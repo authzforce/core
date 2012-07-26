@@ -41,8 +41,8 @@ import com.sun.xacml.MatchResult;
 
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.audit.AuditLogs;
-import com.thalesgroup.authzforce.audit.MatchPolicies;
+import com.thalesgroup.authzforce.audit.api.AuditLogs;
+import com.thalesgroup.authzforce.audit.api.MatchPolicies;
 
 import java.net.URI;
 import java.util.ArrayList;

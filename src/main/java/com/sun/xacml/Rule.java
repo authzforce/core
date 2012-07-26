@@ -45,7 +45,7 @@ import com.sun.xacml.cond.VariableManager;
 
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.audit.AuditLogs;
+import com.thalesgroup.authzforce.audit.api.AuditLogs;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
