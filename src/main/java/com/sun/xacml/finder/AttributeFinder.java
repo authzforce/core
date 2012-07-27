@@ -52,8 +52,8 @@ import com.sun.xacml.attr.AttributeDesignator;
 import com.sun.xacml.attr.AttributeSelector;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.EvaluationResult;
-import com.thalesgroup.authzforce.audit.api.AttributesResolved;
-import com.thalesgroup.authzforce.audit.api.AuditLogs;
+import com.thalesgroup.authzforce.audit.impl.AttributesResolved;
+import com.thalesgroup.authzforce.audit.impl.AuditLogs;
 
 
 /**
