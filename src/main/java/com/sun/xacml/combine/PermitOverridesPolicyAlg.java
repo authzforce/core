@@ -35,21 +35,19 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.MatchResult;
-
-import com.sun.xacml.ctx.Result;
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.audit.impl.AuditLogs;
-import com.thalesgroup.authzforce.audit.impl.MatchPolicies;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.AbstractPolicy;
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.MatchResult;
+import com.sun.xacml.ctx.Result;
+import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.audit.impl.MatchPolicies;
 
 /**
  * This is the standard Permit Overrides policy combining algorithm. It allows a
