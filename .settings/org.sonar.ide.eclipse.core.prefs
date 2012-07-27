@@ -1,0 +1,7 @@
+analyseLocally=false
+eclipse.preferences.version=1
+projectArtifactId=authzforce
+projectBranch=
+projectGroupId=com.thalesgroup.authzforce.core
+serverUrl=http\://sonar.dev.theresis.org/sonar
+version=1
