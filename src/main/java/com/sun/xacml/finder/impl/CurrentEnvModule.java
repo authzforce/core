@@ -113,8 +113,8 @@ public class CurrentEnvModule extends AttributeFinderModule
      * <code>AttributeDesignator.ENVIRONMENT_TARGET</code> included
      */
     public Set getSupportedDesignatorTypes() {
-        HashSet set = new HashSet();
-        set.add(new Integer(AttributeDesignator.ENVIRONMENT_TARGET));
+        Set<Integer> set = new HashSet<Integer>();
+        set.add(Integer.valueOf((AttributeDesignator.ENVIRONMENT_TARGET)));
         return set;
     }
 
@@ -219,17 +219,17 @@ public class CurrentEnvModule extends AttributeFinderModule
      * Private helper that generates a new processing error status and
      * includes the given string.
      */
-    private EvaluationResult makeProcessingError(String message) {
-        ArrayList code = new ArrayList();
-        code.add(Status.STATUS_PROCESSING_ERROR);
-        return new EvaluationResult(new Status(code, message));
-    }
+//    private EvaluationResult makeProcessingError(String message) {
+//        ArrayList<String> code = new ArrayList<String>();
+//        code.add(Status.STATUS_PROCESSING_ERROR);
+//        return new EvaluationResult(new Status(code, message));
+//    }
 
     /**
      * Private helper that makes a bag containing only the given attribute.
      */
     private EvaluationResult makeBag(AttributeValue attribute) {
-        Set set = new HashSet();
+        Set<AttributeValue> set = new HashSet<AttributeValue>();
         set.add(attribute);
 
         BagAttribute bag = new BagAttribute(attribute.getType(), set);

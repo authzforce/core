@@ -36,19 +36,9 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
-import com.sun.xacml.ParsingException;
-
-import com.sun.xacml.attr.BagAttribute;
-
-import com.sun.xacml.ctx.Status;
-
-import java.net.URI;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
-
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,6 +47,12 @@ import java.util.Set;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.attr.AttributeValue;
+import com.sun.xacml.attr.BagAttribute;
 
 
 /**
@@ -95,8 +91,8 @@ class MapFunction implements Function
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
-    public static Set getSupportedIdentifiers() {
-        Set set = new HashSet();
+    public static Set<String> getSupportedIdentifiers() {
+        Set<String> set = new HashSet<String>();
 
         set.add(NAME_MAP);
 
@@ -148,8 +144,9 @@ class MapFunction implements Function
         }
 
         // see if we found the return type
-        if (returnType == null)
+        if (returnType == null) {
             throw new ParsingException("couldn't find the return type");
+        }
 
         return new MapFunction(returnType);
     }
@@ -194,11 +191,11 @@ class MapFunction implements Function
     /**
      * Helper function to create a processing error message.
      */
-    private static EvaluationResult makeProcessingError(String message) {
-        ArrayList code = new ArrayList();
-        code.add(Status.STATUS_PROCESSING_ERROR);
-        return new EvaluationResult(new Status(code, message));
-    }
+//    private static EvaluationResult makeProcessingError(String message) {
+//        ArrayList code = new ArrayList();
+//        code.add(Status.STATUS_PROCESSING_ERROR);
+//        return new EvaluationResult(new Status(code, message));
+//    }
 
     /**
      * Evaluates the function given the input data. Map expects a
@@ -212,7 +209,7 @@ class MapFunction implements Function
     public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // get the inputs, which we expect to be correct
-        Iterator iterator = inputs.iterator();
+        Iterator<?> iterator = inputs.iterator();
         Function function = null;
 
         Expression xpr = (Expression)(iterator.next());
@@ -228,8 +225,9 @@ class MapFunction implements Function
                 
         // in a higher-order case, if anything is INDETERMINATE, then
         // we stop right away
-        if (result.indeterminate())
+        if (result.indeterminate()) {
             return result;
+        }
         
         BagAttribute bag = (BagAttribute)(result.getAttributeValue());
         
@@ -239,16 +237,17 @@ class MapFunction implements Function
         // the value and put the function result in a new bag that
         // is ultimately returned
 
-        Iterator it = bag.iterator();
-        List outputs = new ArrayList();
+        Iterator<?> it = bag.iterator();
+        List<AttributeValue> outputs = new ArrayList<AttributeValue>();
 
         while (it.hasNext()) {
             List params = new ArrayList();
             params.add(it.next());
             result = function.evaluate(params, context);
 
-            if (result.indeterminate())
+            if (result.indeterminate()) {
                 return result;
+            }
 
             outputs.add(result.getAttributeValue());
         }
@@ -267,8 +266,9 @@ class MapFunction implements Function
         Object [] list = inputs.toArray();
 
         // check that we've got the right number of arguments
-        if (list.length != 2)
+        if (list.length != 2) {
             throw new IllegalArgumentException("map requires two inputs");
+        }
 
         // now check that we've got the right types for map
         Function function = null;
@@ -278,17 +278,21 @@ class MapFunction implements Function
         } else if (list[0] instanceof VariableReference) {
             Expression xpr = ((VariableReference)(list[0])).
                 getReferencedDefinition().getExpression();
-            if (xpr instanceof Function)
+            if (xpr instanceof Function) {
                 function = (Function)xpr;
+            }
         }
 
-        if (function == null)
+        if (function == null) {
             throw new IllegalArgumentException("first argument to map must " +
                                                "be a Function");
+        }
+        
         Evaluatable eval = (Evaluatable)(list[1]);
-        if (! eval.returnsBag())
+        if (! eval.returnsBag()) {
             throw new IllegalArgumentException("second argument to map must " +
                                                "be a bag");
+        }
 
         // finally, check that the type in the bag is right for the function
         List input = new ArrayList();
