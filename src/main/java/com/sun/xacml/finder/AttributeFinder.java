@@ -52,8 +52,8 @@ import com.sun.xacml.attr.AttributeDesignator;
 import com.sun.xacml.attr.AttributeSelector;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.EvaluationResult;
-import com.thalesgroup.authzforce.audit.impl.AttributesResolved;
-import com.thalesgroup.authzforce.audit.impl.AuditLogs;
+import com.thalesgroup.authzforce.audit.impl.AttributesResolvedImpl;
+import com.thalesgroup.authzforce.audit.impl.AuditLogsImpl;
 
 
 /**
@@ -188,7 +188,7 @@ public class AttributeFinder
                 }
                 
                 log4jLogger.debug("Finish to resolv attribute value for attribute: "+attributeId +" values are : ");
-                AuditLogs audit = AuditLogs.getInstance();
+                AuditLogsImpl audit = AuditLogsImpl.getInstance();
                 /**
                  * Cache management (Deleting cache)
                  * @author romain.ferrari[AT]thalesgroup.com
@@ -199,14 +199,14 @@ public class AttributeFinder
                 BagAttribute bag = (BagAttribute)(result.getAttributeValue());
                 BagAttribute auditBag = bag;
                 Iterator iter = auditBag.getValue().iterator();
-                AttributesResolved attrResolv = null;
+                AttributesResolvedImpl attrResolv = null;
                 /**
                  * Parsing for auditlog (FIX: Romain Ferrari)
                  * @author romain.guignard[AT]thalesgroup.com
                  */
 				while (iter.hasNext()){
 					String attrval = iter.next().toString();
-					attrResolv = new AttributesResolved();
+					attrResolv = new AttributesResolvedImpl();
 					try {
 						if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#string"))) {
 							attrResolv.setAttributeValue(attrval.split(":")[1]);

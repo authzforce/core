@@ -47,7 +47,7 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.audit.impl.MatchPolicies;
+import com.thalesgroup.authzforce.audit.impl.MatchPoliciesImpl;
 
 /**
  * This is the standard Permit Overrides policy combining algorithm. It allows a
@@ -120,7 +120,7 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 		/**
 		 * END
 		 */
-		List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
+		List<MatchPoliciesImpl> policiesList = new ArrayList<MatchPoliciesImpl>();
 		while (it.hasNext()) {
 			AbstractPolicy policy = ((PolicyCombinerElement) (it.next()))
 					.getPolicy();
