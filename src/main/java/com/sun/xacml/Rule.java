@@ -45,7 +45,7 @@ import com.sun.xacml.cond.VariableManager;
 
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.audit.impl.AuditLogsImpl;
+import com.thalesgroup.authzforce.audit.AuditLogs;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -337,7 +337,7 @@ public class Rule implements PolicyTreeElement
         
         log4jLogger.debug("Found a rule that match the request");
         log4jLogger.debug("RuleId: "+idAttr);
-        AuditLogsImpl audit = AuditLogsImpl.getInstance();
+        AuditLogs audit = AuditLogs.getInstance();
         audit.setRuleId(idAttr.toString());
 
         // if there's no condition, then we just return the effect...
