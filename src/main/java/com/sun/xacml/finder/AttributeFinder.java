@@ -48,8 +48,6 @@ import java.util.logging.Logger;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeSelector;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.EvaluationResult;
 import com.thalesgroup.authzforce.audit.AttributesResolved;
@@ -87,10 +85,10 @@ public class AttributeFinder
     private List selectorModules;
 
     // the logger we'll use for all messages
-    private static final Logger logger =
+    private static final Logger LOGGER =
         Logger.getLogger(AttributeFinder.class.getName());
 
-    private static final org.apache.log4j.Logger log4jLogger = 
+    private static final org.apache.log4j.Logger LOG4J_LOGGER = 
 			org.apache.log4j.Logger.getLogger(AttributeFinder.class);    
     
     /**
@@ -131,11 +129,13 @@ public class AttributeFinder
         while (it.hasNext()) {
             AttributeFinderModule module = (AttributeFinderModule)(it.next());
             
-            if (module.isDesignatorSupported())
+            if (module.isDesignatorSupported()) {
                 designatorModules.add(module);
+            }
 
-            if (module.isSelectorSupported())
+            if (module.isSelectorSupported()) {
                 selectorModules.add(module);
+            }
         }
     }
 
@@ -172,7 +172,7 @@ public class AttributeFinder
             // see if the module supports this type
             Set types = module.getSupportedDesignatorTypes();
             if ((types == null) || (types.
-                                    contains(new Integer(designatorType)))) {
+                                    contains(Integer.valueOf(designatorType)))) {
                 // see if the module can find an attribute value
                 EvaluationResult result =
                     module.findAttribute(attributeType, attributeId, issuer,
@@ -181,13 +181,14 @@ public class AttributeFinder
 
                 // if there was an error, we stop right away
                 if (result.indeterminate()) {
-                    if (logger.isLoggable(Level.INFO))
-                        logger.info("Error while trying to resolve values: " +
+                    if (LOGGER.isLoggable(Level.INFO)) {
+                        LOGGER.info("Error while trying to resolve values: " +
                                     result.getStatus().getMessage());
+                    }
                     return result;
                 }
                 
-                log4jLogger.debug("Finish to resolv attribute value for attribute: "+attributeId +" values are : ");
+                LOG4J_LOGGER.debug("Finish to resolv attribute value for attribute: "+attributeId +" values are : ");
                 AuditLogs audit = AuditLogs.getInstance();
                 /**
                  * Cache management (Deleting cache)
@@ -214,27 +215,29 @@ public class AttributeFinder
 							attrResolv.setAttributeValue(attrval.split("@")[1]);
 						}
 					} catch (URISyntaxException e) {
-						log4jLogger.fatal("Error while building URI");
-						log4jLogger.fatal(e.getLocalizedMessage());
+						LOG4J_LOGGER.fatal("Error while building URI");
+						LOG4J_LOGGER.fatal(e.getLocalizedMessage());
 					}
 					attrResolv.setAttributeId(attributeId);
 					audit.getAttrResolv().add(attrResolv);	
-					log4jLogger.debug("Val : "+attrval);
+					LOG4J_LOGGER.debug("Val : "+attrval);
 				}
 				/**
 				 * End of parsing for auditlog (NOTE: Romain Guignard)
 				 */
-                if (! bag.isEmpty())
+                if (! bag.isEmpty()) {
                     return result;
+                }
             }            
         }
         
         
         // if we got here then there were no errors but there were also no
         // matches, so we have to return an empty bag
-        if (logger.isLoggable(Level.INFO))
-            logger.info("Failed to resolve any values for " +
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info("Failed to resolve any values for " +
                         attributeId.toString());
+        }
 
         return new EvaluationResult(BagAttribute.
                                     createEmptyBag(attributeType));
@@ -275,22 +278,25 @@ public class AttributeFinder
 
             // if there was an error, we stop right away
             if (result.indeterminate()) {
-                if (logger.isLoggable(Level.INFO))
-                    logger.info("Error while trying to resolve values: " +
+                if (LOGGER.isLoggable(Level.INFO)) {
+                    LOGGER.info("Error while trying to resolve values: " +
                                 result.getStatus().getMessage());
+                }
                 return result;
             }
 
             // if the result wasn't empty, then return the result
             BagAttribute bag = (BagAttribute)(result.getAttributeValue());
-            if (! bag.isEmpty())
+            if (! bag.isEmpty()) {
                 return result;
+            }
         }
 
         // if we got here then there were no errors but there were also no
         // matches, so we have to return an empty bag
-        if (logger.isLoggable(Level.INFO))
-            logger.info("Failed to resolve any values for " + contextPath);
+        if (LOGGER.isLoggable(Level.INFO)) {
+            LOGGER.info("Failed to resolve any values for " + contextPath);
+        }
 
         return new EvaluationResult(BagAttribute.
                                     createEmptyBag(attributeType));
