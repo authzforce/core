@@ -145,7 +145,7 @@ public class ConfigurationStore
     private ClassLoader loader;
 
     // the logger we'll use for all messages
-    private static final Logger logger =
+    private static final Logger LOGGER =
         Logger.getLogger(ConfigurationStore.class.getName());
 
     /**
@@ -163,7 +163,7 @@ public class ConfigurationStore
 
         // make sure that the right property was set
         if (configFile == null) {
-            logger.severe("A property defining a config file was expected, " +
+            LOGGER.severe("A property defining a config file was expected, " +
                           "but none was provided");
 
             throw new ParsingException("Config property " +
@@ -174,7 +174,7 @@ public class ConfigurationStore
         try {
             setupConfig(new File(configFile));
         } catch (ParsingException pe) {
-            logger.log(Level.SEVERE, "Runtime config file couldn't be loaded" +
+            LOGGER.log(Level.SEVERE, "Runtime config file couldn't be loaded" +
                        " so no configurations will be available", pe);
             throw pe;
         }
@@ -196,7 +196,7 @@ public class ConfigurationStore
         try {
             setupConfig(configFile);
         } catch (ParsingException pe) {
-            logger.log(Level.SEVERE, "Runtime config file couldn't be loaded" +
+            LOGGER.log(Level.SEVERE, "Runtime config file couldn't be loaded" +
                        " so no configurations will be available", pe);
             throw pe;
         }
@@ -208,7 +208,7 @@ public class ConfigurationStore
      * to setup all the pdps and factories.
      */
     private void setupConfig(File configFile) throws ParsingException {
-        logger.config("Loading runtime configuration");
+        LOGGER.config("Loading runtime configuration");
 
         // load our classloader
         loader = getClass().getClassLoader();
@@ -239,44 +239,52 @@ public class ConfigurationStore
             String elementName = null;
 
             // get the element's name
-            if (child.getNodeType() == Node.ELEMENT_NODE)
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
                 elementName = child.getAttributes().
                     getNamedItem("name").getNodeValue();
+            }
 
             // see if this is a pdp or a factory, and load accordingly,
             // putting the new element into the respective map...make sure
             // that we're never loading something with the same name twice
             if (childName.equals("pdp")) {
-                if (logger.isLoggable(Level.CONFIG))
-                    logger.config("Loading PDP: " + elementName);
-                if (pdpConfigMap.containsKey(elementName))
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.config("Loading PDP: " + elementName);
+                }
+                if (pdpConfigMap.containsKey(elementName)) {
                     throw new ParsingException("more that one pdp with " +
                                                "name \"" + elementName +"\"");
+                }
                 pdpConfigMap.put(elementName, parsePDPConfig(child));
             } else if (childName.equals("attributeFactory")) {
-                if (logger.isLoggable(Level.CONFIG))
-                    logger.config("Loading AttributeFactory: " + elementName);
-                if (attributeMap.containsKey(elementName))
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.config("Loading AttributeFactory: " + elementName);
+                }
+                if (attributeMap.containsKey(elementName)) {
                     throw new ParsingException("more that one " +
                                                "attributeFactory with name " +
                                                elementName +"\"");
+                }
                 attributeMap.put(elementName, parseAttributeFactory(child));
             } else if (childName.equals("combiningAlgFactory")) {
-                if (logger.isLoggable(Level.CONFIG))
-                    logger.config("Loading CombiningAlgFactory: " +
+                if (LOGGER.isLoggable(Level.CONFIG))
+                    LOGGER.config("Loading CombiningAlgFactory: " +
                                   elementName);
-                if (combiningMap.containsKey(elementName))
+                if (combiningMap.containsKey(elementName)) {
                     throw new ParsingException("more that one " +
                                                "combiningAlgFactory with " +
                                                "name \"" + elementName +"\"");
+                }
                 combiningMap.put(elementName, parseCombiningAlgFactory(child));
             } else if (childName.equals("functionFactory")) {
-                if (logger.isLoggable(Level.CONFIG))
-                    logger.config("Loading FunctionFactory: " + elementName);
-                if (functionMap.containsKey(elementName))
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.config("Loading FunctionFactory: " + elementName);
+                }
+                if (functionMap.containsKey(elementName)) {
                     throw new ParsingException("more that one functionFactory"
                                                + " with name \"" +
                                                elementName +"\"");
+                }
                 functionMap.put(elementName, parseFunctionFactory(child));
             }
         }
@@ -324,10 +332,12 @@ public class ConfigurationStore
      */
     private String getDefaultFactory(NamedNodeMap attrs, String factoryName) {
         Node node = attrs.getNamedItem(factoryName);
-        if (node != null)
+        if (node != null) {
             return node.getNodeValue();
-        else
+        }
+        else {
             return PolicyMetaData.XACML_1_0_IDENTIFIER;
+        }
     }
 
     /**
@@ -361,9 +371,10 @@ public class ConfigurationStore
 
         Element root = doc.getDocumentElement();
 
-        if (! root.getTagName().equals("config"))
+        if (! root.getTagName().equals("config")) {
             throw new ParsingException("unknown document type: " +
                                        root.getTagName());
+        }
 
         return root;
     }
@@ -416,7 +427,7 @@ public class ConfigurationStore
 
         // check if we're starting with the standard factory setup
         if (useStandard(root, "useStandardDatatypes")) {
-            logger.config("Starting with standard Datatypes");
+            LOGGER.config("Starting with standard Datatypes");
 
             factory = StandardAttributeFactory.getNewFactory();
         } else {
@@ -458,7 +469,7 @@ public class ConfigurationStore
 
         // check if we're starting with the standard factory setup
         if (useStandard(root, "useStandardAlgorithms")) {
-            logger.config("Starting with standard Combining Algorithms");
+            LOGGER.config("Starting with standard Combining Algorithms");
 
             factory = StandardCombiningAlgFactory.getNewFactory();
         } else {
@@ -505,7 +516,7 @@ public class ConfigurationStore
         // check if we're starting with the standard factory setup, and
         // make sure that the proxy is pre-configured
         if (useStandard(root, "useStandardFunctions")) {
-            logger.config("Starting with standard Functions");
+            LOGGER.config("Starting with standard Functions");
             
             proxy = StandardFunctionFactory.getNewFactoryProxy();
 
@@ -530,13 +541,13 @@ public class ConfigurationStore
             String name = child.getNodeName();
 
             if (name.equals("target")) {
-                logger.config("Loading [TARGET] functions");
+                LOGGER.config("Loading [TARGET] functions");
                 functionParserHelper(child, targetFactory);
             } else if (name.equals("condition")) {
-                logger.config("Loading [CONDITION] functions");
+                LOGGER.config("Loading [CONDITION] functions");
                 functionParserHelper(child, conditionFactory);
             } else if (name.equals("general")) {
-                logger.config("Loading [GENERAL] functions");
+                LOGGER.config("Loading [GENERAL] functions");
                 functionParserHelper(child, generalFactory);
             }
         }
@@ -616,8 +627,8 @@ public class ConfigurationStore
         String className =
             root.getAttributes().getNamedItem("class").getNodeValue();
 
-        if (logger.isLoggable(Level.CONFIG))
-            logger.config("Loading [ " + prefix + ": " + className + " ]");
+        if (LOGGER.isLoggable(Level.CONFIG))
+            LOGGER.config("Loading [ " + prefix + ": " + className + " ]");
 
         // load the given class using the local classloader
         Class c = null;
@@ -671,26 +682,30 @@ public class ConfigurationStore
                     // loop through the parameters and see if each one is
                     // assignable from the coresponding input argument
                     while (it.hasNext()) {
-                        if (! params[j].isAssignableFrom(it.next().getClass()))
+                        if (! params[j].isAssignableFrom(it.next().getClass())) {
                             break;
+                        }
                         j++;
                     }
 
                     // if we looked at all the parameters, then this
                     // constructor matches the input
-                    if (j == argLength)
+                    if (j == argLength) {
                         constructor = cons[i];
+                    }
                 }
 
                 // if we've found a matching constructor then stop looping
-                if (constructor != null)
+                if (constructor != null) {
                     break;
+                }
             }
             
             // make sure we found a matching constructor
-            if (constructor == null)
+            if (constructor == null) {
                 throw new ParsingException("couldn't find a matching " +
                                            "constructor");
+            }
 
             // finally, instantiate the class
             try {
@@ -857,12 +872,14 @@ public class ConfigurationStore
      */
     private boolean useStandard(Node node, String attributeName) {
         NamedNodeMap map = node.getAttributes();
-        if (map == null)
+        if (map == null) {
             return true;
+        }
 
         Node attrNode = map.getNamedItem(attributeName);
-        if (attrNode == null)
+        if (attrNode == null) {
             return true;
+        }
 
         return attrNode.getNodeValue().equals("true");
     }
@@ -877,7 +894,7 @@ public class ConfigurationStore
      */
     public PDPConfig getDefaultPDPConfig() throws UnknownIdentifierException {
         if (defaultPDPConfig == null) {
-        	logger.severe("Default pdp config is null");
+        	LOGGER.severe("Default pdp config is null");
             throw new UnknownIdentifierException("no default available");
         }
 
@@ -897,8 +914,9 @@ public class ConfigurationStore
     {
         Object object = pdpConfigMap.get(name);
 
-        if (object == null)
+        if (object == null) {
             throw new UnknownIdentifierException("unknown pdp: " + name);
+        }
 
         return (PDPConfig)object;
     }
@@ -935,8 +953,9 @@ public class ConfigurationStore
     {
         Object object = attributeMap.get(name);
 
-        if (object == null)
+        if (object == null) {
             throw new UnknownIdentifierException("unknown factory: " + name);
+        }
 
         return (AttributeFactory)object;
     }
@@ -968,7 +987,7 @@ public class ConfigurationStore
             try {
                 AttributeFactory.registerFactory(id, new AFProxy(af));
             } catch (IllegalArgumentException iae) {
-                logger.log(Level.WARNING, "Couldn't register AttributeFactory:"
+                LOGGER.log(Level.WARNING, "Couldn't register AttributeFactory:"
                            + id + " (already in use)", iae);
             }
         }
@@ -1030,7 +1049,7 @@ public class ConfigurationStore
             try {
                 CombiningAlgFactory.registerFactory(id, new CAFProxy(cf));
             } catch (IllegalArgumentException iae) {
-                logger.log(Level.WARNING, "Couldn't register " +
+                LOGGER.log(Level.WARNING, "Couldn't register " +
                            "CombiningAlgFactory: " + id + " (already in use)",
                            iae);
             }
@@ -1093,7 +1112,7 @@ public class ConfigurationStore
             try {
                 FunctionFactory.registerFactory(id, ffp);
             } catch (IllegalArgumentException iae) {
-                logger.log(Level.WARNING, "Couldn't register FunctionFactory: "
+                LOGGER.log(Level.WARNING, "Couldn't register FunctionFactory: "
                            + id + " (already in use)", iae);
             }
         }
@@ -1106,7 +1125,7 @@ public class ConfigurationStore
      * will not be set as the system's default.
      */
     public void useDefaultFactories() {
-        logger.fine("Switching to default factories from configuration");
+        LOGGER.fine("Switching to default factories from configuration");
 
         // set the default attribute factory, if it exists here
         if (defaultAttributeFactory != null) {
@@ -1121,8 +1140,9 @@ public class ConfigurationStore
         }
 
         // set the default function factories, if they exists here
-        if (defaultFunctionFactoryProxy != null)
+        if (defaultFunctionFactoryProxy != null) {
             FunctionFactory.setDefaultFactory(defaultFunctionFactoryProxy);
+        }
     }
 
     /**
