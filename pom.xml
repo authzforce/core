@@ -13,6 +13,12 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	<scm>
+		<connection>scm:svn:http://svn.theresis.org/svn/gt-appsec/AuthZForce/AuthZForce/trunk/core/authzforce</connection>
+		<developerConnection>scm:svn:http://T0101841@svn.theresis.org/svn/gt-appsec/AuthZForce/AuthZForce/trunk/core/authzforce</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://wiki.corp.thales/display/KTDSOA/Thales+Authorization+Server</url>
+	</scm>
 	<build>
 		<plugins>
 			<plugin>
@@ -31,31 +37,31 @@
 					</execution>
 				</executions>
 			</plugin>
-<!-- 			<plugin> -->
-<!-- 				<groupId>org.apache.maven.plugins</groupId> -->
-<!-- 				<artifactId>maven-shade-plugin</artifactId> -->
-<!-- 				<version>1.7.1</version> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<phase>package</phase> -->
-<!-- 						<goals> -->
-<!-- 							<goal>shade</goal> -->
-<!-- 						</goals> -->
-<!-- 						<configuration> -->
-<!-- 							<filters> -->
-<!-- 								<filter> -->
-<!-- 									<artifact>*:*</artifact> -->
-<!-- 									<excludes> -->
-<!-- 										<exclude>META-INF/*.SF</exclude> -->
-<!-- 										<exclude>META-INF/*.DSA</exclude> -->
-<!-- 										<exclude>META-INF/*.RSA</exclude> -->
-<!-- 									</excludes> -->
-<!-- 								</filter> -->
-<!-- 							</filters>							 -->
-<!-- 						</configuration> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 			</plugin> -->
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-shade-plugin</artifactId> -->
+			<!-- <version>1.7.1</version> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <phase>package</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>shade</goal> -->
+			<!-- </goals> -->
+			<!-- <configuration> -->
+			<!-- <filters> -->
+			<!-- <filter> -->
+			<!-- <artifact>*:*</artifact> -->
+			<!-- <excludes> -->
+			<!-- <exclude>META-INF/*.SF</exclude> -->
+			<!-- <exclude>META-INF/*.DSA</exclude> -->
+			<!-- <exclude>META-INF/*.RSA</exclude> -->
+			<!-- </excludes> -->
+			<!-- </filter> -->
+			<!-- </filters> -->
+			<!-- </configuration> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 		</plugins>
 	</build>
 	<dependencies>
@@ -69,12 +75,12 @@
 			<artifactId>spring-core</artifactId>
 			<version>3.1.1.RELEASE</version>
 			<scope>test</scope>
-		</dependency>		 
+		</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>6.4</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>commons-jxpath</groupId>
 			<artifactId>commons-jxpath</artifactId>
