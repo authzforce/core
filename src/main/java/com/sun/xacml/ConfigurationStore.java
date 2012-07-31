@@ -771,7 +771,9 @@ public class ConfigurationStore
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 if (name.equals("string")) {
                     args.add(child.getFirstChild().getNodeValue());
-                } else if (name.equals("list")) {
+                } else if (name.equalsIgnoreCase("list")) {
+                    args.add(getArgs(child));
+                } else if (name.equalsIgnoreCase("map")) {
                     args.add(getArgs(child));
                 } else if (name.equals("Options")) {
                     args.add(getArgs(child));
