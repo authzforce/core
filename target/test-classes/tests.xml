@@ -1,0 +1,453 @@
+
+<!--
+ Copyright 2004 Sun Microsystems, Inc. All Rights Reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+   1. Redistribution of source code must retain the above copyright notice,
+      this list of conditions and the following disclaimer.
+ 
+   2. Redistribution in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+
+ Neither the name of Sun Microsystems, Inc. or the names of contributors may
+ be used to endorse or promote products derived from this software without
+ specific prior written permission.
+ 
+ This software is provided "AS IS," without a warranty of any kind. ALL
+ EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
+ ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
+ OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
+ AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
+ AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
+ DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
+ REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
+ INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
+ OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
+ EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+ You acknowledge that this software is not designed or intended for use in
+ the design, construction, operation or maintenance of any nuclear facility.
+-->
+
+<tests>
+
+  <!-- This file defines all of the conformance tests defined by the TC -->
+  <!-- This uses the tests from the March 25, 2004 release -->
+
+  <group name="II">
+    <group name="A">
+      <test name="001"/>
+      <test name="002"/>
+      <test name="003"/>
+      <test name="004" errorExpected="true"/>
+      <test name="005" errorExpected="true"/>
+      <test name="006"/>
+      <test name="007"/>
+      <test name="008"/>
+      <test name="009"/>
+      <test name="010"/>
+      <test name="011"/>
+      <test name="012"/>
+      <test name="013"/>
+      <test name="014"/>
+      <test name="015"/>
+      <test name="016"/>
+      <test name="017"/>
+      <test name="018"/>
+      <test name="019"/>
+      <test name="020"/>
+      <test name="021"/>
+    </group>
+    <group name="B">
+      <test name="001"/>
+      <test name="002"/>
+      <test name="003"/>
+      <test name="004"/>
+      <test name="005"/>
+      <test name="006"/>
+      <test name="007"/>
+      <test name="008"/>
+      <test name="009"/>
+      <test name="010"/>
+      <test name="011"/>
+      <test name="012"/>
+      <test name="013"/>
+      <test name="014"/>
+      <test name="015"/>
+      <test name="016"/>
+      <test name="017"/>
+      <test name="018"/>
+      <test name="019"/>
+      <test name="020"/>
+      <test name="021"/>
+      <test name="022"/>
+      <test name="023"/>
+      <test name="024"/>
+      <test name="025"/>
+      <test name="026"/>
+      <test name="027"/>
+      <test name="028"/>
+      <test name="029"/>
+      <test name="030"/>
+      <test name="031"/>
+      <test name="032"/>
+      <test name="033"/>
+      <test name="034"/>
+      <test name="035"/>
+      <test name="036"/>
+      <test name="037"/>
+      <test name="038"/>
+      <test name="039"/>
+      <test name="040"/>
+      <test name="041"/>
+      <test name="042"/>
+      <test name="043"/>
+      <test name="044"/>
+      <test name="045"/>
+      <test name="046"/>
+      <test name="047"/>
+      <test name="048"/>
+      <test name="049"/>
+      <test name="050"/>
+      <test name="051"/>
+      <test name="052"/>
+      <test name="053"/>
+    </group>
+    <group name="C">
+      <test name="001"/>
+      <test name="002"/>
+      <test name="003" errorExpected="true"/>
+      <test name="004"/>
+      <test name="005"/>
+      <test name="006"/>
+      <test name="007"/>
+      <test name="008"/>
+      <test name="009"/>
+      <test name="010"/>
+      <test name="011"/>
+      <test name="012" errorExpected="true"/>
+      <test name="013"/>
+      <test name="014" errorExpected="true"/>
+      <test name="015"/>
+      <test name="016"/>
+      <test name="017"/>
+      <test name="018"/>
+      <test name="019"/>
+      <test name="020"/>
+      <test name="021"/>
+      <test name="022"/>
+      <test name="024"/>
+      <test name="025"/>
+      <test name="026"/>
+      <test name="027"/>
+      <test name="028"/>
+      <test name="029"/>
+      <test name="030"/>
+      <test name="031"/>
+      <test name="032"/>
+      <test name="033"/>
+      <test name="034"/>
+      <test name="035"/>
+      <test name="036"/>
+      <test name="037"/>
+      <test name="038"/>
+      <test name="039"/>
+      <test name="040"/>
+      <test name="041"/>
+      <test name="042"/>
+      <test name="043"/>
+      <test name="044"/>
+      <test name="045"/>
+      <test name="046"/>
+      <test name="047"/>
+      <test name="048"/>
+      <test name="049"/>
+      <test name="050"/>
+      <test name="051"/>
+      <test name="052"/>
+      <test name="053"/>
+      <test name="056"/>
+      <test name="057"/>
+      <test name="058"/>
+      <test name="059"/>
+      <test name="060"/>
+      <test name="061"/>
+      <test name="062"/>
+      <test name="063"/>
+      <test name="064"/>
+      <test name="065"/>
+      <test name="066"/>
+      <test name="067"/>
+      <test name="068"/>
+      <test name="069"/>
+      <test name="070"/>
+      <test name="071"/>
+      <test name="072"/>
+      <test name="073"/>
+      <test name="074"/>
+      <test name="075"/>
+      <test name="076"/>
+      <test name="077"/>
+      <test name="078"/>
+      <test name="079"/>
+      <test name="080"/>
+      <test name="081"/>
+      <test name="082"/>
+      <test name="083"/>
+      <test name="084"/>
+      <test name="085"/>
+      <test name="086"/>
+      <test name="087"/>
+      <test name="090"/>
+      <test name="091"/>
+      <test name="094"/>
+      <test name="095"/>
+      <test name="096"/>
+      <test name="097"/>
+      <test name="100"/>
+      <test name="101"/>
+      <test name="102"/>
+      <test name="103"/>
+      <test name="104"/>
+      <test name="105"/>
+      <test name="106"/>
+      <test name="107"/>
+      <test name="108"/>
+      <test name="109"/>
+      <test name="110"/>
+      <test name="111"/>
+      <test name="112"/>
+      <test name="113"/>
+      <test name="114"/>
+      <test name="115"/>
+      <test name="116"/>
+      <test name="117"/>
+      <test name="118"/>
+      <test name="119"/>
+      <test name="120"/>
+      <test name="121"/>
+      <test name="122"/>
+      <test name="123"/>
+      <test name="124"/>
+      <test name="125"/>
+      <test name="126"/>
+      <test name="127"/>
+      <test name="128"/>
+      <test name="129"/>
+      <test name="130"/>
+      <test name="131"/>
+      <test name="132"/>
+      <test name="133"/>
+      <test name="134"/>
+      <test name="135"/>
+      <test name="136"/>
+      <test name="137"/>
+      <test name="138"/>
+      <test name="139"/>
+      <test name="140"/>
+      <test name="141"/>
+      <test name="142"/>
+      <test name="143"/>
+      <test name="144"/>
+      <test name="145"/>
+      <test name="146"/>
+      <test name="147"/>
+      <test name="148"/>
+      <test name="149"/>
+      <test name="150"/>
+      <test name="151"/>
+      <test name="152"/>
+      <test name="153"/>
+      <test name="154"/>
+      <test name="155"/>
+      <test name="156"/>
+      <test name="157"/>
+      <test name="158"/>
+      <test name="159"/>
+      <test name="160"/>
+      <test name="161"/>
+      <test name="162"/>
+      <test name="163"/>
+      <test name="164"/>
+      <test name="165"/>
+      <test name="166"/>
+      <test name="167"/>
+      <test name="168"/>
+      <test name="169"/>
+      <test name="170"/>
+      <test name="171"/>
+      <test name="172"/>
+      <test name="173"/>
+      <test name="174"/>
+      <test name="175"/>
+      <test name="176"/>
+      <test name="177"/>
+      <test name="178"/>
+      <test name="179"/>
+      <test name="180"/>
+      <test name="181"/>
+      <test name="182"/>
+      <test name="183"/>
+      <test name="184"/>
+      <test name="185"/>
+      <test name="186"/>
+      <test name="187"/>
+      <test name="188"/>
+      <test name="189"/>
+      <test name="190"/>
+      <test name="191"/>
+      <test name="192"/>
+      <test name="193"/>
+      <test name="194"/>
+      <test name="195"/>
+      <test name="196"/>
+      <test name="197"/>
+      <test name="198"/>
+      <test name="199"/>
+      <test name="200"/>
+      <test name="201"/>
+      <test name="202"/>
+      <test name="203"/>
+      <test name="204"/>
+      <test name="205"/>
+      <test name="206"/>
+      <test name="207"/>
+      <test name="208"/>
+      <test name="209"/>
+      <test name="210"/>
+      <test name="211"/>
+      <test name="212"/>
+      <test name="213"/>
+      <test name="214"/>
+      <test name="215"/>
+      <test name="216"/>
+      <test name="217"/>
+      <test name="218"/>
+      <test name="219"/>
+      <test name="220"/>
+      <test name="221"/>
+      <test name="222"/>
+      <test name="223"/>
+      <test name="224"/>
+      <test name="225"/>
+      <test name="226"/>
+      <test name="227"/>
+      <test name="228"/>
+      <test name="229"/>
+      <test name="230"/>
+      <test name="231" experimental="true"/>
+      <test name="232" experimental="true"/>
+    </group>
+    <group name="D">
+      <test name="001"/>
+      <test name="002"/>
+      <test name="003"/>
+      <test name="004"/>
+      <test name="005"/>
+      <test name="006"/>
+      <test name="007"/>
+      <test name="008"/>
+      <test name="009"/>
+      <test name="010"/>
+      <test name="011"/>
+      <test name="012"/>
+      <test name="013"/>
+      <test name="014"/>
+      <test name="015"/>
+      <test name="016"/>
+      <test name="017"/>
+      <test name="018"/>
+      <test name="019"/>
+      <test name="020"/>
+      <test name="021"/>
+      <test name="022"/>
+      <test name="023"/>
+      <test name="024"/>
+      <test name="025"/>
+      <test name="026"/>
+      <test name="027"/>
+      <test name="028"/>
+      <test name="029">
+        <policy>029Policy1.xml</policy>
+        <policy>029Policy2.xml</policy>
+      </test>
+      <test name="030">
+        <policy>030Policy1.xml</policy>
+        <policy>030Policy2.xml</policy>
+      </test>
+    </group>
+    <group name="E">
+      <test name="001">
+        <policyReference ref="urn:oasis:names:tc:xacml:1.0:conformance-test:IIE001:policy1">001PolicyId1.xml</policyReference>
+        <policySetReference ref="urn:oasis:names:tc:xacml:1.0:conformance-test:IIE001:policyset1">001PolicySetId1.xml</policySetReference>
+      </test>
+      <test name="002">
+        <policyReference ref="urn:oasis:names:tc:xacml:1.0:conformance-test:IIE002:policy1">002PolicyId1.xml</policyReference>
+        <policySetReference ref="urn:oasis:names:tc:xacml:1.0:conformance-test:IIE002:policyset1">002PolicySetId1.xml</policySetReference>
+      </test>
+      <test name="003" experimental="true">
+        <policyReference ref="urn:oasis:names:tc:xacml:1.0:conformance-test:IIE003:policy1">003PolicyId1.xml</policyReference>
+        <policySetReference ref="urn:oasis:names:tc:xacml:1.0:conformance-test:IIE003:policy2">003PolicyId2.xml</policySetReference>
+      </test>
+    </group>
+  </group>
+  <group name="III" experimental="true">
+    <group name="A">
+      <test name="001"/>
+      <test name="002"/>
+      <test name="003"/>
+      <test name="004"/>
+      <test name="005"/>
+      <test name="006"/>
+      <test name="007"/>
+      <test name="008"/>
+      <test name="009"/>
+      <test name="010"/>
+      <test name="011"/>
+      <test name="012"/>
+      <test name="013"/>
+      <test name="014"/>
+      <test name="015"/>
+      <test name="016"/>
+      <test name="017"/>
+      <test name="018"/>
+      <test name="019"/>
+      <test name="020"/>
+      <test name="021"/>
+      <test name="022"/>
+      <test name="023"/>
+      <test name="024"/>
+      <test name="025"/>
+      <test name="026"/>
+      <test name="027"/>
+      <test name="028"/>
+    </group>
+    <group name="C">
+      <test name="001"/>
+      <test name="002"/>
+      <test name="003"/>
+    </group>
+    <group name="F">
+      <test name="001"/>
+      <test name="002"/>
+      <test name="003"/>
+      <test name="004"/>
+      <test name="005"/>
+      <test name="006"/>
+      <test name="007"/>
+    </group>
+    <group name="G">
+      <!-- SunXACML doesn't currently support any of the optional XPATH -->
+      <!-- functions, which is what this section tests -->
+      <!--<test name="001"/>-->
+      <!--<test name="002"/>-->
+      <!--<test name="003"/>-->
+      <!--<test name="004"/>-->
+      <!--<test name="005"/>-->
+      <!--<test name="006"/>-->
+    </group>
+  </group>
+</tests>
