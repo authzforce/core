@@ -140,6 +140,8 @@ public class ConfigurationStore
     // function factory elements
     private FunctionFactoryProxy defaultFunctionFactoryProxy;
     private HashMap functionMap;
+    
+    private HashMap cacheMap;
 
     // the classloader we'll use for loading classes
     private ClassLoader loader;
@@ -203,6 +205,8 @@ public class ConfigurationStore
     }
 
     /**
+     * TODO: Use JAXB schema model
+     * 
      * Private helper function used by both constructors to actually load the
      * configuration data. This is the root of several private methods used
      * to setup all the pdps and factories.
@@ -221,6 +225,7 @@ public class ConfigurationStore
         attributeMap = new HashMap();
         combiningMap = new HashMap();
         functionMap = new HashMap();
+        cacheMap = new HashMap();
 
         // get the default names
         NamedNodeMap attrs = root.getAttributes();
@@ -386,6 +391,7 @@ public class ConfigurationStore
         ArrayList attrModules = new ArrayList();
         HashSet policyModules = new HashSet();
         ArrayList rsrcModules = new ArrayList();
+        ArrayList cacheModules = new ArrayList();
 
         // go through all elements of the pdp, loading the specified modules
         NodeList children = root.getChildNodes();
@@ -399,6 +405,8 @@ public class ConfigurationStore
                 attrModules.add(loadClass("module", child));
             } else if (name.equals("resourceFinderModule")) {
                 rsrcModules.add(loadClass("module", child));
+            } else if (name.equals("cache")) {
+                cacheModules.add(loadClass("module", child));
             }
         }
 
@@ -413,8 +421,11 @@ public class ConfigurationStore
 
         ResourceFinder rsrcFinder = new ResourceFinder();
         rsrcFinder.setModules(rsrcModules);
-
-        return new PDPConfig(attrFinder, policyFinder, rsrcFinder);
+        
+//        CacheManager cacheManager = CacheManager.getInstance();        
+//        return new PDPConfig(attrFinder, policyFinder, rsrcFinder);
+        
+        return new PDPConfig(attrFinder, policyFinder, rsrcFinder, (CacheManager)cacheModules.get(0));
     }
 
     /**
@@ -620,15 +631,14 @@ public class ConfigurationStore
      * the given class...this assumes that the class is in the classpath,
      * both for simplicity and for stronger security
      */
-    private Object loadClass(String prefix, Node root)
-        throws ParsingException
-    {
+    private Object loadClass(String prefix, Node root) throws ParsingException
+    {    	
         // get the name of the class
-        String className =
-            root.getAttributes().getNamedItem("class").getNodeValue();
+        String className = root.getAttributes().getNamedItem("class").getNodeValue();
 
-        if (LOGGER.isLoggable(Level.CONFIG))
+        if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.config("Loading [ " + prefix + ": " + className + " ]");
+        }
 
         // load the given class using the local classloader
         Class c = null;
@@ -787,6 +797,8 @@ public class ConfigurationStore
                     args.add(getArgs(child));
                 } else if (name.equals("AttributeCertificateFinder")) {
                     args.add(getArgs(child));                    
+                } else if (name.equalsIgnoreCase("cache")) {
+                    args.add(getArgs(child));                    
                 } else if (name.equals("url")) {
                 	Map<String,String> myMap = new HashMap<String,String>();
                 	myMap.put("url", child.getFirstChild().getNodeValue());
@@ -794,6 +806,14 @@ public class ConfigurationStore
                 } else if (name.equals("attributeSupportedId")) {
                 	Map<String,String> myMap = new HashMap<String,String>();
                 	myMap.put("attributeSupportedId", child.getFirstChild().getNodeValue());
+                	args.add(myMap);
+                } else if (name.equals("substituteVmId")) {
+                	Map<String,String> myMap = new HashMap<String,String>();
+                	myMap.put("substituteVmId", child.getFirstChild().getNodeValue());
+                	args.add(myMap);
+                } else if (name.equals("substituteTokenId")) {
+                	Map<String,String> myMap = new HashMap<String,String>();
+                	myMap.put("substituteTokenId", child.getFirstChild().getNodeValue());
                 	args.add(myMap);
                 } else if (name.equals("roleAttribute")) {
                 	Map<String,String> myMap = new HashMap<String,String>();

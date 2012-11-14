@@ -45,6 +45,7 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
 
 import com.sun.xacml.cond.EvaluationResult;
+import com.sun.xacml.ctx.Attribute;
 
 
 import com.sun.xacml.finder.AttributeFinder;
@@ -644,7 +645,42 @@ public class BasicEvaluationCtx implements EvaluationCtx
                 logger.fine("Attribute not in request: " + id.toString() +
                             " ... querying AttributeFinder");
 
-            return callHelper(type, id, issuer, category, designatorType);
+            /*
+             * Code Updated [romain.guignard[at]thalesgroup.com]
+             * Allow to store value retrieves by an attributeFinder for a specific evaluationContext
+             * see also http://jira.theresis.thales:8180/browse/APPSEC-167
+             */
+            EvaluationResult result = callHelper(type, id, issuer, category, designatorType);
+            String issuerString = null;
+            if (issuer != null){
+            	issuerString = issuer.toString();
+            }
+            if (result.getAttributeValue() instanceof BagAttribute){
+            	BagAttribute bagAttribute = (BagAttribute) result.getAttributeValue();
+            	Iterator iit = bagAttribute.getValue().iterator();
+            	HashSet<AttributeType> attrset = new HashSet<AttributeType>();
+                
+            	 while (iit.hasNext()) {
+            		 AttributeValueType attributeValue = (AttributeValueType) iit.next();
+            		 AttributeType attribute = new AttributeType();
+            		 attribute.setAttributeId(id.toASCIIString());
+            		 attribute.setIssuer(issuerString);
+            		 /*
+            		  * TODO: fetch datatype
+            		  */            
+            		 attribute.setDataType(null);
+            		 attribute.getAttributeValue().add(attributeValue);            		 
+            		 attrset.add(attribute);
+            	 }
+            	 map.put(id.toString(), attrset);
+            	 return result;
+            }
+            else {
+            	throw new IllegalArgumentException("CallHelper didn't return BagAttribute");
+            }                         
+            /*
+             * 
+             */
         }
                 
         // if we got here, then we found at least one useful AttributeValue

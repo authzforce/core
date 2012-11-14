@@ -263,11 +263,11 @@ public abstract class AttributeValue implements Evaluatable {
 	}
 
 	
-	/**
+	/*
 	 * 
 	 * Romain FERRARI (THALES)
 	 * @BUG
-	 **/
+	 */
 	
 	/**
 	 * 

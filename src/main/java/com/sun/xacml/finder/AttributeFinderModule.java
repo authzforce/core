@@ -203,11 +203,11 @@ public abstract class AttributeFinderModule
                                     createEmptyBag(attributeType));
     }
 
-	public abstract String getAttributeSupportedId();
-
-	public abstract String getSubstituteValue();
-
-	public abstract StringAttribute getResourceVal();
-
-	public abstract Set getSet();
+//	public abstract String getAttributeSupportedId();
+//
+//	public abstract String getSubstituteValue();
+//
+//	public abstract StringAttribute getResourceVal();
+//
+//	public abstract Set getSet();
 }

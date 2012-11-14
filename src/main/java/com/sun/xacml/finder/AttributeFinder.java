@@ -190,7 +190,7 @@ public class AttributeFinder
                 
                 LOG4J_LOGGER.debug("Finish to resolv attribute value for attribute: "+attributeId +" values are : ");
                 AuditLogs audit = AuditLogs.getInstance();
-                /**
+                /*
                  * Cache management (Deleting cache)
                  * @author romain.ferrari[AT]thalesgroup.com
                  */
@@ -201,7 +201,7 @@ public class AttributeFinder
                 BagAttribute auditBag = bag;
                 Iterator iter = auditBag.getValue().iterator();
                 AttributesResolved attrResolv = null;
-                /**
+                /*
                  * Parsing for auditlog (FIX: Romain Ferrari)
                  * @author romain.guignard[AT]thalesgroup.com
                  */
@@ -222,7 +222,7 @@ public class AttributeFinder
 					audit.getAttrResolv().add(attrResolv);	
 					LOG4J_LOGGER.debug("Val : "+attrval);
 				}
-				/**
+				/*
 				 * End of parsing for auditlog (NOTE: Romain Guignard)
 				 */
                 if (! bag.isEmpty()) {

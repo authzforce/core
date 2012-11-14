@@ -62,6 +62,9 @@ public class PDPConfig
 
     //
     private ResourceFinder resourceFinder;
+    
+    //
+    private CacheManager cacheManager;
 
     /**
      * Constructor that creates a <code>PDPConfig</code> from components.
@@ -76,20 +79,62 @@ public class PDPConfig
     public PDPConfig(AttributeFinder attributeFinder,
                      PolicyFinder policyFinder,
                      ResourceFinder resourceFinder) {
-        if (attributeFinder != null)
+        if (attributeFinder != null) {
             this.attributeFinder = attributeFinder;
-        else
+        } else {
             this.attributeFinder = new AttributeFinder();
-
-        if (policyFinder != null)
+        }
+        if (policyFinder != null) {
             this.policyFinder = policyFinder;
-        else
+        } else {
             this.policyFinder = new PolicyFinder();
-
-        if (resourceFinder != null)
+        }
+        if (resourceFinder != null) {
             this.resourceFinder = resourceFinder;
-        else
+        } else {
             this.resourceFinder = new ResourceFinder();
+        }
+        cacheManager = new CacheManager();
+    }
+    
+    /**
+     * Constructor that creates a <code>PDPConfig</code> from components.
+     *
+     * @param attributeFinder the <code>AttributeFinder</code> that the PDP
+     *                        should use, or null if it shouldn't use any
+     * @param policyFinder the <code>PolicyFinder</code> that the PDP
+     *                     should use, or null if it shouldn't use any
+     * @param resourceFinder the <code>ResourceFinder</code> that the PDP
+     *                       should use, or null if it shouldn't use any
+     * @param cacheManager the <code>CacheManager</code> that the PDP
+     *                       should use, or null if it shouldn't use any
+     *                                           
+     *	@author: romain.ferrari@thalesgroup.com
+     */
+    public PDPConfig(AttributeFinder attributeFinder,
+                     PolicyFinder policyFinder,
+                     ResourceFinder resourceFinder,
+                     CacheManager cacheManager) {
+        if (attributeFinder != null) {
+            this.attributeFinder = attributeFinder;
+        } else {
+            this.attributeFinder = new AttributeFinder();
+        }
+        if (policyFinder != null) {
+            this.policyFinder = policyFinder;
+        } else {
+            this.policyFinder = new PolicyFinder();
+        }
+        if (resourceFinder != null) {
+            this.resourceFinder = resourceFinder;
+        } else {
+            this.resourceFinder = new ResourceFinder();
+        }
+        if (cacheManager != null) {
+            this.cacheManager = cacheManager;
+        } else {
+            this.cacheManager = new CacheManager();
+        }
     }
 
     /**
@@ -121,5 +166,9 @@ public class PDPConfig
     public ResourceFinder getResourceFinder() {
         return resourceFinder;
     }
+
+	public CacheManager getCacheManager() {
+		return cacheManager;
+	}
 
 }
