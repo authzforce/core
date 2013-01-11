@@ -74,7 +74,7 @@ import com.sun.xacml.finder.PolicyFinder;
 @org.testng.annotations.Test
 public class ConformanceTest { //extends XMLTestCase {
 
-    private static Log log = LogFactory.getLog(ConformanceTest.class);
+    private static Log LOGGER = LogFactory.getLog(ConformanceTest.class);
     
     // the pdp we use to do all evaluations
     private PDP pdp;
@@ -84,16 +84,18 @@ public class ConformanceTest { //extends XMLTestCase {
 
     @BeforeTest
     public void setUp() throws Exception {
-        System.out.println("Starting XACML tests at " + new Date());
+        LOGGER.info("Starting XACML tests at " + new Date());
         
         testPolicyFinderModule = new TestPolicyFinderModule();
+        LOGGER.info("TestPolicyFinderModule initilization OK");
         
+        LOGGER.info("Configuring PDP");
         configurePDP();
     }
 
     @org.testng.annotations.Test(dataProvider = "tests2", dataProviderClass = ConformanceTestDataProvider.class)
     public void testXACML(TestDescriptor td) throws Exception {
-        log.info("Running xacml test: " + td.getTestName());
+        LOGGER.info("Running xacml test: " + td.getTestName());
         
         // the policies and references used by this test
         Map policyRefs = null;
@@ -118,7 +120,7 @@ public class ConformanceTest { //extends XMLTestCase {
             testPolicyFinderModule.setPolicyRefs(td.getPolicyRefs(), "");
             testPolicyFinderModule.setPolicySetRefs(td.getPolicySetRefs(), "");
 
-            if (log.isTraceEnabled()) {
+            if (LOGGER.isTraceEnabled()) {
                 File tempFile;
                 tempFile = File.createTempFile("Request-" + td.getTestName() + "-", ".xml");
                 JAXBElement<RequestType> elem = com.sun.xacml.BindingUtility.contextFac.createRequest(request);
@@ -146,7 +148,7 @@ public class ConformanceTest { //extends XMLTestCase {
                 throw new RuntimeException("Unexpected exception in test " + td, e);
             } else {
                 //TODO: Only swallow expected exception not any exceptions
-                log.debug("Expected failure of test " + td + ": ", e);
+                LOGGER.debug("Expected failure of test " + td + ": ", e);
             }
         }
 

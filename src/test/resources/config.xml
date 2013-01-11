@@ -31,7 +31,7 @@
  You acknowledge that this software is not designed or intended for use in
  the design, construction, operation or maintenance of any nuclear facility.
 -->
-
+<!-- 
 <config xmlns="http://sunxacml.sourceforge.net/schema/config-0.2"
         defaultPDP="default" defaultAttributeFactory="default"
         defaultCombiningAlgFactory="default" defaultFunctionFactory="default">
@@ -47,4 +47,33 @@
   <combiningAlgFactory name="default" useStandardAlgorithms="true"/>
 
   <functionFactory name="default" useStandardFunctions="true"/>
+</config>
+-->
+<config xmlns="http://theresis.thalesgroup.com/shared/schema/config/pdp" 
+	defaultAttributeFactory="attr"
+	defaultCombiningAlgFactory="comb" defaultFunctionFactory="func" defaultPDP="AuthZForce-REST"
+	xmlns:config="http://theresis.thalesgroup.com/shared/schema/config/pdp"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://theresis.thalesgroup.com/shared/schema/config/pdp ../../../../../schema/pdp.xsd ">
+	<pdp name="AuthZForce-REST">
+		<attributeFinderModule class="com.sun.xacml.finder.impl.CurrentEnvModule"/>
+	    <attributeFinderModule class="com.sun.xacml.finder.impl.SelectorModule"/>
+	    <attributeFinderModule class="com.sun.xacml.test.TestAttributeFinderModule"/>
+	    <resourceFinderModule class="com.sun.xacml.test.TestResourceFinderModule"/>
+	    
+		<cache class="com.sun.xacml.CacheManager">
+		    <map>
+			<activate>true</activate>
+			<maxElementsInMemory>10000</maxElementsInMemory>
+			<overflowToDisk>false</overflowToDisk>
+			<eternal>false</eternal>
+		    </map>
+		</cache>
+	</pdp>
+	<attributeFactory name="attr" useStandardDatatypes="true" />
+	<combiningAlgFactory name="comb"
+		useStandardAlgorithms="true" />
+	<functionFactory name="func" useStandardFunctions="true">
+		<!-- <condition> <function class="TimeInRangeFunction"/> </condition> -->
+	</functionFactory>
 </config>
