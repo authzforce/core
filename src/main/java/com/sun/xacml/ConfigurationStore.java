@@ -839,7 +839,11 @@ public class ConfigurationStore
                 	Map<String,String> myMap = new HashMap<String,String>();
                 	myMap.put("substituteValue", child.getFirstChild().getNodeValue());
                 	args.add(myMap);
-                } else if (name.equals("password")) {
+                } else if (name.equals("tenantSubstituteValue")) {
+                	Map<String,String> myMap = new HashMap<String,String>();
+                	myMap.put("tenantSubstituteValue", child.getFirstChild().getNodeValue());
+                	args.add(myMap);
+                }  else if (name.equals("password")) {
                 	Map<String,String> myMap = new HashMap<String,String>();
                 	if (child.getFirstChild() == null) {
                 		myMap.put("password", "");
@@ -876,9 +880,9 @@ public class ConfigurationStore
                 	Map<String,String> myMap = new HashMap<String,String>();
                 	myMap.put("timeToLiveSeconds", child.getFirstChild().getNodeValue());
                 	args.add(myMap);
-                } else if (name.equals("timeToIdleSeconds")) {
+                } else if (name.equals("adminToken")) {
                 	Map<String,String> myMap = new HashMap<String,String>();
-                	myMap.put("timeToIdleSeconds", child.getFirstChild().getNodeValue());
+                	myMap.put("adminToken", child.getFirstChild().getNodeValue());
                 	args.add(myMap);
                 } else {
                     throw new IllegalArgumentException("Unkown arg type: " + name);
