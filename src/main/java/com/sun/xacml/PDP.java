@@ -326,13 +326,14 @@ public class PDP {
 			AttributeValue parent = context.getResourceId();
 			ResourceFinderResult resourceResult = null;
 
-			if (context.getScope() == EvaluationCtx.SCOPE_CHILDREN)
+			if (context.getScope() == EvaluationCtx.SCOPE_CHILDREN) {
 				resourceResult = resourceFinder.findChildResources(parent,
 						context);
-			else
+			} else {
 				resourceResult = resourceFinder.findDescendantResources(parent,
 						context);
-
+			}
+			
 			// see if we actually found anything
 			if (resourceResult.isEmpty()) {
 				// this is a problem, since we couldn't find any resources

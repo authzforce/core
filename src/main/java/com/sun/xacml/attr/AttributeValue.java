@@ -52,6 +52,7 @@ import java.io.StringWriter;
 
 import java.net.URI;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -253,13 +254,23 @@ public abstract class AttributeValue implements Evaluatable {
 		}
 	}
 
-	public static AttributeValue convertFromJAXB(List<AttributeValueType> avts,
+	public static List<AttributeValue> convertFromJAXB(List<AttributeValueType> avts,
 			URI dataType) throws ParsingException {
-		if (avts.size() > 0) {
+//		if (avts.size() > 0) {
 			// throw new
 			// UnsupportedOperationException("XACML2 multiple AttributeValues not supported yet.");
+//		}
+		if (avts == null) {
+			return null;
 		}
-		return convertFromJAXB(avts.get(0), dataType);
+		
+		final List<AttributeValue> resultAvts = new ArrayList<AttributeValue>();
+    	for(final AttributeValueType avt: avts) {
+    		final AttributeValue newAvt = convertFromJAXB(avt, dataType);
+    		resultAvts.add(newAvt);
+    	}
+		
+		return resultAvts;
 	}
 
 	
