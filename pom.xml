@@ -5,7 +5,7 @@
 		<artifactId>core</artifactId>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<version>2.0.0</version>
-		<relativePath>..</relativePath>
+		<relativePath>../authzforce-core</relativePath>
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce</artifactId>
