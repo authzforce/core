@@ -48,7 +48,6 @@ import java.util.Set;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.yaml.snakeyaml.parser.ParserException;
 
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
