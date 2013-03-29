@@ -77,18 +77,6 @@
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
 			<version>1.11</version>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce.policyfinder</groupId>
-			<artifactId>filepolicyfinder</artifactId>
-			<version>2.0.0</version>			
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce.policyfinder</groupId>
-			<artifactId>directorypolicyfinder</artifactId>
-			<version>2.0.0</version>			
-			<scope>test</scope>
-		</dependency>
+		</dependency>		
 	</dependencies>
 </project>
