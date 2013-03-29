@@ -13,12 +13,6 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-	<scm>
-		<connection>scm:svn:http://svn.theresis.org/svn/gt-appsec/AuthZForce/AuthZForce/trunk/core/authzforce</connection>
-		<developerConnection>scm:svn:http://Romain Ferrari@svn.theresis.org/svn/gt-appsec/AuthZForce/AuthZForce/trunk/core/authzforce</developerConnection>
-		<tag>HEAD</tag>
-		<url>http://wiki.corp.thales/display/KTDSOA/Thales+Authorization+Server</url>
-	</scm>
 	<build>
 		<plugins>
 			<plugin>
@@ -73,11 +67,6 @@
 			<artifactId>audit</artifactId>
 			<version>2.0.0</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.thalesgroup.authzforce.policyFinder</groupId> -->
-<!-- 			<artifactId>directoryPolicyFinder</artifactId> -->
-<!-- 			<version>2.0.0</version> -->
-<!-- 		</dependency> -->
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
