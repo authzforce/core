@@ -42,11 +42,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOfType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOfType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.MatchType;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.xacmlv3.AllOf;
 import com.sun.xacml.xacmlv3.AnyOf;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
@@ -138,9 +140,6 @@ public class Target {
 		this.actionsSection = actionsSection;
 		this.environmentsSection = environmentsSection;
 		this.xacmlVersion = PolicyMetaData.XACML_VERSION_2_0;
-	}
-
-	public Target() {
 		this.anyOfType = new ArrayList<AnyOf>();
 	}
 
@@ -152,7 +151,19 @@ public class Target {
 	 *            List of <code>AnyOf</code> objects that representing the AnyOf
 	 *            sections of this target
 	 */
-	public Target(List<AnyOf> anyOfType) {
+	public Target(TargetSection subjectsSection,
+			TargetSection resourcesSection, TargetSection actionsSection,
+			TargetSection environmentsSection, List<AnyOf> anyOfType) {
+		if ((subjectsSection == null) || (resourcesSection == null)
+				|| (actionsSection == null) || (environmentsSection == null))
+			throw new ProcessingException("All sections of a Target must "
+					+ "be non-null");
+
+		this.subjectsSection = subjectsSection;
+		this.resourcesSection = resourcesSection;
+		this.actionsSection = actionsSection;
+		this.environmentsSection = environmentsSection;
+		this.xacmlVersion = PolicyMetaData.XACML_VERSION_3_0;
 		this.anyOfType = anyOfType;
 	}
 
@@ -194,11 +205,11 @@ public class Target {
 	 */
 	public static Target getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
-		List<TargetSection> subjects = null;
-		List<TargetSection> resources = null;
-		List<TargetSection> actions = null;
-		List<TargetSection> environments = null;
-		List<TargetSection> targetSectionTmp = null;
+		List<TargetSection> subjects = new ArrayList<TargetSection>();
+		List<TargetSection> resources = new ArrayList<TargetSection>();
+		List<TargetSection> actions = new ArrayList<TargetSection>();
+		List<TargetSection> environments = new ArrayList<TargetSection>();
+		List<TargetSection> targetSectionTmp = new ArrayList<TargetSection>();
 		List<AnyOf> anyOf = new ArrayList<AnyOf>();
 
 		int version = metaData.getXACMLVersion();
@@ -210,23 +221,50 @@ public class Target {
 			for (int i = 0; i < myChildren.getLength(); i++) {
 				Node child = myChildren.item(i);
 				if ("AnyOf".equals(DOMHelper.getLocalName(child))) {
-					targetSectionTmp = AnyOf.getTargetSection(child, metaData);
+					// System.out.println("In AnyOf, getting the first child (i="+i+"): "+DOMHelper.getLocalName(child.getChildNodes().item(1)));
+					// targetSectionTmp =
+					// AnyOf.getTargetSection(child.getChildNodes().item(1),
+					// metaData);
+					/*
+					 * FIXME: Possible NPE
+					 */
+					targetSectionTmp = AnyOf.getTargetSection(child
+							.getChildNodes().item(1), metaData);
 					for (TargetSection targetSection : targetSectionTmp) {
-						if(TargetMatch.SUBJECT == targetSection.getMatchType()) {
+						if (TargetMatch.SUBJECT == targetSection.getMatchType()) {
 							subjects.add(targetSection);
-						} else if(TargetMatch.RESOURCE == targetSection.getMatchType()) {
+						} else if (TargetMatch.RESOURCE == targetSection
+								.getMatchType()) {
 							resources.add(targetSection);
-						} else if(TargetMatch.ACTION == targetSection.getMatchType()) {
+						} else if (TargetMatch.ACTION == targetSection
+								.getMatchType()) {
 							actions.add(targetSection);
-						} else if(TargetMatch.ENVIRONMENT == targetSection.getMatchType()) {
+						} else if (TargetMatch.ENVIRONMENT == targetSection
+								.getMatchType()) {
 							environments.add(targetSection);
 						}
 					}
-					anyOf.add(AnyOf.getInstance(child, metaData));					
+					anyOf.add(AnyOf.getInstance(child, metaData));
 				}
 			}
+			if (subjects.isEmpty()) {
+				subjects.add(new TargetSection(null, TargetMatch.SUBJECT,
+						version));
+			}
+			if (resources.isEmpty()) {
+				resources.add(new TargetSection(null, TargetMatch.RESOURCE,
+						version));
+			}
+			if (actions.isEmpty()) {
+				actions.add(new TargetSection(null, TargetMatch.ACTION, version));
+			}
+			if (environments.isEmpty()) {
+				environments.add(new TargetSection(null,
+						TargetMatch.ENVIRONMENT, version));
+			}
 
-			return new Target(anyOf);
+			return new Target(subjects.get(0), resources.get(0),
+					actions.get(0), environments.get(0), anyOf);
 		}
 
 		NodeList children = root.getChildNodes();
@@ -241,21 +279,22 @@ public class Target {
 				resources.add(TargetSection.getInstance(child,
 						TargetMatch.RESOURCE, metaData));
 			} else if (name.equals("Actions")) {
-				actions.add(TargetSection.getInstance(child, TargetMatch.ACTION,
-						metaData));
+				actions.add(TargetSection.getInstance(child,
+						TargetMatch.ACTION, metaData));
 			} else if (name.equals("Environments")) {
 				environments.add(TargetSection.getInstance(child,
 						TargetMatch.ENVIRONMENT, metaData));
 			}
 		}
 
-		if (subjects == null) {
+		if (subjects.isEmpty()) {
 			subjects.add(new TargetSection(null, TargetMatch.SUBJECT, version));
 		}
-		if (resources == null) {
-			resources.add(new TargetSection(null, TargetMatch.RESOURCE, version));
+		if (resources.isEmpty()) {
+			resources
+					.add(new TargetSection(null, TargetMatch.RESOURCE, version));
 		}
-		if (actions == null) {
+		if (actions.isEmpty()) {
 			actions.add(new TargetSection(null, TargetMatch.ACTION, version));
 		}
 
@@ -266,11 +305,12 @@ public class Target {
 		// FIXME: RF
 		// Workaround in order to handle XACML 3.0 Policy
 		if (version == PolicyMetaData.XACML_VERSION_2_0) {
-			if (environments == null) {
-				environments.add(new TargetSection(null, TargetMatch.ENVIRONMENT,
-						version));
+			if (environments.isEmpty()) {
+				environments.add(new TargetSection(null,
+						TargetMatch.ENVIRONMENT, version));
 			}
-			return new Target(subjects.get(0), resources.get(0), actions.get(0), environments.get(0));
+			return new Target(subjects.get(0), resources.get(0),
+					actions.get(0), environments.get(0));
 		} else {
 			return new Target(subjects.get(0), resources.get(0), actions.get(0));
 		}
@@ -321,22 +361,34 @@ public class Target {
 	 */
 	public boolean matchesAny() {
 		boolean matchAny = false;
-		if (xacmlVersion == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-				.value())) {			
+		matchAny = subjectsSection.matchesAny()
+				&& resourcesSection.matchesAny() && actionsSection.matchesAny()
+				&& environmentsSection.matchesAny();
+
+		return matchAny;
+	}
+
+	/**
+	 * Returns whether or not this <code>Target</code> matches any request.
+	 * 
+	 * @param version
+	 *            the version of the context
+	 * 
+	 * @return true if this Target matches any request, false otherwise
+	 */
+	public boolean matchesAny(int version) {
+		boolean matchAny = false;
+		if (version == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
+				.value())) {
 			for (AnyOf anyOf : anyOfType) {
 				for (AllOfType allOf : anyOf.getAllOf()) {
-					for (MatchType targetMatch : allOf.getMatch()) {
-						matchAny = false;
-					}
+					matchAny = allOf.getMatch().isEmpty();
 				}
 			}
 		} else {
-			matchAny = subjectsSection.matchesAny()
-					&& resourcesSection.matchesAny()
-					&& actionsSection.matchesAny()
-					&& environmentsSection.matchesAny();
+			return matchesAny();
 		}
-		
+
 		return matchAny;
 	}
 
@@ -353,7 +405,8 @@ public class Target {
 		MatchResult result = null;
 
 		// before matching, see if this target matches any request
-		if (matchesAny()) {
+
+		if (matchesAny(context.getVersion())) {
 			return new MatchResult(MatchResult.MATCH);
 		}
 

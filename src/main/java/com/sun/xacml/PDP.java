@@ -283,6 +283,7 @@ public class PDP {
 		String hash = "";
 
 		// try to create the EvaluationCtx out of the request
+		// FIXME: finish implementation
 		try {
 			BasicEvaluationCtx myEvaluationCtx = new BasicEvaluationCtx(
 					request, attributeFinder,

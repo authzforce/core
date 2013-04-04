@@ -42,6 +42,7 @@ import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.TimeAttribute;
 
 import com.sun.xacml.cond.EvaluationResult;
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 import java.net.URI;
 
@@ -248,4 +249,11 @@ public interface EvaluationCtx
                                          Node namespaceNode, URI type,
                                          String xpathVersion);
 
+    /**
+     * Return the attribute representing the version of the standard used 
+     * in this evaluation context
+     *  
+     * @return version the type of xacml standard used (1.0, 1.1, 2.0 or 3.0)
+     */
+    public int getVersion();
 }

@@ -106,8 +106,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private List<AttributeValue> resourceId;
 	private int scope;
 	
-	private int xacmlVersion;
-
+	// Version of the standard used: 1.0, 1.1, 2.0 or 3.0
+	private int version;
+	
 	// the cached current date, time, and datetime, which we may or may
 	// not be using depending on how this object was constructed
 	private DateAttribute currentDate;
@@ -208,6 +209,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		currentDate = null;
 		currentTime = null;
 		currentDateTime = null;
+		
+		this.version = version; 
 
 		for (AttributesType myAttributeTypes : request.getAttributes()) {
 			/* Searching for action */
@@ -327,6 +330,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		} else {
 			// make sure there's only one value for this
 			Set<AttributeType> set = resourceMap.get(RESOURCE_ID);
+			// FIXME: fix this for multiple decision profile
 			if (set.size() > 1) {
 				System.err.println("Resource may contain only one "
 						+ "resource-id Attribute");
@@ -835,5 +839,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 
 		return requestRoot;
 	}
-
+	
+	public int getVersion() {
+		return version;
+	}
 }

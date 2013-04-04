@@ -97,12 +97,26 @@ public class TargetMatch {
 	 * EnvironmentMatch
 	 */
 	public static final int ENVIRONMENT = 3;
+	
+	/**
+	 * XACML 3.0
+	 * An integer value indicating that this class represents an
+	 * AttributeDesignator
+	 */
+	public static final int ATTRIBUTE_DESIGNATOR = 4;
+	
+	/**
+	 * XACML 3.0
+	 * An integer value indicating that this class represents an
+	 * Match
+	 */
+	public static final int MATCH = 5;
 
 	/**
 	 * Mapping from the 4 match types to their string representations
 	 */
 	public static final String[] NAMES = { "Subject", "Resource", "Action",
-			"Environment" };
+			"Environment" , "AttributeDesignator", "Match" };
 
 	// the type of this target match
 	private int type;

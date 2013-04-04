@@ -154,7 +154,7 @@ public class MatchFunction extends FunctionBase {
 
 	private static final String REGEX_ANY_CHAR = ".*";
 	private static final String REGEX_STARTS = "^";
-	private static final String REGEX_ENDS = "^";
+	private static final String REGEX_ENDS = "$";
 
 	// private mappings for the input arguments
 	private static final String regexpParams[] = { StringAttribute.identifier,
@@ -421,7 +421,7 @@ public class MatchFunction extends FunctionBase {
 			str1 = ((StringAttribute) argValues[0]).getValue();
 			str2 = ((StringAttribute) argValues[1]).getValue();
 			// try to match the begining of str2 to str1
-			boolResult = regexpHelper(REGEX_ANY_CHAR + str1 + REGEX_ENDS, str2);
+			boolResult = regexpHelper(REGEX_STARTS + str1 + REGEX_ANY_CHAR, str2);
 			break;
 		}
 
@@ -431,7 +431,7 @@ public class MatchFunction extends FunctionBase {
 			str1 = ((StringAttribute) argValues[0]).getValue();
 			str2 = ((StringAttribute) argValues[1]).getValue();
 			// try to match the ends of str2 to str1
-			boolResult = regexpHelper(REGEX_STARTS + str1 + REGEX_ANY_CHAR,
+			boolResult = regexpHelper(REGEX_ANY_CHAR + str1 + REGEX_ENDS,
 					str2);
 			break;
 		}

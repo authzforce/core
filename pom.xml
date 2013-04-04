@@ -27,7 +27,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<finalName>com.thalesgroup.authzforce.core</finalName>
+							<finalName>${project.artifactId}-${project.version}</finalName>
 						</configuration>
 					</execution>
 				</executions>

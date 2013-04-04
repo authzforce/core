@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+
 
 /**
  * This class contains a group of <code>TargetMatch</code> instances and
@@ -102,17 +104,29 @@ public class TargetMatchGroup
                                                PolicyMetaData metaData)
         throws ParsingException
     {
-        List matches = new ArrayList();
-        NodeList children = root.getChildNodes();
-
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            String name = child.getNodeName();
-
-            if (name.equals(TargetMatch.NAMES[matchType] + "Match")) {
-                matches.add(TargetMatch.getInstance(child, matchType,
-                                                    metaData));
-            }
+    	List matches = new ArrayList();
+        
+        /*
+         * XACML 3.0 hook
+         */
+        if (Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()) == metaData.getXACMLVersion()) {        	
+        	NodeList myRoot = (NodeList)root;
+        	String name = DOMHelper.getLocalName(root);
+        	System.out.println("Node name " + name);
+            if (name.equals(TargetMatch.NAMES[TargetMatch.MATCH])) {
+                matches.add(TargetMatch.getInstance(root, matchType, metaData));
+            } 
+        } else {
+            NodeList children = root.getChildNodes();
+	        for (int i = 0; i < children.getLength(); i++) {
+	            Node child = children.item(i);
+	            String name = child.getNodeName();
+	
+	            if (name.equals(TargetMatch.NAMES[matchType] + "Match")) {
+	                matches.add(TargetMatch.getInstance(child, matchType,
+	                                                    metaData));
+	            } 
+	        }
         }
 
         return new TargetMatchGroup(matches, matchType);

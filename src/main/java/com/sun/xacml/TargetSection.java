@@ -104,16 +104,18 @@ public class TargetSection {
                                             PolicyMetaData metaData)
         throws ParsingException
     {
-        List groups = new ArrayList();
+        List<TargetMatchGroup> groups = new ArrayList<TargetMatchGroup>();
         NodeList children = root.getChildNodes();
 
         for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-            String name = child.getNodeName();
+            String name = root.getNodeName();
             String typeName = TargetMatch.NAMES[matchType];
 
-            if (name.equals(typeName)) {
-                groups.add(TargetMatchGroup.getInstance(child, matchType,
+            /*
+             * FIXME: RF for XACML 3.0
+             */
+            if (name.equals(typeName) || name.equals(TargetMatch.NAMES[TargetMatch.MATCH]) ) {
+                groups.add(TargetMatchGroup.getInstance(root, matchType,
                                                         metaData));
             } else if (name.equals("Any" + typeName)) {
                 // in a schema-valid policy, the Any element will always be
@@ -171,8 +173,9 @@ public class TargetSection {
      */
     public MatchResult match(EvaluationCtx context) {
         // if we apply to anything, then we always match
-        if (matchGroups.isEmpty())
+        if (matchGroups.isEmpty()) {
             return new MatchResult(MatchResult.MATCH);
+        }
 
         // there are specific matching elements, so prepare to iterate
         // through the list
@@ -186,26 +189,29 @@ public class TargetSection {
             MatchResult result = group.match(context);
 
             // we only need one match, so if this matched, then we're done
-            if (result.getResult() == MatchResult.MATCH)
+            if (result.getResult() == MatchResult.MATCH) {
                 return result;
+            }
 
             // if we didn't match then it was either a NO_MATCH or
             // INDETERMINATE...in the second case, we need to remember
             // it happened, 'cause if we don't get a MATCH, then we'll
             // be returning INDETERMINATE
             if (result.getResult() == MatchResult.INDETERMINATE) {
-                if (firstIndeterminateStatus == null)
+                if (firstIndeterminateStatus == null) {
                     firstIndeterminateStatus = result.getStatus();
+                }
             }
         }
 
         // if we got here, then none of the sub-matches passed, so
         // we have to see if we got any INDETERMINATE cases
-        if (firstIndeterminateStatus == null)
+        if (firstIndeterminateStatus == null) {
             return new MatchResult(MatchResult.NO_MATCH);
-        else
+        } else {
             return new MatchResult(MatchResult.INDETERMINATE,
                                    firstIndeterminateStatus);
+        }
     }
 
     /**
