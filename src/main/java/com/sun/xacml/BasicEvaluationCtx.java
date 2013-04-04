@@ -105,10 +105,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	// the resource and its scope
 	private List<AttributeValue> resourceId;
 	private int scope;
-	
+
 	// Version of the standard used: 1.0, 1.1, 2.0 or 3.0
 	private int version;
-	
+
 	// the cached current date, time, and datetime, which we may or may
 	// not be using depending on how this object was constructed
 	private DateAttribute currentDate;
@@ -133,7 +133,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 *             problems dealing with the request data
 	 */
 	public BasicEvaluationCtx(RequestType request) throws ParsingException {
-		this(request, null, true, Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
+		this(request, null, true, Integer
+				.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
 	}
 
 	/**
@@ -150,8 +151,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
 	 */
-	public BasicEvaluationCtx(RequestType request, boolean cacheEnvValues, int version)
-			throws ParsingException {
+	public BasicEvaluationCtx(RequestType request, boolean cacheEnvValues,
+			int version) throws ParsingException {
 		this(request, null, cacheEnvValues, version);
 	}
 
@@ -172,8 +173,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
 	 */
-	public BasicEvaluationCtx(RequestType request, AttributeFinder finder, int version)
-			throws ParsingException {
+	public BasicEvaluationCtx(RequestType request, AttributeFinder finder,
+			int version) throws ParsingException {
 		this(request, finder, true, version);
 	}
 
@@ -209,53 +210,60 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		currentDate = null;
 		currentTime = null;
 		currentDateTime = null;
-		
-		this.version = version; 
+
+		this.version = version;
 
 		for (AttributesType myAttributeTypes : request.getAttributes()) {
 			/* Searching for action */
-			if (myAttributeTypes.getCategory().equalsIgnoreCase(XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
+			if (myAttributeTypes.getCategory().equalsIgnoreCase(
+					XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
 				actionMap = new HashMap();
 				mapAttributes(myAttributeTypes.getAttribute(), actionMap);
 			}
 			/* Searching for resource */
 			else if (myAttributeTypes.getCategory().equalsIgnoreCase(
-					XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value())) {
+					XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE
+							.value())) {
 				// next look at the Resource data, which needs to be handled
 				// specially
 				resourceMap = new HashMap();
 				setupResources(myAttributeTypes.getAttribute());
 			}/* Searching for subject */
-			else if (myAttributeTypes.getCategory().equalsIgnoreCase(
-					XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value())) {
+			else if (myAttributeTypes.getCategory()
+					.equalsIgnoreCase(
+							XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT
+									.value())) {
 				// get the subjects, make sure they're correct, and setup tables
 				subjectMap = new HashMap();
 				setupSubjects(myAttributeTypes.getAttribute());
 
 			}/* Searching for environment */
 			else if (myAttributeTypes.getCategory().equalsIgnoreCase(
-					XACMLAttributeId.XACML_1_0_ENVIRONMENT_ENVIRONMENT_ID.value())) {
+					XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT
+							.value())) {
 				// finally, set up the environment data, which is also generic
 				environmentMap = new HashMap();
 				mapAttributes(myAttributeTypes.getAttribute(), environmentMap);
 			}
 		}
-//
-//		// get the subjects, make sure they're correct, and setup tables
-//		subjectMap = new HashMap();
-//		setupSubjects(request.getSubject());
-//
-//		// next look at the Resource data, which needs to be handled specially
-//		resourceMap = new HashMap();
-//		setupResources(request.getResource());
-//
-//		// setup the action data, which is generic
-//		actionMap = new HashMap();
-//		mapAttributes(request.getAction().getAttribute(), actionMap);
-//
-//		// finally, set up the environment data, which is also generic
-//		environmentMap = new HashMap();
-//		mapAttributes(request.getEnvironment().getAttribute(), environmentMap);
+		//
+		// // get the subjects, make sure they're correct, and setup tables
+		// subjectMap = new HashMap();
+		// setupSubjects(request.getSubject());
+		//
+		// // next look at the Resource data, which needs to be handled
+		// specially
+		// resourceMap = new HashMap();
+		// setupResources(request.getResource());
+		//
+		// // setup the action data, which is generic
+		// actionMap = new HashMap();
+		// mapAttributes(request.getAction().getAttribute(), actionMap);
+		//
+		// // finally, set up the environment data, which is also generic
+		// environmentMap = new HashMap();
+		// mapAttributes(request.getEnvironment().getAttribute(),
+		// environmentMap);
 	}
 
 	/**
@@ -274,7 +282,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		 */
 		// now go through the subject attributes
 		for (AttributeType subject : subjects) {
-			String category = XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value();
+			String category = XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT
+					.value();
 			Map<String, Set<AttributeType>> categoryMap = null;
 
 			// see if we've already got a map for the category
@@ -314,13 +323,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private void setupResources(List<AttributeType> list)
 			throws ParsingException {
 		/*
-		if (list.size() != 1) {
-			// TODO
-			throw new ParsingException(
-					"XACML 2.0 support for multiple resources not yet supported");
-		}
-		*/
-//		AttributeType resource = list.get(0);
+		 * if (list.size() != 1) { // TODO throw new ParsingException(
+		 * "XACML 2.0 support for multiple resources not yet supported"); }
+		 */
+		// AttributeType resource = list.get(0);
 		mapAttributes(list, resourceMap);
 
 		// make sure there resource-id attribute was included
@@ -338,7 +344,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			} else {
 				// keep track of the resource-id attribute
 				AttributeType attr = set.iterator().next();
-				resourceId = AttributeValue.convertFromJAXB(attr.getAttributeValue());
+				resourceId = AttributeValue.convertFromJAXB(attr
+						.getAttributeValue());
 			}
 		}
 
@@ -454,7 +461,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		attrValue.getContent().clear();
 		attrValue.getContent().add(resourceId.encode());
 	}
-	
+
 	public void setResourceId(List<AttributeValue> resourceId) {
 		for (AttributeValue avts : resourceId) {
 			this.setResourceId(avts);
@@ -637,7 +644,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 *         an Indeterminate result
 	 */
 	public EvaluationResult getResourceAttribute(URI type, URI id, URI issuer) {
-		return getGenericAttributes(type, id, issuer, resourceMap, null, AttributeDesignator.RESOURCE_TARGET);
+		return getGenericAttributes(type, id, issuer, resourceMap, null,
+				AttributeDesignator.RESOURCE_TARGET);
 	}
 
 	/**
@@ -704,7 +712,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 						&& ((issuer == null) || ((attr.getIssuer() != null) && (attr
 								.getIssuer().equals(issuer.toString()))))) {
 					try {
-						// if we got here, then we found a match, so we want to pull
+						// if we got here, then we found a match, so we want to
+						// pull
 						// out the values and put them in out list
 						attributeValues.addAll(AttributeValue.convertFromJAXB(
 								attr.getAttributeValue(), type));
@@ -749,11 +758,12 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 					attribute.setAttributeId(id.toASCIIString());
 					attribute.setIssuer(issuerString);
 					attribute.getAttributeValue().add(attributeValue);
-					attribute.getAttributeValue().get(i).setDataType(type.toASCIIString());
+					attribute.getAttributeValue().get(i)
+							.setDataType(type.toASCIIString());
 					attrset.add(attribute);
 					i++;
 				}
-				i=0;
+				i = 0;
 				map.put(id.toString(), attrset);
 				return result;
 			} else {
@@ -839,7 +849,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 
 		return requestRoot;
 	}
-	
+
 	public int getVersion() {
 		return version;
 	}

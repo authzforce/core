@@ -6,12 +6,12 @@
   </Attributes>
   <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
     <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id">
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">foo/foo1</AttributeValue>
+      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#foo">foo/foo1</AttributeValue>
     </Attribute>
   </Attributes>
   <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
     <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id">
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#foo">bar1</AttributeValue>
+      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">bar1</AttributeValue>
     </Attribute>
   </Attributes>
 </Request>

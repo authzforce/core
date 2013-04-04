@@ -44,7 +44,7 @@
 						</goals>
 						<configuration>
 							<failIfNoTests>false</failIfNoTests>
-							<skipTests>true</skipTests>
+							<skipTests>false</skipTests>
 						</configuration>
 					</execution>
 				</executions>
@@ -57,6 +57,28 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce.core</groupId>
+			<artifactId>authzforce-model</artifactId>
+			<version>3.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>audit</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.11</version>
+		</dependency>
+
+		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -88,24 +110,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.thalesgroup.authzforce.core</groupId>
-			<artifactId>authzforce-model</artifactId>
-			<version>3.0.1</version>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.0</version>
+			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce</groupId>
-			<artifactId>audit</artifactId>
-			<version>2.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>1.2.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.11</version>
-		</dependency>
+		<!-- /Test dependencies -->
+		
 	</dependencies>
 </project>

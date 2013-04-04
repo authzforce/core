@@ -112,7 +112,6 @@ public class TargetMatchGroup
         if (Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()) == metaData.getXACMLVersion()) {        	
         	NodeList myRoot = (NodeList)root;
         	String name = DOMHelper.getLocalName(root);
-        	System.out.println("Node name " + name);
             if (name.equals(TargetMatch.NAMES[TargetMatch.MATCH])) {
                 matches.add(TargetMatch.getInstance(root, matchType, metaData));
             } 
