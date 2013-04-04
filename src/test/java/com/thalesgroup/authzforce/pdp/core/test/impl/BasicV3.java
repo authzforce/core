@@ -74,7 +74,6 @@ public class BasicV3 extends TestCase {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0001.xml");
-		PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0001 is started");
 		ResponseCtx response = null;
 		ResponseType expectedResponse = null;
@@ -108,8 +107,9 @@ public class BasicV3 extends TestCase {
 									+ "response_0001_" + reqResNo);
 							results.put("response_0001_" + reqResNo, "SUCCESS");
 						} else {
-							LOGGER.debug("Assertion FAILED for: TestPolicy_0001.xml and response_0001_"
+							LOGGER.error("Assertion FAILED for: TestPolicy_0001.xml and response_0001_"
 									+ reqResNo);
+							results.put("response_0001_" + reqResNo, "FAILED");
 						}
 						assertTrue(assertion);
 					} else {
@@ -132,7 +132,6 @@ public class BasicV3 extends TestCase {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0002.xml");
-		PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0002 is started");
 		ResponseCtx response = null;
 		ResponseType expectedResponse = null;
@@ -166,8 +165,9 @@ public class BasicV3 extends TestCase {
 									+ reqResNo);
 							results.put("response_0002_" + reqResNo, "SUCCESS");
 						} else {
-							LOGGER.debug("Assertion FAILED for: TestPolicy_0002 and response_0002_"
+							LOGGER.error("Assertion FAILED for: TestPolicy_0002 and response_0002_"
 									+ reqResNo);
+							results.put("response_0002_" + reqResNo, "FAILED");
 						}
 						assertTrue(assertion);
 					} else {
@@ -190,7 +190,6 @@ public class BasicV3 extends TestCase {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0003.xml");
-		PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0003 is started");
 		ResponseCtx response = null;
 		ResponseType expectedResponse = null;
@@ -224,8 +223,9 @@ public class BasicV3 extends TestCase {
 									+ "response_0003_" + reqResNo);
 							results.put("response_0003_" + reqResNo, "SUCCESS");
 						} else {
-							LOGGER.debug("Assertion FAILED for: TestPolicy_0003 and response_0003_"
+							LOGGER.error("Assertion FAILED for: TestPolicy_0003 and response_0003_"
 									+ reqResNo);
+							results.put("response_0003_" + reqResNo, "FAILED");
 						}
 						assertTrue(assertion);
 					} else {
@@ -248,7 +248,6 @@ public class BasicV3 extends TestCase {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0004.xml");
-		PDP pdp = getPDPNewInstance(policies);
 		LOGGER.debug("Basic Test 0004 is started");
 		ResponseCtx response = null;
 		ResponseType expectedResponse = null;
@@ -282,8 +281,9 @@ public class BasicV3 extends TestCase {
 									+ "response_0004_" + reqResNo);
 							results.put("response_0004_" + reqResNo, "SUCCESS");
 						} else {
-							LOGGER.debug("Assertion FAILED for: TestPolicy_0004 and response_0004_"
+							LOGGER.error("Assertion FAILED for: TestPolicy_0004 and response_0004_"
 									+ reqResNo);
+							results.put("response_0004_" + reqResNo, "FAILED");
 						}
 						assertTrue(assertion);
 					} else {
@@ -306,7 +306,6 @@ public class BasicV3 extends TestCase {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0005.xml");
-		PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0005 is started");
 		ResponseCtx response = null;
 		ResponseType expectedResponse = null;
@@ -340,8 +339,9 @@ public class BasicV3 extends TestCase {
 									+ "response_0005_" + reqResNo);
 							results.put("response_0005_" + reqResNo, "SUCCESS");
 						} else {
-							LOGGER.debug("Assertion FAILED for: TestPolicy_0005 and response_0005_"
+							LOGGER.error("Assertion FAILED for: TestPolicy_0005 and response_0005_"
 									+ reqResNo);
+							results.put("response_0005_" + reqResNo, "FAILED");
 						}
 						assertTrue(assertion);
 					} else {
