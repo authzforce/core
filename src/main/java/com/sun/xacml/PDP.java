@@ -93,6 +93,25 @@ public class PDP {
 
 	private static CacheManager cacheManager;
 
+	private static PDP authzforce;
+
+	private PDPConfig config;
+
+	public static PDP getInstance() {
+		if (authzforce == null) {
+			authzforce = new PDP();
+		}
+		return authzforce;
+	}
+
+	public PDPConfig getPDPConfig() {
+		return config;
+	}
+
+	public PDP() {
+		config = new PDPConfig(null, null, null, null);
+	}
+
 	/**
 	 * Constructs a new <code>PDP</code> object with the given configuration
 	 * information.
@@ -104,6 +123,8 @@ public class PDP {
 	public PDP(PDPConfig config) {
 		OLD_LOGGER.fine("creating a PDP");
 
+		this.config = config;
+		
 		attributeFinder = config.getAttributeFinder();
 
 		policyFinder = config.getPolicyFinder();
@@ -126,17 +147,17 @@ public class PDP {
 	private String getHashCode(RequestType myEvaluationCtx) {
 		int hash = 0;
 
-			for (AttributesType avts : myEvaluationCtx.getAttributes()) {
-				for (AttributeType att : avts.getAttribute()) {
-					hash += att.getAttributeId().hashCode();
-					for (AttributeValueType attvt : att.getAttributeValue()) {
-						for (Object attContent : attvt.getContent()) {
-							hash += attContent.hashCode();
-						}
+		for (AttributesType avts : myEvaluationCtx.getAttributes()) {
+			for (AttributeType att : avts.getAttribute()) {
+				hash += att.getAttributeId().hashCode();
+				for (AttributeValueType attvt : att.getAttributeValue()) {
+					for (Object attContent : attvt.getContent()) {
+						hash += attContent.hashCode();
 					}
 				}
-
 			}
+
+		}
 		// // Searching within the Action for AttributeType
 		// for (AttributeType myAttributeType : myEvaluationCtx.getAction()
 		// .getAttribute()) {
@@ -201,7 +222,7 @@ public class PDP {
 	public PolicyFinder getPolicyFinder() {
 		return policyFinder;
 	}
-	
+
 	public void setPolicyFinder(PolicyFinder policyFinder) {
 		this.policyFinder = policyFinder;
 		// Used to reload
@@ -286,9 +307,9 @@ public class PDP {
 		// FIXME: finish implementation
 		try {
 			BasicEvaluationCtx myEvaluationCtx = new BasicEvaluationCtx(
-					request, attributeFinder,
-					Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-							.value()));
+					request,
+					attributeFinder,
+					Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
 			/*
 			 * 
 			 */

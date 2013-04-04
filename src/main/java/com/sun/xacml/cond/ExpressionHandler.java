@@ -96,6 +96,8 @@ class ExpressionHandler
         		return AttributeDesignator.getInstance(root, AttributeDesignator.RESOURCE_TARGET, metaData);	
         	} else if (XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value().equalsIgnoreCase(category)) {
         		return AttributeDesignator.getInstance(root, AttributeDesignator.ACTION_TARGET, metaData);	
+        	} else if (XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ENVIRONMENT.value().equalsIgnoreCase(category)) {
+        		return AttributeDesignator.getInstance(root, AttributeDesignator.ENVIRONMENT_TARGET, metaData);	
         	}
         	
         }
