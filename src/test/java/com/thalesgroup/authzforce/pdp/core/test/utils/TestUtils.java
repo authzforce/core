@@ -14,6 +14,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationType;
@@ -34,76 +35,88 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
 
 public class TestUtils {
-	
+
 	/**
-     * the logger we'll use for all messages
-     */
-    private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	 * the logger we'll use for all messages
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
 			.getLogger(TestUtils.class);
-	
-    /**
-     * This creates the XACML request from a file
-     *
-     * @param rootDirectory   root directory of the  request files
-     * @param versionDirectory   version directory of the  request files
-     * @param requestId  request file name
-     * @return String or null if any error
-     */
-    public static RequestType createRequest(String rootDirectory, String versionDirectory,
-                                                   String requestId){
 
-        File file = new File(".");
-        try{
-            String filePath =  file.getCanonicalPath() + File.separator +   TestConstants.RESOURCE_PATH.value() +
-                        File.separator + rootDirectory + File.separator + versionDirectory +
-                        File.separator + TestConstants.REQUEST_DIRECTORY.value() + File.separator + requestId;
+	/**
+	 * This creates the XACML request from a file
+	 * 
+	 * @param rootDirectory
+	 *            root directory of the request files
+	 * @param versionDirectory
+	 *            version directory of the request files
+	 * @param requestId
+	 *            request file name
+	 * @return String or null if any error
+	 */
+	public static RequestType createRequest(String rootDirectory,
+			String versionDirectory, String requestId) {
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setIgnoringComments(true);
-            factory.setNamespaceAware(true);
-            DocumentBuilder db = factory.newDocumentBuilder();
-            Document doc = db.parse(new FileInputStream(filePath));
-            return marshallRequestType(doc);
-        } catch (Exception e){
-            LOGGER.error("Error while reading expected response from file ", e);
-            //ignore any exception and return null
-        }
-        return null;
-    }
+		File file = new File(".");
+		try {
+			String filePath = file.getCanonicalPath() + File.separator
+					+ TestConstants.RESOURCE_PATH.value() + File.separator
+					+ rootDirectory + File.separator + versionDirectory
+					+ File.separator + TestConstants.REQUEST_DIRECTORY.value()
+					+ File.separator + requestId;
 
-    /**
-     * This creates the expected XACML response from a file
-     *
-     * @param rootDirectory   root directory of the  response files
-     * @param versionDirectory   version directory of the  response files
-     * @param responseId  response file name
-     * @return ResponseCtx or null if any error
-     */
-    public static ResponseType createResponse(String rootDirectory, String versionDirectory,
-                                                                            String responseId) {
+			DocumentBuilderFactory factory = DocumentBuilderFactory
+					.newInstance();
+			factory.setIgnoringComments(true);
+			factory.setNamespaceAware(true);
+			DocumentBuilder db = factory.newDocumentBuilder();
+			Document doc = db.parse(new FileInputStream(filePath));
+			return marshallRequestType(doc);
+		} catch (Exception e) {
+			LOGGER.error("Error while reading expected response from file ", e);
+			// ignore any exception and return null
+		}
+		return null;
+	}
 
-        File file = new File(".");
-        try{
-            String filePath =  file.getCanonicalPath() + File.separator +   TestConstants.RESOURCE_PATH.value() +
-                        File.separator + rootDirectory + File.separator + versionDirectory +
-                        File.separator + TestConstants.RESPONSE_DIRECTORY.value() + File.separator + responseId;
+	/**
+	 * This creates the expected XACML response from a file
+	 * 
+	 * @param rootDirectory
+	 *            root directory of the response files
+	 * @param versionDirectory
+	 *            version directory of the response files
+	 * @param responseId
+	 *            response file name
+	 * @return ResponseCtx or null if any error
+	 */
+	public static ResponseType createResponse(String rootDirectory,
+			String versionDirectory, String responseId) {
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setIgnoringComments(true);
-            factory.setNamespaceAware(true);
-            factory.setValidating(false);
-            DocumentBuilder db = factory.newDocumentBuilder();
-            Document doc = db.parse(new FileInputStream(filePath));
-            return marshallResponseType(doc);
-        } catch (Exception e){
-            LOGGER.error("Error while reading expected response from file ", e);
-            //ignore any exception and return null
-        }
+		File file = new File(".");
+		try {
+			String filePath = file.getCanonicalPath() + File.separator
+					+ TestConstants.RESOURCE_PATH.value() + File.separator
+					+ rootDirectory + File.separator + versionDirectory
+					+ File.separator + TestConstants.RESPONSE_DIRECTORY.value()
+					+ File.separator + responseId;
 
-        return null;
-    }
+			DocumentBuilderFactory factory = DocumentBuilderFactory
+					.newInstance();
+			factory.setIgnoringComments(true);
+			factory.setNamespaceAware(true);
+			factory.setValidating(false);
+			DocumentBuilder db = factory.newDocumentBuilder();
+			Document doc = db.parse(new FileInputStream(filePath));
+			return marshallResponseType(doc);
+		} catch (Exception e) {
+			LOGGER.error("Error while reading expected response from file ", e);
+			// ignore any exception and return null
+		}
 
-    private static RequestType marshallRequestType(Node root) {
+		return null;
+	}
+
+	private static RequestType marshallRequestType(Node root) {
 		JAXBElement<RequestType> allOf = null;
 		try {
 			JAXBContext jc = JAXBContext
@@ -116,8 +129,8 @@ public class TestUtils {
 
 		return allOf.getValue();
 	}
-    
-    private static ResponseType marshallResponseType(Node root) {
+
+	private static ResponseType marshallResponseType(Node root) {
 		JAXBElement<ResponseType> allOf = null;
 		try {
 			JAXBContext jc = JAXBContext
@@ -139,12 +152,26 @@ public class TestUtils {
 			Marshaller u = jc.createMarshaller();
 			u.marshal(request, writer);
 		} catch (Exception e) {
-			System.err.println(e);
+			LOGGER.equals(e);
 		}
 
 		return writer.toString();
 	}
 	
+	public static String printResponse(ResponseType response) {
+		StringWriter writer = new StringWriter();
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(response, writer);
+		} catch (Exception e) {
+			LOGGER.equals(e);
+		}
+
+		return writer.toString();
+	}
+
 	/**
 	 * This method is used to convert the parameter decision to a string.
 	 * 
@@ -168,16 +195,16 @@ public class TestUtils {
 
 	public static boolean match(ResponseCtx response,
 			ResponseType expectedResponse) {
-		
+
 		boolean finalResult = false;
-		
+
 		ResponseType xacmlResponse = new ResponseType();
 		Iterator myIt = response.getResults().iterator();
 
 		while (myIt.hasNext()) {
 			Result result = (Result) myIt.next();
 			ResultType resultType = new ResultType();
-//			resultType.setResourceId(result.getResource());
+			// resultType.setResourceId(result.getResource());
 
 			// Decision
 			resultType.setDecision(decisionParser(result.getDecision()));
@@ -206,7 +233,7 @@ public class TestUtils {
 					Obligation obl = (Obligation) ob;
 					ObligationType obType = new ObligationType();
 					obType.setObligationId(obl.getId().toASCIIString());
-//					obType.setFulfillOn(EffectType.fromValue(Result.DECISIONS[obl.getFulfillOn()]));
+					// obType.setFulfillOn(EffectType.fromValue(Result.DECISIONS[obl.getFulfillOn()]));
 					for (Object assignment : obl.getAssignments()) {
 						if (assignment instanceof Attribute) {
 							Attribute attribute = (Attribute) assignment;
@@ -230,15 +257,78 @@ public class TestUtils {
 
 			xacmlResponse.getResult().add(resultType);
 		}
-		// TODO: do a real comparison
-		if (xacmlResponse.getResult().get(0).getDecision().value() == expectedResponse.getResult().get(0).getDecision().value()) {
-			finalResult = true;
+
+		finalResult = matchResult(xacmlResponse.getResult(),
+				expectedResponse.getResult());
+		if (finalResult) {
+			int i = 0;
+			for (ResultType result : xacmlResponse.getResult()) {
+				finalResult = matchObligations(result.getObligations(),
+						expectedResponse.getResult().get(i).getObligations());
+			}
 		} else {
-			LOGGER.error("Expected result is: "+expectedResponse.getResult().get(0).getDecision().value());
-			LOGGER.error("Actual result is: "+xacmlResponse.getResult().get(0).getDecision().value());
+			// Result comparison failed
+			return finalResult;
 		}
-		
+		if (finalResult) {
+			int i = 0;
+			for (ResultType result : xacmlResponse.getResult()) {
+				finalResult = matchAdvices(result.getAssociatedAdvice(),
+						expectedResponse.getResult().get(i)
+								.getAssociatedAdvice());
+			}
+		} else {
+			// Obligation comparison failed
+			return finalResult;
+		}
 		return finalResult;
+	}
+	
+	private static boolean matchResult(List<ResultType> currentResult,
+			List<ResultType> expectedResult) {
+		boolean resultCompare = false;
+		// Compare the number of results
+		LOGGER.debug("Begining result number comparison");
+		if (currentResult.size() != expectedResult.size()) {
+			LOGGER.error("Number of result differ from expected");
+			LOGGER.error("Current: " + currentResult.size());
+			LOGGER.error("Expected: " + expectedResult.size());
+			resultCompare = false;
+		} else {
+			resultCompare = true;
+		}
+		if (resultCompare) {
+			LOGGER.debug("Result number comparaison OK");
+			int i = 0;
+			LOGGER.debug("Begining result decision comparison");
+			for (ResultType result : currentResult) {
+				// Compare the decision
+				resultCompare = result.getDecision().equals(
+						expectedResult.get(i).getDecision());
+				if (!resultCompare) {
+					LOGGER.error("Result " + i + " differ from expected.");
+					LOGGER.error("Current: " + result.getDecision().value());
+					LOGGER.error("Expected: "
+							+ expectedResult.get(i).getDecision().value());
+				}
+			}
+			LOGGER.debug("Result decision comparaison OK");
+		}
+
+		return resultCompare;
+	}
+	
+	private static boolean matchObligations(ObligationsType obligationsType,
+			ObligationsType obligationsType2) {
+		// TODO: not implemented
+		return true;
+	}
+
+	private static boolean matchAdvices(
+			AssociatedAdviceType associatedAdviceType,
+			AssociatedAdviceType associatedAdviceType2) {
+		// TODO: not implemented
+		return true;
 	}
 
 }
