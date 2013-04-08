@@ -45,6 +45,11 @@ import com.sun.xacml.cond.EvaluationResult;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 
 import org.w3c.dom.Node;
 
@@ -57,6 +62,7 @@ import org.w3c.dom.Node;
  *
  * @since 1.0
  * @author Seth Proctor
+ * @author Romain Ferrari
  */
 public interface EvaluationCtx
 {
@@ -109,6 +115,13 @@ public interface EvaluationCtx
      * @return the scope of the resource
      */
     public int getScope();
+    
+    /**
+	 * Returns the resource named in the request as resource-id.
+	 * 
+	 * @return the resourceMap
+	 */
+//	public Map<String, Set<AttributeType>> getResourceMap();
 
     /**
      * Returns the identifier for the resource being requested.
@@ -116,6 +129,19 @@ public interface EvaluationCtx
      * @return the resource
      */
     public AttributeValue getResourceId();
+    
+    
+    /**
+     * Returns the list of identifiers for the resources being requested.
+     *
+     * @return the list of resources
+     */
+//    public List<AttributeValue> getListResourceId();
+    
+    /**
+     * Delete the resourceId from the list (i.e. after an evaluation).
+     */
+//    public void delResourceId(AttributeValue resourceId);
 
     /**
      * Changes the value of the resource-id attribute in this context. This

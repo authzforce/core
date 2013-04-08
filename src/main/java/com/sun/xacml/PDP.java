@@ -42,6 +42,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,7 +125,7 @@ public class PDP {
 		OLD_LOGGER.fine("creating a PDP");
 
 		this.config = config;
-		
+
 		attributeFinder = config.getAttributeFinder();
 
 		policyFinder = config.getPolicyFinder();
@@ -284,6 +285,57 @@ public class PDP {
 		return response;
 	}
 
+	public List<ResponseCtx> evaluateList(RequestType request) {
+
+		List<AttributesType> subjects = new ArrayList<AttributesType>();
+		List<AttributesType> actions = new ArrayList<AttributesType>();
+		List<AttributesType> resources = new ArrayList<AttributesType>();
+		List<RequestType> requests = new ArrayList<RequestType>();
+		List<ResponseCtx> responses = new ArrayList<ResponseCtx>();
+
+		if (request.getMultiRequests() != null) {
+			// TODO: Implement multirequest
+		} else {
+
+			for (AttributesType myAttr : request.getAttributes()) {
+				if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value())) {
+					resources.add(myAttr);
+				} else if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value())) {
+					subjects.add(myAttr);
+				} else if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
+					actions.add(myAttr);
+				}
+			}
+
+			for (AttributesType subjectAttr : subjects) {
+				for (AttributesType actionsAttr : actions) {
+					for (AttributesType resourcesAttr : resources) {
+						RequestType tmpRequest = new RequestType();
+						tmpRequest.setMultiRequests(request.getMultiRequests());
+						tmpRequest.setRequestDefaults(request
+								.getRequestDefaults());
+						tmpRequest.setReturnPolicyIdList(request
+								.isReturnPolicyIdList());
+						tmpRequest.setCombinedDecision(request
+								.isCombinedDecision());
+						tmpRequest.getAttributes().add(resourcesAttr);
+						tmpRequest.getAttributes().add(actionsAttr);
+						tmpRequest.getAttributes().add(subjectAttr);
+						requests.add(tmpRequest);
+					}
+				}
+			}
+			for (RequestType requestType : requests) {
+				responses.add(this.evaluate(requestType));
+			}
+		}
+		
+		return responses;
+	}
+
 	/**
 	 * Attempts to evaluate the request against the policies known to this PDP.
 	 * This is really the core method of the entire XACML specification, and for
@@ -365,6 +417,7 @@ public class PDP {
 	 * @return a response based on the contents of the context
 	 */
 	public ResponseCtx evaluate(EvaluationCtx context) {
+
 		// see if we need to call the resource finder
 		if (context.getScope() != EvaluationCtx.SCOPE_IMMEDIATE) {
 			AttributeValue parent = context.getResourceId();

@@ -35,7 +35,7 @@ public class MultipleResourceFinder extends ResourceFinderModule {
 	public boolean isChildSupported() {
 		return true;
 	}
-
+	
 	public ResourceFinderResult findChildResources(
 			AttributeValue parentResourceId, EvaluationCtx context) {
 		// todo: check if evalresult not null

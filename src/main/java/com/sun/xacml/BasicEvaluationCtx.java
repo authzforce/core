@@ -217,7 +217,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			/* Searching for action */
 			if (myAttributeTypes.getCategory().equalsIgnoreCase(
 					XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
-				actionMap = new HashMap();
+				if (actionMap == null) {
+					actionMap = new HashMap();
+				}
 				mapAttributes(myAttributeTypes.getAttribute(), actionMap);
 			}
 			/* Searching for resource */
@@ -226,7 +228,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 							.value())) {
 				// next look at the Resource data, which needs to be handled
 				// specially
-				resourceMap = new HashMap();
+				if (resourceMap == null) {
+					resourceMap = new HashMap();
+				}
 				setupResources(myAttributeTypes.getAttribute());
 			}/* Searching for subject */
 			else if (myAttributeTypes.getCategory()
@@ -234,7 +238,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 							XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT
 									.value())) {
 				// get the subjects, make sure they're correct, and setup tables
-				subjectMap = new HashMap();
+				if (subjectMap == null) {
+					subjectMap = new HashMap();
+				}
 				setupSubjects(myAttributeTypes.getAttribute());
 
 			}/* Searching for environment */
@@ -242,7 +248,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 					XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT
 							.value())) {
 				// finally, set up the environment data, which is also generic
-				environmentMap = new HashMap();
+				if (environmentMap == null) {
+					environmentMap = new HashMap();
+				}
 				mapAttributes(myAttributeTypes.getAttribute(), environmentMap);
 			}
 		}
@@ -322,11 +330,6 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 */
 	private void setupResources(List<AttributeType> list)
 			throws ParsingException {
-		/*
-		 * if (list.size() != 1) { // TODO throw new ParsingException(
-		 * "XACML 2.0 support for multiple resources not yet supported"); }
-		 */
-		// AttributeType resource = list.get(0);
 		mapAttributes(list, resourceMap);
 
 		// make sure there resource-id attribute was included
@@ -334,18 +337,13 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			System.err.println("Resource must contain resource-id attr");
 			throw new ParsingException("resource missing resource-id");
 		} else {
-			// make sure there's only one value for this
-			Set<AttributeType> set = resourceMap.get(RESOURCE_ID);
-			// FIXME: fix this for multiple decision profile
-			if (set.size() > 1) {
-				System.err.println("Resource may contain only one "
-						+ "resource-id Attribute");
-				throw new ParsingException("too many resource-id attrs");
-			} else {
-				// keep track of the resource-id attribute
-				AttributeType attr = set.iterator().next();
-				resourceId = AttributeValue.convertFromJAXB(attr
-						.getAttributeValue());
+			if (resourceId == null) {
+				resourceId = new ArrayList<AttributeValue>();
+			}
+			resourceId.clear();
+			for (AttributeType attributeType : resourceMap.get(RESOURCE_ID)) {
+				resourceId.addAll(AttributeValue.convertFromJAXB(attributeType
+						.getAttributeValue()));
 			}
 		}
 
@@ -433,15 +431,39 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	/**
 	 * Returns the resource named in the request as resource-id.
 	 * 
+	 * @return the resourceMap
+	 */
+	public Map<String, Set<AttributeType>> getResourceMap() {
+		return resourceMap;
+	}
+
+	/**
+	 * Returns the resource named in the request as resource-id. Using
+	 * resourceId as a pointer to the evaluated resource
+	 * 
 	 * @return the resource
 	 */
 	public AttributeValue getResourceId() {
-		if (resourceId != null && resourceId.size() == 1) {
+		if (resourceId != null /* && resourceId.size() == 1 */) {
 			return resourceId.get(0);
 		} else {
 			return null;
 		}
 	}
+
+	/**
+	 * Returns the resource named in the request as resource-id.
+	 * 
+	 * @return the resource
+	 */
+//	public List<AttributeValue> getListResourceId() {
+//		List<AttributeValue> resourcesIdValues = new ArrayList<AttributeValue>();
+//		for (AttributeValue attrValue : resourceId) {
+//			resourcesIdValues.add(attrValue);
+//		}
+//
+//		return resourcesIdValues;
+//	}
 
 	/**
 	 * Changes the value of the resource-id attribute in this context. This is
@@ -467,6 +489,12 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			this.setResourceId(avts);
 		}
 	}
+
+//	public void delResourceId(AttributeValue resourceId) {
+//		if (this.resourceId.contains(resourceId)) {
+//			this.resourceId.remove(resourceId);
+//		}
+//	}
 
 	/**
 	 * Returns the value for the current time. The current time, current date,
