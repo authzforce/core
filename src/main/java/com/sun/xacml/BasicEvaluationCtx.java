@@ -101,6 +101,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private Map<String, Set<AttributeType>> resourceMap;
 	private Map<String, Set<AttributeType>> actionMap;
 	private Map<String, Set<AttributeType>> environmentMap;
+	
+	// Attributes that needs to be included in the result
+	private Set<AttributeType> includeInResults;
 
 	// the resource and its scope
 	private List<AttributeValue> resourceId;
@@ -253,6 +256,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 				}
 				mapAttributes(myAttributeTypes.getAttribute(), environmentMap);
 			}
+			// Store attributes who needs to be included in the result
+			for (AttributeType attr : myAttributeTypes.getAttribute()) {
+				storeAttrIncludeInResult(attr);	
+			}			
 		}
 		//
 		// // get the subjects, make sure they're correct, and setup tables
@@ -390,6 +397,15 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			scope = SCOPE_IMMEDIATE;
 		}
 	}
+	
+	private void storeAttrIncludeInResult(AttributeType attr) {
+		if(includeInResults == null) {
+			includeInResults = new HashSet<AttributeType>();
+		}
+		if (attr.isIncludeInResult()) {
+			includeInResults.add(attr);
+		}
+	}
 
 	/**
 	 * Generic routine for resource, attribute and environment attributes to
@@ -449,6 +465,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		} else {
 			return null;
 		}
+	}
+	
+	public Set<AttributeType> getIncludeInResults() {
+		return includeInResults;
 	}
 
 	/**

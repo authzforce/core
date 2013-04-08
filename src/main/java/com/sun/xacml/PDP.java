@@ -497,13 +497,13 @@ public class PDP {
 
 		// see if there weren't any applicable policies
 		if (finderResult.notApplicable())
-			return new Result(Result.DECISION_NOT_APPLICABLE, context
-					.getResourceId().encode());
+			return new Result(Result.DECISION_NOT_APPLICABLE, null, context
+					.getResourceId().encode(), null, null, context.getIncludeInResults());
 
 		// see if there were any errors in trying to get a policy
 		if (finderResult.indeterminate())
 			return new Result(Result.DECISION_INDETERMINATE,
-					finderResult.getStatus(), context.getResourceId().encode());
+					finderResult.getStatus(), context.getResourceId().encode(), null, null, context.getIncludeInResults());
 
 		// we found a valid policy, so we can do the evaluation
 		return finderResult.getPolicy().evaluate(context);

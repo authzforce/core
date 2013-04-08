@@ -35,7 +35,6 @@
 
 package com.sun.xacml.ctx;
 
-import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -47,13 +46,12 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -111,10 +109,10 @@ public class Result {
 	// the set of obligations which may be empty
 	private Set obligations;
 
-	private static AssociatedAdviceType advices;
+	private AssociatedAdviceType advices;
 
 	// A list of attributes that were part of the request
-	private static List<Attributes> attributes;
+	private Set<AttributeType> attributes;
 
 	/**
 	 * Constructs a <code>Result</code> object with default status data (OK).
@@ -206,6 +204,7 @@ public class Result {
 			throws IllegalArgumentException {
 		this(decision, null, resource, null);
 	}
+	
 
 	/**
 	 * Constructs a <code>Result</code> object with a resource identifier, and
@@ -248,6 +247,26 @@ public class Result {
 			throws IllegalArgumentException {
 		this(decision, status, resource, null);
 	}
+	
+	/**
+	 * Constructs a <code>Result</code> object with status data and a resource
+	 * identifier.
+	 * 
+	 * @param decision
+	 *            the decision effect to include in this result. This must be
+	 *            one of the four fields in this class.
+	 * @param status
+	 *            the <code>Status</code> to include in this result
+	 * @param resource
+	 *            a <code>String</code> naming the resource
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if decision is not valid
+	 */
+	public Result(int decision, Status status, String resource, Set obligations, Set<AttributeType> attributes)
+			throws IllegalArgumentException {
+		this(decision, status, resource, obligations, null, attributes);
+	}
 
 	/**
 	 * Constructs a <code>Result</code> object with status data, a resource
@@ -268,7 +287,7 @@ public class Result {
 	 */
 	public Result(int decision, Status status, String resource, Set obligations)
 			throws IllegalArgumentException {
-		this(decision, status, resource, obligations, null);
+		this(decision, status, resource, obligations, null, null);
 	}
 
 	/**
@@ -296,7 +315,7 @@ public class Result {
 			throws IllegalArgumentException {
 		this(decision, status, resource, obligations, advices, null);
 	}
-
+	
 	/**
 	 * Support of Advices added (XACML 3.0) Constructs a <code>Result</code>
 	 * object with status data, a resource identifier, obligations and advices.
@@ -317,9 +336,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, String resource,
-			Set obligations, AssociatedAdviceType advices,
-			List<Attributes> attributes) throws IllegalArgumentException {
+	public Result(int decision, Status status, String resource,	Set obligations, AssociatedAdviceType advices, Set attributes) throws IllegalArgumentException {
 		// check that decision is valid
 		if ((decision != DECISION_PERMIT) && (decision != DECISION_DENY)
 				&& (decision != DECISION_INDETERMINATE)
@@ -348,9 +365,9 @@ public class Result {
 		}
 
 		if (attributes == null) {
-			this.attributes = new ArrayList<Attributes>();
+			this.attributes = new HashSet<AttributeType>();
 		} else {
-			this.attributes.addAll(attributes);
+			this.attributes = attributes;
 		}
 	}
 
@@ -372,11 +389,14 @@ public class Result {
 		Status status = null;
 		String resource = null;
 		Set obligations = null;
+		AssociatedAdviceType advices = null;
+		Set attributes = null;
 
 		NamedNodeMap attrs = root.getAttributes();
 		Node resourceAttr = attrs.getNamedItem("ResourceId");
-		if (resourceAttr != null)
+		if (resourceAttr != null) {
 			resource = resourceAttr.getNodeValue();
+		}
 
 		NodeList nodes = root.getChildNodes();
 		for (int i = 0; i < nodes.getLength(); i++) {
@@ -400,14 +420,13 @@ public class Result {
 			} else if (name.equals("Obligations")) {
 				obligations = parseObligations(node);
 			} else if (name.equals("AssociatedAdvice")) {
-				advices = new AssociatedAdviceType();
-				advices.getAdvice().addAll(parseAdvices(root));
+				advices = parseAdvices(root);
 			} else if (name.equals("Attributes")) {
 				attributes = parseAttributes(node);
 			}
 		}
 
-		return new Result(decision, status, resource, obligations);
+		return new Result(decision, status, resource, obligations, advices, attributes);
 	}
 
 	/**
@@ -430,11 +449,11 @@ public class Result {
 	}
 
 	/**
-	 * Helper method that handles the Attributes
+	 * Helper method that handles the Advices
 	 */
-	private static List<AdviceType> parseAdvices(Node root)
+	private static AssociatedAdviceType parseAdvices(Node root)
 			throws ParsingException {
-		List<AdviceType> list = new ArrayList<AdviceType>();
+		AssociatedAdviceType list = new AssociatedAdviceType();
 
 		NodeList nodes = root.getChildNodes();
 		AdviceType advice;
@@ -444,9 +463,9 @@ public class Result {
 				advice = new AdviceType();
 				JAXBContext jc;
 				try {
-					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType");
+					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
 					Unmarshaller u = jc.createUnmarshaller();
-					list.add((AdviceType)u.unmarshal(root));
+					list = ((AssociatedAdviceType)u.unmarshal(root));
 				} catch (JAXBException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -454,32 +473,71 @@ public class Result {
 			}
 		}
 
-		if (list.size() == 0) {
+		return list;
+	}
+	
+	/**
+	 * Helper method that handles the Attributes
+	 */
+	private static Set<AttributesType> parseAttributes(Node root)
+			throws ParsingException {
+		Set<AttributesType> set = new HashSet<AttributesType>();
+
+		NodeList nodes = root.getChildNodes();
+		AttributesType attr;
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			if (node.getNodeName().equals("Attribute")) {
+				attr = new AttributesType();
+				JAXBContext jc;
+				try {
+					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+					Unmarshaller u = jc.createUnmarshaller();
+					set.add((AttributesType)u.unmarshal(root));
+				} catch (JAXBException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		if (set.size() == 0) {
 			throw new ParsingException("Advice must not be empty");
 		}
 
-		return list;
+		return set;
 	}
 
 	/**
 	 * Helper method that handles the Attributes
 	 */
-	private static List<Attributes> parseAttributes(Node root)
+	private static Set<AttributeType> parseAttribute(Node root)
 			throws ParsingException {
-		List<Attributes> list = new ArrayList<Attributes>();
+		Set<AttributeType> set = new HashSet<AttributeType>();
 
 		NodeList nodes = root.getChildNodes();
+		AttributeType attr;
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
-			if (node.getNodeName().equals("Attribute"))
-				list.add(Attributes.getInstance(node));
+			if (node.getNodeName().equals("Attribute")) {
+				attr = new AttributeType();
+				JAXBContext jc;
+				try {
+					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+					Unmarshaller u = jc.createUnmarshaller();
+					set.add((AttributeType)u.unmarshal(root));
+				} catch (JAXBException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 
-		if (list.size() == 0) {
-			throw new ParsingException("AttributeType must not be empty");
+		if (set.size() == 0) {
+			throw new ParsingException("Advice must not be empty");
 		}
 
-		return list;
+		return set;
 	}
 
 	/**
@@ -572,7 +630,7 @@ public class Result {
 	/**
 	 * @return the attributes
 	 */
-	public List<Attributes> getAttributes() {
+	public Set<AttributeType> getAttributes() {
 		return attributes;
 	}
 
@@ -580,7 +638,7 @@ public class Result {
 	 * @param attributes
 	 *            the attributes to set
 	 */
-	public void setAttributes(List<Attributes> attributes) {
+	public void setAttributes(Set<AttributeType> attributes) {
 		this.attributes = attributes;
 	}
 

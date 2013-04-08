@@ -145,8 +145,8 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
         // some Rule said DENY, so since nothing could have permitted,
         // we return DENY
         if (atLeastOneDeny)
-            return new Result(Result.DECISION_DENY,
-                              context.getResourceId().encode());
+            return new Result(Result.DECISION_DENY, null, 
+                              context.getResourceId().encode(), null, null, context.getIncludeInResults());
         
         // we didn't find anything that said DENY, but if we had a
         // problem with one of the Rules, then we're INDETERMINATE
