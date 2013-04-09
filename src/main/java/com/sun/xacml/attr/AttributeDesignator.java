@@ -58,6 +58,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.bind.JAXBElement;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -281,6 +286,11 @@ public class AttributeDesignator implements Evaluatable
 
         return ad;
     }
+    
+    public static AttributeDesignatorType getInstance(AttributeAssignmentExpressionType attrAssignement) {
+		JAXBElement<AttributeDesignatorType> myAttrDes = (JAXBElement<AttributeDesignatorType>)attrAssignement.getExpression();
+		return myAttrDes.getValue();
+	}
 
     /**
      * Returns the type of this designator as specified by the *_TARGET

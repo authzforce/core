@@ -89,7 +89,7 @@ public class ConformanceV3 extends TestCase {
                 Set<String> policies = new HashSet<String>();
                 policies.add("IIIA" + policyNumber + "Policy.xacml3.xml");
                 response = getPDPNewInstance(policies).evaluate(request);
-                if(response != null){
+                if(response != null) {
                     expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY,
                                         VERSION_DIRECTORY, "IIIA" + policyNumber + "Response.xacml3.xml");
                     LOGGER.debug("Response that is received from the PDP :  " + response);

@@ -68,6 +68,7 @@ public class Attribute {
 	// required meta-data attributes
 	private URI id;
 	private URI type;
+	private URI category;
 
 	// optional meta-data attributes
 	private String issuer = null;
@@ -81,7 +82,7 @@ public class Attribute {
 	 * correlate requests with their responses in case of multiple requests.
 	 * optional one defined only in XACML3
 	 */
-	private static boolean includeInResult;
+	private boolean includeInResult;
 
 	private int xacmlVersion;
 
@@ -107,6 +108,33 @@ public class Attribute {
 	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant,
 			AttributeValue value, boolean includeInResult, int version) {
 		this(id, value.getType(), issuer, issueInstant, Arrays.asList(value),
+				includeInResult, version);
+	}
+	
+	/**
+	 * Creates a new <code>Attribute</code> of the type specified in the given
+	 * <code>AttributeValue</code>.for XACML 3 with one
+	 * <code>AttributeValue</code>
+	 * 
+	 * @param id
+	 *            the id of the attribute
+	 * @param issuer
+	 *            the attribute's issuer or null if there is none
+	 * @param category
+	 *            the attribute's category (XACML 3.0)
+	 * @param issueInstant
+	 *            the moment when the attribute was issued, or null if it's
+	 *            unspecified
+	 * @param value
+	 *            the actual value associated with the attribute meta-data
+	 * @param includeInResult
+	 *            whether to include this attribute in the result.
+	 * @param version
+	 *            XACML version
+	 */
+	public Attribute(URI id, String issuer, URI category, DateTimeAttribute issueInstant,
+			AttributeValue value, boolean includeInResult, int version) {
+		this(id, value.getType(), category, issuer, issueInstant, Arrays.asList(value),
 				includeInResult, version);
 	}
 
@@ -165,6 +193,41 @@ public class Attribute {
 		this.attributeValues = attributeValues;
 		this.includeInResult = includeInResult;
 		this.xacmlVersion = xacmlVersion;
+		this.category = null;
+	}
+	
+	/**
+	 * Creates a new <code>Attribute</code>
+	 * 
+	 * @param id
+	 *            the id of the attribute
+	 * @param type
+	 *            the type of the attribute
+	 * @param issuer
+	 *            the attribute's issuer or null if there is none
+	 * @param issueInstant
+	 *            the moment when the attribute was issued, or null if it's
+	 *            unspecified
+	 * @param attributeValues
+	 *            actual <code>List</code> of <code>AttributeValue</code>
+	 *            associated with
+	 * @param includeInResult
+	 *            whether to include this attribute in the result.
+	 * @param xacmlVersion
+	 *            xacml version
+	 */
+	public Attribute(URI id, URI type, URI category, String issuer,
+			DateTimeAttribute issueInstant,
+			List<AttributeValue> attributeValues, boolean includeInResult,
+			int xacmlVersion) {
+		this.id = id;
+		this.type = type;
+		this.category = category;
+		this.issuer = issuer;
+		this.issueInstant = issueInstant;
+		this.attributeValues = attributeValues;
+		this.includeInResult = includeInResult;
+		this.xacmlVersion = xacmlVersion;		
 	}
 
 	/**
@@ -183,6 +246,7 @@ public class Attribute {
 			throws ParsingException {
 		URI id = null;
 		URI type = null;
+		URI category = null;
 		String issuer = null;
 		DateTimeAttribute issueInstant = null;
 		List<AttributeValue> values = new ArrayList<AttributeValue>();
@@ -198,14 +262,11 @@ public class Attribute {
 
 		NamedNodeMap attrs = root.getAttributes();
 
-		if (!(version == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-				.value()))) {
-			try {
-				type = new URI(attrs.getNamedItem("DataType").getNodeValue());
-			} catch (Exception e) {
-				throw new ParsingException("Error parsing required attribute "
-						+ "DataType in AttributeType", e);
-			}
+		try {
+			type = new URI(attrs.getNamedItem("DataType").getNodeValue());
+		} catch (Exception e) {
+			throw new ParsingException("Error parsing required attribute "
+					+ "DataType in AttributeType", e);
 		}
 
 		if (version == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
@@ -251,6 +312,8 @@ public class Attribute {
 					try {
 						type = new URI(dataTypeAttribute.getNamedItem(
 								"DataType").getNodeValue());
+						category = new URI(dataTypeAttribute.getNamedItem(
+								"Category").getNodeValue());
 					} catch (Exception e) {
 						throw new ParsingException(
 								"Error parsing required attribute "
@@ -271,7 +334,7 @@ public class Attribute {
 			throw new ParsingException("Attribute must contain a value");
 		}
 
-		return new Attribute(id, type, issuer, issueInstant, values,
+		return new Attribute(id, type, category, issuer, issueInstant, values,
 				includeInResult, version);
 	}
 
@@ -309,6 +372,18 @@ public class Attribute {
 	 */
 	public String getIssuer() {
 		return issuer;
+	}
+
+	/**
+	 * Returns the category of this attribute
+	 * 
+	 * @return the issuer or null
+	 */
+	public URI getCategory() {
+		if(category != null) {
+			return category;
+		} 
+		return URI.create("");
 	}
 
 	/**
@@ -409,8 +484,8 @@ public class Attribute {
 	public String encode() {
 		String encoded = "";
 		for (AttributeValue value : attributeValues) {
-			encoded += "<Attribute AttributeId=\"" + id.toString()
-					+ "\" " + "DataType=\"" + type.toString() + "\"";
+			encoded += "<Attribute AttributeId=\"" + id.toString() + "\" "
+					+ "DataType=\"" + type.toString() + "\"";
 
 			if (issuer != null) {
 				encoded += " Issuer=\"" + issuer + "\"";

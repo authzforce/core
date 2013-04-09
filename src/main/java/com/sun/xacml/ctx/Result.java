@@ -47,15 +47,18 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.Obligation;
 import com.sun.xacml.ParsingException;
@@ -109,7 +112,7 @@ public class Result {
 	// the set of obligations which may be empty
 	private Set obligations;
 
-	private AssociatedAdviceType advices;
+	private Set advices;
 
 	// A list of attributes that were part of the request
 	private Set<AttributeType> attributes;
@@ -263,7 +266,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, String resource, Set obligations, Set<AttributeType> attributes)
+	public Result(int decision, Status status, String resource, Set obligations, Set attributes)
 			throws IllegalArgumentException {
 		this(decision, status, resource, obligations, null, attributes);
 	}
@@ -310,33 +313,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, String resource,
-			Set obligations, AssociatedAdviceType advices)
-			throws IllegalArgumentException {
-		this(decision, status, resource, obligations, advices, null);
-	}
-	
-	/**
-	 * Support of Advices added (XACML 3.0) Constructs a <code>Result</code>
-	 * object with status data, a resource identifier, obligations and advices.
-	 * 
-	 * @param decision
-	 *            the decision effect to include in this result. This must be
-	 *            one of the four fields in this class.
-	 * @param status
-	 *            the <code>Status</code> to include in this result
-	 * @param resource
-	 *            a <code>String</code> naming the resource
-	 * @param obligations
-	 *            the obligations the PEP must handle
-	 * @param advices
-	 *            A list of advice that provide supplemental information to the
-	 *            PEP
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if decision is not valid
-	 */
-	public Result(int decision, Status status, String resource,	Set obligations, AssociatedAdviceType advices, Set attributes) throws IllegalArgumentException {
+	public Result(int decision, Status status, String resource,	Set obligations, Set advices, Set attributes) throws IllegalArgumentException {
 		// check that decision is valid
 		if ((decision != DECISION_PERMIT) && (decision != DECISION_DENY)
 				&& (decision != DECISION_INDETERMINATE)
@@ -359,7 +336,7 @@ public class Result {
 		}
 
 		if (advices == null) {
-			this.advices = new AssociatedAdviceType();
+			this.advices = new HashSet();
 		} else {
 			this.advices = advices;
 		}
@@ -370,6 +347,7 @@ public class Result {
 			this.attributes = attributes;
 		}
 	}
+
 
 	/**
 	 * Creates a new instance of a <code>Result</code> based on the given DOM
@@ -389,7 +367,7 @@ public class Result {
 		Status status = null;
 		String resource = null;
 		Set obligations = null;
-		AssociatedAdviceType advices = null;
+		Set advices = null;
 		Set attributes = null;
 
 		NamedNodeMap attrs = root.getAttributes();
@@ -451,12 +429,12 @@ public class Result {
 	/**
 	 * Helper method that handles the Advices
 	 */
-	private static AssociatedAdviceType parseAdvices(Node root)
+	private static Set parseAdvices(Node root)
 			throws ParsingException {
-		AssociatedAdviceType list = new AssociatedAdviceType();
+		Set<AssociatedAdviceType> list = new HashSet<AssociatedAdviceType>();
 
 		NodeList nodes = root.getChildNodes();
-		AdviceType advice;
+		AdviceType advice = null;
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Advice")) {
@@ -465,7 +443,7 @@ public class Result {
 				try {
 					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
 					Unmarshaller u = jc.createUnmarshaller();
-					list = ((AssociatedAdviceType)u.unmarshal(root));
+					list.add((AssociatedAdviceType)u.unmarshal(root));
 				} catch (JAXBException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -484,48 +462,14 @@ public class Result {
 		Set<AttributesType> set = new HashSet<AttributesType>();
 
 		NodeList nodes = root.getChildNodes();
-		AttributesType attr;
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Attribute")) {
-				attr = new AttributesType();
 				JAXBContext jc;
 				try {
 					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
 					Unmarshaller u = jc.createUnmarshaller();
 					set.add((AttributesType)u.unmarshal(root));
-				} catch (JAXBException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-		if (set.size() == 0) {
-			throw new ParsingException("Advice must not be empty");
-		}
-
-		return set;
-	}
-
-	/**
-	 * Helper method that handles the Attributes
-	 */
-	private static Set<AttributeType> parseAttribute(Node root)
-			throws ParsingException {
-		Set<AttributeType> set = new HashSet<AttributeType>();
-
-		NodeList nodes = root.getChildNodes();
-		AttributeType attr;
-		for (int i = 0; i < nodes.getLength(); i++) {
-			Node node = nodes.item(i);
-			if (node.getNodeName().equals("Attribute")) {
-				attr = new AttributeType();
-				JAXBContext jc;
-				try {
-					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-					Unmarshaller u = jc.createUnmarshaller();
-					set.add((AttributeType)u.unmarshal(root));
 				} catch (JAXBException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -597,7 +541,7 @@ public class Result {
 	 * 
 	 * @return the set of obligations
 	 */
-	public Set getObligations() {
+	public Set<Obligation> getObligations() {
 		return obligations;
 	}
 
@@ -608,14 +552,32 @@ public class Result {
 	 *            the <code>Obligation</code> to add
 	 */
 	public void addObligation(Obligation obligation) {
-		if (obligation != null)
+		if (obligation != null) {
 			obligations.add(obligation);
+		}
+	}
+	
+	public void addObligation(ObligationExpressionType obligation, EvaluationCtx context) {
+		if(obligation != null) {
+			try {
+				obligations.add(Obligation.getInstance(obligation, context));
+			} catch (ParsingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void addAdvice(AdviceExpressionType advice) {
+		if (advice != null) {
+			advices.add(advice);
+		}
 	}
 
 	/**
 	 * @return the advices
 	 */
-	public AssociatedAdviceType getAdvices() {
+	public Set<AdviceExpressionType> getAdvices() {
 		return advices;
 	}
 
@@ -623,7 +585,7 @@ public class Result {
 	 * @param advices
 	 *            the advices to set
 	 */
-	public void setAdvices(AssociatedAdviceType advices) {
+	public void setAdvices(Set<AssociatedAdviceType> advices) {
 		this.advices = advices;
 	}
 
@@ -704,5 +666,4 @@ public class Result {
 		// finish it off
 		out.println(indent + "</Result>");
 	}
-
 }

@@ -471,19 +471,6 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		return includeInResults;
 	}
 
-	/**
-	 * Returns the resource named in the request as resource-id.
-	 * 
-	 * @return the resource
-	 */
-//	public List<AttributeValue> getListResourceId() {
-//		List<AttributeValue> resourcesIdValues = new ArrayList<AttributeValue>();
-//		for (AttributeValue attrValue : resourceId) {
-//			resourcesIdValues.add(attrValue);
-//		}
-//
-//		return resourcesIdValues;
-//	}
 
 	/**
 	 * Changes the value of the resource-id attribute in this context. This is
@@ -509,12 +496,6 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			this.setResourceId(avts);
 		}
 	}
-
-//	public void delResourceId(AttributeValue resourceId) {
-//		if (this.resourceId.contains(resourceId)) {
-//			this.resourceId.remove(resourceId);
-//		}
-//	}
 
 	/**
 	 * Returns the value for the current time. The current time, current date,

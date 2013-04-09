@@ -99,7 +99,7 @@ public class TestUtils {
 					+ rootDirectory + File.separator + versionDirectory
 					+ File.separator + TestConstants.RESPONSE_DIRECTORY.value()
 					+ File.separator + responseId;
-
+			LOGGER.debug("File to read: "+filePath);
 			DocumentBuilderFactory factory = DocumentBuilderFactory
 					.newInstance();
 			factory.setIgnoringComments(true);

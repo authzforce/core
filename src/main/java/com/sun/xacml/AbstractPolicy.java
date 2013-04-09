@@ -35,32 +35,39 @@
 
 package com.sun.xacml;
 
-import com.sun.xacml.combine.CombinerElement;
-import com.sun.xacml.combine.CombinerParameter;
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.sun.xacml.combine.CombiningAlgFactory;
-import com.sun.xacml.combine.PolicyCombiningAlgorithm;
-import com.sun.xacml.combine.RuleCombiningAlgorithm;
-
-import com.sun.xacml.ctx.Result;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import java.net.URI;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import java.util.logging.Logger;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.combine.CombinerElement;
+import com.sun.xacml.combine.CombinerParameter;
+import com.sun.xacml.combine.CombiningAlgFactory;
+import com.sun.xacml.combine.CombiningAlgorithm;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.combine.RuleCombiningAlgorithm;
+import com.sun.xacml.ctx.Result;
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 /**
  * Represents an instance of an XACML policy.
@@ -94,6 +101,9 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 
 	// any obligations held by this policy
 	private Set obligations;
+
+	// any obligations held by this policy
+	private Set advice;
 
 	// the list of combiner parameters
 	private List parameters;
@@ -182,25 +192,28 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 		this.target = target;
 		this.defaultVersion = defaultVersion;
 
-		if (version == null)
+		if (version == null) {
 			this.version = "1.0";
-		else
+		} else {
 			this.version = version;
+		}
 
 		// FIXME: this needs to fill in the meta-data correctly
 		metaData = null;
 
-		if (obligations == null)
+		if (obligations == null) {
 			this.obligations = Collections.EMPTY_SET;
-		else
+		} else {
 			this.obligations = Collections.unmodifiableSet(new HashSet(
 					obligations));
+		}
 
-		if (parameters == null)
+		if (parameters == null) {
 			this.parameters = Collections.EMPTY_LIST;
-		else
+		} else {
 			this.parameters = Collections.unmodifiableList(new ArrayList(
 					parameters));
+		}
 	}
 
 	/**
@@ -276,8 +289,9 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 		metaData = new PolicyMetaData(root.getNamespaceURI(), defaultVersion);
 
 		// now read the remaining policy elements
-		obligations = new HashSet();
+		obligations = new HashSet<ObligationExpressionType>();
 		parameters = new ArrayList();
+		advice = new HashSet<AdviceExpressionType>();
 		_children = root.getChildNodes();
 
 		for (int i = 0; i < _children.getLength(); i++) {
@@ -293,12 +307,17 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 				parseObligations(child);
 			} else if (cname.equals("CombinerParameters")) {
 				handleParameters(child);
+			} else if (cname.equals("ObligationExpressions")) {
+				parseObligations(child);
+			} else if (cname.equals("AdviceExpressions")) {
+				parseAdvicesExpressions(child);
 			}
 		}
 
 		// finally, make sure the obligations and parameters are immutable
 		obligations = Collections.unmodifiableSet(obligations);
 		parameters = Collections.unmodifiableList(parameters);
+		advice = Collections.unmodifiableSet(advice);
 	}
 
 	/**
@@ -306,11 +325,46 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 	 */
 	private void parseObligations(Node root) throws ParsingException {
 		NodeList nodes = root.getChildNodes();
-
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
-			if (node.getNodeName().equals("Obligation"))
-				obligations.add(Obligation.getInstance(node));
+			if (node.getNodeName().equals("ObligationExpression")) {
+				JAXBElement<ObligationExpressionsType> match = null;
+				try {
+					JAXBContext jc = JAXBContext
+							.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+					Unmarshaller u = jc.createUnmarshaller();
+					match = (JAXBElement<ObligationExpressionsType>) u
+							.unmarshal(root);
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+
+				obligations.add(match.getValue());
+			}
+		}
+	}
+
+	/**
+	 * Helper routine to parse the obligation data
+	 */
+	private void parseAdvicesExpressions(Node root) throws ParsingException {
+		NodeList nodes = root.getChildNodes();
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			if (node.getNodeName().equals("AdviceExpression")) {
+				JAXBElement<AdviceExpressionType> match = null;
+				try {
+					JAXBContext jc = JAXBContext
+							.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+					Unmarshaller u = jc.createUnmarshaller();
+					match = (JAXBElement<AdviceExpressionType>) u
+							.unmarshal(root);
+				} catch (Exception e) {
+					System.err.println(e);
+				}
+
+				advice.add(match.getValue());
+			}
 		}
 	}
 
@@ -531,21 +585,46 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 				return result;
 			}
 
-			Iterator it = obligations.iterator();
-			while (it.hasNext()) {
-				Obligation obligation = (Obligation) (it.next());
-				if (obligation.getFulfillOn() == effect) {
-					result.addObligation(obligation);
+			if (metaData.getXACMLVersion() == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
+				for (ObligationExpressionsType myObligations : (Set<ObligationExpressionsType>) obligations) {
+					for (ObligationExpressionType myObligation : myObligations.getObligationExpression()) {
+						if (myObligation.getFulfillOn().ordinal() == effect ) {
+							result.addObligation(myObligation, context);
+						}
+					}
+				}
+			} else {
+				Iterator it = obligations.iterator();
+				while (it.hasNext()) {
+					Obligation obligation = (Obligation) (it.next());
+					if (obligation.getFulfillOn() == effect) {
+						result.addObligation(obligation);
+					}
 				}
 			}
-
-			// finally, return the result
-			return result;
 		}
+		/* If we have advice, it's definitely a 3.0 policy */
+		if (advice.size() > 0) {
+			int effect = result.getDecision();
+
+			if ((effect == Result.DECISION_INDETERMINATE)
+					|| (effect == Result.DECISION_NOT_APPLICABLE)) {
+				// we didn't permit/deny, so we never return advices
+				return result;
+			}
+			for (AdviceExpressionsType myAdvices : (Set<AdviceExpressionsType>) advice) {
+				for (AdviceExpressionType myAdvice : myAdvices.getAdviceExpression()) {
+					if (myAdvice.getAppliesTo().ordinal() == effect) {
+						result.addAdvice(myAdvice);
+					}
+				}
+			}
+		}
+
 		if (context.getIncludeInResults().size() > 0) {
 			result.getAttributes().addAll(context.getIncludeInResults());
 		}
-		
+
 		return result;
 	}
 
