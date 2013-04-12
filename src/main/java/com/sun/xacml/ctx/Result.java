@@ -52,6 +52,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
 
 import org.w3c.dom.NamedNodeMap;
@@ -347,7 +348,6 @@ public class Result {
 			this.attributes = attributes;
 		}
 	}
-
 
 	/**
 	 * Creates a new instance of a <code>Result</code> based on the given DOM

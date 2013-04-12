@@ -37,6 +37,8 @@
 package com.sun.xacml.cond;
 
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+
 import java.util.List;
 
 

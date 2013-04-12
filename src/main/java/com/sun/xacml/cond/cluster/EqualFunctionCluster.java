@@ -36,11 +36,10 @@
 
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.EqualFunction;
-
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+
+import com.sun.xacml.cond.EqualFunction;
 
 
 /**
@@ -51,15 +50,25 @@ import java.util.Set;
  */
 public class EqualFunctionCluster implements FunctionCluster
 {
+	
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(EqualFunctionCluster.class);
 
-    public Set getSupportedFunctions() {
-        Set set = new HashSet();
-        Iterator it = EqualFunction.getSupportedIdentifiers().iterator();
-
-        while (it.hasNext())
-            set.add(new EqualFunction((String)(it.next())));
-
-        return set;
+    public Set<EqualFunction> getSupportedFunctions() {
+    	
+    	Set<EqualFunction> result = new HashSet<EqualFunction>();
+    	LOGGER.debug("Initialize Equals function");
+    	Set<String> supportedEqualFunction = EqualFunction.getSupportedIdentifiers();
+    	for (String equalFunction : supportedEqualFunction) {
+    		EqualFunction func = new EqualFunction(equalFunction);
+			result.add(func);
+		}
+    	LOGGER.debug("End of Initialize Equals function");        
+        
+        return result;
     }
 
 }

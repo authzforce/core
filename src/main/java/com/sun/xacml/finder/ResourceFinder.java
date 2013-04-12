@@ -35,16 +35,14 @@
 
 package com.sun.xacml.finder;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
  * This class is used by the PDP to handle resource scopes other than Immediate.

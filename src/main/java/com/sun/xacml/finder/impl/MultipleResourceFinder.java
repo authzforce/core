@@ -4,12 +4,14 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ProcessingException;
-import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.StringAttribute;
-import com.sun.xacml.cond.EvaluationResult;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.ResourceFinderModule;
 import com.sun.xacml.finder.ResourceFinderResult;
 
@@ -44,8 +46,8 @@ public class MultipleResourceFinder extends ResourceFinderModule {
 		if(evalResult == null) {
 			throw new ProcessingException();
 		}
-		AttributeValue attrVal = evalResult.getAttributeValue();
-		List<AttributeValue> attrSubVals = (List<AttributeValue>) ((BagAttribute) attrVal).getValue();
-		return new ResourceFinderResult(new HashSet<AttributeValue>(attrSubVals));
+		AttributeValueType attrVal = evalResult.getAttributeValue();
+		List<AttributeValueType> attrSubVals = (List<AttributeValueType>) ((BagAttribute) attrVal).getValue();
+		return new ResourceFinderResult(new HashSet<AttributeValueType>(attrSubVals));
 	}
 }

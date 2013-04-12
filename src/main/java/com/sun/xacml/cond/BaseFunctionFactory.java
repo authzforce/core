@@ -38,6 +38,7 @@ package com.sun.xacml.cond;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.xacmlv3.Match;
 
 import java.net.URI;
 
@@ -78,6 +79,12 @@ public class BaseFunctionFactory extends FunctionFactory
 
     // the superset factory chained to this factory
     private FunctionFactory superset = null;
+    
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(BaseFunctionFactory.class);
 
     /**
      * Default constructor. No superset factory is used.
@@ -135,6 +142,7 @@ public class BaseFunctionFactory extends FunctionFactory
         Iterator it = supportedFunctions.iterator();
         while (it.hasNext()) {
             Function function = (Function)(it.next());
+            LOGGER.debug("Adding function to the functionMap: "+function.getIdentifier());
             functionMap.put(function.getIdentifier().toString(), function);
         }
 
@@ -143,6 +151,7 @@ public class BaseFunctionFactory extends FunctionFactory
             URI id = (URI)(it.next());
             FunctionProxy proxy =
                 (FunctionProxy)(supportedAbstractFunctions.get(id));
+            LOGGER.debug("Adding function to the functionMap: "+id.toString());
             functionMap.put(id.toString(), proxy);
         }
     }
@@ -166,12 +175,14 @@ public class BaseFunctionFactory extends FunctionFactory
         String id = function.getIdentifier().toString();
 
         // make sure this doesn't already exist
-        if (functionMap.containsKey(id))
+        if (functionMap.containsKey(id)) {
             throw new IllegalArgumentException("function already exists");
+        }
 
         // add to the superset factory
-        if (superset != null)
+        if (superset != null) {
             superset.addFunction(function);
+        }
 
         // finally, add to this factory
         functionMap.put(id, function);
@@ -196,12 +207,14 @@ public class BaseFunctionFactory extends FunctionFactory
         String id = identity.toString();
 
         // make sure this doesn't already exist
-        if (functionMap.containsKey(id))
+        if (functionMap.containsKey(id)) {
             throw new IllegalArgumentException("function already exists");
+        }
 
         // add to the superset factory
-        if (superset != null)
+        if (superset != null) {
             superset.addAbstractFunction(proxy, identity);
+        }
 
         // finally, add to this factory
         functionMap.put(id, proxy);

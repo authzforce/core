@@ -36,18 +36,14 @@
 
 package com.sun.xacml.finder;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.StringAttribute;
-
-import com.sun.xacml.cond.EvaluationResult;
-
 import java.net.URI;
-
 import java.util.Set;
 
 import org.w3c.dom.Node;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**

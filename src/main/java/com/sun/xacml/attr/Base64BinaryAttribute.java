@@ -45,7 +45,7 @@ import java.net.URI;
 import java.util.Arrays;
 
 import org.w3c.dom.Node;
-
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
  * Representation of an xsi:base64Binary value. This class supports parsing

@@ -36,25 +36,23 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.BooleanAttribute;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -68,7 +66,7 @@ import java.util.Set;
  * @since 1.0
  * @author Seth Proctor
  */
-public class HigherOrderFunction implements Function
+public class HigherOrderFunction extends Function
 {
 
     /**

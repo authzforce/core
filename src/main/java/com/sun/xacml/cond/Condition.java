@@ -36,26 +36,33 @@
 
 package com.sun.xacml.cond;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ConditionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.MatchType;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-
 import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-
-import java.io.OutputStream;
-import java.io.PrintStream;
-
-import java.net.URI;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 
 /**
@@ -66,7 +73,7 @@ import org.w3c.dom.NodeList;
  * @since 2.0
  * @author Seth Proctor
  */
-public class Condition implements Evaluatable
+public class Condition extends ConditionType implements Evaluatable
 {
 
     // a local Boolean URI that is used as the return type
@@ -77,16 +84,22 @@ public class Condition implements Evaluatable
 
     // regardless of version, this is an expression that can be evaluated
     // directly
-    private Expression expression;
+    private ExpressionType expression;
 
     // the condition function, which is only used if this is a 1.x condition
-    private Function function;
+    private ExpressionType function;
 
     // flags whether this is XACML 1.x or >= 2.0
 //    private boolean isVersionOne;
     
     // flags of the XACML Version, cannot use a boolean anymore since 3.0 is out
     private String xacmlVersion;
+    
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(Condition.class);
 
     // initialize the boolean identifier
     static {
@@ -98,11 +111,25 @@ public class Condition implements Evaluatable
             booleanIdentifier = null;
         }
     }
+    
+    public static ConditionType getInstance(Node root) {
+    	JAXBElement<ConditionType> cond = null;
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Unmarshaller u = jc.createUnmarshaller();
+			cond = (JAXBElement<ConditionType>) u.unmarshal(root);
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+
+		return cond.getValue();
+    }
 
     /**
      * Constructs a <code>Condition</code> as used in XACML 1.x.
      * 
-     * @param function the <code>Function</code> to use in evaluating the
+     * @param expressionType the <code>Function</code> to use in evaluating the
      *                 elements in the Condition
      * @param xprs the contents of the Condition which will be the parameters
      *              to the function, each of which is an
@@ -113,19 +140,19 @@ public class Condition implements Evaluatable
      *                                  if the function is invalid for use
      *                                  in a Condition
      */
-    public Condition(Function function, List expressions)
+    public Condition(ExpressionType expressionType, List expressions)
         throws IllegalArgumentException
     {
     	xacmlVersion = XACMLAttributeId.XACML_VERSION_1_0.value();
 
         // check that the function is valid for a Condition
-        checkExpression(function);
+        checkExpression(expressionType);
 
         // turn the parameters into an Apply for simplicity
-        expression = new Apply(function, expressions);
+        expression = new Apply(expressionType, expressions);
 
         // keep track of the function and the children
-        this.function = function;
+        this.function = expressionType;
         children = ((Apply)expression).getChildren();
     }
     
@@ -137,7 +164,7 @@ public class Condition implements Evaluatable
      * @throws IllegalArgumentException if the expression is not boolean or
      *                                  returns a bag
      */
-    public Condition(Expression expression) throws IllegalArgumentException
+    public Condition(ExpressionType expression) throws IllegalArgumentException
     {
     	/*
     	 * FIXME: RF, check the real version, 2.0 or 3.0
@@ -163,15 +190,15 @@ public class Condition implements Evaluatable
      * Private helper for the constructors that checks if a given expression
      * is valid for the root of a Condition
      */
-    private void checkExpression(Expression xpr) {
+    private void checkExpression(ExpressionType xpr) {
         // make sure it's a boolean expression...
-        if (! xpr.getType().equals(booleanIdentifier))
+        if (! ((Expression)xpr).getType().equals(booleanIdentifier))
             throw new IllegalArgumentException("A Condition must return a " +
                                                "boolean...cannot create " +
-                                               "with " + xpr.getType());
+                                               "with " + ((Expression)xpr).getType());
 
         // ...and that it never returns a bag
-        if (xpr.returnsBag())
+        if (((Expression)xpr).returnsBag())
             throw new IllegalArgumentException("A Condition must not return " +
                                                "a Bag");
     }
@@ -197,7 +224,7 @@ public class Condition implements Evaluatable
                                            manager);
             return new Condition(cond.getFunction(), cond.getChildren());
         } else {
-            Expression xpr = null;
+            ExpressionType xpr = null;
             NodeList nodes = root.getChildNodes();
             
             for (int i = 0; i < nodes.getLength(); i++) {
@@ -218,7 +245,7 @@ public class Condition implements Evaluatable
      *
      * @return a <code>Function</code> or null
      */
-    public Function getFunction() {
+    public ExpressionType getFunction() {
         return function;
     }
 
@@ -307,31 +334,15 @@ public class Condition implements Evaluatable
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        String indent = indenter.makeString();
-
-        // This is XACML v1.0
-        if (xacmlVersion.equalsIgnoreCase(xacmlVersion = XACMLAttributeId.XACML_VERSION_1_0.value())) {
-            out.println(indent + "<Condition FunctionId=\"" + function.getIdentifier() + "\">");
-            indenter.in();
-
-            Iterator it = children.iterator();
-            while (it.hasNext()) {
-                Expression xpr = (Expression)(it.next());
-                xpr.encode(output, indenter);
-            }
-        }
-        // This is XACML v2.0 or v3.0
-        else if (xacmlVersion.equalsIgnoreCase(XACMLAttributeId.XACML_VERSION_2_0.value()) ||
-        		xacmlVersion.equalsIgnoreCase(XACMLAttributeId.XACML_VERSION_3_0.value())){
-            out.println(indent + "<Condition>");
-            indenter.in();
-            
-            expression.encode(output, indenter);
-        } 
-
-        indenter.out();
-        out.println(indent + "</Condition>");
+    	PrintStream out = new PrintStream(output);
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		}  
     }
 
 }

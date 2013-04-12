@@ -36,15 +36,16 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.BooleanAttribute;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -141,10 +142,10 @@ public class LogicalFunction extends FunctionBase
             if (result.indeterminate())
                 return result;
 
-            AttributeValue value = result.getAttributeValue();
+            AttributeValueType value = result.getAttributeValue();
             boolean argBooleanValue = ((BooleanAttribute)value).getValue();
 
-            switch (getFunctionId()) {
+            switch (Integer.parseInt(getFunctionId())) {
             case ID_OR:
                 if (argBooleanValue)
                     return EvaluationResult.getTrueInstance();
@@ -156,7 +157,7 @@ public class LogicalFunction extends FunctionBase
             }
         }
 
-        if (getFunctionId() == ID_OR)
+        if (Integer.parseInt(getFunctionId()) == ID_OR)
             return EvaluationResult.getFalseInstance();
         else
             return EvaluationResult.getTrueInstance();

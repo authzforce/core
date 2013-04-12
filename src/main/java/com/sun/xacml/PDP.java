@@ -55,7 +55,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 
-import com.sun.xacml.attr.AttributeValue;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
@@ -290,6 +290,7 @@ public class PDP {
 		List<AttributesType> subjects = new ArrayList<AttributesType>();
 		List<AttributesType> actions = new ArrayList<AttributesType>();
 		List<AttributesType> resources = new ArrayList<AttributesType>();
+		List<AttributesType> environments = new ArrayList<AttributesType>();
 		List<RequestType> requests = new ArrayList<RequestType>();
 		List<ResponseCtx> responses = new ArrayList<ResponseCtx>();
 
@@ -307,6 +308,9 @@ public class PDP {
 				} else if (myAttr.getCategory().equals(
 						XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
 					actions.add(myAttr);
+				} else if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value())) {
+					environments.add(myAttr);
 				}
 			}
 
@@ -327,6 +331,9 @@ public class PDP {
 						requests.add(tmpRequest);
 					}
 				}
+			}
+			for (RequestType requestList : requests) {
+				requestList.getAttributes().addAll(environments);
 			}
 			for (RequestType requestType : requests) {
 				responses.add(this.evaluate(requestType));

@@ -9,53 +9,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+
+import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
+import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.Evaluatable;
-import com.sun.xacml.cond.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 public class AttributeDesignator extends AttributeDesignatorType implements Evaluatable {
-
-	public static AttributeDesignator getInstance(AttributeAssignmentExpressionType attrAssignement) {
-		JAXBElement<AttributeDesignatorType> myAttrDes = (JAXBElement<AttributeDesignatorType>) attrAssignement
-				.getExpression();
-		int target = -1;
-		if(myAttrDes.getValue().getCategory().equals(XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value())) {
-			target = 0;
-		} else if(myAttrDes.getValue().getCategory().equals(XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value())) {
-			target = 1;
-		} else if(myAttrDes.getValue().getCategory().equals(XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
-			target = 2;
-		} else if(myAttrDes.getValue().getCategory().equals(XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value())) {
-			target = 3;
-		}
-		URI attrId = null;
-		URI datatype = null;
-		URI issuer = null;
-		URI category = null;
-		
-		if(myAttrDes.getValue().getDataType() != null) {
-			datatype = URI.create(myAttrDes.getValue().getDataType());
-		}
-		if(myAttrDes.getValue().getIssuer() != null) {
-			issuer = URI.create(myAttrDes.getValue().getIssuer());
-		}
-		if(myAttrDes.getValue().getAttributeId() != null) {
-			attrId = URI.create(myAttrDes.getValue().getAttributeId());
-		}
-		if(myAttrDes.getValue().getCategory() != null) {
-			category = URI.create(myAttrDes.getValue().getCategory());
-		}
-		return new AttributeDesignator(target, datatype, attrId, category, myAttrDes.getValue().isMustBePresent(), issuer);
-	}
 
 	/**
 	 * Tells designator to search in the subject section of the request
@@ -96,6 +67,64 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 	private static final Logger logger = Logger
 			.getLogger(AttributeDesignator.class.getName());
 
+	/**
+	 * Return an instance of an AttributeDesignator based on an AttributeDesignatorType
+	 * 
+	 * @param attrDesignator the AttributeDesignatorType we want to convert
+	 * 
+	 * @return the AttributeDesignator
+	 */
+	public static AttributeDesignatorType getInstance(AttributeDesignatorType attrDesignator) {
+		int target = -1;
+		URI attrId = null;
+		URI datatype = null;
+		URI issuer = null;
+		URI category = null;
+		
+		if(attrDesignator.getCategory().equals(XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value())) {
+			target = 0;
+		} else if(attrDesignator.getCategory().equals(XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value())) {
+			target = 1;
+		} else if(attrDesignator.getCategory().equals(XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
+			target = 2;
+		} else if(attrDesignator.getCategory().equals(XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value())) {
+			target = 3;
+		}
+		
+		if(attrDesignator.getDataType() != null) {
+			datatype = URI.create(attrDesignator.getDataType());
+		}
+		if(attrDesignator.getIssuer() != null) {
+			issuer = URI.create(attrDesignator.getIssuer());
+		}
+		if(attrDesignator.getAttributeId() != null) {
+			attrId = URI.create(attrDesignator.getAttributeId());
+		}
+		if(attrDesignator.getCategory() != null) {
+			category = URI.create(attrDesignator.getCategory());
+		}
+		return new AttributeDesignator(target, datatype, attrId, category, attrDesignator.isMustBePresent(), issuer);
+	}
+	
+	public static AttributeDesignatorType getInstance(Node root, String myCategory,
+			PolicyMetaData metadata) {
+		return getInstance(root);
+	}
+	
+	public static AttributeDesignatorType getInstance(Node root) {
+		JAXBElement<AttributeDesignatorType> match = null;
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Unmarshaller u = jc.createUnmarshaller();
+			match = (JAXBElement<AttributeDesignatorType>) u.unmarshal(root);
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+
+		return match.getValue();
+	}
+	
 	/**
 	 * Creates a new <code>AttributeDesignator</code> without the optional
 	 * issuer.
@@ -162,12 +191,11 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 	 */
 	public AttributeDesignator(int target, URI type, URI id, URI category,
 			boolean mustBePresent, URI issuer) throws IllegalArgumentException {
-
 		// check if input target is a valid value
 		if ((target != SUBJECT_TARGET) && (target != RESOURCE_TARGET)
 				&& (target != ACTION_TARGET) && (target != ENVIRONMENT_TARGET))
 			throw new IllegalArgumentException("Input target is not a valid"
-					+ "value");
+					+ "value");		
 		this.target = target;
 		this.dataType = type.toASCIIString();		
 		this.attributeId = id.toASCIIString();

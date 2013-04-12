@@ -36,16 +36,16 @@
 
 package com.sun.xacml.attr;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.UnknownIdentifierException;
-
 import java.net.URI;
-
 import java.util.HashMap;
 import java.util.Set;
 
 import org.w3c.dom.Node;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 
 /**

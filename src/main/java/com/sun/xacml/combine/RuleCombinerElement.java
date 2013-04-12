@@ -36,14 +36,23 @@
 
 package com.sun.xacml.combine;
 
+import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
+import com.sun.xacml.MatchResult;
 import com.sun.xacml.Rule;
+import com.sun.xacml.ctx.Result;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URI;
 
 import java.util.Iterator;
 import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 
 /**
@@ -117,5 +126,59 @@ public class RuleCombinerElement extends CombinerElement
 
         getRule().encode(output, indenter);
     }
+
+	@Override
+	public void equals(Object object, EqualsBuilder equalsBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void hashCode(HashCodeBuilder hashCodeBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List getChildren() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TargetType getTarget() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MatchResult match(EvaluationCtx context) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Result evaluate(EvaluationCtx context) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void encode(OutputStream output) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

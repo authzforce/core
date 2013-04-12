@@ -19,8 +19,8 @@ import org.w3c.dom.NodeList;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.TargetMatch;
 import com.sun.xacml.TargetSection;
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 /**
@@ -30,10 +30,9 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 public class AllOf extends AllOfType {
 
 	/**
-	 * List of SubjectMatch, ResourceMatch, ActionMatch, or EnvironmentMatch
+	 * the version of XACML used by the containing Match element
 	 */
-	List<TargetMatch> matches;
-	List<MatchType> matchType;
+    private int xacmlVersion;
 
 	/**
 	 * Constructor that creates a <code>AllOfSelection</code> from components.
@@ -41,14 +40,15 @@ public class AllOf extends AllOfType {
 	 * @param matches
 	 *            a <code>List</code> of <code>TargetMatch</code> elements
 	 */
-	public AllOf(List<?> matches) {
-		if (matches instanceof TargetMatch) {
-			this.matches = (List<TargetMatch>)matches;
+	public AllOf(List<MatchType> match, int version) {
+		if(match == null) {
+			this.match = new ArrayList<MatchType>();
 		} else {
-			this.matchType = (List<MatchType>)matches;
+			this.match = match;
 		}
+		this.xacmlVersion = version;
 	}
-	
+
 	private static MatchType unmarshallMatchType(Node root) {
 		JAXBElement<MatchType> match = null;
 		try {
@@ -77,52 +77,21 @@ public class AllOf extends AllOfType {
 	public static AllOf getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
 
-		List<Object> targetMatches = new ArrayList<Object>();
+		List<MatchType> matchType = new ArrayList<MatchType>();
 		NodeList children = root.getChildNodes();
 
-		if (metaData.getXACMLVersion() == Integer
-				.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
-
-			for (int i = 0; i < children.getLength(); i++) {
-				Node child = children.item(i);
-				if ("Match".equals(DOMHelper.getLocalName(child))) {
-					targetMatches.add(unmarshallMatchType(child));
-				}
-			}
-		} else {
-			for (int i = 0; i < children.getLength(); i++) {
-				Node child = children.item(i);
-				if ("Match".equals(DOMHelper.getLocalName(child))) {
-					NodeList myNodes = child.getChildNodes();
-					for (int j = 0; j < myNodes.getLength(); j++) {
-						if ("AttributeDesignator".equals(myNodes.item(j)
-								.getNodeName())) {
-							String myCategory = myNodes.item(j).getAttributes()
-									.getNamedItem("Category").getNodeValue();
-							if (XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT
-									.value().equals(myCategory)) {
-								targetMatches.add(TargetMatch.getInstance(
-										child, TargetMatch.SUBJECT, metaData));
-							} else if (XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE
-									.value().equals(myCategory)) {
-								targetMatches.add(TargetMatch.getInstance(
-										child, TargetMatch.RESOURCE, metaData));
-							} else if (XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION
-									.value().equals(myCategory)) {
-								targetMatches.add(TargetMatch.getInstance(
-										child, TargetMatch.ACTION, metaData));
-							}
-						}
-					}
-				}
+		for (int i = 0; i < children.getLength(); i++) {
+			Node child = children.item(i);
+			if ("Match".equals(DOMHelper.getLocalName(child))) {
+				matchType.add(Match.getInstance(child, metaData));
 			}
 		}
 
-		if (targetMatches.isEmpty()) {
+		if (matchType.isEmpty()) {
 			throw new ParsingException("AllOf must contain at least one Match");
 		}
 
-		return new AllOf(targetMatches);
+		return new AllOf(matchType, Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
 	}
 
 	public static List<TargetSection> getTargetSection(Node root,
@@ -135,31 +104,23 @@ public class AllOf extends AllOfType {
 			if ("Match".equals(DOMHelper.getLocalName(child))) {
 				NodeList myNodes = child.getChildNodes();
 				for (int j = 0; j < myNodes.getLength(); j++) {
+
 					if ("AttributeDesignator".equals(myNodes.item(j)
-							.getNodeName())
-							|| "AttributeSelector".equals(myNodes.item(j)
-									.getNodeName())) {
+							.getNodeName())) {
 						String myCategory = myNodes.item(j).getAttributes()
 								.getNamedItem("Category").getNodeValue();
-						try {
-							if (XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT
-									.value().equals(myCategory)) {
+						targetSection.add(TargetSection
+								.getInstance(AttributeDesignator.getInstance(
+										child, myCategory, metadata)));
+					} else if ("AttributeSelector".equals(myNodes.item(j)
+							.getNodeName())) {
 
-								targetSection.add(TargetSection.getInstance(
-										child, TargetMatch.SUBJECT, metadata));
-
-							} else if (XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE
-									.value().equals(myCategory)) {
-								targetSection.add(TargetSection.getInstance(
-										child, TargetMatch.RESOURCE, metadata));
-							} else if (XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION
-									.value().equals(myCategory)) {
-								targetSection.add(TargetSection.getInstance(
-										child, TargetMatch.ACTION, metadata));
-							}
-						} catch (ParsingException e) {
-							e.printStackTrace();
-						}
+					} else {
+						throw new ParsingException(
+								"Unknow Element: "
+										+ myNodes.item(j).getNodeName()
+										+ ". "
+										+ "Supported element of Match are AttribtueDesignator and AttributeSelector.");
 					}
 				}
 			}

@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+
 
 /**
  * Represents a bag used in the XACML spec as return values from functions

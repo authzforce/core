@@ -48,6 +48,7 @@ import java.util.TimeZone;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
  * Representation of an xs:time value. This class supports parsing

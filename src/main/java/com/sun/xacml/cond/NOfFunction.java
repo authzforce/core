@@ -40,6 +40,7 @@ import com.sun.xacml.EvaluationCtx;
 
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 import java.util.HashSet;
 import java.util.Iterator;

@@ -5,19 +5,22 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
-import com.sun.xacml.attr.AttributeValue;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+
 /**
  *
  * @author najmi
  */
-public abstract class AbstractFunction implements Function {
+public abstract class AbstractFunction extends Function {
 
     URI identifier;
     URI returnType;
@@ -86,7 +89,7 @@ public abstract class AbstractFunction implements Function {
      *         an <code>EvaluationResult</code> representing the error
      */
     protected EvaluationResult evalArgs(List<Evaluatable> params, EvaluationCtx context,
-                                        List<AttributeValue> paramValues) {
+                                        List<AttributeValueType> paramValues) {
         for (Evaluatable param : params) {
             EvaluationResult result = param.evaluate(context);
 

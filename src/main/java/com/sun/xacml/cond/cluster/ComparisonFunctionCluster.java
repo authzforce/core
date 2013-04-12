@@ -37,6 +37,7 @@
 package com.sun.xacml.cond.cluster;
 
 import com.sun.xacml.cond.ComparisonFunction;
+import com.sun.xacml.cond.MatchFunction;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -51,14 +52,24 @@ import java.util.Set;
  */
 public class ComparisonFunctionCluster implements FunctionCluster
 {
+	
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(ComparisonFunctionCluster.class);
 
-    public Set getSupportedFunctions() {
+    public Set<ComparisonFunction> getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = ComparisonFunction.getSupportedIdentifiers().iterator();
-
-        while (it.hasNext())
-            set.add(new ComparisonFunction((String)(it.next())));
-
+        
+        LOGGER.debug("Initialize Comparison function");
+        while (it.hasNext()) {
+			String funcId = (String) it.next();
+			LOGGER.debug(funcId);
+			set.add(new ComparisonFunction(funcId));
+		}
+        LOGGER.debug("End Initialize Comparison function");
         return set;
     }
 

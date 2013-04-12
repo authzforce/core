@@ -36,15 +36,15 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.DoubleAttribute;
-import com.sun.xacml.attr.IntegerAttribute;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.DoubleAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -151,7 +151,7 @@ public class MultiplyFunction extends FunctionBase
 
         // Now that we have real values, perform the multiply operation
         // in the manner appropriate for the type of the arguments.
-        switch (getFunctionId()) {
+        switch (Integer.parseInt(getFunctionId())) {
         case ID_INTEGER_MULTIPLY: {
             long arg0 = ((IntegerAttribute) argValues[0]).getValue();
             long arg1 = ((IntegerAttribute) argValues[1]).getValue();

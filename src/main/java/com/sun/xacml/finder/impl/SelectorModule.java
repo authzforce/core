@@ -36,29 +36,13 @@
 
 package com.sun.xacml.finder.impl;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.UnknownIdentifierException;
-
-import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.StringAttribute;
-
-import com.sun.xacml.cond.EvaluationResult;
-
-import com.sun.xacml.ctx.Status;
-
-import com.sun.xacml.finder.AttributeFinderModule;
-
 import java.net.URI;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -67,6 +51,16 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.AttributeFactory;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
+import com.sun.xacml.finder.AttributeFinderModule;
 
 
 /**

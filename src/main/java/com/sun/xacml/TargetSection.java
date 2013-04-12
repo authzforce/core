@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -266,5 +268,10 @@ public class TargetSection {
             out.println(indent + "</" + name + "s>");
         }
     }
+
+	public static TargetSection getInstance(AttributeDesignatorType instance) {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
 }

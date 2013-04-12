@@ -48,6 +48,8 @@ import java.util.regex.Matcher;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+
 
 /**
  * Representation of an xf:yearMonthDuration value. This class supports parsing

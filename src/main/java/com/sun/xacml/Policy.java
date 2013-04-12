@@ -36,18 +36,9 @@
 
 package com.sun.xacml;
 
-import com.sun.xacml.combine.CombinerParameter;
-import com.sun.xacml.combine.RuleCombinerElement;
-import com.sun.xacml.combine.RuleCombiningAlgorithm;
-
-import com.sun.xacml.cond.VariableDefinition;
-import com.sun.xacml.cond.VariableManager;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import java.net.URI;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,8 +47,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.combine.CombinerParameter;
+import com.sun.xacml.combine.RuleCombinerElement;
+import com.sun.xacml.combine.RuleCombiningAlgorithm;
+import com.sun.xacml.cond.VariableManager;
 
 
 /**
@@ -70,6 +71,12 @@ import org.w3c.dom.NodeList;
  */
 public class Policy extends AbstractPolicy
 {
+	
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(Policy.class);
 
     // the set of variable definitions in this policy
     private Set definitions;
@@ -82,7 +89,7 @@ public class Policy extends AbstractPolicy
      *                     rules in this set
      * @param target the <code>Target</code> for this policy
      */
-    public Policy(URI id, RuleCombiningAlgorithm combiningAlg, Target target) {
+    public Policy(URI id, RuleCombiningAlgorithm combiningAlg, TargetType target) {
         this(id, null, combiningAlg, null, target, null, null, null);
     }
 
@@ -100,7 +107,7 @@ public class Policy extends AbstractPolicy
      *                                  contains an object that is not a
      *                                  <code>Rule</code>
      */
-    public Policy(URI id, RuleCombiningAlgorithm combiningAlg, Target target,
+    public Policy(URI id, RuleCombiningAlgorithm combiningAlg, TargetType target,
                   List rules) {
         this(id, null, combiningAlg, null, target, null, rules, null);
     }
@@ -124,7 +131,7 @@ public class Policy extends AbstractPolicy
      *                                  <code>Rule</code>
      */
     public Policy(URI id, String version, RuleCombiningAlgorithm combiningAlg,
-                  String description, Target target, List rules) {
+                  String description, TargetType target, List rules) {
         this(id, version, combiningAlg, description, target, null, rules,
              null);
     }
@@ -149,7 +156,7 @@ public class Policy extends AbstractPolicy
      *                                  <code>Rule</code>
      */
     public Policy(URI id, String version, RuleCombiningAlgorithm combiningAlg,
-                  String description, Target target, String defaultVersion,
+                  String description, TargetType target, String defaultVersion,
                   List rules) {
         this(id, version, combiningAlg, description, target, defaultVersion,
              rules, null);
@@ -176,7 +183,7 @@ public class Policy extends AbstractPolicy
      *                                  <code>Rule</code>
      */
     public Policy(URI id, String version, RuleCombiningAlgorithm combiningAlg,
-                  String description, Target target, String defaultVersion,
+                  String description, TargetType target, String defaultVersion,
                   List rules, Set obligations) {
         this(id, version, combiningAlg, description, target, defaultVersion,
              rules, obligations, null);
@@ -207,7 +214,7 @@ public class Policy extends AbstractPolicy
      *                                  <code>Rule</code>
      */
     public Policy(URI id, String version, RuleCombiningAlgorithm combiningAlg,
-                  String description, Target target, String defaultVersion,
+                  String description, TargetType target, String defaultVersion,
                   List rules, Set obligations, Set definitions) {
         super(id, version, combiningAlg, description, target, defaultVersion,
               obligations, null);
@@ -229,11 +236,12 @@ public class Policy extends AbstractPolicy
         setChildren(list);
 
         // save the definitions
-        if (definitions == null)
+        if (definitions == null) {
             this.definitions = Collections.EMPTY_SET;
-        else
+        } else {
             this.definitions = Collections.
                 unmodifiableSet(new HashSet(definitions));
+        }
     }
 
     /**
@@ -270,7 +278,7 @@ public class Policy extends AbstractPolicy
      *                                  <code>RuleCombinerElement</code>
      */
     public Policy(URI id, String version, RuleCombiningAlgorithm combiningAlg,
-                  String description, Target target, String defaultVersion,
+                  String description, TargetType target, String defaultVersion,
                   List ruleElements, Set obligations, Set definitions,
                   List parameters) {
         super(id, version, combiningAlg, description, target, defaultVersion,
@@ -289,11 +297,12 @@ public class Policy extends AbstractPolicy
         setChildren(ruleElements);
 
         // save the definitions
-        if (definitions == null)
+        if (definitions == null) {
             this.definitions = Collections.EMPTY_SET;
-        else
+        } else {
             this.definitions = Collections.
                 unmodifiableSet(new HashSet(definitions));
+        }
     }
 
     /**
@@ -375,23 +384,25 @@ public class Policy extends AbstractPolicy
 
         // now make sure that we can match up any parameters we may have
         // found to a cooresponding Rule...
-        List elements = new ArrayList();
-        Iterator it = rules.iterator();
-
-        while (it.hasNext()) {
-            Rule rule = (Rule)(it.next());
-            String id = rule.getId().toString();
-            List list = (List)(parameters.remove(id));
-
-            elements.add(new RuleCombinerElement(rule, list));
-        }
+//        List elements = new ArrayList();
+//        Iterator it = rules.iterator();
+//
+//        while (it.hasNext()) {
+//            Rule rule = (Rule)(it.next());
+//            String id = rule.getId().toString();
+//            List list = (List)(parameters.remove(id));
+//
+//            elements.add(new RuleCombinerElement(rule, list));
+//        }
 
         // ...and that there aren't extra parameters
-        if (! parameters.isEmpty())
-            throw new ParsingException("Unmatched parameters in Rule");
+//        if (! parameters.isEmpty()) {
+//            throw new ParsingException("Unmatched parameters in Rule");
+//        }
 
         // finally, set the list of Rules
-        setChildren(elements);
+//        setChildren(elements);
+        setChildren(rules);
     }
 
     /**
@@ -457,37 +468,15 @@ public class Policy extends AbstractPolicy
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        String indent = indenter.makeString();
-
-        out.println(indent + "<Policy PolicyId=\"" + getId().toString() +
-                    "\" RuleCombiningAlgId=\"" +
-                    getCombiningAlg().getIdentifier().toString() +
-                    "\">");
-        
-        indenter.in();
-        String nextIndent = indenter.makeString();
-
-        String description = getDescription();
-        if (description != null)
-            out.println(nextIndent + "<Description>" + description +
-                        "</Description>");
-
-        String version = getDefaultVersion();
-        if (version != null)
-            out.println("<PolicyDefaults><XPathVersion>" + version +
-                        "</XPathVersion></PolicyDefaults>");
-
-        getTarget().encode(output, indenter);
-
-        Iterator it = definitions.iterator();
-        while (it.hasNext())
-            ((VariableDefinition)(it.next())).encode(output, indenter);
-        
-        encodeCommonElements(output, indenter);
-
-        indenter.out();
-        out.println(indent + "</Policy>");
+    	PrintStream out = new PrintStream(output);
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		}  
     }
 
 }

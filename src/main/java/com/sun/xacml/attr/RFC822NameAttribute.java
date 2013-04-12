@@ -40,6 +40,8 @@ import java.net.URI;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+
 
 /**
  * Representation of an rfc822Name (ie, an email address).

@@ -36,18 +36,22 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.ProcessingException;
-
 import java.net.URI;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.ProcessingException;
+import com.sun.xacml.attr.xacmlv3.Expression;
 
 /**
  * This class is used by the parsing routines to handle the relationships
@@ -66,7 +70,7 @@ import org.w3c.dom.NodeList;
  * @since 2.0
  * @author Seth Proctor
  */
-public class VariableManager
+public class VariableManager extends ExpressionType
 {
     
     // the map from identifiers to internal data
@@ -199,13 +203,13 @@ public class VariableManager
         if (xprNode.getNodeName().equals("Apply")) {
             try {
                 // get the function in the Apply...
-                Function function = ExpressionHandler.
+                ExpressionType function = ExpressionHandler.
                     getFunction(xprNode, metaData,
                                 FunctionFactory.getGeneralInstance());
                 
                 // ...and store the type information in the variable state
-                state.type = function.getReturnType();
-                state.returnsBag = function.returnsBag();
+                state.type = ((Expression)function).getType();
+                state.returnsBag = ((Expression)function).returnsBag();
             } catch (ParsingException pe) {
                 // we can just ignore this...if there really is an error,
                 // then it will come up during parsing in a code path that
@@ -335,5 +339,17 @@ public class VariableManager
             this.handled = handled;
         }
     }
+
+	@Override
+	public void equals(Object object, EqualsBuilder equalsBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void hashCode(HashCodeBuilder hashCodeBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

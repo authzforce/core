@@ -40,6 +40,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.w3c.dom.Node;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 
 /**

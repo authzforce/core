@@ -38,7 +38,7 @@ package com.sun.xacml.finder;
 
 import com.sun.xacml.EvaluationCtx;
 
-import com.sun.xacml.attr.AttributeValue;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 
 /**

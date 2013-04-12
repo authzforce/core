@@ -37,6 +37,7 @@
 package com.sun.xacml.attr;
 
 import java.net.URI;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 import org.w3c.dom.Node;
 

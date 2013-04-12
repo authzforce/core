@@ -45,14 +45,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -61,7 +64,7 @@ import com.sun.xacml.attr.BagAttribute;
  * @since 1.0
  * @author Seth Proctor
  */
-class MapFunction implements Function
+class MapFunction extends Function
 {
 
     /**
@@ -238,7 +241,7 @@ class MapFunction implements Function
         // is ultimately returned
 
         Iterator<?> it = bag.iterator();
-        List<AttributeValue> outputs = new ArrayList<AttributeValue>();
+        List<AttributeValueType> outputs = new ArrayList<AttributeValueType>();
 
         while (it.hasNext()) {
             List params = new ArrayList();

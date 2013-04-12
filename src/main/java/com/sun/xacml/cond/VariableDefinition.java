@@ -43,6 +43,10 @@ import com.sun.xacml.PolicyMetaData;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -57,7 +61,7 @@ import org.w3c.dom.NodeList;
  * @since 2.0
  * @author Seth Proctor
  */
-public class VariableDefinition
+public class VariableDefinition extends ExpressionType
 {
 
     // the identitifer for this definition
@@ -73,9 +77,9 @@ public class VariableDefinition
      * @param variableId the identifier for this definition
      * @param expression the expression defined here
      */
-    public VariableDefinition(String variableId, Expression expression) {
+    public VariableDefinition(String variableId, ExpressionType expression) {
         this.variableId = variableId;
-        this.expression = expression;
+        this.expression = (Expression)expression;
     }
 
     /**
@@ -106,7 +110,7 @@ public class VariableDefinition
             xprNode = nodes.item(i++);
 
         // use that node to get the expression
-        Expression xpr = ExpressionHandler.
+        ExpressionType xpr = ExpressionHandler.
             parseExpression(xprNode, metaData, manager);
 
         return new VariableDefinition(variableId, xpr);
@@ -160,5 +164,17 @@ public class VariableDefinition
         out.println("</VariableDefinition>");
         indenter.out();
     }
+
+	@Override
+	public void equals(Object object, EqualsBuilder equalsBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void hashCode(HashCodeBuilder hashCodeBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

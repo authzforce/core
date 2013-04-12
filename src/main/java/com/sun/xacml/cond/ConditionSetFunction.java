@@ -36,18 +36,18 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.BooleanAttribute;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -214,7 +214,7 @@ public class ConditionSetFunction extends SetFunction
 
         AttributeValue result = null;
         
-        switch(getFunctionId()) {
+        switch(Integer.parseInt(getFunctionId())) {
             // *-at-least-one-member-of takes two bags of the same type and
             // returns a boolean
         case ID_BASE_AT_LEAST_ONE_MEMBER_OF:

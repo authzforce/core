@@ -36,11 +36,12 @@
 
 package com.sun.xacml.attr;
 
-import com.sun.xacml.ParsingException;
-
 import java.net.URI;
 
 import org.w3c.dom.Node;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 
 /**
@@ -95,7 +96,7 @@ public class BooleanAttribute extends AttributeValue
      */
     private BooleanAttribute(boolean value) {
         super(identifierURI);
-
+//        this.dataType = identifierURI.toASCIIString();
         this.value = value;
     }
 

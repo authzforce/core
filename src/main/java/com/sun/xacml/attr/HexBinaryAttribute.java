@@ -44,6 +44,7 @@ import java.util.Arrays;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
  * Representation of an xsi:hexBinary value. This class supports parsing

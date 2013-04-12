@@ -126,7 +126,7 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
                 // if the Rule's effect is DENY, then we can't let this
                 // alg return PERMIT, since this Rule might have denied
                 // if it could do its stuff
-                if (rule.getEffect() == Result.DECISION_DENY)
+                if (rule.getEffect().ordinal() == Result.DECISION_DENY)
                     potentialDeny = true;
             } else {
                 // keep track of whether we had at least one rule that

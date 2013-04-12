@@ -36,23 +36,30 @@
 
 package com.sun.xacml.cond;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-
-import java.io.OutputStream;
-import java.io.PrintStream;
-
-import java.net.URI;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.xacmlv3.Expression;
 
 
 /**
@@ -73,14 +80,20 @@ import org.w3c.dom.NodeList;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Apply implements Evaluatable
+public class Apply extends ApplyType
 {
 
     // the function used to evaluate the contents of the apply
-    private Function function;
+    private ExpressionType function;
 
     // the paramaters to the function...ie, the contents of the apply
     private List xprs;
+    
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(Apply.class);
 
     /**
      * Constructs an <code>Apply</code> instance.
@@ -94,14 +107,14 @@ public class Apply implements Evaluatable
      * @throws IllegalArgumentException if the input expressions don't
      *                                  match the signature of the function
      */
-    public Apply(Function function, List xprs)
+    public Apply(ExpressionType function, List xprs)
         throws IllegalArgumentException
     {
         // check that the given inputs work for the function
-        function.checkInputs(xprs);
+//        ((Expression)function).checkInputs(xprs);
 
         // if everything checks out, then store the inputs
-        this.function = function;
+        this.function = (ExpressionType)function;
         this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
     }
 
@@ -125,8 +138,7 @@ public class Apply implements Evaluatable
      *                                  match the signature of the function or
      *                                  if <code>isCondition</code> is true
      */
-    public Apply(Function function, List xprs, boolean isCondition)
-        throws IllegalArgumentException
+    public Apply(Expression function, List xprs, boolean isCondition) throws IllegalArgumentException
     {
         // make sure that no is using this constructor to create a Condition
         if (isCondition) {
@@ -266,13 +278,12 @@ public class Apply implements Evaluatable
                                      VariableManager manager)
         throws ParsingException
     {
-        Function function = ExpressionHandler.getFunction(root, metaData, factory);
+        ExpressionType function = ExpressionHandler.getFunction(root, metaData, factory);
         List xprs = new ArrayList();
 
         NodeList nodes = root.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
-            Expression xpr = ExpressionHandler.
-                parseExpression(nodes.item(i), metaData, manager);
+            ExpressionType xpr = ExpressionHandler.parseExpression(nodes.item(i), metaData, manager);
 
             if (xpr != null) {
                 xprs.add(xpr);
@@ -287,7 +298,7 @@ public class Apply implements Evaluatable
      *
      * @return the <code>Function</code>
      */
-    public Function getFunction() {
+    public ExpressionType getFunction() {
         return function;
     }
 
@@ -325,13 +336,8 @@ public class Apply implements Evaluatable
      * @return the result of trying to evaluate this apply object
      */
     public EvaluationResult evaluate(EvaluationCtx context) {
-        // Note that prior to the 2.0 codebase, this method was much more
-        // complex, pre-evaluating the higher-order functions. Because this
-        // was never really the right behavior (there's no reason that a
-        // function can only be at the start of an Apply), we no longer make
-        // assumptions at this point, so the higher order functions are
-        // left to evaluate their own parameters.
-        return function.evaluate(xprs, context);
+        return null;
+//        return function.evaluate(xprs, context);
     }
 
     /**
@@ -343,7 +349,8 @@ public class Apply implements Evaluatable
      * @return the type returned by <code>evaluate</code>
      */
     public URI getType() {
-        return function.getReturnType();
+//        return function.getType();
+    	return null;
     }
 
     /**
@@ -353,7 +360,8 @@ public class Apply implements Evaluatable
      * @return true if evaluation will return a bag of values, false otherwise
      */
     public boolean returnsBag() {
-        return function.returnsBag();
+//        return function.returnsBag();
+    	return false;
     }
 
     /**
@@ -367,7 +375,7 @@ public class Apply implements Evaluatable
      * @return true if evaluation will return a bag of values, false otherwise
      */
     public boolean evaluatesToBag() {
-        return function.returnsBag();
+        return false;
     }
 
     /**
@@ -390,21 +398,15 @@ public class Apply implements Evaluatable
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        String indent = indenter.makeString();
-
-        out.println(indent + "<Apply FunctionId=\"" +
-                    function.getIdentifier() + "\">");
-        indenter.in();
-
-        Iterator it = xprs.iterator();
-        while (it.hasNext()) {
-            Expression xpr = (Expression)(it.next());
-            xpr.encode(output, indenter);
-        }
-
-        indenter.out();
-        out.println(indent + "</Apply>");
+    	PrintStream out = new PrintStream(output);
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		}  
     }
 
 }

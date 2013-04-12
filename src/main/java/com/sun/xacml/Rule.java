@@ -44,7 +44,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ConditionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -53,8 +60,8 @@ import org.w3c.dom.NodeList;
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.cond.Apply;
 import com.sun.xacml.cond.Condition;
-import com.sun.xacml.cond.EvaluationResult;
 import com.sun.xacml.cond.VariableManager;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
 
@@ -66,19 +73,25 @@ import com.sun.xacml.ctx.Status;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Rule implements PolicyTreeElement {
+public class Rule extends RuleType {
 
 	// the attributes associated with this Rule
 	private URI idAttr;
-	private int effectAttr;
+	private EffectType effectAttr;
 
 	// the elements in the rule, each of which is optional
 	private String description = null;
-	private Target target = null;
-	private Condition condition = null;
+	private TargetType target = null;
+	private ConditionType condition = null;
 
 	private static final org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger
 			.getLogger(Rule.class);
+	
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(Condition.class);
 
 	/**
 	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
@@ -96,8 +109,8 @@ public class Rule implements PolicyTreeElement {
 	 * @param condition
 	 *            the rule's condition, or null if there is none
 	 */
-	public Rule(URI id, int effect, String description, Target target,
-			Condition condition) {
+	public Rule(URI id, EffectType effect, String description, TargetType target,
+			ConditionType condition) {
 		idAttr = id;
 		effectAttr = effect;
 		this.description = description;
@@ -124,14 +137,13 @@ public class Rule implements PolicyTreeElement {
 	 * @param condition
 	 *            the rule's condition, or null if there is none
 	 */
-	public Rule(URI id, int effect, String description, Target target,
+	public Rule(URI id, EffectType effect, String description, TargetType target,
 			Apply condition) {
 		idAttr = id;
 		effectAttr = effect;
 		this.description = description;
 		this.target = target;
-		this.condition = new Condition(condition.getFunction(),
-				condition.getChildren());
+		this.condition = new Condition(condition.getFunction(), condition.getChildren());
 	}
 
 	/**
@@ -179,10 +191,10 @@ public class Rule implements PolicyTreeElement {
 			VariableManager manager) throws ParsingException {
 		URI id = null;
 		String name = null;
-		int effect = 0;
+		EffectType effect = null;
 		String description = null;
-		Target target = null;
-		Condition condition = null;
+		TargetType target = null;
+		ConditionType condition = null;
 
 		// first, get the attributes
 		NamedNodeMap attrs = root.getAttributes();
@@ -197,9 +209,9 @@ public class Rule implements PolicyTreeElement {
 
 		String str = attrs.getNamedItem("Effect").getNodeValue();
 		if (str.equals("Permit")) {
-			effect = Result.DECISION_PERMIT;
+			effect = EffectType.PERMIT;
 		} else if (str.equals("Deny")) {
-			effect = Result.DECISION_DENY;
+			effect = EffectType.DENY;
 		} else {
 			throw new ParsingException("Invalid Effect: " + effect);
 		}
@@ -215,7 +227,8 @@ public class Rule implements PolicyTreeElement {
 			} else if (cname.equals("Target")) {
 				target = Target.getInstance(child, metaData);
 			} else if (cname.equals("Condition")) {
-				condition = Condition.getInstance(child, metaData, manager);
+//				condition = Condition.getInstance(child, metaData, manager);
+				condition = Condition.getInstance(child);
 			}
 		}
 
@@ -228,8 +241,8 @@ public class Rule implements PolicyTreeElement {
 	 * 
 	 * @return a decision effect, as defined in <code>Result</code>
 	 */
-	public int getEffect() {
-		return effectAttr;
+	public EffectType getEffect() {
+		return effect;
 	}
 
 	/**
@@ -257,8 +270,8 @@ public class Rule implements PolicyTreeElement {
 	 * 
 	 * @return the rule's target
 	 */
-	public Target getTarget() {
-		return target;
+	public TargetType getTarget() {
+		return this.target;
 	}
 
 	/**
@@ -277,7 +290,7 @@ public class Rule implements PolicyTreeElement {
 	 * 
 	 * @return the rule's condition
 	 */
-	public Condition getCondition() {
+	public ConditionType getCondition() {
 		return condition;
 	}
 
@@ -303,7 +316,7 @@ public class Rule implements PolicyTreeElement {
 			return new MatchResult(MatchResult.INDETERMINATE, status);
 		}
 
-		return target.match(context);
+		return ((Target)target).match(context);
 	}
 
 	/**
@@ -329,7 +342,7 @@ public class Rule implements PolicyTreeElement {
 		// parent policy, so we skip the matching step assuming we wouldn't
 		// be here unless the parent matched
 		if (target != null) {
-			MatchResult match = target.match(context);
+			MatchResult match = ((Target)target).match(context);
 			int result = match.getResult();
 
 			// if the target didn't match, then this Rule doesn't apply
@@ -353,11 +366,11 @@ public class Rule implements PolicyTreeElement {
 		if (condition == null) {
 			log4jLogger.debug("Rule doesn't contain condition, so result is: "
 					+ effectAttr);
-			return new Result(effectAttr, null, context.getResourceId()
+			return new Result(effectAttr.ordinal(), null, context.getResourceId()
 					.encode(), null, includeInResult);
 		}
 		// ...otherwise we evaluate the condition
-		EvaluationResult result = condition.evaluate(context);
+		EvaluationResult result = ((Condition)condition).evaluate(context);
 
 		if (result.indeterminate()) {
 			// if it was INDETERMINATE, then that's what we return
@@ -366,11 +379,10 @@ public class Rule implements PolicyTreeElement {
 					includeInResult);
 		} else {
 			// otherwise we return the effect on tue, and NA on false
-			BooleanAttribute bool = (BooleanAttribute) (result
-					.getAttributeValue());
+			BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
 
 			if (bool.getValue()) {
-				return new Result(effectAttr, null, context.getResourceId()
+				return new Result(effectAttr.ordinal(), null, context.getResourceId()
 						.encode(), null, includeInResult);
 			} else {
 				return new Result(Result.DECISION_NOT_APPLICABLE, null, context
@@ -401,35 +413,14 @@ public class Rule implements PolicyTreeElement {
 	 */
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
-		String indent = indenter.makeString();
-
-		out.print(indent + "<Rule RuleId=\"" + idAttr.toString()
-				+ "\" Effect=\"" + Result.DECISIONS[effectAttr] + "\"");
-
-		if ((description != null) || (target != null) || (condition != null)) {
-			// there is some content in the Rule
-			out.println(">");
-
-			indenter.in();
-			String nextIndent = indenter.makeString();
-
-			if (description != null) {
-				out.println(nextIndent + "<Description>" + description
-						+ "</Description>");
-			}
-			if (target != null) {
-				target.encode(output, indenter);
-			}
-			if (condition != null) {
-				condition.encode(output, indenter);
-			}
-
-			indenter.out();
-			out.println(indent + "</Rule>");
-		} else {
-			// the Rule is empty, so close the tag and we're done
-			out.println("/>");
-		}
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		} 
 	}
 
 }

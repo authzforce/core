@@ -36,21 +36,25 @@
 
 package com.sun.xacml.cond;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.w3c.dom.Node;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.ProcessingException;
-
-import java.io.OutputStream;
-import java.io.PrintStream;
-
-import java.net.URI;
-
-import java.util.Collections;
-import java.util.List;
-
-import org.w3c.dom.Node;
+import com.sun.xacml.attr.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -63,7 +67,7 @@ import org.w3c.dom.Node;
  * @since 2.0
  * @author Seth Proctor
  */
-public class VariableReference implements Expression
+public class VariableReference extends Expression
 {
 
     // the identifier used to resolve the reference
@@ -182,7 +186,7 @@ public class VariableReference implements Expression
      * @return the result of evaluation
      */
     public EvaluationResult evaluate(EvaluationCtx context) {
-        Expression xpr = getReferencedDefinition().getExpression();
+        Expression xpr = (Expression)getReferencedDefinition().getExpression();
 
         // Note that it's technically possible for this expression to
         // be something like a Function, which isn't Evaluatable. It
@@ -190,7 +194,7 @@ public class VariableReference implements Expression
         // it makes no sense, however, it's unlcear exactly what the
         // error should be, so raising the ClassCastException here seems
         // as good an approach as any for now...
-        return ((Evaluatable)xpr).evaluate(context);
+        return ((Expression)xpr).evaluate(context);
     }
 
     /**
@@ -285,5 +289,32 @@ public class VariableReference implements Expression
         out.println(indent + "<VariableReference VariableId=\"" +
                     variableId + "\"/>");
     }
+
+	@Override
+	public void equals(Object object, EqualsBuilder equalsBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void hashCode(HashCodeBuilder hashCodeBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void checkInputs(List xprs) {
+		for (Object object : xprs) {
+			if(!(object instanceof ExpressionType)) {
+				throw new IllegalArgumentException("illegal parameter");	
+			}
+		}		
+	}
+
+	@Override
+	public EvaluationResult evaluate(List xprs, EvaluationCtx context) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

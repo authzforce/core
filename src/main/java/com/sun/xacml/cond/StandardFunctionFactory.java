@@ -36,8 +36,14 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.UnknownIdentifierException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.cluster.AbsFunctionCluster;
 import com.sun.xacml.cond.cluster.AddFunctionCluster;
 import com.sun.xacml.cond.cluster.ComparisonFunctionCluster;
@@ -61,16 +67,6 @@ import com.sun.xacml.cond.cluster.RoundFunctionCluster;
 import com.sun.xacml.cond.cluster.StringFunctionCluster;
 import com.sun.xacml.cond.cluster.StringNormalizeFunctionCluster;
 import com.sun.xacml.cond.cluster.SubtractFunctionCluster;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import java.util.logging.Logger;
 
 
 /**
@@ -101,7 +97,7 @@ public class StandardFunctionFactory extends BaseFunctionFactory
     private static StandardFunctionFactory generalFactory = null;
 
     // the three function sets/maps that we use internally
-    private static Set targetFunctions = null;
+    private static Set<Function> targetFunctions = null;
     private static Set conditionFunctions = null;
     private static Set generalFunctions = null;
 
@@ -118,9 +114,11 @@ public class StandardFunctionFactory extends BaseFunctionFactory
     private Set supportedFunctions = null;
     private Map supportedAbstractFunctions = null;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(StandardFunctionFactory.class.getName());
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(StandardFunctionFactory.class);
 
     /**
      * Creates a new StandardFunctionFactory, making sure that the default
@@ -141,29 +139,27 @@ public class StandardFunctionFactory extends BaseFunctionFactory
      * called once.
      */
     private static void initTargetFunctions() {
-        logger.config("Initializing standard Target functions");
+        LOGGER.info("Initializing standard Target functions");
 
         targetFunctions = new HashSet();
 
         // add EqualFunction
-        targetFunctions.addAll((new EqualFunctionCluster()).
-                               getSupportedFunctions());
+        targetFunctions.addAll((new EqualFunctionCluster()).getSupportedFunctions());
         // add LogicalFunction
-        targetFunctions.addAll((new LogicalFunctionCluster()).
-                               getSupportedFunctions());
+        targetFunctions.addAll((new LogicalFunctionCluster()).getSupportedFunctions());
         // add NOfFunction
-        targetFunctions.addAll((new NOfFunctionCluster()).
-                               getSupportedFunctions());
+        targetFunctions.addAll((new NOfFunctionCluster()).getSupportedFunctions());
         // add NotFunction
-        targetFunctions.addAll((new NotFunctionCluster()).
-                               getSupportedFunctions());
+        targetFunctions.addAll((new NotFunctionCluster()).getSupportedFunctions());
         // add ComparisonFunction
-        targetFunctions.addAll((new ComparisonFunctionCluster()).
-                               getSupportedFunctions());
+        targetFunctions.addAll((new ComparisonFunctionCluster()).getSupportedFunctions());
         // add MatchFunction
-        targetFunctions.addAll((new MatchFunctionCluster()).
-                               getSupportedFunctions());
+        targetFunctions.addAll((new MatchFunctionCluster()).getSupportedFunctions());
 
+        LOGGER.debug("Functions added to the target");
+        for (Function key : (Set<Function>)targetFunctions) {
+        	LOGGER.debug(key.getIdentifier());
+		}
         targetAbstractFunctions = new HashMap();
     }
 
@@ -172,7 +168,7 @@ public class StandardFunctionFactory extends BaseFunctionFactory
      * called once.
      */
     private static void initConditionFunctions() {
-        logger.config("Initializing standard Condition functions");
+        LOGGER.info("Initializing standard Condition functions");
 
         if (targetFunctions == null)
             initTargetFunctions();
@@ -199,7 +195,7 @@ public class StandardFunctionFactory extends BaseFunctionFactory
      * called once.
      */
     private static void initGeneralFunctions() {
-        logger.config("Initializing standard General functions");
+        LOGGER.info("Initializing standard General functions");
 
         if (conditionFunctions == null)
             initConditionFunctions();

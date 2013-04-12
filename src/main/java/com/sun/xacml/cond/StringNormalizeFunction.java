@@ -36,14 +36,14 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.StringAttribute;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -137,7 +137,7 @@ public class StringNormalizeFunction extends FunctionBase
 
         // Now that we have real values, perform the numeric conversion
         // operation in the manner appropriate for this function.
-        switch (getFunctionId()) {
+        switch (Integer.parseInt(getFunctionId())) {
         case ID_STRING_NORMALIZE_SPACE: {
             String str = ((StringAttribute) argValues[0]).getValue();
 

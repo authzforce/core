@@ -36,11 +36,11 @@
 
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.NOfFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import com.sun.xacml.cond.NOfFunction;
 
 
 /**
@@ -52,12 +52,23 @@ import java.util.Set;
 public class NOfFunctionCluster implements FunctionCluster
 {
 
-    public Set getSupportedFunctions() {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(NOfFunctionCluster.class);
+	
+    public Set<NOfFunction> getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = NOfFunction.getSupportedIdentifiers().iterator();
 
-        while (it.hasNext())
-            set.add(new NOfFunction((String)(it.next())));
+        LOGGER.debug("Initialize NofFunction function");
+        while (it.hasNext()) {
+			String funcId = (String) it.next();
+			LOGGER.debug(funcId);
+			set.add(new NOfFunction(funcId));
+		}
+        LOGGER.debug("Initialize NofFunction function");
 
         return set;
     }

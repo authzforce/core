@@ -44,6 +44,9 @@ import java.net.URI;
 
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
 
 /**
  * This represents a single node in a policy tree. A node is either a policy
@@ -54,7 +57,7 @@ import java.util.List;
  * @since 1.1
  * @author seth proctor
  */
-public interface PolicyTreeElement
+public abstract class PolicyTreeElement extends PolicyType
 {
 
     /**
@@ -66,7 +69,7 @@ public interface PolicyTreeElement
      *
      * @return the non-null <code>List</code> of children of this node
      */
-    public List getChildren();
+    public abstract List getChildren();
 
     /**
      * Returns the given description of this element or null if 
@@ -74,14 +77,14 @@ public interface PolicyTreeElement
      *
      * @return the description or null
      */
-    public String getDescription();
+    public abstract String getDescription();
 
     /**
      * Returns the id of this element
      *
      * @return the element's identifier
      */
-    public URI getId();
+    public abstract URI getId();
 
     /**
      * Returns the target for this element or null if there
@@ -89,7 +92,7 @@ public interface PolicyTreeElement
      *
      * @return the element's target
      */
-    public Target getTarget();
+    public abstract TargetType getTarget();
 
     /**
      * Given the input context sees whether or not the request matches this
@@ -100,7 +103,7 @@ public interface PolicyTreeElement
      *
      * @return the result of trying to match this element and the request
      */
-    public MatchResult match(EvaluationCtx context);
+    public abstract MatchResult match(EvaluationCtx context);
 
     /**
      * Evaluates this element in the policy tree, and therefore all elements
@@ -111,7 +114,7 @@ public interface PolicyTreeElement
      *
      * @return the result of the evaluation
      */
-    public Result evaluate(EvaluationCtx context);
+    public abstract Result evaluate(EvaluationCtx context);
 
     /**
      * Encodes this element into its XML representation and writes
@@ -120,7 +123,7 @@ public interface PolicyTreeElement
      *
      * @param output a stream into which the XML-encoded data is written
      */
-    public void encode(OutputStream output);
+    public abstract void encode(OutputStream output);
 
     /**
      * Encodes this element into its XML representation and writes
@@ -130,6 +133,6 @@ public interface PolicyTreeElement
      * @param output a stream into which the XML-encoded data is written
      * @param indenter an object that creates indentation strings
      */
-    public void encode(OutputStream output, Indenter indenter);
+    public abstract void encode(OutputStream output, Indenter indenter);
 
 }

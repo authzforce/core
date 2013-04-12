@@ -52,9 +52,10 @@ import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -76,7 +77,7 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
  * @author Seth Proctor
  * @author Marco Barreno
  */
-public abstract class AbstractPolicy implements PolicyTreeElement {
+public abstract class AbstractPolicy extends PolicyTreeElement {
 
 	// atributes associated with this policy
 	private URI idAttr;
@@ -85,7 +86,7 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 
 	// the elements in the policy
 	private String description;
-	private Target target;
+	private TargetType target;
 
 	// the value in defaults, or null if there was no default value
 	private String defaultVersion;
@@ -136,7 +137,8 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 	 *            the policy's target
 	 */
 	protected AbstractPolicy(URI id, String version,
-			CombiningAlgorithm combiningAlg, String description, Target target) {
+			CombiningAlgorithm combiningAlg, String description,
+			TargetType target) {
 		this(id, version, combiningAlg, description, target, null);
 	}
 
@@ -158,8 +160,8 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 	 *            the XPath version to use for selectors
 	 */
 	protected AbstractPolicy(URI id, String version,
-			CombiningAlgorithm combiningAlg, String description, Target target,
-			String defaultVersion) {
+			CombiningAlgorithm combiningAlg, String description,
+			TargetType target, String defaultVersion) {
 		this(id, version, combiningAlg, description, target, defaultVersion,
 				null, null);
 	}
@@ -184,8 +186,9 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 	 *            the policy's obligations
 	 */
 	protected AbstractPolicy(URI id, String version,
-			CombiningAlgorithm combiningAlg, String description, Target target,
-			String defaultVersion, Set obligations, List parameters) {
+			CombiningAlgorithm combiningAlg, String description,
+			TargetType target, String defaultVersion, Set obligations,
+			List parameters) {
 		idAttr = id;
 		this.combiningAlg = combiningAlg;
 		this.description = description;
@@ -451,7 +454,7 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 	 * 
 	 * @return the policy's target
 	 */
-	public Target getTarget() {
+	public TargetType getTarget() {
 		return target;
 	}
 
@@ -524,7 +527,8 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 			throw new RuntimeException("No target found in policy with id="
 					+ idAttr);
 		}
-		return target.match(context);
+
+		return ((Target) target).match(context);
 	}
 
 	/**
@@ -539,7 +543,7 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 	 *            representing the child elements used by the combining
 	 *            algorithm
 	 */
-	protected void setChildren(List children) {
+	protected void setChildren(List<Rule> children) {
 		// we always want a concrete list, since we're going to pass it to
 		// a combiner that expects a non-null input
 		if (children == null) {
@@ -547,15 +551,15 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 		} else {
 			// NOTE: since this is only getting called by known child
 			// classes we don't check that the types are all the same
-			List list = new ArrayList();
-			Iterator it = children.iterator();
+			// List list = new ArrayList();
+			// Iterator it = children.iterator();
+			//
+			// while (it.hasNext()) {
+			// CombinerElement element = (CombinerElement) (it.next());
+			// list.add(element.getElement());
+			// }
 
-			while (it.hasNext()) {
-				CombinerElement element = (CombinerElement) (it.next());
-				list.add(element.getElement());
-			}
-
-			this.children = Collections.unmodifiableList(list);
+			this.children = Collections.unmodifiableList(children);
 			childElements = Collections.unmodifiableList(children);
 		}
 	}
@@ -585,10 +589,12 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 				return result;
 			}
 
-			if (metaData.getXACMLVersion() == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
+			if (metaData.getXACMLVersion() == Integer
+					.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
 				for (ObligationExpressionsType myObligations : (Set<ObligationExpressionsType>) obligations) {
-					for (ObligationExpressionType myObligation : myObligations.getObligationExpression()) {
-						if (myObligation.getFulfillOn().ordinal() == effect ) {
+					for (ObligationExpressionType myObligation : myObligations
+							.getObligationExpression()) {
+						if (myObligation.getFulfillOn().ordinal() == effect) {
 							result.addObligation(myObligation, context);
 						}
 					}
@@ -613,7 +619,8 @@ public abstract class AbstractPolicy implements PolicyTreeElement {
 				return result;
 			}
 			for (AdviceExpressionsType myAdvices : (Set<AdviceExpressionsType>) advice) {
-				for (AdviceExpressionType myAdvice : myAdvices.getAdviceExpression()) {
+				for (AdviceExpressionType myAdvice : myAdvices
+						.getAdviceExpression()) {
 					if (myAdvice.getAppliesTo().ordinal() == effect) {
 						result.addAdvice(myAdvice);
 					}

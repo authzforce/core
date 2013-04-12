@@ -36,30 +36,30 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AnyURIAttribute;
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.Base64BinaryAttribute;
-import com.sun.xacml.attr.BooleanAttribute;
-import com.sun.xacml.attr.DateAttribute;
-import com.sun.xacml.attr.DateTimeAttribute;
-import com.sun.xacml.attr.DayTimeDurationAttribute;
-import com.sun.xacml.attr.DNSNameAttribute;
-import com.sun.xacml.attr.DoubleAttribute;
-import com.sun.xacml.attr.HexBinaryAttribute;
-import com.sun.xacml.attr.IntegerAttribute;
-import com.sun.xacml.attr.IPAddressAttribute;
-import com.sun.xacml.attr.RFC822NameAttribute;
-import com.sun.xacml.attr.StringAttribute;
-import com.sun.xacml.attr.TimeAttribute;
-import com.sun.xacml.attr.YearMonthDurationAttribute;
-import com.sun.xacml.attr.X500NameAttribute;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.AnyURIAttribute;
+import com.sun.xacml.attr.Base64BinaryAttribute;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.DNSNameAttribute;
+import com.sun.xacml.attr.DateAttribute;
+import com.sun.xacml.attr.DateTimeAttribute;
+import com.sun.xacml.attr.DayTimeDurationAttribute;
+import com.sun.xacml.attr.DoubleAttribute;
+import com.sun.xacml.attr.HexBinaryAttribute;
+import com.sun.xacml.attr.IPAddressAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.attr.RFC822NameAttribute;
+import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.TimeAttribute;
+import com.sun.xacml.attr.X500NameAttribute;
+import com.sun.xacml.attr.YearMonthDurationAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -173,6 +173,12 @@ public class EqualFunction extends FunctionBase
 
     // private mapping of standard functions to their argument types
     private static HashMap typeMap;
+    
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(EqualFunction.class);
 
     /**
      * Static initializer sets up a map of standard function names to their
@@ -247,8 +253,7 @@ public class EqualFunction extends FunctionBase
      *                     the arguments, inlcuding the full namespace
      */
     public EqualFunction(String functionName, String argumentType) {
-        super(functionName, 0, argumentType, false, 2,
-              BooleanAttribute.identifier, false);
+        super(functionName, 0, argumentType, false, 2, BooleanAttribute.identifier, false);
     }
 
     /**
@@ -271,7 +276,8 @@ public class EqualFunction extends FunctionBase
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
-    public static Set getSupportedIdentifiers() {
+    @SuppressWarnings("unchecked")
+	public static Set getSupportedIdentifiers() {
         return Collections.unmodifiableSet(typeMap.keySet());
    }
 

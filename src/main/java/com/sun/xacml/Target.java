@@ -42,13 +42,11 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOfType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOfType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.MatchType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.xacmlv3.AllOf;
 import com.sun.xacml.xacmlv3.AnyOf;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
@@ -61,7 +59,7 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Target {
+public class Target extends TargetType {
 
 	// the four sections of a Target
 	private TargetSection subjectsSection;
@@ -187,7 +185,7 @@ public class Target {
 	 * @throws ParsingException
 	 *             if the DOM node is invalid
 	 */
-	public static Target getInstance(Node root, String xpathVersion)
+	public static TargetType getInstance(Node root, String xpathVersion)
 			throws ParsingException {
 		return getInstance(root, new PolicyMetaData(
 				PolicyMetaData.XACML_1_0_IDENTIFIER, xpathVersion));
@@ -203,8 +201,9 @@ public class Target {
 	 * @throws ParsingException
 	 *             if the DOM node is invalid
 	 */
-	public static Target getInstance(Node root, PolicyMetaData metaData)
+	public static TargetType getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
+		TargetType returnTarget = new TargetType();
 		List<TargetSection> subjects = new ArrayList<TargetSection>();
 		List<TargetSection> resources = new ArrayList<TargetSection>();
 		List<TargetSection> actions = new ArrayList<TargetSection>();
@@ -221,29 +220,6 @@ public class Target {
 			for (int i = 0; i < myChildren.getLength(); i++) {
 				Node child = myChildren.item(i);
 				if ("AnyOf".equals(DOMHelper.getLocalName(child))) {
-					// System.out.println("In AnyOf, getting the first child (i="+i+"): "+DOMHelper.getLocalName(child.getChildNodes().item(1)));
-					// targetSectionTmp =
-					// AnyOf.getTargetSection(child.getChildNodes().item(1),
-					// metaData);
-					/*
-					 * FIXME: Possible NPE
-					 */
-					targetSectionTmp = AnyOf.getTargetSection(child
-							.getChildNodes().item(1), metaData);
-					for (TargetSection targetSection : targetSectionTmp) {
-						if (TargetMatch.SUBJECT == targetSection.getMatchType()) {
-							subjects.add(targetSection);
-						} else if (TargetMatch.RESOURCE == targetSection
-								.getMatchType()) {
-							resources.add(targetSection);
-						} else if (TargetMatch.ACTION == targetSection
-								.getMatchType()) {
-							actions.add(targetSection);
-						} else if (TargetMatch.ENVIRONMENT == targetSection
-								.getMatchType()) {
-							environments.add(targetSection);
-						}
-					}
 					anyOf.add(AnyOf.getInstance(child, metaData));
 				}
 			}
@@ -262,9 +238,9 @@ public class Target {
 				environments.add(new TargetSection(null,
 						TargetMatch.ENVIRONMENT, version));
 			}
+			returnTarget.getAnyOf().addAll(anyOf);
 
-			return new Target(subjects.get(0), resources.get(0),
-					actions.get(0), environments.get(0), anyOf);
+//			return new Target(subjects.get(0), resources.get(0), actions.get(0), environments.get(0), anyOf);
 		}
 
 		NodeList children = root.getChildNodes();
@@ -309,11 +285,13 @@ public class Target {
 				environments.add(new TargetSection(null,
 						TargetMatch.ENVIRONMENT, version));
 			}
-			return new Target(subjects.get(0), resources.get(0),
-					actions.get(0), environments.get(0));
-		} else {
-			return new Target(subjects.get(0), resources.get(0), actions.get(0));
+//			return new Target(subjects.get(0), resources.get(0),
+//					actions.get(0), environments.get(0));
+//		} else {
+//			return new Target(subjects.get(0), resources.get(0), actions.get(0));
 		}
+		
+		return returnTarget;
 	}
 
 	/**

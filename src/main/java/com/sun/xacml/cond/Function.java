@@ -36,15 +36,16 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
-
-import java.net.URI;
-
 import java.io.OutputStream;
-
+import java.net.URI;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * Interface that all functions in the system must implement.
@@ -52,7 +53,7 @@ import java.util.List;
  * @since 1.0
  * @author Seth Proctor
  */
-public interface Function extends Expression
+public abstract class Function extends FunctionType
 {
 
     /**
@@ -85,7 +86,7 @@ public interface Function extends Expression
      *         when evaluating the function, or <code>Status</code>
      *         specifying some error condition
      */
-    public EvaluationResult evaluate(List<Evaluatable> inputs, EvaluationCtx context);
+    public abstract EvaluationResult evaluate(List<Evaluatable> inputs, EvaluationCtx context);
 
     /**
      * Returns the identifier of this function as known by the factories.
@@ -95,7 +96,7 @@ public interface Function extends Expression
      *
      * @return the function's identifier
      */
-    public URI getIdentifier();
+    public abstract URI getIdentifier();
 
     /**
      * Provides the type of <code>AttributeValue</code> that this function
@@ -103,7 +104,7 @@ public interface Function extends Expression
      *
      * @return the type returned by this function
      */
-    public URI getReturnType();
+    public abstract URI getReturnType();
 
     /**
      * Tells whether this function will return a bag of values or just a
@@ -111,7 +112,7 @@ public interface Function extends Expression
      *
      * @return true if evaluation will return a bag, false otherwise
      */
-    public boolean returnsBag();
+    public abstract boolean returnsBag();
 
     /**
      * Checks that the given inputs are of the right types, in the right
@@ -126,7 +127,7 @@ public interface Function extends Expression
      * @throws IllegalArgumentException if the inputs do match what the
      *                                  function accepts for evaluation
      */
-    public void checkInputs(List<Evaluatable> inputs) throws IllegalArgumentException;
+    public abstract void checkInputs(List<ExpressionType> inputs) throws IllegalArgumentException;
 
     /**
      * Checks that the given inputs are of the right types, in the right
@@ -148,7 +149,9 @@ public interface Function extends Expression
      * @throws IllegalArgumentException if the inputs do match what the
      *                                  function accepts for evaluation
      */
-    public void checkInputsNoBag(List<Evaluatable> inputs) throws IllegalArgumentException;
+//    public void checkInputsNoBag(List<Evaluatable> inputs) throws IllegalArgumentException;
+    
+    public abstract void checkInputsNoBag(List<ExpressionType> inputs) throws IllegalArgumentException;
  
     /**
      * Encodes this <code>Function</code> into its XML representation and
@@ -157,7 +160,7 @@ public interface Function extends Expression
      *
      * @param output a stream into which the XML-encoded data is written
      */
-    public void encode(OutputStream output);
+    public abstract void encode(OutputStream output);
 
     /**
      * Encodes this <code>Function</code> into its XML representation and
@@ -167,6 +170,6 @@ public interface Function extends Expression
      * @param output a stream into which the XML-encoded data is written
      * @param indenter an object that creates indentation strings
      */
-    public void encode(OutputStream output, Indenter indenter);
+    public abstract void encode(OutputStream output, Indenter indenter);
    
 }

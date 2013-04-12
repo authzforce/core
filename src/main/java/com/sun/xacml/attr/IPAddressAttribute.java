@@ -44,6 +44,7 @@ import java.net.URI;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
  * Represents the IPAddress datatype introduced in XACML 2.0. All objects of

@@ -42,6 +42,7 @@ import javax.security.auth.x500.X500Principal;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
  * Representation of an X500 Name.

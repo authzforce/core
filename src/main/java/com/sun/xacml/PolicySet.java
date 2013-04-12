@@ -36,25 +36,25 @@
 
 package com.sun.xacml;
 
-import com.sun.xacml.combine.CombinerParameter;
-import com.sun.xacml.combine.PolicyCombinerElement;
-import com.sun.xacml.combine.PolicyCombiningAlgorithm;
-
-import com.sun.xacml.finder.PolicyFinder;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import java.net.URI;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.combine.CombinerParameter;
+import com.sun.xacml.combine.PolicyCombinerElement;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.finder.PolicyFinder;
 
 
 /**
@@ -67,7 +67,12 @@ import org.w3c.dom.NodeList;
  */
 public class PolicySet extends AbstractPolicy
 {
-
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(Policy.class);
+	
     /**
      * Creates a new <code>PolicySet</code> with only the required elements.
      *
@@ -416,32 +421,15 @@ public class PolicySet extends AbstractPolicy
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        String indent = indenter.makeString();
-
-        out.println(indent + "<PolicySet PolicySetId=\"" + getId().toString() +
-                    "\" PolicyCombiningAlgId=\"" +
-                    getCombiningAlg().getIdentifier().toString() +
-                    "\">");
-        
-        indenter.in();
-        String nextIndent = indenter.makeString();
-
-        String description = getDescription();
-        if (description != null)
-            out.println(nextIndent + "<Description>" + description +
-                        "</Description>");
-
-        String version = getDefaultVersion();
-        if (version != null)
-            out.println("<PolicySetDefaults><XPathVersion>" + version +
-                        "</XPathVersion></PolicySetDefaults>");
-
-        getTarget().encode(output, indenter);
-        encodeCommonElements(output, indenter);
-
-        indenter.out();
-        out.println(indent + "</PolicySet>");
+    	PrintStream out = new PrintStream(output);
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		} 
     }
 
 }

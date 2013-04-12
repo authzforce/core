@@ -10,17 +10,18 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.PolicyMetaData;
-
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.AttributeSelector;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.w3c.dom.Node;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.AttributeFactory;
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.xacmlv3.AttributeSelector;
+import com.sun.xacml.attr.xacmlv3.Expression;
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 
 /**
@@ -50,7 +51,7 @@ class ExpressionHandler
      * @return an <code>Expression</code> or null if the root node cannot be
      *         parsed as a valid Expression
      */
-    public static Expression parseExpression(Node root,
+    public static ExpressionType parseExpression(Node root,
                                              PolicyMetaData metaData,
                                              VariableManager manager)
         throws ParsingException
@@ -65,39 +66,22 @@ class ExpressionHandler
             } catch (UnknownIdentifierException uie) {
                 throw new ParsingException("Unknown DataType", uie);
             }
-        } else if (name.equals("SubjectAttributeDesignator")) {
-            return AttributeDesignator.
-                getInstance(root, AttributeDesignator.SUBJECT_TARGET,
-                            metaData);
-        } else if (name.equals("ResourceAttributeDesignator")) {
-            return AttributeDesignator.
-                getInstance(root, AttributeDesignator.RESOURCE_TARGET,
-                            metaData);
-        } else if (name.equals("ActionAttributeDesignator")) {
-            return AttributeDesignator.
-                getInstance(root, AttributeDesignator.ACTION_TARGET,
-                            metaData);
-        } else if (name.equals("EnvironmentAttributeDesignator")) {
-            return AttributeDesignator.
-                getInstance(root, AttributeDesignator.ENVIRONMENT_TARGET,
-                            metaData);
         } else if (name.equals("AttributeSelector")) {
             return AttributeSelector.getInstance(root, metaData);
         } else if (name.equals("Function")) {
-            return getFunction(root, metaData,
-                               FunctionFactory.getGeneralInstance());
+            return getFunction(root, metaData,FunctionFactory.getGeneralInstance());
         } else if (name.equals("VariableReference")) {
             return VariableReference.getInstance(root, metaData, manager);
         } else if (name.equals("AttributeDesignator")) {
         	String category = root.getAttributes().getNamedItem("Category").getNodeValue();
         	if (XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value().equalsIgnoreCase(category)) {
-        		return AttributeDesignator.getInstance(root, AttributeDesignator.SUBJECT_TARGET, metaData);	
+        		return AttributeDesignator.getInstance(root, String.valueOf(AttributeDesignator.SUBJECT_TARGET), metaData);	
         	} else if (XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value().equalsIgnoreCase(category)) {
-        		return AttributeDesignator.getInstance(root, AttributeDesignator.RESOURCE_TARGET, metaData);	
+        		return AttributeDesignator.getInstance(root, String.valueOf(AttributeDesignator.RESOURCE_TARGET), metaData);	
         	} else if (XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value().equalsIgnoreCase(category)) {
-        		return AttributeDesignator.getInstance(root, AttributeDesignator.ACTION_TARGET, metaData);	
+        		return AttributeDesignator.getInstance(root, String.valueOf(AttributeDesignator.ACTION_TARGET), metaData);	
         	} else if (XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value().equalsIgnoreCase(category)) {
-        		return AttributeDesignator.getInstance(root, AttributeDesignator.ENVIRONMENT_TARGET, metaData);	
+        		return AttributeDesignator.getInstance(root, String.valueOf(AttributeDesignator.ENVIRONMENT_TARGET), metaData);	
         	}
         	
         }
@@ -109,7 +93,7 @@ class ExpressionHandler
     /**
      * Helper method that tries to get a function instance
      */
-    public static Function getFunction(Node root, PolicyMetaData metaData,
+    public static ExpressionType getFunction(Node root, PolicyMetaData metaData,
                                        FunctionFactory factory)
         throws ParsingException
     {

@@ -36,11 +36,12 @@
 
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.LogicalFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import com.sun.xacml.cond.LogicalFunction;
+import com.sun.xacml.cond.NotFunction;
 
 
 /**
@@ -52,12 +53,23 @@ import java.util.Set;
 public class LogicalFunctionCluster implements FunctionCluster
 {
 
-    public Set getSupportedFunctions() {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(LogicalFunctionCluster.class);
+	
+    public Set<LogicalFunction> getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = LogicalFunction.getSupportedIdentifiers().iterator();
-        
-        while (it.hasNext())
-            set.add(new LogicalFunction((String)(it.next())));
+
+        LOGGER.debug("Initialize NofFunction function");
+        while (it.hasNext()) {
+			String funcId = (String) it.next();
+			LOGGER.debug(funcId);
+			set.add(new LogicalFunction(funcId));
+		}
+        LOGGER.debug("Initialize NofFunction function");
 
         return set;
     }

@@ -36,20 +36,18 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AnyURIAttribute;
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.StringAttribute;
-
-import com.sun.xacml.ctx.Status;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.AnyURIAttribute;
+import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
 
 
 /**

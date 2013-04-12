@@ -1,4 +1,3 @@
-
 /*
  * @(#)MatchFunctionCluster.java
  *
@@ -36,30 +35,38 @@
 
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.MatchFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.sun.xacml.cond.MatchFunction;
 
 /**
  * Clusters all the functions supported by <code>MatchFunction</code>.
- *
+ * 
  * @since 1.2
  * @author Seth Proctor
  */
-public class MatchFunctionCluster implements FunctionCluster
-{
+public class MatchFunctionCluster implements FunctionCluster {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(MatchFunctionCluster.class);
 
-    public Set getSupportedFunctions() {
-        Set set = new HashSet();
-        Iterator it = MatchFunction.getSupportedIdentifiers().iterator();
+	public Set<MatchFunction> getSupportedFunctions() {
+		Set<MatchFunction> set = new HashSet<MatchFunction>();
+		Iterator it = MatchFunction.getSupportedIdentifiers().iterator();
+		
+		LOGGER.debug("Initialize Match function");
+		while (it.hasNext()) {
+			String funcId = (String) it.next();
+			LOGGER.debug(funcId);
+			set.add(new MatchFunction(funcId));
+		}
+		LOGGER.debug("End Initialize Match function");
 
-        while (it.hasNext())
-            set.add(new MatchFunction((String)(it.next())));
-
-        return set;
-    }
+		return set;
+	}
 
 }

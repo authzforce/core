@@ -36,11 +36,11 @@
 
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.NotFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import com.sun.xacml.cond.NotFunction;
 
 
 /**
@@ -51,13 +51,23 @@ import java.util.Set;
  */
 public class NotFunctionCluster implements FunctionCluster
 {
-
-    public Set getSupportedFunctions() {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(NotFunctionCluster.class);
+	
+    public Set<NotFunction> getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = NotFunction.getSupportedIdentifiers().iterator();
 
-        while (it.hasNext())
-            set.add(new NotFunction((String)(it.next())));
+        LOGGER.debug("Initialize NotFunction function");
+        while (it.hasNext()) {
+			String funcId = (String) it.next();
+			LOGGER.debug(funcId);
+			set.add(new NotFunction(funcId));
+		}
+        LOGGER.debug("End Initialize NotFunction function");
 
         return set;
     }

@@ -62,14 +62,14 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.attr.AttributeDesignator;
-import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.DateAttribute;
 import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
-import com.sun.xacml.cond.EvaluationResult;
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinder;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
@@ -248,8 +248,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 
 			}/* Searching for environment */
 			else if (myAttributeTypes.getCategory().equalsIgnoreCase(
-					XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT
-							.value())) {
+					XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value())) {
 				// finally, set up the environment data, which is also generic
 				if (environmentMap == null) {
 					environmentMap = new HashMap();
@@ -731,7 +730,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		}
 
 		// now go through each, considering each Attribute object
-		List<AttributeValue> attributeValues = new ArrayList();
+		List<AttributeValueType> attributeValues = new ArrayList();
 		Iterator it = attrSet.iterator();
 
 		for (AttributeType attr : attrSet) {
@@ -740,15 +739,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 				if ((attributeValue.getDataType().equals(type.toString()))
 						&& ((issuer == null) || ((attr.getIssuer() != null) && (attr
 								.getIssuer().equals(issuer.toString()))))) {
-					try {
-						// if we got here, then we found a match, so we want to
-						// pull
-						// out the values and put them in out list
-						attributeValues.addAll(AttributeValue.convertFromJAXB(
-								attr.getAttributeValue(), type));
-					} catch (ParsingException ex) {
-						throw new RuntimeException(ex);
-					}
+					// if we got here, then we found a match, so we want to
+					// pull
+					// out the values and put them in out list
+					attributeValues.addAll(attr.getAttributeValue());
 				}
 			}
 		}

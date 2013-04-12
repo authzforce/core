@@ -45,6 +45,8 @@ import java.util.List;
 
 import java.io.OutputStream;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParametersType;
+
 
 /**
  * Represents one input (a Rule, Policy, PolicySet, or reference) to a
@@ -53,7 +55,7 @@ import java.io.OutputStream;
  * @since 2.0
  * @author Seth Proctor
  */
-public abstract class CombinerElement
+public abstract class CombinerElement extends PolicyTreeElement
 {
 
     // the element to be combined

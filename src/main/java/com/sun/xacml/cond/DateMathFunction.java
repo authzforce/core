@@ -36,14 +36,6 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.DateAttribute;
-import com.sun.xacml.attr.DateTimeAttribute;
-import com.sun.xacml.attr.DayTimeDurationAttribute;
-import com.sun.xacml.attr.YearMonthDurationAttribute;
-
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -51,6 +43,14 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.DateAttribute;
+import com.sun.xacml.attr.DateTimeAttribute;
+import com.sun.xacml.attr.DayTimeDurationAttribute;
+import com.sun.xacml.attr.YearMonthDurationAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -254,7 +254,7 @@ public class DateMathFunction extends FunctionBase
         // Now that we have real values, perform the date math operation.
         AttributeValue attrResult = null;
 
-        switch (getFunctionId()) {
+        switch (Integer.parseInt(getFunctionId())) {
         // These two functions are basically the same except for sign.
         // And they both need to deal with sign anyway, so they share
         // their code.
@@ -266,7 +266,7 @@ public class DateMathFunction extends FunctionBase
 
             // Decide what sign goes with duration
             int sign = 1;
-            if (getFunctionId() == ID_DATETIME_SUBTRACT_DAYTIMEDURATION)
+            if (Integer.parseInt(getFunctionId()) == ID_DATETIME_SUBTRACT_DAYTIMEDURATION)
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;
@@ -299,7 +299,7 @@ public class DateMathFunction extends FunctionBase
             
             // Decide what sign goes with duration
             int sign = 1;
-            if (getFunctionId() == ID_DATETIME_SUBTRACT_YEARMONTHDURATION)
+            if (Integer.parseInt(getFunctionId()) == ID_DATETIME_SUBTRACT_YEARMONTHDURATION)
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;
@@ -333,7 +333,7 @@ public class DateMathFunction extends FunctionBase
             
             // Decide what sign goes with duration
             int sign = 1;
-            if (getFunctionId() == ID_DATE_SUBTRACT_YEARMONTHDURATION)
+            if (Integer.parseInt(getFunctionId()) == ID_DATE_SUBTRACT_YEARMONTHDURATION)
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;

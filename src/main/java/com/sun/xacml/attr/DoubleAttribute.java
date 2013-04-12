@@ -40,6 +40,8 @@ import java.net.URI;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+
 
 /**
  * Representation of an xsi:double value. This class supports parsing

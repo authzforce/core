@@ -56,6 +56,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -335,7 +337,7 @@ public class PolicyReference extends AbstractPolicy
      *
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
-    public Target getTarget() {
+    public TargetType getTarget() {
         return resolvePolicy().getTarget();
     }
 
@@ -419,7 +421,7 @@ public class PolicyReference extends AbstractPolicy
      */
     public MatchResult match(EvaluationCtx context) {
         try {
-            return getTarget().match(context);
+            return ((Target)getTarget()).match(context);
         } catch (ProcessingException pe) {
             // this means that we couldn't resolve the policy
             ArrayList code = new ArrayList();

@@ -49,7 +49,9 @@ import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.cond.EvaluationResult;
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.xacmlv3.AttributeSelector;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.thalesgroup.authzforce.audit.AttributesResolved;
 import com.thalesgroup.authzforce.audit.AuditLogs;
 

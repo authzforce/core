@@ -36,27 +36,21 @@
 
 package com.sun.xacml.finder.impl;
 
-import com.sun.xacml.EvaluationCtx;
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.sun.xacml.attr.AttributeDesignator;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.DateAttribute;
 import com.sun.xacml.attr.DateTimeAttribute;
-import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
-
-import com.sun.xacml.cond.EvaluationResult;
-
-import com.sun.xacml.ctx.Status;
-
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinderModule;
-
-import java.net.URI;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 
 /**
@@ -228,37 +222,12 @@ public class CurrentEnvModule extends AttributeFinderModule
     /**
      * Private helper that makes a bag containing only the given attribute.
      */
-    private EvaluationResult makeBag(AttributeValue attribute) {
-        Set<AttributeValue> set = new HashSet<AttributeValue>();
+    private EvaluationResult makeBag(AttributeValueType attribute) {
+        Set<AttributeValueType> set = new HashSet<AttributeValueType>();
         set.add(attribute);
 
-        BagAttribute bag = new BagAttribute(attribute.getType(), set);
+        BagAttribute bag = new BagAttribute(URI.create(attribute.getDataType()), set);
 
         return new EvaluationResult(bag);
     }
-
-//	@Override
-//	public String getAttributeSupportedId() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public String getSubstituteValue() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public StringAttribute getResourceVal() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public Set getSet() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-
 }

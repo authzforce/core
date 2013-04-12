@@ -36,15 +36,15 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.DoubleAttribute;
-import com.sun.xacml.attr.IntegerAttribute;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.DoubleAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -165,7 +165,7 @@ public class NumericConvertFunction extends FunctionBase
 
         // Now that we have real values, perform the numeric conversion
         // operation in the manner appropriate for this function.
-        switch (getFunctionId()) {
+        switch (Integer.parseInt(getFunctionId())) {
         case ID_DOUBLE_TO_INTEGER: {
             double arg0 = ((DoubleAttribute) argValues[0]).getValue();
             long longValue = (long) arg0;

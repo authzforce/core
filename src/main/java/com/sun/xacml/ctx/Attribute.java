@@ -41,8 +41,8 @@ import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 
 import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.DateTimeAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 import java.io.PrintStream;

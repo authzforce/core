@@ -36,17 +36,17 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.BagAttribute;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
 /**
@@ -197,7 +197,7 @@ public class GeneralSetFunction extends SetFunction
         AttributeValue result = null;
         Set set = new HashSet();
         
-        switch(getFunctionId()) {
+        switch(Integer.parseInt(getFunctionId())) {
 
             // *-intersection takes two bags of the same type and returns
             // a bag of that type

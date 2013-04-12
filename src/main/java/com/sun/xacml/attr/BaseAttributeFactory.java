@@ -36,18 +36,20 @@
 
 package com.sun.xacml.attr;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-
 import java.net.URI;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 import org.w3c.dom.Node;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 
 /**
@@ -175,6 +177,12 @@ public class BaseAttributeFactory extends AttributeFactory
     {
         return createValue(root, dataType.toString());
     }
+    
+    public AttributeValueType createValue(AttributeValueType root, URI dataType)
+            throws UnknownIdentifierException, ParsingException
+        {
+            return createValue(root, dataType.toString());
+        }
 
     /**
      * Creates a value based on the given DOM root node and data type.
@@ -206,6 +214,25 @@ public class BaseAttributeFactory extends AttributeFactory
                                                  " aren't supported.");
         }
     }
+    
+    public AttributeValueType createValue(AttributeValueType root, String type)
+            throws UnknownIdentifierException, ParsingException
+        {
+            AttributeProxy proxy = (AttributeProxy)(attributeMap.get(type));
+
+            if (proxy != null) {
+                try {
+                	return com.sun.xacml.attr.xacmlv3.AttributeValue.getInstance(root);
+//                    return proxy.getInstance(root);
+                } catch (Exception e) {
+                    throw new ParsingException("couldn't create " + type +
+                                               " attribute based on DOM node");
+                }
+            } else {
+                throw new UnknownIdentifierException("Attributes of type " + type +
+                                                     " aren't supported.");
+            }
+        }
 
     /**
      * Creates a value based on the given data type and text-encoded value.

@@ -35,22 +35,18 @@
 
 package com.sun.xacml;
 
-import com.sun.xacml.attr.AttributeValue;
-import com.sun.xacml.attr.DateAttribute;
-import com.sun.xacml.attr.DateTimeAttribute;
-import com.sun.xacml.attr.TimeAttribute;
-
-import com.sun.xacml.cond.EvaluationResult;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 
 import org.w3c.dom.Node;
+
+import com.sun.xacml.attr.DateAttribute;
+import com.sun.xacml.attr.DateTimeAttribute;
+import com.sun.xacml.attr.TimeAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * Manages the context of a single policy evaluation. Typically, an instance is
