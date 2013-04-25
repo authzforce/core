@@ -37,6 +37,8 @@ package com.sun.xacml.attr.xacmlv3;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +61,8 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
@@ -74,26 +77,41 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  * @author Romain Ferrari
  */
-public abstract class AttributeValue extends AttributeValueType implements
-		Evaluatable {
+public class AttributeValue extends AttributeValueType implements Evaluatable {
 
 	private static DocumentBuilder db1 = null;
 	// the type of this attribute
 	private URI type;
 
-	public static AttributeValueType getInstance(AttributeValueType attrValue) {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(AttributeValue.class);
+
+	public static AttributeValue getInstance(AttributeValueType attrValue) {
+
+		AttributeFactory myFact = AttributeFactory.getInstance();
+
 		AttributeValue returnData = null;
 		try {
-			returnData = BooleanAttribute.getInstance(String.valueOf(attrValue.getContent().get(0)));
+			returnData = myFact.createValue(
+					URI.create(attrValue.getDataType()),
+					String.valueOf(attrValue.getContent().get(0)));
+		} catch (SecurityException e) {
+			LOGGER.error(e);
+		} catch (IllegalArgumentException e) {
+			LOGGER.error(e);
+		} catch (UnknownIdentifierException e) {
+			LOGGER.error(e);
 		} catch (ParsingException e) {
-			e.printStackTrace();
+			LOGGER.error(e);
 		}
 
 		return returnData;
 	}
 
-	public static AttributeValueType getInstance(Node root,
-			PolicyMetaData metadata) {
+	public static AttributeValue getInstance(Node root, PolicyMetaData metadata) {
 		JAXBElement<AttributeValueType> attrValue = null;
 		try {
 			JAXBContext jc = JAXBContext
@@ -103,8 +121,10 @@ public abstract class AttributeValue extends AttributeValueType implements
 		} catch (Exception e) {
 			System.err.println(e);
 		}
-		
-		return attrValue.getValue();
+
+		return new AttributeValue(
+				URI.create(attrValue.getValue().getDataType()), attrValue
+						.getValue().getContent());
 	}
 
 	/**
@@ -113,8 +133,16 @@ public abstract class AttributeValue extends AttributeValueType implements
 	 * @param type
 	 *            the attribute's type
 	 */
+	protected AttributeValue(URI type, List<Serializable> content) {
+		this.content = content;
+		this.dataType = type.toASCIIString();
+		this.type = type;
+	}
+
 	protected AttributeValue(URI type) {
-		this.dataType= type.toASCIIString();		
+		this.content = new ArrayList<Serializable>();
+		this.dataType = type.toASCIIString();
+		this.type = type;
 	}
 
 	/**
@@ -202,7 +230,19 @@ public abstract class AttributeValue extends AttributeValueType implements
 	 * 
 	 * @return a <code>String</code> form of the value
 	 */
-	public abstract String encode();
+	public String encode() {
+		StringWriter out = new StringWriter();
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		}
+		
+		return out.toString();
+	}
 
 	/**
 	 * Encodes this <code>AttributeValue</code> into its XML representation and
@@ -249,41 +289,8 @@ public abstract class AttributeValue extends AttributeValueType implements
 	 * @return a <code>String</code> encoding including the XML tags
 	 */
 	public String encodeWithTags(boolean includeType) {
-		// FIXME: Properly XML-encode the value
-		if (includeType)
-			return "<AttributeValue DataType=\"" + type.toString() + "\">"
-					+ encode() + "</AttributeValue>";
-		else
-			return "<AttributeValue>" + encode() + "</AttributeValue>";
+		return null;
 	}
-
-	// public static AttributeValue convertFromJAXB(AttributeValueType avt,
-	// URI dataType) throws ParsingException {
-	// try {
-	// AttributeValue result = null;
-	// AttributeFactory attrFactory = AttributeFactory.getInstance();
-	// result = attrFactory.createValue(avt, dataType);
-	// return result;
-	// } catch (UnknownIdentifierException ex) {
-	// throw new ParsingException(ex);
-	// }
-	// }
-	//
-	// public static List<AttributeValue>
-	// convertFromJAXB(List<AttributeValueType> avts, URI dataType) throws
-	// ParsingException {
-	// if (avts == null) {
-	// return null;
-	// }
-	//
-	// final List<AttributeValue> resultAvts = new ArrayList<AttributeValue>();
-	// for(final AttributeValueType avt: avts) {
-	// final AttributeValue newAvt = convertFromJAXB(avt, dataType);
-	// resultAvts.add(newAvt);
-	// }
-	//
-	// return resultAvts;
-	// }
 
 	public static List<AttributeValue> convertFromJAXB(
 			List<AttributeValueType> avts) throws ParsingException {
@@ -315,23 +322,23 @@ public abstract class AttributeValue extends AttributeValueType implements
 	 * @param avt
 	 * @return
 	 */
-	public static Node getAttributeValueNode(AttributeValueType avt) {
-		Node node = null;
-
-		try {
-			Marshaller m = BindingUtility.createMarshaller();
-			synchronized (DocumentBuilder.class) {
-				db1 = BindingUtility.getDocumentBuilder();
-			}
-			Document doc = db1.newDocument();
-			JAXBElement<AttributeValueType> element = BindingUtility.contextFac
-					.createAttributeValue(avt);
-			m.marshal(element, doc);
-			node = doc.getDocumentElement();
-		} catch (JAXBException ex) {
-			throw new RuntimeException(ex);
-		}
-
-		return node;
-	}
+//	public static Node getAttributeValueNode(AttributeValueType avt) {
+//		Node node = null;
+//
+//		try {
+//			Marshaller m = BindingUtility.createMarshaller();
+//			synchronized (DocumentBuilder.class) {
+//				db1 = BindingUtility.getDocumentBuilder();
+//			}
+//			Document doc = db1.newDocument();
+//			JAXBElement<AttributeValueType> element = BindingUtility.contextFac
+//					.createAttributeValue(avt);
+//			m.marshal(element, doc);
+//			node = doc.getDocumentElement();
+//		} catch (JAXBException ex) {
+//			throw new RuntimeException(ex);
+//		}
+//
+//		return node;
+//	}
 }

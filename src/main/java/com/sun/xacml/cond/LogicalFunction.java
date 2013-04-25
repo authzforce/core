@@ -145,7 +145,7 @@ public class LogicalFunction extends FunctionBase
             AttributeValueType value = result.getAttributeValue();
             boolean argBooleanValue = ((BooleanAttribute)value).getValue();
 
-            switch (Integer.parseInt(getFunctionId())) {
+            switch (getId(getFunctionName())) {
             case ID_OR:
                 if (argBooleanValue)
                     return EvaluationResult.getTrueInstance();

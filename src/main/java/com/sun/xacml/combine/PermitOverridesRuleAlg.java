@@ -36,14 +36,17 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Rule;
-
-import com.sun.xacml.ctx.Result;
-
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParametersType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Rule;
+import com.sun.xacml.ctx.Result;
 
 
 /**
@@ -96,7 +99,7 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-    public Result combine(EvaluationCtx context, List parameters,
+    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
                           List ruleElements) {
         boolean atLeastOneError = false;
         boolean potentialPermit = false;
@@ -105,9 +108,9 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
         Iterator it = ruleElements.iterator();
 
         while (it.hasNext()) {
-            Rule rule = ((RuleCombinerElement)(it.next())).getRule();
+            Rule rule = (Rule)(it.next());
             Result result = rule.evaluate(context);
-            int value = result.getDecision();
+            int value = result.getDecision().ordinal();
             
             // if there was a value of PERMIT, then regardless of what
             // else we've seen, we always return PERMIT
@@ -145,7 +148,7 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
         // some Rule said DENY, so since nothing could have permitted,
         // we return DENY
         if (atLeastOneDeny)
-            return new Result(Result.DECISION_DENY, null, 
+            return new Result(DecisionType.DENY, null, 
                               context.getResourceId().encode(), null, null, context.getIncludeInResults());
         
         // we didn't find anything that said DENY, but if we had a
@@ -155,8 +158,7 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
         
         // if we hit this point, then none of the rules actually applied
         // to us, so we return NOT_APPLICABLE
-        return new Result(Result.DECISION_NOT_APPLICABLE,
+        return new Result(DecisionType.NOT_APPLICABLE,
                           context.getResourceId().encode());
     }
-
 }

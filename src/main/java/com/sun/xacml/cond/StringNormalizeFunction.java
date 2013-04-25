@@ -137,7 +137,7 @@ public class StringNormalizeFunction extends FunctionBase
 
         // Now that we have real values, perform the numeric conversion
         // operation in the manner appropriate for this function.
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_STRING_NORMALIZE_SPACE: {
             String str = ((StringAttribute) argValues[0]).getValue();
 

@@ -40,7 +40,6 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -50,8 +49,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
@@ -68,6 +67,7 @@ import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.combine.RuleCombiningAlgorithm;
 import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.Target;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 /**
@@ -77,16 +77,16 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
  * @author Seth Proctor
  * @author Marco Barreno
  */
-public abstract class AbstractPolicy extends PolicyTreeElement {
+public abstract class AbstractPolicy extends PolicyType {
 
 	// atributes associated with this policy
-	private URI idAttr;
-	private String version;
+//	private URI idAttr;
+//	private String version;
 	private CombiningAlgorithm combiningAlg;
 
 	// the elements in the policy
-	private String description;
-	private TargetType target;
+//	private String description;
+//	private TargetType target;
 
 	// the value in defaults, or null if there was no default value
 	private String defaultVersion;
@@ -101,13 +101,13 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 	private List childElements;
 
 	// any obligations held by this policy
-	private Set obligations;
+//	private Set obligations;
 
 	// any obligations held by this policy
-	private Set advice;
+//	private Set advice;
 
 	// the list of combiner parameters
-	private List parameters;
+//	private List parameters;
 
 	// the logger we'll use for all messages
 	private static final Logger logger = Logger.getLogger(AbstractPolicy.class
@@ -189,7 +189,7 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 			CombiningAlgorithm combiningAlg, String description,
 			TargetType target, String defaultVersion, Set obligations,
 			List parameters) {
-		idAttr = id;
+		this.policyId = id.toASCIIString();
 		this.combiningAlg = combiningAlg;
 		this.description = description;
 		this.target = target;
@@ -205,16 +205,17 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 		metaData = null;
 
 		if (obligations == null) {
-			this.obligations = Collections.EMPTY_SET;
+			this.obligationExpressions = new ObligationExpressionsType();
 		} else {
-			this.obligations = Collections.unmodifiableSet(new HashSet(
-					obligations));
+			ObligationExpressionsType oblExpr = new ObligationExpressionsType();
+			oblExpr.getObligationExpression().addAll(obligations);
+			this.obligationExpressions = oblExpr;
 		}
-
+		
 		if (parameters == null) {
-			this.parameters = Collections.EMPTY_LIST;
+			this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.EMPTY_LIST;
 		} else {
-			this.parameters = Collections.unmodifiableList(new ArrayList(
+			this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.unmodifiableList(new ArrayList(
 					parameters));
 		}
 	}
@@ -240,8 +241,8 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 
 		try {
 			// get the attribute Id
-			idAttr = new URI(attrs.getNamedItem(policyPrefix + "Id")
-					.getNodeValue());
+			this.policyId = attrs.getNamedItem(policyPrefix + "Id")
+					.getNodeValue();
 		} catch (Exception e) {
 			throw new ParsingException("Error parsing required attribute "
 					+ policyPrefix + "Id", e);
@@ -262,6 +263,7 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 					.getNodeValue());
 			CombiningAlgFactory factory = CombiningAlgFactory.getInstance();
 			combiningAlg = factory.createAlgorithm(algId);
+			this.ruleCombiningAlgId = attrs.getNamedItem(combiningName).getNodeValue();
 		} catch (Exception e) {
 			throw new ParsingException("Error parsing combining algorithm"
 					+ " in " + policyPrefix, e);
@@ -292,9 +294,9 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 		metaData = new PolicyMetaData(root.getNamespaceURI(), defaultVersion);
 
 		// now read the remaining policy elements
-		obligations = new HashSet<ObligationExpressionType>();
-		parameters = new ArrayList();
-		advice = new HashSet<AdviceExpressionType>();
+		obligationExpressions = new ObligationExpressionsType();
+		this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = new ArrayList();
+		adviceExpressions = new AdviceExpressionsType();
 		_children = root.getChildNodes();
 
 		for (int i = 0; i < _children.getLength(); i++) {
@@ -309,7 +311,7 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 			} else if (cname.equals("Obligations")) {
 				parseObligations(child);
 			} else if (cname.equals("CombinerParameters")) {
-				handleParameters(child);
+				this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = handleParameters(child);
 			} else if (cname.equals("ObligationExpressions")) {
 				parseObligations(child);
 			} else if (cname.equals("AdviceExpressions")) {
@@ -318,9 +320,14 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 		}
 
 		// finally, make sure the obligations and parameters are immutable
-		obligations = Collections.unmodifiableSet(obligations);
-		parameters = Collections.unmodifiableList(parameters);
-		advice = Collections.unmodifiableSet(advice);
+//		ObligationExpressionsType oblExpr = new ObligationExpressionsType();
+//		oblExpr.getObligationExpression().addAll(obligations);
+//		obligationExpressions = oblExpr;
+//		this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.unmodifiableList(parameters);
+//		adviceExpressions = Collections.unmodifiableSet(advice);
+		
+//		this.adviceExpressions = AdviceExpressions.getInstance(advice);
+//		this.obligationExpressions = ObligationExpressions.getInstance(obligations);
 	}
 
 	/**
@@ -342,7 +349,7 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 					System.err.println(e);
 				}
 
-				obligations.add(match.getValue());
+				obligationExpressions= match.getValue();
 			}
 		}
 	}
@@ -354,19 +361,19 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 		NodeList nodes = root.getChildNodes();
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
-			if (node.getNodeName().equals("AdviceExpression")) {
-				JAXBElement<AdviceExpressionType> match = null;
+			if (node.getNodeName().equals("AdviceExpressions")) {
+				JAXBElement<AdviceExpressionsType> match = null;
 				try {
 					JAXBContext jc = JAXBContext
 							.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
 					Unmarshaller u = jc.createUnmarshaller();
-					match = (JAXBElement<AdviceExpressionType>) u
+					match = (JAXBElement<AdviceExpressionsType>) u
 							.unmarshal(root);
 				} catch (Exception e) {
 					System.err.println(e);
 				}
 
-				advice.add(match.getValue());
+				adviceExpressions = match.getValue();
 			}
 		}
 	}
@@ -391,14 +398,17 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 	/**
 	 * Handles all the CombinerParameters in the policy or policy set
 	 */
-	private void handleParameters(Node root) throws ParsingException {
+	private List handleParameters(Node root) throws ParsingException {
 		NodeList nodes = root.getChildNodes();
+		List parameters = new ArrayList();
 
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("CombinerParameter"))
 				parameters.add(CombinerParameter.getInstance(node));
 		}
+		
+		return parameters;
 	}
 
 	/**
@@ -407,7 +417,11 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 	 * @return the policy id
 	 */
 	public URI getId() {
-		return idAttr;
+		if(policyId != null) {
+			return URI.create(policyId);
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -436,7 +450,7 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 	 * @return a <code>List</code> of <code>CombinerParameter</code>s
 	 */
 	public List getCombiningParameters() {
-		return parameters;
+		return this.combinerParametersOrRuleCombinerParametersOrVariableDefinition;
 	}
 
 	/**
@@ -495,8 +509,8 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 	 * 
 	 * @return the policy's obligations
 	 */
-	public Set getObligations() {
-		return obligations;
+	public ObligationExpressionsType getObligations() {
+		return obligationExpressions;
 	}
 
 	/**
@@ -525,7 +539,7 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 		 */
 		if (target == null) {
 			throw new RuntimeException("No target found in policy with id="
-					+ idAttr);
+					+ policyId);
 		}
 
 		return ((Target) target).match(context);
@@ -576,31 +590,27 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 	 */
 	public Result evaluate(EvaluationCtx context) {
 		// evaluate
-		Result result = combiningAlg
-				.combine(context, parameters, childElements);
+		Result result = null;//combiningAlg.combine(context, this.combinerParametersOrRuleCombinerParametersOrVariableDefinition, childElements);
 
-		if (obligations.size() > 0) {
+		if (obligationExpressions.getObligationExpression().size() > 0) {
 			// now, see if we should add any obligations to the set
-			int effect = result.getDecision();
+			int effect = result.getDecision().ordinal();
 
-			if ((effect == Result.DECISION_INDETERMINATE)
-					|| (effect == Result.DECISION_NOT_APPLICABLE)) {
+			if ((effect == DecisionType.INDETERMINATE.ordinal())
+					|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
 				// we didn't permit/deny, so we never return obligations
 				return result;
 			}
 
 			if (metaData.getXACMLVersion() == Integer
 					.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
-				for (ObligationExpressionsType myObligations : (Set<ObligationExpressionsType>) obligations) {
-					for (ObligationExpressionType myObligation : myObligations
-							.getObligationExpression()) {
+				for (ObligationExpressionType myObligation : obligationExpressions.getObligationExpression()) {
 						if (myObligation.getFulfillOn().ordinal() == effect) {
 							result.addObligation(myObligation, context);
 						}
-					}
 				}
 			} else {
-				Iterator it = obligations.iterator();
+				Iterator it = obligationExpressions.getObligationExpression().iterator();
 				while (it.hasNext()) {
 					Obligation obligation = (Obligation) (it.next());
 					if (obligation.getFulfillOn() == effect) {
@@ -610,22 +620,23 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 			}
 		}
 		/* If we have advice, it's definitely a 3.0 policy */
-		if (advice.size() > 0) {
-			int effect = result.getDecision();
+		if (adviceExpressions.getAdviceExpression().size() > 0) {
+			int effect = result.getDecision().ordinal();
 
-			if ((effect == Result.DECISION_INDETERMINATE)
-					|| (effect == Result.DECISION_NOT_APPLICABLE)) {
+			if ((effect == DecisionType.INDETERMINATE.ordinal())
+					|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
 				// we didn't permit/deny, so we never return advices
 				return result;
 			}
-			for (AdviceExpressionsType myAdvices : (Set<AdviceExpressionsType>) advice) {
-				for (AdviceExpressionType myAdvice : myAdvices
-						.getAdviceExpression()) {
-					if (myAdvice.getAppliesTo().ordinal() == effect) {
-						result.addAdvice(myAdvice);
-					}
-				}
-			}
+			//TODO: Fix advice parsing
+//			for (AdviceExpressionsType myAdvices : (Set<AdviceExpressionsType>) advice) {
+//				for (AdviceType myAdvice : myAdvices.getAdviceExpression()) {
+//					if (myAdvice.getAppliesTo().ordinal() == effect) {
+//						AdviceType adviceType = new AdviceType();
+//						result.addAdvice(myAdvice);
+//					}
+//				}
+//			}
 		}
 
 		if (context.getIncludeInResults().size() > 0) {
@@ -650,14 +661,14 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 			((CombinerElement) (it.next())).encode(output, indenter);
 		}
 
-		if (obligations.size() != 0) {
+		if (obligationExpressions.getObligationExpression().size() != 0) {
 			PrintStream out = new PrintStream(output);
 			String indent = indenter.makeString();
 
 			out.println(indent + "<Obligations>");
 			indenter.in();
 
-			it = obligations.iterator();
+			it = obligationExpressions.getObligationExpression().iterator();
 			while (it.hasNext()) {
 				((Obligation) (it.next())).encode(output, indenter);
 			}
@@ -670,7 +681,7 @@ public abstract class AbstractPolicy extends PolicyTreeElement {
 	@Override
 	public String toString() {
 		String className = this.getClass().getSimpleName();
-		return className + " id: \"" + idAttr.toString() + "\"";
+		return className + " id: \"" + policyId + "\"";
 	}
 
 }

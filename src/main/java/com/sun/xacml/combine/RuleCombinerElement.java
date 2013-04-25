@@ -49,6 +49,7 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -92,8 +93,9 @@ public class RuleCombinerElement extends CombinerElement
      *
      * @return the element's <code>Rule</code>
      */
-    public Rule getRule() {
-        return (Rule)(getElement());
+    public RuleType getRule() {
+//        return getElement();
+    	return null;
     }
 
     /**
@@ -105,26 +107,7 @@ public class RuleCombinerElement extends CombinerElement
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
-        Iterator it = getParameters().iterator();
-
-        if (it.hasNext()) {
-            PrintStream out = new PrintStream(output);
-            String indent = indenter.makeString();
-
-            out.println(indent + "<RuleCombinerParameters RuleIdRef=\"" +
-                        getRule().getId() + "\">");
-            indenter.in();
-            
-            while (it.hasNext()) {
-                CombinerParameter param = (CombinerParameter)(it.next());
-                param.encode(output, indenter);
-            }
-            
-            out.println(indent + "</RuleCombinerParameters>");
-            indenter.out();
-        }
-
-        getRule().encode(output, indenter);
+       
     }
 
 	@Override

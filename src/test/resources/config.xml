@@ -153,6 +153,7 @@
                 </attributeFinderModule>
                 -->
                 <attributeFinderModule class="com.sun.xacml.finder.impl.SelectorModule" />
+                <attributeFinderModule class="com.sun.xacml.finder.impl.CurrentEnvModule" />
                 <policyFinderModule
                         class="com.thalesgroup.authzforce.policyfinder.FilePolicyFinder">
                         <list>

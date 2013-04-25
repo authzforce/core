@@ -319,7 +319,7 @@ public class MatchFunction extends FunctionBase {
 
 		boolean boolResult = false;
 
-		switch (Integer.parseInt(getFunctionId())) {
+		switch (getId(getFunctionName())) {
 
 		case ID_REGEXP_STRING_MATCH:
 		case ID_STRING_REGEXP_MATCH: {

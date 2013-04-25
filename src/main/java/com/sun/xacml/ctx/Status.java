@@ -36,20 +36,21 @@
 
 package com.sun.xacml.ctx;
 
-import com.sun.xacml.Indenter;
-import com.sun.xacml.ParsingException;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
 
 
 /**
@@ -59,7 +60,7 @@ import org.w3c.dom.NodeList;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Status
+public class Status extends StatusType
 {
 
     /**

@@ -130,7 +130,9 @@ public class Target extends TargetType {
 	}
 
 	/**
-	 * Returns whether or not this <code>Target</code> matches any request.
+	 * Returns whether or not this <code>Target</code> matches any request. If
+	 * the list of anyOf elements is empty it means that the target match any
+	 * context.
 	 * 
 	 * @param version
 	 *            the version of the context
@@ -138,7 +140,7 @@ public class Target extends TargetType {
 	 * @return true if this Target matches any request, false otherwise
 	 */
 	public boolean matchesAny(int version) {
-		boolean matchAny = false;
+		boolean matchAny = true;
 		for (AnyOfType anyOf : this.anyOf) {
 			for (AllOfType allOf : anyOf.getAllOf()) {
 				matchAny = allOf.getMatch().isEmpty();
@@ -165,14 +167,18 @@ public class Target extends TargetType {
 		if (matchesAny(context.getVersion())) {
 			return new MatchResult(MatchResult.MATCH);
 		}
+		
+		
 
 		for (AnyOfType anyOfList : this.anyOf) {
 			for (AllOfType allOfList : anyOfList.getAllOf()) {
-				for (MatchType matchList : allOfList.getMatch()) {					
-					if(matchList.getAttributeDesignator() != null) {
-						result = new MatchResult(MatchResult.MATCH);
-					} else if(matchList.getAttributeSelector() != null) {
-						result = new MatchResult(MatchResult.MATCH);
+				for (MatchType matchList : allOfList.getMatch()) {
+					if (matchList.getAttributeDesignator() != null) {
+						result = ((Match)matchList).match(context);
+//						result = new MatchResult(MatchResult.MATCH);
+					} else if (matchList.getAttributeSelector() != null) {
+						result = ((Match)matchList).match(context);
+//						result = new MatchResult(MatchResult.MATCH);
 					} else {
 						LOGGER.error("failed to match any element of Target");
 						return new MatchResult(MatchResult.NO_MATCH);
@@ -180,7 +186,7 @@ public class Target extends TargetType {
 				}
 			}
 		}
-		
+
 		// if we got here, then everything matched
 		return result;
 	}

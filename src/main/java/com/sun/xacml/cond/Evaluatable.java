@@ -39,6 +39,7 @@ package com.sun.xacml.cond;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
+
 import java.util.List;
 
 
@@ -51,7 +52,7 @@ import java.util.List;
  * @since 1.0
  * @author Seth Proctor
  */
-public interface Evaluatable extends Expression
+public interface Evaluatable
 {
 
     /**

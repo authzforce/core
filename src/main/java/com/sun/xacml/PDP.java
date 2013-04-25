@@ -44,8 +44,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -53,6 +51,7 @@ import javax.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
@@ -87,8 +86,8 @@ public class PDP {
 	private ResourceFinder resourceFinder;
 
 	// the logger we'll use for all messages
-	private static final Logger OLD_LOGGER = Logger.getLogger(PDP.class
-			.getName());
+//	private static final Logger OLD_LOGGER = Logger.getLogger(PDP.class
+//			.getName());
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
 			.getLogger(PDP.class.getName());
 
@@ -122,7 +121,7 @@ public class PDP {
 	 *            external attributes, etc.
 	 */
 	public PDP(PDPConfig config) {
-		OLD_LOGGER.fine("creating a PDP");
+		LOGGER.info("creating a PDP");
 
 		this.config = config;
 
@@ -269,7 +268,7 @@ public class PDP {
 			}
 			response = this.evaluate(jaxbRequest);
 		} catch (JAXBException e) {
-			OLD_LOGGER.log(Level.INFO, "the PDP receieved an invalid request",
+			LOGGER.info("the PDP receieved an invalid request",
 					e);
 
 			// there was something wrong with the request, so we return
@@ -280,7 +279,7 @@ public class PDP {
 			Status status = new Status(code, e.getMessage());
 
 			response = new ResponseCtx(new Result(
-					Result.DECISION_INDETERMINATE, status));
+					DecisionType.INDETERMINATE, status));
 		}
 		return response;
 	}
@@ -319,12 +318,9 @@ public class PDP {
 					for (AttributesType resourcesAttr : resources) {
 						RequestType tmpRequest = new RequestType();
 						tmpRequest.setMultiRequests(request.getMultiRequests());
-						tmpRequest.setRequestDefaults(request
-								.getRequestDefaults());
-						tmpRequest.setReturnPolicyIdList(request
-								.isReturnPolicyIdList());
-						tmpRequest.setCombinedDecision(request
-								.isCombinedDecision());
+						tmpRequest.setRequestDefaults(request.getRequestDefaults());
+						tmpRequest.setReturnPolicyIdList(request.isReturnPolicyIdList());
+						tmpRequest.setCombinedDecision(request.isCombinedDecision());
 						tmpRequest.getAttributes().add(resourcesAttr);
 						tmpRequest.getAttributes().add(actionsAttr);
 						tmpRequest.getAttributes().add(subjectAttr);
@@ -403,7 +399,7 @@ public class PDP {
 			code.add(Status.STATUS_SYNTAX_ERROR);
 			Status status = new Status(code, pe.getMessage());
 
-			return new ResponseCtx(new Result(Result.DECISION_INDETERMINATE,
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE,
 					status));
 		}
 	}
@@ -448,7 +444,7 @@ public class PDP {
 				String msg = "Couldn't find any resources to work on.";
 
 				return new ResponseCtx(new Result(
-						Result.DECISION_INDETERMINATE, new Status(code, msg),
+						DecisionType.INDETERMINATE, new Status(code, msg),
 						context.getResourceId().encode()));
 			}
 
@@ -481,7 +477,7 @@ public class PDP {
 				Status status = (Status) (failureMap.get(resource));
 
 				// add a new result
-				results.add(new Result(Result.DECISION_INDETERMINATE, status,
+				results.add(new Result(DecisionType.INDETERMINATE, status,
 						resource.encode()));
 			}
 
@@ -504,15 +500,18 @@ public class PDP {
 
 		// see if there weren't any applicable policies
 		if (finderResult.notApplicable())
-			return new Result(Result.DECISION_NOT_APPLICABLE, null, context
+			return new Result(DecisionType.NOT_APPLICABLE, null, context
 					.getResourceId().encode(), null, null, context.getIncludeInResults());
 
 		// see if there were any errors in trying to get a policy
 		if (finderResult.indeterminate())
-			return new Result(Result.DECISION_INDETERMINATE,
+			return new Result(DecisionType.INDETERMINATE,
 					finderResult.getStatus(), context.getResourceId().encode(), null, null, context.getIncludeInResults());
 
 		// we found a valid policy, so we can do the evaluation
+		if (finderResult.getType().equals("PolicySet")) {
+			return finderResult.getPolicySet().evaluate(context);	
+		}
 		return finderResult.getPolicy().evaluate(context);
 	}
 
@@ -548,7 +547,7 @@ public class PDP {
 					+ pe.getMessage());
 
 			response = new ResponseCtx(new Result(
-					Result.DECISION_INDETERMINATE, status));
+					DecisionType.INDETERMINATE, status));
 		}
 
 		// if we didn't have a problem above, then we should go ahead

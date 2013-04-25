@@ -215,14 +215,14 @@ public class BaseAttributeFactory extends AttributeFactory
         }
     }
     
-    public AttributeValueType createValue(AttributeValueType root, String type)
+    public AttributeValue createValue(AttributeValueType attrVal, String type)
             throws UnknownIdentifierException, ParsingException
         {
             AttributeProxy proxy = (AttributeProxy)(attributeMap.get(type));
 
             if (proxy != null) {
                 try {
-                	return com.sun.xacml.attr.xacmlv3.AttributeValue.getInstance(root);
+                	return AttributeValue.getInstance(attrVal);
 //                    return proxy.getInstance(root);
                 } catch (Exception e) {
                     throw new ParsingException("couldn't create " + type +
@@ -268,5 +268,16 @@ public class BaseAttributeFactory extends AttributeFactory
                                                  " aren't supported.");
         }
     }
+    
+    public AttributeValue createValue(String dataType, String value)
+            throws UnknownIdentifierException, ParsingException
+        {
+    	if(dataType != null) {
+    		return this.createValue(URI.create(dataType), value);
+    	} else {
+    		throw new ParsingException("DataType cannot be null");
+    	}
+    	
+        }
 
 }

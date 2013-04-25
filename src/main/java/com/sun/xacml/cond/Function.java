@@ -40,6 +40,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 
@@ -79,14 +81,14 @@ public abstract class Function extends FunctionType
      * its sub-function when <code>checkInputs</code> is called on the
      * higher-order function.
      *
-     * @param inputs the <code>List</code> of inputs for the function
+     * @param expression the <code>List</code> of inputs for the function
      * @param context the representation of the request
      *
      * @return a result containing the <code>AttributeValue</code> computed
      *         when evaluating the function, or <code>Status</code>
      *         specifying some error condition
      */
-    public abstract EvaluationResult evaluate(List<Evaluatable> inputs, EvaluationCtx context);
+    public abstract EvaluationResult evaluate(List<JAXBElement<? extends ExpressionType>> expression, EvaluationCtx context);
 
     /**
      * Returns the identifier of this function as known by the factories.

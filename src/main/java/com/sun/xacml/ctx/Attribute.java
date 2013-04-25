@@ -37,6 +37,7 @@ package com.sun.xacml.ctx;
 
 import com.sun.xacml.Indenter;
 
+import com.sun.xacml.Obligation;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 
@@ -47,11 +48,19 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 import java.io.PrintStream;
 import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.StringWriter;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -63,28 +72,40 @@ import org.w3c.dom.NodeList;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Attribute {
+public class Attribute extends AttributeType implements Serializable {
 
+	/**
+	 * Generated Serial ID 
+	 */
+	private static final long serialVersionUID = -2976070663545305371L;
+	
+	
 	// required meta-data attributes
-	private URI id;
+//	private URI id;
 	private URI type;
 	private URI category;
 
 	// optional meta-data attributes
-	private String issuer = null;
+//	private String issuer = null;
 	private DateTimeAttribute issueInstant = null;
 
 	// the single value associated with this attribute
-	private List<AttributeValue> attributeValues;
+//	private List<AttributeValue> attributeValues;
 
 	/**
 	 * whether to include this attribute in the result. This is useful to
 	 * correlate requests with their responses in case of multiple requests.
 	 * optional one defined only in XACML3
 	 */
-	private boolean includeInResult;
+//	private boolean includeInResult;
 
 	private int xacmlVersion;
+	
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(Attribute.class);
 
 	/**
 	 * Creates a new <code>Attribute</code> of the type specified in the given
@@ -106,8 +127,8 @@ public class Attribute {
 	 *            XACML version
 	 */
 	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant,
-			AttributeValue value, boolean includeInResult, int version) {
-		this(id, value.getType(), issuer, issueInstant, Arrays.asList(value),
+			AttributeValueType value, boolean includeInResult, int version) {
+		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value),
 				includeInResult, version);
 	}
 	
@@ -133,8 +154,8 @@ public class Attribute {
 	 *            XACML version
 	 */
 	public Attribute(URI id, String issuer, URI category, DateTimeAttribute issueInstant,
-			AttributeValue value, boolean includeInResult, int version) {
-		this(id, value.getType(), category, issuer, issueInstant, Arrays.asList(value),
+			AttributeValueType value, boolean includeInResult, int version) {
+		this(id, URI.create(value.getDataType()), category, issuer, issueInstant, Arrays.asList(value),
 				includeInResult, version);
 	}
 
@@ -156,9 +177,9 @@ public class Attribute {
 	 *            XACML version
 	 */
 	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant,
-			AttributeValue value, int version) {
+			AttributeValueType value, int version) {
 
-		this(id, value.getType(), issuer, issueInstant, Arrays.asList(value),
+		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value),
 				false, version);
 	}
 
@@ -184,13 +205,13 @@ public class Attribute {
 	 */
 	public Attribute(URI id, URI type, String issuer,
 			DateTimeAttribute issueInstant,
-			List<AttributeValue> attributeValues, boolean includeInResult,
+			List<AttributeValueType> attributeValues, boolean includeInResult,
 			int xacmlVersion) {
-		this.id = id;
+		this.attributeId = id.toASCIIString();
+		this.attributeValue = attributeValues;
 		this.type = type;
 		this.issuer = issuer;
 		this.issueInstant = issueInstant;
-		this.attributeValues = attributeValues;
 		this.includeInResult = includeInResult;
 		this.xacmlVersion = xacmlVersion;
 		this.category = null;
@@ -218,14 +239,14 @@ public class Attribute {
 	 */
 	public Attribute(URI id, URI type, URI category, String issuer,
 			DateTimeAttribute issueInstant,
-			List<AttributeValue> attributeValues, boolean includeInResult,
+			List<AttributeValueType> attributeValues, boolean includeInResult,
 			int xacmlVersion) {
-		this.id = id;
+		this.attributeId = id.toASCIIString();
 		this.type = type;
 		this.category = category;
 		this.issuer = issuer;
 		this.issueInstant = issueInstant;
-		this.attributeValues = attributeValues;
+		this.attributeValue = attributeValues;
 		this.includeInResult = includeInResult;
 		this.xacmlVersion = xacmlVersion;		
 	}
@@ -249,7 +270,7 @@ public class Attribute {
 		URI category = null;
 		String issuer = null;
 		DateTimeAttribute issueInstant = null;
-		List<AttributeValue> values = new ArrayList<AttributeValue>();
+		List<AttributeValueType> values = new ArrayList<AttributeValueType>();
 		boolean includeInResult = false;
 
 		AttributeFactory attrFactory = AttributeFactory.getInstance();
@@ -334,8 +355,7 @@ public class Attribute {
 			throw new ParsingException("Attribute must contain a value");
 		}
 
-		return new Attribute(id, type, category, issuer, issueInstant, values,
-				includeInResult, version);
+		return new Attribute(id, type, category, issuer, issueInstant, values, includeInResult, version);
 	}
 
 	/**
@@ -353,7 +373,11 @@ public class Attribute {
 	 * @return the attribute id
 	 */
 	public URI getId() {
-		return id;
+		if(attributeId != null) {
+			return URI.create(attributeId);
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -401,8 +425,8 @@ public class Attribute {
 	 * 
 	 * @return the attribute's value or null
 	 */
-	public List<AttributeValue> getValues() {
-		return attributeValues;
+	public List<AttributeValueType> getValues() {
+		return attributeValue;
 	}
 
 	/**
@@ -410,9 +434,9 @@ public class Attribute {
 	 * 
 	 * @return the attribute's value or null
 	 */
-	public AttributeValue getValue() {
-		if (attributeValues != null && attributeValues.size() > 0) {
-			return attributeValues.get(0);
+	public AttributeValueType getValue() {
+		if (attributeValue != null && attributeValue.size() > 0) {
+			return attributeValue.get(0);
 		}
 
 		return null;
@@ -439,40 +463,15 @@ public class Attribute {
 	 *            an object that creates indentation strings
 	 */
 	public void encode(OutputStream output, Indenter indenter) {
-
 		PrintStream out = new PrintStream(output);
-		String indent = indenter.makeString();
-		out.println(indent + "<Attribute AttributeId=\"" + id.toString() + "\"");
-
-		if ((xacmlVersion == Integer
-				.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()))) {
-			out.print(" IncludeInResult=\"" + includeInResult + "\"");
-		} else {
-			out.println(" DataType=\"" + type.toString() + "\"");
-			if (issueInstant != null) {
-				out.print(" IssueInstant=\"" + issueInstant.encode() + "\"");
-			}
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
 		}
-
-		if (issuer != null) {
-			out.print(" Issuer=\"" + issuer + "\"");
-		}
-
-		out.print(">");
-		indenter.in();
-
-		if (attributeValues != null && attributeValues.size() > 0) {
-			for (AttributeValue value : attributeValues) {
-				out.println(value.encodeWithTags(true));
-			}
-		}
-
-		indenter.out();
-
-		out.println(indent + "</Attribute>");
-
-		// write out the encoded form
-		out.println(indent + encode());
 	}
 
 	/**
@@ -482,23 +481,19 @@ public class Attribute {
 	 * @return the text-encoded XML
 	 */
 	public String encode() {
-		String encoded = "";
-		for (AttributeValue value : attributeValues) {
-			encoded += "<Attribute AttributeId=\"" + id.toString() + "\" "
-					+ "DataType=\"" + type.toString() + "\"";
-
-			if (issuer != null) {
-				encoded += " Issuer=\"" + issuer + "\"";
-			}
-
-			if (issueInstant != null) {
-				encoded += " IssueInstant=\"" + issueInstant.encode() + "\"";
-			}
-
-			encoded += ">" + value.encodeWithTags(false) + "</Attribute>";
+		StringWriter attribute = new StringWriter();
+		String str = "";
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, attribute);
+		} catch (Exception e) {
+			LOGGER.error(e);
 		}
-
-		return encoded;
+		attribute.write(str);
+		
+		return str;
 	}
 
 }

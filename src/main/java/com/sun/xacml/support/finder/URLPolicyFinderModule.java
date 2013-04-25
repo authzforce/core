@@ -36,12 +36,10 @@
 
 package com.sun.xacml.support.finder;
 
-import com.sun.xacml.AbstractPolicy;
+import com.sun.xacml.xacmlv3.Policy;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.Policy;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.PolicyReference;
-import com.sun.xacml.PolicySet;
 import com.sun.xacml.VersionConstraints;
 
 import com.sun.xacml.finder.PolicyFinder;
@@ -167,7 +165,7 @@ public class URLPolicyFinderModule extends PolicyFinderModule
         }
 
         // try resolving the URL
-        AbstractPolicy policy = null;
+        Policy policy = null;
         try {
             policy = reader.readPolicy(url);
         } catch (ParsingException pe) {
@@ -185,10 +183,11 @@ public class URLPolicyFinderModule extends PolicyFinderModule
         if (type == PolicyReference.POLICY_REFERENCE) {
             if (! (policy instanceof Policy))
                 return new PolicyFinderResult();
-        } else {
-            if (! (policy instanceof PolicySet))
-                return new PolicyFinderResult();
-        }
+        } 
+//        else {
+//            if (! (policy instanceof PolicySet))
+//                return new PolicyFinderResult();
+//        }
 
         // finally, check that the constraints match ... note that in a more
         // powerful module, you could actually have used the constraints to

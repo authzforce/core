@@ -78,6 +78,7 @@ public class IntegerAttribute extends AttributeValue
     public IntegerAttribute(long value) {
         super(identifierURI);
         this.value = value;
+        this.content.add(value);
     }
 
     /**

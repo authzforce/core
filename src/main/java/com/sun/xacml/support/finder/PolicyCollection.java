@@ -36,30 +36,25 @@
 
 package com.sun.xacml.support.finder;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.MatchResult;
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.PolicyReference;
-import com.sun.xacml.PolicySet;
-import com.sun.xacml.Target;
-import com.sun.xacml.TargetMatch;
-import com.sun.xacml.TargetSection;
-import com.sun.xacml.VersionConstraints;
-
-import com.sun.xacml.combine.PolicyCombiningAlgorithm;
-
-import com.sun.xacml.ctx.Status;
-
 import java.net.URI;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.MatchResult;
+import com.sun.xacml.PolicyReference;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.VersionConstraints;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.ctx.Status;
+import com.sun.xacml.xacmlv3.AnyOf;
+import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.Target;
 
 
 /**
@@ -96,6 +91,8 @@ public class PolicyCollection
 
     // the actual collection of policies
     private HashMap policies;
+    
+    private HashMap policieSets;
 
     // the single instance of the comparator we'll use for managing versions
     private VersionComparator versionComparator = new VersionComparator();
@@ -114,15 +111,15 @@ public class PolicyCollection
      * used by all wrapping policy sets.
      */
     static {
-        target =
-            new Target(new TargetSection(null, TargetMatch.SUBJECT,
-                                         PolicyMetaData.XACML_VERSION_2_0),
-                       new TargetSection(null, TargetMatch.RESOURCE,
-                                         PolicyMetaData.XACML_VERSION_2_0),
-                       new TargetSection(null, TargetMatch.ACTION,
-                                         PolicyMetaData.XACML_VERSION_2_0),
-                       new TargetSection(null, TargetMatch.ENVIRONMENT,
-                                         PolicyMetaData.XACML_VERSION_2_0));
+        target = new Target(new AnyOf());
+//            new Target(new TargetSection(null, TargetMatch.SUBJECT,
+//                                         PolicyMetaData.XACML_VERSION_2_0),
+//                       new TargetSection(null, TargetMatch.RESOURCE,
+//                                         PolicyMetaData.XACML_VERSION_2_0),
+//                       new TargetSection(null, TargetMatch.ACTION,
+//                                         PolicyMetaData.XACML_VERSION_2_0),
+//                       new TargetSection(null, TargetMatch.ENVIRONMENT,
+//                                         PolicyMetaData.XACML_VERSION_2_0));
     };
 
     /**
@@ -131,6 +128,7 @@ public class PolicyCollection
      */
     public PolicyCollection() {
         policies = new HashMap();
+        policieSets = new HashMap();
         combiningAlg = null;
     }
 
@@ -145,6 +143,7 @@ public class PolicyCollection
     public PolicyCollection(PolicyCombiningAlgorithm combiningAlg,
                             URI parentPolicyId) {
         policies = new HashMap();
+        policieSets = new HashMap();
 
         this.combiningAlg = combiningAlg;
         this.parentId = parentPolicyId;
@@ -160,8 +159,12 @@ public class PolicyCollection
      *
      * @return true if the policy was added, false otherwise
      */
-    public boolean addPolicy(AbstractPolicy policy) {
-        return addPolicy(policy, policy.getId().toString());
+    public boolean addPolicy(Policy  policy) {
+        return addPolicy(policy, policy.getPolicyId());
+    }
+    
+    public boolean addPolicySet(PolicySet  policySet) {
+        return addPolicySet(policySet, policySet.getPolicySetId());
     }
 
     /**
@@ -175,7 +178,7 @@ public class PolicyCollection
      *
      * @return true if the policy was added, false otherwise
      */
-    public boolean addPolicy(AbstractPolicy policy, String identifier) {
+    public boolean addPolicy(Policy policy, String identifier) {
         if (policies.containsKey(identifier)) {
             // this identifier is already is use, so see if this version is
             // already in the set
@@ -189,7 +192,22 @@ public class PolicyCollection
             return set.add(policy);
         }
     }
-
+    
+    public boolean addPolicySet(PolicySet policySet, String identifier) {
+        if (policieSets.containsKey(identifier)) {
+            // this identifier is already is use, so see if this version is
+            // already in the set
+            TreeSet set = (TreeSet)(policieSets.get(identifier));
+            return set.add(policySet);
+        } else {
+            // this identifier isn't already being used, so create a new
+            // set in the map for it, and add the policy
+            TreeSet set = new TreeSet(versionComparator);
+            policieSets.put(identifier, set);
+            return set.add(policySet);
+        }
+    }
+    
     /**
      * Attempts to retrieve a policy based on the given context. If multiple
      * policies match then this will either throw an exception or wrap the
@@ -205,18 +223,17 @@ public class PolicyCollection
      * @throws TopLevelPolicyException if multiple policies match but this
      *                                 instance wasn't setup to wrap policies
      */
-    public AbstractPolicy getPolicy(EvaluationCtx context)
+    public PolicySet getPolicySet(EvaluationCtx context)
         throws TopLevelPolicyException
     {
         // setup a list of matching policies
         ArrayList list = new ArrayList();
         // get an iterator over all the identifiers
-        Iterator it = policies.values().iterator();
+        Iterator it = policieSets.values().iterator();
 
         while (it.hasNext()) {
             // for each identifier, get only the most recent policy
-            AbstractPolicy policy =
-                (AbstractPolicy)(((TreeSet)(it.next())).first());
+            PolicySet policy = (PolicySet)(((TreeSet)(it.next())).first());
 
             // see if we match
             MatchResult match = policy.match(context);
@@ -248,7 +265,72 @@ public class PolicyCollection
         case 0:
             return null;
         case 1:
-            return ((AbstractPolicy)(list.get(0)));
+            return ((PolicySet)(list.get(0)));
+        //FIXME
+        default:        	
+            return new PolicySet(parentId, combiningAlg, target, list);
+        }
+    }
+
+    /**
+     * Attempts to retrieve a policy based on the given context. If multiple
+     * policies match then this will either throw an exception or wrap the
+     * policies under a new PolicySet (depending on how this instance was
+     * constructed). If no policies match, then this will return null. See
+     * the comment in the class header about how this behaves when multiple
+     * versions of the same policy exist.
+     *
+     * @param context representation of a request
+     *
+     * @return a matching policy, or null if no policy matches
+     *
+     * @throws TopLevelPolicyException if multiple policies match but this
+     *                                 instance wasn't setup to wrap policies
+     */
+    public Object getPolicy(EvaluationCtx context)
+        throws TopLevelPolicyException
+    {
+        // setup a list of matching policies
+        ArrayList list = new ArrayList();
+        // get an iterator over all the identifiers
+        Iterator it = policies.values().iterator();
+
+        while (it.hasNext()) {
+            // for each identifier, get only the most recent policy
+            Policy policy = (Policy)(((TreeSet)(it.next())).first());
+
+            // see if we match
+            MatchResult match = policy.match(context);
+            int result = match.getResult();
+            
+            // if there was an error, we stop right away
+            if (result == MatchResult.INDETERMINATE)
+                throw new TopLevelPolicyException(match.getStatus());
+
+            // if we matched, we keep track of the matching policy...
+            if (result == MatchResult.MATCH) {
+                // ...first checking if this is the first match and if
+                // we automaticlly nest policies
+                if ((combiningAlg == null) && (list.size() > 0)) {
+                    ArrayList code = new ArrayList();
+                    code.add(Status.STATUS_PROCESSING_ERROR);
+                    Status status = new Status(code, "too many applicable"
+                                               + " top-level policies");
+                    throw new TopLevelPolicyException(status);
+                }
+
+                list.add(policy);
+            }
+        }
+        
+        // no errors happened during the search, so now take the right
+        // action based on how many policies we found
+        switch (list.size()) {
+        case 0:
+            return null;
+        case 1:
+            return list.get(0);
+        //TODO: build a real policySet with obligations, advices etc... 
         default:
             return new PolicySet(parentId, combiningAlg, target, list);
         }
@@ -269,29 +351,32 @@ public class PolicyCollection
      *                    never impose constraints when used from a pre-2.0
      *                    XACML policy)
      */
-    public AbstractPolicy getPolicy(String identifier, int type,
+    public Policy getPolicy(String identifier, int type,
                                     VersionConstraints constraints) {
         TreeSet set = (TreeSet)(policies.get(identifier));
         
         // if we don't know about this identifier then there's nothing to do
-        if (set == null)
+        if (set == null) {
             return null;
+        }
 
         // walk through the set starting with the most recent version, looking
         // for a match until we exhaust all known versions
         Iterator it = set.iterator();
         while (it.hasNext()) {
-            AbstractPolicy policy = (AbstractPolicy)(it.next());
+            Policy policy = (Policy)(it.next());
             if (constraints.meetsConstraint(policy.getVersion())) {
                 // we found a valid version, so see if it's the right kind,
                 // and if it is then we return it
                 if (type == PolicyReference.POLICY_REFERENCE) {
-                    if (policy instanceof Policy)
+                    if (policy instanceof Policy) {
                         return policy;
-                } else {
-                    if (policy instanceof PolicySet)
-                        return policy;
-                }
+                    }
+                } 
+//                else {
+//                    if (policy instanceof PolicySet)
+//                        return policy;
+//                }
             }
         }
 
@@ -311,9 +396,18 @@ public class PolicyCollection
      */
     class VersionComparator implements Comparator {
         public int compare(Object o1, Object o2) {
+        	if(o1 instanceof Policy && o2 instanceof Policy) {
+        		return comparePolicy((Policy)o1, (Policy)o2);
+        	} else if(o1 instanceof PolicySet && o2 instanceof PolicySet) {
+        		return comparePolicySet((PolicySet)o1, (PolicySet)o2);
+        	}
+        	return 0;
+        }
+        private int comparePolicy(Policy o1, Policy o2) {
+
             // we swap the parameters so that sorting goes largest to smallest
-            String v1 = ((AbstractPolicy)o2).getVersion();
-            String v2 = ((AbstractPolicy)o1).getVersion();
+            String v1 = o2.getVersion();
+            String v2 = o1.getVersion();
 
             // do a quick check to see if the strings are equal (note that
             // even if the strings aren't equal, the versions can still
@@ -328,8 +422,9 @@ public class PolicyCollection
 
             while (tok1.hasMoreTokens()) {
                 // if there's nothing left in tok2, then v1 is bigger
-                if (! tok2.hasMoreTokens())
+                if (! tok2.hasMoreTokens()) {
                     return 1;
+                }
 
                 // get the next elements in the version, convert to numbers,
                 // and compare them (continuing with the loop only if the
@@ -337,22 +432,80 @@ public class PolicyCollection
                 int num1 = Integer.parseInt(tok1.nextToken());
                 int num2 = Integer.parseInt(tok2.nextToken());
 
-                if (num1 > num2)
+                if (num1 > num2) {
                     return 1;
+                }
 
-                if (num1 < num2)
+                if (num1 < num2) {
                     return -1;
+                }
             }
 
             // if there's still something left in tok2, then it's bigger
-            if (tok2.hasMoreTokens())
+            if (tok2.hasMoreTokens()) {
                 return -1;
+            }
 
             // if we got here it means both versions had the same number of
             // elements and all the elements were equal, so the versions
             // are in fact equal
             return 0;
+        
+        }
+        private int comparePolicySet(PolicySet o1, PolicySet o2) {
+
+            // we swap the parameters so that sorting goes largest to smallest
+            String v1 = o2.getVersion();
+            String v2 = o1.getVersion();
+
+            // do a quick check to see if the strings are equal (note that
+            // even if the strings aren't equal, the versions can still
+            // be equal)
+            if (v1.equals(v2)) {
+                return 0;
+            }
+
+            // setup tokenizers, and walk through both strings one set of
+            // numeric values at a time
+            StringTokenizer tok1 = new StringTokenizer(v1, ".");
+            StringTokenizer tok2 = new StringTokenizer(v2, ".");
+
+            while (tok1.hasMoreTokens()) {
+                // if there's nothing left in tok2, then v1 is bigger
+                if (! tok2.hasMoreTokens()) {
+                	return 1;	
+                }                    
+
+                // get the next elements in the version, convert to numbers,
+                // and compare them (continuing with the loop only if the
+                // two values were equal)
+                int num1 = Integer.parseInt(tok1.nextToken());
+                int num2 = Integer.parseInt(tok2.nextToken());
+
+                if (num1 > num2) {
+                    return 1;
+                }
+
+                if (num1 < num2) {
+                    return -1;
+                }
+            }
+
+            // if there's still something left in tok2, then it's bigger
+            if (tok2.hasMoreTokens()) {
+                return -1;
+            }
+
+            // if we got here it means both versions had the same number of
+            // elements and all the elements were equal, so the versions
+            // are in fact equal
+            return 0;
+        
         }
     }
+
+	public int getNbPolicies() {
+		return this.policies.size();
+	}
 
 }

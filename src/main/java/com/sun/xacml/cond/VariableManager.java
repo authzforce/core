@@ -51,7 +51,8 @@ import org.w3c.dom.NodeList;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.ProcessingException;
-import com.sun.xacml.attr.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.ExpressionTools;
 
 /**
  * This class is used by the parsing routines to handle the relationships
@@ -203,7 +204,7 @@ public class VariableManager extends ExpressionType
         if (xprNode.getNodeName().equals("Apply")) {
             try {
                 // get the function in the Apply...
-                ExpressionType function = ExpressionHandler.
+                ExpressionType function = ExpressionTools.
                     getFunction(xprNode, metaData,
                                 FunctionFactory.getGeneralInstance());
                 
@@ -252,7 +253,7 @@ public class VariableManager extends ExpressionType
 
         // if we could get the definition, then ask it for the type
         if (definition != null)
-            return definition.getExpression().getType();
+            return ((Expression)definition.getExpression().getValue()).getType();
 
         // we exhausted all our ways to get the right answer
         throw new ProcessingException("we couldn't establish the type: " +
@@ -293,7 +294,7 @@ public class VariableManager extends ExpressionType
 
         // if we could get the definition, then ask it for the bag return
         if (definition != null)
-            return definition.getExpression().returnsBag();
+            return ((Expression)definition.getExpression().getValue()).returnsBag();
 
         // we exhausted all our ways to get the right answer
         throw new ProcessingException("couldn't establish bag return for " +

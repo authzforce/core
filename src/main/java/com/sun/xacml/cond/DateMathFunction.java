@@ -254,7 +254,7 @@ public class DateMathFunction extends FunctionBase
         // Now that we have real values, perform the date math operation.
         AttributeValue attrResult = null;
 
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         // These two functions are basically the same except for sign.
         // And they both need to deal with sign anyway, so they share
         // their code.

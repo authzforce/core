@@ -36,16 +36,18 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.Indenter;
-import com.sun.xacml.PolicyTreeElement;
-
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import java.io.OutputStream;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParametersType;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.PolicyTreeElement;
+import com.sun.xacml.Rule;
+import com.sun.xacml.xacmlv3.Policy;
 
 
 /**
@@ -59,7 +61,7 @@ public abstract class CombinerElement extends PolicyTreeElement
 {
 
     // the element to be combined
-    private PolicyTreeElement element;
+    private Object element;
 
     // the parameters used with this element
     private List parameters;
@@ -70,7 +72,11 @@ public abstract class CombinerElement extends PolicyTreeElement
      *
      * @param element a <code>PolicyTreeElement</code> to use in combining
      */
-    public CombinerElement(PolicyTreeElement element) {
+    public CombinerElement(PolicyType element) {
+        this(element, null);
+    }
+    
+    public CombinerElement(Rule element) {
         this(element, null);
     }
 
@@ -83,14 +89,28 @@ public abstract class CombinerElement extends PolicyTreeElement
      *                   <code>CombinerParameter<code>s provided for general
      *                   use (for all pre-2.0 policies this must be empty)
      */
-    public CombinerElement(PolicyTreeElement element, List parameters) {
+    public CombinerElement(PolicyType element, List parameters) {
         this.element = element;
 
-        if (parameters == null)
+        if (parameters == null) {
             this.parameters = Collections.unmodifiableList(new ArrayList());
-        else
+        } else {
             this.parameters = Collections.
                 unmodifiableList(new ArrayList(parameters));
+        }
+    }
+    
+    public CombinerElement(RuleType element, List parameters) {
+    	this.element = element;
+
+        if (parameters == null) {
+            this.parameters = Collections.unmodifiableList(new ArrayList());
+            this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.unmodifiableList(new ArrayList());
+        } else {
+            this.parameters = Collections.
+                unmodifiableList(new ArrayList(parameters));
+            this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.unmodifiableList(parameters);
+        }
     }
 
     /**
@@ -98,8 +118,8 @@ public abstract class CombinerElement extends PolicyTreeElement
      *
      * @return the <code>PolicyTreeElement</code>
      */
-    public PolicyTreeElement getElement() {
-        return element;
+    public Policy getElement() {
+        return (Policy)element;
     }
 
     /**

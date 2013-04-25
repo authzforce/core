@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.sun.xacml.attr.xacmlv3;
+package com.sun.xacml.cond.xacmlv3;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -14,6 +14,7 @@ import javax.xml.bind.Marshaller;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
@@ -21,7 +22,10 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.xacmlv3.AttributeSelector;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.Evaluatable;
 
 /**
  * @author Romain Ferrari
@@ -37,7 +41,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  *         -	AttributeSelectorType.class
  */
 
-public abstract class Expression extends ExpressionType {
+public abstract class Expression extends ExpressionType implements Evaluatable {
 	
 	/**
 	 * Logger used for all classes
@@ -57,18 +61,13 @@ public abstract class Expression extends ExpressionType {
 		} else if ((expression.getClass() == ApplyType.class)) {
 
 		} else if ((expression.getClass() == AttributeSelectorType.class)) {
-
-			/*
-			 * Written in the specification but not in the schema, weird } else
-			 * if ((expression.getValue().getClass() ==
-			 * AttributeValueType.class)) {
-			 * 
-			 * }
-			 */
+			expr = AttributeSelector.getInstance((AttributeSelectorType)expression);
 		} else if ((expression.getClass() == FunctionType.class)) {
 
 		} else if ((expression.getClass() == VariableReferenceType.class)) {
 
+		} else if ((expression.getClass() == AttributeValueType.class)) {
+			expr = AttributeValue.getInstance((AttributeValueType)expression);
 		} else {
 			throw new UnknownIdentifierException(
 					"Attributes of type "

@@ -6,10 +6,13 @@ package com.sun.xacml.combine;
 import java.net.URI;
 import java.util.List;
 
-import com.sun.xacml.AbstractPolicy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.Policy;
 
 /**
  * @author Romain Ferrari
@@ -49,22 +52,22 @@ public class PermitUnlessDenyPolicyAlg extends PolicyCombiningAlgorithm {
 	 * EvaluationCtx, java.util.List, java.util.List)
 	 */
 	@Override
-	public Result combine(EvaluationCtx context, List parameters,
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List policyElements) {
 		Result result = null;
 		for (PolicyCombinerElement myPolicyCombinerElt : (List<PolicyCombinerElement>) policyElements) {
-			AbstractPolicy policy = myPolicyCombinerElt.getPolicy();
+			Policy policy = myPolicyCombinerElt.getPolicy();
 			// make sure that the policy matches the context
 			MatchResult match = policy.match(context);
 			if (match.getResult() == MatchResult.MATCH) {
 				result = policy.evaluate(context);
-				int value = result.getDecision();
-				if (value == Result.DECISION_DENY) {
+				int value = result.getDecision().ordinal();
+				if (value == DecisionType.DENY.ordinal()) {
 					return result;
 				} 
 			}
 		}
-		return new Result(Result.DECISION_PERMIT, context
+		return new Result(DecisionType.PERMIT, context
 				.getResourceId().encode(), result.getObligations());
 	}
 

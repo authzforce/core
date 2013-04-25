@@ -36,19 +36,22 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.Indenter;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
-
 import java.io.OutputStream;
 import java.io.PrintStream;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinitionType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.cond.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.ExpressionTools;
 
 
 /**
@@ -61,7 +64,7 @@ import org.w3c.dom.NodeList;
  * @since 2.0
  * @author Seth Proctor
  */
-public class VariableDefinition extends ExpressionType
+public class VariableDefinition extends VariableDefinitionType
 {
 
     // the identitifer for this definition
@@ -110,8 +113,8 @@ public class VariableDefinition extends ExpressionType
             xprNode = nodes.item(i++);
 
         // use that node to get the expression
-        ExpressionType xpr = ExpressionHandler.
-            parseExpression(xprNode, metaData, manager);
+        ExpressionType xpr = (Expression)ExpressionTools.
+            getExpression(xprNode, metaData, manager);
 
         return new VariableDefinition(variableId, xpr);
     }
@@ -130,9 +133,9 @@ public class VariableDefinition extends ExpressionType
      *
      * @return the definition's expression
      */
-    public Expression getExpression() {
-        return expression;
-    }
+//    public Expression getExpression() {
+//        return expression;
+//    }
     
     /**
      * Encodes this class into its XML representation and writes this

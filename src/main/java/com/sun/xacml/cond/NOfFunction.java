@@ -36,16 +36,16 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.attr.BooleanAttribute;
-import com.sun.xacml.attr.IntegerAttribute;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 
 
 /**
@@ -176,7 +176,7 @@ public class NOfFunction extends FunctionBase
         // check that none of the inputs is a bag
         Object [] list = inputs.toArray();
         for (int i = 0; i < list.length; i++)
-            if (((Evaluatable)(list[i])).returnsBag())
+            if (((Evaluatable)(list[i])).evaluatesToBag())
                 throw new IllegalArgumentException("n-of can't use bags");
 
         // if we got here then there were no bags, so ask the other check
@@ -195,14 +195,14 @@ public class NOfFunction extends FunctionBase
             throw new IllegalArgumentException("n-of requires an argument");
 
         // check that the first element is an Integer
-        Evaluatable eval = (Evaluatable)(list[0]);
+        Expression eval = (Expression)(list[0]);
         if (! eval.getType().toString().equals(IntegerAttribute.identifier))
             throw new IllegalArgumentException("first argument to n-of must" +
                                                " be an integer");
         
         // now check that the rest of the args are booleans
         for (int i = 1; i < list.length; i++) {
-            if (! ((Evaluatable)(list[i])).getType().toString().
+            if (! ((Expression)(list[i])).getType().toString().
                 equals(BooleanAttribute.identifier))
                 throw new IllegalArgumentException("invalid parameter in n-of"
                                                    + ": expected boolean");

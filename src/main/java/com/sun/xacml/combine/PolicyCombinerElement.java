@@ -36,17 +36,22 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.Indenter;
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicyReference;
-import com.sun.xacml.PolicySet;
-
 import java.io.OutputStream;
-import java.io.PrintStream;
-
-import java.util.Iterator;
+import java.net.URI;
 import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.sun.xacml.AbstractPolicy;
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.MatchResult;
+import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.Policy;
 
 
 /**
@@ -64,8 +69,12 @@ public class PolicyCombinerElement extends CombinerElement
      *
      * @param policy an <code>AbstractPolicy</code> to use in combining
      */
-    public PolicyCombinerElement(AbstractPolicy policy) {
+    public PolicyCombinerElement(PolicyType policy) {
         super(policy);
+    }
+    
+    public PolicyCombinerElement(PolicyType policy, List args) {
+        super(policy, args);
     }
     
     /**
@@ -86,8 +95,8 @@ public class PolicyCombinerElement extends CombinerElement
      *
      * @return the element's <code>AbstractPolicy</code>
      */
-    public AbstractPolicy getPolicy() {
-        return (AbstractPolicy)(getElement());
+    public Policy getPolicy() {
+        return (Policy)getElement();
     }
 
     /**
@@ -99,29 +108,6 @@ public class PolicyCombinerElement extends CombinerElement
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
-        if (! getParameters().isEmpty()) {
-            AbstractPolicy policy = getPolicy();
-
-            // FIXME: This is ugly and happens in several places...maybe this
-            // should get folded into the AbstractPolicy API?
-            if (policy instanceof Policy) {
-                encodeParamaters(output, indenter, "Policy",
-                                 policy.getId().toString());
-            } else if (policy instanceof PolicySet) {
-                encodeParamaters(output, indenter, "PolicySet",
-                                 policy.getId().toString());
-            } else {
-                PolicyReference ref = (PolicyReference)policy;
-                if (ref.getReferenceType() == PolicyReference.POLICY_REFERENCE)
-                    encodeParamaters(output, indenter, "Policy",
-                                     ref.getReference().toString());
-                else
-                    encodeParamaters(output, indenter, "PolicySet",
-                                     ref.getReference().toString());
-            }
-        }
-
-        getPolicy().encode(output, indenter);
     }
 
     /**
@@ -129,21 +115,60 @@ public class PolicyCombinerElement extends CombinerElement
      */
     private void encodeParamaters(OutputStream output, Indenter indenter,
                                   String prefix, String id) {
-        PrintStream out = new PrintStream(output);
-        String indent = indenter.makeString();
-        Iterator it = getParameters().iterator();
-
-        out.println(indent + "<" + prefix + "CombinerParameters " +
-                    prefix + "IdRef=\"" + id + "\">");            
-        indenter.in();
-
-        while (it.hasNext()) {
-            CombinerParameter param = (CombinerParameter)(it.next());
-            param.encode(output, indenter);
-        }
-            
-        out.println(indent + "</" + prefix + "CombinerParameters>");
-        indenter.out();
     }
+
+	@Override
+	public void equals(Object object, EqualsBuilder equalsBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void hashCode(HashCodeBuilder hashCodeBuilder) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List getChildren() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TargetType getTarget() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MatchResult match(EvaluationCtx context) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Result evaluate(EvaluationCtx context) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void encode(OutputStream output) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

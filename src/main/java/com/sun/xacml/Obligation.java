@@ -37,15 +37,16 @@ package com.sun.xacml;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpressionType;
@@ -63,12 +64,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.attr.xacmlv3.Expression;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.Result;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
@@ -84,13 +83,13 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
 public class Obligation extends ObligationType {
 
 	// the obligation id
-	private URI id;
+//	private URI id;
 
 	// effect to fulfill on, as defined in Result
 	private int fulfillOn;
 
 	// the attribute assignments
-	private List<AttributeAssignmentType> assignments;
+//	private List<AttributeAssignmentType> assignments;
 
 	private boolean isIndeterminate = false;
 	
@@ -112,7 +111,7 @@ public class Obligation extends ObligationType {
 	 * @param assignments
 	 *            a <code>List</code> of <code>Attribute</code>s
 	 */
-	public Obligation(URI id, int fulfillOn, List assignments) {
+	public Obligation(String id, int fulfillOn, List assignments) {
 		this(id, fulfillOn, assignments, false);
 	}
 
@@ -128,11 +127,11 @@ public class Obligation extends ObligationType {
 	 * @param assignments
 	 *            a <code>List</code> of <code>Attribute</code>s
 	 */
-	public Obligation(URI id, int fulfillOn, List assignments,
+	public Obligation(String id, int fulfillOn, List assignments,
 			boolean isIndeterminate) {
-		this.id = id;
+		this.obligationId = id;
 		this.fulfillOn = fulfillOn;
-		this.assignments = Collections.unmodifiableList(new ArrayList(
+		this.attributeAssignment = Collections.unmodifiableList(new ArrayList(
 				assignments));
 		this.isIndeterminate = isIndeterminate;
 	}
@@ -150,7 +149,7 @@ public class Obligation extends ObligationType {
 	 *             if the structure isn't valid
 	 */
 	public static Obligation getInstance(Node root) throws ParsingException {
-		URI id;
+		String id;
 		int fulfillOn = -1;
 		List assignments = new ArrayList();
 
@@ -158,7 +157,7 @@ public class Obligation extends ObligationType {
 		NamedNodeMap attrs = root.getAttributes();
 
 		try {
-			id = new URI(attrs.getNamedItem("ObligationId").getNodeValue());
+			id = attrs.getNamedItem("ObligationId").getNodeValue();
 		} catch (Exception e) {
 			throw new ParsingException("Error parsing required attriubte "
 					+ "ObligationId", e);
@@ -223,15 +222,15 @@ public class Obligation extends ObligationType {
 	 */
 	public static Obligation getInstance(ObligationExpressionType root,
 			EvaluationCtx context) throws ParsingException {
-		URI id;
+		String id;
 		int fulfillOn = -1;
-		List assignments = new ArrayList();
+		List<AttributeAssignmentType> assignments = new ArrayList<AttributeAssignmentType>();
 		boolean indeterminate = false;
 		EvaluationResult result = null;
 
 		AttributeFactory attrFactory = AttributeFactory.getInstance();
 
-		id = URI.create(root.getObligationId());
+		id = root.getObligationId();
 
 		fulfillOn = root.getFulfillOn().ordinal();
 
@@ -261,7 +260,7 @@ public class Obligation extends ObligationType {
 				throw new ParsingException("Obligation with AttributeSelector not implemented yet");
 //			Not implemented yet	
 			} else if (myExpr instanceof AttributeValueType) {
-				AttributeValue attrValue = (AttributeValue)myExpr;
+				AttributeValueType attrValue = (AttributeValueType)myExpr;
 				URI datatype = URI.create(XACMLDatatypes.XACML_DATATYPE_STRING.value());
 				if (attrValue.getDataType() != null) {
 					datatype = URI.create(attrValue.getDataType());
@@ -269,9 +268,28 @@ public class Obligation extends ObligationType {
 				/*
 				 * Evaluation
 				 */
-				result = attrValue.evaluate(context);
+				result = ((AttributeValue)attrValue).evaluate(context);
 				if (result.indeterminate()) {
 					indeterminate = true;
+				}
+				// an AD/AS will always return a bag
+//				BagAttribute bag = (BagAttribute) (result.getAttributeValue());
+				AttributeValueType bag = result.getAttributeValue();
+				AttributeValue attr = null;
+				for (Serializable attributeAssignmentType : bag.getContent()) {
+					AttributeAssignmentType attrAsgnType = new AttributeAssignmentType();
+					attrAsgnType.getContent().add(attributeAssignmentType);
+					attrAsgnType.setAttributeId(attrId.toASCIIString());
+					attrAsgnType.setCategory(attrsAssignment.getCategory());
+					attrAsgnType.setDataType(datatype.toASCIIString());
+					attrAsgnType.setIssuer(issuer);					
+					try {
+						attr = attrFactory.createValue(bag.getDataType(), attributeAssignmentType.toString());
+					} catch (UnknownIdentifierException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					assignments.add(attrAsgnType);
 				}
 			} else if (myExpr instanceof FunctionType) {
 				// TODO: Not Implemented
@@ -293,36 +311,6 @@ public class Obligation extends ObligationType {
 					indeterminate = true;
 				}
 			}
-
-			// an AD/AS will always return a bag
-			BagAttribute bag = (BagAttribute) (result.getAttributeValue());
-
-			if (!bag.isEmpty()) {
-				// we got back a set of attributes
-				// we convert them to AttributeAssignementType
-				for (AttributeValue attrStrValue : (Collection<AttributeValue>) bag
-						.getValue()) {
-					attrStrValue.toString();
-					AttributeAssignmentType attrAsgnType = new AttributeAssignmentType();
-					Attribute attr = new Attribute(attrId, issuer,
-							attrCategory, null, attrStrValue, true,
-							Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-									.value()));
-					attrAsgnType.setAttributeId(attr.getId().toASCIIString());
-					attrAsgnType
-							.setCategory(attr.getCategory().toASCIIString());
-					attrAsgnType.setDataType(attr.getType().toASCIIString());
-					attrAsgnType.setIssuer(attr.getIssuer());
-					for (AttributeValue attrValue : attr.getValues()) {
-						attrAsgnType.getContent().add(((StringAttribute) attrValue).encode());
-					}
-					assignments.add(attrAsgnType);
-				}
-
-				// AttributeValue attrValue =
-				// attrFactory.createValue(result.getAttributeValue().getType(),
-				// attrDesignator.getAttributeId());
-			}
 		}
 
 		return new Obligation(id, fulfillOn, assignments, indeterminate);
@@ -333,8 +321,8 @@ public class Obligation extends ObligationType {
 	 * 
 	 * @return the id
 	 */
-	public URI getId() {
-		return id;
+	public String getId() {
+		return obligationId;
 	}
 
 	/**
@@ -355,7 +343,7 @@ public class Obligation extends ObligationType {
 	 * @return the assignments
 	 */
 	public List<AttributeAssignmentType> getAssignments() {
-		return assignments;
+		return attributeAssignment;
 	}
 
 	/**
@@ -388,27 +376,14 @@ public class Obligation extends ObligationType {
 	 */
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
-		String indent = indenter.makeString();
-
-		out.println(indent + "<Obligation ObligationId=\"" + id.toString()
-				+ "\" FulfillOn=\"" + Result.DECISIONS[fulfillOn] + "\">");
-
-		indenter.in();
-
-		Iterator it = assignments.iterator();
-
-		while (it.hasNext()) {
-			Attribute attr = (Attribute) (it.next());
-			out.println(indenter.makeString()
-					+ "<AttributeAssignment AttributeId=\""
-					+ attr.getId().toString() + "\" DataType=\""
-					+ attr.getType().toString() + "\">"
-					+ attr.getValue().encode() + "</AttributeAssignment>");
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
 		}
-
-		indenter.out();
-
-		out.println(indent + "</Obligation>");
 	}
 
 }

@@ -43,7 +43,6 @@ import java.util.Set;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.DateAttribute;
 import com.sun.xacml.attr.DateTimeAttribute;

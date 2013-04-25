@@ -62,7 +62,7 @@ public class ConformanceV3 extends TestCase {
 
 
     @Test
-    public void testConformanceTestA() throws Exception {
+    public static void testConformanceTestA() throws Exception {
 
         String policyNumber;
         ResponseCtx response = null;
@@ -152,9 +152,8 @@ public class ConformanceV3 extends TestCase {
 
         PDP authzforce = PDP.getInstance();
         PDPConfig pdpConfig = authzforce.getPDPConfig();
-        pdpConfig = new PDPConfig(pdpConfig.getAttributeFinder(), finder,
-                                                            pdpConfig.getResourceFinder(), null);
-        return new PDP(pdpConfig);
+        pdpConfig = new PDPConfig(pdpConfig.getAttributeFinder(), finder, pdpConfig.getResourceFinder(), null);
 
+        return new PDP(pdpConfig);
     }    
 }

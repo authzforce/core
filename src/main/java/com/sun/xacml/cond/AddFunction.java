@@ -150,7 +150,7 @@ public class AddFunction extends FunctionBase
             return result;
         
         // Now that we have real values, perform the add operation
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_INTEGER_ADD: {
             long sum = 0;
             for (int index = 0; index < argValues.length; index++) {

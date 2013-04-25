@@ -36,13 +36,15 @@
 
 package com.sun.xacml.combine;
 
+import java.net.URI;
+import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
-
 import com.sun.xacml.ctx.Result;
-import java.net.URI;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -84,25 +86,17 @@ public class FirstApplicableRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-    public Result combine(EvaluationCtx context, List parameters,
+    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
                           List ruleElements) {
-        Iterator it = ruleElements.iterator();
-        
-        while (it.hasNext()) {
-            Rule rule = ((RuleCombinerElement)(it.next())).getRule();
-            Result result = rule.evaluate(context);
-            int value = result.getDecision();
-            
-            // in the case of PERMIT, DENY, or INDETERMINATE, we always
-            // just return that result, so only on a rule that doesn't
-            // apply do we keep going...
-            if (value != Result.DECISION_NOT_APPLICABLE)
+        Result result = null;
+        for (Rule rule : (List<Rule>)ruleElements) {
+			result = rule.evaluate(context);
+			int value = result.getDecision().ordinal();
+			if (value != Result.DECISION_NOT_APPLICABLE)
                 return result;
-        }
-
-        // if we got here, then none of the rules applied
-        return new Result(Result.DECISION_NOT_APPLICABLE,
+		}
+     // if we got here, then none of the rules applied
+        return new Result(DecisionType.NOT_APPLICABLE,
                           context.getResourceId().encode());
     }
-
 }

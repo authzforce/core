@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -53,8 +54,8 @@ import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.ProcessingException;
-import com.sun.xacml.attr.xacmlv3.Expression;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 
 
 /**
@@ -67,11 +68,11 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * @since 2.0
  * @author Seth Proctor
  */
-public class VariableReference extends Expression
+public class VariableReference extends VariableReferenceType implements Evaluatable
 {
 
     // the identifier used to resolve the reference
-    private String variableId;
+//    private String variableId;
 
     // the actual definition we refernce, if it's known
     private VariableDefinition definition = null;
@@ -186,7 +187,7 @@ public class VariableReference extends Expression
      * @return the result of evaluation
      */
     public EvaluationResult evaluate(EvaluationCtx context) {
-        Expression xpr = (Expression)getReferencedDefinition().getExpression();
+        Expression xpr = (Expression)getReferencedDefinition().getExpression().getValue();
 
         // Note that it's technically possible for this expression to
         // be something like a Function, which isn't Evaluatable. It
@@ -210,7 +211,7 @@ public class VariableReference extends Expression
         // since this handles type-checking for definitions that haven't
         // been parsed yet
         if (definition != null) {
-            return definition.getExpression().getType();
+            return ((Expression)definition.getExpression().getValue()).getType();
         } else {
             if (manager != null)
                 return manager.getVariableType(variableId);
@@ -229,7 +230,7 @@ public class VariableReference extends Expression
     public boolean returnsBag() {
         // see comment in getType()
         if (definition != null) {
-            return getReferencedDefinition().getExpression().returnsBag();
+            return ((Expression)getReferencedDefinition().getExpression().getValue()).returnsBag();
         } else {
             if (manager != null)
                 return manager.returnsBag(variableId);
@@ -301,20 +302,4 @@ public class VariableReference extends Expression
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void checkInputs(List xprs) {
-		for (Object object : xprs) {
-			if(!(object instanceof ExpressionType)) {
-				throw new IllegalArgumentException("illegal parameter");	
-			}
-		}		
-	}
-
-	@Override
-	public EvaluationResult evaluate(List xprs, EvaluationCtx context) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

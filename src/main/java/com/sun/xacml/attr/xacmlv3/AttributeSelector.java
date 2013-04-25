@@ -51,6 +51,7 @@ import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -106,7 +107,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
      *                     XPath version string (the identifier for XPath 1.0
      *                     is provided in <code>PolicyMetaData</code>)
      */
-    public AttributeSelector(URI type, String contextPath,
+    public AttributeSelector(String type, String contextPath,
                              boolean mustBePresent, String xpathVersion) {
         this(type, contextPath, null, mustBePresent, xpathVersion);
     }
@@ -124,12 +125,18 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
      *                     XPath version string (the identifier for XPath 1.0
      *                     is provided in <code>PolicyMetaData</code>)
      */
-    public AttributeSelector(URI type, String contextPath, Node policyRoot,
+    public AttributeSelector(String type, String contextPath, Node policyRoot,
                              boolean mustBePresent, String xpathVersion) {
-        this.type = type;
+        this.type = URI.create(type);
         this.contextPath = contextPath;
         this.mustBePresent = mustBePresent;
         this.xpathVersion = xpathVersion;
+        this.policyRoot = policyRoot;
+        
+        this.dataType = type;
+        this.contextSelectorId = contextPath;
+        this.mustBePresent = mustBePresent;
+        this.path = xpathVersion;
         this.policyRoot = policyRoot;
     }
 
@@ -155,7 +162,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
      *
      * @throws ParsingException if the AttributeSelectorType was invalid
      */
-    public static AttributeSelector getInstance(Node root, String xpathVersion)
+    public static AttributeSelectorType getInstance(Node root, String xpathVersion)
         throws ParsingException
     {
         return getInstance(root,
@@ -174,7 +181,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 		} catch (Exception e) {
 			System.err.println(e);
 		}
-
+		
 		return attrSelector.getValue();
     }
 
@@ -252,9 +259,13 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
         }
 
         // create the new selector
-        return new AttributeSelector(type, contextPath, policyRoot,
+        return new AttributeSelector(type.toASCIIString(), contextPath, policyRoot,
                                      mustBePresent, xpathVersion);
     }
+    
+    public static ExpressionType getInstance(AttributeSelectorType attrSelector) {
+    	return new AttributeSelector(attrSelector.getDataType(), attrSelector.getContextSelectorId(), attrSelector.isMustBePresent(), attrSelector.getPath());
+	}
 
     /**
      * Returns the data type of the attribute values that this selector
@@ -415,5 +426,5 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
         
         out.println(indent + tag);
     }
-    
+
 }

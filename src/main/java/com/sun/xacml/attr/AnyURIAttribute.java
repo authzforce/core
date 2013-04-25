@@ -74,6 +74,7 @@ public class AnyURIAttribute extends AttributeValue
     public AnyURIAttribute(URI value) {
         super(identifierURI);
 
+        this.content.add(value);
         this.value = value;
     }
 

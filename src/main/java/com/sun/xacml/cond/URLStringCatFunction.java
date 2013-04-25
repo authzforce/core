@@ -47,6 +47,7 @@ import com.sun.xacml.attr.AnyURIAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Status;
 
 

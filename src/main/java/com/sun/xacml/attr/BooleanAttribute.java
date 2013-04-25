@@ -96,8 +96,8 @@ public class BooleanAttribute extends AttributeValue
      */
     private BooleanAttribute(boolean value) {
         super(identifierURI);
-//        this.dataType = identifierURI.toASCIIString();
         this.value = value;
+        this.content.add(value);
     }
 
     /**

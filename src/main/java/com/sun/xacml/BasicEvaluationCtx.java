@@ -103,7 +103,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private Map<String, Set<AttributeType>> environmentMap;
 	
 	// Attributes that needs to be included in the result
-	private Set<AttributeType> includeInResults;
+	private List<AttributesType> includeInResults;
 
 	// the resource and its scope
 	private List<AttributeValue> resourceId;
@@ -257,7 +257,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			}
 			// Store attributes who needs to be included in the result
 			for (AttributeType attr : myAttributeTypes.getAttribute()) {
-				storeAttrIncludeInResult(attr);	
+				storeAttrIncludeInResult(attr, myAttributeTypes.getCategory());	
 			}			
 		}
 		//
@@ -289,8 +289,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private void setupSubjects(List<AttributeType> subjects)
 			throws ParsingException {
 		// make sure that there is at least one Subject
-		if (subjects.size() == 0)
+		if (subjects.size() == 0) {
 			throw new ParsingException("Request must a contain subject");
+		}
 		/*
 		 * FIXME: RF
 		 */
@@ -397,12 +398,25 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		}
 	}
 	
-	private void storeAttrIncludeInResult(AttributeType attr) {
+	private void storeAttrIncludeInResult(AttributeType attr, String category) {
 		if(includeInResults == null) {
-			includeInResults = new HashSet<AttributeType>();
+			includeInResults = new ArrayList<AttributesType>();
 		}
 		if (attr.isIncludeInResult()) {
-			includeInResults.add(attr);
+			boolean alreadyPresent = false;
+			AttributesType myAttr = new AttributesType();
+			myAttr.getAttribute().add(attr);
+			myAttr.setCategory(category);
+			for (AttributesType attrs : includeInResults) {
+				if(attrs.getCategory().equalsIgnoreCase(category)) {
+					alreadyPresent = true;
+					attrs.getAttribute().add(attr);
+					break;
+				}
+			}
+			if(!alreadyPresent) {
+				includeInResults.add(myAttr);
+			}
 		}
 	}
 
@@ -466,7 +480,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		}
 	}
 	
-	public Set<AttributeType> getIncludeInResults() {
+	public List<AttributesType> getIncludeInResults() {
 		return includeInResults;
 	}
 
@@ -730,7 +744,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		}
 
 		// now go through each, considering each Attribute object
-		List<AttributeValueType> attributeValues = new ArrayList();
+		List<AttributeValue> attributeValues = new ArrayList();
 		Iterator it = attrSet.iterator();
 
 		for (AttributeType attr : attrSet) {
@@ -742,7 +756,12 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 					// if we got here, then we found a match, so we want to
 					// pull
 					// out the values and put them in out list
-					attributeValues.addAll(attr.getAttributeValue());
+					try {
+						attributeValues.addAll(AttributeValue.convertFromJAXB(attr.getAttributeValue()));
+					} catch (ParsingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}

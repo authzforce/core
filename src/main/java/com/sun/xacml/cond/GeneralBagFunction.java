@@ -43,6 +43,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
@@ -268,15 +270,15 @@ public class GeneralBagFunction extends BagFunction
     public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
-        AttributeValue [] argValues = new AttributeValue[inputs.size()];
+        AttributeValueType [] argValues = new AttributeValueType[inputs.size()];
         EvaluationResult result = evalArgs(inputs, context, argValues);
         if (result != null)
             return result;
 
         // Now that we have real values, perform the requested operation.
-        AttributeValue attrResult = null;
+        AttributeValueType attrResult = null;
 
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
             
             // *-one-and-only takes a single bag and returns a
             // single value of baseType
@@ -289,7 +291,7 @@ public class GeneralBagFunction extends BagFunction
                                            "element, got a bag with " +
                                            bag.size() + " elements");
 
-            attrResult = (AttributeValue)(bag.iterator().next());
+            attrResult = (AttributeValueType)(bag.iterator().next());
             break;
         }
 

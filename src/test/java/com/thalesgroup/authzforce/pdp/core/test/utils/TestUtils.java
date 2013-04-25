@@ -203,57 +203,57 @@ public class TestUtils {
 
 		while (myIt.hasNext()) {
 			Result result = (Result) myIt.next();
-			ResultType resultType = new ResultType();
-			// resultType.setResourceId(result.getResource());
-
-			// Decision
-			resultType.setDecision(decisionParser(result.getDecision()));
-
-			// Status
-			Status status = result.getStatus();
-			StatusType statusType = new StatusType();
-
-			StatusCodeType statusCodeType = new StatusCodeType();
-			List<?> statusList = status.getCode();
-			if (statusList != null && statusList.size() > 0) {
-				statusCodeType.setValue((String) statusList.get(0));
-			}
-			statusType.setStatusMessage(status.getMessage());
-			statusType.setStatusCode(statusCodeType);
-			resultType.setStatus(statusType);
-
-			// Obligations
-			Set<?> obligationsSet = result.getObligations();
-			if (obligationsSet != null) {
-				ObligationsType obligationsType = new ObligationsType();
-				for (Object ob : obligationsSet) {
-					if (!(ob instanceof Obligation)) {
-						throw new Error("Obligation is not conformed");
-					}
-					Obligation obl = (Obligation) ob;
-					ObligationType obType = new ObligationType();
-					obType.setObligationId(obl.getId().toASCIIString());
-					// obType.setFulfillOn(EffectType.fromValue(Result.DECISIONS[obl.getFulfillOn()]));
-					for (Object assignment : obl.getAssignments()) {
-						if (assignment instanceof Attribute) {
-							Attribute attribute = (Attribute) assignment;
-							AttributeAssignmentType attributeAssignment = new AttributeAssignmentType();
-							attributeAssignment.setAttributeId(attribute
-									.getId().toString());
-							attributeAssignment.setDataType(attribute.getType()
-									.toString());
-							attributeAssignment.getContent().add(
-									attribute.getValue().encode());
-							obType.getAttributeAssignment().add(
-									attributeAssignment);
-						}
-					}
-					obligationsType.getObligation().add(obType);
-				}
-				if (obligationsSet.size() > 0) {
-					resultType.setObligations(obligationsType);
-				}
-			}
+			ResultType resultType = result;
+//			// resultType.setResourceId(result.getResource());
+//
+//			// Decision
+//			resultType.setDecision(decisionParser(result.getDecision()));
+//
+//			// Status
+//			Status status = result.getStatus();
+//			StatusType statusType = new StatusType();
+//
+//			StatusCodeType statusCodeType = new StatusCodeType();
+//			List<?> statusList = status.getCode();
+//			if (statusList != null && statusList.size() > 0) {
+//				statusCodeType.setValue((String) statusList.get(0));
+//			}
+//			statusType.setStatusMessage(status.getMessage());
+//			statusType.setStatusCode(statusCodeType);
+//			resultType.setStatus(statusType);
+//
+//			// Obligations
+//			Set<?> obligationsSet = result.getObligations();
+//			if (obligationsSet != null) {
+//				ObligationsType obligationsType = new ObligationsType();
+//				for (Object ob : obligationsSet) {
+//					if (!(ob instanceof Obligation)) {
+//						throw new Error("Obligation is not conformed");
+//					}
+//					Obligation obl = (Obligation) ob;
+//					ObligationType obType = new ObligationType();
+//					obType.setObligationId(obl.getId().toASCIIString());
+//					// obType.setFulfillOn(EffectType.fromValue(Result.DECISIONS[obl.getFulfillOn()]));
+//					for (Object assignment : obl.getAssignments()) {
+//						if (assignment instanceof Attribute) {
+//							Attribute attribute = (Attribute) assignment;
+//							AttributeAssignmentType attributeAssignment = new AttributeAssignmentType();
+//							attributeAssignment.setAttributeId(attribute
+//									.getId().toString());
+//							attributeAssignment.setDataType(attribute.getType()
+//									.toString());
+//							attributeAssignment.getContent().add(
+//									attribute.getValue().encode());
+//							obType.getAttributeAssignment().add(
+//									attributeAssignment);
+//						}
+//					}
+//					obligationsType.getObligation().add(obType);
+//				}
+//				if (obligationsSet.size() > 0) {
+//					resultType.setObligations(obligationsType);
+//				}
+//			}
 
 			xacmlResponse.getResult().add(resultType);
 		}

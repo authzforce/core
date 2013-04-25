@@ -34,11 +34,12 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
-package com.sun.xacml.cond;
+package com.sun.xacml.cond.xacmlv3;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,9 +58,16 @@ import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
-import com.sun.xacml.attr.xacmlv3.Expression;
+import com.sun.xacml.attr.xacmlv3.AttributeSelector;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.Evaluatable;
+import com.sun.xacml.cond.Function;
+import com.sun.xacml.cond.FunctionFactory;
+import com.sun.xacml.cond.FunctionTypeException;
+import com.sun.xacml.cond.VariableManager;
+import com.sun.xacml.cond.VariableReference;
 
 
 /**
@@ -80,14 +88,14 @@ import com.sun.xacml.attr.xacmlv3.Expression;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Apply extends ApplyType
+public class Apply extends ApplyType implements Evaluatable
 {
 
     // the function used to evaluate the contents of the apply
-    private ExpressionType function;
+    private Function function;
 
     // the paramaters to the function...ie, the contents of the apply
-    private List xprs;
+//    private List<ExpressionType> xprs;
     
     /**
 	 * Logger used for all classes
@@ -107,15 +115,17 @@ public class Apply extends ApplyType
      * @throws IllegalArgumentException if the input expressions don't
      *                                  match the signature of the function
      */
-    public Apply(ExpressionType function, List xprs)
-        throws IllegalArgumentException
+    public Apply(Function function, List<ExpressionType> xprs) throws IllegalArgumentException
     {
         // check that the given inputs work for the function
 //        ((Expression)function).checkInputs(xprs);
 
         // if everything checks out, then store the inputs
-        this.function = (ExpressionType)function;
-        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
+    	this.functionId = function.getFunctionId();
+        this.expression = Collections.unmodifiableList(new ArrayList(xprs));
+    	this.function = function;
+    	
+//        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
     }
 
     /**
@@ -138,7 +148,7 @@ public class Apply extends ApplyType
      *                                  match the signature of the function or
      *                                  if <code>isCondition</code> is true
      */
-    public Apply(Expression function, List xprs, boolean isCondition) throws IllegalArgumentException
+    public Apply(Function function, List xprs, boolean isCondition) throws IllegalArgumentException
     {
         // make sure that no is using this constructor to create a Condition
         if (isCondition) {
@@ -152,7 +162,8 @@ public class Apply extends ApplyType
 
         // if everything checks out, then store the inputs
         this.function = function;
-        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
+//        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
+        this.expression = Collections.unmodifiableList(new ArrayList(xprs));
     }
 
     /**
@@ -278,21 +289,120 @@ public class Apply extends ApplyType
                                      VariableManager manager)
         throws ParsingException
     {
-        ExpressionType function = ExpressionHandler.getFunction(root, metaData, factory);
-        List xprs = new ArrayList();
+    	Function function = null;
+//    	ExpressionType xpr = null;
+		AttributeValue attrValue = null;
+		List xprs = new ArrayList();
+//        Function function = ExpressionTools.getFunction(root, metaData, factory);        
+//        List xprs = new ArrayList();
+//
+//        NodeList nodes = root.getChildNodes();
+//        for (int i = 0; i < nodes.getLength(); i++) {
+//            ExpressionType xpr = ExpressionTools.getExpression(nodes.item(i), metaData, manager);
+//
+//            if (xpr != null) {
+//                xprs.add(xpr);
+//            }
+//        }
+    	
+		AttributeFactory attrFactory = AttributeFactory.getInstance();
 
-        NodeList nodes = root.getChildNodes();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            ExpressionType xpr = ExpressionHandler.parseExpression(nodes.item(i), metaData, manager);
+		// get the function type, making sure that it's really a correct
+		// Target function
+		String funcName = root.getAttributes().getNamedItem("FunctionId").getNodeValue();
+		try {
+			URI funcId = new URI(funcName);
+			function = factory.createFunction(funcId);
+		} catch (URISyntaxException use) {
+			throw new ParsingException("Error parsing Apply", use);
+		} catch (UnknownIdentifierException uie) {
+			throw new ParsingException("Unknown FunctionId", uie);
+		} catch (FunctionTypeException fte) {
+			// try to create an abstract function
+			try {
+				URI funcId = new URI(funcName);
+				function = factory.createAbstractFunction(funcId, root);
+			} catch (Exception e) {
+				// any exception here is an error
+				throw new ParsingException("invalid abstract function", e);
+			}
+		}
 
-            if (xpr != null) {
-                xprs.add(xpr);
-            }
-        }
+		// next, get the function, the designator or selector being used, and the attribute
+		// value paired with it
+		NodeList nodes = root.getChildNodes();
+		for (int i = 0; i < nodes.getLength(); i++) {
+			Node node = nodes.item(i);
+			String name = node.getNodeName();
+			ExpressionType xpr = null;
+			if (name.equals("Apply")) {
+				xpr = Apply.getInstance(node, metaData, manager);
+			} else if (name.equals("AttributeDesignator")) {
+				xpr = AttributeDesignator.getInstance(node);
+			} else if (name.equals("AttributeSelector")) {
+				xpr = AttributeSelector.getInstance(node, metaData);
+			} else if (name.equals("AttributeValue")) {
+				xpr = AttributeValue.getInstance(node, metaData);
+			} else if (name.equals("Function")) {
+				funcName = node.getAttributes().getNamedItem("FunctionId").getNodeValue();
+				try {
+					URI funcId = new URI(funcName);
+					xpr = factory.createFunction(funcId);
+				} catch (URISyntaxException use) {
+					throw new ParsingException("Error parsing Apply", use);
+				} catch (UnknownIdentifierException uie) {
+					throw new ParsingException("Unknown FunctionId", uie);
+				} catch (FunctionTypeException fte) {
+					// try to create an abstract function
+					try {
+						URI funcId = new URI(funcName);
+						xpr = factory.createAbstractFunction(funcId, root);
+					} catch (Exception e) {
+						// any exception here is an error
+						throw new ParsingException("invalid abstract function", e);
+					}
+				}
+			} else if (name.equals("VariableReference")) {
+				xpr = VariableReference.getInstance(root, metaData, manager);
+			} 
+			
+			if (xpr != null) {
+              xprs.add(xpr);
+          }
+		}
+    	
+    	
 
         return new Apply(function, xprs);
     }
+    
+    /**
+	 * Helper method that tries to get a function instance
+	 */
+	public static Function getFunction(Node root, PolicyMetaData metaData,
+			FunctionFactory factory) throws ParsingException {
+		Node functionNode = root.getAttributes().getNamedItem("FunctionId");
+		String functionName = functionNode.getNodeValue();
 
+		try {
+			// try to get an instance of the given function
+			return factory.createFunction(functionName);
+		} catch (UnknownIdentifierException uie) {
+			throw new ParsingException("Unknown FunctionId", uie);
+		} catch (FunctionTypeException fte) {
+			// try creating as an abstract function
+			try {
+				FunctionFactory ff = FunctionFactory.getGeneralInstance();
+				return ff.createAbstractFunction(functionName, root,
+						metaData.getXPathIdentifier());
+			} catch (Exception e) {
+				// any exception at this point is a failure
+				throw new ParsingException("failed to create abstract function"
+						+ " " + functionName, e);
+			}
+		}
+	}
+    
     /**
      * Returns the <code>Function</code> used by this <code>Apply</code>.
      *
@@ -309,8 +419,9 @@ public class Apply extends ApplyType
      *
      * @return a <code>List</code> of <code>Expression</code>s
      */
+    @Override
     public List getChildren() {
-        return xprs;
+        return expression;
     }
 
     /**
@@ -335,9 +446,9 @@ public class Apply extends ApplyType
      *
      * @return the result of trying to evaluate this apply object
      */
+    @Override
     public EvaluationResult evaluate(EvaluationCtx context) {
-        return null;
-//        return function.evaluate(xprs, context);
+        return function.evaluate(expression, context);
     }
 
     /**
@@ -358,7 +469,7 @@ public class Apply extends ApplyType
      * of values on evaluation.
      *
      * @return true if evaluation will return a bag of values, false otherwise
-     */
+     */    
     public boolean returnsBag() {
 //        return function.returnsBag();
     	return false;
@@ -374,6 +485,7 @@ public class Apply extends ApplyType
      *
      * @return true if evaluation will return a bag of values, false otherwise
      */
+    @Override
     public boolean evaluatesToBag() {
         return false;
     }

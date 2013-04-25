@@ -40,11 +40,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.DoubleAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
 
 
 /**
@@ -144,25 +146,25 @@ public class SubtractFunction extends FunctionBase
     public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
         
         // Evaluate the arguments
-        AttributeValue [] argValues = new AttributeValue[inputs.size()];
+        AttributeValueType [] argValues = new AttributeValueType[inputs.size()];
         EvaluationResult result = evalArgs(inputs, context, argValues);
         if (result != null)
             return result;
 
         // Now that we have real values, perform the subtract operation
         // in the manner appropriate for the type of the arguments.
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_INTEGER_SUBTRACT: {
-            long arg0 = ((IntegerAttribute) argValues[0]).getValue();
-            long arg1 = ((IntegerAttribute) argValues[1]).getValue();
+            long arg0 = Long.parseLong(argValues[0].getContent().get(0).toString());
+            long arg1 = Long.parseLong(argValues[1].getContent().get(0).toString());
             long difference = arg0 - arg1;
 
             result = new EvaluationResult(new IntegerAttribute(difference));
             break;
         }
         case ID_DOUBLE_SUBTRACT: {
-            double arg0 = ((DoubleAttribute) argValues[0]).getValue();
-            double arg1 = ((DoubleAttribute) argValues[1]).getValue();
+            double arg0 = Double.parseDouble(argValues[0].getContent().get(0).toString());
+            double arg1 = Double.parseDouble(argValues[1].getContent().get(0).toString());
             double difference = arg0 - arg1;
 
             result = new EvaluationResult(new DoubleAttribute(difference));

@@ -37,6 +37,7 @@ package com.sun.xacml.xacmlv3;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -155,21 +156,28 @@ public class Match extends MatchType {
 	// the designator or selector
 	private Evaluatable eval;
 
-	public Match(AttributeValueType attrValue, ExpressionType exprType) throws ParsingException {
+	public Match(AttributeValueType attrValue, ExpressionType exprType, Function func) throws ParsingException {
 		if(attrValue == null) {
 			throw new ParsingException("A Match element need to contained at list one AttributeValue");
 		} else {
-			this.attributeValue = attrValue;
+			this.attributeValue = (AttributeValue)attrValue;
 		}
 		if(exprType == null) {
 			throw new ParsingException("A Match element need to contained at list one AttributeDesignator " +
 					"or one AttributeSelector");
 		} else {
 			if(exprType instanceof AttributeDesignatorType) {
-				this.attributeDesignator = (AttributeDesignatorType)exprType;
+				this.attributeDesignator = (AttributeDesignator)exprType;
+				this.eval = (Evaluatable) exprType;
 			} else if(exprType instanceof AttributeSelectorType) {
-				this.attributeSelector = (AttributeSelectorType)exprType;
+				this.attributeSelector = (AttributeSelector)exprType;
+				this.eval = (Evaluatable) exprType;
 			}
+		}
+		
+		if(func != null) {
+			this.function = func;
+			this.matchId = func.getFunctionId();
 		}
 	}
 
@@ -272,7 +280,7 @@ public class Match extends MatchType {
 		inputs.add(eval);
 		function.checkInputsNoBag(inputs);
 
-		return new Match(attrValue, eval);
+		return new Match(attrValue, eval, function);
 	}
 
 	/**
@@ -343,31 +351,53 @@ public class Match extends MatchType {
 			Iterator it = bag.iterator();
 			boolean atLeastOneError = false;
 			Status firstIndeterminateStatus = null;
+		
+			ArrayList inputs = new ArrayList();
 
-			while (it.hasNext()) {
-				ArrayList inputs = new ArrayList();
+			inputs.add(this.attributeValue);
+			inputs.add(bag);
+			// do the evaluation
+			MatchResult match = evaluateMatch(inputs, context);
 
-				inputs.add(this.attributeValue);
-				inputs.add(it.next());
+			// we only need one match for this whole thing to match
+			if (match.getResult() == MatchResult.MATCH)
+				return match;
 
-				// do the evaluation
-				MatchResult match = evaluateMatch(inputs, context);
+			// if it was INDETERMINATE, we want to remember for later
+			if (match.getResult() == MatchResult.INDETERMINATE) {
+				atLeastOneError = true;
 
-				// we only need one match for this whole thing to match
-				if (match.getResult() == MatchResult.MATCH)
-					return match;
-
-				// if it was INDETERMINATE, we want to remember for later
-				if (match.getResult() == MatchResult.INDETERMINATE) {
-					atLeastOneError = true;
-
-					// there are no rules about exactly what status data
-					// should be returned here, so like in the combining
-					// algs, we'll just track the first error
-					if (firstIndeterminateStatus == null)
-						firstIndeterminateStatus = match.getStatus();
-				}
+				// there are no rules about exactly what status data
+				// should be returned here, so like in the combining
+				// algs, we'll just track the first error
+				if (firstIndeterminateStatus == null)
+					firstIndeterminateStatus = match.getStatus();
 			}
+
+//			while (it.hasNext()) {
+//				ArrayList inputs = new ArrayList();
+//
+//				inputs.add(this.attributeValue);
+//				inputs.add(it.next());
+//
+//				// do the evaluation
+//				MatchResult match = evaluateMatch(inputs, context);
+//
+//				// we only need one match for this whole thing to match
+//				if (match.getResult() == MatchResult.MATCH)
+//					return match;
+//
+//				// if it was INDETERMINATE, we want to remember for later
+//				if (match.getResult() == MatchResult.INDETERMINATE) {
+//					atLeastOneError = true;
+//
+//					// there are no rules about exactly what status data
+//					// should be returned here, so like in the combining
+//					// algs, we'll just track the first error
+//					if (firstIndeterminateStatus == null)
+//						firstIndeterminateStatus = match.getStatus();
+//				}
+//			}
 
 			// if we got here, then nothing matched, so we'll either return
 			// INDETERMINATE or NO_MATCH
@@ -400,10 +430,11 @@ public class Match extends MatchType {
 		// otherwise, we figure out if it was a match
 		BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
 
-		if (bool.getValue())
+		if ((Boolean) bool.getContent().get(0)) {
 			return new MatchResult(MatchResult.MATCH);
-		else
+		} else {
 			return new MatchResult(MatchResult.NO_MATCH);
+		}
 	}
 
 	/**

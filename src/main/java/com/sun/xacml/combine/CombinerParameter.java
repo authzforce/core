@@ -39,6 +39,8 @@ package com.sun.xacml.combine;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+
 import org.w3c.dom.Node;
 
 import com.sun.xacml.Indenter;
@@ -55,7 +57,7 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
  * @since 2.0
  * @author Seth Proctor
  */
-public class CombinerParameter
+public class CombinerParameter extends CombinerParametersType
 {
 
     // the name of this parameter

@@ -57,25 +57,15 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons</groupId>
-			<artifactId>runtime</artifactId>
-			<version>0.4.1.5</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.jvnet.jaxb2_commons</groupId> -->
+<!-- 			<artifactId>runtime</artifactId> -->
+<!-- 			<version>0.4.1.5</version> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.jvnet.jaxb2_commons</groupId>
 			<artifactId>testing</artifactId>
 			<version>0.4.1.5</version>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce.core</groupId>
-			<artifactId>authzforce-model</artifactId>
-			<version>3.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce</groupId>
-			<artifactId>audit</artifactId>
-			<version>2.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
@@ -102,16 +92,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.thalesgroup.authzforce.policyfinder</groupId>
-			<artifactId>filepolicyfinder</artifactId>
-			<version>3.0.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce.policyfinder</groupId>
-			<artifactId>directorypolicyfinder</artifactId>
-			<version>3.0.0</version>
-			<scope>test</scope>
+			<groupId>com.thalesgroup.authzforce.core</groupId>
+			<artifactId>authzforce-model</artifactId>
+			<version>3.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-jxpath</groupId>
@@ -126,6 +109,5 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
-
 	</dependencies>
 </project>

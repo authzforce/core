@@ -2,7 +2,6 @@ package com.sun.xacml.cond.xacmlv3;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.ctx.Status;
 

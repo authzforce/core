@@ -35,16 +35,18 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.MatchResult;
-
-import com.sun.xacml.ctx.Result;
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.MatchResult;
+import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.Policy;
 
 /**
  * This is the standard Deny Overrides policy combining algorithm. It allows a
@@ -98,50 +100,49 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 	 * 
 	 * @return the result of running the combining algorithm
 	 */
-	public Result combine(EvaluationCtx context, List parameters,
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List policyElements) {
 		boolean atLeastOnePermit = false;
-		Set permitObligations = new HashSet();
+		ObligationsType permitObligations = new ObligationsType();
 		Iterator it = policyElements.iterator();
 
 		while (it.hasNext()) {
-			AbstractPolicy policy = ((PolicyCombinerElement) (it.next()))
-					.getPolicy();
+			Policy policy = ((PolicyCombinerElement) (it.next())).getElement();
 
 			// make sure that the policy matches the context
 			MatchResult match = policy.match(context);
 
 			if (match.getResult() == MatchResult.INDETERMINATE) {
-				return new Result(Result.DECISION_DENY, context.getResourceId()
+				return new Result(DecisionType.DENY, context.getResourceId()
 						.encode());
 			}
 
 			if (match.getResult() == MatchResult.MATCH) {
 				// evaluate the policy
 				Result result = policy.evaluate(context);
-				int effect = result.getDecision();
+				int effect = result.getDecision().ordinal();
 
 				// unlike in the RuleCombining version of this alg, we always
 				// return DENY if any Policy returns DENY or INDETERMINATE
 				if ((effect == Result.DECISION_DENY)
 						|| (effect == Result.DECISION_INDETERMINATE))
-					return new Result(Result.DECISION_DENY, context
+					return new Result(DecisionType.DENY, context
 							.getResourceId().encode(), result.getObligations());
 
 				// remember if at least one Policy said PERMIT
 				if (effect == Result.DECISION_PERMIT) {
 					atLeastOnePermit = true;
-					permitObligations.addAll(result.getObligations());
+					permitObligations = result.getObligations();
 				}
 			}
 		}
 
 		// if we got a PERMIT, return it, otherwise it's NOT_APPLICABLE
 		if (atLeastOnePermit)
-			return new Result(Result.DECISION_PERMIT, context.getResourceId()
+			return new Result(DecisionType.PERMIT, context.getResourceId()
 					.encode(), permitObligations);
 		else
-			return new Result(Result.DECISION_NOT_APPLICABLE, context
+			return new Result(DecisionType.NOT_APPLICABLE, context
 					.getResourceId().encode());
 	}
 

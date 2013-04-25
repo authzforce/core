@@ -44,6 +44,8 @@ import java.net.URI;
 
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+
 
 /**
  * The base type for all Rule combining algorithms.
@@ -75,7 +77,7 @@ public abstract class RuleCombiningAlgorithm extends CombiningAlgorithm
      *
      * @return a single unified result based on the combining logic
      */
-    public abstract Result combine(EvaluationCtx context, List parameters,
+    public abstract Result combine(EvaluationCtx context, CombinerParametersType parameters,
                                    List ruleElements);
 
 }

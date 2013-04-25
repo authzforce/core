@@ -151,7 +151,7 @@ public class MultiplyFunction extends FunctionBase
 
         // Now that we have real values, perform the multiply operation
         // in the manner appropriate for the type of the arguments.
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_INTEGER_MULTIPLY: {
             long arg0 = ((IntegerAttribute) argValues[0]).getValue();
             long arg1 = ((IntegerAttribute) argValues[1]).getValue();

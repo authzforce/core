@@ -54,11 +54,11 @@ import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.attr.xacmlv3.Expression;
 import com.sun.xacml.cond.Function;
 import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionTypeException;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Status;
 
 /**

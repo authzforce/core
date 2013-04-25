@@ -47,7 +47,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
@@ -55,6 +54,7 @@ import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Status;
 
 /**
@@ -91,7 +91,7 @@ public abstract class FunctionBase extends Function {
 	private String functionName;
 
 	// the id used by this function
-	// private int functionId;
+	 private int funcId;
 
 	// the return type of this function, and whether it's a bag
 	private String returnType;
@@ -284,7 +284,7 @@ public abstract class FunctionBase extends Function {
 	 * @return the function Id
 	 */
 	public String getFunctionId() {
-		return String.valueOf(functionId);
+		return String.valueOf(funcId);
 	}
 
 	/**
@@ -376,7 +376,7 @@ public abstract class FunctionBase extends Function {
 		while (it.hasNext()) {
 			// get and evaluate the next parameter
 			Evaluatable eval = (Evaluatable) (it.next());
-			EvaluationResult result = eval.evaluate(context);
+			EvaluationResult result = ((Evaluatable)eval).evaluate(context);
 
 			// If there was an error, pass it back...
 			if (result.indeterminate()) {
@@ -455,7 +455,7 @@ public abstract class FunctionBase extends Function {
 			Iterator it = inputs.iterator();
 			int i = 0;
 			while (it.hasNext()) {
-				ExpressionType eval = (ExpressionType) (it.next());
+				Object eval = (Object) (it.next());
 
 				/*
 				 * FIXME: Need to be rethink. Too much duplication and introspection
@@ -518,7 +518,7 @@ public abstract class FunctionBase extends Function {
 			// finally check param list
 			Iterator it = inputs.iterator();
 			while (it.hasNext()) {
-				ExpressionType eval = (ExpressionType) (it.next());
+				Object eval = (Object) (it.next());
 				
 				/*
 				 * FIXME: Need to be rethink. Too much duplication and introspection
@@ -558,7 +558,7 @@ public abstract class FunctionBase extends Function {
 			 * FIXME: Need to be rethink. Too much duplication and introspection
 			 */
 			while (it.hasNext()) {
-				ExpressionType eval = (ExpressionType) (it.next());
+				Object eval = (Object) (it.next());
 				if (eval instanceof AttributeDesignatorType) {
 					AttributeDesignator evalTmp = (AttributeDesignator) eval;
 					if ((!evalTmp.getDataType().toString()

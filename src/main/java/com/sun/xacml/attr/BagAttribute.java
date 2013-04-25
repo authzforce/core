@@ -36,8 +36,8 @@
 
 package com.sun.xacml.attr;
 
+import java.io.Serializable;
 import java.net.URI;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -78,9 +78,10 @@ public class BagAttribute extends AttributeValue
     public BagAttribute(URI type, Collection bag) {
         super(type);
 
-        if (type == null)
+        if (type == null) {
             throw new IllegalArgumentException("Bags require a non-null " +
                                                "type be provided");
+        }
 
         // see if the bag is empty/null
         if ((bag == null) || (bag.size() == 0)) {
@@ -92,22 +93,26 @@ public class BagAttribute extends AttributeValue
             
             while (it.hasNext()) {
                 AttributeValue attr = (AttributeValue)(it.next());
-
                 // a bag cannot contain other bags, so make sure that each
                 // value isn't actually another bag
-                if (attr.isBag())
-                    throw new IllegalArgumentException("bags cannot contain " +
-                                                       "other bags");
-                    
+                // FIXME: Find a way to check that there isn't another bag inside
+//                if(attr.getContent().size() > 0) {
+//                	throw new IllegalArgumentException("bags cannot contain " +
+//                            "other bags");
+//                }
                 // make sure that they're all the same type
-                if (! type.equals(attr.getType()))
+                if (! this.dataType.equals(attr.getDataType())) {
                     throw new
                         IllegalArgumentException("Bag items must all be of " +
                                                  "the same type");
+                }
+                for (Serializable content : attr.getContent()) {
+					this.getContent().add(content);
+				}
             }
 
             // if we get here, then they're all the same type
-            this.bag = bag;
+            this.bag = bag;            
         }
     }
 

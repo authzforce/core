@@ -87,13 +87,15 @@ public class StringAttribute extends AttributeValue
      */
     public StringAttribute(String value) {
         super(identifierURI);
+        this.content.add(value);
 
         // TODO: document why a null pointer is allowed here and not for other
         // attributes.
-        if (value == null)
+        if (value == null) {
             this.value = "";
-        else
+        } else {
             this.value = value;
+        }
     }
 
     /**

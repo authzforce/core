@@ -151,7 +151,7 @@ public class AbsFunction extends FunctionBase
 
         // Now that we have real values, perform the abs operation
         // in the manner appropriate for the type of the arguments.
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_INTEGER_ABS: {
             long arg = ((IntegerAttribute) argValues[0]).getValue();
             long absValue = Math.abs(arg);

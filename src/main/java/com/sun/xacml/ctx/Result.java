@@ -38,22 +38,23 @@ package com.sun.xacml.ctx;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResultType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetailType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -63,7 +64,6 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.Obligation;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.xacmlv3.Attributes;
 
 /**
  * Represents the ResultType XML object from the Context schema. Any number of
@@ -75,7 +75,7 @@ import com.sun.xacml.xacmlv3.Attributes;
  * @author Seth Proctor
  * @author Marco Barreno
  */
-public class Result {
+public class Result extends ResultType {
 
 	/**
 	 * The decision to permit the request
@@ -101,22 +101,14 @@ public class Result {
 	public static final String[] DECISIONS = { "Permit", "Deny",
 			"Indeterminate", "NotApplicable" };
 
-	// the decision effect
-	private int decision = -1;
-
-	// the status data
-	private Status status = null;
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(Result.class);
 
 	// the resource identifier or null if there is none
 	private String resource = null;
-
-	// the set of obligations which may be empty
-	private Set obligations;
-
-	private Set advices;
-
-	// A list of attributes that were part of the request
-	private Set<AttributeType> attributes;
 
 	/**
 	 * Constructs a <code>Result</code> object with default status data (OK).
@@ -128,7 +120,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision) throws IllegalArgumentException {
+	public Result(DecisionType decision) throws IllegalArgumentException {
 		this(decision, null, null, null);
 	}
 
@@ -145,7 +137,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Set obligations)
+	public Result(DecisionType decision, ObligationsType obligations)
 			throws IllegalArgumentException {
 		this(decision, null, null, obligations);
 	}
@@ -164,7 +156,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status) throws IllegalArgumentException {
+	public Result(DecisionType decision, StatusType status) throws IllegalArgumentException {
 		this(decision, status, null, null);
 	}
 
@@ -184,7 +176,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, Set obligations)
+	public Result(DecisionType decision, StatusType status, ObligationsType obligations)
 			throws IllegalArgumentException {
 		this(decision, status, null, obligations);
 	}
@@ -204,7 +196,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, String resource)
+	public Result(DecisionType decision, String resource)
 			throws IllegalArgumentException {
 		this(decision, null, resource, null);
 	}
@@ -227,7 +219,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, String resource, Set obligations)
+	public Result(DecisionType decision, String resource, ObligationsType obligations)
 			throws IllegalArgumentException {
 		this(decision, null, resource, obligations);
 	}
@@ -247,7 +239,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, String resource)
+	public Result(DecisionType decision, StatusType status, String resource)
 			throws IllegalArgumentException {
 		this(decision, status, resource, null);
 	}
@@ -267,7 +259,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, String resource, Set obligations, Set attributes)
+	public Result(DecisionType decision, StatusType status, String resource, ObligationsType obligations, List<AttributesType> attributes)
 			throws IllegalArgumentException {
 		this(decision, status, resource, obligations, null, attributes);
 	}
@@ -289,7 +281,7 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, String resource, Set obligations)
+	public Result(DecisionType decision, StatusType status, String resource, ObligationsType obligations)
 			throws IllegalArgumentException {
 		this(decision, status, resource, obligations, null, null);
 	}
@@ -314,36 +306,41 @@ public class Result {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(int decision, Status status, String resource,	Set obligations, Set advices, Set attributes) throws IllegalArgumentException {
+	public Result(DecisionType decision, StatusType status, String resource, ObligationsType obligations, AssociatedAdviceType advices, List<AttributesType> attributes) throws IllegalArgumentException {
 		// check that decision is valid
-		if ((decision != DECISION_PERMIT) && (decision != DECISION_DENY)
-				&& (decision != DECISION_INDETERMINATE)
-				&& (decision != DECISION_NOT_APPLICABLE))
+		if ((decision.ordinal() != DECISION_PERMIT) && (decision.ordinal() != DECISION_DENY)
+				&& (decision.ordinal() != DECISION_INDETERMINATE)
+				&& (decision.ordinal() != DECISION_NOT_APPLICABLE))
 			throw new IllegalArgumentException("invalid decision value");
 
 		this.decision = decision;
 		this.resource = resource;
 
 		if (status == null) {
-			this.status = Status.getOkInstance();
+			this.status = new StatusType();
+			StatusCodeType code = new StatusCodeType();
+			StatusDetailType details = new StatusDetailType();
+			code.setValue("urn:oasis:names:tc:xacml:1.0:status:ok");
+			this.status.setStatusCode(code);
+			this.status.setStatusDetail(details);
 		} else {
 			this.status = status;
 		}
 
 		if (obligations == null) {
-			this.obligations = new HashSet();
+			this.obligations = new ObligationsType();
 		} else {
 			this.obligations = obligations;
 		}
 
 		if (advices == null) {
-			this.advices = new HashSet();
+			this.associatedAdvice = new AssociatedAdviceType();
 		} else {
-			this.advices = advices;
+			this.associatedAdvice = advices;
 		}
 
 		if (attributes == null) {
-			this.attributes = new HashSet<AttributeType>();
+			this.attributes = new ArrayList<AttributesType>();
 		} else {
 			this.attributes = attributes;
 		}
@@ -363,12 +360,12 @@ public class Result {
 	 *             if the node is invalid
 	 */
 	public static Result getInstance(Node root) throws ParsingException {
-		int decision = -1;
-		Status status = null;
+		DecisionType decision = null;
+		StatusType status = null;
 		String resource = null;
-		Set obligations = null;
-		Set advices = null;
-		Set attributes = null;
+		ObligationsType obligations = null;
+		AssociatedAdviceType advices = null;
+		List<AttributesType> attributes = null;
 
 		NamedNodeMap attrs = root.getAttributes();
 		Node resourceAttr = attrs.getNamedItem("ResourceId");
@@ -385,12 +382,13 @@ public class Result {
 				String type = node.getFirstChild().getNodeValue();
 				for (int j = 0; j < DECISIONS.length; j++) {
 					if (DECISIONS[j].equals(type)) {
-						decision = j;
+						//FIXME: check value
+						decision.valueOf(type);
 						break;
 					}
 				}
 
-				if (decision == -1) {
+				if (decision.ordinal() == -1) {
 					throw new ParsingException("Unknown Decision: " + type);
 				}
 			} else if (name.equals("Status")) {
@@ -410,28 +408,28 @@ public class Result {
 	/**
 	 * Helper method that handles the obligations
 	 */
-	private static Set parseObligations(Node root) throws ParsingException {
-		Set set = new HashSet();
+	private static ObligationsType parseObligations(Node root) throws ParsingException {
+		ObligationsType obligations = new ObligationsType();
 
 		NodeList nodes = root.getChildNodes();
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Obligation"))
-				set.add(Obligation.getInstance(node));
+				obligations.getObligation().add(Obligation.getInstance(node));
 		}
 
-		if (set.size() == 0)
+		if (obligations.getObligation().size() == 0)
 			throw new ParsingException("ObligationsType must not be empty");
 
-		return set;
+		return obligations;
 	}
 
 	/**
 	 * Helper method that handles the Advices
 	 */
-	private static Set parseAdvices(Node root)
+	private static AssociatedAdviceType parseAdvices(Node root)
 			throws ParsingException {
-		Set<AssociatedAdviceType> list = new HashSet<AssociatedAdviceType>();
+		AssociatedAdviceType advices = new AssociatedAdviceType();
 
 		NodeList nodes = root.getChildNodes();
 		AdviceType advice = null;
@@ -443,7 +441,7 @@ public class Result {
 				try {
 					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
 					Unmarshaller u = jc.createUnmarshaller();
-					list.add((AssociatedAdviceType)u.unmarshal(root));
+					advices.getAdvice().add((AdviceType)u.unmarshal(root));
 				} catch (JAXBException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -451,15 +449,15 @@ public class Result {
 			}
 		}
 
-		return list;
+		return advices;
 	}
 	
 	/**
 	 * Helper method that handles the Attributes
 	 */
-	private static Set<AttributesType> parseAttributes(Node root)
+	private static List<AttributesType> parseAttributes(Node root)
 			throws ParsingException {
-		Set<AttributesType> set = new HashSet<AttributesType>();
+		List<AttributesType> attributes = new ArrayList<AttributesType>();
 
 		NodeList nodes = root.getChildNodes();
 		for (int i = 0; i < nodes.getLength(); i++) {
@@ -469,7 +467,7 @@ public class Result {
 				try {
 					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
 					Unmarshaller u = jc.createUnmarshaller();
-					set.add((AttributesType)u.unmarshal(root));
+					attributes.add((AttributesType)u.unmarshal(root));
 				} catch (JAXBException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -477,11 +475,11 @@ public class Result {
 			}
 		}
 
-		if (set.size() == 0) {
+		if (attributes.size() == 0) {
 			throw new ParsingException("Advice must not be empty");
 		}
 
-		return set;
+		return attributes;
 	}
 
 	/**
@@ -490,7 +488,7 @@ public class Result {
 	 * 
 	 * @return the decision effect
 	 */
-	public int getDecision() {
+	public DecisionType getDecision() {
 		return decision;
 	}
 
@@ -501,7 +499,7 @@ public class Result {
 	 * 
 	 * @return status associated with this Result
 	 */
-	public Status getStatus() {
+	public StatusType getStatus() {
 		return status;
 	}
 
@@ -541,7 +539,7 @@ public class Result {
 	 * 
 	 * @return the set of obligations
 	 */
-	public Set<Obligation> getObligations() {
+	public ObligationsType getObligations() {
 		return obligations;
 	}
 
@@ -553,14 +551,14 @@ public class Result {
 	 */
 	public void addObligation(Obligation obligation) {
 		if (obligation != null) {
-			obligations.add(obligation);
+			obligations.getObligation().add(obligation);
 		}
 	}
 	
 	public void addObligation(ObligationExpressionType obligation, EvaluationCtx context) {
 		if(obligation != null) {
 			try {
-				obligations.add(Obligation.getInstance(obligation, context));
+				obligations.getObligation().add(Obligation.getInstance(obligation, context));
 			} catch (ParsingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -568,31 +566,31 @@ public class Result {
 		}
 	}
 	
-	public void addAdvice(AdviceExpressionType advice) {
+	public void addAdvice(AdviceType advice) {
 		if (advice != null) {
-			advices.add(advice);
+			associatedAdvice.getAdvice().add(advice);
 		}
 	}
 
 	/**
 	 * @return the advices
 	 */
-	public Set<AdviceExpressionType> getAdvices() {
-		return advices;
+	public AssociatedAdviceType getAdvices() {
+		return associatedAdvice;
 	}
 
 	/**
 	 * @param advices
 	 *            the advices to set
 	 */
-	public void setAdvices(Set<AssociatedAdviceType> advices) {
-		this.advices = advices;
+	public void setAdvices(AssociatedAdviceType advices) {
+		this.associatedAdvice = advices;
 	}
 
 	/**
 	 * @return the attributes
 	 */
-	public Set<AttributeType> getAttributes() {
+	public List<AttributesType> getAttributes() {
 		return attributes;
 	}
 
@@ -600,7 +598,7 @@ public class Result {
 	 * @param attributes
 	 *            the attributes to set
 	 */
-	public void setAttributes(Set<AttributeType> attributes) {
+	public void setAttributes(List<AttributesType> attributes) {
 		this.attributes = attributes;
 	}
 
@@ -626,44 +624,13 @@ public class Result {
 	 */
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
-		String indent = indenter.makeString();
-
-		indenter.in();
-		String indentNext = indenter.makeString();
-
-		// encode the starting tag
-		if (resource == null)
-			out.println(indent + "<Result>");
-		else
-			out.println(indent + "<Result ResourceId=\"" + resource + "\">");
-
-		// encode the decision
-		out.println(indentNext + "<Decision>" + DECISIONS[decision]
-				+ "</Decision>");
-
-		// encode the status
-		if (status != null)
-			status.encode(output, indenter);
-
-		// encode the obligations
-		if (obligations.size() != 0) {
-			out.println(indentNext + "<Obligations>");
-
-			Iterator it = obligations.iterator();
-			indenter.in();
-
-			while (it.hasNext()) {
-				Obligation obligation = (Obligation) (it.next());
-				obligation.encode(output, indenter);
-			}
-
-			indenter.out();
-			out.println(indentNext + "</Obligations>");
-		}
-
-		indenter.out();
-
-		// finish it off
-		out.println(indent + "</Result>");
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		}  
 	}
 }

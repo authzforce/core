@@ -36,26 +36,22 @@
 
 package com.sun.xacml.support.finder;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.VersionConstraints;
-
-import com.sun.xacml.finder.PolicyFinder;
-import com.sun.xacml.finder.PolicyFinderModule;
-import com.sun.xacml.finder.PolicyFinderResult;
-
 import java.io.File;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-
 import java.util.Iterator;
 import java.util.List;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.VersionConstraints;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.finder.PolicyFinderModule;
+import com.sun.xacml.finder.PolicyFinderResult;
+import com.sun.xacml.xacmlv3.Policy;
 
 
 /**
@@ -163,7 +159,7 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
         Iterator it = policyList.iterator();
         while (it.hasNext()) {
             String str = (String)(it.next());
-            AbstractPolicy policy = null;
+            Policy policy = null;
 
             try {
                 try {
@@ -208,7 +204,7 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
     public PolicyFinderResult findPolicy(URI idReference, int type,
                                          VersionConstraints constraints,
                                          PolicyMetaData parentMetaData) {
-        AbstractPolicy policy = policies.getPolicy(idReference.toString(),
+        Policy policy = policies.getPolicy(idReference.toString(),
                                                    type, constraints);
 
         if (policy == null)

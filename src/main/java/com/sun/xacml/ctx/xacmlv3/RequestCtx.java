@@ -53,7 +53,6 @@ import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.InputParser;
-import com.sun.xacml.ctx.Subject;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 /**
@@ -150,9 +149,10 @@ public class RequestCtx
         // make sure subjects is well formed
         Iterator sIter = subjects.iterator();
         while (sIter.hasNext()){
-            if (!(sIter.next() instanceof Subject))
-                throw new IllegalArgumentException("Subjects input is not " +
-                                                   "well formed");
+        	//FIXME
+//            if (!(sIter.next() instanceof Subject))
+//                throw new IllegalArgumentException("Subjects input is not " +
+//                                                   "well formed");
         }
         this.subjects = Collections.unmodifiableSet(new HashSet(subjects));
 
@@ -240,7 +240,14 @@ public class RequestCtx
                 Set attributes = parseAttributes(node);
 
                 // finally, add the list to the set of subject attributes
-                newSubjects.add(new Subject(category, attributes));
+                
+                
+                
+                //FIXME
+//                newSubjects.add(new Subject(category, attributes));
+                
+                
+                
             } else if (tag.equals("Resource")) {
                 // For now, this code doesn't parse the content, since it's
                 // a set of anys with a set of anyAttributes, and therefore
@@ -376,80 +383,6 @@ public class RequestCtx
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
-        
-
-        // Make a PrintStream for a nicer printing interface
-        PrintStream out = new PrintStream(output);
-
-        // Prepare the indentation string
-        String topIndent = indenter.makeString();
-        out.println(topIndent + "<Request xmlns=\"urn:oasis:names:tc:xacml:2.0:context:schema:os\">");
-
-        // go in one more for next-level elements...
-        indenter.in();
-        String indent = indenter.makeString();
-
-        // ...and go in again for everything else
-        indenter.in();
-
-        // first off, go through all subjects
-        Iterator it = subjects.iterator();
-        while (it.hasNext()) {
-            Subject subject = (Subject)(it.next());
-
-            out.print(indent + "<Subject SubjectCategory=\"" +
-                      subject.getCategory().toString() + "\"");
-
-            Set subjectAttrs = subject.getAttributes();
-            
-            if (subjectAttrs.size() == 0) {
-                // there's nothing in this Subject, so just close the tag
-                out.println("/>");
-            } else {
-                // there's content, so fill it in
-                out.println(">");
-
-                encodeAttributes(subjectAttrs, out, indenter);
-            
-                out.println(indent + "</Subject>");
-            }
-        }
-
-        // next do the resource
-        if ((resource.size() != 0) || (resourceContent != null)) {
-            out.println(indent + "<Resource>");
-            if (resourceContent != null)
-                out.println(indenter.makeString() + "<ResourceContent>" +
-                            resourceContent + "</ResourceContent>");
-            encodeAttributes(resource, out, indenter);
-            out.println(indent + "</Resource>");
-        } else {
-            out.println(indent + "<Resource/>");
-        }
-
-        // now the action
-        if (action.size() != 0) {
-            out.println(indent + "<Action>");
-            encodeAttributes(action, out, indenter);
-            out.println(indent + "</Action>");
-        } else {
-            out.println(indent + "<Action/>");
-        }
-
-        // finally the environment, if there are any attrs
-        if (environment.size() != 0) {
-            out.println(indent + "<Environment>");
-            encodeAttributes(environment, out, indenter);
-            out.println(indent + "</Environment>");
-        } else {
-            out.println(indent + "<Environment/>");
-        }
-
-        // we're back to the top
-        indenter.out();
-        indenter.out();
-        
-        out.println(topIndent + "</Request>");
     }
 
     /**

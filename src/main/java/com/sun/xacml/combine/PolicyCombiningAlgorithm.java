@@ -36,13 +36,13 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.ctx.Result;
-
 import java.net.URI;
-
 import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.ctx.Result;
 
 
 /**
@@ -88,7 +88,7 @@ public abstract class PolicyCombiningAlgorithm extends CombiningAlgorithm
      *
      * @return a single unified result based on the combining logic
      */
-    public abstract Result combine(EvaluationCtx context, List parameters,
+    public abstract Result combine(EvaluationCtx context, CombinerParametersType parameters,
                                    List policyElements);
 
 }

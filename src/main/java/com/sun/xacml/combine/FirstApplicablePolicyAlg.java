@@ -36,14 +36,17 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.MatchResult;
-
-import com.sun.xacml.ctx.Result;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.MatchResult;
+import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.Policy;
 
 
 /**
@@ -85,26 +88,26 @@ public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-    public Result combine(EvaluationCtx context, List parameters,
+    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
                           List policyElements) {
         Iterator it = policyElements.iterator();
         
         while (it.hasNext()) {
-            AbstractPolicy policy =
+            Policy policy =
                 ((PolicyCombinerElement)(it.next())).getPolicy();
 
             // make sure that the policy matches the context
             MatchResult match = policy.match(context);
 
             if (match.getResult() == MatchResult.INDETERMINATE)
-                return new Result(Result.DECISION_INDETERMINATE,
+                return new Result(DecisionType.INDETERMINATE,
                                   match.getStatus(),
                                   context.getResourceId().encode());
 
             if (match.getResult() == MatchResult.MATCH) {
                 // evaluate the policy
                 Result result = policy.evaluate(context);
-                int effect = result.getDecision();
+                int effect = result.getDecision().ordinal();
                 
                 // in the case of PERMIT, DENY, or INDETERMINATE, we always
                 // just return that result, so only on a rule that doesn't
@@ -115,8 +118,7 @@ public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
         }
 
         // if we got here, then none of the rules applied
-        return new Result(Result.DECISION_NOT_APPLICABLE,
-                          context.getResourceId().encode());
+        return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
     }
 
 }

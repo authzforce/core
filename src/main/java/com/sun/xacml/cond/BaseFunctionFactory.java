@@ -36,12 +36,7 @@
 
 package com.sun.xacml.cond;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.xacmlv3.Match;
-
 import java.net.URI;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +44,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.w3c.dom.Node;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.UnknownIdentifierException;
 
 
 /**
@@ -267,6 +265,7 @@ public class BaseFunctionFactory extends FunctionFactory
 
         if (entry != null) {
             if (entry instanceof Function) {
+            	((Function) entry).setFunctionId(((Function) entry).getIdentifier().toASCIIString());
                 return (Function)entry;
             } else {
                 // this is actually a proxy, which means the other create

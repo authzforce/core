@@ -151,7 +151,7 @@ public class DivideFunction extends FunctionBase
 
         // Now that we have real values, perform the divide operation
         // in the manner appropriate for the type of the arguments.
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_INTEGER_DIVIDE: {
             long dividend = ((IntegerAttribute) argValues[0]).getValue();
             long divisor = ((IntegerAttribute) argValues[1]).getValue();

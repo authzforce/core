@@ -40,13 +40,20 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -55,6 +62,8 @@ import com.sun.xacml.combine.CombinerParameter;
 import com.sun.xacml.combine.PolicyCombinerElement;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.Target;
 
 
 /**
@@ -65,13 +74,13 @@ import com.sun.xacml.finder.PolicyFinder;
  * @since 1.0
  * @author Seth Proctor
  */
-public class PolicySet extends AbstractPolicy
+public class PolicySet extends AbstractPolicySet
 {
 	/**
 	 * Logger used for all classes
 	 */
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(Policy.class);
+			.getLogger(PolicySet.class);
 	
     /**
      * Creates a new <code>PolicySet</code> with only the required elements.
@@ -83,7 +92,7 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg,
                      Target target) {
-        this(id, null, combiningAlg, null, target, null, null, null);
+        this(id, null, combiningAlg, null, target, null, null, null, null);
     }
 
     /**
@@ -102,7 +111,7 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg,
                      Target target, List policies) {
-        this(id, null, combiningAlg, null, target, policies, null, null);
+        this(id, null, combiningAlg, null, target, policies, null, null, null);
     }
 
     /**
@@ -126,7 +135,7 @@ public class PolicySet extends AbstractPolicy
                      PolicyCombiningAlgorithm combiningAlg,
                      String description, Target target, List policies) {
         this(id, version, combiningAlg, description, target, policies, null,
-             null);
+             null, null);
     }
 
     /**
@@ -149,10 +158,9 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, String version,
                      PolicyCombiningAlgorithm combiningAlg,
-                     String description, Target target, List policies,
+                     String description, TargetType target, List policies,
                      String defaultVersion) {
-        this(id, version, combiningAlg, description, target, policies,
-             defaultVersion, null);
+        this(id, version, combiningAlg, description, target, policies, defaultVersion, null, null);
     }
 
     /**
@@ -176,12 +184,11 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, String version,
                      PolicyCombiningAlgorithm combiningAlg,
-                     String description, Target target, List policies,
-                     String defaultVersion, Set obligations) {
-        super(id, version, combiningAlg, description, target, defaultVersion, 
-              obligations, null);
+                     String description, TargetType target, List policies,
+                     String defaultVersion, ObligationExpressionsType obligations, AdviceExpressionsType advices) {
+        super(id, version, combiningAlg, description, target, defaultVersion, obligations, advices, null);
 
-        List list = null;
+        List list = null;        
 
         // check that the list contains only AbstractPolicy objects
         if (policies != null) {
@@ -189,14 +196,17 @@ public class PolicySet extends AbstractPolicy
             Iterator it = policies.iterator();
             while (it.hasNext()) {
                 Object o = it.next();
-                if (! (o instanceof AbstractPolicy))
-                    throw new IllegalArgumentException("non-AbstractPolicy " +
+                if (! (o instanceof Policy)) {
+                    throw new IllegalArgumentException("non-Policy " +
                                                        "in policies");
-                list.add(new PolicyCombinerElement((AbstractPolicy)o));
+                }
+                list.add(new PolicyCombinerElement((Policy)o));
             }
         }
-
-        setChildren(list);
+        List policyList = new ArrayList();
+        policyList = Collections.unmodifiableList(list);
+        this.policySetOrPolicyOrPolicySetIdReference = ((List<JAXBElement<?>>) policyList);
+//        setChildren(list);
     }
     
     /**
@@ -232,22 +242,22 @@ public class PolicySet extends AbstractPolicy
     public PolicySet(URI id, String version,
                      PolicyCombiningAlgorithm combiningAlg,
                      String description, Target target, List policyElements,
-                     String defaultVersion, Set obligations, List parameters) {
-        super(id, version, combiningAlg, description, target, defaultVersion,
-              obligations, parameters);
+                     String defaultVersion, ObligationExpressionsType obligations, AdviceExpressionsType advices, List parameters) {
+        super(id, version, combiningAlg, description, target, defaultVersion, obligations, advices, parameters);
 
         // check that the list contains only CombinerElements
         if (policyElements != null) {
             Iterator it = policyElements.iterator();
             while (it.hasNext()) {
                 Object o = it.next();
-                if (! (o instanceof PolicyCombinerElement))
-                    throw new IllegalArgumentException("non-AbstractPolicy " +
+                if (! (o instanceof PolicyCombinerElement)) {
+                    throw new IllegalArgumentException("non-PolicyCombinerElement " +
                                                        "in policies");
+                }
             }
         }
 
-        setChildren(policyElements);
+//        setChildren(policyElements);
     }
 
     /**
@@ -270,8 +280,8 @@ public class PolicySet extends AbstractPolicy
             Node child = children.item(i);
             String name = child.getNodeName();
 
-            if (name.equals("PolicySet")) {
-                policies.add(PolicySet.getInstance(child, finder));
+            if (name.equals("Target")) {
+                target = Target.getInstance(child, metaData);
             } else if (name.equals("Policy")) {
                 policies.add(Policy.getInstance(child));
             } else if (name.equals("PolicySetIdReference")) {
@@ -293,41 +303,42 @@ public class PolicySet extends AbstractPolicy
         Iterator it = policies.iterator();
 
         // right now we have to go though each policy and based on several
-        // possible cases figure out what paranmeters might apply...but
+        // possible cases figure out what parameters might apply...but
         // there should be a better way to do this
 
         while (it.hasNext()) {
-            AbstractPolicy policy = (AbstractPolicy)(it.next());
+            Object policy = (Object)(it.next());
             List list = null;
 
             if (policy instanceof Policy) {
-                list = (List)(policyParameters.remove(policy.getId().
-                                                      toString()));
+                list = (List)(policyParameters.remove(((Policy)policy).getPolicyId()));
             } else if (policy instanceof PolicySet) {
-                list = (List)(policySetParameters.remove(policy.getId().
-                                                         toString()));
+            	//TODO: Handle PolicySetIdReference
+                list = (List)(policySetParameters.remove(((PolicySet)policy).getPolicySetId()));
             } else {
                 PolicyReference ref = (PolicyReference)policy;
                 String id = ref.getReference().toString();
 
                 if (ref.getReferenceType() ==
-                    PolicyReference.POLICY_REFERENCE)
+                    PolicyReference.POLICY_REFERENCE) {
                     list = (List)(policyParameters.remove(id));
-                else
+                } else {
                     list = (List)(policySetParameters.remove(id));
+                }
             }
 
-            elements.add(new PolicyCombinerElement(policy, list));
+            elements.add(new PolicyCombinerElement((PolicyType)policy, list));
         }
 
         // ...and that there aren't extra parameters
-        if (! policyParameters.isEmpty())
+        if (! policyParameters.isEmpty()) {
             throw new ParsingException("Unmatched parameters in Policy");
-        if (! policySetParameters.isEmpty())
+        } if (! policySetParameters.isEmpty()) {
             throw new ParsingException("Unmatched parameters in PolicySet");
-
-        // finally, set the list of Rules
-        setChildren(elements);
+        }
+        // finally, set the list of Policies
+        this.policySetOrPolicyOrPolicySetIdReference.addAll((List<JAXBElement<?>>) Collections.unmodifiableList(elements));        
+//        setChildren(elements);
     }
 
     /**

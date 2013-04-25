@@ -402,7 +402,7 @@ public class ComparisonFunction extends FunctionBase
 
         boolean boolResult = false;
 
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
 
         case ID_INTEGER_GREATER_THAN: {
             long arg0 = ((IntegerAttribute)(argValues[0])).getValue();

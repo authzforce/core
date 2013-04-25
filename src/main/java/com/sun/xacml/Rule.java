@@ -42,13 +42,13 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ConditionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
@@ -58,12 +58,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.attr.BooleanAttribute;
-import com.sun.xacml.cond.Apply;
 import com.sun.xacml.cond.Condition;
 import com.sun.xacml.cond.VariableManager;
+import com.sun.xacml.cond.xacmlv3.Apply;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
+import com.sun.xacml.xacmlv3.Target;
 
 /**
  * Represents the RuleType XACML type. This has a target for matching, and
@@ -76,22 +77,18 @@ import com.sun.xacml.ctx.Status;
 public class Rule extends RuleType {
 
 	// the attributes associated with this Rule
-	private URI idAttr;
-	private EffectType effectAttr;
+//	private URI idAttr;
+//	private EffectType effectAttr;
 
 	// the elements in the rule, each of which is optional
-	private String description = null;
-	private TargetType target = null;
-	private ConditionType condition = null;
+//	private String description = null;
+//	private TargetType target = null;
 
-	private static final org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger
-			.getLogger(Rule.class);
-	
 	/**
 	 * Logger used for all classes
 	 */
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(Condition.class);
+			.getLogger(Rule.class);
 
 	/**
 	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
@@ -109,10 +106,10 @@ public class Rule extends RuleType {
 	 * @param condition
 	 *            the rule's condition, or null if there is none
 	 */
-	public Rule(URI id, EffectType effect, String description, TargetType target,
+	public Rule(String id, EffectType effect, String description, TargetType target,
 			ConditionType condition) {
-		idAttr = id;
-		effectAttr = effect;
+		this.ruleId = id;
+		this.effect = effect;
 		this.description = description;
 		this.target = target;
 		this.condition = condition;
@@ -137,13 +134,13 @@ public class Rule extends RuleType {
 	 * @param condition
 	 *            the rule's condition, or null if there is none
 	 */
-	public Rule(URI id, EffectType effect, String description, TargetType target,
+	public Rule(String id, EffectType effect, String description, TargetType target,
 			Apply condition) {
-		idAttr = id;
-		effectAttr = effect;
+		this.ruleId = id;
+		this.effect = effect;
 		this.description = description;
 		this.target = target;
-		this.condition = new Condition(condition.getFunction(), condition.getChildren());
+//		this.condition = new Condition(condition.getFunction(), condition.getChildren());
 	}
 
 	/**
@@ -189,7 +186,7 @@ public class Rule extends RuleType {
 	 */
 	public static Rule getInstance(Node root, PolicyMetaData metaData,
 			VariableManager manager) throws ParsingException {
-		URI id = null;
+		String id = null;
 		String name = null;
 		EffectType effect = null;
 		String description = null;
@@ -199,13 +196,8 @@ public class Rule extends RuleType {
 		// first, get the attributes
 		NamedNodeMap attrs = root.getAttributes();
 
-		try {
-			// get the two required attrs...
-			id = new URI(attrs.getNamedItem("RuleId").getNodeValue());
-		} catch (URISyntaxException use) {
-			throw new ParsingException("Error parsing required attribute "
-					+ "RuleId", use);
-		}
+		// get the two required attrs...
+		id = attrs.getNamedItem("RuleId").getNodeValue();
 
 		String str = attrs.getNamedItem("Effect").getNodeValue();
 		if (str.equals("Permit")) {
@@ -227,8 +219,7 @@ public class Rule extends RuleType {
 			} else if (cname.equals("Target")) {
 				target = Target.getInstance(child, metaData);
 			} else if (cname.equals("Condition")) {
-//				condition = Condition.getInstance(child, metaData, manager);
-				condition = Condition.getInstance(child);
+				condition = Condition.getInstance(child, metaData, manager);
 			}
 		}
 
@@ -250,8 +241,8 @@ public class Rule extends RuleType {
 	 * 
 	 * @return the rule id
 	 */
-	public URI getId() {
-		return idAttr;
+	public String getId() {
+		return ruleId;
 	}
 
 	/**
@@ -337,22 +328,22 @@ public class Rule extends RuleType {
 	 */
 	public Result evaluate(EvaluationCtx context) {
 		// Do the list of Attribute who needs to be included in result
-		Set<AttributeType> includeInResult = context.getIncludeInResults();
+		List<AttributesType> includeInResult = context.getIncludeInResults();
+		MatchResult match = null;
 		// If the Target is null then it's supposed to inherit from the
 		// parent policy, so we skip the matching step assuming we wouldn't
 		// be here unless the parent matched
 		if (target != null) {
-			MatchResult match = ((Target)target).match(context);
+			match = ((Target)target).match(context);
 			int result = match.getResult();
 
 			// if the target didn't match, then this Rule doesn't apply
 			if (result == MatchResult.NO_MATCH)
-				return new Result(Result.DECISION_NOT_APPLICABLE, null, context
-						.getResourceId().encode(), null, includeInResult);
+				return new Result(DecisionType.NOT_APPLICABLE, null, context.getResourceId().encode(), null, includeInResult);
 
 			// if the target was indeterminate, we can't go on
 			if (result == MatchResult.INDETERMINATE)
-				return new Result(Result.DECISION_INDETERMINATE,
+				return new Result(DecisionType.INDETERMINATE,
 						match.getStatus(), context.getResourceId().encode(),
 						null, includeInResult);
 		}
@@ -364,17 +355,17 @@ public class Rule extends RuleType {
 
 		// if there's no condition, then we just return the effect...
 		if (condition == null) {
-			log4jLogger.debug("Rule doesn't contain condition, so result is: "
-					+ effectAttr);
-			return new Result(effectAttr.ordinal(), null, context.getResourceId()
+			LOGGER.info("Rule doesn't contain condition, so result is: " + this.effect.value()+ " for rule: "+this.ruleId);
+			return new Result(DecisionType.fromValue(this.effect.value()), null, context.getResourceId()
 					.encode(), null, includeInResult);
 		}
 		// ...otherwise we evaluate the condition
+//		Condition myCond = new Condition(condition.getExpression().getValue());
 		EvaluationResult result = ((Condition)condition).evaluate(context);
 
 		if (result.indeterminate()) {
 			// if it was INDETERMINATE, then that's what we return
-			return new Result(Result.DECISION_INDETERMINATE,
+			return new Result(DecisionType.INDETERMINATE,
 					result.getStatus(), context.getResourceId().encode(), null,
 					includeInResult);
 		} else {
@@ -382,10 +373,10 @@ public class Rule extends RuleType {
 			BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
 
 			if (bool.getValue()) {
-				return new Result(effectAttr.ordinal(), null, context.getResourceId()
+				return new Result(DecisionType.valueOf(effect.name()), null, context.getResourceId()
 						.encode(), null, includeInResult);
 			} else {
-				return new Result(Result.DECISION_NOT_APPLICABLE, null, context
+				return new Result(DecisionType.NOT_APPLICABLE, null, context
 						.getResourceId().encode(), null, includeInResult);
 			}
 		}

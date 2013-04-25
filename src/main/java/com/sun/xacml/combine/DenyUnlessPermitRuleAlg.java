@@ -6,6 +6,9 @@ package com.sun.xacml.combine;
 import java.net.URI;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
@@ -60,18 +63,19 @@ public class DenyUnlessPermitRuleAlg extends RuleCombiningAlgorithm {
 	 * @return a single unified result based on the combining logic
 	 */
 	@Override
-	public Result combine(EvaluationCtx context, List parameters,
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List ruleElements) {
+		Result result = null;
 		for (RuleCombinerElement myRuleCombinerElt : (List<RuleCombinerElement>)ruleElements) {
-			Rule rule = myRuleCombinerElt.getRule();
-			Result result = rule.evaluate(context);
-            int value = result.getDecision();
+			Rule rule = (Rule)myRuleCombinerElt.getRule();
+			result = rule.evaluate(context);
+            int value = result.getDecision().ordinal();
 			if (value == Result.DECISION_PERMIT) {
 				return result;
 			}
 		}
 
-		return new Result(Result.DECISION_DENY, context.getResourceId().encode());
+		return new Result(DecisionType.DENY, context.getResourceId().encode(), result.getObligations());
 	}
 	
 

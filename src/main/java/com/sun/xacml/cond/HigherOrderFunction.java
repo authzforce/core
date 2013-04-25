@@ -47,12 +47,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 
 
 /**
@@ -152,9 +155,10 @@ public class HigherOrderFunction extends Function
     public HigherOrderFunction(String functionName) {
         // try to get the function's identifier
         Integer i = (Integer)(idMap.get(functionName));
-        if (i == null)
+        if (i == null) {
             throw new IllegalArgumentException("unknown function: " +
                                                functionName);
+        }
         functionId = i.intValue();
 
         // setup the URI form of this function's idenitity
@@ -235,14 +239,16 @@ public class HigherOrderFunction extends Function
         Iterator iterator = inputs.iterator();
 
         // get the first arg, which is the function
-        Expression xpr = (Expression)(iterator.next());
+        Object xpr = (Object)(iterator.next());
         Function function = null;
 
         if (xpr instanceof Function) {
             function = (Function)xpr;
         } else {
+//        	function = (Function)(((VariableReference)xpr).
+//                    getReferencedDefinition().getExpression().getValue());
             function = (Function)(((VariableReference)xpr).
-                                  getReferencedDefinition().getExpression());
+                                  getReferencedDefinition().getExpression().getValue());
         }
 
         // get the two inputs, and if anything is INDETERMINATE, then we
@@ -251,8 +257,9 @@ public class HigherOrderFunction extends Function
 
         Evaluatable eval = (Evaluatable)(iterator.next());
         EvaluationResult result = eval.evaluate(context);
-        if (result.indeterminate())
+        if (result.indeterminate()) {
             return result;
+        }
         args[0] = (AttributeValue)(result.getAttributeValue());
 
         eval = (Evaluatable)(iterator.next());
@@ -265,7 +272,7 @@ public class HigherOrderFunction extends Function
         // now we're ready to do the evaluation
         result = null;
 
-        switch(functionId) {
+        switch(Integer.parseInt(function.getFunctionId())) {
             
         case ID_ANY_OF: {
             
@@ -396,8 +403,8 @@ public class HigherOrderFunction extends Function
         if (list[0] instanceof Function) {
             function = (Function)(list[0]);
         } else if (list[0] instanceof VariableReference) {
-            Expression xpr = ((VariableReference)(list[0])).
-                getReferencedDefinition().getExpression();
+        	ExpressionType xpr = (ExpressionType) ((VariableReference)(list[0])).
+                getReferencedDefinition().getExpression().getValue();
             if (xpr instanceof Function)
                 function = (Function)xpr;
         }
@@ -417,11 +424,11 @@ public class HigherOrderFunction extends Function
         Evaluatable eval2 = (Evaluatable)(list[2]);
 
         // the first arg might be a bag
-        if (secondIsBag && (! eval1.returnsBag()))
+        if (secondIsBag && (! eval1.evaluatesToBag()))
             throw new IllegalArgumentException("first arg has to be a bag");
 
         // the second arg must be a bag
-        if (! eval2.returnsBag())
+        if (! eval2.evaluatesToBag())
             throw new IllegalArgumentException("second arg has to be a bag");
 
         // finally, we need to make sure that the given type will work on

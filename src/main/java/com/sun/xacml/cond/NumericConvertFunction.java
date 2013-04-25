@@ -165,7 +165,7 @@ public class NumericConvertFunction extends FunctionBase
 
         // Now that we have real values, perform the numeric conversion
         // operation in the manner appropriate for this function.
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_DOUBLE_TO_INTEGER: {
             double arg0 = ((DoubleAttribute) argValues[0]).getValue();
             long longValue = (long) arg0;

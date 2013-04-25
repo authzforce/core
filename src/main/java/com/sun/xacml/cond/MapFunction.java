@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -54,8 +56,8 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
 
 
 /**
@@ -215,12 +217,11 @@ class MapFunction extends Function
         Iterator<?> iterator = inputs.iterator();
         Function function = null;
 
-        Expression xpr = (Expression)(iterator.next());
+        ExpressionType xpr = (ExpressionType)(iterator.next());
         if (xpr instanceof Function) {
             function = (Function)xpr;
         } else {
-            function = (Function)(((VariableReference)xpr).
-                                  getReferencedDefinition().getExpression());
+            function = (Function)(((VariableReference)xpr).getReferencedDefinition().getExpression()).getValue();
         }
 
         Evaluatable eval = (Evaluatable)(iterator.next());
@@ -279,8 +280,7 @@ class MapFunction extends Function
         if (list[0] instanceof Function) {
             function = (Function)(list[0]);
         } else if (list[0] instanceof VariableReference) {
-            Expression xpr = ((VariableReference)(list[0])).
-                getReferencedDefinition().getExpression();
+            ExpressionType xpr = (ExpressionType) ((VariableReference)(list[0])).getReferencedDefinition().getExpression().getValue();
             if (xpr instanceof Function) {
                 function = (Function)xpr;
             }
@@ -292,7 +292,8 @@ class MapFunction extends Function
         }
         
         Evaluatable eval = (Evaluatable)(list[1]);
-        if (! eval.returnsBag()) {
+//        if (! eval.returnsBag()) {
+        if (! eval.evaluatesToBag()) {
             throw new IllegalArgumentException("second argument to map must " +
                                                "be a bag");
         }

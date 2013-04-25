@@ -36,6 +36,7 @@
 
 package com.sun.xacml.cond;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +64,18 @@ public class StringFunction extends FunctionBase
 
     // private identifiers for the supported functions
     private static final int ID_STRING_CONCATENATE = 0;
+    
+    private static HashMap idMap;
+    
+    /**
+     * Static initializer to setup the id maps.
+     */
+    static {
+        idMap = new HashMap();
+
+        idMap.put(NAME_STRING_CONCATENATE,
+                  new Integer(ID_STRING_CONCATENATE));
+    };
 
     /**
      * Creates a new <code>StringFunction</code> object.
@@ -89,6 +102,16 @@ public class StringFunction extends FunctionBase
 
         return set;
     }
+    
+    private int getId(String functionName) {
+    	Integer i = (Integer)(idMap.get(functionName));
+
+        if (i == null)
+            throw new IllegalArgumentException("unknown comparison function " +
+                                               functionName);
+
+        return i.intValue();
+	}
 
     /**
      * Evaluate the function, using the specified parameters.
@@ -108,7 +131,7 @@ public class StringFunction extends FunctionBase
             return result;
         }
 
-        switch (Integer.parseInt(getFunctionId())) {
+        switch (getId(getFunctionName())) {
         case ID_STRING_CONCATENATE:
             String str = ((StringAttribute)argValues[0]).getValue();
 
@@ -122,5 +145,4 @@ public class StringFunction extends FunctionBase
 
         return result;
     }
-
 }

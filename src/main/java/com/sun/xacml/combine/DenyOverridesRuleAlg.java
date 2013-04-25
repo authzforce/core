@@ -36,13 +36,16 @@
 
 package com.sun.xacml.combine;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Rule;
-
-import com.sun.xacml.ctx.Result;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Rule;
+import com.sun.xacml.ctx.Result;
 
 
 /**
@@ -95,23 +98,29 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-    public Result combine(EvaluationCtx context, List parameters,
+    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
                           List ruleElements) {
         boolean atLeastOneError = false;
         boolean potentialDeny = false;
         boolean atLeastOnePermit = false;
+        boolean atLeastOneNotApplicable = false;
         Result firstIndeterminateResult = null;
         Iterator it = ruleElements.iterator();
 
         while (it.hasNext()) {
-            Rule rule = ((RuleCombinerElement)(it.next())).getRule();
+//            Rule rule = ((RuleCombinerElement)(it.next())).getRule();
+            Rule rule = ((Rule)(it.next()));
             Result result = rule.evaluate(context);
-            int value = result.getDecision();
+            int value = result.getDecision().ordinal();
             
             // if there was a value of DENY, then regardless of what else
             // we've seen, we always return DENY
-            if (value == Result.DECISION_DENY)
+            if (value == Result.DECISION_DENY) {
                 return result;
+            }
+//            if(value == Result.DECISION_NOT_APPLICABLE) {
+//            	return result;
+//            }
             
             // if it was INDETERMINATE, then we couldn't figure something
             // out, so we keep track of these cases...
@@ -126,7 +135,7 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
                 // if the Rule's effect is DENY, then we can't let this
                 // alg return PERMIT, since this Rule might have denied
                 // if it could do its stuff
-                if (rule.getEffect().ordinal() == Result.DECISION_DENY)
+                if (rule.getEffect().ordinal() == DecisionType.DENY.ordinal())
                     potentialDeny = true;
             } else {
                 // keep track of whether we had at least one rule that
@@ -143,9 +152,9 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
         
         // some Rule said PERMIT, so since nothing could have denied,
         // we return PERMIT
-        if (atLeastOnePermit)
-            return new Result(Result.DECISION_PERMIT,
-                              context.getResourceId().encode());
+        if (atLeastOnePermit) {
+            return new Result(DecisionType.PERMIT, context.getResourceId().encode());
+        }
         
         // we didn't find anything that said PERMIT, but if we had a
         // problem with one of the Rules, then we're INDETERMINATE
@@ -154,7 +163,7 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
         
         // if we hit this point, then none of the rules actually applied
         // to us, so we return NOT_APPLICABLE
-        return new Result(Result.DECISION_NOT_APPLICABLE,
+        return new Result(DecisionType.NOT_APPLICABLE,
                           context.getResourceId().encode());
     }
 

@@ -41,6 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AnyURIAttribute;
 import com.sun.xacml.attr.Base64BinaryAttribute;
@@ -58,7 +60,6 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
 import com.sun.xacml.attr.X500NameAttribute;
 import com.sun.xacml.attr.YearMonthDurationAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
@@ -294,7 +295,7 @@ public class EqualFunction extends FunctionBase
     public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
-        AttributeValue [] argValues = new AttributeValue[inputs.size()];
+        AttributeValueType [] argValues = new AttributeValueType[inputs.size()];
         EvaluationResult result = evalArgs(inputs, context, argValues);
         if (result != null)
             return result;

@@ -42,8 +42,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.w3c.dom.Node;
 
@@ -52,8 +50,8 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-import com.thalesgroup.authzforce.audit.AttributesResolved;
-import com.thalesgroup.authzforce.audit.AuditLogs;
+//import com.thalesgroup.authzforce.audit.AttributesResolved;
+//import com.thalesgroup.authzforce.audit.AuditLogs;
 
 
 /**
@@ -85,10 +83,6 @@ public class AttributeFinder
 
     //
     private List selectorModules;
-
-    // the logger we'll use for all messages
-    private static final Logger LOGGER =
-        Logger.getLogger(AttributeFinder.class.getName());
 
     private static final org.apache.log4j.Logger LOG4J_LOGGER = 
 			org.apache.log4j.Logger.getLogger(AttributeFinder.class);    
@@ -183,15 +177,13 @@ public class AttributeFinder
 
                 // if there was an error, we stop right away
                 if (result.indeterminate()) {
-                    if (LOGGER.isLoggable(Level.INFO)) {
-                        LOGGER.info("Error while trying to resolve values: " +
+                	LOG4J_LOGGER.info("Error while trying to resolve values: " +
                                     result.getStatus().getMessage());
-                    }
                     return result;
                 }
                 
                 LOG4J_LOGGER.debug("Finish to resolv attribute value for attribute: "+attributeId +" values are : ");
-                AuditLogs audit = AuditLogs.getInstance();
+//                AuditLogs audit = AuditLogs.getInstance();
                 /*
                  * Cache management (Deleting cache)
                  * @author romain.ferrari[AT]thalesgroup.com
@@ -202,28 +194,28 @@ public class AttributeFinder
                 BagAttribute bag = (BagAttribute)(result.getAttributeValue());
                 BagAttribute auditBag = bag;
                 Iterator iter = auditBag.getValue().iterator();
-                AttributesResolved attrResolv = null;
+//                AttributesResolved attrResolv = null;
                 /*
                  * Parsing for auditlog (FIX: Romain Ferrari)
                  * @author romain.guignard[AT]thalesgroup.com
                  */
-				while (iter.hasNext()){
-					String attrval = iter.next().toString();
-					attrResolv = new AttributesResolved();
-					try {
-						if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#string"))) {
-							attrResolv.setAttributeValue(attrval.split(":")[1]);
-						} else if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#integer"))) {
-							attrResolv.setAttributeValue(attrval.split("@")[1]);
-						}
-					} catch (URISyntaxException e) {
-						LOG4J_LOGGER.fatal("Error while building URI");
-						LOG4J_LOGGER.fatal(e.getLocalizedMessage());
-					}
-					attrResolv.setAttributeId(attributeId);
-					audit.getAttrResolv().add(attrResolv);	
-					LOG4J_LOGGER.debug("Val : "+attrval);
-				}
+//				while (iter.hasNext()){
+//					String attrval = iter.next().toString();
+//					attrResolv = new AttributesResolved();
+//					try {
+//						if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#string"))) {
+//							attrResolv.setAttributeValue(attrval.split(":")[1]);
+//						} else if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#integer"))) {
+//							attrResolv.setAttributeValue(attrval.split("@")[1]);
+//						}
+//					} catch (URISyntaxException e) {
+//						LOG4J_LOGGER.fatal("Error while building URI");
+//						LOG4J_LOGGER.fatal(e.getLocalizedMessage());
+//					}
+//					attrResolv.setAttributeId(attributeId);
+//					audit.getAttrResolv().add(attrResolv);	
+//					LOG4J_LOGGER.debug("Val : "+attrval);
+//				}
 				/*
 				 * End of parsing for auditlog (NOTE: Romain Guignard)
 				 */
@@ -236,10 +228,8 @@ public class AttributeFinder
         
         // if we got here then there were no errors but there were also no
         // matches, so we have to return an empty bag
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Failed to resolve any values for " +
+        	LOG4J_LOGGER.info("Failed to resolve any values for " +
                         attributeId.toString());
-        }
 
         return new EvaluationResult(BagAttribute.
                                     createEmptyBag(attributeType));
@@ -280,10 +270,8 @@ public class AttributeFinder
 
             // if there was an error, we stop right away
             if (result.indeterminate()) {
-                if (LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.info("Error while trying to resolve values: " +
+            	LOG4J_LOGGER.info("Error while trying to resolve values: " +
                                 result.getStatus().getMessage());
-                }
                 return result;
             }
 
@@ -296,9 +284,7 @@ public class AttributeFinder
 
         // if we got here then there were no errors but there were also no
         // matches, so we have to return an empty bag
-        if (LOGGER.isLoggable(Level.INFO)) {
-            LOGGER.info("Failed to resolve any values for " + contextPath);
-        }
+        	LOG4J_LOGGER.info("Failed to resolve any values for " + contextPath);
 
         return new EvaluationResult(BagAttribute.
                                     createEmptyBag(attributeType));

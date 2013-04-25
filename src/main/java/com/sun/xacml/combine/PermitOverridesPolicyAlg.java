@@ -36,17 +36,18 @@
 package com.sun.xacml.combine;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import com.sun.xacml.AbstractPolicy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.ctx.Status;
+import com.sun.xacml.xacmlv3.Policy;
 
 /**
  * This is the standard Permit Overrides policy combining algorithm. It allows a
@@ -103,12 +104,12 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 	 * 
 	 * @return the result of running the combining algorithm
 	 */
-	public Result combine(EvaluationCtx context, List parameters,
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List policyElements) {
 		boolean atLeastOneError = false;
 		boolean atLeastOneDeny = false;
-		Set denyObligations = new HashSet();
-		Status firstIndeterminateStatus = null;
+		ObligationsType denyObligations = new ObligationsType();
+		StatusType firstIndeterminateStatus = null;
 		Iterator it = policyElements.iterator();
 
 		/**
@@ -121,8 +122,7 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 		 */
 //		List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
 		while (it.hasNext()) {
-			AbstractPolicy policy = ((PolicyCombinerElement) (it.next()))
-					.getPolicy();
+			Policy policy = ((Policy) (it.next()));
 
 			// make sure that the policy matches the context
 			MatchResult match = policy.match(context);
@@ -150,7 +150,7 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 				/**
 				 * END
 				 */
-				int effect = result.getDecision();
+				int effect = result.getDecision().ordinal();
 
 				// this is a little different from DenyOverrides...
 
@@ -167,7 +167,7 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 				}
 				if (effect == Result.DECISION_DENY) {
 					atLeastOneDeny = true;
-					denyObligations.addAll(result.getObligations());
+					denyObligations = result.getObligations();
 				} else if (effect == Result.DECISION_INDETERMINATE) {
 					atLeastOneError = true;
 
@@ -188,17 +188,16 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 
 		// if we got a DENY, return it
 		if (atLeastOneDeny)
-			return new Result(Result.DECISION_DENY, context.getResourceId()
+			return new Result(DecisionType.DENY, context.getResourceId()
 					.encode(), denyObligations);
 
 		// if we got an INDETERMINATE, return it
 		if (atLeastOneError)
-			return new Result(Result.DECISION_INDETERMINATE,
+			return new Result(DecisionType.INDETERMINATE,
 					firstIndeterminateStatus, context.getResourceId().encode());
 
 		// if we got here, then nothing applied to us
-		return new Result(Result.DECISION_NOT_APPLICABLE, context
+		return new Result(DecisionType.NOT_APPLICABLE, context
 				.getResourceId().encode());
 	}
-
 }
