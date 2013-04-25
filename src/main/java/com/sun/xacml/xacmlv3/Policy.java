@@ -64,7 +64,7 @@ public class Policy extends PolicyType {
 
 	public Policy(String description, PolicyIssuerType issuer,
 			DefaultsType policyDefault, Target target, List policyElements,
-			ObligationExpressions obligations, AdviceExpressions advices,
+			ObligationExpressionsType obligations, AdviceExpressionsType advices,
 			String policyId, String version, String ruleCombiningAlgId,
 			BigInteger maxDelegationDepth) {
 
@@ -105,8 +105,8 @@ public class Policy extends PolicyType {
 	public static Policy getInstance(Node root) {
 		String ruleCombiningAlgId = null;
 		List policyElements = new ArrayList();
-		AdviceExpressions advices = null;
-		ObligationExpressions obligations = null;
+		AdviceExpressionsType advices = null;
+		ObligationExpressionsType obligations = null;
 		PolicyIssuerType issuer = null;
 		DefaultsType policyDefault = null;
 		Target target = null;
@@ -159,9 +159,9 @@ public class Policy extends PolicyType {
 				} else if ("Rule".equals(DOMHelper.getLocalName(child))) {
 					policyElements.add(Rule.getInstance(child, metaData, manager));
 				} else if ("ObligationExpressions".equals(DOMHelper.getLocalName(child))) {
-					//TODO: Implement obligation parsing
+					obligations = ObligationExpressions.getInstance(child);
 				} else if ("AdviceExpressions".equals(DOMHelper.getLocalName(child))) {
-					//TODO: Implement Advice parsing
+					advices = AdviceExpressions.getInstance(child);
 				}
 			} catch (ParsingException e) {
 				// TODO Auto-generated catch block

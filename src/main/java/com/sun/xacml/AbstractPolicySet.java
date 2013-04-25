@@ -72,6 +72,7 @@ import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.PolicyCombinerElement;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.Policy;
 import com.sun.xacml.xacmlv3.Target;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
@@ -323,9 +324,11 @@ public abstract class AbstractPolicySet extends PolicySetType {
 			} else if (cname.equals("CombinerParameters")) {
 				this.policySetOrPolicyOrPolicySetIdReference = handleParameters(child);
 			} else if (cname.equals("ObligationExpressions")) {
-				parseObligations(child);
+//				parseObligations(child);
+				this.obligationExpressions = ObligationExpressions.getInstance(child);
 			} else if (cname.equals("AdviceExpressions")) {
-				parseAdvicesExpressions(child);
+//				parseAdvicesExpressions(child);
+				this.adviceExpressions = AdviceExpressions.getInstance(child);
 			} else if (cname.equals("Policy")) {
 				// myPolicies.add(Policy.getInstance(child));
 			}
