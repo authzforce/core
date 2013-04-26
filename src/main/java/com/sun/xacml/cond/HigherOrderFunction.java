@@ -137,12 +137,12 @@ public class HigherOrderFunction extends Function
     static {
         idMap = new HashMap();
 
-        idMap.put(NAME_ANY_OF, new Integer(ID_ANY_OF));
-        idMap.put(NAME_ALL_OF, new Integer(ID_ALL_OF));
-        idMap.put(NAME_ANY_OF_ANY, new Integer(ID_ANY_OF_ANY));
-        idMap.put(NAME_ALL_OF_ANY, new Integer(ID_ALL_OF_ANY));
-        idMap.put(NAME_ANY_OF_ALL, new Integer(ID_ANY_OF_ALL));
-        idMap.put(NAME_ALL_OF_ALL, new Integer(ID_ALL_OF_ALL));
+        idMap.put(NAME_ANY_OF, Integer.valueOf(ID_ANY_OF));
+        idMap.put(NAME_ALL_OF, Integer.valueOf(ID_ALL_OF));
+        idMap.put(NAME_ANY_OF_ANY, Integer.valueOf(ID_ANY_OF_ANY));
+        idMap.put(NAME_ALL_OF_ANY, Integer.valueOf(ID_ALL_OF_ANY));
+        idMap.put(NAME_ANY_OF_ALL, Integer.valueOf(ID_ANY_OF_ALL));
+        idMap.put(NAME_ALL_OF_ALL, Integer.valueOf(ID_ALL_OF_ALL));
     };
 
     /**

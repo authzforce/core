@@ -74,7 +74,7 @@ public class StringFunction extends FunctionBase
         idMap = new HashMap();
 
         idMap.put(NAME_STRING_CONCATENATE,
-                  new Integer(ID_STRING_CONCATENATE));
+                  Integer.valueOf(ID_STRING_CONCATENATE));
     };
 
     /**

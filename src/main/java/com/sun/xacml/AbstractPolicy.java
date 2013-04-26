@@ -588,63 +588,63 @@ public abstract class AbstractPolicy extends PolicyType {
 	 * 
 	 * @return the result of evaluation
 	 */
-	public Result evaluate(EvaluationCtx context) {
-		// evaluate
-		Result result = null;//combiningAlg.combine(context, this.combinerParametersOrRuleCombinerParametersOrVariableDefinition, childElements);
-
-		if (obligationExpressions.getObligationExpression().size() > 0) {
-			// now, see if we should add any obligations to the set
-			int effect = result.getDecision().ordinal();
-
-			if ((effect == DecisionType.INDETERMINATE.ordinal())
-					|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
-				// we didn't permit/deny, so we never return obligations
-				return result;
-			}
-
-			if (metaData.getXACMLVersion() == Integer
-					.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
-				for (ObligationExpressionType myObligation : obligationExpressions.getObligationExpression()) {
-						if (myObligation.getFulfillOn().ordinal() == effect) {
-							result.addObligation(myObligation, context);
-						}
-				}
-			} else {
-				Iterator it = obligationExpressions.getObligationExpression().iterator();
-				while (it.hasNext()) {
-					Obligation obligation = (Obligation) (it.next());
-					if (obligation.getFulfillOn() == effect) {
-						result.addObligation(obligation);
-					}
-				}
-			}
-		}
-		/* If we have advice, it's definitely a 3.0 policy */
-		if (adviceExpressions.getAdviceExpression().size() > 0) {
-			int effect = result.getDecision().ordinal();
-
-			if ((effect == DecisionType.INDETERMINATE.ordinal())
-					|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
-				// we didn't permit/deny, so we never return advices
-				return result;
-			}
-			//TODO: Fix advice parsing
-//			for (AdviceExpressionsType myAdvices : (Set<AdviceExpressionsType>) advice) {
-//				for (AdviceType myAdvice : myAdvices.getAdviceExpression()) {
-//					if (myAdvice.getAppliesTo().ordinal() == effect) {
-//						AdviceType adviceType = new AdviceType();
-//						result.addAdvice(myAdvice);
+//	public Result evaluate(EvaluationCtx context) {
+//		// evaluate
+//		Result result = null;//combiningAlg.combine(context, this.combinerParametersOrRuleCombinerParametersOrVariableDefinition, childElements);
+//
+//		if (obligationExpressions.getObligationExpression().size() > 0) {
+//			// now, see if we should add any obligations to the set
+//			int effect = result.getDecision().ordinal();
+//
+//			if ((effect == DecisionType.INDETERMINATE.ordinal())
+//					|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
+//				// we didn't permit/deny, so we never return obligations
+//				return result;
+//			}
+//
+//			if (metaData.getXACMLVersion() == Integer
+//					.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
+//				for (ObligationExpressionType myObligation : obligationExpressions.getObligationExpression()) {
+//						if (myObligation.getFulfillOn().ordinal() == effect) {
+//							result.addObligation(myObligation, context);
+//						}
+//				}
+//			} else {
+//				Iterator it = obligationExpressions.getObligationExpression().iterator();
+//				while (it.hasNext()) {
+//					Obligation obligation = (Obligation) (it.next());
+//					if (obligation.getFulfillOn() == effect) {
+//						result.addObligation(obligation);
 //					}
 //				}
 //			}
-		}
-
-		if (context.getIncludeInResults().size() > 0) {
-			result.getAttributes().addAll(context.getIncludeInResults());
-		}
-
-		return result;
-	}
+//		}
+//		/* If we have advice, it's definitely a 3.0 policy */
+//		if (adviceExpressions.getAdviceExpression().size() > 0) {
+//			int effect = result.getDecision().ordinal();
+//
+//			if ((effect == DecisionType.INDETERMINATE.ordinal())
+//					|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
+//				// we didn't permit/deny, so we never return advices
+//				return result;
+//			}
+//			//TODO: Fix advice parsing
+////			for (AdviceExpressionsType myAdvices : (Set<AdviceExpressionsType>) advice) {
+////				for (AdviceType myAdvice : myAdvices.getAdviceExpression()) {
+////					if (myAdvice.getAppliesTo().ordinal() == effect) {
+////						AdviceType adviceType = new AdviceType();
+////						result.addAdvice(myAdvice);
+////					}
+////				}
+////			}
+//		}
+//
+//		if (context.getIncludeInResults().size() > 0) {
+//			result.getAttributes().addAll(context.getIncludeInResults());
+//		}
+//
+//		return result;
+//	}
 
 	/**
 	 * Routine used by <code>Policy</code> and <code>PolicySet</code> to encode

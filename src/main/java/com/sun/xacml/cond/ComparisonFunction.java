@@ -250,53 +250,53 @@ public class ComparisonFunction extends FunctionBase
         idMap = new HashMap();
 
         idMap.put(NAME_INTEGER_GREATER_THAN,
-                  new Integer(ID_INTEGER_GREATER_THAN));
+                  Integer.valueOf(ID_INTEGER_GREATER_THAN));
         idMap.put(NAME_INTEGER_GREATER_THAN_OR_EQUAL,
-                  new Integer(ID_INTEGER_GREATER_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_INTEGER_GREATER_THAN_OR_EQUAL));
         idMap.put(NAME_INTEGER_LESS_THAN,
-                  new Integer(ID_INTEGER_LESS_THAN));
+                  Integer.valueOf(ID_INTEGER_LESS_THAN));
         idMap.put(NAME_INTEGER_LESS_THAN_OR_EQUAL,
-                  new Integer(ID_INTEGER_LESS_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_INTEGER_LESS_THAN_OR_EQUAL));
         idMap.put(NAME_DOUBLE_GREATER_THAN,
-                  new Integer(ID_DOUBLE_GREATER_THAN));
+                  Integer.valueOf(ID_DOUBLE_GREATER_THAN));
         idMap.put(NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
-                  new Integer(ID_DOUBLE_GREATER_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_DOUBLE_GREATER_THAN_OR_EQUAL));
         idMap.put(NAME_DOUBLE_LESS_THAN,
-                  new Integer(ID_DOUBLE_LESS_THAN));
+                  Integer.valueOf(ID_DOUBLE_LESS_THAN));
         idMap.put(NAME_DOUBLE_LESS_THAN_OR_EQUAL,
-                  new Integer(ID_DOUBLE_LESS_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_DOUBLE_LESS_THAN_OR_EQUAL));
         idMap.put(NAME_STRING_GREATER_THAN,
-                  new Integer(ID_STRING_GREATER_THAN));
+                  Integer.valueOf(ID_STRING_GREATER_THAN));
         idMap.put(NAME_STRING_GREATER_THAN_OR_EQUAL,
-                  new Integer(ID_STRING_GREATER_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_STRING_GREATER_THAN_OR_EQUAL));
         idMap.put(NAME_STRING_LESS_THAN,
-                  new Integer(ID_STRING_LESS_THAN));
+                  Integer.valueOf(ID_STRING_LESS_THAN));
         idMap.put(NAME_STRING_LESS_THAN_OR_EQUAL,
-                  new Integer(ID_STRING_LESS_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_STRING_LESS_THAN_OR_EQUAL));
         idMap.put(NAME_TIME_GREATER_THAN,
-                  new Integer(ID_TIME_GREATER_THAN));
+                  Integer.valueOf(ID_TIME_GREATER_THAN));
         idMap.put(NAME_TIME_GREATER_THAN_OR_EQUAL,
-                  new Integer(ID_TIME_GREATER_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_TIME_GREATER_THAN_OR_EQUAL));
         idMap.put(NAME_TIME_LESS_THAN,
-                  new Integer(ID_TIME_LESS_THAN));
+                  Integer.valueOf(ID_TIME_LESS_THAN));
         idMap.put(NAME_TIME_LESS_THAN_OR_EQUAL,
-                  new Integer(ID_TIME_LESS_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_TIME_LESS_THAN_OR_EQUAL));
         idMap.put(NAME_DATE_GREATER_THAN,
-                  new Integer(ID_DATE_GREATER_THAN));
+                  Integer.valueOf(ID_DATE_GREATER_THAN));
         idMap.put(NAME_DATE_GREATER_THAN_OR_EQUAL,
-                  new Integer(ID_DATE_GREATER_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_DATE_GREATER_THAN_OR_EQUAL));
         idMap.put(NAME_DATE_LESS_THAN,
-                  new Integer(ID_DATE_LESS_THAN));
+                  Integer.valueOf(ID_DATE_LESS_THAN));
         idMap.put(NAME_DATE_LESS_THAN_OR_EQUAL,
-                  new Integer(ID_DATE_LESS_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_DATE_LESS_THAN_OR_EQUAL));
         idMap.put(NAME_DATETIME_GREATER_THAN,
-                  new Integer(ID_DATETIME_GREATER_THAN));
+                  Integer.valueOf(ID_DATETIME_GREATER_THAN));
         idMap.put(NAME_DATETIME_GREATER_THAN_OR_EQUAL,
-                  new Integer(ID_DATETIME_GREATER_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_DATETIME_GREATER_THAN_OR_EQUAL));
         idMap.put(NAME_DATETIME_LESS_THAN,
-                  new Integer(ID_DATETIME_LESS_THAN));
+                  Integer.valueOf(ID_DATETIME_LESS_THAN));
         idMap.put(NAME_DATETIME_LESS_THAN_OR_EQUAL,
-                  new Integer(ID_DATETIME_LESS_THAN_OR_EQUAL));
+                  Integer.valueOf(ID_DATETIME_LESS_THAN_OR_EQUAL));
 
         typeMap = new HashMap();
 

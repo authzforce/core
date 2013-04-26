@@ -86,11 +86,11 @@ public class ConditionSetFunction extends SetFunction
             String baseType = baseTypes[i];
 
             idMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
-                      new Integer(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
+                      Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
             idMap.put(baseName + NAME_BASE_SUBSET,
-                      new Integer(ID_BASE_SUBSET));
+                      Integer.valueOf(ID_BASE_SUBSET));
             idMap.put(baseName + NAME_BASE_SET_EQUALS,
-                      new Integer(ID_BASE_SET_EQUALS));
+                      Integer.valueOf(ID_BASE_SET_EQUALS));
 
             typeMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF, baseType);
             typeMap.put(baseName + NAME_BASE_SUBSET, baseType);
@@ -102,11 +102,11 @@ public class ConditionSetFunction extends SetFunction
             String baseType = baseTypes2[i];
 
             idMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
-                      new Integer(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
+                      Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
             idMap.put(baseName + NAME_BASE_SUBSET,
-                      new Integer(ID_BASE_SUBSET));
+                      Integer.valueOf(ID_BASE_SUBSET));
             idMap.put(baseName + NAME_BASE_SET_EQUALS,
-                      new Integer(ID_BASE_SET_EQUALS));
+                      Integer.valueOf(ID_BASE_SET_EQUALS));
 
             typeMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF, baseType);
             typeMap.put(baseName + NAME_BASE_SUBSET, baseType);
@@ -117,9 +117,9 @@ public class ConditionSetFunction extends SetFunction
             unmodifiableSet(new HashSet(idMap.keySet()));
 
         idMap.put(NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
-                  new Integer(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
-        idMap.put(NAME_BASE_SUBSET, new Integer(ID_BASE_SUBSET));
-        idMap.put(NAME_BASE_SET_EQUALS, new Integer(ID_BASE_SET_EQUALS));
+                  Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
+        idMap.put(NAME_BASE_SUBSET, Integer.valueOf(ID_BASE_SUBSET));
+        idMap.put(NAME_BASE_SET_EQUALS, Integer.valueOf(ID_BASE_SET_EQUALS));
     };
     
     /**

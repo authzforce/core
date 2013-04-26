@@ -37,7 +37,6 @@ package com.sun.xacml.xacmlv3;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;

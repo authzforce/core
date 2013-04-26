@@ -52,7 +52,7 @@ public class PolicyIssuer extends PolicyIssuerType {
 	}
 
 	public static PolicyIssuerType getInstance(Node root) {
-		ContentType content = null;
+		ContentType content = new ContentType();
 		List<AttributeType> attribute = new ArrayList<AttributeType>();
 		
 		// Setting elements

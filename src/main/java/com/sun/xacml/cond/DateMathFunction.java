@@ -143,17 +143,17 @@ public class DateMathFunction extends FunctionBase
         idMap = new HashMap();
 
         idMap.put(NAME_DATETIME_ADD_DAYTIMEDURATION,
-                  new Integer(ID_DATETIME_ADD_DAYTIMEDURATION));
+                  Integer.valueOf(ID_DATETIME_ADD_DAYTIMEDURATION));
         idMap.put(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION,
-                  new Integer(ID_DATETIME_SUBTRACT_DAYTIMEDURATION));
+                  Integer.valueOf(ID_DATETIME_SUBTRACT_DAYTIMEDURATION));
         idMap.put(NAME_DATETIME_ADD_YEARMONTHDURATION,
-                  new Integer(ID_DATETIME_ADD_YEARMONTHDURATION));
+                  Integer.valueOf(ID_DATETIME_ADD_YEARMONTHDURATION));
         idMap.put(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION,
-                  new Integer(ID_DATETIME_SUBTRACT_YEARMONTHDURATION));
+                  Integer.valueOf(ID_DATETIME_SUBTRACT_YEARMONTHDURATION));
         idMap.put(NAME_DATE_ADD_YEARMONTHDURATION,
-                  new Integer(ID_DATE_ADD_YEARMONTHDURATION));
+                  Integer.valueOf(ID_DATE_ADD_YEARMONTHDURATION));
         idMap.put(NAME_DATE_SUBTRACT_YEARMONTHDURATION,
-                  new Integer(ID_DATE_SUBTRACT_YEARMONTHDURATION));
+                  Integer.valueOf(ID_DATE_SUBTRACT_YEARMONTHDURATION));
 
         typeMap = new HashMap();
 

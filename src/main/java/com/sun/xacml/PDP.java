@@ -332,7 +332,8 @@ public class PDP {
 				requestList.getAttributes().addAll(environments);
 			}
 			for (RequestType requestType : requests) {
-				responses.add(this.evaluate(requestType));
+				ResponseCtx response = this.evaluate(requestType);
+				responses.add(response);
 			}
 		}
 		

@@ -75,17 +75,17 @@ public class GeneralSetFunction extends SetFunction
         idMap = new HashMap();
         typeMap = new HashMap();
 
-        idMap.put(NAME_BASE_INTERSECTION, new Integer(ID_BASE_INTERSECTION));
-        idMap.put(NAME_BASE_UNION, new Integer(ID_BASE_UNION));
+        idMap.put(NAME_BASE_INTERSECTION, Integer.valueOf(ID_BASE_INTERSECTION));
+        idMap.put(NAME_BASE_UNION, Integer.valueOf(ID_BASE_UNION));
 
         for (int i = 0; i < baseTypes.length; i++) {
             String baseName = FUNCTION_NS + simpleTypes[i];
             String baseType = baseTypes[i];
 
             idMap.put(baseName + NAME_BASE_INTERSECTION,
-                      new Integer(ID_BASE_INTERSECTION));
+                      Integer.valueOf(ID_BASE_INTERSECTION));
             idMap.put(baseName + NAME_BASE_UNION,
-                      new Integer(ID_BASE_UNION));
+                      Integer.valueOf(ID_BASE_UNION));
 
             typeMap.put(baseName + NAME_BASE_INTERSECTION, baseType);
             typeMap.put(baseName + NAME_BASE_UNION, baseType);
@@ -96,9 +96,9 @@ public class GeneralSetFunction extends SetFunction
             String baseType = baseTypes2[i];
 
             idMap.put(baseName + NAME_BASE_INTERSECTION,
-                      new Integer(ID_BASE_INTERSECTION));
+                      Integer.valueOf(ID_BASE_INTERSECTION));
             idMap.put(baseName + NAME_BASE_UNION,
-                      new Integer(ID_BASE_UNION));
+                      Integer.valueOf(ID_BASE_UNION));
 
             typeMap.put(baseName + NAME_BASE_INTERSECTION, baseType);
             typeMap.put(baseName + NAME_BASE_UNION, baseType);
