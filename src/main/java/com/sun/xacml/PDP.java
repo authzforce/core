@@ -53,6 +53,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -402,6 +404,27 @@ public class PDP {
 
 			return new ResponseCtx(new Result(DecisionType.INDETERMINATE,
 					status));
+		} catch (NumberFormatException e) {
+			LOGGER.error(e);
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			ArrayList code = new ArrayList();
+			code.add(Status.STATUS_SYNTAX_ERROR);
+			Status status = new Status(code, e.getLocalizedMessage());
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE,
+					status));
+		} catch (UnknownIdentifierException e) {
+			LOGGER.error(e);
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			StatusCodeType code = new StatusCodeType();
+			code.setValue(Status.STATUS_SYNTAX_ERROR);
+			StatusType status = new StatusType();
+			status.setStatusCode(code);
+			status.setStatusMessage(e.getLocalizedMessage());
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
 		}
 	}
 
@@ -500,14 +523,20 @@ public class PDP {
 		PolicyFinderResult finderResult = policyFinder.findPolicy(context);
 
 		// see if there weren't any applicable policies
-		if (finderResult.notApplicable())
-			return new Result(DecisionType.NOT_APPLICABLE, null, context
-					.getResourceId().encode(), null, null, context.getIncludeInResults());
+		if (finderResult.notApplicable()) {
+			AttributeValue resourceId = context.getResourceId();
+			if(resourceId != null) {
+				return new Result(DecisionType.NOT_APPLICABLE, null, context
+						.getResourceId().encode(), null, null, context.getIncludeInResults());	
+			}
+			return new Result(DecisionType.NOT_APPLICABLE, null, null, null, null, context.getIncludeInResults());
+		}
 
 		// see if there were any errors in trying to get a policy
-		if (finderResult.indeterminate())
+		if (finderResult.indeterminate()) {
 			return new Result(DecisionType.INDETERMINATE,
 					finderResult.getStatus(), context.getResourceId().encode(), null, null, context.getIncludeInResults());
+		}
 
 		// we found a valid policy, so we can do the evaluation
 		if (finderResult.getType().equals("PolicySet")) {
@@ -515,51 +544,4 @@ public class PDP {
 		}
 		return finderResult.getPolicy().evaluate(context);
 	}
-
-	/**
-	 * A utility method that wraps the functionality of the other evaluate
-	 * method with input and output streams. This is useful if you've got a PDP
-	 * that is taking inputs from some stream and is returning responses through
-	 * the same stream system. If the Request is invalid, then this will always
-	 * return a decision of INDETERMINATE.
-	 * 
-	 * @deprecated As of 1.2 this method should not be used. Instead, you should
-	 *             do your own stream handling, and then use one of the other
-	 *             <code>evaluate</code> methods. The problem with this method
-	 *             is that it often doesn't handle stream termination correctly
-	 *             (eg, with sockets).
-	 * 
-	 * @param input
-	 *            a stream that contains an XML RequestType
-	 * 
-	 * @return a stream that contains an XML ResponseType
-	 */
-//	public OutputStream evaluate(InputStream input) {
-//		RequestCtx request = null;
-//		ResponseCtx response = null;
-//
-//		try {
-//			request = RequestCtx.getInstance(input);
-//		} catch (Exception pe) {
-//			// the request wasn't formed correctly
-//			ArrayList code = new ArrayList();
-//			code.add(Status.STATUS_SYNTAX_ERROR);
-//			Status status = new Status(code, "invalid request: "
-//					+ pe.getMessage());
-//
-//			response = new ResponseCtx(new Result(
-//					DecisionType.INDETERMINATE, status));
-//		}
-//
-//		// if we didn't have a problem above, then we should go ahead
-//		// with the evaluation
-//		if (response == null)
-//			response = evaluate(request);
-//
-//		ByteArrayOutputStream out = new ByteArrayOutputStream();
-//		response.encode(out, new Indenter());
-//
-//		return out;
-//	}
-
 }

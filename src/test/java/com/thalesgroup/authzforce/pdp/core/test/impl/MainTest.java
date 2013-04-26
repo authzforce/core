@@ -14,7 +14,7 @@ public class MainTest extends TestSuite {
 		// conformance test for XACML 3.0
 		testSuite.addTestSuite(ConformanceV3.class);
 		// Basic test suite for xacml 3.0
-//		testSuite.addTestSuite(BasicV3.class);
+		testSuite.addTestSuite(BasicV3.class);
 		// Extended test suite for XACML 3.0 function (Not suppported yet)
 //		 testSuite.addTestSuite(BasicFunctionV3.class);
 		//Multiple Requests for XACML 3.0

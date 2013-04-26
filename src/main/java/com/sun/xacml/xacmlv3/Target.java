@@ -183,6 +183,9 @@ public class Target extends TargetType {
 						LOGGER.error("failed to match any element of Target");
 						return new MatchResult(MatchResult.NO_MATCH);
 					}
+					if(result.getResult() != MatchResult.MATCH) {
+						return result;
+					}
 				}
 			}
 		}

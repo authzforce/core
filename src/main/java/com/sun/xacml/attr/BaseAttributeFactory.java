@@ -72,13 +72,13 @@ public class BaseAttributeFactory extends AttributeFactory
 {
 
     // the map of proxies
-    private HashMap attributeMap;
+    private HashMap<String, AttributeProxy> attributeMap;
     
     /**
      * Default constructor.
      */
     public BaseAttributeFactory() {
-        attributeMap = new HashMap();
+        attributeMap = new HashMap<String, AttributeProxy>();
     }
 
     /**
@@ -120,8 +120,9 @@ public class BaseAttributeFactory extends AttributeFactory
      */
     public void addDatatype(String id, AttributeProxy proxy) {
         // make sure this doesn't already exist
-        if (attributeMap.containsKey(id))
+        if (attributeMap.containsKey(id)) {
             throw new IllegalArgumentException("datatype already exists");
+        }
 
         attributeMap.put(id, proxy);
     }

@@ -41,6 +41,7 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,6 +53,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -65,6 +68,8 @@ import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
+import com.sun.xacml.ctx.StatusDetail;
 
 /**
  * The base type for all datatypes used in a policy or request/response, this
@@ -79,7 +84,6 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  */
 public class AttributeValue extends AttributeValueType implements Evaluatable {
 
-	private static DocumentBuilder db1 = null;
 	// the type of this attribute
 	private URI type;
 
@@ -89,7 +93,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
 			.getLogger(AttributeValue.class);
 
-	public static AttributeValue getInstance(AttributeValueType attrValue) {
+	public static AttributeValue getInstance(AttributeValueType attrValue) throws UnknownIdentifierException {
 
 		AttributeFactory myFact = AttributeFactory.getInstance();
 
@@ -101,8 +105,6 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 		} catch (SecurityException e) {
 			LOGGER.error(e);
 		} catch (IllegalArgumentException e) {
-			LOGGER.error(e);
-		} catch (UnknownIdentifierException e) {
 			LOGGER.error(e);
 		} catch (ParsingException e) {
 			LOGGER.error(e);
@@ -216,9 +218,15 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	 *            the representation of the request
 	 * 
 	 * @return a successful evaluation containing this value
+	 * @throws UnknownIdentifierException 
 	 */
 	public EvaluationResult evaluate(EvaluationCtx context) {
-		return new EvaluationResult(AttributeValue.getInstance(this));
+		try {
+			return new EvaluationResult(AttributeValue.getInstance(this));
+		} catch (UnknownIdentifierException e) {
+			Status status = new Status(Arrays.asList(Status.STATUS_PROCESSING_ERROR), e.getLocalizedMessage());
+			return new EvaluationResult(status);
+		}
 	}
 
 	/**
@@ -293,52 +301,23 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	}
 
 	public static List<AttributeValue> convertFromJAXB(
-			List<AttributeValueType> avts) throws ParsingException {
+			List<AttributeValueType> avts) throws ParsingException, UnknownIdentifierException {
 		if (avts == null) {
 			return null;
 		}
 
 		final List<AttributeValue> resultAvts = new ArrayList<AttributeValue>();
 		for (final AttributeValueType avt : avts) {
-			final AttributeValue newAvt = (AttributeValue) AttributeValue
-					.getInstance(avt);
+			AttributeValue newAvt = null;
+			newAvt = (AttributeValue) AttributeValue.getInstance(avt);
+			
 			// final AttributeValue newAvt = convertFromJAXB(avt,
 			// URI.create(avt.getDataType()));
-			resultAvts.add(newAvt);
+			if(newAvt != null) {
+				resultAvts.add(newAvt);
+			}
 		}
 
 		return resultAvts;
 	}
-
-	/*
-	 * 
-	 * Romain FERRARI (THALES)
-	 * 
-	 * @BUG
-	 */
-
-	/**
-	 * 
-	 * @param avt
-	 * @return
-	 */
-//	public static Node getAttributeValueNode(AttributeValueType avt) {
-//		Node node = null;
-//
-//		try {
-//			Marshaller m = BindingUtility.createMarshaller();
-//			synchronized (DocumentBuilder.class) {
-//				db1 = BindingUtility.getDocumentBuilder();
-//			}
-//			Document doc = db1.newDocument();
-//			JAXBElement<AttributeValueType> element = BindingUtility.contextFac
-//					.createAttributeValue(avt);
-//			m.marshal(element, doc);
-//			node = doc.getDocumentElement();
-//		} catch (JAXBException ex) {
-//			throw new RuntimeException(ex);
-//		}
-//
-//		return node;
-//	}
 }

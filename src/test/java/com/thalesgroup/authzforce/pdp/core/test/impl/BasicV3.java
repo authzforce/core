@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.junit.Test;
-
 import junit.framework.TestCase;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
+
+import org.junit.Test;
 
 import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.PDP;

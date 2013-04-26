@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -101,7 +100,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private Map<String, Set<AttributeType>> resourceMap;
 	private Map<String, Set<AttributeType>> actionMap;
 	private Map<String, Set<AttributeType>> environmentMap;
-	
+
 	// Attributes that needs to be included in the result
 	private List<AttributesType> includeInResults;
 
@@ -119,9 +118,11 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private DateTimeAttribute currentDateTime;
 	private boolean useCachedEnvValues;
 
-	// the logger we'll use for all messages
-	private static final Logger logger = Logger
-			.getLogger(BasicEvaluationCtx.class.getName());
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(BasicEvaluationCtx.class);
 
 	/**
 	 * Constructs a new <code>BasicEvaluationCtx</code> based on the given
@@ -134,8 +135,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
+	 * @throws UnknownIdentifierException 
+	 * @throws NumberFormatException 
 	 */
-	public BasicEvaluationCtx(RequestType request) throws ParsingException {
+	public BasicEvaluationCtx(RequestType request) throws ParsingException, NumberFormatException, UnknownIdentifierException {
 		this(request, null, true, Integer
 				.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
 	}
@@ -153,9 +156,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
+	 * @throws UnknownIdentifierException 
 	 */
 	public BasicEvaluationCtx(RequestType request, boolean cacheEnvValues,
-			int version) throws ParsingException {
+			int version) throws ParsingException, UnknownIdentifierException {
 		this(request, null, cacheEnvValues, version);
 	}
 
@@ -175,9 +179,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
+	 * @throws UnknownIdentifierException 
 	 */
 	public BasicEvaluationCtx(RequestType request, AttributeFinder finder,
-			int version) throws ParsingException {
+			int version) throws ParsingException, UnknownIdentifierException {
 		this(request, finder, true, version);
 	}
 
@@ -198,9 +203,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
+	 * @throws UnknownIdentifierException 
 	 */
 	public BasicEvaluationCtx(RequestType request, AttributeFinder finder,
-			boolean cacheEnvValues, int version) throws ParsingException {
+			boolean cacheEnvValues, int version) throws ParsingException, UnknownIdentifierException {
 
 		this.request = request;
 
@@ -234,7 +240,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 				if (resourceMap == null) {
 					resourceMap = new HashMap();
 				}
-				setupResources(myAttributeTypes.getAttribute());
+					setupResources(myAttributeTypes.getAttribute());
 			}/* Searching for subject */
 			else if (myAttributeTypes.getCategory()
 					.equalsIgnoreCase(
@@ -248,7 +254,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 
 			}/* Searching for environment */
 			else if (myAttributeTypes.getCategory().equalsIgnoreCase(
-					XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value())) {
+					XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT
+							.value())) {
 				// finally, set up the environment data, which is also generic
 				if (environmentMap == null) {
 					environmentMap = new HashMap();
@@ -257,27 +264,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			}
 			// Store attributes who needs to be included in the result
 			for (AttributeType attr : myAttributeTypes.getAttribute()) {
-				storeAttrIncludeInResult(attr, myAttributeTypes.getCategory());	
-			}			
+				storeAttrIncludeInResult(attr, myAttributeTypes.getCategory());
+			}
 		}
-		//
-		// // get the subjects, make sure they're correct, and setup tables
-		// subjectMap = new HashMap();
-		// setupSubjects(request.getSubject());
-		//
-		// // next look at the Resource data, which needs to be handled
-		// specially
-		// resourceMap = new HashMap();
-		// setupResources(request.getResource());
-		//
-		// // setup the action data, which is generic
-		// actionMap = new HashMap();
-		// mapAttributes(request.getAction().getAttribute(), actionMap);
-		//
-		// // finally, set up the environment data, which is also generic
-		// environmentMap = new HashMap();
-		// mapAttributes(request.getEnvironment().getAttribute(),
-		// environmentMap);
 	}
 
 	/**
@@ -334,9 +323,11 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * except that we also look for a resource-id attribute, not because we're
 	 * going to use, but only to make sure that it's actually there, and for the
 	 * optional scope attribute, to see what the scope of the attribute is
+	 * 
+	 * @throws UnknownIdentifierException
 	 */
 	private void setupResources(List<AttributeType> list)
-			throws ParsingException {
+			throws ParsingException, UnknownIdentifierException {
 		mapAttributes(list, resourceMap);
 
 		// make sure there resource-id attribute was included
@@ -366,19 +357,11 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			}
 
 			AttributeType attr = set.iterator().next();
-			AttributeValueType attrValue = attr.getAttributeValue().get(0); // TODO:
-																			// XACML2
-																			// can
-																			// have
-																			// multiple
-																			// AttributeValues
-																			// in
-																			// an
-																			// Attribute
-
+			AttributeValueType attrValue = attr.getAttributeValue().get(0);
 			// scope must be a string, so throw an exception otherwise
-			if (!attrValue.getDataType().equals(StringAttribute.identifier))
+			if (!attrValue.getDataType().equals(StringAttribute.identifier)) {
 				throw new ParsingException("scope attr must be a string");
+			}
 
 			String value = attrValue.getContent().get(0).toString();
 
@@ -389,7 +372,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			} else if (value.equals("Descendants")) {
 				scope = SCOPE_DESCENDANTS;
 			} else {
-				System.err.println("Unknown scope type: " + value);
+				LOGGER.error("Unknown scope type: " + value);
 				throw new ParsingException("invalid scope type: " + value);
 			}
 		} else {
@@ -397,9 +380,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			scope = SCOPE_IMMEDIATE;
 		}
 	}
-	
+
 	private void storeAttrIncludeInResult(AttributeType attr, String category) {
-		if(includeInResults == null) {
+		if (includeInResults == null) {
 			includeInResults = new ArrayList<AttributesType>();
 		}
 		if (attr.isIncludeInResult()) {
@@ -408,13 +391,13 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			myAttr.getAttribute().add(attr);
 			myAttr.setCategory(category);
 			for (AttributesType attrs : includeInResults) {
-				if(attrs.getCategory().equalsIgnoreCase(category)) {
+				if (attrs.getCategory().equalsIgnoreCase(category)) {
 					alreadyPresent = true;
 					attrs.getAttribute().add(attr);
 					break;
 				}
 			}
-			if(!alreadyPresent) {
+			if (!alreadyPresent) {
 				includeInResults.add(myAttr);
 			}
 		}
@@ -473,17 +456,16 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @return the resource
 	 */
 	public AttributeValue getResourceId() {
-		if (resourceId != null /* && resourceId.size() == 1 */) {
+		if (resourceId != null && resourceId.size() >= 1) {
 			return resourceId.get(0);
 		} else {
 			return null;
 		}
 	}
-	
+
 	public List<AttributesType> getIncludeInResults() {
 		return includeInResults;
 	}
-
 
 	/**
 	 * Changes the value of the resource-id attribute in this context. This is
@@ -757,10 +739,12 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 					// pull
 					// out the values and put them in out list
 					try {
-						attributeValues.addAll(AttributeValue.convertFromJAXB(attr.getAttributeValue()));
+						attributeValues.addAll(AttributeValue
+								.convertFromJAXB(attr.getAttributeValue()));
 					} catch (ParsingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						LOGGER.error(e);
+					} catch (UnknownIdentifierException e) {
+						LOGGER.error(e);
 					}
 				}
 			}
@@ -770,9 +754,8 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		if (attributeValues.size() == 0) {
 			// we failed to find any that matched the type/issuer, or all the
 			// Attribute types were empty...so ask the finder
-			if (logger.isLoggable(Level.FINE))
-				logger.fine("Attribute not in request: " + id.toString()
-						+ " ... querying AttributeFinder");
+			LOGGER.debug("Attribute not in request: " + id.toString()
+					+ " ... querying AttributeFinder");
 
 			/*
 			 * Code Updated [romain.guignard[at]thalesgroup.com] Allow to store
@@ -831,7 +814,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			return finder.findAttribute(type, id, issuer, category, this,
 					adType);
 		} else {
-			logger.warning("Context tried to invoke AttributeFinder but was "
+			LOGGER.warn("Context tried to invoke AttributeFinder but was "
 					+ "not configured with one");
 
 			return new EvaluationResult(BagAttribute.createEmptyBag(type));
@@ -862,7 +845,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			return finder.findAttribute(contextPath, namespaceNode, type, this, // XXX
 					xpathVersion);
 		} else {
-			logger.warning("Context tried to invoke AttributeFinder but was "
+			LOGGER.warn("Context tried to invoke AttributeFinder but was "
 					+ "not configured with one");
 
 			return new EvaluationResult(BagAttribute.createEmptyBag(type));
