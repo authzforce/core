@@ -58,7 +58,7 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-import com.sun.xacml.ctx.xacmlv3.RequestCtx;
+//import com.sun.xacml.ctx.xacmlv3.RequestCtx;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
@@ -245,44 +245,44 @@ public class PDP {
 	 * @deprecated As of release2.0, replaced by {@link #evaluate(RequestType)}
 	 * @return a response paired to the request
 	 */
-	public ResponseCtx evaluate(RequestCtx request) {
-		ResponseCtx response = null;
-
-		JAXBElement<RequestType> jaxbRequestElem = null;
-		RequestType jaxbRequest = null;
-		try {
-			if (request.getDocumentRoot() != null) {
-				jaxbRequestElem = BindingUtility.getUnmarshaller().unmarshal(
-						request.getDocumentRoot(), RequestType.class);
-				jaxbRequest = jaxbRequestElem.getValue();
-			} else {
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				request.encode(bos);
-
-				byte[] buf = bos.toByteArray();
-				ByteArrayInputStream bis = new ByteArrayInputStream(buf);
-
-				jaxbRequestElem = (JAXBElement<RequestType>) BindingUtility
-						.getUnmarshaller().unmarshal(bis);
-				jaxbRequest = jaxbRequestElem.getValue();
-			}
-			response = this.evaluate(jaxbRequest);
-		} catch (JAXBException e) {
-			LOGGER.info("the PDP receieved an invalid request",
-					e);
-
-			// there was something wrong with the request, so we return
-			// Indeterminate with a status of syntax error...though this
-			// may change if a more appropriate status type exists
-			ArrayList code = new ArrayList();
-			code.add(Status.STATUS_SYNTAX_ERROR);
-			Status status = new Status(code, e.getMessage());
-
-			response = new ResponseCtx(new Result(
-					DecisionType.INDETERMINATE, status));
-		}
-		return response;
-	}
+//	public ResponseCtx evaluate(RequestCtx request) {
+//		ResponseCtx response = null;
+//
+//		JAXBElement<RequestType> jaxbRequestElem = null;
+//		RequestType jaxbRequest = null;
+//		try {
+//			if (request.getDocumentRoot() != null) {
+//				jaxbRequestElem = BindingUtility.getUnmarshaller().unmarshal(
+//						request.getDocumentRoot(), RequestType.class);
+//				jaxbRequest = jaxbRequestElem.getValue();
+//			} else {
+//				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//				request.encode(bos);
+//
+//				byte[] buf = bos.toByteArray();
+//				ByteArrayInputStream bis = new ByteArrayInputStream(buf);
+//
+//				jaxbRequestElem = (JAXBElement<RequestType>) BindingUtility
+//						.getUnmarshaller().unmarshal(bis);
+//				jaxbRequest = jaxbRequestElem.getValue();
+//			}
+//			response = this.evaluate(jaxbRequest);
+//		} catch (JAXBException e) {
+//			LOGGER.info("the PDP receieved an invalid request",
+//					e);
+//
+//			// there was something wrong with the request, so we return
+//			// Indeterminate with a status of syntax error...though this
+//			// may change if a more appropriate status type exists
+//			ArrayList code = new ArrayList();
+//			code.add(Status.STATUS_SYNTAX_ERROR);
+//			Status status = new Status(code, e.getMessage());
+//
+//			response = new ResponseCtx(new Result(
+//					DecisionType.INDETERMINATE, status));
+//		}
+//		return response;
+//	}
 
 	public List<ResponseCtx> evaluateList(RequestType request) {
 
@@ -534,32 +534,32 @@ public class PDP {
 	 * 
 	 * @return a stream that contains an XML ResponseType
 	 */
-	public OutputStream evaluate(InputStream input) {
-		RequestCtx request = null;
-		ResponseCtx response = null;
-
-		try {
-			request = RequestCtx.getInstance(input);
-		} catch (Exception pe) {
-			// the request wasn't formed correctly
-			ArrayList code = new ArrayList();
-			code.add(Status.STATUS_SYNTAX_ERROR);
-			Status status = new Status(code, "invalid request: "
-					+ pe.getMessage());
-
-			response = new ResponseCtx(new Result(
-					DecisionType.INDETERMINATE, status));
-		}
-
-		// if we didn't have a problem above, then we should go ahead
-		// with the evaluation
-		if (response == null)
-			response = evaluate(request);
-
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		response.encode(out, new Indenter());
-
-		return out;
-	}
+//	public OutputStream evaluate(InputStream input) {
+//		RequestCtx request = null;
+//		ResponseCtx response = null;
+//
+//		try {
+//			request = RequestCtx.getInstance(input);
+//		} catch (Exception pe) {
+//			// the request wasn't formed correctly
+//			ArrayList code = new ArrayList();
+//			code.add(Status.STATUS_SYNTAX_ERROR);
+//			Status status = new Status(code, "invalid request: "
+//					+ pe.getMessage());
+//
+//			response = new ResponseCtx(new Result(
+//					DecisionType.INDETERMINATE, status));
+//		}
+//
+//		// if we didn't have a problem above, then we should go ahead
+//		// with the evaluation
+//		if (response == null)
+//			response = evaluate(request);
+//
+//		ByteArrayOutputStream out = new ByteArrayOutputStream();
+//		response.encode(out, new Indenter());
+//
+//		return out;
+//	}
 
 }

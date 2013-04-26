@@ -55,8 +55,7 @@ public class PermitUnlessDenyPolicyAlg extends PolicyCombiningAlgorithm {
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List policyElements) {
 		Result result = null;
-		for (PolicyCombinerElement myPolicyCombinerElt : (List<PolicyCombinerElement>) policyElements) {
-			Policy policy = myPolicyCombinerElt.getPolicy();
+		for (Policy policy : (List<Policy>) policyElements) {
 			// make sure that the policy matches the context
 			MatchResult match = policy.match(context);
 			if (match.getResult() == MatchResult.MATCH) {

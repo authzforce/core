@@ -36,29 +36,26 @@
 
 package com.sun.xacml.support.finder;
 
-import com.sun.xacml.xacmlv3.Policy;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URI;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicySet;
-
 import com.sun.xacml.combine.PolicyCombinerElement;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.net.URI;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.xacml.xacmlv3.Policy;
 
 
 /**
@@ -216,10 +213,26 @@ public class FilePolicyModule extends PolicyFinderModule {
         Iterator it = fileNames.iterator();
         while (it.hasNext()) {
             String fname = (String)(it.next());
+            Policy policy = null;
+            PolicySet policySet = null;
             try {
-                Policy policy =
-                    reader.readPolicy(new FileInputStream(fname));
-                policies.addPolicy(policy);
+            	String typePolicy = reader.getType(new FileInputStream(fname));
+            	if (typePolicy.equals("Policy")) {
+            		policy = reader.readPolicy(new FileInputStream(fname));
+				} else if (typePolicy.equals("PolicySet")) {
+					policySet = reader.readPolicySet(new FileInputStream(fname));
+				}
+				if (policy != null) {
+					this.policies.addPolicy(policy);
+				} else if (policySet != null) {
+					this.policies.addPolicySet(policySet);
+				}
+                
+				if (policy != null) {
+					this.policies.addPolicy(policy);
+				} else if (policySet != null) {
+					this.policies.addPolicySet(policySet);
+				}
             } catch (FileNotFoundException fnfe) {
                 if (logger.isLoggable(Level.WARNING))
                     logger.log(Level.WARNING, "File couldn't be read: "

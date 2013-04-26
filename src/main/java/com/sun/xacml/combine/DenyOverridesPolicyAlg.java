@@ -107,7 +107,7 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 		Iterator it = policyElements.iterator();
 
 		while (it.hasNext()) {
-			Policy policy = ((PolicyCombinerElement) (it.next())).getElement();
+			Policy policy = ((Policy) (it.next()));
 
 			// make sure that the policy matches the context
 			MatchResult match = policy.match(context);

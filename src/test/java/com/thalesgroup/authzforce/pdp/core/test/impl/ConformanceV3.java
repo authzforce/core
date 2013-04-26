@@ -92,7 +92,7 @@ public class ConformanceV3 extends TestCase {
                 if(response != null) {
                     expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY,
                                         VERSION_DIRECTORY, "IIIA" + policyNumber + "Response.xacml3.xml");
-                    LOGGER.debug("Response that is received from the PDP :  " + response);
+                    LOGGER.debug("Response that is received from the PDP :  " + response.getEncoded());
                     LOGGER.debug("Going to assert it");
                     if(expectedResponse != null){
                     	boolean assertion = TestUtils.match(response, expectedResponse);
@@ -100,7 +100,7 @@ public class ConformanceV3 extends TestCase {
                     		LOGGER.debug("Assertion SUCCESS for: IIIA"+policyNumber);
                     		results.put(policyNumber, "SUCCESS");
                     	} else {
-                    		LOGGER.debug("Assertion FAILED");
+                    		LOGGER.debug("Assertion FAILED for: IIIA"+policyNumber);
                     	}
                        assertTrue(assertion);
                     } else {
@@ -130,7 +130,7 @@ public class ConformanceV3 extends TestCase {
      */
     private static PDP getPDPNewInstance(Set<String> policies){
 
-        PolicyFinder finder= new PolicyFinder();
+        PolicyFinder finder = new PolicyFinder();
         List<String> policyLocations = new ArrayList<String>();
 
         for(String policy : policies){

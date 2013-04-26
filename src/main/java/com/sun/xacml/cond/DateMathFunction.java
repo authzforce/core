@@ -130,17 +130,17 @@ public class DateMathFunction extends FunctionBase
     private static final boolean bagParams [] = { false, false };
 
     // Argument types for this object
-    private String [] argTypes = null;
+//    private String [] argTypes = null;
 
     // mapping from name to provide identifiers and argument types
-    private static HashMap idMap;
-    private static HashMap typeMap;
+    private static HashMap<String, Integer> idMap;
+    private static HashMap<String, String[]> typeMap;
 
     /**
      * Static initializer to setup the id and type maps
      */
     static {
-        idMap = new HashMap();
+        idMap = new HashMap<String, Integer>();
 
         idMap.put(NAME_DATETIME_ADD_DAYTIMEDURATION,
                   Integer.valueOf(ID_DATETIME_ADD_DAYTIMEDURATION));
@@ -155,7 +155,7 @@ public class DateMathFunction extends FunctionBase
         idMap.put(NAME_DATE_SUBTRACT_YEARMONTHDURATION,
                   Integer.valueOf(ID_DATE_SUBTRACT_YEARMONTHDURATION));
 
-        typeMap = new HashMap();
+        typeMap = new HashMap<String, String[]>();
 
         typeMap.put(NAME_DATETIME_ADD_DAYTIMEDURATION,
                     dateTimeDayTimeDurationArgTypes);

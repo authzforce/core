@@ -67,19 +67,19 @@ public class ConditionSetFunction extends SetFunction
     private static final int ID_BASE_SET_EQUALS = 2;
 
     // mapping of function name to its associated id and parameter type
-    private static HashMap idMap;
-    private static HashMap typeMap;
+    private static HashMap<String, Integer> idMap;
+    private static HashMap<String, String> typeMap;
 
     // the actual supported ids
-    private static Set supportedIds;
+    private static Set<String> supportedIds;
 
     /**
      * Static initializer that sets up the paramater info for all the
      * supported functions.
      */
     static {
-        idMap = new HashMap();
-        typeMap = new HashMap();
+        idMap = new HashMap<String, Integer>();
+        typeMap = new HashMap<String, String>();
 
         for (int i = 0; i < baseTypes.length; i++) {
             String baseName = FUNCTION_NS + simpleTypes[i];
@@ -114,7 +114,7 @@ public class ConditionSetFunction extends SetFunction
         }
 
         supportedIds = Collections.
-            unmodifiableSet(new HashSet(idMap.keySet()));
+            unmodifiableSet(new HashSet<String>(idMap.keySet()));
 
         idMap.put(NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
                   Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
@@ -185,7 +185,7 @@ public class ConditionSetFunction extends SetFunction
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
-    public static Set getSupportedIdentifiers() {
+    public static Set<String> getSupportedIdentifiers() {
         return supportedIds;
     }
 
@@ -222,7 +222,7 @@ public class ConditionSetFunction extends SetFunction
             // second argument (using the *-is-in semantics)
 
             result = BooleanAttribute.getFalseInstance();
-            Iterator it = bags[0].iterator();
+            Iterator<?> it = bags[0].iterator();
 
             while (it.hasNext()) {
                 if (bags[1].contains((AttributeValue)(it.next()))) {

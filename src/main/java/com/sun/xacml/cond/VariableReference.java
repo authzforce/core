@@ -290,16 +290,4 @@ public class VariableReference extends VariableReferenceType implements Evaluata
         out.println(indent + "<VariableReference VariableId=\"" +
                     variableId + "\"/>");
     }
-
-	@Override
-	public void equals(Object object, EqualsBuilder equalsBuilder) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void hashCode(HashCodeBuilder hashCodeBuilder) {
-		// TODO Auto-generated method stub
-		
-	}
 }

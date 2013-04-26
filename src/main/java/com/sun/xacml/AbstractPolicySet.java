@@ -656,8 +656,7 @@ public abstract class AbstractPolicySet extends PolicySetType {
 		if (adviceExpressions.getAdviceExpression().size() > 0) {
 			int effect = result.getDecision().ordinal();
 
-			if ((effect == DecisionType.INDETERMINATE.ordinal())
-					|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
+			if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
 				// we didn't permit/deny, so we never return advices
 				return result;
 			}

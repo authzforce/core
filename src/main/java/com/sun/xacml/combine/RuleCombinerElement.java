@@ -111,18 +111,6 @@ public class RuleCombinerElement extends CombinerElement
     }
 
 	@Override
-	public void equals(Object object, EqualsBuilder equalsBuilder) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void hashCode(HashCodeBuilder hashCodeBuilder) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public List getChildren() {
 		// TODO Auto-generated method stub
 		return null;

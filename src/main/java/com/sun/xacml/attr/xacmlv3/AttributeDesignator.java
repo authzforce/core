@@ -405,7 +405,6 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 		if (bag.isEmpty()) {
 			// if it's empty, this may be an error
 			if (mustBePresent) {
-				if (logger.isLoggable(Level.INFO))
 					logger.info("AttributeDesignator failed to resolve a "
 							+ "value for a required attribute: "
 							+ this.getId().toASCIIString());

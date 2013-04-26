@@ -50,8 +50,6 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
@@ -68,7 +66,6 @@ import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.combine.RuleCombiningAlgorithm;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.Target;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 /**
  * Represents an instance of an XACML policy.
@@ -80,13 +77,7 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 public abstract class AbstractPolicy extends PolicyType {
 
 	// atributes associated with this policy
-//	private URI idAttr;
-//	private String version;
 	private CombiningAlgorithm combiningAlg;
-
-	// the elements in the policy
-//	private String description;
-//	private TargetType target;
 
 	// the value in defaults, or null if there was no default value
 	private String defaultVersion;
@@ -100,18 +91,11 @@ public abstract class AbstractPolicy extends PolicyType {
 	// ...or the CombinerElements that are passed to combining algorithms
 	private List childElements;
 
-	// any obligations held by this policy
-//	private Set obligations;
-
-	// any obligations held by this policy
-//	private Set advice;
-
-	// the list of combiner parameters
-//	private List parameters;
-
-	// the logger we'll use for all messages
-	private static final Logger logger = Logger.getLogger(AbstractPolicy.class
-			.getName());
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(AbstractPolicy.class);
 
 	/**
 	 * Constructor used by <code>PolicyReference</code>, which supplies its own
@@ -319,15 +303,6 @@ public abstract class AbstractPolicy extends PolicyType {
 			}
 		}
 
-		// finally, make sure the obligations and parameters are immutable
-//		ObligationExpressionsType oblExpr = new ObligationExpressionsType();
-//		oblExpr.getObligationExpression().addAll(obligations);
-//		obligationExpressions = oblExpr;
-//		this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.unmodifiableList(parameters);
-//		adviceExpressions = Collections.unmodifiableSet(advice);
-		
-//		this.adviceExpressions = AdviceExpressions.getInstance(advice);
-//		this.obligationExpressions = ObligationExpressions.getInstance(obligations);
 	}
 
 	/**
@@ -370,7 +345,7 @@ public abstract class AbstractPolicy extends PolicyType {
 					match = (JAXBElement<AdviceExpressionsType>) u
 							.unmarshal(root);
 				} catch (Exception e) {
-					System.err.println(e);
+					LOGGER.error(e);
 				}
 
 				adviceExpressions = match.getValue();
@@ -563,16 +538,6 @@ public abstract class AbstractPolicy extends PolicyType {
 		if (children == null) {
 			this.children = Collections.EMPTY_LIST;
 		} else {
-			// NOTE: since this is only getting called by known child
-			// classes we don't check that the types are all the same
-			// List list = new ArrayList();
-			// Iterator it = children.iterator();
-			//
-			// while (it.hasNext()) {
-			// CombinerElement element = (CombinerElement) (it.next());
-			// list.add(element.getElement());
-			// }
-
 			this.children = Collections.unmodifiableList(children);
 			childElements = Collections.unmodifiableList(children);
 		}

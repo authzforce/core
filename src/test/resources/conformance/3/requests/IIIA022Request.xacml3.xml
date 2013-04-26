@@ -4,6 +4,9 @@
     <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id">
       <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Julius Hibbert</AttributeValue>
     </Attribute>
+    <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:2.0:conformance-tests:bogus">
+      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Bogus</AttributeValue>
+    </Attribute>
     <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:2.0:conformance-test:age">
       <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">45</AttributeValue>
     </Attribute>

@@ -57,11 +57,11 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.jvnet.jaxb2_commons</groupId> -->
-<!-- 			<artifactId>runtime</artifactId> -->
-<!-- 			<version>0.4.1.5</version> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>jaxb2-basics-runtime</artifactId>
+			<version>0.6.4</version>
+		</dependency>
 		<dependency>
 			<groupId>org.jvnet.jaxb2_commons</groupId>
 			<artifactId>testing</artifactId>
@@ -94,7 +94,7 @@
 		<dependency>
 			<groupId>com.thalesgroup.authzforce.core</groupId>
 			<artifactId>authzforce-model</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-jxpath</groupId>

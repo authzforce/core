@@ -93,8 +93,7 @@ public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
         Iterator it = policyElements.iterator();
         
         while (it.hasNext()) {
-            Policy policy =
-                ((PolicyCombinerElement)(it.next())).getPolicy();
+            Policy policy = ((Policy)(it.next()));
 
             // make sure that the policy matches the context
             MatchResult match = policy.match(context);

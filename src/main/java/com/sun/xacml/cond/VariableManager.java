@@ -340,17 +340,4 @@ public class VariableManager extends ExpressionType
             this.handled = handled;
         }
     }
-
-	@Override
-	public void equals(Object object, EqualsBuilder equalsBuilder) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void hashCode(HashCodeBuilder hashCodeBuilder) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

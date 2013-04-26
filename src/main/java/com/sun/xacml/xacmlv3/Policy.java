@@ -329,29 +329,4 @@ public class Policy extends PolicyType {
 		return metaData;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jvnet.jaxb2_commons.lang.Equals#equals(java.lang.Object,
-	 * org.apache.commons.lang.builder.EqualsBuilder)
-	 */
-	@Override
-	public void equals(Object object, EqualsBuilder equalsBuilder) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.jvnet.jaxb2_commons.lang.HashCode#hashCode(org.apache.commons.lang
-	 * .builder.HashCodeBuilder)
-	 */
-	@Override
-	public void hashCode(HashCodeBuilder hashCodeBuilder) {
-		// TODO Auto-generated method stub
-
-	}
-
 }
