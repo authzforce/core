@@ -40,6 +40,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -292,6 +293,7 @@ public class PDP {
 		List<AttributesType> actions = new ArrayList<AttributesType>();
 		List<AttributesType> resources = new ArrayList<AttributesType>();
 		List<AttributesType> environments = new ArrayList<AttributesType>();
+		List<AttributesType> customs = new ArrayList<AttributesType>();
 		List<RequestType> requests = new ArrayList<RequestType>();
 		List<ResponseCtx> responses = new ArrayList<ResponseCtx>();
 
@@ -312,9 +314,34 @@ public class PDP {
 				} else if (myAttr.getCategory().equals(
 						XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value())) {
 					environments.add(myAttr);
+				} else {
+					customs.add(myAttr);
 				}
 			}
-
+			if(subjects.isEmpty() && actions.isEmpty() && resources.isEmpty()) {
+				// there was something wrong with the request, so we return
+				// Indeterminate with a status of syntax error...though this
+				// may change if a more appropriate status type exists
+				StatusCodeType code = new StatusCodeType();
+				code.setValue(Status.STATUS_SYNTAX_ERROR);
+				StatusType status = new StatusType();
+				status.setStatusCode(code);
+				status.setStatusMessage("Ressource or Subject or Action attributes needs to be filled");
+				return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+			}
+			if(subjects.isEmpty()) {
+				AttributesType subject = new AttributesType();
+				subjects.add(subject);
+			}
+			if(actions.isEmpty()) {
+				AttributesType action = new AttributesType();
+				actions.add(action);
+			}
+			if(resources.isEmpty()) {
+				AttributesType resource = new AttributesType();
+				resources.add(resource);
+			}
+			
 			for (AttributesType subjectAttr : subjects) {
 				for (AttributesType actionsAttr : actions) {
 					for (AttributesType resourcesAttr : resources) {
@@ -323,15 +350,24 @@ public class PDP {
 						tmpRequest.setRequestDefaults(request.getRequestDefaults());
 						tmpRequest.setReturnPolicyIdList(request.isReturnPolicyIdList());
 						tmpRequest.setCombinedDecision(request.isCombinedDecision());
-						tmpRequest.getAttributes().add(resourcesAttr);
-						tmpRequest.getAttributes().add(actionsAttr);
-						tmpRequest.getAttributes().add(subjectAttr);
+						if(!resourcesAttr.getAttribute().isEmpty()) {
+							tmpRequest.getAttributes().add(resourcesAttr);
+						}
+						if(!actionsAttr.getAttribute().isEmpty()) {
+							tmpRequest.getAttributes().add(actionsAttr);
+						}
+						if(!subjectAttr.getAttribute().isEmpty()) {
+							tmpRequest.getAttributes().add(subjectAttr);
+						}
 						requests.add(tmpRequest);
 					}
 				}
 			}
 			for (RequestType requestList : requests) {
 				requestList.getAttributes().addAll(environments);
+			}
+			for (RequestType requestList : requests) {
+				requestList.getAttributes().addAll(customs);
 			}
 			for (RequestType requestType : requests) {
 				ResponseCtx response = this.evaluate(requestType);

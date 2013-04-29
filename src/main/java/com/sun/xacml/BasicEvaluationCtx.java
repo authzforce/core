@@ -100,6 +100,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	private Map<String, Set<AttributeType>> resourceMap;
 	private Map<String, Set<AttributeType>> actionMap;
 	private Map<String, Set<AttributeType>> environmentMap;
+	private Map<String, Set<AttributeType>> customMap;
 
 	// Attributes that needs to be included in the result
 	private List<AttributesType> includeInResults;
@@ -135,10 +136,11 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
-	 * @throws UnknownIdentifierException 
-	 * @throws NumberFormatException 
+	 * @throws UnknownIdentifierException
+	 * @throws NumberFormatException
 	 */
-	public BasicEvaluationCtx(RequestType request) throws ParsingException, NumberFormatException, UnknownIdentifierException {
+	public BasicEvaluationCtx(RequestType request) throws ParsingException,
+			NumberFormatException, UnknownIdentifierException {
 		this(request, null, true, Integer
 				.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
 	}
@@ -156,7 +158,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
-	 * @throws UnknownIdentifierException 
+	 * @throws UnknownIdentifierException
 	 */
 	public BasicEvaluationCtx(RequestType request, boolean cacheEnvValues,
 			int version) throws ParsingException, UnknownIdentifierException {
@@ -179,7 +181,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
-	 * @throws UnknownIdentifierException 
+	 * @throws UnknownIdentifierException
 	 */
 	public BasicEvaluationCtx(RequestType request, AttributeFinder finder,
 			int version) throws ParsingException, UnknownIdentifierException {
@@ -203,10 +205,11 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	 * @throws ParsingException
 	 *             if a required attribute is missing, or if there are any
 	 *             problems dealing with the request data
-	 * @throws UnknownIdentifierException 
+	 * @throws UnknownIdentifierException
 	 */
 	public BasicEvaluationCtx(RequestType request, AttributeFinder finder,
-			boolean cacheEnvValues, int version) throws ParsingException, UnknownIdentifierException {
+			boolean cacheEnvValues, int version) throws ParsingException,
+			UnknownIdentifierException {
 
 		this.request = request;
 
@@ -240,7 +243,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 				if (resourceMap == null) {
 					resourceMap = new HashMap();
 				}
-					setupResources(myAttributeTypes.getAttribute());
+				setupResources(myAttributeTypes.getAttribute());
 			}/* Searching for subject */
 			else if (myAttributeTypes.getCategory()
 					.equalsIgnoreCase(
@@ -261,6 +264,15 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 					environmentMap = new HashMap();
 				}
 				mapAttributes(myAttributeTypes.getAttribute(), environmentMap);
+			}
+			// Attribute category didn't match any known category so we store
+			// the attributes in an custom list
+			else {
+				// finally, set up the environment data, which is also generic
+				if (customMap == null) {
+					customMap = new HashMap();
+				}
+				mapAttributes(myAttributeTypes.getAttribute(), customMap);
 			}
 			// Store attributes who needs to be included in the result
 			for (AttributeType attr : myAttributeTypes.getAttribute()) {
@@ -708,6 +720,25 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	public EvaluationResult getEnvironmentAttribute(URI type, URI id, URI issuer) {
 		return getGenericAttributes(type, id, issuer, environmentMap, null,
 				AttributeDesignator.ENVIRONMENT_TARGET);
+	}
+	
+	/**
+	 * Returns attribute value(s) from the environment section of the request.
+	 * 
+	 * @param type
+	 *            the type of the attribute value(s) to find
+	 * @param id
+	 *            the id of the attribute value(s) to find
+	 * @param issuer
+	 *            the issuer of the attribute value(s) to find or null
+	 * 
+	 * @return a result containing a bag either empty because no values were
+	 *         found or containing at least one value, or status associated with
+	 *         an Indeterminate result
+	 */
+	public EvaluationResult getCustomAttribute(URI type, URI id, URI issuer) {
+		return getGenericAttributes(type, id, issuer, customMap, null,
+				-1);
 	}
 
 	/**

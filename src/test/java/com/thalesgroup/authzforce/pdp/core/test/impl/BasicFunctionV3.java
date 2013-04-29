@@ -66,7 +66,7 @@ public class BasicFunctionV3 extends TestCase {
 		this.showResults();
 	}
 
-	public void testBasicTest0001() throws Exception {
+	public void testBasicTest0006() throws Exception {
 
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
@@ -120,10 +120,10 @@ public class BasicFunctionV3 extends TestCase {
 				assertTrue("Request read from file is Null", false);
 			}
 
-			LOGGER.info("Basic Test 0003 is finished");
+			LOGGER.info("Basic Test 0006 is finished");
 		}
 	}
-
+	
 	private void showResults() throws Exception {
 		for (String key : results.keySet()) {
 			LOGGER.info(key + ":" + results.get(key));

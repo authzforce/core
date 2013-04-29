@@ -393,6 +393,10 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 			result = context.getEnvironmentAttribute(this.getType(),
 					this.getId(), issuer);
 			break;
+		case -1:
+			result = context.getCustomAttribute(this.getType(),
+					this.getId(), issuer);
+			break;
 		}
 
 		// if the lookup was indeterminate, then we return immediately
@@ -450,6 +454,8 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 				XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT
 						.value())) {
 			target = 3;
+		} else {
+			target = -1;
 		}
 	}
 

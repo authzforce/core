@@ -36,15 +36,21 @@
 
 package com.sun.xacml.cond;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
 
 
 /**
@@ -61,20 +67,29 @@ public class StringFunction extends FunctionBase
      */
     public static final String NAME_STRING_CONCATENATE =
         FUNCTION_NS_2 + "string-concatenate";
+    
+    /**
+     * Standard identifier for the string-concatenate function.
+     */
+    public static final String NAME_BOOLEAN_FROM_STRING = 
+        FUNCTION_NS_3 + "boolean-from-string";
 
     // private identifiers for the supported functions
     private static final int ID_STRING_CONCATENATE = 0;
+    private static final int ID_BOOLEAN_FROM_STRING = 1;
     
-    private static HashMap idMap;
+    private static HashMap<String, Integer> idMap;
     
     /**
      * Static initializer to setup the id maps.
      */
     static {
-        idMap = new HashMap();
+        idMap = new HashMap<String, Integer>();
 
         idMap.put(NAME_STRING_CONCATENATE,
                   Integer.valueOf(ID_STRING_CONCATENATE));
+        idMap.put(NAME_BOOLEAN_FROM_STRING,
+                Integer.valueOf(ID_BOOLEAN_FROM_STRING));
     };
 
     /**
@@ -96,9 +111,10 @@ public class StringFunction extends FunctionBase
      * @return a <code>Set</code> of <code>String</code>s
      */
     public static Set getSupportedIdentifiers() {
-        Set set = new HashSet();
+        Set<String> set = new HashSet<String>();
 
         set.add(NAME_STRING_CONCATENATE);
+        set.add(NAME_BOOLEAN_FROM_STRING);
 
         return set;
     }
@@ -135,12 +151,31 @@ public class StringFunction extends FunctionBase
         case ID_STRING_CONCATENATE:
             String str = ((StringAttribute)argValues[0]).getValue();
 
-            for (int i = 1; i < argValues.length; i++)
+            for (int i = 1; i < argValues.length; i++) {
                 str += ((StringAttribute)(argValues[i])).getValue();
+            }
 
             result = new EvaluationResult(new StringAttribute(str));
 
             break;
+        
+        case ID_BOOLEAN_FROM_STRING:
+        	str = ((StringAttribute)argValues[0]).getValue();
+        	boolean funcResult = false;
+        	if(str.equalsIgnoreCase("true")) {
+        		result = new EvaluationResult(BooleanAttribute.getTrueInstance());
+        	} else if(str.equalsIgnoreCase("false")) {
+        		result = new EvaluationResult(BooleanAttribute.getFalseInstance());
+        	} else {
+        		Status status = new Status(Arrays.asList(Status.STATUS_PROCESSING_ERROR));
+        		StatusCodeType code = new StatusCodeType();
+				code.setValue(Status.STATUS_PROCESSING_ERROR);
+				status.setStatusCode(code);
+        		result = new EvaluationResult(status);
+        	}
+        	        	
+        	
+        	break;
         }
 
         return result;

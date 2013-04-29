@@ -257,6 +257,27 @@ public interface EvaluationCtx {
 	 *         an Indeterminate result
 	 */
 	public EvaluationResult getEnvironmentAttribute(URI type, URI id, URI issuer);
+	
+	
+	/**
+	 * Returns available custom attribute value(s).
+	 * <p>
+	 * Note that if you want to resolve the correct current date, time, or
+	 * dateTime as seen from an evaluation point of view, you should use this
+	 * method and supply the corresponding identifier.
+	 * 
+	 * @param type
+	 *            the type of the attribute value(s) to find
+	 * @param id
+	 *            the id of the attribute value(s) to find
+	 * @param issuer
+	 *            the issuer of the attribute value(s) to find or null
+	 * 
+	 * @return a result containing a bag either empty because no values were
+	 *         found or containing at least one value, or status associated with
+	 *         an Indeterminate result
+	 */
+	public EvaluationResult getCustomAttribute(URI type, URI id, URI issuer);
 
 	/**
 	 * Returns the attribute value(s) retrieved using the given XPath
