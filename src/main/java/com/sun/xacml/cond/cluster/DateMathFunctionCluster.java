@@ -51,11 +51,17 @@ import java.util.Set;
  */
 public class DateMathFunctionCluster implements FunctionCluster
 {
-
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(DateMathFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = DateMathFunction.getSupportedIdentifiers().iterator();
         
+        LOGGER.debug("Initialize Date Math function");
         while (it.hasNext())
             set.add(new DateMathFunction((String)(it.next())));
 

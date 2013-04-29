@@ -36,12 +36,11 @@
 
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.ComparisonFunction;
-import com.sun.xacml.cond.MatchFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import com.sun.xacml.cond.ComparisonFunction;
 
 
 /**
@@ -66,10 +65,9 @@ public class ComparisonFunctionCluster implements FunctionCluster
         LOGGER.debug("Initialize Comparison function");
         while (it.hasNext()) {
 			String funcId = (String) it.next();
-			LOGGER.debug(funcId);
+			LOGGER.trace(funcId);
 			set.add(new ComparisonFunction(funcId));
 		}
-        LOGGER.debug("End Initialize Comparison function");
         return set;
     }
 

@@ -61,6 +61,7 @@ import com.sun.xacml.cond.cluster.FunctionCluster;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.ResourceFinder;
+import com.sun.xacml.xacmlv3.Policy;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -146,9 +147,11 @@ public class ConfigurationStore
     // the classloader we'll use for loading classes
     private ClassLoader loader;
 
-    // the logger we'll use for all messages
-    private static final Logger LOGGER =
-        Logger.getLogger(ConfigurationStore.class.getName());
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(ConfigurationStore.class);
 
     /**
      * Default constructor. This constructor uses the
@@ -165,7 +168,7 @@ public class ConfigurationStore
 
         // make sure that the right property was set
         if (configFile == null) {
-            LOGGER.severe("A property defining a config file was expected, " +
+            LOGGER.error("A property defining a config file was expected, " +
                           "but none was provided");
 
             throw new ParsingException("Config property " +
@@ -176,7 +179,7 @@ public class ConfigurationStore
         try {
             setupConfig(new File(configFile));
         } catch (ParsingException pe) {
-            LOGGER.log(Level.SEVERE, "Runtime config file couldn't be loaded" +
+            LOGGER.error("Runtime config file couldn't be loaded" +
                        " so no configurations will be available", pe);
             throw pe;
         }
@@ -198,7 +201,7 @@ public class ConfigurationStore
         try {
             setupConfig(configFile);
         } catch (ParsingException pe) {
-            LOGGER.log(Level.SEVERE, "Runtime config file couldn't be loaded" +
+            LOGGER.error("Runtime config file couldn't be loaded" +
                        " so no configurations will be available", pe);
             throw pe;
         }
@@ -212,7 +215,7 @@ public class ConfigurationStore
      * to setup all the pdps and factories.
      */
     private void setupConfig(File configFile) throws ParsingException {
-        LOGGER.config("Loading runtime configuration");
+        LOGGER.info("Loading runtime configuration");
 
         // load our classloader
         loader = getClass().getClassLoader();
@@ -253,18 +256,14 @@ public class ConfigurationStore
             // putting the new element into the respective map...make sure
             // that we're never loading something with the same name twice
             if (childName.equals("pdp")) {
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.config("Loading PDP: " + elementName);
-                }
+                    LOGGER.info("Loading PDP: " + elementName);
                 if (pdpConfigMap.containsKey(elementName)) {
                     throw new ParsingException("more that one pdp with " +
                                                "name \"" + elementName +"\"");
                 }
                 pdpConfigMap.put(elementName, parsePDPConfig(child));
             } else if (childName.equals("attributeFactory")) {
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.config("Loading AttributeFactory: " + elementName);
-                }
+                    LOGGER.info("Loading AttributeFactory: " + elementName);
                 if (attributeMap.containsKey(elementName)) {
                     throw new ParsingException("more that one " +
                                                "attributeFactory with name " +
@@ -272,8 +271,7 @@ public class ConfigurationStore
                 }
                 attributeMap.put(elementName, parseAttributeFactory(child));
             } else if (childName.equals("combiningAlgFactory")) {
-                if (LOGGER.isLoggable(Level.CONFIG))
-                    LOGGER.config("Loading CombiningAlgFactory: " +
+                    LOGGER.info("Loading CombiningAlgFactory: " +
                                   elementName);
                 if (combiningMap.containsKey(elementName)) {
                     throw new ParsingException("more that one " +
@@ -282,9 +280,7 @@ public class ConfigurationStore
                 }
                 combiningMap.put(elementName, parseCombiningAlgFactory(child));
             } else if (childName.equals("functionFactory")) {
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.config("Loading FunctionFactory: " + elementName);
-                }
+                    LOGGER.info("Loading FunctionFactory: " + elementName);
                 if (functionMap.containsKey(elementName)) {
                     throw new ParsingException("more that one functionFactory"
                                                + " with name \"" +
@@ -438,7 +434,7 @@ public class ConfigurationStore
 
         // check if we're starting with the standard factory setup
         if (useStandard(root, "useStandardDatatypes")) {
-            LOGGER.config("Starting with standard Datatypes");
+            LOGGER.info("Starting with standard Datatypes");
 
             factory = StandardAttributeFactory.getNewFactory();
         } else {
@@ -480,7 +476,7 @@ public class ConfigurationStore
 
         // check if we're starting with the standard factory setup
         if (useStandard(root, "useStandardAlgorithms")) {
-            LOGGER.config("Starting with standard Combining Algorithms");
+            LOGGER.info("Starting with standard Combining Algorithms");
 
             factory = StandardCombiningAlgFactory.getNewFactory();
         } else {
@@ -527,7 +523,7 @@ public class ConfigurationStore
         // check if we're starting with the standard factory setup, and
         // make sure that the proxy is pre-configured
         if (useStandard(root, "useStandardFunctions")) {
-            LOGGER.config("Starting with standard Functions");
+            LOGGER.info("Starting with standard Functions");
             
             proxy = StandardFunctionFactory.getNewFactoryProxy();
 
@@ -552,13 +548,13 @@ public class ConfigurationStore
             String name = child.getNodeName();
 
             if (name.equals("target")) {
-                LOGGER.config("Loading [TARGET] functions");
+                LOGGER.info("Loading [TARGET] functions");
                 functionParserHelper(child, targetFactory);
             } else if (name.equals("condition")) {
-                LOGGER.config("Loading [CONDITION] functions");
+                LOGGER.info("Loading [CONDITION] functions");
                 functionParserHelper(child, conditionFactory);
             } else if (name.equals("general")) {
-                LOGGER.config("Loading [GENERAL] functions");
+                LOGGER.info("Loading [GENERAL] functions");
                 functionParserHelper(child, generalFactory);
             }
         }
@@ -636,9 +632,7 @@ public class ConfigurationStore
         // get the name of the class
         String className = root.getAttributes().getNamedItem("class").getNodeValue();
 
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.config("Loading [ " + prefix + ": " + className + " ]");
-        }
+            LOGGER.info("Loading [ " + prefix + ": " + className + " ]");
 
         // load the given class using the local classloader
         Class c = null;
@@ -735,34 +729,6 @@ public class ConfigurationStore
         return instance;
     }
 
-    /**
-     * Private helper that gets the constructor arguments for a given class.
-     * Right now this just supports String and List, but it's trivial to
-     * add support for other types should that be needed. Right now, it's not
-     * clear that there's any need for other types.
-     */
-//    private List getArgs(Node root) {
-//        List args = new ArrayList();
-//        NodeList children = root.getChildNodes();
-//
-//        for (int i = 0; i < children.getLength(); i++) {
-//            Node child = children.item(i);
-//            String name = child.getNodeName();
-//            
-//            if (child.getNodeType() == Node.ELEMENT_NODE) {
-//                if (name.equals("string")) {
-//                    args.add(child.getFirstChild().getNodeValue());
-//                } else if (name.equals("list")) {
-//                    args.add(getArgs(child));
-//                } else {
-//                    throw new IllegalArgumentException("unkown arg type: " +
-//                                                       name);
-//                }
-//            }
-//        }
-//
-//        return args;
-//    }
     /**
      * Private helper that gets the constructor arguments for a given class.
      * Right now this just supports String and List, but it's trivial to
@@ -920,7 +886,7 @@ public class ConfigurationStore
      */
     public PDPConfig getDefaultPDPConfig() throws UnknownIdentifierException {
         if (defaultPDPConfig == null) {
-        	LOGGER.severe("Default pdp config is null");
+        	LOGGER.error("Default pdp config is null");
             throw new UnknownIdentifierException("no default available");
         }
 
@@ -1013,7 +979,7 @@ public class ConfigurationStore
             try {
                 AttributeFactory.registerFactory(id, new AFProxy(af));
             } catch (IllegalArgumentException iae) {
-                LOGGER.log(Level.WARNING, "Couldn't register AttributeFactory:"
+                LOGGER.warn("Couldn't register AttributeFactory:"
                            + id + " (already in use)", iae);
             }
         }
@@ -1075,7 +1041,7 @@ public class ConfigurationStore
             try {
                 CombiningAlgFactory.registerFactory(id, new CAFProxy(cf));
             } catch (IllegalArgumentException iae) {
-                LOGGER.log(Level.WARNING, "Couldn't register " +
+                LOGGER.warn("Couldn't register " +
                            "CombiningAlgFactory: " + id + " (already in use)",
                            iae);
             }
@@ -1138,7 +1104,7 @@ public class ConfigurationStore
             try {
                 FunctionFactory.registerFactory(id, ffp);
             } catch (IllegalArgumentException iae) {
-                LOGGER.log(Level.WARNING, "Couldn't register FunctionFactory: "
+                LOGGER.warn("Couldn't register FunctionFactory: "
                            + id + " (already in use)", iae);
             }
         }
@@ -1151,7 +1117,7 @@ public class ConfigurationStore
      * will not be set as the system's default.
      */
     public void useDefaultFactories() {
-        LOGGER.fine("Switching to default factories from configuration");
+        LOGGER.info("Switching to default factories from configuration");
 
         // set the default attribute factory, if it exists here
         if (defaultAttributeFactory != null) {

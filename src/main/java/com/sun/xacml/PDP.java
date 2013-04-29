@@ -245,48 +245,8 @@ public class PDP {
 	 * 
 	 * @param request
 	 *            the request to evaluate
-	 * @deprecated As of release2.0, replaced by {@link #evaluate(RequestType)}
 	 * @return a response paired to the request
 	 */
-//	public ResponseCtx evaluate(RequestCtx request) {
-//		ResponseCtx response = null;
-//
-//		JAXBElement<RequestType> jaxbRequestElem = null;
-//		RequestType jaxbRequest = null;
-//		try {
-//			if (request.getDocumentRoot() != null) {
-//				jaxbRequestElem = BindingUtility.getUnmarshaller().unmarshal(
-//						request.getDocumentRoot(), RequestType.class);
-//				jaxbRequest = jaxbRequestElem.getValue();
-//			} else {
-//				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//				request.encode(bos);
-//
-//				byte[] buf = bos.toByteArray();
-//				ByteArrayInputStream bis = new ByteArrayInputStream(buf);
-//
-//				jaxbRequestElem = (JAXBElement<RequestType>) BindingUtility
-//						.getUnmarshaller().unmarshal(bis);
-//				jaxbRequest = jaxbRequestElem.getValue();
-//			}
-//			response = this.evaluate(jaxbRequest);
-//		} catch (JAXBException e) {
-//			LOGGER.info("the PDP receieved an invalid request",
-//					e);
-//
-//			// there was something wrong with the request, so we return
-//			// Indeterminate with a status of syntax error...though this
-//			// may change if a more appropriate status type exists
-//			ArrayList code = new ArrayList();
-//			code.add(Status.STATUS_SYNTAX_ERROR);
-//			Status status = new Status(code, e.getMessage());
-//
-//			response = new ResponseCtx(new Result(
-//					DecisionType.INDETERMINATE, status));
-//		}
-//		return response;
-//	}
-
 	public List<ResponseCtx> evaluateList(RequestType request) {
 
 		List<AttributesType> subjects = new ArrayList<AttributesType>();
@@ -298,7 +258,27 @@ public class PDP {
 		List<ResponseCtx> responses = new ArrayList<ResponseCtx>();
 
 		if (request.getMultiRequests() != null) {
-			// TODO: Implement multirequest
+			// TODO: Implement multiRequest
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			StatusCodeType code = new StatusCodeType();
+			code.setValue(Status.STATUS_SYNTAX_ERROR);
+			StatusType status = new StatusType();
+			status.setStatusCode(code);
+			status.setStatusMessage("Multi Request not implemented yet");
+			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+		} else if (request.isCombinedDecision()){
+			// TODO: Implement combinedDecision
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			StatusCodeType code = new StatusCodeType();
+			code.setValue(Status.STATUS_SYNTAX_ERROR);
+			StatusType status = new StatusType();
+			status.setStatusCode(code);
+			status.setStatusMessage("Combined decision not implemented yet");
+			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
 		} else {
 
 			for (AttributesType myAttr : request.getAttributes()) {
@@ -423,10 +403,6 @@ public class PDP {
 			if (cacheManager.isActivate()) {
 				cacheManager.updateCache(hash, myResponse);
 			}
-			/*
-			 * 
-			 */
-
 			return myResponse;
 		} catch (ParsingException pe) {
 			LOGGER.debug("the PDP receieved an invalid request", pe);

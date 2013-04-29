@@ -64,10 +64,9 @@ public class NotFunctionCluster implements FunctionCluster
         LOGGER.debug("Initialize NotFunction function");
         while (it.hasNext()) {
 			String funcId = (String) it.next();
-			LOGGER.debug(funcId);
+			LOGGER.trace(funcId);
 			set.add(new NotFunction(funcId));
 		}
-        LOGGER.debug("End Initialize NotFunction function");
 
         return set;
     }

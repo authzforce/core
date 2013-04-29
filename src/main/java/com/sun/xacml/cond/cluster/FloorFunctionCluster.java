@@ -51,11 +51,17 @@ import java.util.Set;
  */
 public class FloorFunctionCluster implements FunctionCluster
 {
-
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(FloorFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = FloorFunction.getSupportedIdentifiers().iterator();
 
+        LOGGER.debug("Initialize Floor function");
         while (it.hasNext())
             set.add(new FloorFunction((String)(it.next())));
 

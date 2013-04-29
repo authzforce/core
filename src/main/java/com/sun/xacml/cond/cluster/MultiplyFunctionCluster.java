@@ -51,11 +51,17 @@ import java.util.Set;
  */
 public class MultiplyFunctionCluster implements FunctionCluster
 {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(MultiplyFunctionCluster.class);
 
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = MultiplyFunction.getSupportedIdentifiers().iterator();
 
+        LOGGER.debug("Initialize Multiply function");
         while (it.hasNext())
             set.add(new MultiplyFunction((String)(it.next())));
 

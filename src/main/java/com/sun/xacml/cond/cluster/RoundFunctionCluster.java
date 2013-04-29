@@ -51,11 +51,17 @@ import java.util.Set;
  */
 public class RoundFunctionCluster implements FunctionCluster
 {
-
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(RoundFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = RoundFunction.getSupportedIdentifiers().iterator();
 
+        LOGGER.debug("Initialize Round function");
         while (it.hasNext())
             set.add(new RoundFunction((String)(it.next())));
 

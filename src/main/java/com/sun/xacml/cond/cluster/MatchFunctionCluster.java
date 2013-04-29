@@ -61,10 +61,9 @@ public class MatchFunctionCluster implements FunctionCluster {
 		LOGGER.debug("Initialize Match function");
 		while (it.hasNext()) {
 			String funcId = (String) it.next();
-			LOGGER.debug(funcId);
+			LOGGER.trace(funcId);
 			set.add(new MatchFunction(funcId));
 		}
-		LOGGER.debug("End Initialize Match function");
 
 		return set;
 	}

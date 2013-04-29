@@ -51,11 +51,18 @@ import java.util.Set;
  */
 public class AbsFunctionCluster implements FunctionCluster
 {
+	
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(AbsFunctionCluster.class);
 
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = AbsFunction.getSupportedIdentifiers().iterator();
 
+        LOGGER.debug("Initialize Abs function");
         while (it.hasNext())
             set.add(new AbsFunction((String)(it.next())));
 

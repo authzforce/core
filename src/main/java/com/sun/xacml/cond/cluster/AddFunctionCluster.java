@@ -51,11 +51,17 @@ import java.util.Set;
  */
 public class AddFunctionCluster implements FunctionCluster
 {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(AddFunctionCluster.class);
 
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = AddFunction.getSupportedIdentifiers().iterator();
         
+        LOGGER.debug("Initialize Add function");
         while (it.hasNext())
             set.add(new AddFunction((String)(it.next())));
 

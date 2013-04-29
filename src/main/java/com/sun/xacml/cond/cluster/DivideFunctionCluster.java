@@ -51,11 +51,17 @@ import java.util.Set;
  */
 public class DivideFunctionCluster implements FunctionCluster
 {
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(DivideFunctionCluster.class);
 
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = DivideFunction.getSupportedIdentifiers().iterator();
         
+        LOGGER.debug("Initialize Divide function");
         while (it.hasNext())
             set.add(new DivideFunction((String)(it.next())));
 

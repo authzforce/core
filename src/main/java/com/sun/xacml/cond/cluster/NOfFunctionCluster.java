@@ -65,10 +65,9 @@ public class NOfFunctionCluster implements FunctionCluster
         LOGGER.debug("Initialize NofFunction function");
         while (it.hasNext()) {
 			String funcId = (String) it.next();
-			LOGGER.debug(funcId);
+			LOGGER.trace(funcId);
 			set.add(new NOfFunction(funcId));
 		}
-        LOGGER.debug("Initialize NofFunction function");
 
         return set;
     }

@@ -224,14 +224,16 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		currentDateTime = null;
 
 		this.version = version;
-
+		actionMap = new HashMap();
+		resourceMap = new HashMap();
+		subjectMap = new HashMap();
+		environmentMap = new HashMap();
+		customMap = new HashMap();
+		
 		for (AttributesType myAttributeTypes : request.getAttributes()) {
 			/* Searching for action */
 			if (myAttributeTypes.getCategory().equalsIgnoreCase(
 					XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
-				if (actionMap == null) {
-					actionMap = new HashMap();
-				}
 				mapAttributes(myAttributeTypes.getAttribute(), actionMap);
 			}
 			/* Searching for resource */
@@ -240,9 +242,6 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 							.value())) {
 				// next look at the Resource data, which needs to be handled
 				// specially
-				if (resourceMap == null) {
-					resourceMap = new HashMap();
-				}
 				setupResources(myAttributeTypes.getAttribute());
 			}/* Searching for subject */
 			else if (myAttributeTypes.getCategory()
@@ -250,9 +249,6 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 							XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT
 									.value())) {
 				// get the subjects, make sure they're correct, and setup tables
-				if (subjectMap == null) {
-					subjectMap = new HashMap();
-				}
 				setupSubjects(myAttributeTypes.getAttribute());
 
 			}/* Searching for environment */
@@ -260,18 +256,12 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 					XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT
 							.value())) {
 				// finally, set up the environment data, which is also generic
-				if (environmentMap == null) {
-					environmentMap = new HashMap();
-				}
 				mapAttributes(myAttributeTypes.getAttribute(), environmentMap);
 			}
 			// Attribute category didn't match any known category so we store
 			// the attributes in an custom list
 			else {
 				// finally, set up the environment data, which is also generic
-				if (customMap == null) {
-					customMap = new HashMap();
-				}
 				mapAttributes(myAttributeTypes.getAttribute(), customMap);
 			}
 			// Store attributes who needs to be included in the result

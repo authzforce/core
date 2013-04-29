@@ -52,10 +52,17 @@ import java.util.Set;
 public class SubtractFunctionCluster implements FunctionCluster
 {
 
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(SubtractFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = SubtractFunction.getSupportedIdentifiers().iterator();
 
+        LOGGER.debug("Initialize Subtract function");
         while (it.hasNext())
             set.add(new SubtractFunction((String)(it.next())));
 

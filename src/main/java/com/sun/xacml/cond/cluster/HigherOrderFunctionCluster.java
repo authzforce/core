@@ -51,11 +51,17 @@ import java.util.Set;
  */
 public class HigherOrderFunctionCluster implements FunctionCluster
 {
-
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(HigherOrderFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = HigherOrderFunction.getSupportedIdentifiers().iterator();
 
+        LOGGER.debug("Initialize Higher Order function");
         while (it.hasNext())
             set.add(new HigherOrderFunction((String)(it.next())));
 

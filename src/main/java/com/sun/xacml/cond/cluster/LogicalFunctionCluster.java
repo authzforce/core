@@ -63,13 +63,12 @@ public class LogicalFunctionCluster implements FunctionCluster
         Set set = new HashSet();
         Iterator it = LogicalFunction.getSupportedIdentifiers().iterator();
 
-        LOGGER.debug("Initialize NofFunction function");
+        LOGGER.debug("Initialize Logical function");
         while (it.hasNext()) {
 			String funcId = (String) it.next();
-			LOGGER.debug(funcId);
+			LOGGER.trace(funcId);
 			set.add(new LogicalFunction(funcId));
 		}
-        LOGGER.debug("Initialize NofFunction function");
 
         return set;
     }

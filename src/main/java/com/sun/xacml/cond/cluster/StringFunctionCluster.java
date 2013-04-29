@@ -54,11 +54,18 @@ import java.util.Set;
 public class StringFunctionCluster implements FunctionCluster
 {
 
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(StringFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = StringFunction.getSupportedIdentifiers().
             iterator();
 
+        LOGGER.debug("Initialize String function");
         while (it.hasNext())
             set.add(new StringFunction((String)(it.next())));
 

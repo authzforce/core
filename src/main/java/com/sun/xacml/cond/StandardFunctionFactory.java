@@ -170,9 +170,10 @@ public class StandardFunctionFactory extends BaseFunctionFactory
     private static void initConditionFunctions() {
         LOGGER.info("Initializing standard Condition functions");
 
-        if (targetFunctions == null)
+        if (targetFunctions == null) {
             initTargetFunctions();
-
+        }
+        
         conditionFunctions = new HashSet(targetFunctions);
 
         // add condition function TimeInRange
@@ -197,8 +198,9 @@ public class StandardFunctionFactory extends BaseFunctionFactory
     private static void initGeneralFunctions() {
         LOGGER.info("Initializing standard General functions");
 
-        if (conditionFunctions == null)
+        if (conditionFunctions == null) {
             initConditionFunctions();
+        }
 
         generalFunctions = new HashSet(conditionFunctions);
 

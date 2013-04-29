@@ -51,12 +51,18 @@ import java.util.Set;
  */
 public class ConditionBagFunctionCluster implements FunctionCluster
 {
-
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(ConditionBagFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = ConditionBagFunction.getSupportedIdentifiers().
             iterator();
-
+        LOGGER.debug("Initialize ConditionBag function");
+        
         while (it.hasNext())
             set.add(new ConditionBagFunction((String)(it.next())));
 

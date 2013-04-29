@@ -66,7 +66,6 @@ public class EqualFunctionCluster implements FunctionCluster
     		EqualFunction func = new EqualFunction(equalFunction);
 			result.add(func);
 		}
-    	LOGGER.debug("End of Initialize Equals function");        
         
         return result;
     }

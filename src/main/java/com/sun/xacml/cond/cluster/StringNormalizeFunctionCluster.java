@@ -52,12 +52,18 @@ import java.util.Set;
  */
 public class StringNormalizeFunctionCluster implements FunctionCluster
 {
-
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(StringNormalizeFunctionCluster.class);
+	
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = StringNormalizeFunction.getSupportedIdentifiers().
             iterator();
         
+        LOGGER.debug("Initialize String Normalize function");
         while (it.hasNext())
             set.add(new StringNormalizeFunction((String)(it.next())));
 
