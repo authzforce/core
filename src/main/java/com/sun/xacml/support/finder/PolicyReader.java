@@ -260,7 +260,7 @@ public class PolicyReader implements ErrorHandler
         String name = root.getTagName();
 
         // see what type of policy this is
-        if (name.equals("Policy")) {
+        if (name.equals("Policy") || name.equals("PolicyType") ) {
             return Policy.getInstance(root);
         } else {
             // this isn't a root type that we know how to handle
@@ -280,7 +280,7 @@ public class PolicyReader implements ErrorHandler
         String name = root.getTagName();
 
         // see what type of policy this is
-        if (name.equals("PolicySet")) {
+        if (name.equals("PolicySet") || name.equals("PolicySetType")) {
             return PolicySet.getInstance(root);
         } else {
             // this isn't a root type that we know how to handle
