@@ -347,7 +347,7 @@ public class PolicyReader implements ErrorHandler
         String name = root.getTagName();
 
         // see what type of policy this is
-        if (name.equals("Policy") || name.equals("PolicySet") ) {
+        if ((name.equals("Policy") || name.equals("PolicyType")) || (name.equals("PolicySet") || name.equals("PolicySet")) ) {
             return name;
         } else {
         	throw new ParsingException("Unknown root document type: " + name);
