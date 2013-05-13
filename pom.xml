@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.3.0</version>
+	<version>3.3.1</version>
 	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -85,12 +85,12 @@
 			<version>3.1.1.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>6.4</version>
-			<scope>test</scope>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.testng</groupId> -->
+<!-- 			<artifactId>testng</artifactId> -->
+<!-- 			<version>6.4</version> -->
+<!-- 			<scope>test</scope> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>com.thalesgroup.authzforce.core</groupId>
 			<artifactId>authzforce-model</artifactId>
@@ -105,7 +105,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.0</version>
+			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
