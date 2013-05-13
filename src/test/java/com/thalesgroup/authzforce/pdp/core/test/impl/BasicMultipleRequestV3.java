@@ -1,5 +1,8 @@
 package com.thalesgroup.authzforce.pdp.core.test.impl;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
@@ -27,7 +34,7 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 /**
  * This would test multiple decision profile that is introduced with XACML 3.0.
  */
-public class BasicMultipleRequestV3 extends TestCase {
+public class BasicMultipleRequestV3 {
 
 	/**
 	 * Configuration store
@@ -52,10 +59,10 @@ public class BasicMultipleRequestV3 extends TestCase {
 	/**
 	 * The map of results
 	 */
-	private Map<String, String> results = new TreeMap<String, String>();
+	private static Map<String, String> results = new TreeMap<String, String>();
 
-	@Override
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUp() throws Exception {
 
 		LOGGER.info("Starting tests for multiple decision profile");
 		String configFile = (new File(".")).getCanonicalPath() + File.separator
@@ -63,10 +70,12 @@ public class BasicMultipleRequestV3 extends TestCase {
 		store = new ConfigurationStore(new File(configFile));
 	}
 
-	public void tearDown() throws Exception {
-		this.showResults();
+	@AfterClass
+	public static void tearDown() throws Exception {
+		showResults();
 	}
 
+	@Test
 	public void testBasicTest0001() throws Exception {
 
 		String reqResNo;
@@ -167,7 +176,7 @@ public class BasicMultipleRequestV3 extends TestCase {
 
 	}
 
-	private void showResults() throws Exception {
+	private static void showResults() throws Exception {
 		for (String key : results.keySet()) {
 			LOGGER.info(key + ":" + results.get(key));
 		}

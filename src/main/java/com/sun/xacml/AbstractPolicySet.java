@@ -609,13 +609,16 @@ public abstract class AbstractPolicySet extends PolicySetType {
 	 */
 	public Result evaluate(EvaluationCtx context) {
 		Result result = null;
-		List<Policy> policies = new ArrayList<Policy>();
+		List policies = new ArrayList();
 		CombinerParametersType combParams = new CombinerParametersType();
 		PolicyCombinerParametersType combParam = null;
 		for (Object element : this.policySetOrPolicyOrPolicySetIdReference) {
 			if (element instanceof PolicyCombinerElement) {
 				if (((PolicyCombinerElement) element).getElement() instanceof Policy) {
 					policies.add((Policy) ((PolicyCombinerElement) element)
+							.getElement());
+				} else if (((PolicyCombinerElement) element).getElement() instanceof PolicySet) {
+					policies.add((PolicySet) ((PolicyCombinerElement) element)
 							.getElement());
 				}
 			}
@@ -633,24 +636,12 @@ public abstract class AbstractPolicySet extends PolicySetType {
 				return result;
 			}
 
-			// if (metaData.getXACMLVersion() == Integer
-			// .parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
 			for (ObligationExpressionType myObligation : obligationExpressions
 					.getObligationExpression()) {
 				if (myObligation.getFulfillOn().ordinal() == effect) {
 					result.addObligation(myObligation, context);
 				}
 			}
-			// } else {
-			// Iterator it =
-			// obligationExpressions.getObligationExpression().iterator();
-			// while (it.hasNext()) {
-			// Obligation obligation = (Obligation) (it.next());
-			// if (obligation.getFulfillOn() == effect) {
-			// result.addObligation(obligation);
-			// }
-			// }
-			// }
 		}
 		/* If we have advice, it's definitely a 3.0 policy */
 		if (adviceExpressions.getAdviceExpression().size() > 0) {

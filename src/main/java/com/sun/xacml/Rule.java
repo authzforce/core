@@ -37,8 +37,6 @@ package com.sun.xacml;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,10 +44,18 @@ import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ConditionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
@@ -64,6 +70,7 @@ import com.sun.xacml.cond.xacmlv3.Apply;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
+import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.Target;
 
 /**
@@ -77,12 +84,12 @@ import com.sun.xacml.xacmlv3.Target;
 public class Rule extends RuleType {
 
 	// the attributes associated with this Rule
-//	private URI idAttr;
-//	private EffectType effectAttr;
+	// private URI idAttr;
+	// private EffectType effectAttr;
 
 	// the elements in the rule, each of which is optional
-//	private String description = null;
-//	private TargetType target = null;
+	// private String description = null;
+	// private TargetType target = null;
 
 	/**
 	 * Logger used for all classes
@@ -105,9 +112,68 @@ public class Rule extends RuleType {
 	 *            from the encompassing policy
 	 * @param condition
 	 *            the rule's condition, or null if there is none
+	 * @param obligation
+	 *            the rule's obligations, or null if there is none
 	 */
-	public Rule(String id, EffectType effect, String description, TargetType target,
-			ConditionType condition) {
+	public Rule(String id, EffectType effect, String description,
+			TargetType target, ConditionType condition,
+			ObligationExpressionsType obligations, AdviceExpressionsType advices) {
+		this.ruleId = id;
+		this.effect = effect;
+		this.description = description;
+		this.target = target;
+		this.condition = condition;
+		this.obligationExpressions = obligations;
+		this.adviceExpressions = advices;
+	}
+
+	/**
+	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
+	 * 
+	 * @param id
+	 *            the rule's identifier
+	 * @param effect
+	 *            the effect to return if the rule applies (either Pemit or
+	 *            Deny) as specified in <code>Result</code>
+	 * @param description
+	 *            a textual description, or null
+	 * @param target
+	 *            the rule's target, or null if the target is to be inherited
+	 *            from the encompassing policy
+	 * @param condition
+	 *            the rule's condition, or null if there is none
+	 * @param obligation
+	 *            the rule's obligations, or null if there is none
+	 */
+	public Rule(String id, EffectType effect, String description,
+			TargetType target, ConditionType condition,
+			ObligationExpressionsType obligations) {
+		this.ruleId = id;
+		this.effect = effect;
+		this.description = description;
+		this.target = target;
+		this.condition = condition;
+		this.obligationExpressions = obligations;
+	}
+
+	/**
+	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
+	 * 
+	 * @param id
+	 *            the rule's identifier
+	 * @param effect
+	 *            the effect to return if the rule applies (either Pemit or
+	 *            Deny) as specified in <code>Result</code>
+	 * @param description
+	 *            a textual description, or null
+	 * @param target
+	 *            the rule's target, or null if the target is to be inherited
+	 *            from the encompassing policy
+	 * @param condition
+	 *            the rule's condition, or null if there is none
+	 */
+	public Rule(String id, EffectType effect, String description,
+			TargetType target, ConditionType condition) {
 		this.ruleId = id;
 		this.effect = effect;
 		this.description = description;
@@ -134,13 +200,14 @@ public class Rule extends RuleType {
 	 * @param condition
 	 *            the rule's condition, or null if there is none
 	 */
-	public Rule(String id, EffectType effect, String description, TargetType target,
-			Apply condition) {
+	public Rule(String id, EffectType effect, String description,
+			TargetType target, Apply condition) {
 		this.ruleId = id;
 		this.effect = effect;
 		this.description = description;
 		this.target = target;
-//		this.condition = new Condition(condition.getFunction(), condition.getChildren());
+		// this.condition = new Condition(condition.getFunction(),
+		// condition.getChildren());
 	}
 
 	/**
@@ -192,6 +259,8 @@ public class Rule extends RuleType {
 		String description = null;
 		TargetType target = null;
 		ConditionType condition = null;
+		ObligationExpressionsType obligations = null;
+		AdviceExpressionsType advices = null;
 
 		// first, get the attributes
 		NamedNodeMap attrs = root.getAttributes();
@@ -220,10 +289,15 @@ public class Rule extends RuleType {
 				target = Target.getInstance(child, metaData);
 			} else if (cname.equals("Condition")) {
 				condition = Condition.getInstance(child, metaData, manager);
+			} else if (cname.equals("ObligationExpressions")) {
+				obligations = ObligationExpressions.getInstance(child);
+			} else if (cname.equals("AdviceExpressions")) {
+				advices = AdviceExpressions.getInstance(child);
 			}
 		}
 
-		return new Rule(id, effect, description, target, condition);
+		return new Rule(id, effect, description, target, condition,
+				obligations, advices);
 	}
 
 	/**
@@ -307,7 +381,7 @@ public class Rule extends RuleType {
 			return new MatchResult(MatchResult.INDETERMINATE, status);
 		}
 
-		return ((Target)target).match(context);
+		return ((Target) target).match(context);
 	}
 
 	/**
@@ -330,22 +404,25 @@ public class Rule extends RuleType {
 		// Do the list of Attribute who needs to be included in result
 		List<AttributesType> includeInResult = context.getIncludeInResults();
 		MatchResult match = null;
+		Result returnResult = null;
 		// If the Target is null then it's supposed to inherit from the
 		// parent policy, so we skip the matching step assuming we wouldn't
 		// be here unless the parent matched
 		if (target != null) {
-			match = ((Target)target).match(context);
+			match = ((Target) target).match(context);
 			int result = match.getResult();
 
 			// if the target didn't match, then this Rule doesn't apply
-			if (result == MatchResult.NO_MATCH)
-				return new Result(DecisionType.NOT_APPLICABLE, null, context.getResourceId().encode(), null, includeInResult);
-
+			if (result == MatchResult.NO_MATCH) {
+				return new Result(DecisionType.NOT_APPLICABLE, null, context
+						.getResourceId().encode(), null, includeInResult);
+			}
 			// if the target was indeterminate, we can't go on
-			if (result == MatchResult.INDETERMINATE)
+			if (result == MatchResult.INDETERMINATE) {
 				return new Result(DecisionType.INDETERMINATE,
 						match.getStatus(), context.getResourceId().encode(),
 						null, includeInResult);
+			}
 		}
 
 		// log4jLogger.debug("Found a rule that match the request");
@@ -355,31 +432,92 @@ public class Rule extends RuleType {
 
 		// if there's no condition, then we just return the effect...
 		if (condition == null) {
-			LOGGER.info("Rule doesn't contain condition, so result is: " + this.effect.value()+ " for rule: "+this.ruleId);
-			return new Result(DecisionType.fromValue(this.effect.value()), null, context.getResourceId()
-					.encode(), null, includeInResult);
-		}
-		// ...otherwise we evaluate the condition
-//		Condition myCond = new Condition(condition.getExpression().getValue());
-		EvaluationResult result = ((Condition)condition).evaluate(context);
-
-		if (result.indeterminate()) {
-			// if it was INDETERMINATE, then that's what we return
-			return new Result(DecisionType.INDETERMINATE,
-					result.getStatus(), context.getResourceId().encode(), null,
+			LOGGER.info("Rule doesn't contain condition, so result is: "
+					+ this.effect.value() + " for rule: " + this.ruleId);
+			returnResult = new Result(DecisionType.fromValue(this.effect
+					.value()), null, context.getResourceId().encode(), null,
 					includeInResult);
 		} else {
-			// otherwise we return the effect on tue, and NA on false
-			BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
+			// ...otherwise we evaluate the condition
+			EvaluationResult result = ((Condition) condition).evaluate(context);
 
-			if (bool.getValue()) {
-				return new Result(DecisionType.valueOf(effect.name()), null, context.getResourceId()
-						.encode(), null, includeInResult);
+			if (result.indeterminate()) {
+				// if it was INDETERMINATE, then that's what we return
+				return new Result(DecisionType.INDETERMINATE,
+						result.getStatus(), context.getResourceId().encode(),
+						null, includeInResult);
 			} else {
-				return new Result(DecisionType.NOT_APPLICABLE, null, context
-						.getResourceId().encode(), null, includeInResult);
+				// otherwise we return the effect on tue, and NA on false
+				BooleanAttribute bool = (BooleanAttribute) (result
+						.getAttributeValue());
+
+				if (bool.getValue()) {
+					returnResult = new Result(DecisionType.valueOf(effect
+							.name()), null, context.getResourceId().encode(),
+							null, includeInResult);
+
+				} else {
+					return new Result(DecisionType.NOT_APPLICABLE, null,
+							context.getResourceId().encode(), null,
+							includeInResult);
+				}
 			}
 		}
+		
+		// Adding Obligations and Advice to the result
+		if (obligationExpressions != null) {
+			if (obligationExpressions.getObligationExpression().size() > 0) {
+				// now, see if we should add any obligations to the set
+				int effect = returnResult.getDecision().ordinal();
+
+				if ((effect == DecisionType.INDETERMINATE.ordinal())
+						|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
+					// we didn't permit/deny, so we never return
+					// obligations
+					return returnResult;
+				}
+
+				for (ObligationExpressionType myObligation : obligationExpressions
+						.getObligationExpression()) {
+					if (myObligation.getFulfillOn().ordinal() == effect) {
+						returnResult.addObligation(myObligation, context);
+					}
+				}
+			}
+		}
+		if (adviceExpressions != null) {
+			if (adviceExpressions.getAdviceExpression().size() > 0) {
+				int effect = returnResult.getDecision().ordinal();
+
+				if ((effect == DecisionType.INDETERMINATE.ordinal())
+						|| (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
+					// we didn't permit/deny, so we never return advices
+					return returnResult;
+				}
+				for (AdviceExpressionType adviceExpr : adviceExpressions
+						.getAdviceExpression()) {
+					if (adviceExpr.getAppliesTo().ordinal() == effect) {
+						AdviceType advice = new AdviceType();
+						advice.setAdviceId(adviceExpr.getAdviceId());
+						for (AttributeAssignmentExpressionType attrExpr : adviceExpr
+								.getAttributeAssignmentExpression()) {
+							AttributeAssignmentType myAttrAssType = new AttributeAssignmentType();
+							myAttrAssType.setAttributeId(attrExpr.getAttributeId());
+							myAttrAssType.setCategory(attrExpr.getCategory());
+							myAttrAssType.setIssuer(attrExpr.getIssuer());		
+							if ((attrExpr.getExpression().getDeclaredType()  == AttributeValueType.class)) {
+								myAttrAssType.setDataType(((AttributeValueType)attrExpr.getExpression().getValue()).getDataType());
+								myAttrAssType.getContent().addAll(((AttributeValueType)attrExpr.getExpression().getValue()).getContent());
+							}
+							advice.getAttributeAssignment().add(myAttrAssType);
+						}
+						returnResult.addAdvice(advice);
+					}
+				}				
+			}
+		}
+
+		return returnResult;
 	}
 
 	/**
@@ -411,7 +549,7 @@ public class Rule extends RuleType {
 			u.marshal(this, out);
 		} catch (Exception e) {
 			LOGGER.error(e);
-		} 
+		}
 	}
 
 }

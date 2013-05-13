@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -15,24 +14,17 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResultType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.Obligation;
-import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.ctx.Status;
 
 public class TestUtils {
 
@@ -99,7 +91,7 @@ public class TestUtils {
 					+ rootDirectory + File.separator + versionDirectory
 					+ File.separator + TestConstants.RESPONSE_DIRECTORY.value()
 					+ File.separator + responseId;
-			LOGGER.debug("File to read: "+filePath);
+			LOGGER.debug("File to read: " + filePath);
 			DocumentBuilderFactory factory = DocumentBuilderFactory
 					.newInstance();
 			factory.setIgnoringComments(true);
@@ -157,7 +149,7 @@ public class TestUtils {
 
 		return writer.toString();
 	}
-	
+
 	public static String printResponse(ResponseType response) {
 		StringWriter writer = new StringWriter();
 		try {
@@ -204,57 +196,6 @@ public class TestUtils {
 		while (myIt.hasNext()) {
 			Result result = (Result) myIt.next();
 			ResultType resultType = result;
-//			// resultType.setResourceId(result.getResource());
-//
-//			// Decision
-//			resultType.setDecision(decisionParser(result.getDecision()));
-//
-//			// Status
-//			Status status = result.getStatus();
-//			StatusType statusType = new StatusType();
-//
-//			StatusCodeType statusCodeType = new StatusCodeType();
-//			List<?> statusList = status.getCode();
-//			if (statusList != null && statusList.size() > 0) {
-//				statusCodeType.setValue((String) statusList.get(0));
-//			}
-//			statusType.setStatusMessage(status.getMessage());
-//			statusType.setStatusCode(statusCodeType);
-//			resultType.setStatus(statusType);
-//
-//			// Obligations
-//			Set<?> obligationsSet = result.getObligations();
-//			if (obligationsSet != null) {
-//				ObligationsType obligationsType = new ObligationsType();
-//				for (Object ob : obligationsSet) {
-//					if (!(ob instanceof Obligation)) {
-//						throw new Error("Obligation is not conformed");
-//					}
-//					Obligation obl = (Obligation) ob;
-//					ObligationType obType = new ObligationType();
-//					obType.setObligationId(obl.getId().toASCIIString());
-//					// obType.setFulfillOn(EffectType.fromValue(Result.DECISIONS[obl.getFulfillOn()]));
-//					for (Object assignment : obl.getAssignments()) {
-//						if (assignment instanceof Attribute) {
-//							Attribute attribute = (Attribute) assignment;
-//							AttributeAssignmentType attributeAssignment = new AttributeAssignmentType();
-//							attributeAssignment.setAttributeId(attribute
-//									.getId().toString());
-//							attributeAssignment.setDataType(attribute.getType()
-//									.toString());
-//							attributeAssignment.getContent().add(
-//									attribute.getValue().encode());
-//							obType.getAttributeAssignment().add(
-//									attributeAssignment);
-//						}
-//					}
-//					obligationsType.getObligation().add(obType);
-//				}
-//				if (obligationsSet.size() > 0) {
-//					resultType.setObligations(obligationsType);
-//				}
-//			}
-
 			xacmlResponse.getResult().add(resultType);
 		}
 
@@ -267,7 +208,8 @@ public class TestUtils {
 						expectedResponse.getResult().get(i).getObligations());
 			}
 		} else {
-			// Result comparison failed
+			// Obligation comparison failed
+			LOGGER.error("Result comparaison failed");
 			return finalResult;
 		}
 		if (finalResult) {
@@ -278,12 +220,21 @@ public class TestUtils {
 								.getAssociatedAdvice());
 			}
 		} else {
-			// Obligation comparison failed
+			// Advice comparison failed
+			LOGGER.error("Obligations comparaison failed");
 			return finalResult;
 		}
+		
+		if(!finalResult){
+			// Advice comparison failed
+			LOGGER.error("Advice comparaison failed");
+			return finalResult;
+		}
+		
+		// Everything gone right
 		return finalResult;
 	}
-	
+
 	private static boolean matchResult(List<ResultType> currentResult,
 			List<ResultType> expectedResult) {
 		boolean resultCompare = false;
@@ -317,18 +268,31 @@ public class TestUtils {
 
 		return resultCompare;
 	}
-	
+
 	private static boolean matchObligations(ObligationsType obligationsType,
 			ObligationsType obligationsType2) {
-		// TODO: not implemented
-		return true;
+		boolean returnData = true;
+
+		if (obligationsType != null && obligationsType2 != null) {
+			if (!obligationsType.equals(obligationsType2)) {
+				returnData = false;
+			}
+		}
+
+		return returnData;
 	}
 
 	private static boolean matchAdvices(
 			AssociatedAdviceType associatedAdviceType,
 			AssociatedAdviceType associatedAdviceType2) {
-		// TODO: not implemented
-		return true;
+		boolean returnData = true;
+		if (associatedAdviceType != null && associatedAdviceType2 != null) {
+			if (!associatedAdviceType.equals(associatedAdviceType2)) {
+				returnData = false;
+			}
+		}
+
+		return returnData;
 	}
 
 }

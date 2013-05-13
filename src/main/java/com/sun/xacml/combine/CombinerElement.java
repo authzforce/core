@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
 
@@ -100,6 +101,17 @@ public abstract class CombinerElement extends PolicyTreeElement
         }
     }
     
+    public CombinerElement(PolicySetType element, List parameters) {
+        this.element = element;
+
+        if (parameters == null) {
+            this.parameters = Collections.unmodifiableList(new ArrayList());
+        } else {
+            this.parameters = Collections.
+                unmodifiableList(new ArrayList(parameters));
+        }
+    }
+    
     public CombinerElement(RuleType element, List parameters) {
     	this.element = element;
 
@@ -118,8 +130,8 @@ public abstract class CombinerElement extends PolicyTreeElement
      *
      * @return the <code>PolicyTreeElement</code>
      */
-    public Policy getElement() {
-        return (Policy)element;
+    public Object getElement() {
+        return element;
     }
 
     /**

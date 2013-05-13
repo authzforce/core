@@ -40,6 +40,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
@@ -77,6 +78,10 @@ public class PolicyCombinerElement extends CombinerElement
         super(policy, args);
     }
     
+    public PolicyCombinerElement(PolicySetType policy, List args) {
+        super(policy, args);
+    }
+    
     /**
      * Constructor that takes both the <code>AbstractPolicy</code> to combine
      * and its associated combiner parameters.
@@ -90,7 +95,7 @@ public class PolicyCombinerElement extends CombinerElement
         super(policy, parameters);
     }
 
-    /**
+	/**
      * Returns the <code>AbstractPolicy</code> in this element.
      *
      * @return the element's <code>AbstractPolicy</code>

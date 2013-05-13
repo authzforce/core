@@ -332,6 +332,7 @@ public class PolicyCollection
             return list.get(0);
         //TODO: build a real policySet with obligations, advices etc... 
         default:
+//        	return new PolicySet(parentId, policySet.getVersion(), combiningAlg, policySet.getDescription(), target, list, policySet.getDefaultVersion(), policySet.getObligationExpressions(), policySet.getAdviceExpressions());
             return new PolicySet(parentId, combiningAlg, target, list);
         }
     }

@@ -1,5 +1,8 @@
 package com.thalesgroup.authzforce.pdp.core.test.impl;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +16,8 @@ import junit.framework.TestCase;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.sun.xacml.ConfigurationStore;
@@ -29,7 +34,7 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 /**
  *  XACML 3.0 conformance tests published by OASIS
  */
-public class ConformanceV3 extends TestCase {
+public class ConformanceV3 {
 
 
     /**
@@ -53,8 +58,8 @@ public class ConformanceV3 extends TestCase {
     private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
 			.getLogger(ConformanceV3.class);
 
-    @Override
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
 
         String configFile = (new File(".")).getCanonicalPath() + File.separator + TestConstants.CONF_FILE.value();
         store = new ConfigurationStore(new File(configFile));
@@ -62,7 +67,7 @@ public class ConformanceV3 extends TestCase {
 
 
     @Test
-    public static void testConformanceTestA() throws Exception {
+    public void testConformanceTestA() throws Exception {
 
         String policyNumber;
         ResponseCtx response = null;
@@ -97,15 +102,15 @@ public class ConformanceV3 extends TestCase {
                     if(expectedResponse != null){
                     	boolean assertion = TestUtils.match(response, expectedResponse);
                     	if(assertion) {
-                    		LOGGER.debug("Assertion SUCCESS for: IIIA"+policyNumber);
+                    		LOGGER.info("Assertion SUCCESS for: IIIA"+policyNumber);
                     		results.put(policyNumber, "SUCCESS");
                     	} else {
-                    		LOGGER.debug("Assertion FAILED for: IIIA"+policyNumber);
+                    		LOGGER.error("Assertion FAILED for: IIIA"+policyNumber);
                     	}
                        assertTrue(assertion);
                     } else {
                         assertTrue("Response read from file is Null",false);
-                        LOGGER.debug("Assertion FAILED");
+                        LOGGER.error("Assertion FAILED");
                     }
                 } else {
                     assertFalse("Response received PDP is Null",false);

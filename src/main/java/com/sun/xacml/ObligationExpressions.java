@@ -20,6 +20,12 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class ObligationExpressions extends ObligationExpressionsType {
+	
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(ObligationExpressions.class);
 
 	public static ObligationExpressionsType getInstance(
 			Set<ObligationExpressionType> obligations) {
@@ -43,7 +49,7 @@ public class ObligationExpressions extends ObligationExpressionsType {
 					match = (JAXBElement<ObligationExpressionsType>) u
 							.unmarshal(root);
 				} catch (Exception e) {
-					System.err.println(e);
+					LOGGER.error(e);
 				}
 
 				obligationExpressions = match.getValue();

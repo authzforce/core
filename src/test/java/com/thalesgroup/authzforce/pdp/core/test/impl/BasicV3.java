@@ -1,5 +1,8 @@
 package com.thalesgroup.authzforce.pdp.core.test.impl;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +16,8 @@ import junit.framework.TestCase;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.sun.xacml.ConfigurationStore;
@@ -29,7 +34,7 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
  * This XACML 3.0 basic policy test. This would test a basic policy, basic
  * policy with obligations and basic policy with advices.
  */
-public class BasicV3 extends TestCase {
+public class BasicV3 {
 
 	/**
 	 * Configuration store
@@ -54,18 +59,19 @@ public class BasicV3 extends TestCase {
 	/**
 	 * The map of results
 	 */
-	private Map<String, String> results = new TreeMap<String, String>();
+	private static Map<String, String> results = new TreeMap<String, String>();
 
-	@Override
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUp() throws Exception {
 
 		String configFile = (new File(".")).getCanonicalPath() + File.separator
 				+ TestConstants.CONF_FILE.value();
 		store = new ConfigurationStore(new File(configFile));
 	}
 
-	public void tearDown() throws Exception {
-		this.showResults();
+	@AfterClass
+	public static void tearDown() throws Exception {
+		showResults();
 	}
 
 	@Test
@@ -358,7 +364,7 @@ public class BasicV3 extends TestCase {
 		}
 	}
 
-	private void showResults() throws Exception {
+	private static void showResults() throws Exception {
 		for (String key : results.keySet()) {
 			LOGGER.info(key + ":" + results.get(key));
 		}

@@ -46,6 +46,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
+import com.sun.xacml.PolicySet;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.Policy;
 
@@ -122,10 +123,15 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 		 */
 //		List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
 		while (it.hasNext()) {
-			Policy policy = ((Policy) (it.next()));
-
+			Object policy = (it.next());
+			MatchResult match = null;
+			Result result = null;
 			// make sure that the policy matches the context
-			MatchResult match = policy.match(context);
+			if(policy instanceof Policy) {
+				match = ((Policy)policy).match(context);				
+			} else if(policy instanceof PolicySet) {
+				match = ((PolicySet)policy).match(context);
+			}
 
 			if (match.getResult() == MatchResult.INDETERMINATE) {
 				atLeastOneError = true;
@@ -135,7 +141,11 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 					firstIndeterminateStatus = match.getStatus();
 			} else if (match.getResult() == MatchResult.MATCH) {
 				// now we evaluate the policy
-				Result result = policy.evaluate(context);
+				if(policy instanceof Policy) {
+				result = ((Policy)policy).evaluate(context);
+				} else if(policy instanceof PolicySet) {
+					result = ((PolicySet)policy).evaluate(context);	
+				}
 				/**
 				 * BEGINING
 				 * Romain Guignard

@@ -1,26 +1,40 @@
 package com.thalesgroup.authzforce.pdp.core.test.impl;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * @author Romain Ferrari
  * 
+ * class to use for the testSuite
+ 		ConformanceV3.class,
+		BasicV3.class,
+		BasicFunctionV3.class,
+		BasicMultipleRequestV3.class
  */
-public class MainTest extends TestSuite {
+@RunWith(Suite.class)
+@SuiteClasses(value={
+		ConformanceV3.class,
+		BasicV3.class,
+		BasicFunctionV3.class
+})
+public class MainTest {
+	/**
+	 * the logger we'll use for all messages
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(MainTest.class);
+	
+	@BeforeClass 
+    public static void setUpClass() {      
+        LOGGER.info("Beginning Tests");
 
-	public static Test suite() throws Exception {
-		TestSuite testSuite = new TestSuite();
-		// conformance test for XACML 3.0
-		testSuite.addTestSuite(ConformanceV3.class);
-		// Basic test suite for xacml 3.0
-		testSuite.addTestSuite(BasicV3.class);
-		// Extended test suite for XACML 3.0 function (Not suppported yet)
-		 testSuite.addTestSuite(BasicFunctionV3.class);
+    }
 
-		 //Multiple Requests for XACML 3.0
-//		testSuite.addTestSuite(BasicMultipleRequestV3.class);
-
-		return testSuite;
-	}
+    @AfterClass public static void tearDownClass() { 
+    	LOGGER.info("Finishing Tests");
+    }
 }

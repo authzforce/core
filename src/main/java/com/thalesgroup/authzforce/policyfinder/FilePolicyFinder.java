@@ -22,7 +22,6 @@ import com.sun.xacml.support.finder.PolicyCollection;
 import com.sun.xacml.support.finder.PolicyReader;
 import com.sun.xacml.support.finder.TopLevelPolicyException;
 import com.sun.xacml.xacmlv3.Policy;
-import com.sun.xacml.xacmlv3.Target;
 
 /**
  * This module represents a collection of files containing polices, each of
@@ -240,12 +239,24 @@ public class FilePolicyFinder extends PolicyFinderModule {
 				PolicyCollection myPolcollection = new PolicyCollection(myCombiningAlg, URI.create(policySet.getPolicySetId()));
 				for (Object elt : policySet.getPolicySetOrPolicyOrPolicySetIdReference()) {
 					if (elt instanceof PolicyCombinerElement) {
+						if((((PolicyCombinerElement) elt).getElement()) instanceof Policy) {
 							myPolcollection.addPolicy((Policy) ((PolicyCombinerElement) elt).getElement());
+						} else if((((PolicyCombinerElement) elt).getElement()) instanceof PolicySet) {
+							myPolcollection.addPolicySet((PolicySet) ((PolicyCombinerElement) elt).getElement());
+						}
 					}
 				}
-				Object policy = myPolcollection.getPolicy(context);				
+				Object policy = myPolcollection.getPolicySet(context);
+				if(policy == null) {
+					policy = myPolcollection.getPolicy(context);
+					
+				}
 				// The finder found more than one applicable policy so it build a new PolicySet
 				if(policy instanceof PolicySet) {
+					if(policySet != null) {
+						((PolicySet)policy).setObligationExpressions(policySet.getObligationExpressions());
+						((PolicySet)policy).setAdviceExpressions(policySet.getAdviceExpressions());
+					}
 					return new PolicyFinderResult((PolicySet)policy, myCombiningAlg);	
 				}
 				// The finder found only one applicable policy 

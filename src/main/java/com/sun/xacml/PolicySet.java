@@ -51,6 +51,7 @@ import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
@@ -283,6 +284,8 @@ public class PolicySet extends AbstractPolicySet
                 target = Target.getInstance(child, metaData);
             } else if (name.equals("Policy")) {
                 policies.add(Policy.getInstance(child));
+            } else if (name.equals("PolicySet")) {
+                policies.add(PolicySet.getInstance(child));
             } else if (name.equals("PolicySetIdReference")) {
                 policies.add(PolicyReference.getInstance(child, finder,
                                                          metaData));
@@ -325,8 +328,11 @@ public class PolicySet extends AbstractPolicySet
                     list = (List)(policySetParameters.remove(id));
                 }
             }
-
-            elements.add(new PolicyCombinerElement((PolicyType)policy, list));
+            if(policy instanceof PolicyType) {
+            	elements.add(new PolicyCombinerElement((PolicyType)policy, list));
+            } else if(policy instanceof PolicySetType) {
+            	elements.add(new PolicyCombinerElement((PolicySetType)policy, list));
+            }
         }
 
         // ...and that there aren't extra parameters
@@ -403,7 +409,7 @@ public class PolicySet extends AbstractPolicySet
         throws ParsingException
     {
         // first off, check that it's the right kind of node
-        if (! root.getNodeName().equals("PolicySet")) {
+        if (! (root.getNodeName().equals("PolicySet") || root.getNodeName().equals("PolicySetType"))) {
             throw new ParsingException("Cannot create PolicySet from root of" +
                                        " type " + root.getNodeName());
         }

@@ -36,9 +36,11 @@
 
 package com.sun.xacml.finder;
 
+import com.sun.xacml.ObligationExpressions;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.ctx.Status;
+import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.Policy;
 
 
