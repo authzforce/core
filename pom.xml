@@ -13,8 +13,6 @@
 	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<inceptionYear>2012</inceptionYear>
-		<copyrightOwner>Thalesgroup - ThereSIS</copyrightOwner>
 	</properties>
 	<build>
 		<plugins>
@@ -48,68 +46,6 @@
 							<failIfNoTests>false</failIfNoTests>
 							<skipTests>false</skipTests>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Creating current year element -->
-			<plugin>
-				<groupId>org.codehaus.gmaven</groupId>
-				<artifactId>gmaven-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>execute</goal>
-						</goals>
-						<configuration>
-							<source>
-								import java.util.Date
-								import java.text.MessageFormat
-								def
-								vartimestamp = MessageFormat.format("{0,date,yyyy}", new
-								Date())
-								project.properties['currentYear'] = vartimestamp
-							</source>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Adding header to file -->
-			<plugin>
-				<groupId>com.mycila.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.9.0</version>
-				<configuration>
-					<!-- Template location -->
-					<header>src/main/resources/fileHeader.txt</header>
-					<properties>
-						<!-- Values to be substituted in template -->
-						<h_inceptionYear>${project.inceptionYear}</h_inceptionYear>
-						<h_currentYear>${currentYear}</h_currentYear>
-						<h_copyrightOwner>${copyrightOwner}</h_copyrightOwner>
-					</properties>
-					<strictCheck>true</strictCheck>
-					<excludes>
-						<exclude>**/*.html</exclude>
-						<exclude>**/*.xml</exclude>
-						<exclude>**/*.txt</exclude>
-						<exclude>**/*.ec</exclude>
-						<exclude>**/*.log</exclude>
-						<exclude>**/*.css</exclude>
-						<exclude>**/*.js</exclude>
-						<exclude>**/*.jsp</exclude>
-						<exclude>**/*.md</exclude>
-						<exclude>**/*.properties</exclude>
-						<exclude>**/*.gitignore</exclude>
-					</excludes>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -149,12 +85,12 @@
 			<version>3.1.1.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.testng</groupId> -->
-		<!-- <artifactId>testng</artifactId> -->
-		<!-- <version>6.4</version> -->
-		<!-- <scope>test</scope> -->
-		<!-- </dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.testng</groupId> -->
+<!-- 			<artifactId>testng</artifactId> -->
+<!-- 			<version>6.4</version> -->
+<!-- 			<scope>test</scope> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>com.thalesgroup.authzforce.core</groupId>
 			<artifactId>authzforce-model</artifactId>
