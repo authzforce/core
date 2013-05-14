@@ -11,14 +11,55 @@
 	<artifactId>authzforce-core</artifactId>
 	<version>3.3.1</version>
 	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
+	<organization>
+		<name>Thales</name>
+	</organization>
+	<description>
+			An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP.
+	</description>
+	<inceptionYear>2011</inceptionYear>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<copyrightOwner>Thales Services - ThereSIS</copyrightOwner>
-		<project.inceptionYear>2012</project.inceptionYear>		
-<!-- 		<currentYear>2013</currentYear> -->
+		<jdk.source>1.7</jdk.source>
+		<jdk.target>1.7</jdk.target>
 	</properties>
 	<build>
 		<plugins>
+			<!-- Maven compiler configuration -->
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<executions>
+					<execution>
+						<id>default-testCompile</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<source>${jdk.source}</source>
+							<target>${jdk.target}</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<source>${jdk.source}</source>
+							<target>${jdk.target}</target>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<source>${jdk.source}</source>
+					<target>${jdk.target}</target>
+				</configuration>
+			</plugin>
+			<!-- Uber jar configuration -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -35,6 +76,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Test configuration -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.14.1</version>
@@ -52,14 +94,14 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Creating current year element -->
+			<!-- Creating current year element for license headers -->
 			<plugin>
 				<groupId>org.codehaus.gmaven</groupId>
 				<artifactId>gmaven-plugin</artifactId>
 				<version>1.5</version>
 				<executions>
 					<execution>
-						<phase>generate-sources</phase>
+						<phase>validate</phase>
 						<goals>
 							<goal>execute</goal>
 						</goals>
@@ -67,7 +109,8 @@
 							<source>
 								import java.util.Date
 								import java.text.MessageFormat
-								def vartimestamp = MessageFormat.format("{0,date,yyyy}", new Date())
+								def
+								vartimestamp = MessageFormat.format("{0,date,yyyy}", new Date())
 								project.properties['currentYear'] = vartimestamp
 							</source>
 						</configuration>
@@ -84,7 +127,7 @@
 					<header>src/main/resources/fileHeader.txt</header>
 					<properties>
 						<!-- Values to be substituted in template -->
-						<h_inceptionYear>${project.inceptionYear}</h_inceptionYear>
+						<h_inceptionYear>${inceptionYear}</h_inceptionYear>
 						<h_currentYear>${currentYear}</h_currentYear>
 						<h_copyrightOwner>${copyrightOwner}</h_copyrightOwner>
 					</properties>
@@ -105,7 +148,7 @@
 				</configuration>
 				<executions>
 					<execution>
-						<phase>generate-sources</phase>
+						<phase>validate</phase>
 						<goals>
 							<goal>format</goal>
 						</goals>
@@ -166,5 +209,5 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
-	</dependencies>
+	</dependencies>	
 </project>

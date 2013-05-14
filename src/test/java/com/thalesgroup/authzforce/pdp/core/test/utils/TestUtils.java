@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2013 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
@@ -123,20 +122,22 @@ public class TestUtils {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static RequestType marshallRequestType(Node root) {
 		JAXBElement<RequestType> allOf = null;
 		try {
 			JAXBContext jc = JAXBContext
 					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
 			Unmarshaller u = jc.createUnmarshaller();
-			allOf = (JAXBElement<RequestType>) u.unmarshal(root);
+			allOf = ((JAXBElement<RequestType>) u.unmarshal(root));
 		} catch (Exception e) {
 			System.err.println(e);
 		}
 
 		return allOf.getValue();
 	}
-
+	
+	@SuppressWarnings("unchecked")
 	private static ResponseType marshallResponseType(Node root) {
 		JAXBElement<ResponseType> allOf = null;
 		try {
@@ -179,34 +180,13 @@ public class TestUtils {
 		return writer.toString();
 	}
 
-	/**
-	 * This method is used to convert the parameter decision to a string.
-	 * 
-	 * @param decision
-	 * @return decision in a String format
-	 */
-	private static DecisionType decisionParser(int decision) {
-		switch (decision) {
-		case 0:
-			return DecisionType.PERMIT;
-		case 1:
-			return DecisionType.DENY;
-		case 2:
-			return DecisionType.INDETERMINATE;
-		case 3:
-			return DecisionType.NOT_APPLICABLE;
-		default:
-			throw new IllegalStateException("Unknown code");
-		}
-	}
-
 	public static boolean match(ResponseCtx response,
 			ResponseType expectedResponse) {
 
 		boolean finalResult = false;
 
 		ResponseType xacmlResponse = new ResponseType();
-		Iterator myIt = response.getResults().iterator();
+		Iterator<ResultType> myIt = response.getResults().iterator();
 
 		while (myIt.hasNext()) {
 			Result result = (Result) myIt.next();

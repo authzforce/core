@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2013 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import junit.framework.TestCase;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
 
@@ -35,7 +34,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -50,11 +48,6 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
  * policy with obligations and basic policy with advices.
  */
 public class BasicV3 {
-
-	/**
-	 * Configuration store
-	 */
-	private static ConfigurationStore store;
 
 	/**
 	 * directory name that states the test type
@@ -78,10 +71,7 @@ public class BasicV3 {
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-
-		String configFile = (new File(".")).getCanonicalPath() + File.separator
-				+ TestConstants.CONF_FILE.value();
-		store = new ConfigurationStore(new File(configFile));
+		LOGGER.info("Launching Basic tests");
 	}
 
 	@AfterClass

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2013 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -49,11 +48,6 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
  * policy with obligations and basic policy with advices.
  */
 public class BasicFunctionV3 {
-
-	/**
-	 * Configuration store
-	 */
-	private static ConfigurationStore store;
 
 	/**
 	 * directory name that states the test type
@@ -77,10 +71,7 @@ public class BasicFunctionV3 {
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-
-		String configFile = (new File(".")).getCanonicalPath() + File.separator
-				+ TestConstants.CONF_FILE.value();
-		store = new ConfigurationStore(new File(configFile));
+		LOGGER.info("Launching basic function tests");
 	}
 	
 	@AfterClass
@@ -94,8 +85,8 @@ public class BasicFunctionV3 {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0006.xml");
-		PDP pdp = getPDPNewInstance(policies);
-		LOGGER.info("Basic Test 0006 is started");
+//		PDP pdp = getPDPNewInstance(policies);
+		LOGGER.info("Basic function Test 0006 is started");
 		ResponseCtx response = null;
 		ResponseType expectedResponse = null;
 		RequestType request = null;

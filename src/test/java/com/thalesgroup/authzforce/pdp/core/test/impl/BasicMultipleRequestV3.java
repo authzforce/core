@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2013 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,16 +27,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
-
-import junit.framework.TestCase;
-
-import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -51,10 +48,6 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
  */
 public class BasicMultipleRequestV3 {
 
-	/**
-	 * Configuration store
-	 */
-	private static ConfigurationStore store;
 	/**
 	 * directory name that states the test type
 	 */
@@ -78,11 +71,7 @@ public class BasicMultipleRequestV3 {
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-
-		LOGGER.info("Starting tests for multiple decision profile");
-		String configFile = (new File(".")).getCanonicalPath() + File.separator
-				+ TestConstants.CONF_FILE.value();
-		store = new ConfigurationStore(new File(configFile));
+		LOGGER.info("Launching multi requests tests");
 	}
 
 	@AfterClass
@@ -96,57 +85,55 @@ public class BasicMultipleRequestV3 {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0014.xml");
-		PDP pdp = getPDPNewInstance(policies);
+//		PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0014 is started");
 		ResponseCtx response = null;
 		ResponseType expectedResponse = null;
 		RequestType request = null;
 
-		for (int i = 1; i < 3; i++) {		
-				if (i < 10) {
-					reqResNo = "0" + i;
-				} else {
-					reqResNo = Integer.toString(i);
-				}
+		for (int i = 1; i < 3; i++) {
+			if (i < 10) {
+				reqResNo = "0" + i;
+			} else {
+				reqResNo = Integer.toString(i);
+			}
 
-				request = TestUtils.createRequest(ROOT_DIRECTORY,
-						VERSION_DIRECTORY, "request_0014_" + reqResNo + ".xml");
-				if (request != null) {
-					LOGGER.debug("Request that is sent to the PDP :  "
-							+ TestUtils.printRequest(request));
-					response = getPDPNewInstance(policies).evaluate(request);
-					if (response != null) {
-						LOGGER.info("Response that is received from the PDP :  "
-								+ response.getEncoded());
-						expectedResponse = TestUtils.createResponse(
-								ROOT_DIRECTORY, VERSION_DIRECTORY,
-								"response_0014_" + reqResNo + ".xml");
-						LOGGER.info("Response expected:  "
-								+ TestUtils.printResponse(expectedResponse));
-						if (expectedResponse != null) {
-							boolean assertion = TestUtils.match(response,
-									expectedResponse);
-							if (assertion) {
-								LOGGER.debug("Assertion SUCCESS for: IIIA"
-										+ "response_0014_" + reqResNo);
-								results.put("response_0014_" + reqResNo,
-										"SUCCESS");
-							} else {
-								LOGGER.error("Assertion FAILED for: TestPolicy_0014.xml and response_0014_"
-										+ reqResNo);
-								results.put("response_0014_" + reqResNo,
-										"FAILED");
-							}
-							assertTrue(assertion);
+			request = TestUtils.createRequest(ROOT_DIRECTORY,
+					VERSION_DIRECTORY, "request_0014_" + reqResNo + ".xml");
+			if (request != null) {
+				LOGGER.debug("Request that is sent to the PDP :  "
+						+ TestUtils.printRequest(request));
+				response = getPDPNewInstance(policies).evaluate(request);
+				if (response != null) {
+					LOGGER.info("Response that is received from the PDP :  "
+							+ response.getEncoded());
+					expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY,
+							VERSION_DIRECTORY, "response_0014_" + reqResNo
+									+ ".xml");
+					LOGGER.info("Response expected:  "
+							+ TestUtils.printResponse(expectedResponse));
+					if (expectedResponse != null) {
+						boolean assertion = TestUtils.match(response,
+								expectedResponse);
+						if (assertion) {
+							LOGGER.debug("Assertion SUCCESS for: IIIA"
+									+ "response_0014_" + reqResNo);
+							results.put("response_0014_" + reqResNo, "SUCCESS");
 						} else {
-							assertTrue("Response read from file is Null", false);
+							LOGGER.error("Assertion FAILED for: TestPolicy_0014.xml and response_0014_"
+									+ reqResNo);
+							results.put("response_0014_" + reqResNo, "FAILED");
 						}
+						assertTrue(assertion);
 					} else {
-						assertFalse("Response received PDP is Null", false);
+						assertTrue("Response read from file is Null", false);
 					}
 				} else {
-					assertTrue("Request read from file is Null", false);
+					assertFalse("Response received PDP is Null", false);
 				}
+			} else {
+				assertTrue("Request read from file is Null", false);
+			}
 			LOGGER.info("Basic Test 0014 is finished");
 		}
 	}
