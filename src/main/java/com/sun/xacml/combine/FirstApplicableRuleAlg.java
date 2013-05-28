@@ -25,6 +25,7 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
+import com.thalesgroup.authzforce.audit.annotations.Audit.Type;
 
 
 /**
@@ -66,6 +67,7 @@ public class FirstApplicableRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
+    @Audit(type = Audit.Type.RULE)
     public Result combine(EvaluationCtx context, CombinerParametersType parameters,
                           List ruleElements) {
         Result result = null;
