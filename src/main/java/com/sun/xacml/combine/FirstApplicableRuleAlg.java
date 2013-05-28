@@ -24,6 +24,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 
 /**

@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.3.1</version>
+	<version>3.3.2</version>
 	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
 	<organization>
 		<name>Thales</name>
@@ -24,6 +24,71 @@
 		<jdk.source>1.7</jdk.source>
 		<jdk.target>1.7</jdk.target>
 	</properties>
+	<dependencies>
+		<!-- Authzforce optionnal dependencies -->
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-audit</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>1.6.11</version>
+		</dependency>
+		<!-- /Authzforce optionnal dependencies -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.16</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>jaxb2-basics-runtime</artifactId>
+			<version>0.6.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>testing</artifactId>
+			<version>0.4.1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.11</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.1.1.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce.core</groupId>
+			<artifactId>authzforce-model</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-jxpath</groupId>
+			<artifactId>commons-jxpath</artifactId>
+			<version>1.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- /Test dependencies -->
+	</dependencies>
 	<build>
 		<plugins>
 			<!-- Maven compiler configuration -->
@@ -89,7 +154,7 @@
 						</goals>
 						<configuration>
 							<failIfNoTests>false</failIfNoTests>
-							<skipTests>false</skipTests>
+							<skipTests>true</skipTests>
 						</configuration>
 					</execution>
 				</executions>
@@ -155,59 +220,21 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+					<id>default</id>
+					<phase>compile</phase>
+<!-- 						<goals> -->
+<!-- 							<goal>compile</goal> -->
+<!-- 							<goal>test-compile</goal> -->
+<!-- 						</goals> -->
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-	<dependencies>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons</groupId>
-			<artifactId>jaxb2-basics-runtime</artifactId>
-			<version>0.6.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons</groupId>
-			<artifactId>testing</artifactId>
-			<version>0.4.1.5</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>1.2.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.11</version>
-		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>3.1.1.RELEASE</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce.core</groupId>
-			<artifactId>authzforce-model</artifactId>
-			<version>3.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-jxpath</groupId>
-			<artifactId>commons-jxpath</artifactId>
-			<version>1.3</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- /Test dependencies -->
-	</dependencies>	
 </project>

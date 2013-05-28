@@ -15,15 +15,14 @@
  */
 package com.sun.xacml.combine;
 
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.ctx.Result;
-
 import java.net.URI;
-
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.ctx.Result;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 
 /**
@@ -56,6 +55,7 @@ public abstract class RuleCombiningAlgorithm extends CombiningAlgorithm
      *
      * @return a single unified result based on the combining logic
      */
+    @Audit(type = Audit.Type.RULE)
     public abstract Result combine(EvaluationCtx context, CombinerParametersType parameters,
                                    List ruleElements);
 
