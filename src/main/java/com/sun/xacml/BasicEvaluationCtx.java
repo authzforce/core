@@ -413,6 +413,13 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 	}
 
 	/**
+	 * @return the request
+	 */
+	public RequestType getRequest() {
+		return request;
+	}
+
+	/**
 	 * Returns the resource scope of the request, which will be one of the three
 	 * fields denoting Immediate, Children, or Descendants.
 	 * 

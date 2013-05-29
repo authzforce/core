@@ -19,6 +19,16 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * 
+ * @author Romain Ferrari
+ * 
+ *         Theses annotations are used to generate audit log based on the aspect
+ *         <code>com.thalesgroup.authzforce.audit.aspect.AuditAspect</code>. You
+ *         can use theses annotations on combination algorithm for PolicySet
+ *         (FIXME: Not Implemented), Policy(FIXME: Not Implemented), Rules and
+ *         on Attribute retrieving(FIXME: Not Implemented)
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Audit {
@@ -26,6 +36,6 @@ public @interface Audit {
 	Type type();
 
 	public static enum Type {
-		POLICY, RULE, ATTRIBUTE;
+		POLICYSET, POLICY, RULE, ATTRIBUTE;
 	};
 }

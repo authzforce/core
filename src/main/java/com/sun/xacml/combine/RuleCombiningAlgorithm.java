@@ -54,8 +54,7 @@ public abstract class RuleCombiningAlgorithm extends CombiningAlgorithm
      * @param ruleElements a <code>List</code> of <code>CombinerElement<code>s
      *
      * @return a single unified result based on the combining logic
-     */
-    @Audit(type = Audit.Type.RULE)
+     */    
     public abstract Result combine(EvaluationCtx context, CombinerParametersType parameters,
                                    List ruleElements);
 

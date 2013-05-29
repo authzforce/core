@@ -15,44 +15,51 @@
  */
 package com.thalesgroup.authzforce.audit.aspect;
 
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
+import java.util.ArrayList;
 
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+
+import com.sun.xacml.BasicEvaluationCtx;
 import com.sun.xacml.Rule;
+import com.thalesgroup.authzforce.audit.AuditLog;
 import com.thalesgroup.authzforce.audit.AuditLogs;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 @Aspect
 public class AuditAspect {
-	
-	@Before("@annotation(com.thalesgroup.authzforce.audit.annotations.Audit)")
-	public void doAuditLog(Audit annotation, JoinPoint jp) {
-		StringBuilder sb = new StringBuilder("\nBuilding audit logs -- ");
-		sb.append("Entering into the aspect\n");
+
+	@Pointcut("execution (@com.thalesgroup.authzforce.audit.annotations * *.*(..))")
+	public void searchAnnotation() {
+
+	}
+
+	@AfterReturning(value = "@annotation(annotation)", returning="result")
+	public void doAuditLog(Audit annotation, JoinPoint jp, Object result) {
+		StringBuilder sb = new StringBuilder("\n-- Building "+annotation.type()+" audit logs -- \n");
 		sb.append(jp.getSourceLocation().toString() + " -- ");
 		sb.append(jp.getSignature().getName() + "\n");
-		sb.append("Evaluation from rule: "+jp.getSignature().getName());
-		System.out.println(sb.toString());
 		
-		AuditLogs audit = AuditLogs.getInstance();
 		switch (annotation.type()) {
 		case RULE:
-			System.out.println("This is a rule, adding this to the audit log");
-			System.out.println("Rule id: "+ ((Rule)jp.getThis()).getId());
-			break;
-		default:
+			AuditLog audit = new AuditLog();
+			for (Object arg : jp.getArgs()) {
+				if(arg instanceof ArrayList<?>) {
+					for (Rule ruleElt : (ArrayList<Rule>)arg) {
+						audit.addRule(ruleElt);						
+					}
+				} else if (arg instanceof BasicEvaluationCtx) {
+					audit.setRequest(((BasicEvaluationCtx)arg).getRequest());
+				}
+			}		
+			AuditLogs.getInstance().addAudit(audit);
 			break;
 		}
-	}
-	
-	@Before("call(* *..*.combine(..))")
-	public void firstApplicableAspect() {
-		System.out.println("AuditAspect.firstApplicableAspect()");
-	}
-	
-	@Before("execute(* *..*.combine(..))")
-	public void firstApplicableAspectExecute() {
-		System.out.println("AuditAspect.firstApplicableAspectExecute()");
+		System.out.println(sb.toString());
+		
+		
+		
 	}
 }
