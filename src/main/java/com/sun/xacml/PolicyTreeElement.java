@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)PolicyTreeElement.java
@@ -34,6 +35,23 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 package com.sun.xacml;
 
 import com.sun.xacml.ctx.Result;
@@ -44,6 +62,12 @@ import java.net.URI;
 
 import java.util.List;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
+>>>>>>> 3.x
 
 /**
  * This represents a single node in a policy tree. A node is either a policy
@@ -54,7 +78,11 @@ import java.util.List;
  * @since 1.1
  * @author seth proctor
  */
+<<<<<<< HEAD
 public interface PolicyTreeElement
+=======
+public abstract class PolicyTreeElement extends PolicyType
+>>>>>>> 3.x
 {
 
     /**
@@ -66,7 +94,11 @@ public interface PolicyTreeElement
      *
      * @return the non-null <code>List</code> of children of this node
      */
+<<<<<<< HEAD
     public List getChildren();
+=======
+    public abstract List getChildren();
+>>>>>>> 3.x
 
     /**
      * Returns the given description of this element or null if 
@@ -74,14 +106,22 @@ public interface PolicyTreeElement
      *
      * @return the description or null
      */
+<<<<<<< HEAD
     public String getDescription();
+=======
+    public abstract String getDescription();
+>>>>>>> 3.x
 
     /**
      * Returns the id of this element
      *
      * @return the element's identifier
      */
+<<<<<<< HEAD
     public URI getId();
+=======
+    public abstract URI getId();
+>>>>>>> 3.x
 
     /**
      * Returns the target for this element or null if there
@@ -89,7 +129,11 @@ public interface PolicyTreeElement
      *
      * @return the element's target
      */
+<<<<<<< HEAD
     public Target getTarget();
+=======
+    public abstract TargetType getTarget();
+>>>>>>> 3.x
 
     /**
      * Given the input context sees whether or not the request matches this
@@ -100,7 +144,11 @@ public interface PolicyTreeElement
      *
      * @return the result of trying to match this element and the request
      */
+<<<<<<< HEAD
     public MatchResult match(EvaluationCtx context);
+=======
+    public abstract MatchResult match(EvaluationCtx context);
+>>>>>>> 3.x
 
     /**
      * Evaluates this element in the policy tree, and therefore all elements
@@ -111,7 +159,11 @@ public interface PolicyTreeElement
      *
      * @return the result of the evaluation
      */
+<<<<<<< HEAD
     public Result evaluate(EvaluationCtx context);
+=======
+    public abstract Result evaluate(EvaluationCtx context);
+>>>>>>> 3.x
 
     /**
      * Encodes this element into its XML representation and writes
@@ -120,7 +172,11 @@ public interface PolicyTreeElement
      *
      * @param output a stream into which the XML-encoded data is written
      */
+<<<<<<< HEAD
     public void encode(OutputStream output);
+=======
+    public abstract void encode(OutputStream output);
+>>>>>>> 3.x
 
     /**
      * Encodes this element into its XML representation and writes
@@ -130,6 +186,10 @@ public interface PolicyTreeElement
      * @param output a stream into which the XML-encoded data is written
      * @param indenter an object that creates indentation strings
      */
+<<<<<<< HEAD
     public void encode(OutputStream output, Indenter indenter);
+=======
+    public abstract void encode(OutputStream output, Indenter indenter);
+>>>>>>> 3.x
 
 }

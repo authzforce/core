@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)EqualFunction.java
@@ -60,6 +61,50 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.AnyURIAttribute;
+import com.sun.xacml.attr.Base64BinaryAttribute;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.DNSNameAttribute;
+import com.sun.xacml.attr.DateAttribute;
+import com.sun.xacml.attr.DateTimeAttribute;
+import com.sun.xacml.attr.DayTimeDurationAttribute;
+import com.sun.xacml.attr.DoubleAttribute;
+import com.sun.xacml.attr.HexBinaryAttribute;
+import com.sun.xacml.attr.IPAddressAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.attr.RFC822NameAttribute;
+import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.TimeAttribute;
+import com.sun.xacml.attr.X500NameAttribute;
+import com.sun.xacml.attr.YearMonthDurationAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+>>>>>>> 3.x
 
 
 /**
@@ -173,6 +218,15 @@ public class EqualFunction extends FunctionBase
 
     // private mapping of standard functions to their argument types
     private static HashMap typeMap;
+<<<<<<< HEAD
+=======
+    
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(EqualFunction.class);
+>>>>>>> 3.x
 
     /**
      * Static initializer sets up a map of standard function names to their
@@ -247,8 +301,12 @@ public class EqualFunction extends FunctionBase
      *                     the arguments, inlcuding the full namespace
      */
     public EqualFunction(String functionName, String argumentType) {
+<<<<<<< HEAD
         super(functionName, 0, argumentType, false, 2,
               BooleanAttribute.identifier, false);
+=======
+        super(functionName, 0, argumentType, false, 2, BooleanAttribute.identifier, false);
+>>>>>>> 3.x
     }
 
     /**
@@ -271,7 +329,12 @@ public class EqualFunction extends FunctionBase
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
+<<<<<<< HEAD
     public static Set getSupportedIdentifiers() {
+=======
+    @SuppressWarnings("unchecked")
+	public static Set getSupportedIdentifiers() {
+>>>>>>> 3.x
         return Collections.unmodifiableSet(typeMap.keySet());
    }
 
@@ -288,7 +351,11 @@ public class EqualFunction extends FunctionBase
     public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
+<<<<<<< HEAD
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
+=======
+        AttributeValueType [] argValues = new AttributeValueType[inputs.size()];
+>>>>>>> 3.x
         EvaluationResult result = evalArgs(inputs, context, argValues);
         if (result != null)
             return result;

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)BaseAttributeFactory.java
@@ -41,14 +42,45 @@ import com.sun.xacml.UnknownIdentifierException;
 
 import java.net.URI;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.attr;
+
+import java.net.URI;
+>>>>>>> 3.x
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+<<<<<<< HEAD
 import org.w3c.dom.Node;
 
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import org.w3c.dom.Node;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+
+>>>>>>> 3.x
 
 /**
  * This is a basic implementation of <code>AttributeFactory</code>. It
@@ -70,13 +102,21 @@ public class BaseAttributeFactory extends AttributeFactory
 {
 
     // the map of proxies
+<<<<<<< HEAD
     private HashMap attributeMap;
+=======
+    private HashMap<String, AttributeProxy> attributeMap;
+>>>>>>> 3.x
     
     /**
      * Default constructor.
      */
     public BaseAttributeFactory() {
+<<<<<<< HEAD
         attributeMap = new HashMap();
+=======
+        attributeMap = new HashMap<String, AttributeProxy>();
+>>>>>>> 3.x
     }
 
     /**
@@ -118,8 +158,14 @@ public class BaseAttributeFactory extends AttributeFactory
      */
     public void addDatatype(String id, AttributeProxy proxy) {
         // make sure this doesn't already exist
+<<<<<<< HEAD
         if (attributeMap.containsKey(id))
             throw new IllegalArgumentException("datatype already exists");
+=======
+        if (attributeMap.containsKey(id)) {
+            throw new IllegalArgumentException("datatype already exists");
+        }
+>>>>>>> 3.x
 
         attributeMap.put(id, proxy);
     }
@@ -175,6 +221,15 @@ public class BaseAttributeFactory extends AttributeFactory
     {
         return createValue(root, dataType.toString());
     }
+<<<<<<< HEAD
+=======
+    
+    public AttributeValueType createValue(AttributeValueType root, URI dataType)
+            throws UnknownIdentifierException, ParsingException
+        {
+            return createValue(root, dataType.toString());
+        }
+>>>>>>> 3.x
 
     /**
      * Creates a value based on the given DOM root node and data type.
@@ -206,6 +261,28 @@ public class BaseAttributeFactory extends AttributeFactory
                                                  " aren't supported.");
         }
     }
+<<<<<<< HEAD
+=======
+    
+    public AttributeValue createValue(AttributeValueType attrVal, String type)
+            throws UnknownIdentifierException, ParsingException
+        {
+            AttributeProxy proxy = (AttributeProxy)(attributeMap.get(type));
+
+            if (proxy != null) {
+                try {
+                	return AttributeValue.getInstance(attrVal);
+//                    return proxy.getInstance(root);
+                } catch (Exception e) {
+                    throw new ParsingException("couldn't create " + type +
+                                               " attribute based on DOM node");
+                }
+            } else {
+                throw new UnknownIdentifierException("Attributes of type " + type +
+                                                     " aren't supported.");
+            }
+        }
+>>>>>>> 3.x
 
     /**
      * Creates a value based on the given data type and text-encoded value.
@@ -241,5 +318,19 @@ public class BaseAttributeFactory extends AttributeFactory
                                                  " aren't supported.");
         }
     }
+<<<<<<< HEAD
+=======
+    
+    public AttributeValue createValue(String dataType, String value)
+            throws UnknownIdentifierException, ParsingException
+        {
+    	if(dataType != null) {
+    		return this.createValue(URI.create(dataType), value);
+    	} else {
+    		throw new ParsingException("DataType cannot be null");
+    	}
+    	
+        }
+>>>>>>> 3.x
 
 }

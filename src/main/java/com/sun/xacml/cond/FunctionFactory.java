@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)FunctionFactory.java
@@ -34,6 +35,23 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 package com.sun.xacml.cond;
 
 import com.sun.xacml.ParsingException;
@@ -92,6 +110,10 @@ public abstract class FunctionFactory
         registeredFactories = new HashMap();
         registeredFactories.put(PolicyMetaData.XACML_1_0_IDENTIFIER, proxy);
         registeredFactories.put(PolicyMetaData.XACML_2_0_IDENTIFIER, proxy);
+<<<<<<< HEAD
+=======
+        registeredFactories.put(PolicyMetaData.XACML_3_0_IDENTIFIER, proxy);
+>>>>>>> 3.x
 
         defaultFactoryProxy = proxy;
     };
@@ -234,9 +256,16 @@ public abstract class FunctionFactory
         FunctionFactoryProxy proxy =
             (FunctionFactoryProxy)(registeredFactories.get(identifier));
 
+<<<<<<< HEAD
         if (proxy == null)
             throw new UnknownIdentifierException("Uknown FunctionFactory " +
                                                  "identifier: " + identifier);
+=======
+        if (proxy == null) {
+            throw new UnknownIdentifierException("Uknown FunctionFactory " +
+                                                 "identifier: " + identifier);
+        }
+>>>>>>> 3.x
 
         return proxy;
     }
@@ -269,11 +298,19 @@ public abstract class FunctionFactory
         throws IllegalArgumentException
     {
         synchronized (registeredFactories) {
+<<<<<<< HEAD
             if (registeredFactories.containsKey(identifier))
+=======
+            if (registeredFactories.containsKey(identifier)) {
+>>>>>>> 3.x
                 throw new IllegalArgumentException("Identifier is already " +
                                                    "registered as " +
                                                    "FunctionFactory: " +
                                                    identifier);
+<<<<<<< HEAD
+=======
+            }
+>>>>>>> 3.x
 
             registeredFactories.put(identifier, proxy);
         }

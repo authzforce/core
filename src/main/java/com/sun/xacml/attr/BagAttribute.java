@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)BagAttribute.java
@@ -38,11 +39,37 @@ package com.sun.xacml.attr;
 
 import java.net.URI;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.attr;
+
+import java.io.Serializable;
+import java.net.URI;
+>>>>>>> 3.x
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+
+>>>>>>> 3.x
 
 /**
  * Represents a bag used in the XACML spec as return values from functions
@@ -76,9 +103,16 @@ public class BagAttribute extends AttributeValue
     public BagAttribute(URI type, Collection bag) {
         super(type);
 
+<<<<<<< HEAD
         if (type == null)
             throw new IllegalArgumentException("Bags require a non-null " +
                                                "type be provided");
+=======
+        if (type == null) {
+            throw new IllegalArgumentException("Bags require a non-null " +
+                                               "type be provided");
+        }
+>>>>>>> 3.x
 
         // see if the bag is empty/null
         if ((bag == null) || (bag.size() == 0)) {
@@ -90,6 +124,7 @@ public class BagAttribute extends AttributeValue
             
             while (it.hasNext()) {
                 AttributeValue attr = (AttributeValue)(it.next());
+<<<<<<< HEAD
 
                 // a bag cannot contain other bags, so make sure that each
                 // value isn't actually another bag
@@ -106,6 +141,28 @@ public class BagAttribute extends AttributeValue
 
             // if we get here, then they're all the same type
             this.bag = bag;
+=======
+                // a bag cannot contain other bags, so make sure that each
+                // value isn't actually another bag
+                // FIXME: Find a way to check that there isn't another bag inside
+//                if(attr.getContent().size() > 0) {
+//                	throw new IllegalArgumentException("bags cannot contain " +
+//                            "other bags");
+//                }
+                // make sure that they're all the same type
+                if (! this.dataType.equals(attr.getDataType())) {
+                    throw new
+                        IllegalArgumentException("Bag items must all be of " +
+                                                 "the same type");
+                }
+                for (Serializable content : attr.getContent()) {
+					this.getContent().add(content);
+				}
+            }
+
+            // if we get here, then they're all the same type
+            this.bag = bag;            
+>>>>>>> 3.x
         }
     }
 

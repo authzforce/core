@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)VariableManager.java
@@ -48,6 +49,42 @@ import java.util.Map;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.ProcessingException;
+import com.sun.xacml.cond.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.ExpressionTools;
+>>>>>>> 3.x
 
 /**
  * This class is used by the parsing routines to handle the relationships
@@ -66,7 +103,11 @@ import org.w3c.dom.NodeList;
  * @since 2.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public class VariableManager
+=======
+public class VariableManager extends ExpressionType
+>>>>>>> 3.x
 {
     
     // the map from identifiers to internal data
@@ -199,13 +240,22 @@ public class VariableManager
         if (xprNode.getNodeName().equals("Apply")) {
             try {
                 // get the function in the Apply...
+<<<<<<< HEAD
                 Function function = ExpressionHandler.
+=======
+                ExpressionType function = ExpressionTools.
+>>>>>>> 3.x
                     getFunction(xprNode, metaData,
                                 FunctionFactory.getGeneralInstance());
                 
                 // ...and store the type information in the variable state
+<<<<<<< HEAD
                 state.type = function.getReturnType();
                 state.returnsBag = function.returnsBag();
+=======
+                state.type = ((Expression)function).getType();
+                state.returnsBag = ((Expression)function).returnsBag();
+>>>>>>> 3.x
             } catch (ParsingException pe) {
                 // we can just ignore this...if there really is an error,
                 // then it will come up during parsing in a code path that
@@ -248,7 +298,11 @@ public class VariableManager
 
         // if we could get the definition, then ask it for the type
         if (definition != null)
+<<<<<<< HEAD
             return definition.getExpression().getType();
+=======
+            return ((Expression)definition.getExpression().getValue()).getType();
+>>>>>>> 3.x
 
         // we exhausted all our ways to get the right answer
         throw new ProcessingException("we couldn't establish the type: " +
@@ -289,7 +343,11 @@ public class VariableManager
 
         // if we could get the definition, then ask it for the bag return
         if (definition != null)
+<<<<<<< HEAD
             return definition.getExpression().returnsBag();
+=======
+            return ((Expression)definition.getExpression().getValue()).returnsBag();
+>>>>>>> 3.x
 
         // we exhausted all our ways to get the right answer
         throw new ProcessingException("couldn't establish bag return for " +
@@ -335,5 +393,8 @@ public class VariableManager
             this.handled = handled;
         }
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3.x
 }

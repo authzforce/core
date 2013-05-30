@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)PolicyMetaData.java
@@ -34,6 +35,23 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 package com.sun.xacml;
 
 import com.sun.xacml.attr.AttributeFactory;
@@ -44,6 +62,10 @@ import com.sun.xacml.combine.CombiningAlgFactoryProxy;
 
 import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionFactoryProxy;
+<<<<<<< HEAD
+=======
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+>>>>>>> 3.x
 
 
 /**
@@ -68,6 +90,15 @@ public class PolicyMetaData
      */
     public static final String XACML_2_0_IDENTIFIER =
         "urn:oasis:names:tc:xacml:2.0:policy:schema:os";
+<<<<<<< HEAD
+=======
+    
+    /**
+     * XACML 3.0 identifier
+     */
+    public static final String XACML_3_0_IDENTIFIER =
+        "urn:oasis:names:tc:xacml:3.0:policy:schema:os";
+>>>>>>> 3.x
 
     /**
      * Version identifier for XACML 1.0
@@ -85,6 +116,14 @@ public class PolicyMetaData
      * Version identifier for XACML 1.2
      */
     public static final int XACML_VERSION_2_0 = 2;
+<<<<<<< HEAD
+=======
+    
+    /**
+     * Version identifier for XACML 3.0
+     */
+    public static final int XACML_VERSION_3_0 = 3;
+>>>>>>> 3.x
 
     /**
      * The default version of XACML, 1.0, used if no namespace string
@@ -199,6 +238,7 @@ public class PolicyMetaData
                           AttributeFactoryProxy attributeFactoryProxy,
                           CombiningAlgFactoryProxy combiningAlgFactoryProxy,
                           FunctionFactoryProxy functionFactoryProxy) {
+<<<<<<< HEAD
         if (xacmlVersion == null)
             this.xacmlVersion = XACML_DEFAULT_VERSION;
         else if (xacmlVersion.equals(XACML_1_0_IDENTIFIER))
@@ -214,6 +254,27 @@ public class PolicyMetaData
                 throw new IllegalArgumentException("Unsupported XPath " +
                                                    " version: " +
                                                    xpathVersion);
+=======
+        if (xacmlVersion == null) {
+            this.xacmlVersion = XACML_DEFAULT_VERSION;
+        } else if (xacmlVersion.equals(XACMLAttributeId.XACML_1_0_IDENTIFIER.value())) {
+            this.xacmlVersion = Integer.parseInt(XACMLAttributeId.XACML_VERSION_1_0.value());
+        } else if (xacmlVersion.equals(XACMLAttributeId.XACML_2_0_IDENTIFIER.value())) {
+            this.xacmlVersion = Integer.parseInt(XACMLAttributeId.XACML_VERSION_2_0.value());
+        } else if (xacmlVersion.equals(XACMLAttributeId.XACML_3_0_IDENTIFIER.value())) {
+        	this.xacmlVersion = Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value());
+        } else {
+            throw new IllegalArgumentException("Unknown XACML version " +
+                                               "string: " + xacmlVersion);
+        }
+
+        if (xpathVersion != null) {
+            if (! xpathVersion.equals(XPATH_1_0_IDENTIFIER)) {
+                throw new IllegalArgumentException("Unsupported XPath " +
+                                                   " version: " +
+                                                   xpathVersion);
+            }
+>>>>>>> 3.x
             this.xpathVersion = XPATH_VERSION_1_0;
         } else {
             //Change from INDETERMINANT due to bug https://sourceforge.net/tracker/?func=detail&aid=2983180&group_id=73884&atid=539255
@@ -230,21 +291,34 @@ public class PolicyMetaData
     private void proxySetup(AttributeFactoryProxy attributeFactoryProxy,
                             CombiningAlgFactoryProxy combiningAlgFactoryProxy,
                             FunctionFactoryProxy functionFactoryProxy) {
+<<<<<<< HEAD
         if (attributeFactoryProxy == null)
+=======
+        if (attributeFactoryProxy == null) {
+>>>>>>> 3.x
             this.afProxy = new AttributeFactoryProxy() {
                     public AttributeFactory getFactory() {
                         return AttributeFactory.getInstance();
                     }
                 };
+<<<<<<< HEAD
         else
             this.afProxy = attributeFactoryProxy;
 
         if (combiningAlgFactoryProxy == null)
+=======
+        } else {
+            this.afProxy = attributeFactoryProxy;
+        }
+
+        if (combiningAlgFactoryProxy == null) {
+>>>>>>> 3.x
             this.cafProxy = new CombiningAlgFactoryProxy() {
                     public CombiningAlgFactory getFactory() {
                         return CombiningAlgFactory.getInstance();
                     }
                 };
+<<<<<<< HEAD
         else
             this.cafProxy = combiningAlgFactoryProxy;
 
@@ -252,6 +326,17 @@ public class PolicyMetaData
             this.ffProxy = FunctionFactory.getInstance();
         else
             this.ffProxy = functionFactoryProxy;
+=======
+        } else {
+            this.cafProxy = combiningAlgFactoryProxy;
+        }
+
+        if (functionFactoryProxy == null) {
+            this.ffProxy = FunctionFactory.getInstance();
+        } else {
+            this.ffProxy = functionFactoryProxy;
+        }
+>>>>>>> 3.x
     }
 
     /**
@@ -340,5 +425,8 @@ public class PolicyMetaData
     public FunctionFactory getGeneralFunctionFactory() {
         return ffProxy.getGeneralFactory();
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3.x
 }

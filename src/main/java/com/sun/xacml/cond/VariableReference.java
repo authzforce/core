@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)VariableReference.java
@@ -52,6 +53,46 @@ import java.util.List;
 
 import org.w3c.dom.Node;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.w3c.dom.Node;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.ProcessingException;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
+
+>>>>>>> 3.x
 
 /**
  * This class supports the VariableReferenceType type introuced in XACML
@@ -63,11 +104,19 @@ import org.w3c.dom.Node;
  * @since 2.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public class VariableReference implements Expression
 {
 
     // the identifier used to resolve the reference
     private String variableId;
+=======
+public class VariableReference extends VariableReferenceType implements Evaluatable
+{
+
+    // the identifier used to resolve the reference
+//    private String variableId;
+>>>>>>> 3.x
 
     // the actual definition we refernce, if it's known
     private VariableDefinition definition = null;
@@ -182,7 +231,11 @@ public class VariableReference implements Expression
      * @return the result of evaluation
      */
     public EvaluationResult evaluate(EvaluationCtx context) {
+<<<<<<< HEAD
         Expression xpr = getReferencedDefinition().getExpression();
+=======
+        Expression xpr = (Expression)getReferencedDefinition().getExpression().getValue();
+>>>>>>> 3.x
 
         // Note that it's technically possible for this expression to
         // be something like a Function, which isn't Evaluatable. It
@@ -190,7 +243,11 @@ public class VariableReference implements Expression
         // it makes no sense, however, it's unlcear exactly what the
         // error should be, so raising the ClassCastException here seems
         // as good an approach as any for now...
+<<<<<<< HEAD
         return ((Evaluatable)xpr).evaluate(context);
+=======
+        return ((Expression)xpr).evaluate(context);
+>>>>>>> 3.x
     }
 
     /**
@@ -206,7 +263,11 @@ public class VariableReference implements Expression
         // since this handles type-checking for definitions that haven't
         // been parsed yet
         if (definition != null) {
+<<<<<<< HEAD
             return definition.getExpression().getType();
+=======
+            return ((Expression)definition.getExpression().getValue()).getType();
+>>>>>>> 3.x
         } else {
             if (manager != null)
                 return manager.getVariableType(variableId);
@@ -225,7 +286,11 @@ public class VariableReference implements Expression
     public boolean returnsBag() {
         // see comment in getType()
         if (definition != null) {
+<<<<<<< HEAD
             return getReferencedDefinition().getExpression().returnsBag();
+=======
+            return ((Expression)getReferencedDefinition().getExpression().getValue()).returnsBag();
+>>>>>>> 3.x
         } else {
             if (manager != null)
                 return manager.returnsBag(variableId);
@@ -285,5 +350,8 @@ public class VariableReference implements Expression
         out.println(indent + "<VariableReference VariableId=\"" +
                     variableId + "\"/>");
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3.x
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)PolicyReader.java
@@ -49,6 +50,30 @@ import java.io.IOException;
 
 import java.net.URL;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.support.finder;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+>>>>>>> 3.x
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,11 +83,22 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3.x
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.xacmlv3.Policy;
+
+>>>>>>> 3.x
 
 /**
  * This class is provided as a utility for reading policies from common,
@@ -181,7 +217,11 @@ public class PolicyReader implements ErrorHandler
      * @throws ParsingException if an error occurs while reading or
      *                          parsing the policy
      */
+<<<<<<< HEAD
     public synchronized AbstractPolicy readPolicy(File file)
+=======
+    public synchronized Policy readPolicy(File file)
+>>>>>>> 3.x
         throws ParsingException
     {
         try {
@@ -204,7 +244,11 @@ public class PolicyReader implements ErrorHandler
      * @throws ParsingException if an error occurs while reading or
      *                          parsing the policy
      */
+<<<<<<< HEAD
     public synchronized AbstractPolicy readPolicy(InputStream input)
+=======
+    public synchronized Policy readPolicy(InputStream input)
+>>>>>>> 3.x
         throws ParsingException
     {
         try {
@@ -215,6 +259,21 @@ public class PolicyReader implements ErrorHandler
             throw new ParsingException("Failed to parse the stream", saxe);
         }
     }
+<<<<<<< HEAD
+=======
+    
+    public synchronized PolicySet readPolicySet(InputStream input)
+            throws ParsingException
+        {
+            try {
+                return handlePolicySetDocument(builder.parse(input));
+            } catch (IOException ioe) {
+                throw new ParsingException("Failed to read the stream", ioe);
+            } catch (SAXException saxe) {
+                throw new ParsingException("Failed to parse the stream", saxe);
+            }
+        }
+>>>>>>> 3.x
 
     /**
      * Tries to read an XACML policy or policy set based on the given URL.
@@ -229,7 +288,11 @@ public class PolicyReader implements ErrorHandler
      *                          parsing the policy, or if the URL can't
      *                          be resolved
      */
+<<<<<<< HEAD
     public synchronized AbstractPolicy readPolicy(URL url)
+=======
+    public synchronized Policy readPolicy(URL url)
+>>>>>>> 3.x
         throws ParsingException
     {
         try {
@@ -242,9 +305,15 @@ public class PolicyReader implements ErrorHandler
 
     /**
      * A private method that handles reading the policy and creates the
+<<<<<<< HEAD
      * correct kind of AbstractPolicy.
      */
     private AbstractPolicy handleDocument(Document doc)
+=======
+     * correct kind of Policy.
+     */
+    private Policy handleDocument(Document doc)
+>>>>>>> 3.x
         throws ParsingException
     {
         // handle the policy, if it's a known type
@@ -252,10 +321,35 @@ public class PolicyReader implements ErrorHandler
         String name = root.getTagName();
 
         // see what type of policy this is
+<<<<<<< HEAD
         if (name.equals("Policy")) {
             return Policy.getInstance(root);
         } else if (name.equals("PolicySet")) {
             return PolicySet.getInstance(root, finder);
+=======
+        if (name.equals("Policy") || name.equals("PolicyType") ) {
+            return Policy.getInstance(root);
+        } else {
+            // this isn't a root type that we know how to handle
+            throw new ParsingException("Unknown root document type: " + name);
+        }
+    }
+    
+    /**
+     * A private method that handles reading the policySet and creates the
+     * correct kind of PolicySet.
+     */
+    private PolicySet handlePolicySetDocument(Document doc)
+        throws ParsingException
+    {
+        // handle the policy, if it's a known type
+        Element root = doc.getDocumentElement();
+        String name = root.getTagName();
+
+        // see what type of policy this is
+        if (name.equals("PolicySet") || name.equals("PolicySetType")) {
+            return PolicySet.getInstance(root);
+>>>>>>> 3.x
         } else {
             // this isn't a root type that we know how to handle
             throw new ParsingException("Unknown root document type: " + name);
@@ -305,4 +399,34 @@ public class PolicyReader implements ErrorHandler
         throw new SAXException("fatal error parsing policy");
     }
 
+<<<<<<< HEAD
+=======
+	public String getType(FileInputStream input) throws ParsingException {
+	    // handle the policy, if it's a known type
+		Document doc = null;
+		try {
+			doc = builder.parse(input);
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        Element root = doc.getDocumentElement();
+        String name = root.getTagName();
+
+        // see what type of policy this is
+        if ((name.equals("Policy") || name.equals("PolicyType"))){
+        	return "Policy";
+        }
+        else if(name.equals("PolicySet") || name.equals("PolicySetType")) {
+        	return "PolicySet";
+        } else {
+        	throw new ParsingException("Unknown root document type: " + name);
+        }
+	    
+	}
+
+>>>>>>> 3.x
 }

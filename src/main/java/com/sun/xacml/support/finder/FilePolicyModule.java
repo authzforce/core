@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)FilePolicyModule.java
@@ -48,14 +49,54 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.support.finder;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.net.URI;
+import java.util.Arrays;
+>>>>>>> 3.x
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+<<<<<<< HEAD
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+=======
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.combine.PolicyCombinerElement;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.finder.PolicyFinderModule;
+import com.sun.xacml.finder.PolicyFinderResult;
+import com.sun.xacml.xacmlv3.Policy;
+
+>>>>>>> 3.x
 
 /**
  * This module represents a collection of files containing polices,
@@ -212,10 +253,33 @@ public class FilePolicyModule extends PolicyFinderModule {
         Iterator it = fileNames.iterator();
         while (it.hasNext()) {
             String fname = (String)(it.next());
+<<<<<<< HEAD
             try {
                 AbstractPolicy policy =
                     reader.readPolicy(new FileInputStream(fname));
                 policies.addPolicy(policy);
+=======
+            Policy policy = null;
+            PolicySet policySet = null;
+            try {
+            	String typePolicy = reader.getType(new FileInputStream(fname));
+            	if (typePolicy.equals("Policy")) {
+            		policy = reader.readPolicy(new FileInputStream(fname));
+				} else if (typePolicy.equals("PolicySet")) {
+					policySet = reader.readPolicySet(new FileInputStream(fname));
+				}
+				if (policy != null) {
+					this.policies.addPolicy(policy);
+				} else if (policySet != null) {
+					this.policies.addPolicySet(policySet);
+				}
+                
+				if (policy != null) {
+					this.policies.addPolicy(policy);
+				} else if (policySet != null) {
+					this.policies.addPolicySet(policySet);
+				}
+>>>>>>> 3.x
             } catch (FileNotFoundException fnfe) {
                 if (logger.isLoggable(Level.WARNING))
                     logger.log(Level.WARNING, "File couldn't be read: "
@@ -229,6 +293,11 @@ public class FilePolicyModule extends PolicyFinderModule {
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * TODO: Handle policySet
+     * 
+>>>>>>> 3.x
      * Finds a policy based on a request's context. If more than one
      * applicable policy is found, this will return an error. Note that
      * this is basically just a subset of the OnlyOneApplicable Policy
@@ -240,6 +309,7 @@ public class FilePolicyModule extends PolicyFinderModule {
      * @return the result of trying to find an applicable policy
      */
     public PolicyFinderResult findPolicy(EvaluationCtx context) {
+<<<<<<< HEAD
         try {
             AbstractPolicy policy = policies.getPolicy(context);
             if (policy == null)
@@ -250,5 +320,56 @@ public class FilePolicyModule extends PolicyFinderModule {
             return new PolicyFinderResult(tlpe.getStatus());
         }
     }
+=======
+		try {
+			Object myPolicies = this.policies.getPolicy(context);
+			if(myPolicies == null) {
+				myPolicies = this.policies.getPolicySet(context);
+			}
+			if(myPolicies instanceof PolicySet) {
+				PolicySet policySet = (PolicySet)myPolicies;
+				// Retrieving combining algorithm
+				PolicyCombiningAlgorithm myCombiningAlg = (PolicyCombiningAlgorithm) policySet.getCombiningAlg();
+				PolicyCollection myPolcollection = new PolicyCollection(myCombiningAlg, URI.create(policySet.getPolicySetId()));
+				for (Object elt : policySet.getPolicySetOrPolicyOrPolicySetIdReference()) {
+					if (elt instanceof PolicyCombinerElement) {
+						if((((PolicyCombinerElement) elt).getElement()) instanceof Policy) {
+							myPolcollection.addPolicy((Policy) ((PolicyCombinerElement) elt).getElement());
+						} else if((((PolicyCombinerElement) elt).getElement()) instanceof PolicySet) {
+							myPolcollection.addPolicySet((PolicySet) ((PolicyCombinerElement) elt).getElement());
+						}
+					}
+				}
+				Object policy = myPolcollection.getPolicySet(context);
+				if(policy == null) {
+					policy = myPolcollection.getPolicy(context);
+					
+				}
+				// The finder found more than one applicable policy so it build a new PolicySet
+				if(policy instanceof PolicySet) {
+					if(policySet != null) {
+						((PolicySet)policy).setObligationExpressions(policySet.getObligationExpressions());
+						((PolicySet)policy).setAdviceExpressions(policySet.getAdviceExpressions());
+					}
+					return new PolicyFinderResult((PolicySet)policy, myCombiningAlg);	
+				}
+				// The finder found only one applicable policy 
+				else if(policy instanceof Policy) {
+					List matchedPolicies = Arrays.asList(policy);
+					PolicySet finalPolicySet = new PolicySet(policySet.getId(), policySet.getVersion(), myCombiningAlg, policySet.getDescription(), policySet.getTarget(), matchedPolicies, policySet.getDefaultVersion(), policySet.getObligationExpressions(), policySet.getAdviceExpressions());
+					
+					return new PolicyFinderResult(finalPolicySet, myCombiningAlg);
+				}
+			} else if (myPolicies instanceof Policy) {
+				Policy policies = (Policy)myPolicies;
+				return new PolicyFinderResult((Policy)policies);
+			}
+			// None of the policies/policySets matched 
+			return new PolicyFinderResult();
+		} catch (TopLevelPolicyException tlpe) {
+			return new PolicyFinderResult(tlpe.getStatus());
+		}
+	}
+>>>>>>> 3.x
 
 }

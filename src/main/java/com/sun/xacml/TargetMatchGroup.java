@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)TargetMatchGroup.java
@@ -34,6 +35,23 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 package com.sun.xacml;
 
 import java.io.OutputStream;
@@ -49,6 +67,11 @@ import java.util.logging.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+<<<<<<< HEAD
+=======
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+
+>>>>>>> 3.x
 
 /**
  * This class contains a group of <code>TargetMatch</code> instances and
@@ -102,6 +125,7 @@ public class TargetMatchGroup
                                                PolicyMetaData metaData)
         throws ParsingException
     {
+<<<<<<< HEAD
         List matches = new ArrayList();
         NodeList children = root.getChildNodes();
 
@@ -113,6 +137,30 @@ public class TargetMatchGroup
                 matches.add(TargetMatch.getInstance(child, matchType,
                                                     metaData));
             }
+=======
+    	List matches = new ArrayList();
+        
+        /*
+         * XACML 3.0 hook
+         */
+        if (Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()) == metaData.getXACMLVersion()) {        	
+        	NodeList myRoot = (NodeList)root;
+        	String name = DOMHelper.getLocalName(root);
+            if (name.equals(TargetMatch.NAMES[TargetMatch.MATCH])) {
+                matches.add(TargetMatch.getInstance(root, matchType, metaData));
+            } 
+        } else {
+            NodeList children = root.getChildNodes();
+	        for (int i = 0; i < children.getLength(); i++) {
+	            Node child = children.item(i);
+	            String name = child.getNodeName();
+	
+	            if (name.equals(TargetMatch.NAMES[matchType] + "Match")) {
+	                matches.add(TargetMatch.getInstance(child, matchType,
+	                                                    metaData));
+	            } 
+	        }
+>>>>>>> 3.x
         }
 
         return new TargetMatchGroup(matches, matchType);

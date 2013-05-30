@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)ComparisonFunction.java
@@ -39,6 +40,32 @@ package com.sun.xacml.cond;
 import com.sun.xacml.EvaluationCtx;
 
 import com.sun.xacml.attr.AttributeValue;
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import com.sun.xacml.EvaluationCtx;
+>>>>>>> 3.x
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.DateAttribute;
 import com.sun.xacml.attr.DateTimeAttribute;
@@ -46,12 +73,17 @@ import com.sun.xacml.attr.DoubleAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
+<<<<<<< HEAD
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+=======
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+>>>>>>> 3.x
 
 
 /**
@@ -250,6 +282,7 @@ public class ComparisonFunction extends FunctionBase
         idMap = new HashMap();
 
         idMap.put(NAME_INTEGER_GREATER_THAN,
+<<<<<<< HEAD
                   new Integer(ID_INTEGER_GREATER_THAN));
         idMap.put(NAME_INTEGER_GREATER_THAN_OR_EQUAL,
                   new Integer(ID_INTEGER_GREATER_THAN_OR_EQUAL));
@@ -297,6 +330,55 @@ public class ComparisonFunction extends FunctionBase
                   new Integer(ID_DATETIME_LESS_THAN));
         idMap.put(NAME_DATETIME_LESS_THAN_OR_EQUAL,
                   new Integer(ID_DATETIME_LESS_THAN_OR_EQUAL));
+=======
+                  Integer.valueOf(ID_INTEGER_GREATER_THAN));
+        idMap.put(NAME_INTEGER_GREATER_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_INTEGER_GREATER_THAN_OR_EQUAL));
+        idMap.put(NAME_INTEGER_LESS_THAN,
+                  Integer.valueOf(ID_INTEGER_LESS_THAN));
+        idMap.put(NAME_INTEGER_LESS_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_INTEGER_LESS_THAN_OR_EQUAL));
+        idMap.put(NAME_DOUBLE_GREATER_THAN,
+                  Integer.valueOf(ID_DOUBLE_GREATER_THAN));
+        idMap.put(NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_DOUBLE_GREATER_THAN_OR_EQUAL));
+        idMap.put(NAME_DOUBLE_LESS_THAN,
+                  Integer.valueOf(ID_DOUBLE_LESS_THAN));
+        idMap.put(NAME_DOUBLE_LESS_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_DOUBLE_LESS_THAN_OR_EQUAL));
+        idMap.put(NAME_STRING_GREATER_THAN,
+                  Integer.valueOf(ID_STRING_GREATER_THAN));
+        idMap.put(NAME_STRING_GREATER_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_STRING_GREATER_THAN_OR_EQUAL));
+        idMap.put(NAME_STRING_LESS_THAN,
+                  Integer.valueOf(ID_STRING_LESS_THAN));
+        idMap.put(NAME_STRING_LESS_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_STRING_LESS_THAN_OR_EQUAL));
+        idMap.put(NAME_TIME_GREATER_THAN,
+                  Integer.valueOf(ID_TIME_GREATER_THAN));
+        idMap.put(NAME_TIME_GREATER_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_TIME_GREATER_THAN_OR_EQUAL));
+        idMap.put(NAME_TIME_LESS_THAN,
+                  Integer.valueOf(ID_TIME_LESS_THAN));
+        idMap.put(NAME_TIME_LESS_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_TIME_LESS_THAN_OR_EQUAL));
+        idMap.put(NAME_DATE_GREATER_THAN,
+                  Integer.valueOf(ID_DATE_GREATER_THAN));
+        idMap.put(NAME_DATE_GREATER_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_DATE_GREATER_THAN_OR_EQUAL));
+        idMap.put(NAME_DATE_LESS_THAN,
+                  Integer.valueOf(ID_DATE_LESS_THAN));
+        idMap.put(NAME_DATE_LESS_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_DATE_LESS_THAN_OR_EQUAL));
+        idMap.put(NAME_DATETIME_GREATER_THAN,
+                  Integer.valueOf(ID_DATETIME_GREATER_THAN));
+        idMap.put(NAME_DATETIME_GREATER_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_DATETIME_GREATER_THAN_OR_EQUAL));
+        idMap.put(NAME_DATETIME_LESS_THAN,
+                  Integer.valueOf(ID_DATETIME_LESS_THAN));
+        idMap.put(NAME_DATETIME_LESS_THAN_OR_EQUAL,
+                  Integer.valueOf(ID_DATETIME_LESS_THAN_OR_EQUAL));
+>>>>>>> 3.x
 
         typeMap = new HashMap();
 
@@ -402,7 +484,11 @@ public class ComparisonFunction extends FunctionBase
 
         boolean boolResult = false;
 
+<<<<<<< HEAD
         switch (getFunctionId()) {
+=======
+        switch (getId(getFunctionName())) {
+>>>>>>> 3.x
 
         case ID_INTEGER_GREATER_THAN: {
             long arg0 = ((IntegerAttribute)(argValues[0])).getValue();

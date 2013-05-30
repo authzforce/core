@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)TargetSection.java
@@ -34,6 +35,23 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 package com.sun.xacml;
 
 import com.sun.xacml.ctx.Status;
@@ -46,6 +64,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+
+>>>>>>> 3.x
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -58,13 +81,21 @@ import org.w3c.dom.NodeList;
  * @since 2.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public class TargetSection
 {
+=======
+public class TargetSection {
+>>>>>>> 3.x
 
     // the list of match groups
     private List matchGroups;
 
+<<<<<<< HEAD
     // the match type contained in this group
+=======
+	// the match type contained in this group
+>>>>>>> 3.x
     private int matchType;
 
     // the version of XACML used by the containing Target
@@ -80,11 +111,20 @@ public class TargetSection
      * @param xacmlVersion the version XACML being used
      */
     public TargetSection(List matchGroups, int matchType, int xacmlVersion) {
+<<<<<<< HEAD
         if (matchGroups == null)
             this.matchGroups = Collections.unmodifiableList(new ArrayList());
         else
             this.matchGroups = Collections.
                 unmodifiableList(new ArrayList(matchGroups));
+=======
+        if (matchGroups == null) {
+            this.matchGroups = Collections.unmodifiableList(new ArrayList());
+        } else {
+            this.matchGroups = Collections.
+                unmodifiableList(new ArrayList(matchGroups));
+        }
+>>>>>>> 3.x
         this.matchType = matchType;
         this.xacmlVersion = xacmlVersion;
     }
@@ -104,6 +144,7 @@ public class TargetSection
                                             PolicyMetaData metaData)
         throws ParsingException
     {
+<<<<<<< HEAD
         List groups = new ArrayList();
         NodeList children = root.getChildNodes();
 
@@ -114,6 +155,20 @@ public class TargetSection
 
             if (name.equals(typeName)) {
                 groups.add(TargetMatchGroup.getInstance(child, matchType,
+=======
+        List<TargetMatchGroup> groups = new ArrayList<TargetMatchGroup>();
+        NodeList children = root.getChildNodes();
+
+        for (int i = 0; i < children.getLength(); i++) {
+            String name = root.getNodeName();
+            String typeName = TargetMatch.NAMES[matchType];
+
+            /*
+             * FIXME: RF for XACML 3.0
+             */
+            if (name.equals(typeName) || name.equals(TargetMatch.NAMES[TargetMatch.MATCH]) ) {
+                groups.add(TargetMatchGroup.getInstance(root, matchType,
+>>>>>>> 3.x
                                                         metaData));
             } else if (name.equals("Any" + typeName)) {
                 // in a schema-valid policy, the Any element will always be
@@ -146,6 +201,23 @@ public class TargetSection
     public boolean matchesAny() {
         return matchGroups.isEmpty();
     }
+<<<<<<< HEAD
+=======
+    
+    /**
+	 * @return the matchType
+	 */
+	public int getMatchType() {
+		return matchType;
+	}
+
+	/**
+	 * @param matchType the matchType to set
+	 */
+	public void setMatchType(int matchType) {
+		this.matchType = matchType;
+	}
+>>>>>>> 3.x
 
     /**
      * Determines whether this <code>TargetSection</code> matches
@@ -157,8 +229,14 @@ public class TargetSection
      */
     public MatchResult match(EvaluationCtx context) {
         // if we apply to anything, then we always match
+<<<<<<< HEAD
         if (matchGroups.isEmpty())
             return new MatchResult(MatchResult.MATCH);
+=======
+        if (matchGroups.isEmpty()) {
+            return new MatchResult(MatchResult.MATCH);
+        }
+>>>>>>> 3.x
 
         // there are specific matching elements, so prepare to iterate
         // through the list
@@ -172,26 +250,47 @@ public class TargetSection
             MatchResult result = group.match(context);
 
             // we only need one match, so if this matched, then we're done
+<<<<<<< HEAD
             if (result.getResult() == MatchResult.MATCH)
                 return result;
+=======
+            if (result.getResult() == MatchResult.MATCH) {
+                return result;
+            }
+>>>>>>> 3.x
 
             // if we didn't match then it was either a NO_MATCH or
             // INDETERMINATE...in the second case, we need to remember
             // it happened, 'cause if we don't get a MATCH, then we'll
             // be returning INDETERMINATE
             if (result.getResult() == MatchResult.INDETERMINATE) {
+<<<<<<< HEAD
                 if (firstIndeterminateStatus == null)
                     firstIndeterminateStatus = result.getStatus();
+=======
+                if (firstIndeterminateStatus == null) {
+                    firstIndeterminateStatus = result.getStatus();
+                }
+>>>>>>> 3.x
             }
         }
 
         // if we got here, then none of the sub-matches passed, so
         // we have to see if we got any INDETERMINATE cases
+<<<<<<< HEAD
         if (firstIndeterminateStatus == null)
             return new MatchResult(MatchResult.NO_MATCH);
         else
             return new MatchResult(MatchResult.INDETERMINATE,
                                    firstIndeterminateStatus);
+=======
+        if (firstIndeterminateStatus == null) {
+            return new MatchResult(MatchResult.NO_MATCH);
+        } else {
+            return new MatchResult(MatchResult.INDETERMINATE,
+                                   firstIndeterminateStatus);
+        }
+>>>>>>> 3.x
     }
 
     /**
@@ -246,5 +345,13 @@ public class TargetSection
             out.println(indent + "</" + name + "s>");
         }
     }
+<<<<<<< HEAD
+=======
+
+	public static TargetSection getInstance(AttributeDesignatorType instance) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+>>>>>>> 3.x
     
 }

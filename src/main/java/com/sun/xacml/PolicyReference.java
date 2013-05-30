@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)PolicyReference.java
@@ -59,6 +60,48 @@ import java.util.logging.Logger;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+import com.sun.xacml.combine.CombiningAlgorithm;
+import com.sun.xacml.ctx.Result;
+import com.sun.xacml.ctx.Status;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.finder.PolicyFinderResult;
+import com.sun.xacml.xacmlv3.Policy;
+
+>>>>>>> 3.x
 
 /**
  * This class is used as a placeholder for the PolicyIdReference and
@@ -77,7 +120,11 @@ import org.w3c.dom.Node;
  * @since 1.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public class PolicyReference extends AbstractPolicy
+=======
+public class PolicyReference extends PolicyType
+>>>>>>> 3.x
 {
     
     /**
@@ -275,7 +322,11 @@ public class PolicyReference extends AbstractPolicy
      *         or <code>POLICYSET_REFERENCE</code>
      */
     public int getReferenceType() {
+<<<<<<< HEAD
         return policyType;
+=======
+        return POLICY_REFERENCE;
+>>>>>>> 3.x
     }
 
     /**
@@ -286,8 +337,13 @@ public class PolicyReference extends AbstractPolicy
      *
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
+<<<<<<< HEAD
     public URI getId() {
         return resolvePolicy().getId();
+=======
+    public String getId() {
+        return resolvePolicy().getPolicyId();
+>>>>>>> 3.x
     }
 
     /**
@@ -311,7 +367,11 @@ public class PolicyReference extends AbstractPolicy
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
     public CombiningAlgorithm getCombiningAlg() {
+<<<<<<< HEAD
         return resolvePolicy().getCombiningAlg();
+=======
+        return resolvePolicy().getRuleCombiningAlg();
+>>>>>>> 3.x
     }
 
     /**
@@ -335,7 +395,11 @@ public class PolicyReference extends AbstractPolicy
      *
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
+<<<<<<< HEAD
     public Target getTarget() {
+=======
+    public TargetType getTarget() {
+>>>>>>> 3.x
         return resolvePolicy().getTarget();
     }
 
@@ -348,7 +412,11 @@ public class PolicyReference extends AbstractPolicy
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
     public String getDefaultVersion() {
+<<<<<<< HEAD
         return resolvePolicy().getDefaultVersion();
+=======
+        return resolvePolicy().getVersion();
+>>>>>>> 3.x
     }
 
     /**
@@ -361,7 +429,11 @@ public class PolicyReference extends AbstractPolicy
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
     public List getChildren() {
+<<<<<<< HEAD
         return resolvePolicy().getChildren();
+=======
+        return resolvePolicy().getCombinerParametersOrRuleCombinerParametersOrVariableDefinition();
+>>>>>>> 3.x
     }
 
     /**
@@ -374,7 +446,11 @@ public class PolicyReference extends AbstractPolicy
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
     public List getChildElements() {
+<<<<<<< HEAD
         return resolvePolicy().getChildElements();
+=======
+        return resolvePolicy().getCombinerParametersOrRuleCombinerParametersOrVariableDefinition();
+>>>>>>> 3.x
     }
 
     /**
@@ -386,8 +462,13 @@ public class PolicyReference extends AbstractPolicy
      *
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
+<<<<<<< HEAD
     public Set getObligations() {
         return resolvePolicy().getObligations();
+=======
+    public ObligationExpressionsType getObligations() {
+        return resolvePolicy().getObligationExpressions();
+>>>>>>> 3.x
     }
 
     /**
@@ -419,7 +500,11 @@ public class PolicyReference extends AbstractPolicy
      */
     public MatchResult match(EvaluationCtx context) {
         try {
+<<<<<<< HEAD
             return getTarget().match(context);
+=======
+            return ((Target)getTarget()).match(context);
+>>>>>>> 3.x
         } catch (ProcessingException pe) {
             // this means that we couldn't resolve the policy
             ArrayList code = new ArrayList();
@@ -432,7 +517,11 @@ public class PolicyReference extends AbstractPolicy
     /**
      * Private helper method that tried to resolve the policy
      */
+<<<<<<< HEAD
     private AbstractPolicy resolvePolicy() {
+=======
+    private Policy resolvePolicy() {
+>>>>>>> 3.x
         // see if this reference was setup with a finder
         if (finder == null) {
             if (logger.isLoggable(Level.WARNING))
@@ -470,7 +559,11 @@ public class PolicyReference extends AbstractPolicy
     public Result evaluate(EvaluationCtx context) {
         // if there is no finder, then we return NotApplicable
         if (finder == null)
+<<<<<<< HEAD
             return new Result(Result.DECISION_NOT_APPLICABLE,
+=======
+            return new Result(DecisionType.NOT_APPLICABLE,
+>>>>>>> 3.x
                               context.getResourceId().encode());
 
         PolicyFinderResult pfr = finder.findPolicy(reference, policyType,
@@ -479,12 +572,20 @@ public class PolicyReference extends AbstractPolicy
 
         // if we found nothing, then we return NotApplicable
         if (pfr.notApplicable())
+<<<<<<< HEAD
             return new Result(Result.DECISION_NOT_APPLICABLE,
+=======
+            return new Result(DecisionType.NOT_APPLICABLE,
+>>>>>>> 3.x
                               context.getResourceId().encode());
 
         // if there was an error, we return that status data
         if (pfr.indeterminate())
+<<<<<<< HEAD
             return new Result(Result.DECISION_INDETERMINATE, pfr.getStatus(),
+=======
+            return new Result(DecisionType.INDETERMINATE, pfr.getStatus(),
+>>>>>>> 3.x
                               context.getResourceId().encode());
 
         // we must have found a policy

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)PolicyFinderResult.java
@@ -39,6 +40,31 @@ package com.sun.xacml.finder;
 import com.sun.xacml.AbstractPolicy;
 
 import com.sun.xacml.ctx.Status;
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.finder;
+
+import com.sun.xacml.ObligationExpressions;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.ctx.Status;
+import com.sun.xacml.xacmlv3.AdviceExpressions;
+import com.sun.xacml.xacmlv3.Policy;
+>>>>>>> 3.x
 
 
 /**
@@ -57,11 +83,23 @@ public class PolicyFinderResult
 {
 
     // the single policy being returned
+<<<<<<< HEAD
     private AbstractPolicy policy;
+=======
+    private Policy policy;
+    
+    private PolicySet policySet;
+    private PolicyCombiningAlgorithm policyCombiningAlg;
+>>>>>>> 3.x
 
     // status that represents an error occurred
     private Status status;
 
+<<<<<<< HEAD
+=======
+	private String type;
+
+>>>>>>> 3.x
     /**
      * Creates a result saying that no applicable policies were found.
      */
@@ -75,9 +113,28 @@ public class PolicyFinderResult
      *
      * @param policy the applicable policy
      */
+<<<<<<< HEAD
     public PolicyFinderResult(AbstractPolicy policy) {
         this.policy = policy;
         status = null;
+=======
+    public PolicyFinderResult(Policy policy) {
+        this.policy = policy;
+        status = null;
+        this.type = "Policy";
+    }
+    
+    /**
+     * Creates a result containing a single applicable policy.
+     *
+     * @param policy the applicable policy
+     */
+    public PolicyFinderResult(PolicySet policySet, PolicyCombiningAlgorithm policyCombiningAlg) {
+        this.policySet = policySet;
+        this.policyCombiningAlg = policyCombiningAlg;
+        status = null;
+        this.type = "PolicySet";
+>>>>>>> 3.x
     }
 
     /**
@@ -96,7 +153,11 @@ public class PolicyFinderResult
      * @return true if the result was NotApplicable
      */
     public boolean notApplicable() {
+<<<<<<< HEAD
         return ((policy == null) && (status == null));
+=======
+        return ((policy == null) && (status == null) && (policySet == null));
+>>>>>>> 3.x
     }
 
     /**
@@ -114,9 +175,25 @@ public class PolicyFinderResult
      *
      * @return the applicable policy or null
      */
+<<<<<<< HEAD
     public AbstractPolicy getPolicy() {
         return policy;
     }
+=======
+    public Policy getPolicy() {
+        return policy;
+    }
+    
+    /**
+     * Returns the found policy, or null if there was an error or no policy
+     * was found.
+     *
+     * @return the applicable policy or null
+     */
+    public PolicySet getPolicySet() {
+        return policySet;
+    }
+>>>>>>> 3.x
 
     /**
      * Returns the status if there was an error, or null if no error occurred.
@@ -127,4 +204,11 @@ public class PolicyFinderResult
         return status;
     }
 
+<<<<<<< HEAD
+=======
+	public String getType() {
+		return type;
+	}
+
+>>>>>>> 3.x
 }

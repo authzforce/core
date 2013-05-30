@@ -5,6 +5,7 @@
 		<artifactId>core</artifactId>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<version>2.0.0</version>
+<<<<<<< HEAD
 		<relativePath>../authzforce-core</relativePath>
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
@@ -40,22 +41,87 @@
 		</plugins>
 	</build>
 	<dependencies>
+=======
+		<relativePath>../authzforce-core/pom.xml</relativePath>
+	</parent>
+	<groupId>com.thalesgroup.authzforce.core</groupId>
+	<artifactId>authzforce-core</artifactId>
+	<version>3.4.0</version>
+	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
+	<organization>
+		<name>Thales</name>
+	</organization>
+	<description>
+			An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP.
+	</description>
+	<inceptionYear>2011</inceptionYear>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<copyrightOwner>Thales Services - ThereSIS</copyrightOwner>
+		<jdk.source>1.7</jdk.source>
+		<jdk.target>1.7</jdk.target>
+	</properties>
+	<dependencies>
+		<!-- Authzforce optionnal dependencies -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.thalesgroup.authzforce</groupId> -->
+<!-- 			<artifactId>authzforce-audit</artifactId> -->
+<!-- 			<version>2.0.1</version> -->
+<!-- 		</dependency> -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>1.6.11</version>
+		</dependency>
+		<!-- /Authzforce optionnal dependencies -->
+>>>>>>> 3.x
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
 		</dependency>
 		<dependency>
+<<<<<<< HEAD
+=======
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>jaxb2-basics-runtime</artifactId>
+			<version>0.6.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>testing</artifactId>
+			<version>0.4.1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>1.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.11</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+>>>>>>> 3.x
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>3.1.1.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+<<<<<<< HEAD
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<version>6.4</version>
 			<scope>test</scope>
+=======
+			<groupId>com.thalesgroup.authzforce.core</groupId>
+			<artifactId>authzforce-model</artifactId>
+			<version>3.0.2</version>
+>>>>>>> 3.x
 		</dependency>
 		<dependency>
 			<groupId>commons-jxpath</groupId>
@@ -64,6 +130,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+<<<<<<< HEAD
 			<groupId>com.thalesgroup.authzforce.core</groupId>
 			<artifactId>model</artifactId>
 			<version>${project.version}</version>
@@ -79,4 +146,161 @@
 			<version>1.2.3</version>
 		</dependency>
 	</dependencies>
+=======
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- /Test dependencies -->
+	</dependencies>
+	<build>
+		<plugins>
+			<!-- Maven compiler configuration -->
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<executions>
+					<execution>
+						<id>default-testCompile</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<source>${jdk.source}</source>
+							<target>${jdk.target}</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-compile</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<configuration>
+							<source>${jdk.source}</source>
+							<target>${jdk.target}</target>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<source>${jdk.source}</source>
+					<target>${jdk.target}</target>
+				</configuration>
+			</plugin>
+			<!-- Uber jar configuration -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<finalName>${project.artifactId}-${project.version}</finalName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Test configuration -->
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.14.1</version>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<failIfNoTests>false</failIfNoTests>
+							<skipTests>false</skipTests>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Creating current year element for license headers -->
+			<plugin>
+				<groupId>org.codehaus.gmaven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<source>
+								import java.util.Date
+								import java.text.MessageFormat
+								def
+								vartimestamp = MessageFormat.format("{0,date,yyyy}", new Date())
+								project.properties['currentYear'] = vartimestamp
+							</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Adding header to file -->
+			<plugin>
+				<groupId>com.mycila.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<version>1.9.0</version>
+				<configuration>
+					<!-- Template location -->
+					<header>src/main/resources/fileHeader.txt</header>
+					<properties>
+						<!-- Values to be substituted in template -->
+						<h_inceptionYear>${inceptionYear}</h_inceptionYear>
+						<h_currentYear>${currentYear}</h_currentYear>
+						<h_copyrightOwner>${copyrightOwner}</h_copyrightOwner>
+					</properties>
+					<strictCheck>true</strictCheck>
+					<excludes>
+						<exclude>**/*.html</exclude>
+						<exclude>**/*.xml</exclude>
+						<exclude>**/*.txt</exclude>
+						<exclude>**/*.ec</exclude>
+						<exclude>**/*.log</exclude>
+						<exclude>**/*.css</exclude>
+						<exclude>**/*.js</exclude>
+						<exclude>**/*.jsp</exclude>
+						<exclude>**/*.md</exclude>
+						<exclude>**/*.properties</exclude>
+						<exclude>**/*.gitignore</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+					<id>default</id>
+					<phase>compile</phase>
+<!-- 						<goals> -->
+<!-- 							<goal>compile</goal> -->
+<!-- 							<goal>test-compile</goal> -->
+<!-- 						</goals> -->
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+>>>>>>> 3.x
 </project>

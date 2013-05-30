@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)Function.java
@@ -45,6 +46,37 @@ import java.io.OutputStream;
 
 import java.util.List;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.List;
+
+import javax.xml.bind.JAXBElement;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+>>>>>>> 3.x
 
 /**
  * Interface that all functions in the system must implement.
@@ -52,7 +84,11 @@ import java.util.List;
  * @since 1.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public interface Function extends Expression
+=======
+public abstract class Function extends FunctionType
+>>>>>>> 3.x
 {
 
     /**
@@ -78,14 +114,22 @@ public interface Function extends Expression
      * its sub-function when <code>checkInputs</code> is called on the
      * higher-order function.
      *
+<<<<<<< HEAD
      * @param inputs the <code>List</code> of inputs for the function
+=======
+     * @param expression the <code>List</code> of inputs for the function
+>>>>>>> 3.x
      * @param context the representation of the request
      *
      * @return a result containing the <code>AttributeValue</code> computed
      *         when evaluating the function, or <code>Status</code>
      *         specifying some error condition
      */
+<<<<<<< HEAD
     public EvaluationResult evaluate(List<Evaluatable> inputs, EvaluationCtx context);
+=======
+    public abstract EvaluationResult evaluate(List<JAXBElement<? extends ExpressionType>> expression, EvaluationCtx context);
+>>>>>>> 3.x
 
     /**
      * Returns the identifier of this function as known by the factories.
@@ -95,7 +139,11 @@ public interface Function extends Expression
      *
      * @return the function's identifier
      */
+<<<<<<< HEAD
     public URI getIdentifier();
+=======
+    public abstract URI getIdentifier();
+>>>>>>> 3.x
 
     /**
      * Provides the type of <code>AttributeValue</code> that this function
@@ -103,7 +151,11 @@ public interface Function extends Expression
      *
      * @return the type returned by this function
      */
+<<<<<<< HEAD
     public URI getReturnType();
+=======
+    public abstract URI getReturnType();
+>>>>>>> 3.x
 
     /**
      * Tells whether this function will return a bag of values or just a
@@ -111,7 +163,11 @@ public interface Function extends Expression
      *
      * @return true if evaluation will return a bag, false otherwise
      */
+<<<<<<< HEAD
     public boolean returnsBag();
+=======
+    public abstract boolean returnsBag();
+>>>>>>> 3.x
 
     /**
      * Checks that the given inputs are of the right types, in the right
@@ -126,7 +182,11 @@ public interface Function extends Expression
      * @throws IllegalArgumentException if the inputs do match what the
      *                                  function accepts for evaluation
      */
+<<<<<<< HEAD
     public void checkInputs(List<Evaluatable> inputs) throws IllegalArgumentException;
+=======
+    public abstract void checkInputs(List<ExpressionType> inputs) throws IllegalArgumentException;
+>>>>>>> 3.x
 
     /**
      * Checks that the given inputs are of the right types, in the right
@@ -148,7 +208,13 @@ public interface Function extends Expression
      * @throws IllegalArgumentException if the inputs do match what the
      *                                  function accepts for evaluation
      */
+<<<<<<< HEAD
     public void checkInputsNoBag(List<Evaluatable> inputs) throws IllegalArgumentException;
+=======
+//    public void checkInputsNoBag(List<Evaluatable> inputs) throws IllegalArgumentException;
+    
+    public abstract void checkInputsNoBag(List<ExpressionType> inputs) throws IllegalArgumentException;
+>>>>>>> 3.x
  
     /**
      * Encodes this <code>Function</code> into its XML representation and
@@ -157,7 +223,11 @@ public interface Function extends Expression
      *
      * @param output a stream into which the XML-encoded data is written
      */
+<<<<<<< HEAD
     public void encode(OutputStream output);
+=======
+    public abstract void encode(OutputStream output);
+>>>>>>> 3.x
 
     /**
      * Encodes this <code>Function</code> into its XML representation and
@@ -167,6 +237,10 @@ public interface Function extends Expression
      * @param output a stream into which the XML-encoded data is written
      * @param indenter an object that creates indentation strings
      */
+<<<<<<< HEAD
     public void encode(OutputStream output, Indenter indenter);
+=======
+    public abstract void encode(OutputStream output, Indenter indenter);
+>>>>>>> 3.x
    
 }

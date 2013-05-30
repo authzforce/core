@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)NOfFunction.java
@@ -41,11 +42,39 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+>>>>>>> 3.x
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
+
+>>>>>>> 3.x
 
 /**
  * A class that implements the n-of function. It requires
@@ -175,7 +204,11 @@ public class NOfFunction extends FunctionBase
         // check that none of the inputs is a bag
         Object [] list = inputs.toArray();
         for (int i = 0; i < list.length; i++)
+<<<<<<< HEAD
             if (((Evaluatable)(list[i])).returnsBag())
+=======
+            if (((Evaluatable)(list[i])).evaluatesToBag())
+>>>>>>> 3.x
                 throw new IllegalArgumentException("n-of can't use bags");
 
         // if we got here then there were no bags, so ask the other check
@@ -194,14 +227,22 @@ public class NOfFunction extends FunctionBase
             throw new IllegalArgumentException("n-of requires an argument");
 
         // check that the first element is an Integer
+<<<<<<< HEAD
         Evaluatable eval = (Evaluatable)(list[0]);
+=======
+        Expression eval = (Expression)(list[0]);
+>>>>>>> 3.x
         if (! eval.getType().toString().equals(IntegerAttribute.identifier))
             throw new IllegalArgumentException("first argument to n-of must" +
                                                " be an integer");
         
         // now check that the rest of the args are booleans
         for (int i = 1; i < list.length; i++) {
+<<<<<<< HEAD
             if (! ((Evaluatable)(list[i])).getType().toString().
+=======
+            if (! ((Expression)(list[i])).getType().toString().
+>>>>>>> 3.x
                 equals(BooleanAttribute.identifier))
                 throw new IllegalArgumentException("invalid parameter in n-of"
                                                    + ": expected boolean");

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)PermitOverridesRuleAlg.java
@@ -41,10 +42,40 @@ import com.sun.xacml.Rule;
 
 import com.sun.xacml.ctx.Result;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.combine;
+
+>>>>>>> 3.x
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParametersType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Rule;
+import com.sun.xacml.ctx.Result;
+
+>>>>>>> 3.x
 
 /**
  * This is the standard Permit Overrides rule combining algorithm. It
@@ -96,7 +127,11 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
+<<<<<<< HEAD
     public Result combine(EvaluationCtx context, List parameters,
+=======
+    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
+>>>>>>> 3.x
                           List ruleElements) {
         boolean atLeastOneError = false;
         boolean potentialPermit = false;
@@ -105,9 +140,15 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
         Iterator it = ruleElements.iterator();
 
         while (it.hasNext()) {
+<<<<<<< HEAD
             Rule rule = ((RuleCombinerElement)(it.next())).getRule();
             Result result = rule.evaluate(context);
             int value = result.getDecision();
+=======
+            Rule rule = (Rule)(it.next());
+            Result result = rule.evaluate(context);
+            int value = result.getDecision().ordinal();
+>>>>>>> 3.x
             
             // if there was a value of PERMIT, then regardless of what
             // else we've seen, we always return PERMIT
@@ -127,7 +168,11 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
                 // if the Rule's effect is PERMIT, then we can't let this
                 // alg return DENY, since this Rule might have permitted
                 // if it could do its stuff
+<<<<<<< HEAD
                 if (rule.getEffect() == Result.DECISION_PERMIT)
+=======
+                if (rule.getEffect().ordinal() == Result.DECISION_PERMIT)
+>>>>>>> 3.x
                     potentialPermit = true;
             } else {
                 // keep track of whether we had at least one rule that
@@ -145,8 +190,13 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
         // some Rule said DENY, so since nothing could have permitted,
         // we return DENY
         if (atLeastOneDeny)
+<<<<<<< HEAD
             return new Result(Result.DECISION_DENY,
                               context.getResourceId().encode());
+=======
+            return new Result(DecisionType.DENY, null, 
+                              context.getResourceId().encode(), null, null, context.getIncludeInResults());
+>>>>>>> 3.x
         
         // we didn't find anything that said DENY, but if we had a
         // problem with one of the Rules, then we're INDETERMINATE
@@ -155,8 +205,14 @@ public class PermitOverridesRuleAlg extends RuleCombiningAlgorithm
         
         // if we hit this point, then none of the rules actually applied
         // to us, so we return NOT_APPLICABLE
+<<<<<<< HEAD
         return new Result(Result.DECISION_NOT_APPLICABLE,
                           context.getResourceId().encode());
     }
 
+=======
+        return new Result(DecisionType.NOT_APPLICABLE,
+                          context.getResourceId().encode());
+    }
+>>>>>>> 3.x
 }

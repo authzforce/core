@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)MapFunction.java	1.4 01/30/03
@@ -34,6 +35,23 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 package com.sun.xacml.cond;
 
 import java.io.OutputStream;
@@ -45,14 +63,27 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+
+>>>>>>> 3.x
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
+<<<<<<< HEAD
 import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
+=======
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
+>>>>>>> 3.x
 
 
 /**
@@ -61,7 +92,11 @@ import com.sun.xacml.attr.BagAttribute;
  * @since 1.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 class MapFunction implements Function
+=======
+class MapFunction extends Function
+>>>>>>> 3.x
 {
 
     /**
@@ -212,12 +247,20 @@ class MapFunction implements Function
         Iterator<?> iterator = inputs.iterator();
         Function function = null;
 
+<<<<<<< HEAD
         Expression xpr = (Expression)(iterator.next());
         if (xpr instanceof Function) {
             function = (Function)xpr;
         } else {
             function = (Function)(((VariableReference)xpr).
                                   getReferencedDefinition().getExpression());
+=======
+        ExpressionType xpr = (ExpressionType)(iterator.next());
+        if (xpr instanceof Function) {
+            function = (Function)xpr;
+        } else {
+            function = (Function)(((VariableReference)xpr).getReferencedDefinition().getExpression()).getValue();
+>>>>>>> 3.x
         }
 
         Evaluatable eval = (Evaluatable)(iterator.next());
@@ -238,7 +281,11 @@ class MapFunction implements Function
         // is ultimately returned
 
         Iterator<?> it = bag.iterator();
+<<<<<<< HEAD
         List<AttributeValue> outputs = new ArrayList<AttributeValue>();
+=======
+        List<AttributeValueType> outputs = new ArrayList<AttributeValueType>();
+>>>>>>> 3.x
 
         while (it.hasNext()) {
             List params = new ArrayList();
@@ -276,8 +323,12 @@ class MapFunction implements Function
         if (list[0] instanceof Function) {
             function = (Function)(list[0]);
         } else if (list[0] instanceof VariableReference) {
+<<<<<<< HEAD
             Expression xpr = ((VariableReference)(list[0])).
                 getReferencedDefinition().getExpression();
+=======
+            ExpressionType xpr = (ExpressionType) ((VariableReference)(list[0])).getReferencedDefinition().getExpression().getValue();
+>>>>>>> 3.x
             if (xpr instanceof Function) {
                 function = (Function)xpr;
             }
@@ -289,7 +340,12 @@ class MapFunction implements Function
         }
         
         Evaluatable eval = (Evaluatable)(list[1]);
+<<<<<<< HEAD
         if (! eval.returnsBag()) {
+=======
+//        if (! eval.returnsBag()) {
+        if (! eval.evaluatesToBag()) {
+>>>>>>> 3.x
             throw new IllegalArgumentException("second argument to map must " +
                                                "be a bag");
         }

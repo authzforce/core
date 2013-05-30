@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)BaseCombiningAlgFactory.java
@@ -41,6 +42,26 @@ import com.sun.xacml.UnknownIdentifierException;
 
 import java.net.URI;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.net.URI;
+>>>>>>> 3.x
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +70,12 @@ import java.util.Set;
 
 import org.w3c.dom.Node;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.UnknownIdentifierException;
+
+>>>>>>> 3.x
 
 /**
  * This is a basic implementation of <code>FunctionFactory</code>. It
@@ -78,6 +105,15 @@ public class BaseFunctionFactory extends FunctionFactory
 
     // the superset factory chained to this factory
     private FunctionFactory superset = null;
+<<<<<<< HEAD
+=======
+    
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(BaseFunctionFactory.class);
+>>>>>>> 3.x
 
     /**
      * Default constructor. No superset factory is used.
@@ -135,6 +171,10 @@ public class BaseFunctionFactory extends FunctionFactory
         Iterator it = supportedFunctions.iterator();
         while (it.hasNext()) {
             Function function = (Function)(it.next());
+<<<<<<< HEAD
+=======
+            LOGGER.debug("Adding supported function to the functionMap: "+function.getIdentifier());
+>>>>>>> 3.x
             functionMap.put(function.getIdentifier().toString(), function);
         }
 
@@ -143,6 +183,10 @@ public class BaseFunctionFactory extends FunctionFactory
             URI id = (URI)(it.next());
             FunctionProxy proxy =
                 (FunctionProxy)(supportedAbstractFunctions.get(id));
+<<<<<<< HEAD
+=======
+            LOGGER.debug("Adding abstract function to the functionMap: "+id.toString());
+>>>>>>> 3.x
             functionMap.put(id.toString(), proxy);
         }
     }
@@ -166,12 +210,23 @@ public class BaseFunctionFactory extends FunctionFactory
         String id = function.getIdentifier().toString();
 
         // make sure this doesn't already exist
+<<<<<<< HEAD
         if (functionMap.containsKey(id))
             throw new IllegalArgumentException("function already exists");
 
         // add to the superset factory
         if (superset != null)
             superset.addFunction(function);
+=======
+        if (functionMap.containsKey(id)) {
+            throw new IllegalArgumentException("function already exists");
+        }
+
+        // add to the superset factory
+        if (superset != null) {
+            superset.addFunction(function);
+        }
+>>>>>>> 3.x
 
         // finally, add to this factory
         functionMap.put(id, function);
@@ -196,12 +251,23 @@ public class BaseFunctionFactory extends FunctionFactory
         String id = identity.toString();
 
         // make sure this doesn't already exist
+<<<<<<< HEAD
         if (functionMap.containsKey(id))
             throw new IllegalArgumentException("function already exists");
 
         // add to the superset factory
         if (superset != null)
             superset.addAbstractFunction(proxy, identity);
+=======
+        if (functionMap.containsKey(id)) {
+            throw new IllegalArgumentException("function already exists");
+        }
+
+        // add to the superset factory
+        if (superset != null) {
+            superset.addAbstractFunction(proxy, identity);
+        }
+>>>>>>> 3.x
 
         // finally, add to this factory
         functionMap.put(id, proxy);
@@ -254,6 +320,10 @@ public class BaseFunctionFactory extends FunctionFactory
 
         if (entry != null) {
             if (entry instanceof Function) {
+<<<<<<< HEAD
+=======
+            	((Function) entry).setFunctionId(((Function) entry).getIdentifier().toASCIIString());
+>>>>>>> 3.x
                 return (Function)entry;
             } else {
                 // this is actually a proxy, which means the other create

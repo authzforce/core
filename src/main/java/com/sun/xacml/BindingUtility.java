@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -17,7 +35,11 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  *
+<<<<<<< HEAD
  * @author najmi
+=======
+ * @author Romain Ferrari
+>>>>>>> 3.x
  */
 public class BindingUtility {
 	
@@ -26,6 +48,7 @@ public class BindingUtility {
 	static DocumentBuilderFactory dbf = null;
 	
     static JAXBContext s_jaxbContext = null;
+<<<<<<< HEAD
     public static oasis.names.tc.xacml._2_0.context.schema.os.ObjectFactory contextFac =
             new oasis.names.tc.xacml._2_0.context.schema.os.ObjectFactory();
     public static oasis.names.tc.xacml._2_0.policy.schema.os.ObjectFactory policyFac =
@@ -40,6 +63,22 @@ public class BindingUtility {
             s_jaxbContext = JAXBContext.newInstance(
                     jaxbContextPath,
                     BindingUtility.class.getClassLoader());            
+=======
+    public static  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory contextFac =
+            new  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory();
+//    public static oasis.names.tc.xacml._2_0.policy.schema.os.ObjectFactory policyFac =
+//            new oasis.names.tc.xacml._2_0.policy.schema.os.ObjectFactory();
+    public static  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory policyFac =
+            new  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory();
+    
+
+    //public static String jaxbContextPath = "net.opengis.gml.v_3_2_1:org.isotc211.iso19139.d_2007_04_17.gco:org.isotc211.iso19139.d_2007_04_17.gmd:org.isotc211.iso19139.d_2007_04_17.gmx:org.isotc211.iso19139.d_2007_04_17.gsr:org.isotc211.iso19139.d_2007_04_17.gss:org.isotc211.iso19139.d_2007_04_17.gts";
+    public static String jaxbContextPath = "oasis.names.tc.xacml._3_0.core.schema.wd_17";
+
+    public static JAXBContext getJAXBContext() throws JAXBException {
+        if (s_jaxbContext == null) {
+            s_jaxbContext = JAXBContext.newInstance(jaxbContextPath, BindingUtility.class.getClassLoader());            
+>>>>>>> 3.x
         }
 
         return s_jaxbContext;

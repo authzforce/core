@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 target/
 .classpath
 .project
@@ -6,3 +7,15 @@ target/
 .settings/org.eclipse.m2e.core.prefs
 /bin
 /.settings
+=======
+/target
+/.classpath
+/.project
+/bin
+/.settings
+/.settings/org.eclipse.jdt.core.prefs
+/.settings/org.eclipse.core.resources.prefs
+/.settings/org.eclipse.wst.common.component
+/.settings/org.eclipse.wst.common.project.facet.core.xml
+/.settings/org.sonar.ide.eclipse.core.prefs
+>>>>>>> 3.x

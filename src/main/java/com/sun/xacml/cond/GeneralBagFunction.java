@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)GeneralBagFunction.java
@@ -42,6 +43,25 @@ import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+>>>>>>> 3.x
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +69,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+
+>>>>>>> 3.x
 
 /**
  * Specific <code>BagFunction</code> class that supports all of the
@@ -268,15 +299,25 @@ public class GeneralBagFunction extends BagFunction
     public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
+<<<<<<< HEAD
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
+=======
+        AttributeValueType [] argValues = new AttributeValueType[inputs.size()];
+>>>>>>> 3.x
         EvaluationResult result = evalArgs(inputs, context, argValues);
         if (result != null)
             return result;
 
         // Now that we have real values, perform the requested operation.
+<<<<<<< HEAD
         AttributeValue attrResult = null;
 
         switch (getFunctionId()) {
+=======
+        AttributeValueType attrResult = null;
+
+        switch (getId(getFunctionName())) {
+>>>>>>> 3.x
             
             // *-one-and-only takes a single bag and returns a
             // single value of baseType
@@ -289,7 +330,11 @@ public class GeneralBagFunction extends BagFunction
                                            "element, got a bag with " +
                                            bag.size() + " elements");
 
+<<<<<<< HEAD
             attrResult = (AttributeValue)(bag.iterator().next());
+=======
+            attrResult = (AttributeValueType)(bag.iterator().next());
+>>>>>>> 3.x
             break;
         }
 

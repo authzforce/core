@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)VariableDefinition.java
@@ -46,6 +47,42 @@ import java.io.PrintStream;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinitionType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.cond.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.ExpressionTools;
+
+>>>>>>> 3.x
 
 /**
  * This class supports the VariableDefinitionType type introuced in XACML
@@ -57,7 +94,11 @@ import org.w3c.dom.NodeList;
  * @since 2.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public class VariableDefinition
+=======
+public class VariableDefinition extends VariableDefinitionType
+>>>>>>> 3.x
 {
 
     // the identitifer for this definition
@@ -73,9 +114,15 @@ public class VariableDefinition
      * @param variableId the identifier for this definition
      * @param expression the expression defined here
      */
+<<<<<<< HEAD
     public VariableDefinition(String variableId, Expression expression) {
         this.variableId = variableId;
         this.expression = expression;
+=======
+    public VariableDefinition(String variableId, ExpressionType expression) {
+        this.variableId = variableId;
+        this.expression = (Expression)expression;
+>>>>>>> 3.x
     }
 
     /**
@@ -106,8 +153,13 @@ public class VariableDefinition
             xprNode = nodes.item(i++);
 
         // use that node to get the expression
+<<<<<<< HEAD
         Expression xpr = ExpressionHandler.
             parseExpression(xprNode, metaData, manager);
+=======
+        ExpressionType xpr = (Expression)ExpressionTools.
+            getExpression(xprNode, metaData, manager);
+>>>>>>> 3.x
 
         return new VariableDefinition(variableId, xpr);
     }
@@ -126,9 +178,15 @@ public class VariableDefinition
      *
      * @return the definition's expression
      */
+<<<<<<< HEAD
     public Expression getExpression() {
         return expression;
     }
+=======
+//    public Expression getExpression() {
+//        return expression;
+//    }
+>>>>>>> 3.x
     
     /**
      * Encodes this class into its XML representation and writes this
@@ -160,5 +218,8 @@ public class VariableDefinition
         out.println("</VariableDefinition>");
         indenter.out();
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3.x
 }

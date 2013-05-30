@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)RuleCombinerElement.java
@@ -41,10 +42,47 @@ import com.sun.xacml.Rule;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.combine;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.MatchResult;
+import com.sun.xacml.Rule;
+import com.sun.xacml.ctx.Result;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+>>>>>>> 3.x
 
 import java.util.Iterator;
 import java.util.List;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+>>>>>>> 3.x
 
 /**
  * Specific version of <code>CombinerElement</code> used for rule combining.
@@ -83,8 +121,14 @@ public class RuleCombinerElement extends CombinerElement
      *
      * @return the element's <code>Rule</code>
      */
+<<<<<<< HEAD
     public Rule getRule() {
         return (Rule)(getElement());
+=======
+    public RuleType getRule() {
+//        return getElement();
+    	return null;
+>>>>>>> 3.x
     }
 
     /**
@@ -96,6 +140,7 @@ public class RuleCombinerElement extends CombinerElement
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
+<<<<<<< HEAD
         Iterator it = getParameters().iterator();
 
         if (it.hasNext()) {
@@ -118,4 +163,51 @@ public class RuleCombinerElement extends CombinerElement
         getRule().encode(output, indenter);
     }
 
+=======
+       
+    }
+
+	@Override
+	public List getChildren() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getId() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TargetType getTarget() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MatchResult match(EvaluationCtx context) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Result evaluate(EvaluationCtx context) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void encode(OutputStream output) {
+		// TODO Auto-generated method stub
+		
+	}
+
+>>>>>>> 3.x
 }

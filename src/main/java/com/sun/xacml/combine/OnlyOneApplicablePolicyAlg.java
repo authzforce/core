@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)OnlyOneApplicablePolicyAlg.java
@@ -43,11 +44,42 @@ import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.combine;
+
+>>>>>>> 3.x
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.MatchResult;
+import com.sun.xacml.ctx.Result;
+import com.sun.xacml.ctx.Status;
+
+>>>>>>> 3.x
 
 /**
  * This is the standard Only One Applicable Policy combining algorithm. This
@@ -88,6 +120,7 @@ public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
+<<<<<<< HEAD
     public Result combine(EvaluationCtx context, List parameters,
                           List policyElements) {
         boolean atLeastOne = false;
@@ -97,6 +130,17 @@ public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
         while (it.hasNext()) {
             AbstractPolicy policy =
                 ((PolicyCombinerElement)(it.next())).getPolicy();
+=======
+    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
+                          List policyElements) {
+        boolean atLeastOne = false;
+        Policy selectedPolicy = null;
+        Iterator it = policyElements.iterator();
+
+        while (it.hasNext()) {
+//            Policy policy = ((Policy)(it.next())).getPolicy();
+        	Policy policy = ((Policy)(it.next()));
+>>>>>>> 3.x
 
             // see if the policy matches the context
             MatchResult match = policy.match(context);
@@ -105,7 +149,11 @@ public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
             // if there is an error in trying to match any of the targets,
             // we always return INDETERMINATE immediately
             if (result == MatchResult.INDETERMINATE)
+<<<<<<< HEAD
                 return new Result(Result.DECISION_INDETERMINATE,
+=======
+                return new Result(DecisionType.INDETERMINATE,
+>>>>>>> 3.x
                                   match.getStatus(),
                                   context.getResourceId().encode());
             
@@ -115,7 +163,11 @@ public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
                     List code = new ArrayList();
                     code.add(Status.STATUS_PROCESSING_ERROR);
                     String message = "Too many applicable policies";
+<<<<<<< HEAD
                     return new Result(Result.DECISION_INDETERMINATE,
+=======
+                    return new Result(DecisionType.INDETERMINATE,
+>>>>>>> 3.x
                                       new Status(code, message),
                                       context.getResourceId().encode());
                 }
@@ -129,6 +181,7 @@ public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
 
         // if we got through the loop and found exactly one match, then
         // we return the evaluation result of that policy
+<<<<<<< HEAD
         if (atLeastOne)
             return selectedPolicy.evaluate(context);
 
@@ -137,4 +190,14 @@ public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
                           context.getResourceId().encode());
     }
 
+=======
+        if (atLeastOne) {
+            return selectedPolicy.evaluate(context);
+        }
+
+        // if we didn't find a matching policy, then we don't apply
+        return new Result(DecisionType.NOT_APPLICABLE,
+                          context.getResourceId().encode());
+    }
+>>>>>>> 3.x
 }

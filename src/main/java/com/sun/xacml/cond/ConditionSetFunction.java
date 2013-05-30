@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)ConditionSetFunction.java
@@ -42,6 +43,25 @@ import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.BooleanAttribute;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+>>>>>>> 3.x
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +69,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+
+>>>>>>> 3.x
 
 /**
  * Specific <code>SetFunction</code> class that supports all of the
@@ -67,30 +96,51 @@ public class ConditionSetFunction extends SetFunction
     private static final int ID_BASE_SET_EQUALS = 2;
 
     // mapping of function name to its associated id and parameter type
+<<<<<<< HEAD
     private static HashMap idMap;
     private static HashMap typeMap;
 
     // the actual supported ids
     private static Set supportedIds;
+=======
+    private static HashMap<String, Integer> idMap;
+    private static HashMap<String, String> typeMap;
+
+    // the actual supported ids
+    private static Set<String> supportedIds;
+>>>>>>> 3.x
 
     /**
      * Static initializer that sets up the paramater info for all the
      * supported functions.
      */
     static {
+<<<<<<< HEAD
         idMap = new HashMap();
         typeMap = new HashMap();
+=======
+        idMap = new HashMap<String, Integer>();
+        typeMap = new HashMap<String, String>();
+>>>>>>> 3.x
 
         for (int i = 0; i < baseTypes.length; i++) {
             String baseName = FUNCTION_NS + simpleTypes[i];
             String baseType = baseTypes[i];
 
             idMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
+<<<<<<< HEAD
                       new Integer(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
             idMap.put(baseName + NAME_BASE_SUBSET,
                       new Integer(ID_BASE_SUBSET));
             idMap.put(baseName + NAME_BASE_SET_EQUALS,
                       new Integer(ID_BASE_SET_EQUALS));
+=======
+                      Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
+            idMap.put(baseName + NAME_BASE_SUBSET,
+                      Integer.valueOf(ID_BASE_SUBSET));
+            idMap.put(baseName + NAME_BASE_SET_EQUALS,
+                      Integer.valueOf(ID_BASE_SET_EQUALS));
+>>>>>>> 3.x
 
             typeMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF, baseType);
             typeMap.put(baseName + NAME_BASE_SUBSET, baseType);
@@ -102,11 +152,19 @@ public class ConditionSetFunction extends SetFunction
             String baseType = baseTypes2[i];
 
             idMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
+<<<<<<< HEAD
                       new Integer(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
             idMap.put(baseName + NAME_BASE_SUBSET,
                       new Integer(ID_BASE_SUBSET));
             idMap.put(baseName + NAME_BASE_SET_EQUALS,
                       new Integer(ID_BASE_SET_EQUALS));
+=======
+                      Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
+            idMap.put(baseName + NAME_BASE_SUBSET,
+                      Integer.valueOf(ID_BASE_SUBSET));
+            idMap.put(baseName + NAME_BASE_SET_EQUALS,
+                      Integer.valueOf(ID_BASE_SET_EQUALS));
+>>>>>>> 3.x
 
             typeMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF, baseType);
             typeMap.put(baseName + NAME_BASE_SUBSET, baseType);
@@ -114,12 +172,21 @@ public class ConditionSetFunction extends SetFunction
         }
 
         supportedIds = Collections.
+<<<<<<< HEAD
             unmodifiableSet(new HashSet(idMap.keySet()));
 
         idMap.put(NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
                   new Integer(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
         idMap.put(NAME_BASE_SUBSET, new Integer(ID_BASE_SUBSET));
         idMap.put(NAME_BASE_SET_EQUALS, new Integer(ID_BASE_SET_EQUALS));
+=======
+            unmodifiableSet(new HashSet<String>(idMap.keySet()));
+
+        idMap.put(NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
+                  Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
+        idMap.put(NAME_BASE_SUBSET, Integer.valueOf(ID_BASE_SUBSET));
+        idMap.put(NAME_BASE_SET_EQUALS, Integer.valueOf(ID_BASE_SET_EQUALS));
+>>>>>>> 3.x
     };
     
     /**
@@ -185,7 +252,11 @@ public class ConditionSetFunction extends SetFunction
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
+<<<<<<< HEAD
     public static Set getSupportedIdentifiers() {
+=======
+    public static Set<String> getSupportedIdentifiers() {
+>>>>>>> 3.x
         return supportedIds;
     }
 
@@ -214,7 +285,11 @@ public class ConditionSetFunction extends SetFunction
 
         AttributeValue result = null;
         
+<<<<<<< HEAD
         switch(getFunctionId()) {
+=======
+        switch(Integer.parseInt(getFunctionId())) {
+>>>>>>> 3.x
             // *-at-least-one-member-of takes two bags of the same type and
             // returns a boolean
         case ID_BASE_AT_LEAST_ONE_MEMBER_OF:
@@ -222,7 +297,11 @@ public class ConditionSetFunction extends SetFunction
             // second argument (using the *-is-in semantics)
 
             result = BooleanAttribute.getFalseInstance();
+<<<<<<< HEAD
             Iterator it = bags[0].iterator();
+=======
+            Iterator<?> it = bags[0].iterator();
+>>>>>>> 3.x
 
             while (it.hasNext()) {
                 if (bags[1].contains((AttributeValue)(it.next()))) {

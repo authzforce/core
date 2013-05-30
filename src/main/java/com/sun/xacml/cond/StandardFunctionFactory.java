@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)StandardFunctionFactory.java
@@ -38,6 +39,33 @@ package com.sun.xacml.cond;
 
 import com.sun.xacml.UnknownIdentifierException;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import com.sun.xacml.UnknownIdentifierException;
+>>>>>>> 3.x
 import com.sun.xacml.cond.cluster.AbsFunctionCluster;
 import com.sun.xacml.cond.cluster.AddFunctionCluster;
 import com.sun.xacml.cond.cluster.ComparisonFunctionCluster;
@@ -62,6 +90,7 @@ import com.sun.xacml.cond.cluster.StringFunctionCluster;
 import com.sun.xacml.cond.cluster.StringNormalizeFunctionCluster;
 import com.sun.xacml.cond.cluster.SubtractFunctionCluster;
 
+<<<<<<< HEAD
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -72,6 +101,8 @@ import java.util.Set;
 
 import java.util.logging.Logger;
 
+=======
+>>>>>>> 3.x
 
 /**
  * This factory supports the standard set of functions specified in XACML
@@ -101,7 +132,11 @@ public class StandardFunctionFactory extends BaseFunctionFactory
     private static StandardFunctionFactory generalFactory = null;
 
     // the three function sets/maps that we use internally
+<<<<<<< HEAD
     private static Set targetFunctions = null;
+=======
+    private static Set<Function> targetFunctions = null;
+>>>>>>> 3.x
     private static Set conditionFunctions = null;
     private static Set generalFunctions = null;
 
@@ -112,14 +147,26 @@ public class StandardFunctionFactory extends BaseFunctionFactory
     // the static sets of supported identifiers for each XACML version
     private static Set supportedV1Functions;
     private static Set supportedV2Functions;
+<<<<<<< HEAD
+=======
+    private static Set supportedV3Functions;
+>>>>>>> 3.x
 
     // the set/map used by each singleton factory instance
     private Set supportedFunctions = null;
     private Map supportedAbstractFunctions = null;
 
+<<<<<<< HEAD
     // the logger we'll use for all messages
     private static final Logger logger =
         Logger.getLogger(StandardFunctionFactory.class.getName());
+=======
+    /**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(StandardFunctionFactory.class);
+>>>>>>> 3.x
 
     /**
      * Creates a new StandardFunctionFactory, making sure that the default
@@ -140,11 +187,16 @@ public class StandardFunctionFactory extends BaseFunctionFactory
      * called once.
      */
     private static void initTargetFunctions() {
+<<<<<<< HEAD
         logger.config("Initializing standard Target functions");
+=======
+        LOGGER.info("Initializing standard Target functions");
+>>>>>>> 3.x
 
         targetFunctions = new HashSet();
 
         // add EqualFunction
+<<<<<<< HEAD
         targetFunctions.addAll((new EqualFunctionCluster()).
                                getSupportedFunctions());
         // add LogicalFunction
@@ -163,6 +215,24 @@ public class StandardFunctionFactory extends BaseFunctionFactory
         targetFunctions.addAll((new MatchFunctionCluster()).
                                getSupportedFunctions());
 
+=======
+        targetFunctions.addAll((new EqualFunctionCluster()).getSupportedFunctions());
+        // add LogicalFunction
+        targetFunctions.addAll((new LogicalFunctionCluster()).getSupportedFunctions());
+        // add NOfFunction
+        targetFunctions.addAll((new NOfFunctionCluster()).getSupportedFunctions());
+        // add NotFunction
+        targetFunctions.addAll((new NotFunctionCluster()).getSupportedFunctions());
+        // add ComparisonFunction
+        targetFunctions.addAll((new ComparisonFunctionCluster()).getSupportedFunctions());
+        // add MatchFunction
+        targetFunctions.addAll((new MatchFunctionCluster()).getSupportedFunctions());
+
+        LOGGER.debug("Functions added to the target");
+        for (Function key : (Set<Function>)targetFunctions) {
+        	LOGGER.debug(key.getIdentifier());
+		}
+>>>>>>> 3.x
         targetAbstractFunctions = new HashMap();
     }
 
@@ -171,11 +241,20 @@ public class StandardFunctionFactory extends BaseFunctionFactory
      * called once.
      */
     private static void initConditionFunctions() {
+<<<<<<< HEAD
         logger.config("Initializing standard Condition functions");
 
         if (targetFunctions == null)
             initTargetFunctions();
 
+=======
+        LOGGER.info("Initializing standard Condition functions");
+
+        if (targetFunctions == null) {
+            initTargetFunctions();
+        }
+        
+>>>>>>> 3.x
         conditionFunctions = new HashSet(targetFunctions);
 
         // add condition function TimeInRange
@@ -198,10 +277,18 @@ public class StandardFunctionFactory extends BaseFunctionFactory
      * called once.
      */
     private static void initGeneralFunctions() {
+<<<<<<< HEAD
         logger.config("Initializing standard General functions");
 
         if (conditionFunctions == null)
             initConditionFunctions();
+=======
+        LOGGER.info("Initializing standard General functions");
+
+        if (conditionFunctions == null) {
+            initConditionFunctions();
+        }
+>>>>>>> 3.x
 
         generalFunctions = new HashSet(conditionFunctions);
 

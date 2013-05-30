@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)AttributeFinder.java
@@ -34,6 +35,23 @@
  * the design, construction, operation or maintenance of any nuclear facility.
  */
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 package com.sun.xacml.finder;
 
 import java.net.URI;
@@ -42,16 +60,27 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+<<<<<<< HEAD
 import java.util.logging.Level;
 import java.util.logging.Logger;
+=======
+>>>>>>> 3.x
 
 import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
+<<<<<<< HEAD
 import com.sun.xacml.cond.EvaluationResult;
 import com.thalesgroup.authzforce.audit.AttributesResolved;
 import com.thalesgroup.authzforce.audit.AuditLogs;
+=======
+import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.xacmlv3.AttributeSelector;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+//import com.thalesgroup.authzforce.audit.AttributesResolved;
+//import com.thalesgroup.authzforce.audit.AuditLogs;
+>>>>>>> 3.x
 
 
 /**
@@ -84,10 +113,13 @@ public class AttributeFinder
     //
     private List selectorModules;
 
+<<<<<<< HEAD
     // the logger we'll use for all messages
     private static final Logger LOGGER =
         Logger.getLogger(AttributeFinder.class.getName());
 
+=======
+>>>>>>> 3.x
     private static final org.apache.log4j.Logger LOG4J_LOGGER = 
 			org.apache.log4j.Logger.getLogger(AttributeFinder.class);    
     
@@ -181,15 +213,24 @@ public class AttributeFinder
 
                 // if there was an error, we stop right away
                 if (result.indeterminate()) {
+<<<<<<< HEAD
                     if (LOGGER.isLoggable(Level.INFO)) {
                         LOGGER.info("Error while trying to resolve values: " +
                                     result.getStatus().getMessage());
                     }
+=======
+                	LOG4J_LOGGER.info("Error while trying to resolve values: " +
+                                    result.getStatus().getMessage());
+>>>>>>> 3.x
                     return result;
                 }
                 
                 LOG4J_LOGGER.debug("Finish to resolv attribute value for attribute: "+attributeId +" values are : ");
+<<<<<<< HEAD
                 AuditLogs audit = AuditLogs.getInstance();
+=======
+//                AuditLogs audit = AuditLogs.getInstance();
+>>>>>>> 3.x
                 /*
                  * Cache management (Deleting cache)
                  * @author romain.ferrari[AT]thalesgroup.com
@@ -200,11 +241,16 @@ public class AttributeFinder
                 BagAttribute bag = (BagAttribute)(result.getAttributeValue());
                 BagAttribute auditBag = bag;
                 Iterator iter = auditBag.getValue().iterator();
+<<<<<<< HEAD
                 AttributesResolved attrResolv = null;
+=======
+//                AttributesResolved attrResolv = null;
+>>>>>>> 3.x
                 /*
                  * Parsing for auditlog (FIX: Romain Ferrari)
                  * @author romain.guignard[AT]thalesgroup.com
                  */
+<<<<<<< HEAD
 				while (iter.hasNext()){
 					String attrval = iter.next().toString();
 					attrResolv = new AttributesResolved();
@@ -222,6 +268,25 @@ public class AttributeFinder
 					audit.getAttrResolv().add(attrResolv);	
 					LOG4J_LOGGER.debug("Val : "+attrval);
 				}
+=======
+//				while (iter.hasNext()){
+//					String attrval = iter.next().toString();
+//					attrResolv = new AttributesResolved();
+//					try {
+//						if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#string"))) {
+//							attrResolv.setAttributeValue(attrval.split(":")[1]);
+//						} else if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#integer"))) {
+//							attrResolv.setAttributeValue(attrval.split("@")[1]);
+//						}
+//					} catch (URISyntaxException e) {
+//						LOG4J_LOGGER.fatal("Error while building URI");
+//						LOG4J_LOGGER.fatal(e.getLocalizedMessage());
+//					}
+//					attrResolv.setAttributeId(attributeId);
+//					audit.getAttrResolv().add(attrResolv);	
+//					LOG4J_LOGGER.debug("Val : "+attrval);
+//				}
+>>>>>>> 3.x
 				/*
 				 * End of parsing for auditlog (NOTE: Romain Guignard)
 				 */
@@ -234,10 +299,15 @@ public class AttributeFinder
         
         // if we got here then there were no errors but there were also no
         // matches, so we have to return an empty bag
+<<<<<<< HEAD
         if (LOGGER.isLoggable(Level.INFO)) {
             LOGGER.info("Failed to resolve any values for " +
                         attributeId.toString());
         }
+=======
+        	LOG4J_LOGGER.info("Failed to resolve any values for " +
+                        attributeId.toString());
+>>>>>>> 3.x
 
         return new EvaluationResult(BagAttribute.
                                     createEmptyBag(attributeType));
@@ -278,10 +348,15 @@ public class AttributeFinder
 
             // if there was an error, we stop right away
             if (result.indeterminate()) {
+<<<<<<< HEAD
                 if (LOGGER.isLoggable(Level.INFO)) {
                     LOGGER.info("Error while trying to resolve values: " +
                                 result.getStatus().getMessage());
                 }
+=======
+            	LOG4J_LOGGER.info("Error while trying to resolve values: " +
+                                result.getStatus().getMessage());
+>>>>>>> 3.x
                 return result;
             }
 
@@ -294,9 +369,13 @@ public class AttributeFinder
 
         // if we got here then there were no errors but there were also no
         // matches, so we have to return an empty bag
+<<<<<<< HEAD
         if (LOGGER.isLoggable(Level.INFO)) {
             LOGGER.info("Failed to resolve any values for " + contextPath);
         }
+=======
+        	LOG4J_LOGGER.info("Failed to resolve any values for " + contextPath);
+>>>>>>> 3.x
 
         return new EvaluationResult(BagAttribute.
                                     createEmptyBag(attributeType));

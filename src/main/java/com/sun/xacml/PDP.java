@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * @(#)PDP.java
  *
@@ -61,6 +62,41 @@ import oasis.names.tc.xacml._2_0.context.schema.os.SubjectType;
 
 import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.ctx.RequestCtx;
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+>>>>>>> 3.x
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
@@ -69,6 +105,12 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderResult;
+<<<<<<< HEAD
+=======
+import com.thalesgroup.authzforce.audit.AuditLogs;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+>>>>>>> 3.x
 
 /**
  * This is the core class for the XACML engine, providing the starting point for
@@ -90,13 +132,40 @@ public class PDP {
 	private ResourceFinder resourceFinder;
 
 	// the logger we'll use for all messages
+<<<<<<< HEAD
 	private static final Logger OLD_LOGGER = Logger.getLogger(PDP.class
 			.getName());
+=======
+//	private static final Logger OLD_LOGGER = Logger.getLogger(PDP.class
+//			.getName());
+>>>>>>> 3.x
 	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
 			.getLogger(PDP.class.getName());
 
 	private static CacheManager cacheManager;
 
+<<<<<<< HEAD
+=======
+	private static PDP authzforce;
+
+	private PDPConfig config;
+
+	public static PDP getInstance() {
+		if (authzforce == null) {
+			authzforce = new PDP();
+		}
+		return authzforce;
+	}
+
+	public PDPConfig getPDPConfig() {
+		return config;
+	}
+
+	public PDP() {
+		config = new PDPConfig(null, null, null, null);
+	}
+
+>>>>>>> 3.x
 	/**
 	 * Constructs a new <code>PDP</code> object with the given configuration
 	 * information.
@@ -106,7 +175,13 @@ public class PDP {
 	 *            external attributes, etc.
 	 */
 	public PDP(PDPConfig config) {
+<<<<<<< HEAD
 		OLD_LOGGER.fine("creating a PDP");
+=======
+		LOGGER.info("creating a PDP");
+
+		this.config = config;
+>>>>>>> 3.x
 
 		attributeFinder = config.getAttributeFinder();
 
@@ -114,7 +189,11 @@ public class PDP {
 		policyFinder.init();
 
 		resourceFinder = config.getResourceFinder();
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> 3.x
 		cacheManager = config.getCacheManager();
 
 		/*
@@ -122,13 +201,18 @@ public class PDP {
 		 * 
 		 * AUTHOR: romain.ferrari[AT]thalesgroup.com
 		 */
+<<<<<<< HEAD
 		if (cacheManager.isActivate()) {			
+=======
+		if (cacheManager.isActivate()) {
+>>>>>>> 3.x
 			cacheManager = CacheManager.getInstance();
 		}
 	}
 
 	private String getHashCode(RequestType myEvaluationCtx) {
 		int hash = 0;
+<<<<<<< HEAD
 		
 		// Searching within the Action for AttributeType
 		for (AttributeType myAttributeType : myEvaluationCtx.getAction()
@@ -176,6 +260,21 @@ public class PDP {
 				}
 			}
 		}
+=======
+
+		for (AttributesType avts : myEvaluationCtx.getAttributes()) {
+			for (AttributeType att : avts.getAttribute()) {
+				hash += att.getAttributeId().hashCode();
+				for (AttributeValueType attvt : att.getAttributeValue()) {
+					for (Object attContent : attvt.getContent()) {
+						hash += attContent.hashCode();
+					}
+				}
+			}
+
+		}
+		
+>>>>>>> 3.x
 		return String.valueOf(hash);
 	}
 
@@ -189,6 +288,15 @@ public class PDP {
 		return policyFinder;
 	}
 
+<<<<<<< HEAD
+=======
+	public void setPolicyFinder(PolicyFinder policyFinder) {
+		this.policyFinder = policyFinder;
+		// Used to reload
+		getPolicyFinder();
+	}
+
+>>>>>>> 3.x
 	/**
 	 * Attempts to evaluate the request against the policies known to this PDP.
 	 * This is really the core method of the entire XACML specification, and for
@@ -202,6 +310,7 @@ public class PDP {
 	 * 
 	 * @param request
 	 *            the request to evaluate
+<<<<<<< HEAD
 	 * @deprecated As of release2.0, replaced by {@link #evaluate(RequestType)}
 	 * @return a response paired to the request
 	 */
@@ -242,6 +351,120 @@ public class PDP {
 					Result.DECISION_INDETERMINATE, status));
 		}
 		return response;
+=======
+	 * @return a response paired to the request
+	 */
+	@Audit(type = Audit.Type.DISPLAY)
+	public List<ResponseCtx> evaluateList(RequestType request) {
+
+		List<AttributesType> subjects = new ArrayList<AttributesType>();
+		List<AttributesType> actions = new ArrayList<AttributesType>();
+		List<AttributesType> resources = new ArrayList<AttributesType>();
+		List<AttributesType> environments = new ArrayList<AttributesType>();
+		List<AttributesType> customs = new ArrayList<AttributesType>();
+		List<RequestType> requests = new ArrayList<RequestType>();
+		List<ResponseCtx> responses = new ArrayList<ResponseCtx>();
+
+		if (request.getMultiRequests() != null) {
+			// TODO: Implement multiRequest
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			StatusCodeType code = new StatusCodeType();
+			code.setValue(Status.STATUS_SYNTAX_ERROR);
+			StatusType status = new StatusType();
+			status.setStatusCode(code);
+			status.setStatusMessage("Multi Request not implemented yet");
+			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+		} else if (request.isCombinedDecision()){
+			// TODO: Implement combinedDecision
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			StatusCodeType code = new StatusCodeType();
+			code.setValue(Status.STATUS_SYNTAX_ERROR);
+			StatusType status = new StatusType();
+			status.setStatusCode(code);
+			status.setStatusMessage("Combined decision not implemented yet");
+			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+		} else {
+
+			for (AttributesType myAttr : request.getAttributes()) {
+				if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value())) {
+					resources.add(myAttr);
+				} else if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value())) {
+					subjects.add(myAttr);
+				} else if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value())) {
+					actions.add(myAttr);
+				} else if (myAttr.getCategory().equals(
+						XACMLAttributeId.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value())) {
+					environments.add(myAttr);
+				} else {
+					customs.add(myAttr);
+				}
+			}
+			if(subjects.isEmpty() && actions.isEmpty() && resources.isEmpty()) {
+				// there was something wrong with the request, so we return
+				// Indeterminate with a status of syntax error...though this
+				// may change if a more appropriate status type exists
+				StatusCodeType code = new StatusCodeType();
+				code.setValue(Status.STATUS_SYNTAX_ERROR);
+				StatusType status = new StatusType();
+				status.setStatusCode(code);
+				status.setStatusMessage("Ressource or Subject or Action attributes needs to be filled");
+				return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+			}
+			if(subjects.isEmpty()) {
+				AttributesType subject = new AttributesType();
+				subjects.add(subject);
+			}
+			if(actions.isEmpty()) {
+				AttributesType action = new AttributesType();
+				actions.add(action);
+			}
+			if(resources.isEmpty()) {
+				AttributesType resource = new AttributesType();
+				resources.add(resource);
+			}
+			
+			for (AttributesType subjectAttr : subjects) {
+				for (AttributesType actionsAttr : actions) {
+					for (AttributesType resourcesAttr : resources) {
+						RequestType tmpRequest = new RequestType();
+						tmpRequest.setMultiRequests(request.getMultiRequests());
+						tmpRequest.setRequestDefaults(request.getRequestDefaults());
+						tmpRequest.setReturnPolicyIdList(request.isReturnPolicyIdList());
+						tmpRequest.setCombinedDecision(request.isCombinedDecision());
+						if(!resourcesAttr.getAttribute().isEmpty()) {
+							tmpRequest.getAttributes().add(resourcesAttr);
+						}
+						if(!actionsAttr.getAttribute().isEmpty()) {
+							tmpRequest.getAttributes().add(actionsAttr);
+						}
+						if(!subjectAttr.getAttribute().isEmpty()) {
+							tmpRequest.getAttributes().add(subjectAttr);
+						}
+						requests.add(tmpRequest);
+					}
+				}
+			}
+			for (RequestType requestList : requests) {
+				requestList.getAttributes().addAll(environments);
+			}
+			for (RequestType requestList : requests) {
+				requestList.getAttributes().addAll(customs);
+			}
+			for (RequestType requestType : requests) {
+				ResponseCtx response = this.evaluate(requestType);
+				responses.add(response);
+			}
+		}
+		
+		return responses;
+>>>>>>> 3.x
 	}
 
 	/**
@@ -262,6 +485,7 @@ public class PDP {
 	 */
 	public ResponseCtx evaluate(RequestType request) {
 		String hash = "";
+<<<<<<< HEAD
 		
 		// try to create the EvaluationCtx out of the request
 		try {
@@ -275,6 +499,25 @@ public class PDP {
 			if (cacheManager.isActivate()) {
 				hash = getHashCode(request);
 				ResponseCtx cacheResult = (ResponseCtx)cacheManager.checkCache(hash);
+=======
+
+		// try to create the EvaluationCtx out of the request
+		// FIXME: finish implementation
+		try {
+			BasicEvaluationCtx myEvaluationCtx = new BasicEvaluationCtx(
+					request,
+					attributeFinder,
+					Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
+			/*
+			 * 
+			 */
+			// @author: romain.ferrari@thalesgroup.com
+			// Using the cache if defined
+			if (cacheManager.isActivate()) {
+				hash = getHashCode(request);
+				ResponseCtx cacheResult = (ResponseCtx) cacheManager
+						.checkCache(hash);
+>>>>>>> 3.x
 				if (cacheResult != null) {
 					LOGGER.debug("Response found in cache");
 					return cacheResult;
@@ -285,10 +528,13 @@ public class PDP {
 			if (cacheManager.isActivate()) {
 				cacheManager.updateCache(hash, myResponse);
 			}
+<<<<<<< HEAD
 			/*
 			 * 
 			 */
 
+=======
+>>>>>>> 3.x
 			return myResponse;
 		} catch (ParsingException pe) {
 			LOGGER.debug("the PDP receieved an invalid request", pe);
@@ -300,8 +546,34 @@ public class PDP {
 			code.add(Status.STATUS_SYNTAX_ERROR);
 			Status status = new Status(code, pe.getMessage());
 
+<<<<<<< HEAD
 			return new ResponseCtx(new Result(Result.DECISION_INDETERMINATE,
 					status));
+=======
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE,
+					status));
+		} catch (NumberFormatException e) {
+			LOGGER.error(e);
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			ArrayList code = new ArrayList();
+			code.add(Status.STATUS_SYNTAX_ERROR);
+			Status status = new Status(code, e.getLocalizedMessage());
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE,
+					status));
+		} catch (UnknownIdentifierException e) {
+			LOGGER.error(e);
+			// there was something wrong with the request, so we return
+			// Indeterminate with a status of syntax error...though this
+			// may change if a more appropriate status type exists
+			StatusCodeType code = new StatusCodeType();
+			code.setValue(Status.STATUS_SYNTAX_ERROR);
+			StatusType status = new StatusType();
+			status.setStatusCode(code);
+			status.setStatusMessage(e.getLocalizedMessage());
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
+>>>>>>> 3.x
 		}
 	}
 
@@ -321,6 +593,10 @@ public class PDP {
 	 * @return a response based on the contents of the context
 	 */
 	public ResponseCtx evaluate(EvaluationCtx context) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3.x
 		// see if we need to call the resource finder
 		if (context.getScope() != EvaluationCtx.SCOPE_IMMEDIATE) {
 			AttributeValue parent = context.getResourceId();
@@ -333,7 +609,11 @@ public class PDP {
 				resourceResult = resourceFinder.findDescendantResources(parent,
 						context);
 			}
+<<<<<<< HEAD
 			
+=======
+
+>>>>>>> 3.x
 			// see if we actually found anything
 			if (resourceResult.isEmpty()) {
 				// this is a problem, since we couldn't find any resources
@@ -344,7 +624,11 @@ public class PDP {
 				String msg = "Couldn't find any resources to work on.";
 
 				return new ResponseCtx(new Result(
+<<<<<<< HEAD
 						Result.DECISION_INDETERMINATE, new Status(code, msg),
+=======
+						DecisionType.INDETERMINATE, new Status(code, msg),
+>>>>>>> 3.x
 						context.getResourceId().encode()));
 			}
 
@@ -377,7 +661,11 @@ public class PDP {
 				Status status = (Status) (failureMap.get(resource));
 
 				// add a new result
+<<<<<<< HEAD
 				results.add(new Result(Result.DECISION_INDETERMINATE, status,
+=======
+				results.add(new Result(DecisionType.INDETERMINATE, status,
+>>>>>>> 3.x
 						resource.encode()));
 			}
 
@@ -399,6 +687,7 @@ public class PDP {
 		PolicyFinderResult finderResult = policyFinder.findPolicy(context);
 
 		// see if there weren't any applicable policies
+<<<<<<< HEAD
 		if (finderResult.notApplicable())
 			return new Result(Result.DECISION_NOT_APPLICABLE, context
 					.getResourceId().encode());
@@ -458,4 +747,27 @@ public class PDP {
 		return out;
 	}
 
+=======
+		if (finderResult.notApplicable()) {
+			AttributeValue resourceId = context.getResourceId();
+			if(resourceId != null) {
+				return new Result(DecisionType.NOT_APPLICABLE, null, context
+						.getResourceId().encode(), null, null, context.getIncludeInResults());	
+			}
+			return new Result(DecisionType.NOT_APPLICABLE, null, null, null, null, context.getIncludeInResults());
+		}
+
+		// see if there were any errors in trying to get a policy
+		if (finderResult.indeterminate()) {
+			return new Result(DecisionType.INDETERMINATE,
+					finderResult.getStatus(), context.getResourceId().encode(), null, null, context.getIncludeInResults());
+		}
+
+		// we found a valid policy, so we can do the evaluation
+		if (finderResult.getType().equals("PolicySet")) {
+			return finderResult.getPolicySet().evaluate(context);	
+		}
+		return finderResult.getPolicy().evaluate(context);
+	}
+>>>>>>> 3.x
 }

@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+>>>>>>> 3.x
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -5,19 +23,35 @@
 
 package com.sun.xacml.cond;
 
+<<<<<<< HEAD
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.attr.AttributeValue;
+=======
+>>>>>>> 3.x
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.List;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+
+>>>>>>> 3.x
 /**
  *
  * @author najmi
  */
+<<<<<<< HEAD
 public abstract class AbstractFunction implements Function {
+=======
+public abstract class AbstractFunction extends Function {
+>>>>>>> 3.x
 
     URI identifier;
     URI returnType;
@@ -86,7 +120,11 @@ public abstract class AbstractFunction implements Function {
      *         an <code>EvaluationResult</code> representing the error
      */
     protected EvaluationResult evalArgs(List<Evaluatable> params, EvaluationCtx context,
+<<<<<<< HEAD
                                         List<AttributeValue> paramValues) {
+=======
+                                        List<AttributeValueType> paramValues) {
+>>>>>>> 3.x
         for (Evaluatable param : params) {
             EvaluationResult result = param.evaluate(context);
 

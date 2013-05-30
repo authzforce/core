@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)PolicySet.java
@@ -52,10 +53,57 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+>>>>>>> 3.x
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.combine.CombinerParameter;
+import com.sun.xacml.combine.PolicyCombinerElement;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.Target;
+
+>>>>>>> 3.x
 
 /**
  * Represents one of the two top-level constructs in XACML, the PolicySetType.
@@ -65,9 +113,20 @@ import org.w3c.dom.NodeList;
  * @since 1.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public class PolicySet extends AbstractPolicy
 {
 
+=======
+public class PolicySet extends AbstractPolicySet
+{
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(PolicySet.class);
+	
+>>>>>>> 3.x
     /**
      * Creates a new <code>PolicySet</code> with only the required elements.
      *
@@ -78,7 +137,11 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg,
                      Target target) {
+<<<<<<< HEAD
         this(id, null, combiningAlg, null, target, null, null, null);
+=======
+        this(id, null, combiningAlg, null, target, null, null, null, null);
+>>>>>>> 3.x
     }
 
     /**
@@ -97,7 +160,11 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg,
                      Target target, List policies) {
+<<<<<<< HEAD
         this(id, null, combiningAlg, null, target, policies, null, null);
+=======
+        this(id, null, combiningAlg, null, target, policies, null, null, null);
+>>>>>>> 3.x
     }
 
     /**
@@ -121,7 +188,11 @@ public class PolicySet extends AbstractPolicy
                      PolicyCombiningAlgorithm combiningAlg,
                      String description, Target target, List policies) {
         this(id, version, combiningAlg, description, target, policies, null,
+<<<<<<< HEAD
              null);
+=======
+             null, null);
+>>>>>>> 3.x
     }
 
     /**
@@ -144,10 +215,16 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, String version,
                      PolicyCombiningAlgorithm combiningAlg,
+<<<<<<< HEAD
                      String description, Target target, List policies,
                      String defaultVersion) {
         this(id, version, combiningAlg, description, target, policies,
              defaultVersion, null);
+=======
+                     String description, TargetType target, List policies,
+                     String defaultVersion) {
+        this(id, version, combiningAlg, description, target, policies, defaultVersion, null, null);
+>>>>>>> 3.x
     }
 
     /**
@@ -171,12 +248,20 @@ public class PolicySet extends AbstractPolicy
      */
     public PolicySet(URI id, String version,
                      PolicyCombiningAlgorithm combiningAlg,
+<<<<<<< HEAD
                      String description, Target target, List policies,
                      String defaultVersion, Set obligations) {
         super(id, version, combiningAlg, description, target, defaultVersion, 
               obligations, null);
 
         List list = null;
+=======
+                     String description, TargetType target, List policies,
+                     String defaultVersion, ObligationExpressionsType obligations, AdviceExpressionsType advices) {
+        super(id, version, combiningAlg, description, target, defaultVersion, obligations, advices, null);
+
+        List list = null;        
+>>>>>>> 3.x
 
         // check that the list contains only AbstractPolicy objects
         if (policies != null) {
@@ -184,6 +269,7 @@ public class PolicySet extends AbstractPolicy
             Iterator it = policies.iterator();
             while (it.hasNext()) {
                 Object o = it.next();
+<<<<<<< HEAD
                 if (! (o instanceof AbstractPolicy))
                     throw new IllegalArgumentException("non-AbstractPolicy " +
                                                        "in policies");
@@ -192,6 +278,19 @@ public class PolicySet extends AbstractPolicy
         }
 
         setChildren(list);
+=======
+                if (! (o instanceof Policy)) {
+                    throw new IllegalArgumentException("non-Policy " +
+                                                       "in policies");
+                }
+                list.add(new PolicyCombinerElement((Policy)o));
+            }
+        }
+        List policyList = new ArrayList();
+        policyList = Collections.unmodifiableList(list);
+        this.policySetOrPolicyOrPolicySetIdReference = ((List<JAXBElement<?>>) policyList);
+//        setChildren(list);
+>>>>>>> 3.x
     }
     
     /**
@@ -227,15 +326,21 @@ public class PolicySet extends AbstractPolicy
     public PolicySet(URI id, String version,
                      PolicyCombiningAlgorithm combiningAlg,
                      String description, Target target, List policyElements,
+<<<<<<< HEAD
                      String defaultVersion, Set obligations, List parameters) {
         super(id, version, combiningAlg, description, target, defaultVersion,
               obligations, parameters);
+=======
+                     String defaultVersion, ObligationExpressionsType obligations, AdviceExpressionsType advices, List parameters) {
+        super(id, version, combiningAlg, description, target, defaultVersion, obligations, advices, parameters);
+>>>>>>> 3.x
 
         // check that the list contains only CombinerElements
         if (policyElements != null) {
             Iterator it = policyElements.iterator();
             while (it.hasNext()) {
                 Object o = it.next();
+<<<<<<< HEAD
                 if (! (o instanceof PolicyCombinerElement))
                     throw new IllegalArgumentException("non-AbstractPolicy " +
                                                        "in policies");
@@ -243,6 +348,16 @@ public class PolicySet extends AbstractPolicy
         }
 
         setChildren(policyElements);
+=======
+                if (! (o instanceof PolicyCombinerElement)) {
+                    throw new IllegalArgumentException("non-PolicyCombinerElement " +
+                                                       "in policies");
+                }
+            }
+        }
+
+//        setChildren(policyElements);
+>>>>>>> 3.x
     }
 
     /**
@@ -265,10 +380,19 @@ public class PolicySet extends AbstractPolicy
             Node child = children.item(i);
             String name = child.getNodeName();
 
+<<<<<<< HEAD
             if (name.equals("PolicySet")) {
                 policies.add(PolicySet.getInstance(child, finder));
             } else if (name.equals("Policy")) {
                 policies.add(Policy.getInstance(child));
+=======
+            if (name.equals("Target")) {
+                target = Target.getInstance(child, metaData);
+            } else if (name.equals("Policy")) {
+                policies.add(Policy.getInstance(child));
+            } else if (name.equals("PolicySet")) {
+                policies.add(PolicySet.getInstance(child));
+>>>>>>> 3.x
             } else if (name.equals("PolicySetIdReference")) {
                 policies.add(PolicyReference.getInstance(child, finder,
                                                          metaData));
@@ -288,6 +412,7 @@ public class PolicySet extends AbstractPolicy
         Iterator it = policies.iterator();
 
         // right now we have to go though each policy and based on several
+<<<<<<< HEAD
         // possible cases figure out what paranmeters might apply...but
         // there should be a better way to do this
 
@@ -301,11 +426,26 @@ public class PolicySet extends AbstractPolicy
             } else if (policy instanceof PolicySet) {
                 list = (List)(policySetParameters.remove(policy.getId().
                                                          toString()));
+=======
+        // possible cases figure out what parameters might apply...but
+        // there should be a better way to do this
+
+        while (it.hasNext()) {
+            Object policy = (Object)(it.next());
+            List list = null;
+
+            if (policy instanceof Policy) {
+                list = (List)(policyParameters.remove(((Policy)policy).getPolicyId()));
+            } else if (policy instanceof PolicySet) {
+            	//TODO: Handle PolicySetIdReference
+                list = (List)(policySetParameters.remove(((PolicySet)policy).getPolicySetId()));
+>>>>>>> 3.x
             } else {
                 PolicyReference ref = (PolicyReference)policy;
                 String id = ref.getReference().toString();
 
                 if (ref.getReferenceType() ==
+<<<<<<< HEAD
                     PolicyReference.POLICY_REFERENCE)
                     list = (List)(policyParameters.remove(id));
                 else
@@ -323,6 +463,30 @@ public class PolicySet extends AbstractPolicy
 
         // finally, set the list of Rules
         setChildren(elements);
+=======
+                    PolicyReference.POLICY_REFERENCE) {
+                    list = (List)(policyParameters.remove(id));
+                } else {
+                    list = (List)(policySetParameters.remove(id));
+                }
+            }
+            if(policy instanceof PolicyType) {
+            	elements.add(new PolicyCombinerElement((PolicyType)policy, list));
+            } else if(policy instanceof PolicySetType) {
+            	elements.add(new PolicyCombinerElement((PolicySetType)policy, list));
+            }
+        }
+
+        // ...and that there aren't extra parameters
+        if (! policyParameters.isEmpty()) {
+            throw new ParsingException("Unmatched parameters in Policy");
+        } if (! policySetParameters.isEmpty()) {
+            throw new ParsingException("Unmatched parameters in PolicySet");
+        }
+        // finally, set the list of Policies
+        this.policySetOrPolicyOrPolicySetIdReference.addAll((List<JAXBElement<?>>) Collections.unmodifiableList(elements));        
+//        setChildren(elements);
+>>>>>>> 3.x
     }
 
     /**
@@ -388,7 +552,11 @@ public class PolicySet extends AbstractPolicy
         throws ParsingException
     {
         // first off, check that it's the right kind of node
+<<<<<<< HEAD
         if (! root.getNodeName().equals("PolicySet")) {
+=======
+        if (! (root.getNodeName().equals("PolicySet") || root.getNodeName().equals("PolicySetType"))) {
+>>>>>>> 3.x
             throw new ParsingException("Cannot create PolicySet from root of" +
                                        " type " + root.getNodeName());
         }
@@ -416,6 +584,7 @@ public class PolicySet extends AbstractPolicy
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
+<<<<<<< HEAD
         PrintStream out = new PrintStream(output);
         String indent = indenter.makeString();
 
@@ -442,6 +611,17 @@ public class PolicySet extends AbstractPolicy
 
         indenter.out();
         out.println(indent + "</PolicySet>");
+=======
+    	PrintStream out = new PrintStream(output);
+		try {
+			JAXBContext jc = JAXBContext
+					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
+			Marshaller u = jc.createMarshaller();
+			u.marshal(this, out);
+		} catch (Exception e) {
+			LOGGER.error(e);
+		} 
+>>>>>>> 3.x
     }
 
 }

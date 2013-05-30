@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)BooleanAttribute.java
@@ -38,10 +39,35 @@ package com.sun.xacml.attr;
 
 import com.sun.xacml.ParsingException;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.attr;
+
+>>>>>>> 3.x
 import java.net.URI;
 
 import org.w3c.dom.Node;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+
+>>>>>>> 3.x
 
 /**
  * Representation of an xs:boolean value. This class supports parsing
@@ -95,8 +121,13 @@ public class BooleanAttribute extends AttributeValue
      */
     private BooleanAttribute(boolean value) {
         super(identifierURI);
+<<<<<<< HEAD
 
         this.value = value;
+=======
+        this.value = value;
+        this.content.add(value);
+>>>>>>> 3.x
     }
 
     /**

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)NotFunctionCluster.java
@@ -38,10 +39,34 @@ package com.sun.xacml.cond.cluster;
 
 import com.sun.xacml.cond.NotFunction;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond.cluster;
+
+>>>>>>> 3.x
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.cond.NotFunction;
+
+>>>>>>> 3.x
 
 /**
  * Clusters all the functions supported by <code>NotFunction</code>.
@@ -51,6 +76,7 @@ import java.util.Set;
  */
 public class NotFunctionCluster implements FunctionCluster
 {
+<<<<<<< HEAD
 
     public Set getSupportedFunctions() {
         Set set = new HashSet();
@@ -58,6 +84,24 @@ public class NotFunctionCluster implements FunctionCluster
 
         while (it.hasNext())
             set.add(new NotFunction((String)(it.next())));
+=======
+	/**
+	 * Logger used for all classes
+	 */
+	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+			.getLogger(NotFunctionCluster.class);
+	
+    public Set<NotFunction> getSupportedFunctions() {
+        Set set = new HashSet();
+        Iterator it = NotFunction.getSupportedIdentifiers().iterator();
+
+        LOGGER.debug("Initialize NotFunction function");
+        while (it.hasNext()) {
+			String funcId = (String) it.next();
+			LOGGER.trace(funcId);
+			set.add(new NotFunction(funcId));
+		}
+>>>>>>> 3.x
 
         return set;
     }

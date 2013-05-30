@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)HigherOrderFunction.java
@@ -49,6 +50,29 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+>>>>>>> 3.x
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,6 +80,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.cond.xacmlv3.Expression;
+
+>>>>>>> 3.x
 
 /**
  * Represents all of the higher order bag functions, except map, which has
@@ -68,7 +105,11 @@ import java.util.Set;
  * @since 1.0
  * @author Seth Proctor
  */
+<<<<<<< HEAD
 public class HigherOrderFunction implements Function
+=======
+public class HigherOrderFunction extends Function
+>>>>>>> 3.x
 {
 
     /**
@@ -136,12 +177,21 @@ public class HigherOrderFunction implements Function
     static {
         idMap = new HashMap();
 
+<<<<<<< HEAD
         idMap.put(NAME_ANY_OF, new Integer(ID_ANY_OF));
         idMap.put(NAME_ALL_OF, new Integer(ID_ALL_OF));
         idMap.put(NAME_ANY_OF_ANY, new Integer(ID_ANY_OF_ANY));
         idMap.put(NAME_ALL_OF_ANY, new Integer(ID_ALL_OF_ANY));
         idMap.put(NAME_ANY_OF_ALL, new Integer(ID_ANY_OF_ALL));
         idMap.put(NAME_ALL_OF_ALL, new Integer(ID_ALL_OF_ALL));
+=======
+        idMap.put(NAME_ANY_OF, Integer.valueOf(ID_ANY_OF));
+        idMap.put(NAME_ALL_OF, Integer.valueOf(ID_ALL_OF));
+        idMap.put(NAME_ANY_OF_ANY, Integer.valueOf(ID_ANY_OF_ANY));
+        idMap.put(NAME_ALL_OF_ANY, Integer.valueOf(ID_ALL_OF_ANY));
+        idMap.put(NAME_ANY_OF_ALL, Integer.valueOf(ID_ANY_OF_ALL));
+        idMap.put(NAME_ALL_OF_ALL, Integer.valueOf(ID_ALL_OF_ALL));
+>>>>>>> 3.x
     };
 
     /**
@@ -154,9 +204,16 @@ public class HigherOrderFunction implements Function
     public HigherOrderFunction(String functionName) {
         // try to get the function's identifier
         Integer i = (Integer)(idMap.get(functionName));
+<<<<<<< HEAD
         if (i == null)
             throw new IllegalArgumentException("unknown function: " +
                                                functionName);
+=======
+        if (i == null) {
+            throw new IllegalArgumentException("unknown function: " +
+                                               functionName);
+        }
+>>>>>>> 3.x
         functionId = i.intValue();
 
         // setup the URI form of this function's idenitity
@@ -237,14 +294,25 @@ public class HigherOrderFunction implements Function
         Iterator iterator = inputs.iterator();
 
         // get the first arg, which is the function
+<<<<<<< HEAD
         Expression xpr = (Expression)(iterator.next());
+=======
+        Object xpr = (Object)(iterator.next());
+>>>>>>> 3.x
         Function function = null;
 
         if (xpr instanceof Function) {
             function = (Function)xpr;
         } else {
+<<<<<<< HEAD
             function = (Function)(((VariableReference)xpr).
                                   getReferencedDefinition().getExpression());
+=======
+//        	function = (Function)(((VariableReference)xpr).
+//                    getReferencedDefinition().getExpression().getValue());
+            function = (Function)(((VariableReference)xpr).
+                                  getReferencedDefinition().getExpression().getValue());
+>>>>>>> 3.x
         }
 
         // get the two inputs, and if anything is INDETERMINATE, then we
@@ -253,20 +321,36 @@ public class HigherOrderFunction implements Function
 
         Evaluatable eval = (Evaluatable)(iterator.next());
         EvaluationResult result = eval.evaluate(context);
+<<<<<<< HEAD
         if (result.indeterminate())
             return result;
+=======
+        if (result.indeterminate()) {
+            return result;
+        }
+>>>>>>> 3.x
         args[0] = (AttributeValue)(result.getAttributeValue());
 
         eval = (Evaluatable)(iterator.next());
         result = eval.evaluate(context);
+<<<<<<< HEAD
         if (result.indeterminate())
             return result;
+=======
+        if (result.indeterminate()) {
+            return result;
+        }
+>>>>>>> 3.x
         args[1] = (AttributeValue)(result.getAttributeValue());
 
         // now we're ready to do the evaluation
         result = null;
 
+<<<<<<< HEAD
         switch(functionId) {
+=======
+        switch(Integer.parseInt(function.getFunctionId())) {
+>>>>>>> 3.x
             
         case ID_ANY_OF: {
             
@@ -387,8 +471,14 @@ public class HigherOrderFunction implements Function
         Object [] list = inputs.toArray();
 
         // first off, check that we got the right number of paramaters
+<<<<<<< HEAD
         if (list.length != 3)
             throw new IllegalArgumentException("requires three inputs");
+=======
+        if (list.length != 3) {
+            throw new IllegalArgumentException("requires three inputs");
+        }
+>>>>>>> 3.x
 
         // now, try to cast the first element into a function
         Function function = null;
@@ -396,8 +486,13 @@ public class HigherOrderFunction implements Function
         if (list[0] instanceof Function) {
             function = (Function)(list[0]);
         } else if (list[0] instanceof VariableReference) {
+<<<<<<< HEAD
             Expression xpr = ((VariableReference)(list[0])).
                 getReferencedDefinition().getExpression();
+=======
+        	ExpressionType xpr = (ExpressionType) ((VariableReference)(list[0])).
+                getReferencedDefinition().getExpression().getValue();
+>>>>>>> 3.x
             if (xpr instanceof Function)
                 function = (Function)xpr;
         }
@@ -417,11 +512,19 @@ public class HigherOrderFunction implements Function
         Evaluatable eval2 = (Evaluatable)(list[2]);
 
         // the first arg might be a bag
+<<<<<<< HEAD
         if (secondIsBag && (! eval1.returnsBag()))
             throw new IllegalArgumentException("first arg has to be a bag");
 
         // the second arg must be a bag
         if (! eval2.returnsBag())
+=======
+        if (secondIsBag && (! eval1.evaluatesToBag()))
+            throw new IllegalArgumentException("first arg has to be a bag");
+
+        // the second arg must be a bag
+        if (! eval2.evaluatesToBag())
+>>>>>>> 3.x
             throw new IllegalArgumentException("second arg has to be a bag");
 
         // finally, we need to make sure that the given type will work on

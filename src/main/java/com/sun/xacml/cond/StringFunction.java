@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)StringFunction.java
@@ -41,10 +42,44 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.StringAttribute;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+import java.util.Arrays;
+import java.util.HashMap;
+>>>>>>> 3.x
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
+
+>>>>>>> 3.x
 
 /**
  * This class implements the string-concatenate function from XACML 2.0.
@@ -60,9 +95,36 @@ public class StringFunction extends FunctionBase
      */
     public static final String NAME_STRING_CONCATENATE =
         FUNCTION_NS_2 + "string-concatenate";
+<<<<<<< HEAD
 
     // private identifiers for the supported functions
     private static final int ID_STRING_CONCATENATE = 0;
+=======
+    
+    /**
+     * Standard identifier for the string-concatenate function.
+     */
+    public static final String NAME_BOOLEAN_FROM_STRING = 
+        FUNCTION_NS_3 + "boolean-from-string";
+
+    // private identifiers for the supported functions
+    private static final int ID_STRING_CONCATENATE = 0;
+    private static final int ID_BOOLEAN_FROM_STRING = 1;
+    
+    private static HashMap<String, Integer> idMap;
+    
+    /**
+     * Static initializer to setup the id maps.
+     */
+    static {
+        idMap = new HashMap<String, Integer>();
+
+        idMap.put(NAME_STRING_CONCATENATE,
+                  Integer.valueOf(ID_STRING_CONCATENATE));
+        idMap.put(NAME_BOOLEAN_FROM_STRING,
+                Integer.valueOf(ID_BOOLEAN_FROM_STRING));
+    };
+>>>>>>> 3.x
 
     /**
      * Creates a new <code>StringFunction</code> object.
@@ -73,8 +135,12 @@ public class StringFunction extends FunctionBase
      * @throws IllegalArgumentException if the function is unknown
      */
     public StringFunction(String functionName) {
+<<<<<<< HEAD
         super(functionName, ID_STRING_CONCATENATE, StringAttribute.identifier,
               false, -1, 2, StringAttribute.identifier, false);
+=======
+        super(functionName, ID_STRING_CONCATENATE, StringAttribute.identifier, false, -1, 2, StringAttribute.identifier, false);
+>>>>>>> 3.x
     }
 
     /**
@@ -84,12 +150,32 @@ public class StringFunction extends FunctionBase
      * @return a <code>Set</code> of <code>String</code>s
      */
     public static Set getSupportedIdentifiers() {
+<<<<<<< HEAD
         Set set = new HashSet();
 
         set.add(NAME_STRING_CONCATENATE);
 
         return set;
     }
+=======
+        Set<String> set = new HashSet<String>();
+
+        set.add(NAME_STRING_CONCATENATE);
+        set.add(NAME_BOOLEAN_FROM_STRING);
+
+        return set;
+    }
+    
+    private int getId(String functionName) {
+    	Integer i = (Integer)(idMap.get(functionName));
+
+        if (i == null)
+            throw new IllegalArgumentException("unknown comparison function " +
+                                               functionName);
+
+        return i.intValue();
+	}
+>>>>>>> 3.x
 
     /**
      * Evaluate the function, using the specified parameters.
@@ -105,6 +191,7 @@ public class StringFunction extends FunctionBase
         // Evaluate the arguments
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
         EvaluationResult result = evalArgs(inputs, context, argValues);
+<<<<<<< HEAD
         if (result != null)
             return result;
 
@@ -114,13 +201,50 @@ public class StringFunction extends FunctionBase
 
             for (int i = 1; i < argValues.length; i++)
                 str += ((StringAttribute)(argValues[i])).getValue();
+=======
+        if (result != null) {
+            return result;
+        }
+
+        switch (getId(getFunctionName())) {
+        case ID_STRING_CONCATENATE:
+            String str = ((StringAttribute)argValues[0]).getValue();
+
+            for (int i = 1; i < argValues.length; i++) {
+                str += ((StringAttribute)(argValues[i])).getValue();
+            }
+>>>>>>> 3.x
 
             result = new EvaluationResult(new StringAttribute(str));
 
             break;
+<<<<<<< HEAD
+=======
+        
+        case ID_BOOLEAN_FROM_STRING:
+        	str = ((StringAttribute)argValues[0]).getValue();
+        	boolean funcResult = false;
+        	if(str.equalsIgnoreCase("true")) {
+        		result = new EvaluationResult(BooleanAttribute.getTrueInstance());
+        	} else if(str.equalsIgnoreCase("false")) {
+        		result = new EvaluationResult(BooleanAttribute.getFalseInstance());
+        	} else {
+        		Status status = new Status(Arrays.asList(Status.STATUS_PROCESSING_ERROR));
+        		StatusCodeType code = new StatusCodeType();
+				code.setValue(Status.STATUS_PROCESSING_ERROR);
+				status.setStatusCode(code);
+        		result = new EvaluationResult(status);
+        	}
+        	        	
+        	
+        	break;
+>>>>>>> 3.x
         }
 
         return result;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3.x
 }

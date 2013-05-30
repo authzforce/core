@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)DateMathFunction.java
@@ -44,6 +45,25 @@ import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.DayTimeDurationAttribute;
 import com.sun.xacml.attr.YearMonthDurationAttribute;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+>>>>>>> 3.x
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -52,6 +72,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.DateAttribute;
+import com.sun.xacml.attr.DateTimeAttribute;
+import com.sun.xacml.attr.DayTimeDurationAttribute;
+import com.sun.xacml.attr.YearMonthDurationAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+
+>>>>>>> 3.x
 
 /**
  * A class that implements several of the date math functions. They
@@ -130,16 +161,25 @@ public class DateMathFunction extends FunctionBase
     private static final boolean bagParams [] = { false, false };
 
     // Argument types for this object
+<<<<<<< HEAD
     private String [] argTypes = null;
 
     // mapping from name to provide identifiers and argument types
     private static HashMap idMap;
     private static HashMap typeMap;
+=======
+//    private String [] argTypes = null;
+
+    // mapping from name to provide identifiers and argument types
+    private static HashMap<String, Integer> idMap;
+    private static HashMap<String, String[]> typeMap;
+>>>>>>> 3.x
 
     /**
      * Static initializer to setup the id and type maps
      */
     static {
+<<<<<<< HEAD
         idMap = new HashMap();
 
         idMap.put(NAME_DATETIME_ADD_DAYTIMEDURATION,
@@ -156,6 +196,24 @@ public class DateMathFunction extends FunctionBase
                   new Integer(ID_DATE_SUBTRACT_YEARMONTHDURATION));
 
         typeMap = new HashMap();
+=======
+        idMap = new HashMap<String, Integer>();
+
+        idMap.put(NAME_DATETIME_ADD_DAYTIMEDURATION,
+                  Integer.valueOf(ID_DATETIME_ADD_DAYTIMEDURATION));
+        idMap.put(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION,
+                  Integer.valueOf(ID_DATETIME_SUBTRACT_DAYTIMEDURATION));
+        idMap.put(NAME_DATETIME_ADD_YEARMONTHDURATION,
+                  Integer.valueOf(ID_DATETIME_ADD_YEARMONTHDURATION));
+        idMap.put(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION,
+                  Integer.valueOf(ID_DATETIME_SUBTRACT_YEARMONTHDURATION));
+        idMap.put(NAME_DATE_ADD_YEARMONTHDURATION,
+                  Integer.valueOf(ID_DATE_ADD_YEARMONTHDURATION));
+        idMap.put(NAME_DATE_SUBTRACT_YEARMONTHDURATION,
+                  Integer.valueOf(ID_DATE_SUBTRACT_YEARMONTHDURATION));
+
+        typeMap = new HashMap<String, String[]>();
+>>>>>>> 3.x
 
         typeMap.put(NAME_DATETIME_ADD_DAYTIMEDURATION,
                     dateTimeDayTimeDurationArgTypes);
@@ -254,7 +312,11 @@ public class DateMathFunction extends FunctionBase
         // Now that we have real values, perform the date math operation.
         AttributeValue attrResult = null;
 
+<<<<<<< HEAD
         switch (getFunctionId()) {
+=======
+        switch (getId(getFunctionName())) {
+>>>>>>> 3.x
         // These two functions are basically the same except for sign.
         // And they both need to deal with sign anyway, so they share
         // their code.
@@ -266,7 +328,11 @@ public class DateMathFunction extends FunctionBase
 
             // Decide what sign goes with duration
             int sign = 1;
+<<<<<<< HEAD
             if (getFunctionId() == ID_DATETIME_SUBTRACT_DAYTIMEDURATION)
+=======
+            if (Integer.parseInt(getFunctionId()) == ID_DATETIME_SUBTRACT_DAYTIMEDURATION)
+>>>>>>> 3.x
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;
@@ -299,7 +365,11 @@ public class DateMathFunction extends FunctionBase
             
             // Decide what sign goes with duration
             int sign = 1;
+<<<<<<< HEAD
             if (getFunctionId() == ID_DATETIME_SUBTRACT_YEARMONTHDURATION)
+=======
+            if (Integer.parseInt(getFunctionId()) == ID_DATETIME_SUBTRACT_YEARMONTHDURATION)
+>>>>>>> 3.x
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;
@@ -333,7 +403,11 @@ public class DateMathFunction extends FunctionBase
             
             // Decide what sign goes with duration
             int sign = 1;
+<<<<<<< HEAD
             if (getFunctionId() == ID_DATE_SUBTRACT_YEARMONTHDURATION)
+=======
+            if (Integer.parseInt(getFunctionId()) == ID_DATE_SUBTRACT_YEARMONTHDURATION)
+>>>>>>> 3.x
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;

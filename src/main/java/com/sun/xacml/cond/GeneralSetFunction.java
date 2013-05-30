@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)GeneralSetFunction.java
@@ -41,6 +42,25 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.BagAttribute;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+>>>>>>> 3.x
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +68,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+
+>>>>>>> 3.x
 
 /**
  * Specific <code>SetFunction</code> class that supports all of the
@@ -75,17 +103,28 @@ public class GeneralSetFunction extends SetFunction
         idMap = new HashMap();
         typeMap = new HashMap();
 
+<<<<<<< HEAD
         idMap.put(NAME_BASE_INTERSECTION, new Integer(ID_BASE_INTERSECTION));
         idMap.put(NAME_BASE_UNION, new Integer(ID_BASE_UNION));
+=======
+        idMap.put(NAME_BASE_INTERSECTION, Integer.valueOf(ID_BASE_INTERSECTION));
+        idMap.put(NAME_BASE_UNION, Integer.valueOf(ID_BASE_UNION));
+>>>>>>> 3.x
 
         for (int i = 0; i < baseTypes.length; i++) {
             String baseName = FUNCTION_NS + simpleTypes[i];
             String baseType = baseTypes[i];
 
             idMap.put(baseName + NAME_BASE_INTERSECTION,
+<<<<<<< HEAD
                       new Integer(ID_BASE_INTERSECTION));
             idMap.put(baseName + NAME_BASE_UNION,
                       new Integer(ID_BASE_UNION));
+=======
+                      Integer.valueOf(ID_BASE_INTERSECTION));
+            idMap.put(baseName + NAME_BASE_UNION,
+                      Integer.valueOf(ID_BASE_UNION));
+>>>>>>> 3.x
 
             typeMap.put(baseName + NAME_BASE_INTERSECTION, baseType);
             typeMap.put(baseName + NAME_BASE_UNION, baseType);
@@ -96,9 +135,15 @@ public class GeneralSetFunction extends SetFunction
             String baseType = baseTypes2[i];
 
             idMap.put(baseName + NAME_BASE_INTERSECTION,
+<<<<<<< HEAD
                       new Integer(ID_BASE_INTERSECTION));
             idMap.put(baseName + NAME_BASE_UNION,
                       new Integer(ID_BASE_UNION));
+=======
+                      Integer.valueOf(ID_BASE_INTERSECTION));
+            idMap.put(baseName + NAME_BASE_UNION,
+                      Integer.valueOf(ID_BASE_UNION));
+>>>>>>> 3.x
 
             typeMap.put(baseName + NAME_BASE_INTERSECTION, baseType);
             typeMap.put(baseName + NAME_BASE_UNION, baseType);
@@ -197,7 +242,11 @@ public class GeneralSetFunction extends SetFunction
         AttributeValue result = null;
         Set set = new HashSet();
         
+<<<<<<< HEAD
         switch(getFunctionId()) {
+=======
+        switch(Integer.parseInt(getFunctionId())) {
+>>>>>>> 3.x
 
             // *-intersection takes two bags of the same type and returns
             // a bag of that type

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)SubtractFunction.java
@@ -42,10 +43,40 @@ import com.sun.xacml.attr.AttributeValue;
 import com.sun.xacml.attr.DoubleAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.cond;
+
+>>>>>>> 3.x
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+<<<<<<< HEAD
+=======
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.DoubleAttribute;
+import com.sun.xacml.attr.IntegerAttribute;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
+
+>>>>>>> 3.x
 
 /**
  * A class that implements all the *-subtract functions. It takes two
@@ -144,25 +175,41 @@ public class SubtractFunction extends FunctionBase
     public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
         
         // Evaluate the arguments
+<<<<<<< HEAD
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
+=======
+        AttributeValueType [] argValues = new AttributeValueType[inputs.size()];
+>>>>>>> 3.x
         EvaluationResult result = evalArgs(inputs, context, argValues);
         if (result != null)
             return result;
 
         // Now that we have real values, perform the subtract operation
         // in the manner appropriate for the type of the arguments.
+<<<<<<< HEAD
         switch (getFunctionId()) {
         case ID_INTEGER_SUBTRACT: {
             long arg0 = ((IntegerAttribute) argValues[0]).getValue();
             long arg1 = ((IntegerAttribute) argValues[1]).getValue();
+=======
+        switch (getId(getFunctionName())) {
+        case ID_INTEGER_SUBTRACT: {
+            long arg0 = Long.parseLong(argValues[0].getContent().get(0).toString());
+            long arg1 = Long.parseLong(argValues[1].getContent().get(0).toString());
+>>>>>>> 3.x
             long difference = arg0 - arg1;
 
             result = new EvaluationResult(new IntegerAttribute(difference));
             break;
         }
         case ID_DOUBLE_SUBTRACT: {
+<<<<<<< HEAD
             double arg0 = ((DoubleAttribute) argValues[0]).getValue();
             double arg1 = ((DoubleAttribute) argValues[1]).getValue();
+=======
+            double arg0 = Double.parseDouble(argValues[0].getContent().get(0).toString());
+            double arg1 = Double.parseDouble(argValues[1].getContent().get(0).toString());
+>>>>>>> 3.x
             double difference = arg0 - arg1;
 
             result = new EvaluationResult(new DoubleAttribute(difference));

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 /*
  * @(#)SimplePDP.java
@@ -53,10 +54,56 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.impl.CurrentEnvModule;
 import com.sun.xacml.finder.impl.SelectorModule;
 
+=======
+/**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+package com.sun.xacml.support;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
+
+import com.sun.xacml.BindingUtility;
+import com.sun.xacml.ConfigurationStore;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.PDP;
+import com.sun.xacml.PDPConfig;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.combine.PermitOverridesPolicyAlg;
+import com.sun.xacml.ctx.ResponseCtx;
+import com.sun.xacml.finder.AttributeFinder;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.finder.impl.CurrentEnvModule;
+import com.sun.xacml.finder.impl.SelectorModule;
+>>>>>>> 3.x
 import com.sun.xacml.support.finder.StaticPolicyFinderModule;
 import com.sun.xacml.support.finder.StaticRefPolicyFinderModule;
 import com.sun.xacml.support.finder.URLPolicyFinderModule;
 
+<<<<<<< HEAD
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -70,6 +117,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import oasis.names.tc.xacml._2_0.context.schema.os.RequestType;
 
+=======
+>>>>>>> 3.x
 
 /**
  * This is a simple, command-line driven XACML PDP. It acts both as an example
