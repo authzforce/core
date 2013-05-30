@@ -15,19 +15,12 @@
  */
 package com.sun.xacml;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
@@ -41,12 +34,13 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-//import com.sun.xacml.ctx.xacmlv3.RequestCtx;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderResult;
+import com.thalesgroup.authzforce.audit.AuditLogs;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 /**
@@ -141,58 +135,7 @@ public class PDP {
 			}
 
 		}
-		// // Searching within the Action for AttributeType
-		// for (AttributeType myAttributeType : myEvaluationCtx.getAction()
-		// .getAttribute()) {
-		// hash += myAttributeType.getAttributeId().hashCode();
-		// // Searching within the AttributeType for AttributeValueType
-		// for (AttributeValueType myAttributeValueType : myAttributeType
-		// .getAttributeValue()) {
-		// // Searching within the AttributeValueType for Object
-		// // (Defined
-		// // as Object in the model but it's actually String)
-		// for (Object myContent : myAttributeValueType.getContent()) {
-		// hash += myContent.hashCode();
-		// }
-		// }
-		// }
-		// // Searching within the Subject for AttributeType
-		// for (SubjectType mySubjectType : myEvaluationCtx.getSubject()) {
-		// // Searching within the AttributeType for AttributeValueType
-		// for (AttributeType myAttributeType : mySubjectType
-		// .getAttribute()) {
-		// hash += myAttributeType.getAttributeId().hashCode();
-		// for (AttributeValueType myAttributeValueType : myAttributeType
-		// .getAttributeValue()) {
-		// // Searching within the AttributeValueType for Object
-		// // (Defined
-		// // as Object in the model but it's actually String)
-		// for (Object myContent : myAttributeValueType
-		// .getContent()) {
-		// hash += myContent.hashCode();
-		// }
-		// }
-		// }
-		// }
-		// // Searching within the Resource for AttributeType
-		// for (ResourceType myResourceType : myEvaluationCtx.getResource()) {
-		// // Searching within the AttributeType for AttributeValueType
-		// for (AttributeType myAttributeType : myResourceType
-		// .getAttribute()) {
-		// hash += myAttributeType.getAttributeId().hashCode();
-		// for (AttributeValueType myAttributeValueType : myAttributeType
-		// .getAttributeValue()) {
-		// // Searching within the AttributeValueType for Object
-		// // (Defined
-		// // as Object in the model but it's actually String)
-		// for (Object myContent : myAttributeValueType
-		// .getContent()) {
-		// hash += myContent.hashCode();
-		// }
-		// }
-		// }
-		// }
-		// }
+		
 		return String.valueOf(hash);
 	}
 
@@ -227,6 +170,7 @@ public class PDP {
 	 *            the request to evaluate
 	 * @return a response paired to the request
 	 */
+	@Audit(type = Audit.Type.DISPLAY)
 	public List<ResponseCtx> evaluateList(RequestType request) {
 
 		List<AttributesType> subjects = new ArrayList<AttributesType>();

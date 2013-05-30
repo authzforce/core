@@ -52,6 +52,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.Target;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 /**
  * Represents the RuleType XACML type. This has a target for matching, and
@@ -380,6 +381,7 @@ public class Rule extends RuleType {
 	 * 
 	 * @return the result of the evaluation
 	 */
+	@Audit(type = Audit.Type.RULE)
 	public Result evaluate(EvaluationCtx context) {
 		// Do the list of Attribute who needs to be included in result
 		List<AttributesType> includeInResult = context.getIncludeInResults();

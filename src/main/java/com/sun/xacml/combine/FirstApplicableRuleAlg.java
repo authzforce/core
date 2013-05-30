@@ -67,7 +67,7 @@ public class FirstApplicableRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-    @Audit(type = Audit.Type.RULE)
+//    @Audit(type = Audit.Type.RULE)
     public Result combine(EvaluationCtx context, CombinerParametersType parameters,
                           List ruleElements) {
         Result result = null;

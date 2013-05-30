@@ -69,6 +69,7 @@ import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.cond.VariableManager;
 import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Result;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 /**
  * @author Romain Ferrari
@@ -251,7 +252,7 @@ public class Policy extends PolicyType {
 	 *            the representation of the request
 	 * 
 	 * @return the result of trying to match the policy and the request
-	 */
+	 */	
 	public MatchResult match(EvaluationCtx context) {
 		/**
 		 * Romain Ferrari (Thales)
@@ -276,6 +277,7 @@ public class Policy extends PolicyType {
 	 * 
 	 * @return the result of evaluation
 	 */
+	@Audit(type = Audit.Type.POLICY)
 	public Result evaluate(EvaluationCtx context) {
 		Result result = null;
 		List<Rule> rules = new ArrayList<Rule>();
