@@ -80,10 +80,9 @@ public class PermitUnlessDenyRuleAlg extends RuleCombiningAlgorithm {
 	@Override
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List ruleElements) {
-		for (RuleCombinerElement myRuleCombinerElt : (List<RuleCombinerElement>) ruleElements) {
-			Rule rule = (Rule)myRuleCombinerElt.getRule();
+		for (Rule rule: (List<Rule>) ruleElements) {
 			Result result = rule.evaluate(context);
-            int value = result.getDecision().ordinal();
+			int value = result.getDecision().ordinal();
 			if (value == DecisionType.DENY.ordinal()) {
 				return result;
 			}

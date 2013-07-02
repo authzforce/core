@@ -81,10 +81,9 @@ public class DenyUnlessPermitRuleAlg extends RuleCombiningAlgorithm {
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List ruleElements) {
 		Result result = null;
-		for (RuleCombinerElement myRuleCombinerElt : (List<RuleCombinerElement>)ruleElements) {
-			Rule rule = (Rule)myRuleCombinerElt.getRule();
+		for (Rule rule: (List<Rule>)ruleElements) {
 			result = rule.evaluate(context);
-            int value = result.getDecision().ordinal();
+			int value = result.getDecision().ordinal();
 			if (value == Result.DECISION_PERMIT) {
 				return result;
 			}

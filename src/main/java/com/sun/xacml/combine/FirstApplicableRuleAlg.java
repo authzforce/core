@@ -74,8 +74,9 @@ public class FirstApplicableRuleAlg extends RuleCombiningAlgorithm
         for (Rule rule : (List<Rule>)ruleElements) {
 			result = rule.evaluate(context);
 			int value = result.getDecision().ordinal();
-			if (value != Result.DECISION_NOT_APPLICABLE)
-                return result;
+			if (value != Result.DECISION_NOT_APPLICABLE) {
+				return result;
+			}
 		}
      // if we got here, then none of the rules applied
         return new Result(DecisionType.NOT_APPLICABLE,
