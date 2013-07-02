@@ -3,6 +3,14 @@ AuthZForce CORE - Release Notes
 -------------------------
 
 -------------------
+-- Version 3.4.2 --
+-------------------
+Fixing bug on Rule Algorithm: 
+	- DenyUnlessPermitRuleAlg.java
+	- PermitUnlessDenyRuleAlg.java. 
+=> A cast was misplaced and an error occured on the combination of rules
+
+-------------------
 -- Version 3.4.0 --
 -------------------
 Implementation working with XACML 3.0 requests and policies. Based on OASIS model (xsd)
