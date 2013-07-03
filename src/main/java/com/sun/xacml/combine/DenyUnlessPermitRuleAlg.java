@@ -23,6 +23,7 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
@@ -88,8 +89,9 @@ public class DenyUnlessPermitRuleAlg extends RuleCombiningAlgorithm {
 				return result;
 			}
 		}
-
-		return new Result(DecisionType.DENY, context.getResourceId().encode(), result.getObligations());
+		
+		// FIXME: NPE if result doesn't get filled at least once (i.e. no rule)
+		return new Result(DecisionType.DENY, result.getStatus(), context.getResourceId().encode(), result.getObligations(), result.getAssociatedAdvice(), result.getAttributes());
 	}
 	
 

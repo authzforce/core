@@ -80,16 +80,17 @@ public class PermitUnlessDenyRuleAlg extends RuleCombiningAlgorithm {
 	@Override
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List ruleElements) {
+		Result result = null;
 		for (Rule rule: (List<Rule>) ruleElements) {
-			Result result = rule.evaluate(context);
+			result = rule.evaluate(context);
 			int value = result.getDecision().ordinal();
 			if (value == DecisionType.DENY.ordinal()) {
 				return result;
 			}
 		}
 
-		return new Result(DecisionType.PERMIT, context.getResourceId()
-				.encode());
+		// FIXME: NPE if result doesn't get filled at least once (i.e. no rule)
+		return new Result(DecisionType.PERMIT, result.getStatus(), context.getResourceId().encode(), result.getObligations(), result.getAssociatedAdvice(), result.getAttributes());
 	}
 
 }

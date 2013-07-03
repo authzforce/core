@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.4.2</version>
+	<version>3.4.3</version>
 	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
 	<organization>
 		<name>Thales</name>
@@ -37,6 +37,13 @@
 			<version>1.6.11</version>
 		</dependency>
 		<!-- /Authzforce optionnal dependencies -->
+		<!-- Authzforce dependencies -->
+		<dependency>
+			<groupId>com.thalesgroup.authzforce.core</groupId>
+			<artifactId>authzforce-model</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<!-- /Authzforce dependencies -->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -69,11 +76,6 @@
 			<artifactId>spring-core</artifactId>
 			<version>3.1.1.RELEASE</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce.core</groupId>
-			<artifactId>authzforce-model</artifactId>
-			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-jxpath</groupId>
