@@ -19,6 +19,7 @@ import org.apache.log4j.Level;
 
 public class AuditLevel extends Level {
 
+	
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -45,65 +46,5 @@ public class AuditLevel extends Level {
 
 	}
 
-	/**
-	 * Checks whether sArg is "AUDIT" level. If yes then returns
-	 * {@link AuditLevel#AUDIT}, else calls
-	 * {@link AuditLevel#toLevel(String, Level)} passing it {@link Level#DEBUG}
-	 * as the defaultLevel.
-	 * 
-	 * @see Level#toLevel(java.lang.String)
-	 * @see Level#toLevel(java.lang.String, org.apache.log4j.Level)
-	 * 
-	 */
-	public static Level toLevel(String sArg) {
-		if (sArg != null && sArg.toUpperCase().equals("AUDIT")) {
-			return AUDIT;
-		}
-		return (Level) toLevel(sArg, Level.DEBUG);
-	}
-
-	/**
-	 * Checks whether val is {@link AuditLevel#AUDIT_INT}. If yes then
-	 * returns {@link AuditLevel#AUDIT}, else calls
-	 * {@link AuditLevel#toLevel(int, Level)} passing it {@link Level#DEBUG} as
-	 * the defaultLevel
-	 * 
-	 * @see Level#toLevel(int)
-	 * @see Level#toLevel(int, org.apache.log4j.Level)
-	 * 
-	 */
-	public static Level toLevel(int val) {
-		if (val == AUDIT_INT) {
-			return AUDIT;
-		}
-		return (Level) toLevel(val, Level.DEBUG);
-	}
-
-	/**
-	 * Checks whether val is {@link AuditLevel#AUDIT_INT}. If yes then
-	 * returns {@link AuditLevel#AUDIT}, else calls
-	 * {@link Level#toLevel(int, org.apache.log4j.Level)}
-	 * 
-	 * @see Level#toLevel(int, org.apache.log4j.Level)
-	 */
-	public static Level toLevel(int val, Level defaultLevel) {
-		if (val == AUDIT_INT) {
-			return AUDIT;
-		}
-		return Level.toLevel(val, defaultLevel);
-	}
-
-	/**
-	 * Checks whether sArg is "MY_TRACE" level. If yes then returns
-	 * {@link AuditLevel#AUDIT}, else calls
-	 * {@link Level#toLevel(java.lang.String, org.apache.log4j.Level)}
-	 * 
-	 * @see Level#toLevel(java.lang.String, org.apache.log4j.Level)
-	 */
-	public static Level toLevel(String sArg, Level defaultLevel) {
-		if (sArg != null && sArg.toUpperCase().equals("AUDIT")) {
-			return AUDIT;
-		}
-		return Level.toLevel(sArg, defaultLevel);
-	}
+	
 }
