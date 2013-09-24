@@ -211,6 +211,20 @@
 						<exclude>**/*.md</exclude>
 						<exclude>**/*.properties</exclude>
 						<exclude>**/*.gitignore</exclude>
+						<exclude>src/test/**</exclude>
+            			<exclude>src/main/resources/**</exclude>
+            			<!-- Added by Thales -->
+            			<exclude>src/main/java/com/thalesgroup/**</exclude>
+            			<exclude>src/main/java/com/sun/xacml/xacmlv3/**</exclude>
+            			<exclude>src/main/java/com/sun/cond/xacmlv3/**</exclude>
+            			<exclude>src/main/java/com/sun/ctx/xacmlv3/**</exclude>            			
+            			<exclude>src/main/java/com/sun/xacml/CacheManager.java</exclude>
+            			<exclude>src/main/java/com/sun/xacml/ObligationExpressions.java</exclude>
+            			<exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</exclude>
+            			<exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</exclude>
+            			<exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</exclude>
+            			<exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</exclude>
+            			<exclude>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</exclude>
 					</excludes>
 				</configuration>
 				<executions>
