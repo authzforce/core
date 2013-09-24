@@ -185,13 +185,58 @@
 				</executions>
 			</plugin>
 			<!-- Adding header to file -->
+			<!-- Sun License Header -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>com.mycila.maven-license-plugin</groupId> -->
+<!-- 				<artifactId>maven-license-plugin</artifactId> -->
+<!-- 				<version>1.9.0</version> -->
+<!-- 				<configuration> -->
+<!-- 					Template location -->
+<!-- 					<header>src/main/resources/fileHeader.txt</header> -->
+<!-- 					<properties> -->
+<!-- 						Values to be substituted in template -->
+<!-- 						<h_inceptionYear>${inceptionYear}</h_inceptionYear> -->
+<!-- 						<h_currentYear>${currentYear}</h_currentYear> -->
+<!-- 						<h_copyrightOwner>${copyrightOwner}</h_copyrightOwner> -->
+<!-- 					</properties> -->
+<!-- 					<strictCheck>true</strictCheck>					 -->
+<!-- 					<excludes> -->
+<!-- 						<exclude>**/*.html</exclude> -->
+<!-- 						<exclude>**/*.xml</exclude> -->
+<!-- 						<exclude>**/*.txt</exclude> -->
+<!-- 						<exclude>**/*.ec</exclude> -->
+<!-- 						<exclude>**/*.log</exclude> -->
+<!-- 						<exclude>**/*.css</exclude> -->
+<!-- 						<exclude>**/*.js</exclude> -->
+<!-- 						<exclude>**/*.jsp</exclude> -->
+<!-- 						<exclude>**/*.md</exclude> -->
+<!-- 						<exclude>**/*.properties</exclude> -->
+<!-- 						<exclude>**/*.gitignore</exclude> -->
+<!-- 						<exclude>src/test/**</exclude> -->
+<!--             			<exclude>src/main/resources/**</exclude> -->
+<!--             			Added by Thales -->
+<!--             			<exclude>src/main/java/com/thalesgroup/**</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/xacml/xacmlv3/**</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/cond/xacmlv3/**</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/ctx/xacmlv3/**</exclude>            			 -->
+<!--             			<exclude>src/main/java/com/sun/xacml/CacheManager.java</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/xacml/ObligationExpressions.java</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</exclude> -->
+<!--             			<exclude>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</exclude> -->
+<!-- 					</excludes> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
 			<plugin>
+				<!-- Thales's license Headers -->				
 				<groupId>com.mycila.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>
 				<version>1.9.0</version>
 				<configuration>
 					<!-- Template location -->
-					<header>src/main/resources/fileHeader.txt</header>
+					<header>src/main/resources/fileHeader.apache2.txt</header>
 					<properties>
 						<!-- Values to be substituted in template -->
 						<h_inceptionYear>${inceptionYear}</h_inceptionYear>
@@ -213,19 +258,20 @@
 						<exclude>**/*.gitignore</exclude>
 						<exclude>src/test/**</exclude>
             			<exclude>src/main/resources/**</exclude>
-            			<!-- Added by Thales -->
-            			<exclude>src/main/java/com/thalesgroup/**</exclude>
-            			<exclude>src/main/java/com/sun/xacml/xacmlv3/**</exclude>
-            			<exclude>src/main/java/com/sun/cond/xacmlv3/**</exclude>
-            			<exclude>src/main/java/com/sun/ctx/xacmlv3/**</exclude>            			
-            			<exclude>src/main/java/com/sun/xacml/CacheManager.java</exclude>
-            			<exclude>src/main/java/com/sun/xacml/ObligationExpressions.java</exclude>
-            			<exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</exclude>
-            			<exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</exclude>
-            			<exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</exclude>
-            			<exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</exclude>
-            			<exclude>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</exclude>
-					</excludes>
+					</excludes>			
+					<includes>
+            			<include>src/main/java/com/thalesgroup/**</include>
+            			<include>src/main/java/com/sun/xacml/xacmlv3/**</include>
+            			<include>src/main/java/com/sun/cond/xacmlv3/**</include>
+            			<include>src/main/java/com/sun/ctx/xacmlv3/**</include>            			
+            			<include>src/main/java/com/sun/xacml/CacheManager.java</include>
+            			<include>src/main/java/com/sun/xacml/ObligationExpressions.java</include>
+            			<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</include>
+            			<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</include>
+            			<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
+            			<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
+            			<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
+					</includes>
 				</configuration>
 				<executions>
 					<execution>
@@ -235,7 +281,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>			
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
