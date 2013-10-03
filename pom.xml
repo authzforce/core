@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.5.0</version>
+	<version>3.5.1</version>
 	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
 	<organization>
 		<name>Thales</name>

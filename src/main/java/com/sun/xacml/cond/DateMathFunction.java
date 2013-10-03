@@ -71,38 +71,38 @@ public class DateMathFunction extends FunctionBase
      * Standard identifier for the dateTime-add-dayTimeDuration function.
      */
     public static final String NAME_DATETIME_ADD_DAYTIMEDURATION =
-        FUNCTION_NS + "dateTime-add-dayTimeDuration";
+        FUNCTION_NS_3 + "dateTime-add-dayTimeDuration";
 
     /**
      * Standard identifier for the dateTime-subtract-dayTimeDuration function.
      */
     public static final String NAME_DATETIME_SUBTRACT_DAYTIMEDURATION =
-        FUNCTION_NS + "dateTime-subtract-dayTimeDuration";
+        FUNCTION_NS_3 + "dateTime-subtract-dayTimeDuration";
 
     /**
      * Standard identifier for the dateTime-add-yearMonthDuration function.
      */
     public static final String NAME_DATETIME_ADD_YEARMONTHDURATION =
-        FUNCTION_NS + "dateTime-add-yearMonthDuration";
+        FUNCTION_NS_3 + "dateTime-add-yearMonthDuration";
 
     /**
      * Standard identifier for the dateTime-subtract-yearMonthDuration
      * function.
      */
     public static final String NAME_DATETIME_SUBTRACT_YEARMONTHDURATION =
-        FUNCTION_NS + "dateTime-subtract-yearMonthDuration";
+        FUNCTION_NS_3 + "dateTime-subtract-yearMonthDuration";
 
     /**
      * Standard identifier for the date-add-yearMonthDuration function.
      */
     public static final String NAME_DATE_ADD_YEARMONTHDURATION =
-        FUNCTION_NS + "date-add-yearMonthDuration";
+        FUNCTION_NS_3 + "date-add-yearMonthDuration";
 
     /**
      * Standard identifier for the date-subtract-yearMonthDuration function.
      */
     public static final String NAME_DATE_SUBTRACT_YEARMONTHDURATION =
-        FUNCTION_NS + "date-subtract-yearMonthDuration";
+        FUNCTION_NS_3 + "date-subtract-yearMonthDuration";
 
     // private identifiers for the supported functions
     private static final int ID_DATETIME_ADD_DAYTIMEDURATION = 0;
