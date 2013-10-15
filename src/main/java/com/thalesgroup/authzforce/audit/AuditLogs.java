@@ -115,7 +115,7 @@ public final class AuditLogs {
 			StringBuilder sb = new StringBuilder();
 			sb.append(auditElt.print());
 			sb.append("\n");
-			LOGGER.log(AuditLevel.AUDIT, sb);
+			LOGGER.info(sb);
 		}
 		
 		// Releasing memory 
