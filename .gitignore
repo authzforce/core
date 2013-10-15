@@ -8,3 +8,4 @@
 /.settings/org.eclipse.wst.common.component
 /.settings/org.eclipse.wst.common.project.facet.core.xml
 /.settings/org.sonar.ide.eclipse.core.prefs
+*.log

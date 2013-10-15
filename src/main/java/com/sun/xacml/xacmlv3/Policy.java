@@ -152,8 +152,11 @@ public class Policy extends PolicyType {
 		metaData = new PolicyMetaData(root.getNamespaceURI(), null);
 		// Setting attributes
 		NamedNodeMap attrs = root.getAttributes();
+		//FIXME: NPE if policyId is null
 		policyId = attrs.getNamedItem("PolicyId").getNodeValue();
+		//FIXME: NPE if version is null
 		version = attrs.getNamedItem("Version").getNodeValue();
+		//FIXME: NPE if RuleCombiningAlg Id is null
 		ruleCombiningAlgId = attrs.getNamedItem("RuleCombiningAlgId")
 				.getNodeValue();
 

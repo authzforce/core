@@ -284,8 +284,7 @@ public class PolicyCollection
      * @throws TopLevelPolicyException if multiple policies match but this
      *                                 instance wasn't setup to wrap policies
      */
-    public Object getPolicy(EvaluationCtx context)
-        throws TopLevelPolicyException
+    public Object getPolicy(EvaluationCtx context) throws TopLevelPolicyException
     {
         // setup a list of matching policies
         ArrayList list = new ArrayList();
