@@ -14,9 +14,7 @@
 	<organization>
 		<name>Thales</name>
 	</organization>
-	<description>
-			An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP.
-	</description>
+	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
 	<inceptionYear>2011</inceptionYear>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
