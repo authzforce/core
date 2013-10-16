@@ -14,9 +14,7 @@
 	<organization>
 		<name>Thales</name>
 	</organization>
-	<description>
-			An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP.
-	</description>
+	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
 	<inceptionYear>2011</inceptionYear>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,11 +24,11 @@
 	</properties>
 	<dependencies>
 		<!-- Authzforce optionnal dependencies -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.thalesgroup.authzforce</groupId> -->
-<!-- 			<artifactId>authzforce-audit</artifactId> -->
-<!-- 			<version>2.0.1</version> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>com.thalesgroup.authzforce</groupId> -->
+		<!-- <artifactId>authzforce-audit</artifactId> -->
+		<!-- <version>2.0.1</version> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
@@ -45,32 +43,37 @@
 		</dependency>
 		<!-- /Authzforce dependencies -->
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons</groupId>
-			<artifactId>jaxb2-basics-runtime</artifactId>
-			<version>0.6.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons</groupId>
-			<artifactId>testing</artifactId>
-			<version>0.4.1.5</version>
-		</dependency>
-		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
-			<version>1.2.3</version>
+			<version>2.7.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
 			<version>1.11</version>
 		</dependency>
-
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce.core</groupId>
+			<artifactId>authzforce-model</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.ktd.scis</groupId>
+			<artifactId>oasis-xacml-model</artifactId>
+			<version>3.0.0</version>
+		</dependency>
 		<!-- Test dependencies -->
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>testing</artifactId>
+			<version>0.4.1.5</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -89,6 +92,20 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- Uncoment dependency below to use log4j as SLFJ implementation for test logs -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.6</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- Uncoment dependency below to use logback as SLFJ implementation for test logs -->
+		<!-- <dependency> -->
+		<!-- <groupId>ch.qos.logback</groupId> -->
+		<!-- <artifactId>logback-classic</artifactId> -->
+		<!-- <version>1.0.7</version> -->
+		<!-- <scope>test</scope> -->
+		<!-- </dependency> -->
 		<!-- /Test dependencies -->
 	</dependencies>
 	<build>
@@ -96,7 +113,6 @@
 			<!-- Maven compiler configuration -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.5.1</version>
 				<executions>
 					<execution>
 						<id>default-testCompile</id>
@@ -127,22 +143,10 @@
 				</configuration>
 			</plugin>
 			<!-- Uber jar configuration -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<finalName>${project.artifactId}-${project.version}</finalName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-shade-plugin</artifactId> 
+				<version>1.5</version> <executions> <execution> <phase>package</phase> <goals> <goal>shade</goal> </goals> 
+				<configuration> <finalName>${project.artifactId}-${project.version}</finalName> </configuration> </execution> 
+				</executions> </plugin> -->
 			<!-- Test configuration -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -177,8 +181,10 @@
 								import java.util.Date
 								import java.text.MessageFormat
 								def
-								vartimestamp = MessageFormat.format("{0,date,yyyy}", new Date())
-								project.properties['currentYear'] = vartimestamp
+								vartimestamp =
+								MessageFormat.format("{0,date,yyyy}", new Date())
+								project.properties['currentYear'] =
+								vartimestamp
 							</source>
 						</configuration>
 					</execution>
@@ -239,7 +245,7 @@
 					<header>src/main/resources/fileHeader.apache2.txt</header>
 					<properties>
 						<!-- Values to be substituted in template -->
-						<h_inceptionYear>${inceptionYear}</h_inceptionYear>
+						<h_inceptionYear>${project.inceptionYear}</h_inceptionYear>
 						<h_currentYear>${currentYear}</h_currentYear>
 						<h_copyrightOwner>${copyrightOwner}</h_copyrightOwner>
 					</properties>
@@ -288,12 +294,12 @@
 				<version>1.4</version>
 				<executions>
 					<execution>
-					<id>default</id>
-					<phase>compile</phase>
-<!-- 						<goals> -->
-<!-- 							<goal>compile</goal> -->
-<!-- 							<goal>test-compile</goal> -->
-<!-- 						</goals> -->
+						<id>default</id>
+						<phase>compile</phase>
+						<!-- <goals> -->
+						<!-- <goal>compile</goal> -->
+						<!-- <goal>test-compile</goal> -->
+						<!-- </goals> -->
 					</execution>
 				</executions>
 			</plugin>

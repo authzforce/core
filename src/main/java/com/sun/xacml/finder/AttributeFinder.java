@@ -34,12 +34,13 @@
 package com.sun.xacml.finder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
@@ -47,8 +48,6 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-//import com.thalesgroup.authzforce.audit.AttributesResolved;
-//import com.thalesgroup.authzforce.audit.AuditLogs;
 
 
 /**
@@ -81,8 +80,8 @@ public class AttributeFinder
     //
     private List selectorModules;
 
-    private static final org.apache.log4j.Logger LOG4J_LOGGER = 
-			org.apache.log4j.Logger.getLogger(AttributeFinder.class);    
+    private static final Logger LOG4J_LOGGER = 
+			LoggerFactory.getLogger(AttributeFinder.class);    
     
     /**
      * Default constructor.

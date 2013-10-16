@@ -45,16 +45,13 @@ import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
-import org.w3c.dom.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.BindingUtility;
@@ -67,7 +64,6 @@ import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.sun.xacml.ctx.StatusDetail;
 
 /**
  * The base type for all datatypes used in a policy or request/response, this
@@ -88,43 +84,44 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(AttributeValue.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeValue.class);
 
 	public static AttributeValue getInstance(AttributeValueType attrValue) throws UnknownIdentifierException {
 
-		AttributeFactory myFact = AttributeFactory.getInstance();
+		AttributeFactory attrFactory = AttributeFactory.getInstance();
 
 		AttributeValue returnData = null;
+		// FIXME: what if attrValue.getContent() is empty list (no content): <Attribute Value ....DataType="..." />
 		try {
-			returnData = myFact.createValue(
+			returnData = attrFactory.createValue(
 					URI.create(attrValue.getDataType()),
 					String.valueOf(attrValue.getContent().get(0)));
+			// FIXME: more explicit message for this exception (who throws this and why?)
 		} catch (SecurityException e) {
-			LOGGER.error(e);
+			LOGGER.error("Error parsing AttributeValue", e);
 		} catch (IllegalArgumentException e) {
-			LOGGER.error(e);
+			LOGGER.error("Error parsing AttributeValue", e);
 		} catch (ParsingException e) {
-			LOGGER.error(e);
+			// FIXME: why catch this and not UnknownIdentifierException? Is UnknownIdentifierException even thrown?
+			LOGGER.error("Error parsing AttributeValue", e);
 		}
 
 		return returnData;
 	}
 
 	public static AttributeValue getInstance(Node root, PolicyMetaData metadata) {
-		JAXBElement<AttributeValueType> attrValue = null;
+		final JAXBElement<AttributeValueType> attrValue;
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Unmarshaller u = jc.createUnmarshaller();
-			attrValue = (JAXBElement<AttributeValueType>) u.unmarshal(root);
+			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			attrValue = u.unmarshal(root, AttributeValueType.class);
+			return new AttributeValue(
+					URI.create(attrValue.getValue().getDataType()), attrValue
+							.getValue().getContent());
 		} catch (Exception e) {
-			System.err.println(e);
+			LOGGER.error("Error unmarshalling AttributeValue", e);
 		}
-
-		return new AttributeValue(
-				URI.create(attrValue.getValue().getDataType()), attrValue
-						.getValue().getContent());
+		
+		return null;
 	}
 
 	/**
@@ -239,12 +236,10 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	public String encode() {
 		StringWriter out = new StringWriter();
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling AttributeValue to String", e);
 		}
 		
 		return out.toString();
@@ -295,7 +290,12 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	 * @return a <code>String</code> encoding including the XML tags
 	 */
 	public String encodeWithTags(boolean includeType) {
-		return null;
+			// FIXME: Properly XML-encode the value
+			if (includeType)
+				return "<AttributeValue DataType=\"" + type.toString() + "\">"
+						+ encode() + "</AttributeValue>";
+			else
+				return "<AttributeValue>" + encode() + "</AttributeValue>";
 	}
 
 	public static List<AttributeValue> convertFromJAXB(
@@ -306,8 +306,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 
 		final List<AttributeValue> resultAvts = new ArrayList<AttributeValue>();
 		for (final AttributeValueType avt : avts) {
-			AttributeValue newAvt = null;
-			newAvt = (AttributeValue) AttributeValue.getInstance(avt);
+			final AttributeValue newAvt = AttributeValue.getInstance(avt);
 			
 			// final AttributeValue newAvt = convertFromJAXB(avt,
 			// URI.create(avt.getDataType()));

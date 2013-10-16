@@ -6,22 +6,23 @@ import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResultType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 
@@ -30,7 +31,7 @@ public class TestUtils {
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(TestUtils.class);
 
 	/**
@@ -44,7 +45,7 @@ public class TestUtils {
 	 *            request file name
 	 * @return String or null if any error
 	 */
-	public static RequestType createRequest(String rootDirectory,
+	public static Request createRequest(String rootDirectory,
 			String versionDirectory, String requestId) {
 
 		File file = new File(".");
@@ -63,7 +64,7 @@ public class TestUtils {
 			Document doc = db.parse(new FileInputStream(filePath));
 			return marshallRequestType(doc);
 		} catch (Exception e) {
-			LOGGER.error("Error while reading expected response from file ", e);
+			LOGGER.error("Error while reading expected request from file ", e);
 			// ignore any exception and return null
 		}
 		return null;
@@ -80,7 +81,7 @@ public class TestUtils {
 	 *            response file name
 	 * @return ResponseCtx or null if any error
 	 */
-	public static ResponseType createResponse(String rootDirectory,
+	public static Response createResponse(String rootDirectory,
 			String versionDirectory, String responseId) {
 
 		File file = new File(".");
@@ -108,84 +109,77 @@ public class TestUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static RequestType marshallRequestType(Node root) {
-		JAXBElement<RequestType> allOf = null;
+	private static Request marshallRequestType(Node root) {
+		Request request = null;
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Unmarshaller u = jc.createUnmarshaller();
-			allOf = ((JAXBElement<RequestType>) u.unmarshal(root));
+			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			JAXBElement<Request> jaxbElt = u.unmarshal(root, Request.class);
+			request = jaxbElt.getValue();
 		} catch (Exception e) {
-			System.err.println(e);
+			LOGGER.error("Error unmarshalling Request", e);
 		}
 
-		return allOf.getValue();
+		return request;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static ResponseType marshallResponseType(Node root) {
-		JAXBElement<ResponseType> allOf = null;
+	private static Response marshallResponseType(Node root) {
+		Response allOf = null;
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Unmarshaller u = jc.createUnmarshaller();
-			allOf = (JAXBElement<ResponseType>) u.unmarshal(root);
+			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			allOf = (Response) u.unmarshal(root);
 		} catch (Exception e) {
-			System.err.println(e);
+			LOGGER.error("Error unmarshalling Response", e);
 		}
 
-		return allOf.getValue();
+		return allOf;
 	}
 
-	public static String printRequest(RequestType request) {
+	public static String printRequest(Request request) {
 		StringWriter writer = new StringWriter();
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(request, writer);
 		} catch (Exception e) {
-			LOGGER.equals(e);
+			LOGGER.error("Error marshalling Request", e);
 		}
 
 		return writer.toString();
 	}
 
-	public static String printResponse(ResponseType response) {
+	public static String printResponse(Response response) {
 		StringWriter writer = new StringWriter();
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(response, writer);
 		} catch (Exception e) {
-			LOGGER.equals(e);
+			LOGGER.error("Error marshalling Response", e);
 		}
 
 		return writer.toString();
 	}
 
 	public static boolean match(ResponseCtx response,
-			ResponseType expectedResponse) {
+			Response expectedResponse) {
 
 		boolean finalResult = false;
 
-		ResponseType xacmlResponse = new ResponseType();
-		Iterator<ResultType> myIt = response.getResults().iterator();
+		Response xacmlResponse = new Response();
+		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> myIt = response.getResults().iterator();
 
 		while (myIt.hasNext()) {
 			Result result = (Result) myIt.next();
-			ResultType resultType = result;
-			xacmlResponse.getResult().add(resultType);
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Result resultType = result;
+			xacmlResponse.getResults().add(resultType);
 		}
 
-		finalResult = matchResult(xacmlResponse.getResult(),
-				expectedResponse.getResult());
+		finalResult = matchResult(xacmlResponse.getResults(),
+				expectedResponse.getResults());
 		if (finalResult) {
 			int i = 0;
-			for (ResultType result : xacmlResponse.getResult()) {
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse.getResults()) {
 				finalResult = matchObligations(result.getObligations(),
-						expectedResponse.getResult().get(i).getObligations());
+						expectedResponse.getResults().get(i).getObligations());
 			}
 		} else {
 			// Obligation comparison failed
@@ -194,9 +188,9 @@ public class TestUtils {
 		}
 		if (finalResult) {
 			int i = 0;
-			for (ResultType result : xacmlResponse.getResult()) {
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse.getResults()) {
 				finalResult = matchAdvices(result.getAssociatedAdvice(),
-						expectedResponse.getResult().get(i)
+						expectedResponse.getResults().get(i)
 								.getAssociatedAdvice());
 			}
 		} else {
@@ -215,8 +209,8 @@ public class TestUtils {
 		return finalResult;
 	}
 
-	private static boolean matchResult(List<ResultType> currentResult,
-			List<ResultType> expectedResult) {
+	private static boolean matchResult(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> currentResult,
+			List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResult) {
 		boolean resultCompare = false;
 		// Compare the number of results
 		LOGGER.debug("Begining result number comparison");
@@ -232,7 +226,7 @@ public class TestUtils {
 			LOGGER.debug("Result number comparaison OK");
 			int i = 0;
 			LOGGER.debug("Begining result decision comparison");
-			for (ResultType result : currentResult) {
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : currentResult) {
 				// Compare the decision
 				resultCompare = result.getDecision().equals(
 						expectedResult.get(i).getDecision());
@@ -249,8 +243,8 @@ public class TestUtils {
 		return resultCompare;
 	}
 
-	private static boolean matchObligations(ObligationsType obligationsType,
-			ObligationsType obligationsType2) {
+	private static boolean matchObligations(Obligations obligationsType,
+			Obligations obligationsType2) {
 		boolean returnData = true;
 
 		if (obligationsType != null && obligationsType2 != null) {
@@ -263,11 +257,11 @@ public class TestUtils {
 	}
 
 	private static boolean matchAdvices(
-			AssociatedAdviceType associatedAdviceType,
-			AssociatedAdviceType associatedAdviceType2) {
+			AssociatedAdvice associatedAdvice,
+			AssociatedAdvice associatedAdvice2) {
 		boolean returnData = true;
-		if (associatedAdviceType != null && associatedAdviceType2 != null) {
-			if (!associatedAdviceType.equals(associatedAdviceType2)) {
+		if (associatedAdvice != null && associatedAdvice2 != null) {
+			if (!associatedAdvice.equals(associatedAdvice2)) {
 				returnData = false;
 			}
 		}

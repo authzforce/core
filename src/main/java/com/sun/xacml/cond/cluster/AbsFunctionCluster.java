@@ -33,11 +33,14 @@
  */
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.AbsFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.xacml.cond.AbsFunction;
 
 
 /**
@@ -49,19 +52,16 @@ import java.util.Set;
 public class AbsFunctionCluster implements FunctionCluster
 {
 	
-	/**
-	 * Logger used for all classes
-	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(AbsFunctionCluster.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbsFunctionCluster.class);
 
     public Set getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = AbsFunction.getSupportedIdentifiers().iterator();
 
         LOGGER.debug("Initialize Abs function");
-        while (it.hasNext())
+        while (it.hasNext()) {
             set.add(new AbsFunction((String)(it.next())));
+        }
 
         return set;
     }

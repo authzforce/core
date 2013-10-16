@@ -23,18 +23,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.MatchType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.MatchResult;
@@ -63,7 +64,7 @@ import com.sun.xacml.ctx.Status;
 
  * @author Romain Ferrari
  */
-public class Match extends MatchType {
+public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match {
 
 	/**
 	 * An integer value indicating that this class represents a SubjectMatch
@@ -123,7 +124,7 @@ public class Match extends MatchType {
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Match.class);
 
 	// the type of this target match
@@ -441,12 +442,10 @@ public class Match extends MatchType {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Match", e);
 		}
 	}
 

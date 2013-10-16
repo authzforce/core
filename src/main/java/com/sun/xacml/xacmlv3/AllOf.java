@@ -25,25 +25,28 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOfType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.MatchType;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.TargetSection;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * @author Romain Ferrari
  * 
  */
-public class AllOf extends AllOfType {
+public class AllOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(AllOf.class);
+	
 	/**
 	 * the version of XACML used by the containing Match element
 	 */
@@ -55,27 +58,26 @@ public class AllOf extends AllOfType {
 	 * @param matches
 	 *            a <code>List</code> of <code>TargetMatch</code> elements
 	 */
-	public AllOf(List<MatchType> match, int version) {
+	public AllOf(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Match> match, int version) {
 		if(match == null) {
-			this.match = new ArrayList<MatchType>();
+			this.matches = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.Match>();
 		} else {
-			this.match = match;
+			this.matches = match;
 		}
 		this.xacmlVersion = version;
 	}
 
-	private static MatchType unmarshallMatchType(Node root) {
-		JAXBElement<MatchType> match = null;
+	private static oasis.names.tc.xacml._3_0.core.schema.wd_17.Match unmarshallMatchType(Node root) {
+		final JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.Match> match;
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Unmarshaller u = jc.createUnmarshaller();
-			match = (JAXBElement<MatchType>) u.unmarshal(root);
+			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			match = u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.Match.class);
+			return match.getValue();
 		} catch (Exception e) {
-			System.err.println(e);
+			LOGGER.error("Error unmarshalling AllOf", e);
 		}
-
-		return match.getValue();
+		
+		return null;
 	}
 
 	/**
@@ -92,7 +94,7 @@ public class AllOf extends AllOfType {
 	public static AllOf getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
 
-		List<MatchType> matchType = new ArrayList<MatchType>();
+		List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Match> matchType = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.Match>();
 		NodeList children = root.getChildNodes();
 
 		for (int i = 0; i < children.getLength(); i++) {
@@ -106,7 +108,7 @@ public class AllOf extends AllOfType {
 			throw new ParsingException("AllOf must contain at least one Match");
 		}
 
-		return new AllOf(matchType, Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
+		return new AllOf(matchType, PolicyMetaData.XACML_VERSION_3_0);
 	}
 
 	public static List<TargetSection> getTargetSection(Node root,

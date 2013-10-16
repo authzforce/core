@@ -40,21 +40,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ConditionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
 import org.jvnet.jaxb2_commons.lang.JAXBHashCodeStrategy;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
@@ -69,6 +70,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.xacmlv3.Target;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the XACML ConditionType type. It contains exactly one child
@@ -78,7 +80,7 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
  * @since 2.0
  * @author Seth Proctor
  */
-public class Condition extends ConditionType implements Evaluatable {
+public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition implements Evaluatable {
 
 	// a local Boolean URI that is used as the return type
 	private static URI booleanIdentifier;
@@ -97,12 +99,12 @@ public class Condition extends ConditionType implements Evaluatable {
 	// private boolean isVersionOne;
 
 	// flags of the XACML Version, cannot use a boolean anymore since 3.0 is out
-	private String xacmlVersion;
+	private int xacmlVersion;
 
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Condition.class);
 
 	// initialize the boolean identifier
@@ -181,7 +183,7 @@ public class Condition extends ConditionType implements Evaluatable {
 	 */
 	public Condition(Function expressionType, List<ExpressionType> expressions)
 			throws IllegalArgumentException {
-		xacmlVersion = XACMLAttributeId.XACML_VERSION_1_0.value();
+		xacmlVersion = PolicyMetaData.XACML_VERSION_1_0;
 
 		// check that the function is valid for a Condition
 		checkExpression(expressionType);
@@ -209,7 +211,7 @@ public class Condition extends ConditionType implements Evaluatable {
 		/*
 		 * FIXME: RF, check the real version, 2.0 or 3.0
 		 */
-		xacmlVersion = XACMLAttributeId.XACML_VERSION_3_0.value();
+		xacmlVersion = PolicyMetaData.XACML_VERSION_3_0;
 
 		// check that the function is valid for a Condition
 		//FIXME: check the validity of the expression
@@ -228,7 +230,7 @@ public class Condition extends ConditionType implements Evaluatable {
 		children = Collections.unmodifiableList(list);
 	}
 
-	public Condition(ConditionType cond) {
+	public Condition(oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition cond) {
 		this.setExpression(cond.getExpression());
 	}
 
@@ -353,12 +355,10 @@ public class Condition extends ConditionType implements Evaluatable {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Condition", e);
 		}
 	}
 }

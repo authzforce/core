@@ -33,7 +33,7 @@
  */
 package com.sun.xacml.support;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,11 +41,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import com.sun.xacml.BindingUtility;
 import com.sun.xacml.ConfigurationStore;
@@ -95,6 +95,7 @@ public class SimplePDP
      * Default constructor. This creates a <code>SimplePDP</code> with a
      * <code>PDP</code> based on the configuration defined by the runtime
      * property com.sun.xcaml.PDPConfigFile.
+     * @throws Exception 
      */
     public SimplePDP() throws Exception {
         // load the configuration
@@ -167,13 +168,15 @@ public class SimplePDP
      *
      * @throws IOException if there is a problem accessing the file
      * @throws ParsingException if the Request is invalid
+     * @throws JAXBException 
      */
-    public ResponseCtx evaluate(String requestFile)
+    public ResponseCtx evaluate(String requestFilename)
         throws IOException, ParsingException, JAXBException
     {
         // setup the request based on the file
-        Unmarshaller u = BindingUtility.getUnmarshaller();
-        RequestType request = ((JAXBElement<RequestType>) u.unmarshal(new FileInputStream(requestFile))).getValue();
+        Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+        File requestFile = new File(requestFilename);
+        Request request = u.unmarshal(new StreamSource(requestFile), Request.class).getValue();
 
         // evaluate the request
         return pdp.evaluate(request);

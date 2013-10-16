@@ -12,12 +12,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
@@ -47,7 +49,7 @@ public class BasicV3 {
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(BasicV3.class);
 	/**
 	 * The map of results
@@ -72,8 +74,8 @@ public class BasicV3 {
 		policies.add("TestPolicy_0001.xml");
 		LOGGER.info("Basic Test 0001 is started");
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 
 		for (int i = 1; i < 8; i++) {
 
@@ -130,8 +132,8 @@ public class BasicV3 {
 		policies.add("TestPolicy_0002.xml");
 		LOGGER.info("Basic Test 0002 is started");
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 
 		for (int i = 1; i < 4; i++) {
 
@@ -188,8 +190,8 @@ public class BasicV3 {
 		policies.add("TestPolicy_0003.xml");
 		LOGGER.info("Basic Test 0003 is started");
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 
 		for (int i = 1; i < 4; i++) {
 
@@ -246,8 +248,8 @@ public class BasicV3 {
 		policies.add("TestPolicy_0004.xml");
 		LOGGER.debug("Basic Test 0004 is started");
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 
 		for (int i = 1; i < 4; i++) {
 
@@ -304,8 +306,8 @@ public class BasicV3 {
 		policies.add("TestPolicy_0005.xml");
 		LOGGER.info("Basic Test 0005 is started");
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 
 		for (int i = 1; i < 4; i++) {
 
@@ -382,7 +384,7 @@ public class BasicV3 {
 						+ File.separator + policy;
 				policyLocations.add(policyPath);
 			} catch (IOException e) {
-				LOGGER.error(e);
+				LOGGER.error("Error getting path to policy", e);
 			}
 		}
 

@@ -39,7 +39,7 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
@@ -101,7 +101,7 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
 			List policyElements) {
 		boolean atLeastOnePermit = false;
-		ObligationsType permitObligations = new ObligationsType();
+		Obligations permitObligations = new Obligations();
 		Iterator it = policyElements.iterator();
 
 		while (it.hasNext()) {

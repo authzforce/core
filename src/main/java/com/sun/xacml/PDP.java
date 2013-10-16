@@ -40,13 +40,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
 
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -60,6 +63,7 @@ import com.sun.xacml.finder.ResourceFinderResult;
 import com.thalesgroup.authzforce.audit.AuditLogs;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * This is the core class for the XACML engine, providing the starting point for
@@ -83,7 +87,7 @@ public class PDP {
 	// the logger we'll use for all messages
 //	private static final Logger OLD_LOGGER = Logger.getLogger(PDP.class
 //			.getName());
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(PDP.class.getName());
 
 	private static CacheManager cacheManager;
@@ -139,13 +143,13 @@ public class PDP {
 		}
 	}
 
-	private String getHashCode(RequestType myEvaluationCtx) {
+	private String getHashCode(Request myEvaluationCtx) {
 		int hash = 0;
 
-		for (AttributesType avts : myEvaluationCtx.getAttributes()) {
-			for (AttributeType att : avts.getAttribute()) {
+		for (Attributes avts : myEvaluationCtx.getAttributes()) {
+			for (Attribute att : avts.getAttributes()) {
 				hash += att.getAttributeId().hashCode();
-				for (AttributeValueType attvt : att.getAttributeValue()) {
+				for (AttributeValueType attvt : att.getAttributeValues()) {
 					for (Object attContent : attvt.getContent()) {
 						hash += attContent.hashCode();
 					}
@@ -189,14 +193,14 @@ public class PDP {
 	 * @return a response paired to the request
 	 */
 	@Audit(type = Audit.Type.DISPLAY)
-	public List<ResponseCtx> evaluateList(RequestType request) {
+	public List<ResponseCtx> evaluateList(Request request) {
 
-		List<AttributesType> subjects = new ArrayList<AttributesType>();
-		List<AttributesType> actions = new ArrayList<AttributesType>();
-		List<AttributesType> resources = new ArrayList<AttributesType>();
-		List<AttributesType> environments = new ArrayList<AttributesType>();
-		List<AttributesType> customs = new ArrayList<AttributesType>();
-		List<RequestType> requests = new ArrayList<RequestType>();
+		List<Attributes> subjects = new ArrayList<Attributes>();
+		List<Attributes> actions = new ArrayList<Attributes>();
+		List<Attributes> resources = new ArrayList<Attributes>();
+		List<Attributes> environments = new ArrayList<Attributes>();
+		List<Attributes> customs = new ArrayList<Attributes>();
+		List<Request> requests = new ArrayList<Request>();
 		List<ResponseCtx> responses = new ArrayList<ResponseCtx>();
 
 		if (request.getMultiRequests() != null) {
@@ -204,9 +208,9 @@ public class PDP {
 			// there was something wrong with the request, so we return
 			// Indeterminate with a status of syntax error...though this
 			// may change if a more appropriate status type exists
-			StatusCodeType code = new StatusCodeType();
+			StatusCode code = new StatusCode();
 			code.setValue(Status.STATUS_SYNTAX_ERROR);
-			StatusType status = new StatusType();
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 			status.setStatusCode(code);
 			status.setStatusMessage("Multi Request not implemented yet");
 			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
@@ -215,15 +219,15 @@ public class PDP {
 			// there was something wrong with the request, so we return
 			// Indeterminate with a status of syntax error...though this
 			// may change if a more appropriate status type exists
-			StatusCodeType code = new StatusCodeType();
+			StatusCode code = new StatusCode();
 			code.setValue(Status.STATUS_SYNTAX_ERROR);
-			StatusType status = new StatusType();
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 			status.setStatusCode(code);
 			status.setStatusMessage("Combined decision not implemented yet");
 			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
 		} else {
 
-			for (AttributesType myAttr : request.getAttributes()) {
+			for (Attributes myAttr : request.getAttributes()) {
 				if (myAttr.getCategory().equals(
 						XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value())) {
 					resources.add(myAttr);
@@ -244,55 +248,55 @@ public class PDP {
 				// there was something wrong with the request, so we return
 				// Indeterminate with a status of syntax error...though this
 				// may change if a more appropriate status type exists
-				StatusCodeType code = new StatusCodeType();
+				StatusCode code = new StatusCode();
 				code.setValue(Status.STATUS_SYNTAX_ERROR);
-				StatusType status = new StatusType();
+				oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 				status.setStatusCode(code);
 				status.setStatusMessage("Ressource or Subject or Action attributes needs to be filled");
 				return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
 			}
 			if(subjects.isEmpty()) {
-				AttributesType subject = new AttributesType();
+				Attributes subject = new Attributes();
 				subjects.add(subject);
 			}
 			if(actions.isEmpty()) {
-				AttributesType action = new AttributesType();
+				Attributes action = new Attributes();
 				actions.add(action);
 			}
 			if(resources.isEmpty()) {
-				AttributesType resource = new AttributesType();
+				Attributes resource = new Attributes();
 				resources.add(resource);
 			}
 			
-			for (AttributesType subjectAttr : subjects) {
-				for (AttributesType actionsAttr : actions) {
-					for (AttributesType resourcesAttr : resources) {
-						RequestType tmpRequest = new RequestType();
+			for (Attributes subjectAttr : subjects) {
+				for (Attributes actionsAttr : actions) {
+					for (Attributes resourcesAttr : resources) {
+						Request tmpRequest = new Request();
 						tmpRequest.setMultiRequests(request.getMultiRequests());
 						tmpRequest.setRequestDefaults(request.getRequestDefaults());
 						tmpRequest.setReturnPolicyIdList(request.isReturnPolicyIdList());
 						tmpRequest.setCombinedDecision(request.isCombinedDecision());
-						if(!resourcesAttr.getAttribute().isEmpty()) {
+						if(!resourcesAttr.getAttributes().isEmpty()) {
 							tmpRequest.getAttributes().add(resourcesAttr);
 						}
-						if(!actionsAttr.getAttribute().isEmpty()) {
+						if(!actionsAttr.getAttributes().isEmpty()) {
 							tmpRequest.getAttributes().add(actionsAttr);
 						}
-						if(!subjectAttr.getAttribute().isEmpty()) {
+						if(!subjectAttr.getAttributes().isEmpty()) {
 							tmpRequest.getAttributes().add(subjectAttr);
 						}
 						requests.add(tmpRequest);
 					}
 				}
 			}
-			for (RequestType requestList : requests) {
+			for (Request requestList : requests) {
 				requestList.getAttributes().addAll(environments);
 			}
-			for (RequestType requestList : requests) {
+			for (Request requestList : requests) {
 				requestList.getAttributes().addAll(customs);
 			}
-			for (RequestType requestType : requests) {
-				ResponseCtx response = this.evaluate(requestType);
+			for (Request Request : requests) {
+				ResponseCtx response = this.evaluate(Request);
 				responses.add(response);
 			}
 		}
@@ -316,7 +320,7 @@ public class PDP {
 	 * 
 	 * @return a response paired to the request
 	 */
-	public ResponseCtx evaluate(RequestType request) {
+	public ResponseCtx evaluate(Request request) {
 		String hash = "";
 
 		// try to create the EvaluationCtx out of the request
@@ -325,13 +329,14 @@ public class PDP {
 			BasicEvaluationCtx myEvaluationCtx = new BasicEvaluationCtx(
 					request,
 					attributeFinder,
-					Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
+					PolicyMetaData.XACML_VERSION_3_0);
 			/*
 			 * 
 			 */
 			// @author: romain.ferrari@thalesgroup.com
 			// Using the cache if defined
 			if (cacheManager.isActivate()) {
+				// FIXME: simply use request.hashCode()
 				hash = getHashCode(request);
 				ResponseCtx cacheResult = (ResponseCtx) cacheManager
 						.checkCache(hash);
@@ -359,7 +364,8 @@ public class PDP {
 			return new ResponseCtx(new Result(DecisionType.INDETERMINATE,
 					status));
 		} catch (NumberFormatException e) {
-			LOGGER.error(e);
+			// FIXME: this exception is too low-level, hard to guess what would cause it at this point
+			LOGGER.error("Invalid request", e);
 			// there was something wrong with the request, so we return
 			// Indeterminate with a status of syntax error...though this
 			// may change if a more appropriate status type exists
@@ -369,13 +375,13 @@ public class PDP {
 			return new ResponseCtx(new Result(DecisionType.INDETERMINATE,
 					status));
 		} catch (UnknownIdentifierException e) {
-			LOGGER.error(e);
+			LOGGER.error("Invalid request", e);
 			// there was something wrong with the request, so we return
 			// Indeterminate with a status of syntax error...though this
 			// may change if a more appropriate status type exists
-			StatusCodeType code = new StatusCodeType();
+			StatusCode code = new StatusCode();
 			code.setValue(Status.STATUS_SYNTAX_ERROR);
-			StatusType status = new StatusType();
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 			status.setStatusCode(code);
 			status.setStatusMessage(e.getLocalizedMessage());
 			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
@@ -386,7 +392,7 @@ public class PDP {
 	 * Uses the given <code>EvaluationCtx</code> against the available policies
 	 * to determine a response. If you are starting with a standard XACML
 	 * Request, then you should use the version of this method that takes a
-	 * <code>RequestType</code>. This method should be used only if you have a
+	 * <code>Request</code>. This method should be used only if you have a
 	 * real need to directly construct an evaluation context (or if you need to
 	 * use an <code>EvaluationCtx</code> implementation other than
 	 * <code>BasicEvaluationCtx</code>).
