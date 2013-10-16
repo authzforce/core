@@ -155,10 +155,8 @@ public class Target extends TargetType {
 				for (MatchType matchList : allOfList.getMatch()) {
 					if (matchList.getAttributeDesignator() != null) {
 						result = ((Match)matchList).match(context);
-//						result = new MatchResult(MatchResult.MATCH);
 					} else if (matchList.getAttributeSelector() != null) {
 						result = ((Match)matchList).match(context);
-//						result = new MatchResult(MatchResult.MATCH);
 					} else {
 						LOGGER.error("failed to match any element of Target");
 						return new MatchResult(MatchResult.NO_MATCH);
