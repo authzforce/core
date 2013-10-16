@@ -5,3 +5,6 @@
 /.settings
 /.settings/org.eclipse.jdt.core.prefs
 /.settings/org.eclipse.core.resources.prefs
+/.settings/org.eclipse.wst.common.component
+/.settings/org.eclipse.wst.common.project.facet.core.xml
+/.settings/org.sonar.ide.eclipse.core.prefs
