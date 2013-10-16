@@ -41,7 +41,6 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
