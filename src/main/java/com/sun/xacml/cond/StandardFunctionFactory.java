@@ -22,6 +22,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.cluster.AbsFunctionCluster;
 import com.sun.xacml.cond.cluster.AddFunctionCluster;
@@ -96,7 +100,7 @@ public class StandardFunctionFactory extends BaseFunctionFactory
     /**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(StandardFunctionFactory.class);
 
     /**
@@ -134,11 +138,11 @@ public class StandardFunctionFactory extends BaseFunctionFactory
         targetFunctions.addAll((new ComparisonFunctionCluster()).getSupportedFunctions());
         // add MatchFunction
         targetFunctions.addAll((new MatchFunctionCluster()).getSupportedFunctions());
+        
+        if(LOGGER.isDebugEnabled()) {
+        	LOGGER.debug("Added Target functions: {}", StringUtils.join(targetFunctions.toArray(), ','));
+        }
 
-        LOGGER.debug("Functions added to the target");
-        for (Function key : (Set<Function>)targetFunctions) {
-        	LOGGER.debug(key.getIdentifier());
-		}
         targetAbstractFunctions = new HashMap();
     }
 

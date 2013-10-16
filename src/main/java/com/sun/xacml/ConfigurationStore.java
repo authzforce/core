@@ -15,43 +15,13 @@
  */
 package com.sun.xacml;
 
-import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.AttributeFactoryProxy;
-import com.sun.xacml.attr.AttributeProxy;
-import com.sun.xacml.attr.BaseAttributeFactory;
-import com.sun.xacml.attr.StandardAttributeFactory;
-
-import com.sun.xacml.combine.BaseCombiningAlgFactory;
-import com.sun.xacml.combine.CombiningAlgFactory;
-import com.sun.xacml.combine.CombiningAlgFactoryProxy;
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.sun.xacml.combine.StandardCombiningAlgFactory;
-
-import com.sun.xacml.cond.BaseFunctionFactory;
-import com.sun.xacml.cond.BasicFunctionFactoryProxy;
-import com.sun.xacml.cond.Function;
-import com.sun.xacml.cond.FunctionProxy;
-import com.sun.xacml.cond.FunctionFactory;
-import com.sun.xacml.cond.FunctionFactoryProxy;
-import com.sun.xacml.cond.StandardFunctionFactory;
-
-import com.sun.xacml.cond.cluster.FunctionCluster;
-
-import com.sun.xacml.finder.AttributeFinder;
-import com.sun.xacml.finder.PolicyFinder;
-import com.sun.xacml.finder.ResourceFinder;
-import com.sun.xacml.xacmlv3.Policy;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,20 +31,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.xml.sax.SAXException;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.sun.xacml.attr.AttributeFactory;
+import com.sun.xacml.attr.AttributeFactoryProxy;
+import com.sun.xacml.attr.AttributeProxy;
+import com.sun.xacml.attr.BaseAttributeFactory;
+import com.sun.xacml.attr.StandardAttributeFactory;
+import com.sun.xacml.combine.BaseCombiningAlgFactory;
+import com.sun.xacml.combine.CombiningAlgFactory;
+import com.sun.xacml.combine.CombiningAlgFactoryProxy;
+import com.sun.xacml.combine.CombiningAlgorithm;
+import com.sun.xacml.combine.StandardCombiningAlgFactory;
+import com.sun.xacml.cond.BaseFunctionFactory;
+import com.sun.xacml.cond.BasicFunctionFactoryProxy;
+import com.sun.xacml.cond.Function;
+import com.sun.xacml.cond.FunctionFactory;
+import com.sun.xacml.cond.FunctionFactoryProxy;
+import com.sun.xacml.cond.FunctionProxy;
+import com.sun.xacml.cond.StandardFunctionFactory;
+import com.sun.xacml.cond.cluster.FunctionCluster;
+import com.sun.xacml.finder.AttributeFinder;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.finder.ResourceFinder;
 
 
 /**
@@ -129,7 +119,7 @@ public class ConfigurationStore
     /**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(ConfigurationStore.class);
 
     /**
@@ -875,6 +865,7 @@ public class ConfigurationStore
     /**
      * Returns the PDP configuration with the given name. If no such
      * configuration exists then an exception is thrown.
+     * @param name 
      *
      * @return the matching PDP configuation
      *
@@ -976,6 +967,7 @@ public class ConfigurationStore
     /**
      * Returns the combiningAlg factory with the given name. If no such
      * factory exists then an exception is thrown.
+     * @param name 
      *
      * @return the matching combiningAlg factory
      *
@@ -1039,6 +1031,7 @@ public class ConfigurationStore
     /**
      * Returns the function factory proxy with the given name. If no such
      * proxy exists then an exception is thrown.
+     * @param name 
      *
      * @return the matching function factory proxy
      *

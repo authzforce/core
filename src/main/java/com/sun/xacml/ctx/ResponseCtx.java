@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResultType;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.yaml.snakeyaml.parser.ParserException;
@@ -45,7 +43,7 @@ public class ResponseCtx
 {
 
     // The set of Result objects returned by the PDP
-    private Set<ResultType> results = null;
+    private Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results = null;
 
     /**
      * Constructor that creates a new <code>ResponseCtx</code> with only a
@@ -124,7 +122,7 @@ public class ResponseCtx
      * 
      * @return a <code>Set</code> of results
      */
-    public Set<ResultType> getResults() {
+    public Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> getResults() {
         return results;
     }
 

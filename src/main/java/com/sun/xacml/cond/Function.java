@@ -152,5 +152,10 @@ public abstract class Function extends FunctionType
      * @param indenter an object that creates indentation strings
      */
     public abstract void encode(OutputStream output, Indenter indenter);
+    
+    @Override
+    public String toString() {
+    	return getIdentifier().toString();
+    }
    
 }

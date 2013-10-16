@@ -21,8 +21,11 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
@@ -42,7 +45,7 @@ import com.sun.xacml.xacmlv3.Policy;
  */
 public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 
-	private static final org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger
+	private static final Logger log4jLogger = LoggerFactory
 			.getLogger(PermitOverridesPolicyAlg.class);
 
 	/**
@@ -89,8 +92,8 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 			List policyElements) {
 		boolean atLeastOneError = false;
 		boolean atLeastOneDeny = false;
-		ObligationsType denyObligations = new ObligationsType();
-		StatusType firstIndeterminateStatus = null;
+		Obligations denyObligations = new Obligations();
+		Status firstIndeterminateStatus = null;
 		Iterator it = policyElements.iterator();
 
 		/**

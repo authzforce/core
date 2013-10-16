@@ -19,10 +19,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinitionType;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -43,7 +40,7 @@ import com.sun.xacml.cond.xacmlv3.ExpressionTools;
  * @since 2.0
  * @author Seth Proctor
  */
-public class VariableDefinition extends VariableDefinitionType
+public class VariableDefinition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition
 {
 
     // the identitifer for this definition

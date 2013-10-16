@@ -18,14 +18,17 @@ package com.sun.xacml.support.finder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
@@ -74,9 +77,9 @@ public class FilePolicyModule extends PolicyFinderModule {
     // the actual loaded policies
     private PolicyCollection policies;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(FilePolicyModule.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(FilePolicyModule.class.getName());
 
     /**
      * Constructor which retrieves the schema file to validate policies against
@@ -188,7 +191,7 @@ public class FilePolicyModule extends PolicyFinderModule {
      * @param finder a PolicyFinder used to help in instantiating PolicySets
      */
     public void init(PolicyFinder finder) {
-        PolicyReader reader = new PolicyReader(finder, logger, schemaFile);
+        PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
 
         Iterator it = fileNames.iterator();
         while (it.hasNext()) {
@@ -214,14 +217,16 @@ public class FilePolicyModule extends PolicyFinderModule {
 					this.policies.addPolicySet(policySet);
 				}
             } catch (FileNotFoundException fnfe) {
-                if (logger.isLoggable(Level.WARNING))
-                    logger.log(Level.WARNING, "File couldn't be read: "
-                               + fname, fnfe);
+                    LOGGER.error("File couldn't be read: {}", fname, fnfe);
             } catch (ParsingException pe) {
-                if (logger.isLoggable(Level.WARNING))
-                    logger.log(Level.WARNING, "Error reading policy from file "
-                               + fname, pe);
-            }
+            	LOGGER.error("File couldn't be parsed: {}", fname, pe);
+            } catch (SAXException e)
+			{
+            	LOGGER.error("File couldn't be parsed: {}", fname, e);
+			} catch (IOException e)
+			{
+				LOGGER.error("File couldn't be read: {}", fname, e);
+			}
         }
     }
 
@@ -249,7 +254,7 @@ public class FilePolicyModule extends PolicyFinderModule {
 				// Retrieving combining algorithm
 				PolicyCombiningAlgorithm myCombiningAlg = (PolicyCombiningAlgorithm) policySet.getCombiningAlg();
 				PolicyCollection myPolcollection = new PolicyCollection(myCombiningAlg, URI.create(policySet.getPolicySetId()));
-				for (Object elt : policySet.getPolicySetOrPolicyOrPolicySetIdReference()) {
+				for (Object elt : policySet.getPolicySetsAndPoliciesAndPolicySetIdReferences()) {
 					if (elt instanceof PolicyCombinerElement) {
 						if((((PolicyCombinerElement) elt).getElement()) instanceof Policy) {
 							myPolcollection.addPolicy((Policy) ((PolicyCombinerElement) elt).getElement());

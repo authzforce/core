@@ -24,21 +24,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -50,8 +49,8 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.Result;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the ObligationType XML type in XACML. This also stores all the
@@ -60,7 +59,7 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Obligation extends ObligationType {
+public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation {
 
 	// the obligation id
 //	private URI id;
@@ -76,8 +75,7 @@ public class Obligation extends ObligationType {
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(Obligation.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Obligation.class);
 
 	/**
 	 * Constructor that takes all the data associated with an obligation. The
@@ -106,12 +104,13 @@ public class Obligation extends ObligationType {
 	 *            the effect denoting when to fulfill this obligation
 	 * @param assignments
 	 *            a <code>List</code> of <code>Attribute</code>s
+	 * @param isIndeterminate 
 	 */
 	public Obligation(String id, int fulfillOn, List assignments,
 			boolean isIndeterminate) {
 		this.obligationId = id;
 		this.fulfillOn = fulfillOn;
-		this.attributeAssignment = Collections.unmodifiableList(new ArrayList(
+		this.attributeAssignments = Collections.unmodifiableList(new ArrayList(
 				assignments));
 		this.isIndeterminate = isIndeterminate;
 	}
@@ -172,8 +171,7 @@ public class Obligation extends ObligationType {
 					AttributeValue attrValue = attrFactory.createValue(node);
 					assignments.add(new Attribute(attrId, null, null,
 							attrValue,
-							Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-									.value())));
+							PolicyMetaData.XACML_VERSION_3_0));
 				} catch (URISyntaxException use) {
 					throw new ParsingException("Error parsing URI", use);
 				} catch (UnknownIdentifierException uie) {
@@ -194,17 +192,18 @@ public class Obligation extends ObligationType {
 	 * 
 	 * @param root
 	 *            the DOM root of the ObligationType XML type
+	 * @param context 
 	 * 
 	 * @return an instance of an obligation
 	 * 
 	 * @throws ParsingException
 	 *             if the structure isn't valid
 	 */
-	public static Obligation getInstance(ObligationExpressionType root,
+	public static Obligation getInstance(ObligationExpression root,
 			EvaluationCtx context) throws ParsingException {
 		String id;
 		int fulfillOn = -1;
-		List<AttributeAssignmentType> assignments = new ArrayList<AttributeAssignmentType>();
+		List<AttributeAssignment> assignments = new ArrayList<AttributeAssignment>();
 		boolean indeterminate = false;
 		EvaluationResult result = null;
 
@@ -214,20 +213,16 @@ public class Obligation extends ObligationType {
 
 		fulfillOn = root.getFulfillOn().ordinal();
 
-		for (AttributeAssignmentExpressionType attrsAssignment : root
-				.getAttributeAssignmentExpression()) {
+		for (AttributeAssignmentExpression attrsAssignment : root
+				.getAttributeAssignmentExpressions()) {
 			URI attrId = URI.create(attrsAssignment.getAttributeId());
-			URI attrCategory = null;
-			if (attrsAssignment.getCategory() != null) {
-				attrCategory = URI.create(attrsAssignment.getCategory());
-			}
 			String issuer = attrsAssignment.getIssuer();
 
 			ExpressionType myExpr = null;
 			try {
-				myExpr = Expression.getInstance(((JAXBElement<ExpressionType>) attrsAssignment.getExpression()).getValue());
+				myExpr = Expression.getInstance(attrsAssignment.getExpression().getValue());
 			} catch (UnknownIdentifierException e) {
-				LOGGER.error(e);
+				LOGGER.error("Error parsing Expression", e);
 				return new Obligation(id, fulfillOn, assignments, true);
 			}
 			
@@ -255,20 +250,13 @@ public class Obligation extends ObligationType {
 				// an AD/AS will always return a bag
 //				BagAttribute bag = (BagAttribute) (result.getAttributeValue());
 				AttributeValueType bag = result.getAttributeValue();
-				AttributeValue attr = null;
 				for (Serializable attributeAssignmentType : bag.getContent()) {
-					AttributeAssignmentType attrAsgnType = new AttributeAssignmentType();
+					AttributeAssignment attrAsgnType = new AttributeAssignment();
 					attrAsgnType.getContent().add(attributeAssignmentType);
 					attrAsgnType.setAttributeId(attrId.toASCIIString());
 					attrAsgnType.setCategory(attrsAssignment.getCategory());
 					attrAsgnType.setDataType(datatype.toASCIIString());
 					attrAsgnType.setIssuer(issuer);					
-					try {
-						attr = attrFactory.createValue(bag.getDataType(), attributeAssignmentType.toString());
-					} catch (UnknownIdentifierException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
 					assignments.add(attrAsgnType);
 				}
 			} else if (myExpr instanceof FunctionType) {
@@ -279,10 +267,6 @@ public class Obligation extends ObligationType {
 				throw new ParsingException("Obligation with VariableReference not implemented yet");
 			} else if (myExpr instanceof AttributeDesignator) {
 				AttributeDesignator attrExpression = (AttributeDesignator) myExpr;
-				URI datatype = URI.create(XACMLDatatypes.XACML_DATATYPE_STRING.value());
-				if (attrExpression.getDataType() != null) {
-					datatype = URI.create(attrExpression.getDataType());
-				}
 				/*
 				 * Evaluation
 				 */
@@ -322,13 +306,14 @@ public class Obligation extends ObligationType {
 	 * 
 	 * @return the assignments
 	 */
-	public List<AttributeAssignmentType> getAssignments() {
-		return attributeAssignment;
+	public List<AttributeAssignment> getAssignments() {
+		return attributeAssignments;
 	}
 
 	/**
-	 * Return true if and AttributeAssignement return an indeterminate
+	 * Return true if AttributeAssignement return an indeterminate
 	 * evaluation
+	 * @return true if and only if Indeterminate AttributeAssignment
 	 */
 	public boolean getIsIndeterminate() {
 		return isIndeterminate;
@@ -357,12 +342,10 @@ public class Obligation extends ObligationType {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Obligation", e);
 		}
 	}
 

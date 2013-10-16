@@ -15,11 +15,14 @@
  */
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.StringNormalizeFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.xacml.cond.StringNormalizeFunction;
 
 
 /**
@@ -34,7 +37,7 @@ public class StringNormalizeFunctionCluster implements FunctionCluster
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(StringNormalizeFunctionCluster.class);
 	
     public Set getSupportedFunctions() {

@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import com.sun.xacml.EvaluationCtx;
@@ -157,8 +160,8 @@ public class EqualFunction extends FunctionBase
     /**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(EqualFunction.class);
+//	private static final Logger LOGGER = LoggerFactory
+//			.getLogger(EqualFunction.class);
 
     /**
      * Static initializer sets up a map of standard function names to their

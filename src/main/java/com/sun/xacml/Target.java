@@ -21,14 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOfType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.xacmlv3.AnyOf;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the TargetType XML type in XACML. This also stores several other
@@ -39,7 +39,7 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Target extends TargetType {
+public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target {
 
 	// the four sections of a Target
 	private TargetSection subjectsSection;
@@ -165,7 +165,7 @@ public class Target extends TargetType {
 	 * @throws ParsingException
 	 *             if the DOM node is invalid
 	 */
-	public static TargetType getInstance(Node root, String xpathVersion)
+	public static oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getInstance(Node root, String xpathVersion)
 			throws ParsingException {
 		return getInstance(root, new PolicyMetaData(
 				PolicyMetaData.XACML_1_0_IDENTIFIER, xpathVersion));
@@ -181,9 +181,9 @@ public class Target extends TargetType {
 	 * @throws ParsingException
 	 *             if the DOM node is invalid
 	 */
-	public static TargetType getInstance(Node root, PolicyMetaData metaData)
+	public static oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
-		TargetType returnTarget = new TargetType();
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.Target returnTarget = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Target();
 		List<TargetSection> subjects = new ArrayList<TargetSection>();
 		List<TargetSection> resources = new ArrayList<TargetSection>();
 		List<TargetSection> actions = new ArrayList<TargetSection>();
@@ -193,8 +193,7 @@ public class Target extends TargetType {
 
 		int version = metaData.getXACMLVersion();
 
-		if (version == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-				.value())) {
+		if (version == PolicyMetaData.XACML_VERSION_3_0) {
 			NodeList myChildren = root.getChildNodes();
 
 			for (int i = 0; i < myChildren.getLength(); i++) {
@@ -218,7 +217,7 @@ public class Target extends TargetType {
 				environments.add(new TargetSection(null,
 						TargetMatch.ENVIRONMENT, version));
 			}
-			returnTarget.getAnyOf().addAll(anyOf);
+			returnTarget.getAnyOves().addAll(anyOf);
 
 //			return new Target(subjects.get(0), resources.get(0), actions.get(0), environments.get(0), anyOf);
 		}
@@ -336,11 +335,10 @@ public class Target extends TargetType {
 	 */
 	public boolean matchesAny(int version) {
 		boolean matchAny = false;
-		if (version == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-				.value())) {
+		if (version == PolicyMetaData.XACML_VERSION_3_0) {
 			for (AnyOf anyOf : anyOfType) {
-				for (AllOfType allOf : anyOf.getAllOf()) {
-					matchAny = allOf.getMatch().isEmpty();
+				for (AllOf allOf : anyOf.getAllOves()) {
+					matchAny = allOf.getMatches().isEmpty();
 				}
 			}
 		} else {

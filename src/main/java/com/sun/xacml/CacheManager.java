@@ -18,13 +18,14 @@ package com.sun.xacml;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CacheManager {
 
@@ -41,7 +42,7 @@ public class CacheManager {
 	private Cache cache;
 	private Cache memoryOnlyCache;
 	
-	private final static Logger LOGGER = Logger.getLogger(CacheManager.class); 
+	private final static Logger LOGGER = LoggerFactory.getLogger(CacheManager.class); 
 
 	public static CacheManager getInstance() {
 		if (null == INSTANCE) {

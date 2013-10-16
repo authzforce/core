@@ -22,8 +22,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
@@ -79,8 +80,8 @@ public class StaticPolicyFinderModule extends PolicyFinderModule {
 	private static final String POLICY_ID = "urn:com:sun:xacml:support:finder:dynamic-policy-set";
 	private static URI policyId = null;
 
-	// the logger we'll use for all messages
-	private static final Logger logger = Logger
+	// the LOGGER we'll use for all messages
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(StaticPolicyFinderModule.class.getName());
 
 	static {
@@ -88,8 +89,8 @@ public class StaticPolicyFinderModule extends PolicyFinderModule {
 			policyId = new URI(POLICY_ID);
 		} catch (Exception e) {
 			// this can't actually happen, but just in case...
-			if (logger.isLoggable(Level.SEVERE))
-				logger.log(Level.SEVERE, "couldn't assign default policy id");
+			
+				LOGGER.error("couldn't assign default policy id", e);
 		}
 	};
 
@@ -227,7 +228,7 @@ public class StaticPolicyFinderModule extends PolicyFinderModule {
 	 */
 	public void init(PolicyFinder finder) {
 		// now that we have the PolicyFinder, we can load the policies
-		PolicyReader reader = new PolicyReader(finder, logger, schemaFile);
+		PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
 
 		Iterator it = policyList.iterator();
 		while (it.hasNext()) {
@@ -246,12 +247,9 @@ public class StaticPolicyFinderModule extends PolicyFinderModule {
 
 				// we loaded the policy, so try putting it in the collection
 				if (!policies.addPolicy((Policy) policy))
-					if (logger.isLoggable(Level.WARNING))
-						logger.log(Level.WARNING, "tried to load the same "
-								+ "policy multiple times: " + str);
+						LOGGER.warn("tried to load the same policy multiple times: {}", str);
 			} catch (ParsingException pe) {
-				if (logger.isLoggable(Level.WARNING))
-					logger.log(Level.WARNING, "Error reading policy: " + str,
+					LOGGER.warn("Error reading policy: {}", str,
 							pe);
 			}
 		}
@@ -297,7 +295,7 @@ public class StaticPolicyFinderModule extends PolicyFinderModule {
 				PolicyCollection myPolcollection = new PolicyCollection(
 						myCombiningAlg, URI.create(policySet.getPolicySetId()));
 				for (Object elt : policySet
-						.getPolicySetOrPolicyOrPolicySetIdReference()) {
+						.getPolicySetsAndPoliciesAndPolicySetIdReferences()) {
 					if (elt instanceof PolicyCombinerElement) {
 						myPolcollection
 								.addPolicy((Policy) ((PolicyCombinerElement) elt)

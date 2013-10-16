@@ -21,6 +21,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Clusters all the functions supported by <code>AddFunction</code>.
@@ -33,8 +36,7 @@ public class AddFunctionCluster implements FunctionCluster
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(AddFunctionCluster.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AddFunctionCluster.class);
 
     public Set getSupportedFunctions() {
         Set set = new HashSet();

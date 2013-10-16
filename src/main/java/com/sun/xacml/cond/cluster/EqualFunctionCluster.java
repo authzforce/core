@@ -18,6 +18,9 @@ package com.sun.xacml.cond.cluster;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.xacml.cond.EqualFunction;
 
 
@@ -33,7 +36,7 @@ public class EqualFunctionCluster implements FunctionCluster
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(EqualFunctionCluster.class);
 
     public Set<EqualFunction> getSupportedFunctions() {

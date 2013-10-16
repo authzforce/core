@@ -15,11 +15,14 @@
  */
 package com.sun.xacml.cond.cluster;
 
-import com.sun.xacml.cond.ConditionBagFunction;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.xacml.cond.ConditionBagFunction;
 
 
 /**
@@ -30,11 +33,7 @@ import java.util.Set;
  */
 public class ConditionBagFunctionCluster implements FunctionCluster
 {
-	/**
-	 * Logger used for all classes
-	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(ConditionBagFunctionCluster.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConditionBagFunctionCluster.class);
 	
     public Set getSupportedFunctions() {
         Set set = new HashSet();

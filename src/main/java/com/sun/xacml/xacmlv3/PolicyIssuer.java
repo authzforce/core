@@ -21,33 +21,35 @@ package com.sun.xacml.xacmlv3;
 import java.util.ArrayList;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ContentType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuerType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Content;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.ctx.Attribute;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * @author Romain Ferrari
  * 
  */
-public class PolicyIssuer extends PolicyIssuerType {
+public class PolicyIssuer extends oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer {
 	
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(PolicyIssuer.class);
 
-	public static PolicyIssuerType getInstance(Node root) {
-		ContentType content = new ContentType();
-		List<AttributeType> attribute = new ArrayList<AttributeType>();
+	public static oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer getInstance(Node root) {
+		Content content = new Content();
+		List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute> attribute = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute>();
 		
 		// Setting elements
 		NodeList children = root.getChildNodes();
@@ -56,11 +58,9 @@ public class PolicyIssuer extends PolicyIssuerType {
 			Node child = children.item(i);
 			if ("Attribute".equals(DOMHelper.getLocalName(child))) {
 				try {
-					attribute.add(Attribute.getInstance(child, Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())));
-				} catch (NumberFormatException e) {
-					LOGGER.error(e);
+					attribute.add(Attribute.getInstance(child,  PolicyMetaData.XACML_VERSION_3_0));
 				} catch (ParsingException e) {
-					LOGGER.error(e);
+					LOGGER.error("Error parsing Attribute from DOM node", e);
 				}
 			} else if ("Content".equals(DOMHelper.getLocalName(child))) {
 				content.getContent().add(child.getTextContent());
@@ -70,9 +70,9 @@ public class PolicyIssuer extends PolicyIssuerType {
 		return new PolicyIssuer(content, attribute);
 	}
 	
-	public PolicyIssuer(ContentType content, List<AttributeType> attribute) {
+	public PolicyIssuer(Content content, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute> attributes) {
 		this.content = content;
-		this.attribute = attribute;
+		this.attributes = attributes;
 	}
 
 }

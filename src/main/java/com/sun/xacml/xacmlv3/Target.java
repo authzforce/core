@@ -20,17 +20,14 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOfType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOfType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.MatchType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
@@ -38,6 +35,7 @@ import com.sun.xacml.MatchResult;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the TargetType XML type in XACML. This also stores several other
@@ -48,38 +46,37 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Target extends TargetType {
+public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target {
 
 	// the version of XACML of the policy containing this target
-	private int xacmlVersion = Integer
-			.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value());
+//	private int xacmlVersion = XACMLVersion.V3_0.value();
 
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Target.class);
 
 	public Target(AnyOf anyof, int version) {
-		anyOf = new ArrayList<AnyOfType>();
-		this.xacmlVersion = version;
-		this.anyOf.add(anyof);
+		anyOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf>();
+//		this.xacmlVersion = version;
+		this.anyOves.add(anyof);
 	}
 
 	public Target(AnyOf anyof) {
-		anyOf = new ArrayList<AnyOfType>();
-		this.anyOf.add(anyof);
+		anyOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf>();
+		this.anyOves.add(anyof);
 	}
 
 	public Target(List<AnyOf> anyof, int version) {
-		anyOf = new ArrayList<AnyOfType>();
-		this.xacmlVersion = version;
-		this.anyOf.addAll(anyof);
+		anyOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf>();
+//		this.xacmlVersion = version;
+		this.anyOves.addAll(anyof);
 	}
 
 	public Target(List<AnyOf> anyof) {
-		anyOf = new ArrayList<AnyOfType>();
-		this.anyOf.addAll(anyof);
+		anyOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf>();
+		this.anyOves.addAll(anyof);
 	}
 
 	/**
@@ -121,9 +118,9 @@ public class Target extends TargetType {
 	 */
 	public boolean matchesAny(int version) {
 		boolean matchAny = true;
-		for (AnyOfType anyOf : this.anyOf) {
-			for (AllOfType allOf : anyOf.getAllOf()) {
-				matchAny = allOf.getMatch().isEmpty();
+		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf anyOf : this.anyOves) {
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOf : anyOf.getAllOves()) {
+				matchAny = allOf.getMatches().isEmpty();
 			}
 		}
 
@@ -150,9 +147,9 @@ public class Target extends TargetType {
 		
 		
 
-		for (AnyOfType anyOfList : this.anyOf) {
-			for (AllOfType allOfList : anyOfList.getAllOf()) {
-				for (MatchType matchList : allOfList.getMatch()) {
+		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf anyOfList : this.anyOves) {
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfList : anyOfList.getAllOves()) {
+				for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Match matchList : allOfList.getMatches()) {
 					if (matchList.getAttributeDesignator() != null) {
 						result = ((Match)matchList).match(context);
 //						result = new MatchResult(MatchResult.MATCH);
@@ -197,12 +194,10 @@ public class Target extends TargetType {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error Marshalling Target", e);
 		}
 	}
 

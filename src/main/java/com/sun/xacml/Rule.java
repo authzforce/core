@@ -21,24 +21,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ConditionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -55,14 +50,14 @@ import com.sun.xacml.xacmlv3.Target;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 /**
- * Represents the RuleType XACML type. This has a target for matching, and
+ * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XACML type. This has a target for matching, and
  * encapsulates the condition and all sub-operations that make up the heart of
  * most policies.
  * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class Rule extends RuleType {
+public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule {
 
 	// the attributes associated with this Rule
 	// private URI idAttr;
@@ -72,11 +67,7 @@ public class Rule extends RuleType {
 	// private String description = null;
 	// private TargetType target = null;
 
-	/**
-	 * Logger used for all classes
-	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(Rule.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Rule.class);
 
 	/**
 	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
@@ -93,12 +84,13 @@ public class Rule extends RuleType {
 	 *            from the encompassing policy
 	 * @param condition
 	 *            the rule's condition, or null if there is none
-	 * @param obligation
+	 * @param obligations
 	 *            the rule's obligations, or null if there is none
+	 * @param advices 
 	 */
 	public Rule(String id, EffectType effect, String description,
-			TargetType target, ConditionType condition,
-			ObligationExpressionsType obligations, AdviceExpressionsType advices) {
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition,
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations, oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices) {
 		this.ruleId = id;
 		this.effect = effect;
 		this.description = description;
@@ -123,12 +115,12 @@ public class Rule extends RuleType {
 	 *            from the encompassing policy
 	 * @param condition
 	 *            the rule's condition, or null if there is none
-	 * @param obligation
+	 * @param obligations
 	 *            the rule's obligations, or null if there is none
 	 */
 	public Rule(String id, EffectType effect, String description,
-			TargetType target, ConditionType condition,
-			ObligationExpressionsType obligations) {
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition,
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations) {
 		this.ruleId = id;
 		this.effect = effect;
 		this.description = description;
@@ -154,7 +146,7 @@ public class Rule extends RuleType {
 	 *            the rule's condition, or null if there is none
 	 */
 	public Rule(String id, EffectType effect, String description,
-			TargetType target, ConditionType condition) {
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition) {
 		this.ruleId = id;
 		this.effect = effect;
 		this.description = description;
@@ -182,7 +174,7 @@ public class Rule extends RuleType {
 	 *            the rule's condition, or null if there is none
 	 */
 	public Rule(String id, EffectType effect, String description,
-			TargetType target, Apply condition) {
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, Apply condition) {
 		this.ruleId = id;
 		this.effect = effect;
 		this.description = description;
@@ -193,7 +185,7 @@ public class Rule extends RuleType {
 
 	/**
 	 * Returns a new instance of the <code>Rule</code> class based on a DOM
-	 * node. The node must be the root of an XML RuleType.
+	 * node. The node must be the root of an XML oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule.
 	 * 
 	 * @deprecated As of 2.0 you should avoid using this method and should
 	 *             instead use the version that takes a
@@ -201,14 +193,15 @@ public class Rule extends RuleType {
 	 *             work for XACML 1.x policies.
 	 * 
 	 * @param root
-	 *            the DOM root of a RuleType XML type
+	 *            the DOM root of a oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XML type
 	 * @param xpathVersion
 	 *            the XPath version to use in any selectors or XPath functions,
 	 *            or null if this is unspecified (ie, not supplied in the
 	 *            defaults section of the policy)
+	 * @return Rule
 	 * 
 	 * @throws ParsingException
-	 *             if the RuleType is invalid
+	 *             if the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule is invalid
 	 */
 	public static Rule getInstance(Node root, String xpathVersion)
 			throws ParsingException {
@@ -218,30 +211,30 @@ public class Rule extends RuleType {
 
 	/**
 	 * Returns a new instance of the <code>Rule</code> class based on a DOM
-	 * node. The node must be the root of an XML RuleType.
+	 * node. The node must be the root of an XML oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule.
 	 * 
 	 * @param root
-	 *            the DOM root of a RuleType XML type
+	 *            the DOM root of a oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XML type
 	 * @param metaData
 	 *            the meta-data associated with this Rule's policy
 	 * @param manager
 	 *            the <code>VariableManager</code> used to connect
 	 *            <code>VariableReference</code>s to their cooresponding
 	 *            <code>VariableDefinition<code>s
+	 * @return Rule
 	 * 
 	 * @throws ParsingException
-	 *             if the RuleType is invalid
+	 *             if the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule is invalid
 	 */
 	public static Rule getInstance(Node root, PolicyMetaData metaData,
 			VariableManager manager) throws ParsingException {
 		String id = null;
-		String name = null;
 		EffectType effect = null;
 		String description = null;
-		TargetType target = null;
-		ConditionType condition = null;
-		ObligationExpressionsType obligations = null;
-		AdviceExpressionsType advices = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices = null;
 
 		// first, get the attributes
 		NamedNodeMap attrs = root.getAttributes();
@@ -316,7 +309,7 @@ public class Rule extends RuleType {
 	 * 
 	 * @return the rule's target
 	 */
-	public TargetType getTarget() {
+	public oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget() {
 		return this.target;
 	}
 
@@ -336,7 +329,7 @@ public class Rule extends RuleType {
 	 * 
 	 * @return the rule's condition
 	 */
-	public ConditionType getCondition() {
+	public oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition getCondition() {
 		return condition;
 	}
 
@@ -384,7 +377,7 @@ public class Rule extends RuleType {
 	@Audit(type = Audit.Type.RULE)
 	public Result evaluate(EvaluationCtx context) {
 		// Do the list of Attribute who needs to be included in result
-		List<AttributesType> includeInResult = context.getIncludeInResults();
+		List<Attributes> includeInResult = context.getIncludeInResults();
 		MatchResult match = null;
 		Result returnResult = null;
 		// If the Target is null then it's supposed to inherit from the
@@ -407,8 +400,8 @@ public class Rule extends RuleType {
 			}
 		}
 
-		// log4jLogger.debug("Found a rule that match the request");
-		// log4jLogger.debug("RuleId: "+idAttr);
+		// LOGGER.debug("Found a rule that match the request");
+		// LOGGER.debug("RuleId: "+idAttr);
 		// AuditLogs audit = AuditLogs.getInstance();
 		// audit.setRuleId(idAttr.toString());
 
@@ -448,7 +441,7 @@ public class Rule extends RuleType {
 		
 		// Adding Obligations and Advice to the result
 		if (obligationExpressions != null) {
-			if (obligationExpressions.getObligationExpression().size() > 0) {
+			if (obligationExpressions.getObligationExpressions().size() > 0) {
 				// now, see if we should add any obligations to the set
 				int effect = returnResult.getDecision().ordinal();
 
@@ -459,8 +452,8 @@ public class Rule extends RuleType {
 					return returnResult;
 				}
 
-				for (ObligationExpressionType myObligation : obligationExpressions
-						.getObligationExpression()) {
+				for (oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression myObligation : obligationExpressions
+						.getObligationExpressions()) {
 					if (myObligation.getFulfillOn().ordinal() == effect) {
 						returnResult.addObligation(myObligation, context);
 					}
@@ -468,7 +461,7 @@ public class Rule extends RuleType {
 			}
 		}
 		if (adviceExpressions != null) {
-			if (adviceExpressions.getAdviceExpression().size() > 0) {
+			if (adviceExpressions.getAdviceExpressions().size() > 0) {
 				int effect = returnResult.getDecision().ordinal();
 
 				if ((effect == DecisionType.INDETERMINATE.ordinal())
@@ -476,14 +469,14 @@ public class Rule extends RuleType {
 					// we didn't permit/deny, so we never return advices
 					return returnResult;
 				}
-				for (AdviceExpressionType adviceExpr : adviceExpressions
-						.getAdviceExpression()) {
+				for (AdviceExpression adviceExpr : adviceExpressions
+						.getAdviceExpressions()) {
 					if (adviceExpr.getAppliesTo().ordinal() == effect) {
-						AdviceType advice = new AdviceType();
+						Advice advice = new Advice();
 						advice.setAdviceId(adviceExpr.getAdviceId());
-						for (AttributeAssignmentExpressionType attrExpr : adviceExpr
-								.getAttributeAssignmentExpression()) {
-							AttributeAssignmentType myAttrAssType = new AttributeAssignmentType();
+						for (AttributeAssignmentExpression attrExpr : adviceExpr
+								.getAttributeAssignmentExpressions()) {
+							AttributeAssignment myAttrAssType = new AttributeAssignment();
 							myAttrAssType.setAttributeId(attrExpr.getAttributeId());
 							myAttrAssType.setCategory(attrExpr.getCategory());
 							myAttrAssType.setIssuer(attrExpr.getIssuer());		
@@ -491,7 +484,7 @@ public class Rule extends RuleType {
 								myAttrAssType.setDataType(((AttributeValueType)attrExpr.getExpression().getValue()).getDataType());
 								myAttrAssType.getContent().addAll(((AttributeValueType)attrExpr.getExpression().getValue()).getContent());
 							}
-							advice.getAttributeAssignment().add(myAttrAssType);
+							advice.getAttributeAssignments().add(myAttrAssType);
 						}
 						returnResult.addAdvice(advice);
 					}
@@ -525,12 +518,10 @@ public class Rule extends RuleType {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Rule", e);
 		}
 	}
 

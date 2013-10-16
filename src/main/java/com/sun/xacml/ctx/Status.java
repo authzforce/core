@@ -22,8 +22,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -39,7 +37,7 @@ import com.sun.xacml.ParsingException;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Status extends StatusType
+public class Status extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Status
 {
 
     /**

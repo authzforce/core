@@ -2,25 +2,25 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 	<appender class="org.apache.log4j.RollingFileAppender" name="Appender1">
-		<param value="/opt/AuthZForce/logs/cache.log" name="File" />
+		<param value="/etc/AuthZForce/logs/cache-3.0.0.log" name="File" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param value="%-4r [%t] [%d] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
 	<appender class="org.apache.log4j.RollingFileAppender" name="Appender2">
-		<param value="/opt/AuthZForce/logs/pdp.log" name="File" />
+		<param value="/etc/AuthZForce/logs/pdp-3.0.0.log" name="File" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param value="%-4r [%t] [%d] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
 	<appender class="org.apache.log4j.RollingFileAppender" name="Appender3">
-		<param value="/opt/AuthZForce/logs/tests.log" name="File" />
+		<param value="/etc/AuthZForce/logs/tests-3.0.0.log" name="File" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param value="%-4r [%t] [%d] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
 	<appender class="org.apache.log4j.RollingFileAppender" name="AuditAppender">
-		<param value="/opt/AuthZForce/logs/pdp-audit.log" name="File" />
+		<param value="/etc/AuthZForce/logs/pdp-3.0.0-audit.log" name="File" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param value="%-4r [%t] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
@@ -33,58 +33,58 @@
 	</appender>
 	
 	<!-- AUDIT LOGGER -->
-	<logger name="com.thalesgroup.authzforce.audit.AuditLogs">
+	<logger name="com.thalesgroup.authzforce.audit.AuditLogs" additivity="false">
 		<appender-ref ref="AuditAppender" />
 	</logger>
 	<!-- /AUDIT LOGGER -->
 	
-	<logger name="com.sun.xacml.cond.BaseFunctionFactory">
+	<logger name="com.sun.xacml.cond.BaseFunctionFactory" additivity="false">
 		<level value="info" />
 		<appender-ref ref="Appender2" />
 	</logger>
-	<logger name="com.sun.xacml.cond.StandardFunctionFactory">
+	<logger name="com.sun.xacml.cond.StandardFunctionFactory" additivity="false">
 		<level value="info" />
 		<appender-ref ref="Appender2" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicFunctionV3">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicFunctionV3" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
 	<logger
-		name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicMultipleRequestV3">
+		name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicMultipleRequestV3" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicV3">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicV3" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.ConformanceV3">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.ConformanceV3" additivity="false">
 		<level value="debug" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils" additivity="false">
 		<level value="debug" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.MainTest">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.MainTest" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="net.sf.ehcache">
+	<logger name="net.sf.ehcache" additivity="false">
 		<level value="warn" />
 		<appender-ref ref="Appender1" />
 	</logger>
-	<logger name="org.apache.axis.ConfigurationException">
+	<logger name="org.apache.axis.ConfigurationException" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="org.apache.commons.digester">
+	<logger name="org.apache.commons.digester" additivity="false">
 		<level value="debug" />
 		<appender-ref ref="stdout" />
 	</logger>
 	<root>
-		<level value="info" />
+		<level value="debug" />
 		<appender-ref ref="Appender2" />
 	</root>
 </log4j:configuration>

@@ -17,13 +17,11 @@ package com.sun.xacml;
 
 import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.AttributeFactoryProxy;
-
 import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgFactoryProxy;
-
 import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionFactoryProxy;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 
 /**
@@ -182,7 +180,9 @@ public class PolicyMetaData
      * @param xpathVersion the XPath version to use in any selectors, or
      *                     null if this is unspecified (ie, not supplied in
      *                     the defaults section of the policy)
-     * @param 
+     * @param attributeFactoryProxy 
+     * @param combiningAlgFactoryProxy 
+     * @param functionFactoryProxy 
      *
      * @throws IllegalArgumentException if the identifier strings are unknown
      */
@@ -192,15 +192,9 @@ public class PolicyMetaData
                           FunctionFactoryProxy functionFactoryProxy) {
         if (xacmlVersion == null) {
             this.xacmlVersion = XACML_DEFAULT_VERSION;
-        } else if (xacmlVersion.equals(XACMLAttributeId.XACML_1_0_IDENTIFIER.value())) {
-            this.xacmlVersion = Integer.parseInt(XACMLAttributeId.XACML_VERSION_1_0.value());
-        } else if (xacmlVersion.equals(XACMLAttributeId.XACML_2_0_IDENTIFIER.value())) {
-            this.xacmlVersion = Integer.parseInt(XACMLAttributeId.XACML_VERSION_2_0.value());
-        } else if (xacmlVersion.equals(XACMLAttributeId.XACML_3_0_IDENTIFIER.value())) {
-        	this.xacmlVersion = Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value());
         } else {
-            throw new IllegalArgumentException("Unknown XACML version " +
-                                               "string: " + xacmlVersion);
+        	// Validate version ID
+        	this.xacmlVersion = XACMLVersion.fromValue(xacmlVersion).ordinal();
         }
 
         if (xpathVersion != null) {

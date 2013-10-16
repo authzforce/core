@@ -19,12 +19,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
 import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
@@ -49,15 +45,15 @@ public class PolicyCombinerElement extends CombinerElement
      *
      * @param policy an <code>AbstractPolicy</code> to use in combining
      */
-    public PolicyCombinerElement(PolicyType policy) {
+    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy) {
         super(policy);
     }
     
-    public PolicyCombinerElement(PolicyType policy, List args) {
+    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy, List args) {
         super(policy, args);
     }
     
-    public PolicyCombinerElement(PolicySetType policy, List args) {
+    public PolicyCombinerElement(PolicySet policy, List args) {
         super(policy, args);
     }
     
@@ -120,7 +116,7 @@ public class PolicyCombinerElement extends CombinerElement
 	}
 
 	@Override
-	public TargetType getTarget() {
+	public Target getTarget() {
 		// TODO Auto-generated method stub
 		return null;
 	}

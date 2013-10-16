@@ -24,7 +24,6 @@ import java.net.URI;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResultType;
 
 
 /**

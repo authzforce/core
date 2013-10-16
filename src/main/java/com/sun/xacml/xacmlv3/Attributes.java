@@ -28,8 +28,10 @@ import org.w3c.dom.NodeList;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.ctx.Attribute;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the AttributesType XML type found in the context schema.
@@ -135,7 +137,7 @@ public class Attributes {
             	/*
             	 * FIXME: RF
             	 */
-                attributes.add(Attribute.getInstance(node, Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())));
+                attributes.add(Attribute.getInstance(node, PolicyMetaData.XACML_VERSION_3_0));
             }
         }
 

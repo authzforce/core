@@ -22,8 +22,6 @@ import java.util.Map;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

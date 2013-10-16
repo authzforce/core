@@ -21,8 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BooleanAttribute;
@@ -147,7 +146,7 @@ public class StringFunction extends FunctionBase
         		result = new EvaluationResult(BooleanAttribute.getFalseInstance());
         	} else {
         		Status status = new Status(Arrays.asList(Status.STATUS_PROCESSING_ERROR));
-        		StatusCodeType code = new StatusCodeType();
+        		StatusCode code = new StatusCode();
 				code.setValue(Status.STATUS_PROCESSING_ERROR);
 				status.setStatusCode(code);
         		result = new EvaluationResult(status);

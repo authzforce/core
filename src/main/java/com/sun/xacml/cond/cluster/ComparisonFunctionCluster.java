@@ -19,6 +19,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.xacml.cond.ComparisonFunction;
 
 
@@ -31,11 +34,7 @@ import com.sun.xacml.cond.ComparisonFunction;
 public class ComparisonFunctionCluster implements FunctionCluster
 {
 	
-	/**
-	 * Logger used for all classes
-	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(ComparisonFunctionCluster.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ComparisonFunctionCluster.class);
 
     public Set<ComparisonFunction> getSupportedFunctions() {
         Set set = new HashSet();
