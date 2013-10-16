@@ -25,28 +25,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameterType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuerType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -75,7 +71,7 @@ import com.thalesgroup.authzforce.audit.annotations.Audit;
  * @author Romain Ferrari
  * 
  */
-public class Policy extends PolicyType {
+public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy {
 
 	// the meta-data associated with this policy
 	private static PolicyMetaData metaData;
@@ -84,13 +80,13 @@ public class Policy extends PolicyType {
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Policy.class);
 
-	public Policy(String description, PolicyIssuerType issuer,
+	public Policy(String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer issuer,
 			DefaultsType policyDefault, Target target, List policyElements,
-			ObligationExpressionsType obligations,
-			AdviceExpressionsType advices, String policyId, String version,
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations,
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices, String policyId, String version,
 			String ruleCombiningAlgId, BigInteger maxDelegationDepth) {
 
 		this.description = description;
@@ -98,18 +94,18 @@ public class Policy extends PolicyType {
 		this.policyDefaults = policyDefault;
 		this.target = target;
 		if (policyElements == null) {
-			this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.EMPTY_LIST;
+			this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = Collections.EMPTY_LIST;
 		} else {
-			this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections
+			this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = Collections
 					.unmodifiableList(new ArrayList(policyElements));
 		}
 		if (obligations == null) {
-			this.obligationExpressions = new ObligationExpressionsType();
+			this.obligationExpressions = new oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions();
 		} else {
 			this.obligationExpressions = obligations;
 		}
 		if (advices == null) {
-			this.adviceExpressions = new AdviceExpressionsType();
+			this.adviceExpressions = new oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions();
 		} else {
 			this.adviceExpressions = advices;
 		}
@@ -122,18 +118,18 @@ public class Policy extends PolicyType {
 			this.ruleCombiningAlg = factory.createAlgorithm(URI
 					.create(this.ruleCombiningAlgId));
 		} catch (DOMException e) {
-			LOGGER.error(e);
+			LOGGER.error("Error instantiating algorithm '{}'", this.ruleCombiningAlgId, e);
 		} catch (UnknownIdentifierException e) {
-			LOGGER.error(e);
+			LOGGER.error("Error instantiating algorithm '{}'", this.ruleCombiningAlgId, e);
 		}
 	}
 
 	public static Policy getInstance(Node root) {
 		String ruleCombiningAlgId = null;
 		List policyElements = new ArrayList();
-		AdviceExpressionsType advices = null;
-		ObligationExpressionsType obligations = null;
-		PolicyIssuerType issuer = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer issuer = null;
 		DefaultsType policyDefault = null;
 		Target target = null;
 		String description = null;
@@ -142,12 +138,13 @@ public class Policy extends PolicyType {
 		BigInteger maxDelegationDepth = null;
 		VariableManager manager = null;
 
-		// Creating the variable manager
-		// FIXME: Understand the point of this thing
+		/**
+		 *  Creating the variable manager for connecting VariableReference(s) to their corresponding VariableDefinition(s) (see VariableReference class).
+		 */
 		try {
 			manager = createVariableManager(root);
 		} catch (ParsingException e) {
-			LOGGER.error(e);
+			LOGGER.error("Error creating VariableManager, VariableReferences will not be supported in this policy", e);
 		}
 		metaData = new PolicyMetaData(root.getNamespaceURI(), null);
 		// Setting attributes
@@ -205,8 +202,7 @@ public class Policy extends PolicyType {
 					advices = AdviceExpressions.getInstance(child);
 				}
 			} catch (ParsingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOGGER.error("Error instantiating Policy", e);
 			}
 		}
 
@@ -286,18 +282,18 @@ public class Policy extends PolicyType {
 		List<Rule> rules = new ArrayList<Rule>();
 		CombinerParametersType combParams = new CombinerParametersType();
 		CombinerParameter combParam = null;
-		for (Object element : this.combinerParametersOrRuleCombinerParametersOrVariableDefinition) {
+		for (Object element : this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions) {
 			if (element instanceof CombinerParametersType) {
-				combParams.getCombinerParameter().add(
-						(CombinerParameterType) element);
-			} else if (element instanceof RuleType) {
+				combParams.getCombinerParameters().add(
+						(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter) element);
+			} else if (element instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule) {
 				rules.add((Rule) element);
 			}
 		}
 		// evaluate
 		result = this.ruleCombiningAlg.combine(context, combParams, rules);
 
-		if (obligationExpressions.getObligationExpression().size() > 0) {
+		if (obligationExpressions.getObligationExpressions().size() > 0) {
 			// now, see if we should add any obligations to the set
 			int effect = result.getDecision().ordinal();
 
@@ -307,15 +303,15 @@ public class Policy extends PolicyType {
 				return result;
 			}
 
-			for (ObligationExpressionType myObligation : obligationExpressions
-					.getObligationExpression()) {
+			for (ObligationExpression myObligation : obligationExpressions
+					.getObligationExpressions()) {
 				if (myObligation.getFulfillOn().ordinal() == effect) {
 					result.addObligation(myObligation, context);
 				}
 			}
 		}
 		/* If we have advice, it's definitely a 3.0 policy */
-		if (adviceExpressions.getAdviceExpression().size() > 0) {
+		if (adviceExpressions.getAdviceExpressions().size() > 0) {
 			int effect = result.getDecision().ordinal();
 
 			if ((effect == DecisionType.INDETERMINATE.ordinal())
@@ -323,14 +319,14 @@ public class Policy extends PolicyType {
 				// we didn't permit/deny, so we never return advices
 				return result;
 			}
-			for (AdviceExpressionType adviceExpr : adviceExpressions
-					.getAdviceExpression()) {
+			for (AdviceExpression adviceExpr : adviceExpressions
+					.getAdviceExpressions()) {
 				if (adviceExpr.getAppliesTo().ordinal() == effect) {
-					AdviceType advice = new AdviceType();
+					Advice advice = new Advice();
 					advice.setAdviceId(adviceExpr.getAdviceId());
-					for (AttributeAssignmentExpressionType attrExpr : adviceExpr
-							.getAttributeAssignmentExpression()) {
-						AttributeAssignmentType myAttrAssType = new AttributeAssignmentType();
+					for (AttributeAssignmentExpression attrExpr : adviceExpr
+							.getAttributeAssignmentExpressions()) {
+						AttributeAssignment myAttrAssType = new AttributeAssignment();
 						myAttrAssType.setAttributeId(attrExpr.getAttributeId());
 						myAttrAssType.setCategory(attrExpr.getCategory());
 						myAttrAssType.setIssuer(attrExpr.getIssuer());		
@@ -338,7 +334,7 @@ public class Policy extends PolicyType {
 							myAttrAssType.setDataType(((AttributeValueType)attrExpr.getExpression().getValue()).getDataType());
 							myAttrAssType.getContent().addAll(((AttributeValueType)attrExpr.getExpression().getValue()).getContent());
 						}
-						advice.getAttributeAssignment().add(myAttrAssType);
+						advice.getAttributeAssignments().add(myAttrAssType);
 					}
 					result.addAdvice(advice);
 				}

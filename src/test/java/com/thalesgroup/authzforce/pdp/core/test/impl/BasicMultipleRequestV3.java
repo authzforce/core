@@ -12,12 +12,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
@@ -46,7 +48,7 @@ public class BasicMultipleRequestV3 {
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(BasicMultipleRequestV3.class);
 
 	/**
@@ -73,8 +75,8 @@ public class BasicMultipleRequestV3 {
 //		PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0014 is started");
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 
 		for (int i = 1; i < 3; i++) {
 			if (i < 10) {
@@ -145,7 +147,7 @@ public class BasicMultipleRequestV3 {
 						+ File.separator + policy;
 				policyLocations.add(policyPath);
 			} catch (IOException e) {
-				LOGGER.error(e);
+				LOGGER.error("Error getting path to policy", e);
 			}
 		}
 

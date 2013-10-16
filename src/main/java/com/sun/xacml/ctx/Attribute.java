@@ -33,36 +33,34 @@
  */
 package com.sun.xacml.ctx;
 
-import com.sun.xacml.Indenter;
-
-import com.sun.xacml.Obligation;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-
-import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.DateTimeAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-
-import java.io.PrintStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.BindingUtility;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.AttributeFactory;
+import com.sun.xacml.attr.DateTimeAttribute;
+import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the AttributeType XML type found in the context schema.
@@ -70,7 +68,7 @@ import org.w3c.dom.NodeList;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Attribute extends AttributeType implements Serializable {
+public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute implements Serializable {
 
 	/**
 	 * Generated Serial ID 
@@ -102,7 +100,7 @@ public class Attribute extends AttributeType implements Serializable {
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER =LoggerFactory
 			.getLogger(Attribute.class);
 
 	/**
@@ -206,7 +204,7 @@ public class Attribute extends AttributeType implements Serializable {
 			List<AttributeValueType> attributeValues, boolean includeInResult,
 			int xacmlVersion) {
 		this.attributeId = id.toASCIIString();
-		this.attributeValue = attributeValues;
+		this.attributeValues = attributeValues;
 		this.type = type;
 		this.issuer = issuer;
 		this.issueInstant = issueInstant;
@@ -244,7 +242,7 @@ public class Attribute extends AttributeType implements Serializable {
 		this.category = category;
 		this.issuer = issuer;
 		this.issueInstant = issueInstant;
-		this.attributeValue = attributeValues;
+		this.attributeValues = attributeValues;
 		this.includeInResult = includeInResult;
 		this.xacmlVersion = xacmlVersion;		
 	}
@@ -288,8 +286,7 @@ public class Attribute extends AttributeType implements Serializable {
 					+ "DataType in AttributeType", e);
 		}
 
-		if (version == Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0
-				.value())) {
+		if (version == PolicyMetaData.XACML_VERSION_3_0) {
 			try {
 				String includeInResultString = attrs.getNamedItem(
 						"IncludeInResult").getNodeValue();
@@ -306,8 +303,7 @@ public class Attribute extends AttributeType implements Serializable {
 			Node issuerNode = attrs.getNamedItem("Issuer");
 			if (issuerNode != null)
 				issuer = issuerNode.getNodeValue();
-			if (!(version == Integer
-					.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()))) {
+			if (!(version == PolicyMetaData.XACML_VERSION_3_0)) {
 				Node instantNode = attrs.getNamedItem("IssueInstant");
 				if (instantNode != null) {
 					issueInstant = DateTimeAttribute.getInstance(instantNode
@@ -325,8 +321,7 @@ public class Attribute extends AttributeType implements Serializable {
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("AttributeValue")) {
-				if (version == Integer
-						.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value())) {
+				if (version ==  PolicyMetaData.XACML_VERSION_3_0) {
 					NamedNodeMap dataTypeAttribute = node.getAttributes();
 					try {
 						type = new URI(dataTypeAttribute.getNamedItem(
@@ -424,7 +419,7 @@ public class Attribute extends AttributeType implements Serializable {
 	 * @return the attribute's value or null
 	 */
 	public List<AttributeValueType> getValues() {
-		return attributeValue;
+		return attributeValues;
 	}
 
 	/**
@@ -433,8 +428,8 @@ public class Attribute extends AttributeType implements Serializable {
 	 * @return the attribute's value or null
 	 */
 	public AttributeValueType getValue() {
-		if (attributeValue != null && attributeValue.size() > 0) {
-			return attributeValue.get(0);
+		if (attributeValues != null && attributeValues.size() > 0) {
+			return attributeValues.get(0);
 		}
 
 		return null;
@@ -463,12 +458,10 @@ public class Attribute extends AttributeType implements Serializable {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Attribute", e);
 		}
 	}
 
@@ -482,12 +475,10 @@ public class Attribute extends AttributeType implements Serializable {
 		StringWriter attribute = new StringWriter();
 		String str = "";
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, attribute);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Attribute to String", e);
 		}
 		attribute.write(str);
 		

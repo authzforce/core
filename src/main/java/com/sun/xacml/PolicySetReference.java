@@ -42,9 +42,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -74,7 +73,7 @@ import com.sun.xacml.xacmlv3.Policy;
  * @since 1.0
  * @author Seth Proctor
  */
-public class PolicySetReference extends PolicySetType
+public class PolicySetReference extends PolicySet
 {
     
     /**
@@ -332,7 +331,7 @@ public class PolicySetReference extends PolicySetType
      *
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
-    public TargetType getTarget() {
+    public oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget() {
         return resolvePolicy().getTarget();
     }
 
@@ -358,7 +357,7 @@ public class PolicySetReference extends PolicySetType
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
     public List getChildren() {
-        return resolvePolicy().getCombinerParametersOrRuleCombinerParametersOrVariableDefinition();
+        return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
     }
 
     /**
@@ -371,7 +370,7 @@ public class PolicySetReference extends PolicySetType
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
     public List getChildElements() {
-        return resolvePolicy().getCombinerParametersOrRuleCombinerParametersOrVariableDefinition();
+        return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
     }
 
     /**
@@ -383,7 +382,7 @@ public class PolicySetReference extends PolicySetType
      *
      * @throws ProcessingException if the referenced policy can't be retrieved
      */
-    public ObligationExpressionsType getObligations() {
+    public ObligationExpressions getObligations() {
         return resolvePolicy().getObligationExpressions();
     }
 

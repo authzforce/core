@@ -39,17 +39,17 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.PolicyMetaData;
@@ -98,8 +98,10 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 //	private URI category;
 
 	// the logger we'll use for all messages
-	private static final Logger logger = Logger
+	private static final Logger logger = LoggerFactory
 			.getLogger(AttributeDesignator.class.getName());
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeDesignator.class);
 
 	/**
 	 * Return an instance of an AttributeDesignator based on an
@@ -155,19 +157,18 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 	}
 
 	public static AttributeDesignator getInstance(Node root) {
-		JAXBElement<AttributeDesignatorType> match = null;
+		final JAXBElement<AttributeDesignatorType> match;
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Unmarshaller u = jc.createUnmarshaller();
-			match = (JAXBElement<AttributeDesignatorType>) u.unmarshal(root);
+			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			match = u.unmarshal(root, AttributeDesignatorType.class);
+			AttributeDesignatorType attrDes = match.getValue();
+			AttributeDesignator myAttr = new AttributeDesignator(attrDes);
+			return myAttr;
 		} catch (Exception e) {
-			System.err.println(e);
+			LOGGER.error("Error unmarshalling AttributeDesignator", e);
 		}
-		AttributeDesignatorType attrDes = match.getValue();
-		AttributeDesignator myAttr = new AttributeDesignator(attrDes);
 
-		return myAttr;
+		return null;
 	}
 
 	/**

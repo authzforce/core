@@ -35,10 +35,8 @@ package com.sun.xacml;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import org.w3c.dom.Node;
 
@@ -126,7 +124,7 @@ public interface EvaluationCtx {
 	 * 
 	 * @return the set of attributes that need to be include in the result
 	 */
-	public List<AttributesType> getIncludeInResults();
+	public List<Attributes> getIncludeInResults();
 
 	/**
 	 * Changes the value of the resource-id attribute in this context. This is

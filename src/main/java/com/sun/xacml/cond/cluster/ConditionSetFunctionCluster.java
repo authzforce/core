@@ -39,6 +39,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Clusters all the functions supported by <code>ConditionSetFunction</code>.
@@ -48,11 +51,7 @@ import java.util.Set;
  */
 public class ConditionSetFunctionCluster implements FunctionCluster
 {
-	/**
-	 * Logger used for all classes
-	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(ConditionSetFunctionCluster.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConditionSetFunctionCluster.class);
 	
     public Set getSupportedFunctions() {
         Set set = new HashSet();

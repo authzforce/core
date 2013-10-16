@@ -5,6 +5,8 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Romain Ferrari
@@ -25,7 +27,7 @@ public class MainTest {
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(MainTest.class);
 	
 	@BeforeClass 

@@ -38,33 +38,33 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdviceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResultType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCodeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetailType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.Obligation;
 import com.sun.xacml.ParsingException;
 
 /**
- * Represents the ResultType XML object from the Context schema. Any number of
+ * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Result XML object from the Context schema. Any number of
  * these may included in a <code>ResponseCtx</code>. This class encodes the
  * decision effect, as well as an optional resource identifier and optional
  * status data. Any number of obligations may also be included.
@@ -73,7 +73,7 @@ import com.sun.xacml.ParsingException;
  * @author Seth Proctor
  * @author Marco Barreno
  */
-public class Result extends ResultType {
+public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result {
 
 	/**
 	 * The decision to permit the request
@@ -102,7 +102,7 @@ public class Result extends ResultType {
 	/**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Result.class);
 
 	// the resource identifier or null if there is none
@@ -135,7 +135,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, ObligationsType obligations)
+	public Result(DecisionType decision, Obligations obligations)
 			throws IllegalArgumentException {
 		this(decision, null, null, obligations);
 	}
@@ -154,7 +154,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, StatusType status) throws IllegalArgumentException {
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status) throws IllegalArgumentException {
 		this(decision, status, null, null);
 	}
 
@@ -174,7 +174,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, StatusType status, ObligationsType obligations)
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, Obligations obligations)
 			throws IllegalArgumentException {
 		this(decision, status, null, obligations);
 	}
@@ -217,7 +217,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, String resource, ObligationsType obligations)
+	public Result(DecisionType decision, String resource, Obligations obligations)
 			throws IllegalArgumentException {
 		this(decision, null, resource, obligations);
 	}
@@ -237,7 +237,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, StatusType status, String resource)
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource)
 			throws IllegalArgumentException {
 		this(decision, status, resource, null);
 	}
@@ -257,7 +257,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, StatusType status, String resource, ObligationsType obligations, List<AttributesType> attributes)
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource, Obligations obligations, List<Attributes> attributes)
 			throws IllegalArgumentException {
 		this(decision, status, resource, obligations, null, attributes);
 	}
@@ -279,7 +279,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, StatusType status, String resource, ObligationsType obligations)
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource, Obligations obligations)
 			throws IllegalArgumentException {
 		this(decision, status, resource, obligations, null, null);
 	}
@@ -304,7 +304,7 @@ public class Result extends ResultType {
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, StatusType status, String resource, ObligationsType obligations, AssociatedAdviceType advices, List<AttributesType> attributes) throws IllegalArgumentException {
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource, Obligations obligations, AssociatedAdvice advices, List<Attributes> attributes) throws IllegalArgumentException {
 		// check that decision is valid
 		if ((decision.ordinal() != DECISION_PERMIT) && (decision.ordinal() != DECISION_DENY)
 				&& (decision.ordinal() != DECISION_INDETERMINATE)
@@ -315,9 +315,9 @@ public class Result extends ResultType {
 		this.resource = resource;
 
 		if (status == null) {
-			this.status = new StatusType();
-			StatusCodeType code = new StatusCodeType();
-			StatusDetailType details = new StatusDetailType();
+			this.status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
+			StatusCode code = new StatusCode();
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail details = new oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail();
 			code.setValue("urn:oasis:names:tc:xacml:1.0:status:ok");
 			this.status.setStatusCode(code);
 			this.status.setStatusDetail(details);
@@ -326,19 +326,19 @@ public class Result extends ResultType {
 		}
 
 		if (obligations == null) {
-			this.obligations = new ObligationsType();
+			this.obligations = new Obligations();
 		} else {
 			this.obligations = obligations;
 		}
 
 		if (advices == null) {
-			this.associatedAdvice = new AssociatedAdviceType();
+			this.associatedAdvice = new AssociatedAdvice();
 		} else {
 			this.associatedAdvice = advices;
 		}
 
 		if (attributes == null) {
-			this.attributes = new ArrayList<AttributesType>();
+			this.attributes = new ArrayList<Attributes>();
 		} else {
 			this.attributes = attributes;
 		}
@@ -347,10 +347,10 @@ public class Result extends ResultType {
 	/**
 	 * Creates a new instance of a <code>Result</code> based on the given DOM
 	 * root node. A <code>ParsingException</code> is thrown if the DOM root
-	 * doesn't represent a valid ResultType.
+	 * doesn't represent a valid oasis.names.tc.xacml._3_0.core.schema.wd_17.Result.
 	 * 
 	 * @param root
-	 *            the DOM root of a ResultType
+	 *            the DOM root of a oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 * 
 	 * @return a new <code>Result</code>
 	 * 
@@ -359,11 +359,11 @@ public class Result extends ResultType {
 	 */
 	public static Result getInstance(Node root) throws ParsingException {
 		DecisionType decision = null;
-		StatusType status = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = null;
 		String resource = null;
-		ObligationsType obligations = null;
-		AssociatedAdviceType advices = null;
-		List<AttributesType> attributes = null;
+		Obligations obligations = null;
+		AssociatedAdvice advices = null;
+		List<Attributes> attributes = null;
 
 		NamedNodeMap attrs = root.getAttributes();
 		Node resourceAttr = attrs.getNamedItem("ResourceId");
@@ -406,18 +406,18 @@ public class Result extends ResultType {
 	/**
 	 * Helper method that handles the obligations
 	 */
-	private static ObligationsType parseObligations(Node root) throws ParsingException {
-		ObligationsType obligations = new ObligationsType();
+	private static Obligations parseObligations(Node root) throws ParsingException {
+		Obligations obligations = new Obligations();
 
 		NodeList nodes = root.getChildNodes();
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Obligation"))
-				obligations.getObligation().add(Obligation.getInstance(node));
+				obligations.getObligations().add(Obligation.getInstance(node));
 		}
 
-		if (obligations.getObligation().size() == 0)
-			throw new ParsingException("ObligationsType must not be empty");
+		if (obligations.getObligations().size() == 0)
+			throw new ParsingException("Obligations must not be empty");
 
 		return obligations;
 	}
@@ -425,24 +425,20 @@ public class Result extends ResultType {
 	/**
 	 * Helper method that handles the Advices
 	 */
-	private static AssociatedAdviceType parseAdvices(Node root)
+	private static AssociatedAdvice parseAdvices(Node root)
 			throws ParsingException {
-		AssociatedAdviceType advices = new AssociatedAdviceType();
+		AssociatedAdvice advices = new AssociatedAdvice();
 
 		NodeList nodes = root.getChildNodes();
-		AdviceType advice = null;
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Advice")) {
-				advice = new AdviceType();
-				JAXBContext jc;
 				try {
-					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-					Unmarshaller u = jc.createUnmarshaller();
-					advices.getAdvice().add((AdviceType)u.unmarshal(root));
+					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					JAXBElement<Advice> advice = u.unmarshal(node, Advice.class);
+					advices.getAdvices().add(advice.getValue());
 				} catch (JAXBException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOGGER.error("Error unmarshalling Advice", e);
 				}
 			}
 		}
@@ -453,22 +449,20 @@ public class Result extends ResultType {
 	/**
 	 * Helper method that handles the Attributes
 	 */
-	private static List<AttributesType> parseAttributes(Node root)
+	private static List<Attributes> parseAttributes(Node root)
 			throws ParsingException {
-		List<AttributesType> attributes = new ArrayList<AttributesType>();
+		List<Attributes> attributes = new ArrayList<Attributes>();
 
 		NodeList nodes = root.getChildNodes();
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Attribute")) {
-				JAXBContext jc;
 				try {
-					jc = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-					Unmarshaller u = jc.createUnmarshaller();
-					attributes.add((AttributesType)u.unmarshal(root));
+					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					JAXBElement<Attributes> attrs = u.unmarshal(root, Attributes.class);
+					attributes.add(attrs.getValue());
 				} catch (JAXBException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					LOGGER.error("Error unmarshalling Attributes", e);
 				}
 			}
 		}
@@ -497,7 +491,7 @@ public class Result extends ResultType {
 	 * 
 	 * @return status associated with this Result
 	 */
-	public StatusType getStatus() {
+	public oasis.names.tc.xacml._3_0.core.schema.wd_17.Status getStatus() {
 		return status;
 	}
 
@@ -537,7 +531,7 @@ public class Result extends ResultType {
 	 * 
 	 * @return the set of obligations
 	 */
-	public ObligationsType getObligations() {
+	public Obligations getObligations() {
 		return obligations;
 	}
 
@@ -549,31 +543,30 @@ public class Result extends ResultType {
 	 */
 	public void addObligation(Obligation obligation) {
 		if (obligation != null) {
-			obligations.getObligation().add(obligation);
+			obligations.getObligations().add(obligation);
 		}
 	}
 	
-	public void addObligation(ObligationExpressionType obligation, EvaluationCtx context) {
+	public void addObligation(ObligationExpression obligation, EvaluationCtx context) {
 		if(obligation != null) {
 			try {
-				obligations.getObligation().add(Obligation.getInstance(obligation, context));
+				obligations.getObligations().add(Obligation.getInstance(obligation, context));
 			} catch (ParsingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOGGER.error("Error instantiating ObligationExpression", e);
 			}
 		}
 	}
 	
-	public void addAdvice(AdviceType advice) {
+	public void addAdvice(Advice advice) {
 		if (advice != null) {
-			associatedAdvice.getAdvice().add(advice);
+			associatedAdvice.getAdvices().add(advice);
 		}
 	}
 
 	/**
 	 * @return the advices
 	 */
-	public AssociatedAdviceType getAdvices() {
+	public AssociatedAdvice getAdvices() {
 		return associatedAdvice;
 	}
 
@@ -581,14 +574,14 @@ public class Result extends ResultType {
 	 * @param advices
 	 *            the advices to set
 	 */
-	public void setAdvices(AssociatedAdviceType advices) {
+	public void setAdvices(AssociatedAdvice advices) {
 		this.associatedAdvice = advices;
 	}
 
 	/**
 	 * @return the attributes
 	 */
-	public List<AttributesType> getAttributes() {
+	public List<Attributes> getAttributes() {
 		return attributes;
 	}
 
@@ -596,7 +589,7 @@ public class Result extends ResultType {
 	 * @param attributes
 	 *            the attributes to set
 	 */
-	public void setAttributes(List<AttributesType> attributes) {
+	public void setAttributes(List<Attributes> attributes) {
 		this.attributes = attributes;
 	}
 
@@ -623,12 +616,10 @@ public class Result extends ResultType {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Result", e);
 		}  
 	}
 }

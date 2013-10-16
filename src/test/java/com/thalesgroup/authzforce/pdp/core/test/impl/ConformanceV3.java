@@ -12,11 +12,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
@@ -45,7 +47,7 @@ public class ConformanceV3 {
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(ConformanceV3.class);
 
 	@BeforeClass
@@ -58,8 +60,8 @@ public class ConformanceV3 {
 
 		String policyNumber;
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 		Map<String, String> results = new TreeMap<String, String>();
 
 		for (int i = 1; i < 29; i++) {
@@ -145,7 +147,7 @@ public class ConformanceV3 {
 						+ File.separator + policy;
 				policyLocations.add(policyPath);
 			} catch (IOException e) {
-				LOGGER.error(e);
+				LOGGER.error("Error getting path to policy", e);
 			}
 		}
 

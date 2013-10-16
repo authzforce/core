@@ -33,24 +33,17 @@
  */
 package com.sun.xacml.combine;
 
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
-
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.URI;
-
-import java.util.Iterator;
-import java.util.List;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 
 
 /**
@@ -90,7 +83,7 @@ public class RuleCombinerElement extends CombinerElement
      *
      * @return the element's <code>Rule</code>
      */
-    public RuleType getRule() {
+    public oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule getRule() {
 //        return getElement();
     	return null;
     }
@@ -126,7 +119,7 @@ public class RuleCombinerElement extends CombinerElement
 	}
 
 	@Override
-	public TargetType getTarget() {
+	public Target getTarget() {
 		// TODO Auto-generated method stub
 		return null;
 	}

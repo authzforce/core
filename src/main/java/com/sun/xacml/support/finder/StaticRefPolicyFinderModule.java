@@ -39,8 +39,9 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
@@ -90,9 +91,9 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
     // the optional schema file
     private File schemaFile = null;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(StaticRefPolicyFinderModule.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(StaticRefPolicyFinderModule.class.getName());
 
     /**
      * Creates a <code>StaticRefPolicyFinderModule</code> that provides
@@ -151,7 +152,7 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
      */
     public void init(PolicyFinder finder) {
         // now that we have the PolicyFinder, we can load the policies
-        PolicyReader reader = new PolicyReader(finder, logger, schemaFile);
+        PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
 
         Iterator it = policyList.iterator();
         while (it.hasNext()) {
@@ -170,12 +171,9 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 
                 // we loaded the policy, so try putting it in the collection
                 if (! policies.addPolicy(policy))
-                    if (logger.isLoggable(Level.WARNING))
-                        logger.log(Level.WARNING, "tried to load the same " +
-                                   "policy multiple times: " + str);
+                        LOGGER.warn("tried to load the same policy multiple times: {}", str);
             } catch (ParsingException pe) {
-                if (logger.isLoggable(Level.WARNING))
-                    logger.log(Level.WARNING, "Error reading policy: " + str,
+                    LOGGER.warn("Error reading policy: {}", str,
                                pe);
             }
         }

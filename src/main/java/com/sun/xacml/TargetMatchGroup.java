@@ -47,6 +47,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 
 /**
@@ -106,7 +107,7 @@ public class TargetMatchGroup
         /*
          * XACML 3.0 hook
          */
-        if (Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()) == metaData.getXACMLVersion()) {        	
+        if (PolicyMetaData.XACML_VERSION_3_0 == metaData.getXACMLVersion()) {        	
         	NodeList myRoot = (NodeList)root;
         	String name = DOMHelper.getLocalName(root);
             if (name.equals(TargetMatch.NAMES[TargetMatch.MATCH])) {

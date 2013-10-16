@@ -76,7 +76,7 @@ public class BasicPolicyFinderModule extends PolicyFinderModule
     private PolicyCollection refPolicies;
 
     // the combining alg, or null if none is used
-    private PolicyCombiningAlgorithm combiningAlg;
+//    private PolicyCombiningAlgorithm combiningAlg;
 
     // the policy identifier for any policy sets we dynamically create
     private static final String POLICY_ID =
@@ -95,7 +95,7 @@ public class BasicPolicyFinderModule extends PolicyFinderModule
             if (logger.isLoggable(Level.SEVERE))
                 logger.log(Level.SEVERE, "couldn't assign default policy id");
         }
-    };
+    }
 
     /**
      * Creates a <code>BasicPolicyFinderModule</code>.
@@ -227,7 +227,7 @@ public class BasicPolicyFinderModule extends PolicyFinderModule
 				// Retrieving combining algorithm
 				PolicyCombiningAlgorithm myCombiningAlg = (PolicyCombiningAlgorithm) policySet.getCombiningAlg();
 				PolicyCollection myPolcollection = new PolicyCollection(myCombiningAlg, URI.create(policySet.getPolicySetId()));
-				for (Object elt : policySet.getPolicySetOrPolicyOrPolicySetIdReference()) {
+				for (Object elt : policySet.getPolicySetsAndPoliciesAndPolicySetIdReferences()) {
 					if (elt instanceof PolicyCombinerElement) {
 							myPolcollection.addPolicy((Policy) ((PolicyCombinerElement) elt).getElement());
 					}

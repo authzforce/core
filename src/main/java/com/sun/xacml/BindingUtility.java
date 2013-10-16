@@ -54,11 +54,80 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 public class BindingUtility {
 	
-	private static DocumentBuilder db = null;
+	/**
+	 * JAXB context for (un)marshalling from/to JAXB objects derived from XACML 3.0 schema
+	 */	
+    public static final JAXBContext XACML30_JAXB_CONTEXT;
+    static {
+    	try
+		{
+			XACML30_JAXB_CONTEXT = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17", BindingUtility.class.getClassLoader());
+		} catch (JAXBException e)
+		{
+			throw new RuntimeException("Error instantiating JAXB context for (un)marshalling from/to XACML 3.0 objects", e);
+		}
+    }
+    
+    /**
+	 * Thread-local namespace-aware document builder to build DOM elements from XML strings.
+	 * DocumentBuilder(Factory) is not guaranteed to be thread-safe, therefore this thread local
+	 * variable. 
+	 * 
+	 * WARNING: the application must call {@link DocumentBuilder#reset()} on the instance result of
+	 * {@link ThreadLocal#get()} on {@link #THREAD_LOCAL_NS_AWARE_DOC_BUILDER}, after calling
+	 * one of parse(...) or {@link DocumentBuilder#newDocument()} methods to preserve thread-safety.
+	 */
+	private static final ThreadLocal<DocumentBuilder> THREAD_LOCAL_NS_AWARE_DOC_BUILDER = new ThreadLocal<DocumentBuilder>()
+	{
+		@Override
+		protected DocumentBuilder initialValue()
+		{
+			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			factory.setNamespaceAware(true);
+			factory.setIgnoringComments(true);
+			final DocumentBuilder docBuilder;
+			try
+			{
+				docBuilder = factory.newDocumentBuilder();
+			} catch (ParserConfigurationException e)
+			{
+				throw new RuntimeException("Failed to initialize namespace-aware DOM DocumentBuilder for parsing XML to DOM documents", e);
+			}
+
+			return docBuilder;
+		}
+	};
 	
-	static DocumentBuilderFactory dbf = null;
-	
-    static JAXBContext s_jaxbContext = null;
+	/**
+	 * Thread-local namespace-unaware document builder to build DOM elements from XML strings.
+	 * DocumentBuilder(Factory) is not guaranteed to be thread-safe, therefore this thread local
+	 * variable. 
+	 * 
+	 * WARNING: the application must call {@link DocumentBuilder#reset()} on the instance result of
+	 * {@link ThreadLocal#get()} on {@link #THREAD_LOCAL_NS_AWARE_DOC_BUILDER}, after calling
+	 * one of parse(...) methods to preserve thread-safety.
+	 */
+	private static final ThreadLocal<DocumentBuilder> THREAD_LOCAL_NS_UNAWARE_DOC_BUILDER = new ThreadLocal<DocumentBuilder>()
+	{
+		@Override
+		protected DocumentBuilder initialValue()
+		{
+			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			factory.setNamespaceAware(true);
+			factory.setIgnoringComments(true);
+			final DocumentBuilder docBuilder;
+			try
+			{
+				docBuilder = factory.newDocumentBuilder();
+			} catch (ParserConfigurationException e)
+			{
+				throw new RuntimeException("Failed to initialize namespace-aware DOM DocumentBuilder for parsing XML to DOM documents", e);
+			}
+
+			return docBuilder;
+		}
+	};
+
     public static  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory contextFac =
             new  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory();
 //    public static oasis.names.tc.xacml._2_0.policy.schema.os.ObjectFactory policyFac =
@@ -68,55 +137,38 @@ public class BindingUtility {
     
 
     //public static String jaxbContextPath = "net.opengis.gml.v_3_2_1:org.isotc211.iso19139.d_2007_04_17.gco:org.isotc211.iso19139.d_2007_04_17.gmd:org.isotc211.iso19139.d_2007_04_17.gmx:org.isotc211.iso19139.d_2007_04_17.gsr:org.isotc211.iso19139.d_2007_04_17.gss:org.isotc211.iso19139.d_2007_04_17.gts";
-    public static String jaxbContextPath = "oasis.names.tc.xacml._3_0.core.schema.wd_17";
-
-    public static JAXBContext getJAXBContext() throws JAXBException {
-        if (s_jaxbContext == null) {
-            s_jaxbContext = JAXBContext.newInstance(jaxbContextPath, BindingUtility.class.getClassLoader());            
-        }
-
-        return s_jaxbContext;
-    }
     
-    public static Unmarshaller getUnmarshaller() throws JAXBException {
-        JAXBContext gmlContext = getJAXBContext();
-        Unmarshaller unmarshaller = getJAXBContext().createUnmarshaller();
+//    public static Unmarshaller getUnmarshaller() throws JAXBException {
+//        Unmarshaller unmarshaller = XACML30_JAXB_CONTEXT.createUnmarshaller();
+//
+//        //unmarshaller.setValidating(true);
+//        unmarshaller.setEventHandler(new ValidationEventHandler() {
+//
+//            public boolean handleEvent(ValidationEvent event) {
+//                boolean keepOn = false;
+//
+//                return keepOn;
+//            }
+//        });
+//
+//        return unmarshaller;
+//    }
 
-        //unmarshaller.setValidating(true);
-        unmarshaller.setEventHandler(new ValidationEventHandler() {
-
-            public boolean handleEvent(ValidationEvent event) {
-                boolean keepOn = false;
-
-                return keepOn;
-            }
-        });
-
-        return unmarshaller;
-    }
-
-    public static Marshaller createMarshaller() {
-        try {
-            Marshaller marshaller = getJAXBContext().createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            return marshaller;
-        } catch (JAXBException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
     
-    public static DocumentBuilder getDocumentBuilder(){    	
-    	if (dbf == null) {    		
-			dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);			
-			try {
-				db = dbf.newDocumentBuilder();
-			} catch (ParserConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+    /**
+     * Get thread-local document builder. The client must call the {@link DocumentBuilder#reset()} after calling any parse() methods to preserve thread-safety..
+     * @param namespaceAware true if and only returned documentBuilder must be namespace-aware
+     * @return thread-local instance of DocumentBuilder (thread-local)
+     */
+    public static DocumentBuilder getDocumentBuilder(boolean namespaceAware){
+    	final DocumentBuilder docBuilder;
+    	if(namespaceAware) {
+    		docBuilder = THREAD_LOCAL_NS_AWARE_DOC_BUILDER.get();
+    	} else {
+    		docBuilder = THREAD_LOCAL_NS_UNAWARE_DOC_BUILDER.get();
     	}
-          return db;
+    	
+    	return docBuilder;
     }
     
 }
