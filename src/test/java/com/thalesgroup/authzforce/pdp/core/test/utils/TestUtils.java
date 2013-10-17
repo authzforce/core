@@ -49,25 +49,28 @@ public class TestUtils {
 			String versionDirectory, String requestId) {
 
 		File file = new File(".");
+		Document doc = null;
 		try {
-			String filePath = file.getCanonicalPath() + File.separator
-					+ TestConstants.RESOURCE_PATH.value() + File.separator
-					+ rootDirectory + File.separator + versionDirectory
-					+ File.separator + TestConstants.REQUEST_DIRECTORY.value()
-					+ File.separator + requestId;
+			String filePath = Thread
+					.currentThread()
+					.getContextClassLoader()
+					.getResource(
+							rootDirectory + File.separator + versionDirectory
+									+ File.separator
+									+ TestConstants.REQUEST_DIRECTORY.value()
+									+ File.separator + requestId).getPath();
 
 			DocumentBuilderFactory factory = DocumentBuilderFactory
 					.newInstance();
 			factory.setIgnoringComments(true);
 			factory.setNamespaceAware(true);
 			DocumentBuilder db = factory.newDocumentBuilder();
-			Document doc = db.parse(new FileInputStream(filePath));
-			return marshallRequestType(doc);
+			doc = db.parse(new FileInputStream(filePath));
+			LOGGER.debug("Request file to read: " + filePath);
 		} catch (Exception e) {
 			LOGGER.error("Error while reading expected request from file ", e);
-			// ignore any exception and return null
 		}
-		return null;
+		return marshallRequestType(doc);
 	}
 
 	/**
@@ -85,34 +88,39 @@ public class TestUtils {
 			String versionDirectory, String responseId) {
 
 		File file = new File(".");
+		Document doc = null;
+
 		try {
-			String filePath = file.getCanonicalPath() + File.separator
-					+ TestConstants.RESOURCE_PATH.value() + File.separator
-					+ rootDirectory + File.separator + versionDirectory
-					+ File.separator + TestConstants.RESPONSE_DIRECTORY.value()
-					+ File.separator + responseId;
-			LOGGER.debug("File to read: " + filePath);
+			String filePath = Thread
+					.currentThread()
+					.getContextClassLoader()
+					.getResource(
+							rootDirectory + File.separator + versionDirectory
+									+ File.separator
+									+ TestConstants.RESPONSE_DIRECTORY.value()
+									+ File.separator + responseId).getPath();
+			LOGGER.debug("Response file to read: " + filePath);
 			DocumentBuilderFactory factory = DocumentBuilderFactory
 					.newInstance();
 			factory.setIgnoringComments(true);
 			factory.setNamespaceAware(true);
 			factory.setValidating(false);
 			DocumentBuilder db = factory.newDocumentBuilder();
-			Document doc = db.parse(new FileInputStream(filePath));
-			return marshallResponseType(doc);
+			doc = db.parse(new FileInputStream(filePath));
+
 		} catch (Exception e) {
 			LOGGER.error("Error while reading expected response from file ", e);
-			// ignore any exception and return null
 		}
 
-		return null;
+		return marshallResponseType(doc);
 	}
 
 	@SuppressWarnings("unchecked")
 	private static Request marshallRequestType(Node root) {
 		Request request = null;
 		try {
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT
+					.createUnmarshaller();
 			JAXBElement<Request> jaxbElt = u.unmarshal(root, Request.class);
 			request = jaxbElt.getValue();
 		} catch (Exception e) {
@@ -121,12 +129,13 @@ public class TestUtils {
 
 		return request;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private static Response marshallResponseType(Node root) {
 		Response allOf = null;
 		try {
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT
+					.createUnmarshaller();
 			allOf = (Response) u.unmarshal(root);
 		} catch (Exception e) {
 			LOGGER.error("Error unmarshalling Response", e);
@@ -138,7 +147,8 @@ public class TestUtils {
 	public static String printRequest(Request request) {
 		StringWriter writer = new StringWriter();
 		try {
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT
+					.createMarshaller();
 			u.marshal(request, writer);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Request", e);
@@ -150,7 +160,8 @@ public class TestUtils {
 	public static String printResponse(Response response) {
 		StringWriter writer = new StringWriter();
 		try {
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT
+					.createMarshaller();
 			u.marshal(response, writer);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Response", e);
@@ -159,13 +170,13 @@ public class TestUtils {
 		return writer.toString();
 	}
 
-	public static boolean match(ResponseCtx response,
-			Response expectedResponse) {
+	public static boolean match(ResponseCtx response, Response expectedResponse) {
 
 		boolean finalResult = false;
 
 		Response xacmlResponse = new Response();
-		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> myIt = response.getResults().iterator();
+		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> myIt = response
+				.getResults().iterator();
 
 		while (myIt.hasNext()) {
 			Result result = (Result) myIt.next();
@@ -177,7 +188,8 @@ public class TestUtils {
 				expectedResponse.getResults());
 		if (finalResult) {
 			int i = 0;
-			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse.getResults()) {
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse
+					.getResults()) {
 				finalResult = matchObligations(result.getObligations(),
 						expectedResponse.getResults().get(i).getObligations());
 			}
@@ -188,7 +200,8 @@ public class TestUtils {
 		}
 		if (finalResult) {
 			int i = 0;
-			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse.getResults()) {
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse
+					.getResults()) {
 				finalResult = matchAdvices(result.getAssociatedAdvice(),
 						expectedResponse.getResults().get(i)
 								.getAssociatedAdvice());
@@ -198,18 +211,19 @@ public class TestUtils {
 			LOGGER.error("Obligations comparaison failed");
 			return finalResult;
 		}
-		
-		if(!finalResult){
+
+		if (!finalResult) {
 			// Advice comparison failed
 			LOGGER.error("Advice comparaison failed");
 			return finalResult;
 		}
-		
+
 		// Everything gone right
 		return finalResult;
 	}
 
-	private static boolean matchResult(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> currentResult,
+	private static boolean matchResult(
+			List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> currentResult,
 			List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResult) {
 		boolean resultCompare = false;
 		// Compare the number of results
@@ -256,8 +270,7 @@ public class TestUtils {
 		return returnData;
 	}
 
-	private static boolean matchAdvices(
-			AssociatedAdvice associatedAdvice,
+	private static boolean matchAdvices(AssociatedAdvice associatedAdvice,
 			AssociatedAdvice associatedAdvice2) {
 		boolean returnData = true;
 		if (associatedAdvice != null && associatedAdvice2 != null) {

@@ -60,7 +60,7 @@ public class BasicFunctionV3 {
 	public static void setUp() throws Exception {
 		LOGGER.info("Launching basic function tests");
 	}
-	
+
 	@AfterClass
 	public static void tearDown() throws Exception {
 		showResults();
@@ -72,7 +72,7 @@ public class BasicFunctionV3 {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0006.xml");
-//		PDP pdp = getPDPNewInstance(policies);
+		// PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic function Test 0006 is started");
 		ResponseCtx response = null;
 		Response expectedResponse = null;
@@ -124,7 +124,7 @@ public class BasicFunctionV3 {
 			LOGGER.info("Basic Test 0006 is finished");
 		}
 	}
-	
+
 	private static void showResults() throws Exception {
 		for (String key : results.keySet()) {
 			LOGGER.info(key + ":" + results.get(key));
@@ -144,17 +144,15 @@ public class BasicFunctionV3 {
 		List<String> policyLocations = new ArrayList<String>();
 
 		for (String policy : policies) {
-			try {
-				String policyPath = (new File(".")).getCanonicalPath()
-						+ File.separator + TestConstants.RESOURCE_PATH.value()
-						+ File.separator + ROOT_DIRECTORY + File.separator
-						+ VERSION_DIRECTORY + File.separator
-						+ TestConstants.POLICY_DIRECTORY.value()
-						+ File.separator + policy;
-				policyLocations.add(policyPath);
-			} catch (IOException e) {
-				LOGGER.error("Error getting path to policy", e);
-			}
+			String policyPath = Thread
+					.currentThread()
+					.getContextClassLoader()
+					.getResource(
+							ROOT_DIRECTORY + File.separator + VERSION_DIRECTORY
+									+ File.separator
+									+ TestConstants.POLICY_DIRECTORY.value()
+									+ File.separator + policy).getPath();
+			policyLocations.add(policyPath);
 		}
 
 		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(

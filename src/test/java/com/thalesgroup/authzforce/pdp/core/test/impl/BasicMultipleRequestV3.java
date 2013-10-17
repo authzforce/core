@@ -72,7 +72,7 @@ public class BasicMultipleRequestV3 {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0014.xml");
-//		PDP pdp = getPDPNewInstance(policies);
+		// PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0014 is started");
 		ResponseCtx response = null;
 		Response expectedResponse = null;
@@ -138,17 +138,15 @@ public class BasicMultipleRequestV3 {
 		List<String> policyLocations = new ArrayList<String>();
 
 		for (String policy : policies) {
-			try {
-				String policyPath = (new File(".")).getCanonicalPath()
-						+ File.separator + TestConstants.RESOURCE_PATH.value()
-						+ File.separator + ROOT_DIRECTORY + File.separator
-						+ VERSION_DIRECTORY + File.separator
-						+ TestConstants.POLICY_DIRECTORY.value()
-						+ File.separator + policy;
-				policyLocations.add(policyPath);
-			} catch (IOException e) {
-				LOGGER.error("Error getting path to policy", e);
-			}
+			String policyPath = Thread
+					.currentThread()
+					.getContextClassLoader()
+					.getResource(
+							ROOT_DIRECTORY + File.separator + VERSION_DIRECTORY
+									+ File.separator
+									+ TestConstants.POLICY_DIRECTORY.value()
+									+ File.separator + policy).getPath();
+			policyLocations.add(policyPath);
 		}
 
 		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(

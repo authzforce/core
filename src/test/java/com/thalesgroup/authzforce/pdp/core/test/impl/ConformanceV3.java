@@ -138,17 +138,15 @@ public class ConformanceV3 {
 		List<String> policyLocations = new ArrayList<String>();
 
 		for (String policy : policies) {
-			try {
-				String policyPath = (new File(".")).getCanonicalPath()
-						+ File.separator + TestConstants.RESOURCE_PATH.value()
-						+ File.separator + ROOT_DIRECTORY + File.separator
-						+ VERSION_DIRECTORY + File.separator
-						+ TestConstants.POLICY_DIRECTORY.value()
-						+ File.separator + policy;
-				policyLocations.add(policyPath);
-			} catch (IOException e) {
-				LOGGER.error("Error getting path to policy", e);
-			}
+			String policyPath = Thread
+					.currentThread()
+					.getContextClassLoader()
+					.getResource(
+							ROOT_DIRECTORY + File.separator + VERSION_DIRECTORY
+									+ File.separator
+									+ TestConstants.POLICY_DIRECTORY.value()
+									+ File.separator + policy).getPath();
+			policyLocations.add(policyPath);
 		}
 
 		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
