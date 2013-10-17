@@ -2,9 +2,9 @@ package com.thalesgroup.authzforce.pdp.core.test.utils;
 
 public enum TestConstants {
 	
-	CONF_FILE("src\\test\\resources\\config.xml"),
-	LOG_FILE("src\\test\\resources\\log4j.properties"),
-	RESOURCE_PATH("src\\test\\resources"),
+	CONF_FILE("src/test/resources/config.xml"),
+	LOG_FILE("src/test/resources/log4j.properties"),
+	RESOURCE_PATH("src/test/resources"),
 	POLICY_DIRECTORY("policies"),
 	REQUEST_DIRECTORY("requests"),
 	RESPONSE_DIRECTORY("responses");
