@@ -27,19 +27,13 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,14 +50,10 @@ import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.Rule;
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
-import com.sun.xacml.attr.xacmlv3.AttributeSelector;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.combine.CombinerParameter;
 import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.cond.VariableManager;
-import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Result;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 
@@ -284,8 +274,8 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy {
 		CombinerParameter combParam = null;
 		for (Object element : this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions) {
 			if (element instanceof CombinerParametersType) {
-				combParams.getCombinerParameter().add(
-						(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameterType) element);
+				combParams.getCombinerParameters().add(
+						(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter) element);
 			} else if (element instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule) {
 				rules.add((Rule) element);
 			}

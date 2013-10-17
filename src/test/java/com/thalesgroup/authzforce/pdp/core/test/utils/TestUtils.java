@@ -113,7 +113,7 @@ public class TestUtils {
 		Request request = null;
 		try {
 			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
-			JAXBElement<Request> jaxbElt = (JAXBElement<Request>)u.unmarshal(root);
+			JAXBElement<Request> jaxbElt = u.unmarshal(root, Request.class);
 			request = jaxbElt.getValue();
 		} catch (Exception e) {
 			LOGGER.error("Error unmarshalling Request", e);
