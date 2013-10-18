@@ -38,6 +38,13 @@
 	</logger>
 	<!-- /AUDIT LOGGER -->
 	
+	<!-- Unitary Test Loggers -->
+	<logger name="com.sun.xacml.Test_PDP" additivity="false">
+		<level value="info" />
+		<appender-ref ref="stdout" />		
+	</logger>
+	<!-- Unitary Test Loggers -->
+	
 	<logger name="com.sun.xacml.cond.BaseFunctionFactory" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
