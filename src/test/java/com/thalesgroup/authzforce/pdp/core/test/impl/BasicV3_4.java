@@ -4,7 +4,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +16,7 @@ import java.util.TreeMap;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,15 +35,16 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestConstants;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
 /**
- * XACML 3.0 conformance tests published by OASIS
+ * This XACML 3.0 basic policy test. This would test a basic policy, basic
+ * policy with obligations and basic policy with advices.
  */
 @RunWith(value = Parameterized.class)
-public class ConformanceV3 {
+public class BasicV3_4 {
 
 	/**
 	 * directory name that states the test type
 	 */
-	private final static String ROOT_DIRECTORY = "conformance";
+	private final static String ROOT_DIRECTORY = "basic";
 
 	/**
 	 * directory name that states XACML version
@@ -54,92 +55,90 @@ public class ConformanceV3 {
 	 * the logger we'll use for all messages
 	 */
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(ConformanceV3.class);
-
-	private static final int NB_TESTS = 28;
+			.getLogger(BasicV3_4.class);
+	/**
+	 * The map of results
+	 */
+	private static Map<String, String> results = new TreeMap<String, String>();
 	
-	private int numTest;
-
-	public ConformanceV3(int numTest) {
+	int numTest;
+	
+	public BasicV3_4(int numTest) {
 		this.numTest = numTest;
 	}
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-		LOGGER.info("Launching conformance tests");
+		LOGGER.info("Launching Basic tests v4");
+	}
+
+	@AfterClass
+	public static void tearDown() throws Exception {
+		showResults();
 	}
 	
 	@Parameters
 	public static Collection<Object[]> data() {
-		Object[][] data = new Object[NB_TESTS][1];
-		for (int i = 0; i < NB_TESTS; i++) {
-			data[i][0] = i+1;
-		}
-		return Arrays.asList(data);
+		Object[][] data = new Object[][] { { 1 }, { 2 }, { 3 } };
+		   return Arrays.asList(data);
 	}
 
 	@Test
-	public void testConformanceTestA() throws Exception {
+	public void testBasicTest0004() throws Exception {
 
-		String policyNumber;
+		String reqResNo;
+		Set<String> policies = new HashSet<String>();
+		policies.add("TestPolicy_0004.xml");
+		LOGGER.debug("Basic Test V3 v4 "+numTest+" is started");
 		ResponseCtx response = null;
 		Response expectedResponse = null;
 		Request request = null;
-		Map<String, String> results = new TreeMap<String, String>();
 
 			if (numTest < 10) {
-				policyNumber = "00" + numTest;
-			} else if (9 < numTest && numTest < 100) {
-				policyNumber = "0" + numTest;
+				reqResNo = "0" + numTest;
 			} else {
-				policyNumber = Integer.toString(numTest);
+				reqResNo = Integer.toString(numTest);
 			}
 
-			LOGGER.debug("Conformance Test IIIA" + policyNumber + " is started");
-
 			request = TestUtils.createRequest(ROOT_DIRECTORY,
-					VERSION_DIRECTORY, "IIIA" + policyNumber
-							+ "Request.xacml3.xml");
+					VERSION_DIRECTORY, "request_0004_" + reqResNo + ".xml");
 			if (request != null) {
 				LOGGER.debug("Request that is sent to the PDP :  "
 						+ TestUtils.printRequest(request));
-				Set<String> policies = new HashSet<String>();
-				policies.add("IIIA" + policyNumber + "Policy.xacml3.xml");
 				response = getPDPNewInstance(policies).evaluate(request);
 				if (response != null) {
-					expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY,
-							VERSION_DIRECTORY, "IIIA" + policyNumber
-									+ "Response.xacml3.xml");
 					LOGGER.debug("Response that is received from the PDP :  "
 							+ response.getEncoded());
-					LOGGER.debug("Going to assert it");
+					expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY,
+							VERSION_DIRECTORY, "response_0004_" + reqResNo
+									+ ".xml");
 					if (expectedResponse != null) {
 						boolean assertion = TestUtils.match(response,
 								expectedResponse);
 						if (assertion) {
-							LOGGER.info("Assertion SUCCESS for: IIIA"
-									+ policyNumber);
-							results.put(policyNumber, "SUCCESS");
+							LOGGER.debug("Assertion SUCCESS for: IIIA"
+									+ "response_0004_" + reqResNo);
+							results.put("response_0004_" + reqResNo, "SUCCESS");
 						} else {
-							LOGGER.error("Assertion FAILED for: IIIA"
-									+ policyNumber);
+							LOGGER.error("Assertion FAILED for: TestPolicy_0004 and response_0004_"
+									+ reqResNo);
+							results.put("response_0004_" + reqResNo, "FAILED");
 						}
 						assertTrue(assertion);
 					} else {
-						LOGGER.error("Assertion FAILED for: IIIA"
-								+ policyNumber);
 						assertTrue("Response read from file is Null", false);
 					}
 				} else {
-					LOGGER.error("Assertion FAILED for: IIIA" + policyNumber);
 					assertFalse("Response received PDP is Null", false);
 				}
 			} else {
-				LOGGER.error("Assertion FAILED for: IIIA" + policyNumber);
 				assertTrue("Request read from file is Null", false);
 			}
 
-			LOGGER.info("Conformance Test IIIA" + policyNumber + " is finished");
+			LOGGER.debug("Basic Test V3 v4 "+numTest+" is finished");
+	}
+
+	private static void showResults() throws Exception {
 		for (String key : results.keySet()) {
 			LOGGER.debug(key + ":" + results.get(key));
 		}
@@ -166,7 +165,7 @@ public class ConformanceV3 {
 									+ File.separator
 									+ TestConstants.POLICY_DIRECTORY.value()
 									+ File.separator + policy).getPath();
-			policyLocations.add(policyPath);
+				policyLocations.add(policyPath);
 		}
 
 		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
@@ -179,7 +178,7 @@ public class ConformanceV3 {
 		PDPConfig pdpConfig = authzforce.getPDPConfig();
 		pdpConfig = new PDPConfig(pdpConfig.getAttributeFinder(), finder,
 				pdpConfig.getResourceFinder(), null);
-
 		return new PDP(pdpConfig);
+
 	}
 }

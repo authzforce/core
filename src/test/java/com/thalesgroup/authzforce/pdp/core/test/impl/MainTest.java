@@ -13,14 +13,21 @@ import org.slf4j.LoggerFactory;
  * 
  * class to use for the testSuite
  		ConformanceV3.class,
-		BasicV3.class,
-		BasicFunctionV3.class,
-		BasicMultipleRequestV3.class
+		BasicV3_1.class,
+		BasicV3_2.class,
+		BasicV3_3.class,
+		BasicV3_4.class,
+		BasicV3_5.class,
+		BasicFunctionV3.class
  */
 @RunWith(Suite.class)
 @SuiteClasses(value={
 		ConformanceV3.class,
-		BasicV3.class,
+		BasicV3_1.class,
+		BasicV3_2.class,
+		BasicV3_3.class,
+		BasicV3_4.class,
+		BasicV3_5.class,
 		BasicFunctionV3.class
 })
 public class MainTest {

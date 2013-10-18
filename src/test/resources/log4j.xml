@@ -43,16 +43,6 @@
 		<level value="info" />
 		<appender-ref ref="stdout" />		
 	</logger>
-	<!-- Unitary Test Loggers -->
-	
-	<logger name="com.sun.xacml.cond.BaseFunctionFactory" additivity="false">
-		<level value="info" />
-		<appender-ref ref="stdout" />
-	</logger>
-	<logger name="com.sun.xacml.cond.StandardFunctionFactory" additivity="false">
-		<level value="info" />
-		<appender-ref ref="stdout" />
-	</logger>
 	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicFunctionV3" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
@@ -67,14 +57,24 @@
 		<appender-ref ref="stdout" />
 	</logger>
 	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.ConformanceV3" additivity="false">
-		<level value="debug" />
+		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
 	<logger name="com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils" additivity="false">
-		<level value="debug" />
+		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
 	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.MainTest" additivity="false">
+		<level value="info" />
+		<appender-ref ref="stdout" />
+	</logger>
+	<!-- Unitary Test Loggers -->
+	
+	<logger name="com.sun.xacml.cond.BaseFunctionFactory" additivity="false">
+		<level value="info" />
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="com.sun.xacml.cond.StandardFunctionFactory" additivity="false">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
