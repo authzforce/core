@@ -56,7 +56,7 @@ public class ConformanceV3 {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(ConformanceV3.class);
 
-	private static final int NB_TESTS = 28;
+	private static final int NB_TESTS = 32;
 	
 	private int numTest;
 
