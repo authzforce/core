@@ -82,8 +82,6 @@ public class PDP {
 	private ResourceFinder resourceFinder;
 
 	// the logger we'll use for all messages
-//	private static final Logger OLD_LOGGER = Logger.getLogger(PDP.class
-//			.getName());
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(PDP.class);
 
