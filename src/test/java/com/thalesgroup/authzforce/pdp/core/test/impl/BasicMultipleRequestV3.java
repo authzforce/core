@@ -90,7 +90,7 @@ public class BasicMultipleRequestV3 {
 			if (request != null) {
 				LOGGER.debug("Request that is sent to the PDP :  "
 						+ TestUtils.printRequest(request));
-				response = getPDPNewInstance(policies).evaluate(request);
+				response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policies).evaluate(request);
 				if (response != null) {
 					LOGGER.info("Response that is received from the PDP :  "
 							+ response.getEncoded());
@@ -123,44 +123,6 @@ public class BasicMultipleRequestV3 {
 			}
 			LOGGER.info("Basic Test 0014 is finished");
 		}
-	}
-
-	/**
-	 * Returns a new PDP instance with new XACML policies
-	 * 
-	 * @param policies
-	 *            Set of XACML policy file names
-	 * @return a PDP instance
-	 */
-	private static PDP getPDPNewInstance(Set<String> policies) {
-
-		PolicyFinder finder = new PolicyFinder();
-		List<String> policyLocations = new ArrayList<String>();
-
-		for (String policy : policies) {
-			String policyPath = Thread
-					.currentThread()
-					.getContextClassLoader()
-					.getResource(
-							ROOT_DIRECTORY + File.separator + VERSION_DIRECTORY
-									+ File.separator
-									+ TestConstants.POLICY_DIRECTORY.value()
-									+ File.separator + policy).getPath();
-			policyLocations.add(policyPath);
-		}
-
-		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
-				policyLocations);
-		Set<PolicyFinderModule> policyModules = new HashSet<PolicyFinderModule>();
-		policyModules.add(testPolicyFinderModule);
-		finder.setModules(policyModules);
-
-		PDP authzforce = PDP.getInstance();
-		PDPConfig pdpConfig = authzforce.getPDPConfig();
-		pdpConfig = new PDPConfig(pdpConfig.getAttributeFinder(), finder,
-				pdpConfig.getResourceFinder(), null);
-		return new PDP(pdpConfig);
-
 	}
 
 	private static void showResults() throws Exception {

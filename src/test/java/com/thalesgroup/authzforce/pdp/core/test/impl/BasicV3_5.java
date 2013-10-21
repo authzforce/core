@@ -3,12 +3,9 @@ package com.thalesgroup.authzforce.pdp.core.test.impl;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -19,20 +16,13 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.PDP;
-import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.ResponseCtx;
-import com.sun.xacml.finder.PolicyFinder;
-import com.sun.xacml.finder.PolicyFinderModule;
-import com.sun.xacml.support.finder.FilePolicyModule;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestConstants;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
 /**
@@ -106,7 +96,7 @@ public class BasicV3_5 {
 		if (request != null) {
 			LOGGER.debug("Request that is sent to the PDP :  "
 					+ TestUtils.printRequest(request));
-			response = getPDPNewInstance(policies).evaluate(request);
+			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policies).evaluate(request);
 			if (response != null) {
 				LOGGER.debug("Response that is received from the PDP :  "
 						+ response.getEncoded());
@@ -143,43 +133,5 @@ public class BasicV3_5 {
 		for (String key : results.keySet()) {
 			LOGGER.debug(key + ":" + results.get(key));
 		}
-	}
-
-	/**
-	 * Returns a new PDP instance with new XACML policies
-	 * 
-	 * @param policies
-	 *            Set of XACML policy file names
-	 * @return a PDP instance
-	 */
-	private static PDP getPDPNewInstance(Set<String> policies) {
-
-		PolicyFinder finder = new PolicyFinder();
-		List<String> policyLocations = new ArrayList<String>();
-
-		for (String policy : policies) {
-			String policyPath = Thread
-					.currentThread()
-					.getContextClassLoader()
-					.getResource(
-							ROOT_DIRECTORY + File.separator + VERSION_DIRECTORY
-									+ File.separator
-									+ TestConstants.POLICY_DIRECTORY.value()
-									+ File.separator + policy).getPath();
-			policyLocations.add(policyPath);
-		}
-
-		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
-				policyLocations);
-		Set<PolicyFinderModule> policyModules = new HashSet<PolicyFinderModule>();
-		policyModules.add(testPolicyFinderModule);
-		finder.setModules(policyModules);
-
-		PDP authzforce = PDP.getInstance();
-		PDPConfig pdpConfig = authzforce.getPDPConfig();
-		pdpConfig = new PDPConfig(pdpConfig.getAttributeFinder(), finder,
-				pdpConfig.getResourceFinder(), null);
-		return new PDP(pdpConfig);
-
 	}
 }
