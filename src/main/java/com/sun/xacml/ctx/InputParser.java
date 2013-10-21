@@ -38,12 +38,11 @@ import com.sun.xacml.ParsingException;
 import java.io.File;
 import java.io.InputStream;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -73,9 +72,9 @@ public class InputParser implements ErrorHandler
     private static final String CONTEXT_SCHEMA_PROPERTY =
         "com.sun.xacml.ContextSchema";
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(InputParser.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(InputParser.class);
 
     // standard strings for setting validation
 
@@ -168,9 +167,9 @@ public class InputParser implements ErrorHandler
      * @param exception information on what caused the problem
      */
     public void warning(SAXParseException exception) throws SAXException {
-        if (logger.isLoggable(Level.WARNING))
-            logger.warning("Warning on line " + exception.getLineNumber() +
-                           ": " + exception.getMessage());
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Warning on line {}: {}", exception.getLineNumber(), exception.getMessage());
+        }
     }
 
     /**
@@ -181,9 +180,9 @@ public class InputParser implements ErrorHandler
      * @throws SAXException always to halt parsing on errors
      */
     public void error(SAXParseException exception) throws SAXException {
-        if (logger.isLoggable(Level.WARNING))
-            logger.warning("Error on line " + exception.getLineNumber() +
-                           ": " + exception.getMessage());
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error("Error on line {}: {}", exception.getLineNumber(), exception.getMessage());
+        }
         
         throw new SAXException("invalid context document");
     }
@@ -196,10 +195,10 @@ public class InputParser implements ErrorHandler
      * @throws SAXException always to halt parsing on errors
      */
     public void fatalError(SAXParseException exception) throws SAXException {
-        if (logger.isLoggable(Level.WARNING))
-            logger.warning("FatalError on line " + exception.getLineNumber() +
-                           ": " + exception.getMessage());
-
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error("FatalError on line {}: {}", exception.getLineNumber(), exception.getMessage());
+        }
+        
         throw new SAXException("invalid context document");
     }
 

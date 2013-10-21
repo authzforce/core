@@ -37,16 +37,15 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.xacmlv3.AnyOf;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the TargetType XML type in XACML. This also stores several other
@@ -70,9 +69,8 @@ public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target {
 
 	List<AnyOf> anyOfType;
 
-	// the logger we'll use for all messages
-	private static final Logger logger = Logger.getLogger(Target.class
-			.getName());
+	// the LOGGER we'll use for all messages
+	private static final Logger LOGGER = LoggerFactory.getLogger(Target.class);
 
 	/**
 	 * Constructor that creates an XACML 1.x <code>Target</code> from
@@ -387,28 +385,28 @@ public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target {
 		// first, try matching the Subjects section
 		result = subjectsSection.match(context);
 		if (result.getResult() != MatchResult.MATCH) {
-			logger.finer("failed to match Subjects section of Target");
+			LOGGER.debug("failed to match Subjects section of Target");
 			return result;
 		}
 
 		// now try matching the Resources section
 		result = resourcesSection.match(context);
 		if (result.getResult() != MatchResult.MATCH) {
-			logger.finer("failed to match Resources section of Target");
+			LOGGER.debug("failed to match Resources section of Target");
 			return result;
 		}
 
 		// next, look at the Actions section
 		result = actionsSection.match(context);
 		if (result.getResult() != MatchResult.MATCH) {
-			logger.finer("failed to match Actions section of Target");
+			LOGGER.debug("failed to match Actions section of Target");
 			return result;
 		}
 
 		// finally, match the Environments section
 		result = environmentsSection.match(context);
 		if (result.getResult() != MatchResult.MATCH) {
-			logger.finer("failed to match Environments section of Target");
+			LOGGER.debug("failed to match Environments section of Target");
 			return result;
 		}
 

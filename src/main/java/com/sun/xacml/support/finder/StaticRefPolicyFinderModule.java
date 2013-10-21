@@ -93,7 +93,7 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 
     // the LOGGER we'll use for all messages
     private static final Logger LOGGER =
-        LoggerFactory.getLogger(StaticRefPolicyFinderModule.class.getName());
+        LoggerFactory.getLogger(StaticRefPolicyFinderModule.class);
 
     /**
      * Creates a <code>StaticRefPolicyFinderModule</code> that provides

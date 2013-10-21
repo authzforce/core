@@ -97,7 +97,7 @@ public class FilePolicyModule extends PolicyFinderModule {
 
     // the LOGGER we'll use for all messages
     private static final Logger LOGGER =
-        LoggerFactory.getLogger(FilePolicyModule.class.getName());
+        LoggerFactory.getLogger(FilePolicyModule.class);
 
     /**
      * Constructor which retrieves the schema file to validate policies against

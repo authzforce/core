@@ -101,12 +101,12 @@ public class CacheManager {
 		 * 
 		 * @author romain.ferrari[AT]thalesgroup.com
 		 */
-		LOGGER.debug("Cache activated: " + activate);
-		LOGGER.debug("maxElementsInMemory = " + maxElementsInMemory);
-		LOGGER.debug("overflowToDisk: " + overflowToDisk);
-		LOGGER.debug("eternal: " + eternal);
-		LOGGER.debug("timeToLiveSeconds = " + timeToLiveInSeconds);
-		LOGGER.debug("timeToIdleSeconds = " + timeToIdleInSeconds);
+		LOGGER.debug("Cache activated: {}", activate);
+		LOGGER.debug("maxElementsInMemory = {}", maxElementsInMemory);
+		LOGGER.debug("overflowToDisk: {}", overflowToDisk);
+		LOGGER.debug("eternal: {}", eternal);
+		LOGGER.debug("timeToLiveSeconds = {}", timeToLiveInSeconds);
+		LOGGER.debug("timeToIdleSeconds = {}", timeToIdleInSeconds);
 		
 //		cacheManager = net.sf.ehcache.CacheManager.getInstance();
 		cacheManager = new net.sf.ehcache.CacheManager();
@@ -152,12 +152,12 @@ public class CacheManager {
 		 * 
 		 * @author romain.ferrari[AT]thalesgroup.com
 		 */
-		LOGGER.debug("Cache activated: " + activate);
-		LOGGER.debug("maxElementsInMemory = " + maxElementsInMemory);
-		LOGGER.debug("overflowToDisk: " + overflowToDisk);
-		LOGGER.debug("eternal: " + eternal);
-		LOGGER.debug("timeToLiveSeconds = " + timeToLiveInSeconds);
-		LOGGER.debug("timeToIdleSeconds = " + timeToIdleInSeconds);
+		LOGGER.debug("Cache activated: {}", activate);
+		LOGGER.debug("maxElementsInMemory = {}", maxElementsInMemory);
+		LOGGER.debug("overflowToDisk: {}", overflowToDisk);
+		LOGGER.debug("eternal: {}", eternal);
+		LOGGER.debug("timeToLiveSeconds = {}", timeToLiveInSeconds);
+		LOGGER.debug("timeToIdleSeconds = {}", timeToIdleInSeconds);
 		
 		initCache();
 	}
@@ -206,7 +206,7 @@ public class CacheManager {
 	 */
 	public Object checkCache(String hash) {
 		Element myElt;
-		LOGGER.debug("checkCache with " + hash);
+		LOGGER.debug("checkCache with {}", hash);
 		myElt = cache.get(hash);
 		if (myElt != null) {
 			return myElt.getObjectValue();
@@ -222,7 +222,7 @@ public class CacheManager {
 	 * @param storedObject
 	 */
 	public void updateCache(String hash, Object storedObject) {
-		LOGGER.debug("Updating cache with: " + hash);
+		LOGGER.debug("Updating cache with: {}", hash);
 		cache.put(new Element(hash, storedObject));
 	}
 

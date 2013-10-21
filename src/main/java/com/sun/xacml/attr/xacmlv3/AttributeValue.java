@@ -244,6 +244,11 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 		
 		return out.toString();
 	}
+	
+	@Override
+	public String toString() {
+		return encode();
+	}
 
 	/**
 	 * Encodes this <code>AttributeValue</code> into its XML representation and

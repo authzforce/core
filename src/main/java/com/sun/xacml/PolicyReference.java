@@ -38,12 +38,12 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -54,493 +54,503 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.xacmlv3.Policy;
 
-
 /**
- * This class is used as a placeholder for the PolicyIdReference and
- * PolicySetIdReference fields in a PolicySetType. When a reference is used
- * in a policy set, it is telling the PDP to use an external policy in
- * the current policy. Each time the PDP needs to evaluate that policy
- * reference, it asks the policy finder for the policy. Typically the policy
- * finder will have cached the referenced policy, so this isn't too slow.
+ * This class is used as a placeholder for the PolicyIdReference and PolicySetIdReference fields in
+ * a PolicySetType. When a reference is used in a policy set, it is telling the PDP to use an
+ * external policy in the current policy. Each time the PDP needs to evaluate that policy reference,
+ * it asks the policy finder for the policy. Typically the policy finder will have cached the
+ * referenced policy, so this isn't too slow.
  * <p>
- * NOTE: all of the accessor methods, the match method, and the evaluate method
- * require this class to ask its <code>PolicyFinder</code> for the referenced
- * policy, which can be a slow operation. Care should be taken, therefore in
- * calling these methods too often. Also note that it's not safe to cacheManager the
- * results of these calls, since the referenced policy may change.
- *
+ * NOTE: all of the accessor methods, the match method, and the evaluate method require this class
+ * to ask its <code>PolicyFinder</code> for the referenced policy, which can be a slow operation.
+ * Care should be taken, therefore in calling these methods too often. Also note that it's not safe
+ * to cacheManager the results of these calls, since the referenced policy may change.
+ * 
  * @since 1.0
  * @author Seth Proctor
  */
 public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy
 {
-    
-    /**
-     * Identifies this as a reference to a <code>Policy</code>
-     */
-    public static final int POLICY_REFERENCE = 0;
 
-    /**
-     * Identifies this as a reference to a <code>PolicySet</code>
-     */
-    public static final int POLICYSET_REFERENCE = 1;
+	/**
+	 * Identifies this as a reference to a <code>Policy</code>
+	 */
+	public static final int POLICY_REFERENCE = 0;
 
-    // the reference
-    private URI reference;
+	/**
+	 * Identifies this as a reference to a <code>PolicySet</code>
+	 */
+	public static final int POLICYSET_REFERENCE = 1;
 
-    // the reference type
-    private int policyType;
+	// the reference
+	private URI reference;
 
-    // and version constraints on this reference
-    private VersionConstraints constraints;
+	// the reference type
+	private int policyType;
 
-    // the finder to use in finding the referenced policy
-    private PolicyFinder finder;
+	// and version constraints on this reference
+	private VersionConstraints constraints;
 
-    // the meta-data for the parent policy
-    private PolicyMetaData parentMetaData;
+	// the finder to use in finding the referenced policy
+	private PolicyFinder finder;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(PolicyReference.class.getName());
+	// the meta-data for the parent policy
+	private PolicyMetaData parentMetaData;
 
-    /**
-     * Creates a new <code>PolicyReference</code> instance. This has no
-     * constraints on version matching. Note that an XACML 1.x reference may
-     * not have any constraints.
-     *
-     * @param reference the reference to the policy
-     * @param policyType one of the two fields in this class
-     * @param finder the <code>PolicyFinder</code> used to handle the reference
-     * @param parentMetaData the meta-data associated with the containing
-     *                       (parent) policy
-     *
-     * @throws IllegalArgumentException if the input policyType isn't valid
-     */
-    public PolicyReference(URI reference, int policyType, PolicyFinder finder,
-                           PolicyMetaData parentMetaData)
-        throws IllegalArgumentException
-    {
-        this(reference, policyType, new VersionConstraints(null, null, null),
-             finder, parentMetaData);
-    }
+	// the LOGGER we'll use for all messages
+	private static final Logger LOGGER = LoggerFactory.getLogger(PolicyReference.class);
 
-    /**
-     * Creates a new <code>PolicyReference</code> instance with version
-     * constraints. Note that an XACML 1.x reference may not have any
-     * constraints.
-     *
-     * @param reference the reference to the policy
-     * @param policyType one of the two fields in this class
-     * @param constraints any optional constraints on the version of the
-     *                    referenced policy (this is never null, but
-     *                    it may impose no constraints, and in fact will
-     *                    never impose constraints when used from a pre-2.0
-     *                    XACML policy)
-     * @param finder the <code>PolicyFinder</code> used to handle the reference
-     * @param parentMetaData the meta-data associated with the containing
-     *                       (parent) policy
-     *
-     * @throws IllegalArgumentException if the input policyType isn't valid
-     */
-    public PolicyReference(URI reference, int policyType,
-                           VersionConstraints constraints, PolicyFinder finder,
-                           PolicyMetaData parentMetaData)
-        throws IllegalArgumentException {
+	/**
+	 * Creates a new <code>PolicyReference</code> instance. This has no constraints on version
+	 * matching. Note that an XACML 1.x reference may not have any constraints.
+	 * 
+	 * @param reference
+	 *            the reference to the policy
+	 * @param policyType
+	 *            one of the two fields in this class
+	 * @param finder
+	 *            the <code>PolicyFinder</code> used to handle the reference
+	 * @param parentMetaData
+	 *            the meta-data associated with the containing (parent) policy
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the input policyType isn't valid
+	 */
+	public PolicyReference(URI reference, int policyType, PolicyFinder finder, PolicyMetaData parentMetaData) throws IllegalArgumentException
+	{
+		this(reference, policyType, new VersionConstraints(null, null, null), finder, parentMetaData);
+	}
 
-        // check if input policyType is a valid value
-        if ((policyType != POLICY_REFERENCE) && 
-            (policyType != POLICYSET_REFERENCE))
-            throw new IllegalArgumentException("Input policyType is not a" +
-                                               "valid value");
+	/**
+	 * Creates a new <code>PolicyReference</code> instance with version constraints. Note that an
+	 * XACML 1.x reference may not have any constraints.
+	 * 
+	 * @param reference
+	 *            the reference to the policy
+	 * @param policyType
+	 *            one of the two fields in this class
+	 * @param constraints
+	 *            any optional constraints on the version of the referenced policy (this is never
+	 *            null, but it may impose no constraints, and in fact will never impose constraints
+	 *            when used from a pre-2.0 XACML policy)
+	 * @param finder
+	 *            the <code>PolicyFinder</code> used to handle the reference
+	 * @param parentMetaData
+	 *            the meta-data associated with the containing (parent) policy
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the input policyType isn't valid
+	 */
+	public PolicyReference(URI reference, int policyType, VersionConstraints constraints, PolicyFinder finder, PolicyMetaData parentMetaData)
+			throws IllegalArgumentException
+	{
 
-        this.reference = reference;
-        this.policyType = policyType;
-        this.constraints = constraints;
-        this.finder = finder;
-        this.parentMetaData = parentMetaData;
-    }
+		// check if input policyType is a valid value
+		if ((policyType != POLICY_REFERENCE) && (policyType != POLICYSET_REFERENCE))
+			throw new IllegalArgumentException("Input policyType is not a" + "valid value");
 
-    /**
-     * Creates an instance of a <code>PolicyReference</code> object based on
-     * a DOM node.
-     *
-     * @deprecated As of 2.0 you should avoid using this method and should
-     *             instead use the version that takes a
-     *             <code>PolicyMetaData</code> instance. This method will
-     *             only work for XACML 1.x policies.
-     *
-     * @param root the DOM root of a PolicyIdReference or a 
-     *             PolicySetIdReference XML type
-     * @param finder the <code>PolicyFinder</code> used to handle the reference
-     *
-     * @exception ParsingException if the node is invalid
-     */
-    public static PolicyReference getInstance(Node root, PolicyFinder finder)
-        throws ParsingException
-    {
-        return getInstance(root, finder, new PolicyMetaData());
-    }
+		this.reference = reference;
+		this.policyType = policyType;
+		this.constraints = constraints;
+		this.finder = finder;
+		this.parentMetaData = parentMetaData;
+	}
 
-    /**
-     * Creates an instance of a <code>PolicyReference</code> object based on
-     * a DOM node.
-     *
-     * @param root the DOM root of a PolicyIdReference or a 
-     *             PolicySetIdReference XML type
-     * @param finder the <code>PolicyFinder</code> used to handle the reference
-     * @param metaData the meta-data associated with the containing policy
-     *
-     * @exception ParsingException if the node is invalid
-     */
-    public static PolicyReference getInstance(Node root, PolicyFinder finder,
-                                              PolicyMetaData metaData)
-        throws ParsingException
-    {
-        URI reference = null;
-        int policyType;
-        
-        // see what type of reference we are
-        String name = root.getNodeName();
-        if (name.equals("PolicyIdReference")) {
-            policyType = POLICY_REFERENCE;
-        } else if (name.equals("PolicySetIdReference")) {
-            policyType = POLICYSET_REFERENCE;
-        } else {
-            throw new ParsingException("Unknown reference type: " + name);
-        }
+	/**
+	 * Creates an instance of a <code>PolicyReference</code> object based on a DOM node.
+	 * 
+	 * @deprecated As of 2.0 you should avoid using this method and should instead use the version
+	 *             that takes a <code>PolicyMetaData</code> instance. This method will only work for
+	 *             XACML 1.x policies.
+	 * 
+	 * @param root
+	 *            the DOM root of a PolicyIdReference or a PolicySetIdReference XML type
+	 * @param finder
+	 *            the <code>PolicyFinder</code> used to handle the reference
+	 * 
+	 * @exception ParsingException
+	 *                if the node is invalid
+	 */
+	public static PolicyReference getInstance(Node root, PolicyFinder finder) throws ParsingException
+	{
+		return getInstance(root, finder, new PolicyMetaData());
+	}
 
-        // next get the reference
-        try {
-            reference = new URI(root.getFirstChild().getNodeValue());
-        } catch (Exception e) {
-            throw new ParsingException("Invalid URI in Reference", e);
-        }
+	/**
+	 * Creates an instance of a <code>PolicyReference</code> object based on a DOM node.
+	 * 
+	 * @param root
+	 *            the DOM root of a PolicyIdReference or a PolicySetIdReference XML type
+	 * @param finder
+	 *            the <code>PolicyFinder</code> used to handle the reference
+	 * @param metaData
+	 *            the meta-data associated with the containing policy
+	 * 
+	 * @exception ParsingException
+	 *                if the node is invalid
+	 */
+	public static PolicyReference getInstance(Node root, PolicyFinder finder, PolicyMetaData metaData) throws ParsingException
+	{
+		URI reference = null;
+		int policyType;
 
-        // now get any constraints
-        NamedNodeMap map = root.getAttributes();
+		// see what type of reference we are
+		String name = root.getNodeName();
+		if (name.equals("PolicyIdReference"))
+		{
+			policyType = POLICY_REFERENCE;
+		} else if (name.equals("PolicySetIdReference"))
+		{
+			policyType = POLICYSET_REFERENCE;
+		} else
+		{
+			throw new ParsingException("Unknown reference type: " + name);
+		}
 
-        String versionConstraint = null;
-        Node versionNode = map.getNamedItem("Version");
-        if (versionNode != null)
-            versionConstraint = versionNode.getNodeValue();
+		// next get the reference
+		try
+		{
+			reference = new URI(root.getFirstChild().getNodeValue());
+		} catch (Exception e)
+		{
+			throw new ParsingException("Invalid URI in Reference", e);
+		}
 
-        String earlyConstraint = null;
-        Node earlyNode = map.getNamedItem("EarliestVersion");
-        if (earlyNode != null)
-            earlyConstraint = earlyNode.getNodeValue();
+		// now get any constraints
+		NamedNodeMap map = root.getAttributes();
 
-        String lateConstraint = null;
-        Node lateNode = map.getNamedItem("LatestVersion");
-        if (lateNode != null)
-            lateConstraint = lateNode.getNodeValue();
+		String versionConstraint = null;
+		Node versionNode = map.getNamedItem("Version");
+		if (versionNode != null)
+			versionConstraint = versionNode.getNodeValue();
 
-        VersionConstraints constraints =
-            new VersionConstraints(versionConstraint, earlyConstraint,
-                                   lateConstraint);
+		String earlyConstraint = null;
+		Node earlyNode = map.getNamedItem("EarliestVersion");
+		if (earlyNode != null)
+			earlyConstraint = earlyNode.getNodeValue();
 
-        // finally, create the reference
-        return new PolicyReference(reference, policyType, constraints, finder,
-                                   metaData);
-    }
+		String lateConstraint = null;
+		Node lateNode = map.getNamedItem("LatestVersion");
+		if (lateNode != null)
+			lateConstraint = lateNode.getNodeValue();
 
-    /**
-     * Returns the refernce identitfier used to resolve the policy.
-     *
-     * @return the reference <code>URI</code>
-     */
-    public URI getReference() {
-        return reference;
-    }
+		VersionConstraints constraints = new VersionConstraints(versionConstraint, earlyConstraint, lateConstraint);
 
-    /**
-     * Returns the version constraints associated with this reference. This
-     * will never be null, though the constraints may be empty.
-     *
-     * @return the version constraints
-     */
-    public VersionConstraints getConstraints() {
-        return constraints;
-    }
+		// finally, create the reference
+		return new PolicyReference(reference, policyType, constraints, finder, metaData);
+	}
 
-    /**
-     * Returns whether this is a reference to a policy or to a policy set.
-     *
-     * @return the reference type, either <code>POLICY_REFERENCE</code>
-     *         or <code>POLICYSET_REFERENCE</code>
-     */
-    public int getReferenceType() {
-        return POLICY_REFERENCE;
-    }
+	/**
+	 * Returns the refernce identitfier used to resolve the policy.
+	 * 
+	 * @return the reference <code>URI</code>
+	 */
+	public URI getReference()
+	{
+		return reference;
+	}
 
-    /**
-     * Returns the id of this policy. If the policy is invalid or can't be
-     * retrieved, then a runtime exception is thrown.
-     *
-     * @return the policy id
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public String getId() {
-        return resolvePolicy().getPolicyId();
-    }
+	/**
+	 * Returns the version constraints associated with this reference. This will never be null,
+	 * though the constraints may be empty.
+	 * 
+	 * @return the version constraints
+	 */
+	public VersionConstraints getConstraints()
+	{
+		return constraints;
+	}
 
-    /**
-     * Returns the version of this policy. If the policy is invalid or can't
-     * be retrieved, then a runtime exception is thrown.
-     *
-     * @return the policy version
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public String getVersion() {
-        return resolvePolicy().getVersion();
-    }
+	/**
+	 * Returns whether this is a reference to a policy or to a policy set.
+	 * 
+	 * @return the reference type, either <code>POLICY_REFERENCE</code> or
+	 *         <code>POLICYSET_REFERENCE</code>
+	 */
+	public int getReferenceType()
+	{
+		return POLICY_REFERENCE;
+	}
 
-    /**
-     * Returns the combining algorithm used by this policy. If the policy is
-     * invalid or can't be retrieved, then a runtime exception is thrown.
-     *
-     * @return the combining algorithm
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public CombiningAlgorithm getCombiningAlg() {
-        return resolvePolicy().getRuleCombiningAlg();
-    }
+	/**
+	 * Returns the id of this policy. If the policy is invalid or can't be retrieved, then a runtime
+	 * exception is thrown.
+	 * 
+	 * @return the policy id
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public String getId()
+	{
+		return resolvePolicy().getPolicyId();
+	}
 
-    /**
-     * Returns the given description of this policy or null if there is no
-     * description. If the policy is invalid or can't be retrieved, then a
-     * runtime exception is thrown.
-     *
-     * @return the description or null
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public String getDescription() {
-        return resolvePolicy().getDescription();
-    }
+	/**
+	 * Returns the version of this policy. If the policy is invalid or can't be retrieved, then a
+	 * runtime exception is thrown.
+	 * 
+	 * @return the policy version
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public String getVersion()
+	{
+		return resolvePolicy().getVersion();
+	}
 
-    /**
-     * Returns the target for this policy. If the policy is invalid or can't be
-     * retrieved, then a runtime exception is thrown.
-     *
-     * @return the policy's target
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget() {
-        return resolvePolicy().getTarget();
-    }
+	/**
+	 * Returns the combining algorithm used by this policy. If the policy is invalid or can't be
+	 * retrieved, then a runtime exception is thrown.
+	 * 
+	 * @return the combining algorithm
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public CombiningAlgorithm getCombiningAlg()
+	{
+		return resolvePolicy().getRuleCombiningAlg();
+	}
 
-    /**
-     * Returns the default version for this policy. If the policy is 
-     * invalid or can't be retrieved, then a runtime exception is thrown.
-     *
-     * @return the policy's default version
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public String getDefaultVersion() {
-        return resolvePolicy().getVersion();
-    }
+	/**
+	 * Returns the given description of this policy or null if there is no description. If the
+	 * policy is invalid or can't be retrieved, then a runtime exception is thrown.
+	 * 
+	 * @return the description or null
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public String getDescription()
+	{
+		return resolvePolicy().getDescription();
+	}
 
-    /**
-     * Returns the child policy nodes under this node in the policy tree. If
-     * the policy is invalid or can't be retrieved, then a runtime exception
-     * is thrown.
-     *
-     * @return the <code>List</code> of child policy nodes
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public List getChildren() {
-        return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
-    }
+	/**
+	 * Returns the target for this policy. If the policy is invalid or can't be retrieved, then a
+	 * runtime exception is thrown.
+	 * 
+	 * @return the policy's target
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget()
+	{
+		return resolvePolicy().getTarget();
+	}
 
-    /**
-     * Returns the child policy nodes and their associated parameters. If
-     * the policy is invalid or can't be retrieved, then a runtime exception
-     * is thrown.
-     *
-     * @return a <code>List</code> of <code>CombinerElement</code>s
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public List getChildElements() {
-        return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
-    }
+	/**
+	 * Returns the default version for this policy. If the policy is invalid or can't be retrieved,
+	 * then a runtime exception is thrown.
+	 * 
+	 * @return the policy's default version
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public String getDefaultVersion()
+	{
+		return resolvePolicy().getVersion();
+	}
 
-    /**
-     * Returns the Set of obligations for this policy, which may be empty if 
-     * there are no obligations. If the policy is invalid or can't be 
-     * retrieved, then a runtime exception is thrown.
-     *
-     * @return the policy's obligations
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public ObligationExpressions getObligations() {
-        return resolvePolicy().getObligationExpressions();
-    }
+	/**
+	 * Returns the child policy nodes under this node in the policy tree. If the policy is invalid
+	 * or can't be retrieved, then a runtime exception is thrown.
+	 * 
+	 * @return the <code>List</code> of child policy nodes
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public List getChildren()
+	{
+		return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
+	}
 
-    /**
-     * Returns the meta-data associated with this policy. If the policy is
-     * invalid or can't be retrieved, then a runtime exception is thrown.
-     * Note that this is the meta-data for the referenced policy, not the
-     * meta-data for the parent policy (which is what gets provided to the
-     * constructors of this class).
-     *
-     * @return the policy's meta-data
-     *
-     * @throws ProcessingException if the referenced policy can't be retrieved
-     */
-    public PolicyMetaData getMetaData() {
-        return resolvePolicy().getMetaData();
-    }
+	/**
+	 * Returns the child policy nodes and their associated parameters. If the policy is invalid or
+	 * can't be retrieved, then a runtime exception is thrown.
+	 * 
+	 * @return a <code>List</code> of <code>CombinerElement</code>s
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public List getChildElements()
+	{
+		return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
+	}
 
-    /**
-     * Given the input context sees whether or not the request matches this
-     * policy. This must be called by combining algorithms before they
-     * evaluate a policy. This is also used in the initial policy finding
-     * operation to determine which top-level policies might apply to the
-     * request. If the policy is invalid or can't be retrieved, then a
-     * runtime exception is thrown.
-     *
-     * @param context the representation of the request
-     *
-     * @return the result of trying to match the policy and the request
-     */
-    public MatchResult match(EvaluationCtx context) {
-        try {
-            return ((Target)getTarget()).match(context);
-        } catch (ProcessingException pe) {
-            // this means that we couldn't resolve the policy
-            ArrayList code = new ArrayList();
-            code.add(Status.STATUS_PROCESSING_ERROR);
-            Status status = new Status(code, "couldn't resolve policy ref");
-            return new MatchResult(MatchResult.INDETERMINATE, status);
-        }
-    }
+	/**
+	 * Returns the Set of obligations for this policy, which may be empty if there are no
+	 * obligations. If the policy is invalid or can't be retrieved, then a runtime exception is
+	 * thrown.
+	 * 
+	 * @return the policy's obligations
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public ObligationExpressions getObligations()
+	{
+		return resolvePolicy().getObligationExpressions();
+	}
 
-    /**
-     * Private helper method that tried to resolve the policy
-     */
-    private Policy resolvePolicy() {
-        // see if this reference was setup with a finder
-        if (finder == null) {
-            if (logger.isLoggable(Level.WARNING))
-                logger.warning("PolicyReference with id " +
-                               reference.toString() + " was queried but was " +
-                               "not configured with a PolicyFinder");
+	/**
+	 * Returns the meta-data associated with this policy. If the policy is invalid or can't be
+	 * retrieved, then a runtime exception is thrown. Note that this is the meta-data for the
+	 * referenced policy, not the meta-data for the parent policy (which is what gets provided to
+	 * the constructors of this class).
+	 * 
+	 * @return the policy's meta-data
+	 * 
+	 * @throws ProcessingException
+	 *             if the referenced policy can't be retrieved
+	 */
+	public PolicyMetaData getMetaData()
+	{
+		return resolvePolicy().getMetaData();
+	}
 
-            throw new ProcessingException("couldn't find the policy with " +
-                                          "a null finder");
-        }
+	/**
+	 * Given the input context sees whether or not the request matches this policy. This must be
+	 * called by combining algorithms before they evaluate a policy. This is also used in the
+	 * initial policy finding operation to determine which top-level policies might apply to the
+	 * request. If the policy is invalid or can't be retrieved, then a runtime exception is thrown.
+	 * 
+	 * @param context
+	 *            the representation of the request
+	 * 
+	 * @return the result of trying to match the policy and the request
+	 */
+	public MatchResult match(EvaluationCtx context)
+	{
+		try
+		{
+			return ((Target) getTarget()).match(context);
+		} catch (ProcessingException pe)
+		{
+			// this means that we couldn't resolve the policy
+			ArrayList code = new ArrayList();
+			code.add(Status.STATUS_PROCESSING_ERROR);
+			Status status = new Status(code, "couldn't resolve policy ref");
+			return new MatchResult(MatchResult.INDETERMINATE, status);
+		}
+	}
 
-        PolicyFinderResult pfr =
-            finder.findPolicy(reference, policyType, constraints,
-                              parentMetaData);
-        
-        if (pfr.notApplicable())
-            throw new ProcessingException("couldn't resolve the policy");
-        
-        if (pfr.indeterminate())
-            throw new ProcessingException("error resolving the policy");
+	/**
+	 * Private helper method that tried to resolve the policy
+	 */
+	private Policy resolvePolicy()
+	{
+		// see if this reference was setup with a finder
+		if (finder == null)
+		{
+			LOGGER.warn("PolicyReference with id {} was queried but was not configured with a PolicyFinder", reference);
+			throw new ProcessingException("couldn't find the policy with " + "a null finder");
+		}
 
-        return pfr.getPolicy();
-    }
+		PolicyFinderResult pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
 
-    /**
-     * Tries to evaluate the policy by calling the combining algorithm on
-     * the given policies or rules. The <code>match</code> method must always
-     * be called first, and must always return MATCH, before this method
-     * is called.
-     *
-     * @param context the representation of the request
-     *
-     * @return the result of evaluation
-     */
-    public Result evaluate(EvaluationCtx context) {
-        // if there is no finder, then we return NotApplicable
-        if (finder == null)
-            return new Result(DecisionType.NOT_APPLICABLE,
-                              context.getResourceId().encode());
+		if (pfr.notApplicable())
+			throw new ProcessingException("couldn't resolve the policy");
 
-        PolicyFinderResult pfr = finder.findPolicy(reference, policyType,
-                                                   constraints,
-                                                   parentMetaData);
+		if (pfr.indeterminate())
+			throw new ProcessingException("error resolving the policy");
 
-        // if we found nothing, then we return NotApplicable
-        if (pfr.notApplicable())
-            return new Result(DecisionType.NOT_APPLICABLE,
-                              context.getResourceId().encode());
+		return pfr.getPolicy();
+	}
 
-        // if there was an error, we return that status data
-        if (pfr.indeterminate())
-            return new Result(DecisionType.INDETERMINATE, pfr.getStatus(),
-                              context.getResourceId().encode());
+	/**
+	 * Tries to evaluate the policy by calling the combining algorithm on the given policies or
+	 * rules. The <code>match</code> method must always be called first, and must always return
+	 * MATCH, before this method is called.
+	 * 
+	 * @param context
+	 *            the representation of the request
+	 * 
+	 * @return the result of evaluation
+	 */
+	public Result evaluate(EvaluationCtx context)
+	{
+		// if there is no finder, then we return NotApplicable
+		if (finder == null)
+			return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
 
-        // we must have found a policy
-        return pfr.getPolicy().evaluate(context);
-    }
+		PolicyFinderResult pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
 
-    /**
-     * Encodes this <code>PolicyReference</code> into its XML representation
-     * and writes this encoding to the given <code>OutputStream</code> with
-     * no indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     */
-    public void encode(OutputStream output) {
-        encode(output, new Indenter(0));
-    }
+		// if we found nothing, then we return NotApplicable
+		if (pfr.notApplicable())
+			return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
 
-    /**
-     * Encodes this <code>PolicyReference</code> into its XML representation
-     * and writes this encoding to the given <code>OutputStream</code> with
-     * indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     * @param indenter an object that creates indentation strings
-     */
-    public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        String encoded = indenter.makeString();
+		// if there was an error, we return that status data
+		if (pfr.indeterminate())
+			return new Result(DecisionType.INDETERMINATE, pfr.getStatus(), context.getResourceId().encode());
 
-        if (policyType == POLICY_REFERENCE) {
-            out.println(encoded + "<PolicyIdReference" + encodeConstraints() +
-                        ">" + reference.toString() + "</PolicyIdReference>");
-        } else {
-            out.println(encoded + "<PolicySetIdReference" +
-                        encodeConstraints() + ">" + reference.toString() +
-                        "</PolicySetIdReference>");
-        }
-    }
+		// we must have found a policy
+		return pfr.getPolicy().evaluate(context);
+	}
 
-    /**
-     * Private helper method that encodes the variable constraints info. Note
-     * that if this is a pre-2.0 policy the constraints are always null, so
-     * nothing will be added here.
-     */
-    private String encodeConstraints() {
-        String str = "";
-        VersionConstraints version = getConstraints();
+	/**
+	 * Encodes this <code>PolicyReference</code> into its XML representation and writes this
+	 * encoding to the given <code>OutputStream</code> with no indentation.
+	 * 
+	 * @param output
+	 *            a stream into which the XML-encoded data is written
+	 */
+	public void encode(OutputStream output)
+	{
+		encode(output, new Indenter(0));
+	}
 
-        String v = version.getVersionConstraint();
-        if (v != null)
-            str += " Version=\"" + v + "\"";
+	/**
+	 * Encodes this <code>PolicyReference</code> into its XML representation and writes this
+	 * encoding to the given <code>OutputStream</code> with indentation.
+	 * 
+	 * @param output
+	 *            a stream into which the XML-encoded data is written
+	 * @param indenter
+	 *            an object that creates indentation strings
+	 */
+	public void encode(OutputStream output, Indenter indenter)
+	{
+		PrintStream out = new PrintStream(output);
+		String encoded = indenter.makeString();
 
-        String e = version.getEarliestConstraint();
-        if (e != null)
-            str += " EarliestVersion=\"" + e + "\"";
+		if (policyType == POLICY_REFERENCE)
+		{
+			out.println(encoded + "<PolicyIdReference" + encodeConstraints() + ">" + reference.toString() + "</PolicyIdReference>");
+		} else
+		{
+			out.println(encoded + "<PolicySetIdReference" + encodeConstraints() + ">" + reference.toString() + "</PolicySetIdReference>");
+		}
+	}
 
-        String l = version.getLatestConstraint();
-        if (l != null)
-            str += " LatestVersion=\"" + l + "\"";
+	/**
+	 * Private helper method that encodes the variable constraints info. Note that if this is a
+	 * pre-2.0 policy the constraints are always null, so nothing will be added here.
+	 */
+	private String encodeConstraints()
+	{
+		String str = "";
+		VersionConstraints version = getConstraints();
 
-        return str;
-    }
+		String v = version.getVersionConstraint();
+		if (v != null)
+			str += " Version=\"" + v + "\"";
+
+		String e = version.getEarliestConstraint();
+		if (e != null)
+			str += " EarliestVersion=\"" + e + "\"";
+
+		String l = version.getLatestConstraint();
+		if (l != null)
+			str += " LatestVersion=\"" + l + "\"";
+
+		return str;
+	}
 
 }

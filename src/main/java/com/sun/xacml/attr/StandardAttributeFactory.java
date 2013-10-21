@@ -57,7 +57,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -92,9 +93,9 @@ public class StandardAttributeFactory extends BaseAttributeFactory
     private static Set supportedV1Identifiers;
     private static Set supportedV2Identifiers;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(StandardAttributeFactory.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(StandardAttributeFactory.class);
 
     /**
      * Private constructor that sets up proxies for all of the standard
@@ -109,7 +110,7 @@ public class StandardAttributeFactory extends BaseAttributeFactory
      * until something needs these values, and is only called once.
      */
     private static void initDatatypes() {
-        logger.config("Initializing standard datatypes");
+        LOGGER.info("Initializing standard datatypes");
 
         supportedDatatypes = new HashMap();
 

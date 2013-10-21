@@ -203,7 +203,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 
 		// make sure we were given an xpath version
 		if (xpathVersion == null)
-			throw new ParsingException("An XPathVersion is required for " + "any policies that use selectors");
+			throw new ParsingException("An XPathVersion is required for any policies that use selectors");
 
 		NamedNodeMap attrs = root.getAttributes();
 
@@ -213,7 +213,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 			type = new URI(attrs.getNamedItem("DataType").getNodeValue());
 		} catch (Exception e)
 		{
-			throw new ParsingException("Error parsing required DataType " + "attribute in AttributeSelector", e);
+			throw new ParsingException("Error parsing required DataType attribute in AttributeSelector", e);
 		}
 
 		try
@@ -366,10 +366,8 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 				if (mustBePresent)
 				{
 					// this is an error
-					if (LOGGER.isInfoEnabled()) {
-						LOGGER.info("AttributeSelector failed to resolve a " + "value for a required attribute: {} ", contextPath);
-					}
-					
+					LOGGER.info("AttributeSelector failed to resolve a value for a required attribute: {} ", contextPath);
+
 					ArrayList code = new ArrayList();
 					code.add(Status.STATUS_MISSING_ATTRIBUTE);
 					String message = "couldn't resolve XPath expression " + contextPath + " for type " + type.toString();

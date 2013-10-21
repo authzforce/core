@@ -100,7 +100,7 @@ public class StaticPolicyFinderModule extends PolicyFinderModule {
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(StaticPolicyFinderModule.class.getName());
+			.getLogger(StaticPolicyFinderModule.class);
 
 	static {
 		try {

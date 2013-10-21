@@ -82,7 +82,7 @@ public class URLPolicyFinderModule extends PolicyFinderModule
 
     // the LOGGER we'll use for all messages
     private static final Logger LOGGER =
-        LoggerFactory.getLogger(URLPolicyFinderModule.class.getName());
+        LoggerFactory.getLogger(URLPolicyFinderModule.class);
 
     /**
      * Creates a <code>URLPolicyFinderModule</code>. The schema file used

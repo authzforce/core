@@ -40,16 +40,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -60,10 +59,8 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderResult;
-import com.thalesgroup.authzforce.audit.AuditLogs;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * This is the core class for the XACML engine, providing the starting point for
@@ -88,7 +85,7 @@ public class PDP {
 //	private static final Logger OLD_LOGGER = Logger.getLogger(PDP.class
 //			.getName());
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(PDP.class.getName());
+			.getLogger(PDP.class);
 
 	private static CacheManager cacheManager;
 

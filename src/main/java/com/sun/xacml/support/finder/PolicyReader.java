@@ -126,7 +126,7 @@ public class PolicyReader implements ErrorHandler
 	 */
 	public PolicyReader(File schemaFile, PolicyFinder finder)
 	{
-		this.logger = LoggerFactory.getLogger(PolicyReader.class.getName());
+		this.logger = LoggerFactory.getLogger(PolicyReader.class);
 		this.finder = finder;
 
 		// create the factory

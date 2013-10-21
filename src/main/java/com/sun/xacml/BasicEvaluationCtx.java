@@ -372,7 +372,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			} else if (value.equals("Descendants")) {
 				scope = SCOPE_DESCENDANTS;
 			} else {
-				LOGGER.error("Unknown scope type: " + value);
+				LOGGER.error("Unknown scope type: {}", value);
 				throw new ParsingException("invalid scope type: " + value);
 			}
 		} else {
@@ -780,8 +780,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		if (attributeValues.size() == 0) {
 			// we failed to find any that matched the type/issuer, or all the
 			// Attribute types were empty...so ask the finder
-			LOGGER.debug("Attribute not in request: " + id.toString()
-					+ " ... querying AttributeFinder");
+			LOGGER.debug("Attribute not in request: {} ... querying AttributeFinder", id);
 
 			/*
 			 * Code Updated [romain.guignard[at]thalesgroup.com] Allow to store

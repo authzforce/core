@@ -243,14 +243,14 @@ public class ConfigurationStore
             // putting the new element into the respective map...make sure
             // that we're never loading something with the same name twice
             if (childName.equals("pdp")) {
-                    LOGGER.info("Loading PDP: " + elementName);
+                    LOGGER.info("Loading PDP: {}", elementName);
                 if (pdpConfigMap.containsKey(elementName)) {
                     throw new ParsingException("more that one pdp with " +
                                                "name \"" + elementName +"\"");
                 }
                 pdpConfigMap.put(elementName, parsePDPConfig(child));
             } else if (childName.equals("attributeFactory")) {
-                    LOGGER.info("Loading AttributeFactory: " + elementName);
+                    LOGGER.info("Loading AttributeFactory: {}", elementName);
                 if (attributeMap.containsKey(elementName)) {
                     throw new ParsingException("more that one " +
                                                "attributeFactory with name " +
@@ -258,7 +258,7 @@ public class ConfigurationStore
                 }
                 attributeMap.put(elementName, parseAttributeFactory(child));
             } else if (childName.equals("combiningAlgFactory")) {
-                    LOGGER.info("Loading CombiningAlgFactory: " +
+                    LOGGER.info("Loading CombiningAlgFactory: {}",
                                   elementName);
                 if (combiningMap.containsKey(elementName)) {
                     throw new ParsingException("more that one " +
@@ -267,7 +267,7 @@ public class ConfigurationStore
                 }
                 combiningMap.put(elementName, parseCombiningAlgFactory(child));
             } else if (childName.equals("functionFactory")) {
-                    LOGGER.info("Loading FunctionFactory: " + elementName);
+                    LOGGER.info("Loading FunctionFactory: {}", elementName);
                 if (functionMap.containsKey(elementName)) {
                     throw new ParsingException("more that one functionFactory"
                                                + " with name \"" +
@@ -619,7 +619,7 @@ public class ConfigurationStore
         // get the name of the class
         String className = root.getAttributes().getNamedItem("class").getNodeValue();
 
-            LOGGER.info("Loading [ " + prefix + ": " + className + " ]");
+            LOGGER.info("Loading [ {}: {} ]", prefix, className);
 
         // load the given class using the local classloader
         Class c = null;
@@ -1030,9 +1030,8 @@ public class ConfigurationStore
             try {
                 CombiningAlgFactory.registerFactory(id, new CAFProxy(cf));
             } catch (IllegalArgumentException iae) {
-                LOGGER.warn("Couldn't register " +
-                           "CombiningAlgFactory: " + id + " (already in use)",
-                           iae);
+                LOGGER.warn("Couldn't register CombiningAlgFactory: {} (already in use)",
+                           id, iae);
             }
         }
     }

@@ -97,10 +97,7 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 	// if we're a subject this is the category
 //	private URI category;
 
-	// the logger we'll use for all messages
-	private static final Logger logger = LoggerFactory
-			.getLogger(AttributeDesignator.class.getName());
-
+	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeDesignator.class);
 
 	/**
@@ -443,7 +440,7 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 		if (bag.isEmpty()) {
 			// if it's empty, this may be an error
 			if (mustBePresent) {
-					logger.info("AttributeDesignator failed to resolve a "
+					LOGGER.info("AttributeDesignator failed to resolve a "
 							+ "value for a required attribute: "
 							+ this.getId().toASCIIString());
 

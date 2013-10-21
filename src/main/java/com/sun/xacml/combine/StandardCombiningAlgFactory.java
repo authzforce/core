@@ -36,7 +36,9 @@ package com.sun.xacml.combine;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
@@ -73,9 +75,9 @@ public class StandardCombiningAlgFactory extends BaseCombiningAlgFactory
     // identifiers for the supported algorithms
     private static Set supportedAlgIds;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(StandardCombiningAlgFactory.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(StandardCombiningAlgFactory.class);
 
     /**
      * Default constructor.
@@ -89,7 +91,7 @@ public class StandardCombiningAlgFactory extends BaseCombiningAlgFactory
      * until something needs these values, and is only called once.
      */
     private static void initAlgorithms() {
-        logger.config("Initializing standard combining algorithms");
+        LOGGER.info("Initializing standard combining algorithms");
 
         supportedAlgorithms = new HashSet();
         supportedAlgIds = new HashSet();

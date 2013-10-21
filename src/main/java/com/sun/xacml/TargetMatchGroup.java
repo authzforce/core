@@ -41,13 +41,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 
 /**
@@ -67,9 +64,9 @@ public class TargetMatchGroup
     // the match type contained in this group
     private int matchType;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(Target.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(Target.class);
 
     /**
      * Constructor that creates a new <code>TargetMatchGroup</code> based
