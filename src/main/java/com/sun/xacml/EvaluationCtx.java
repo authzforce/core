@@ -303,4 +303,36 @@ public interface EvaluationCtx {
 	 * @return version the type of xacml standard used (1.0, 1.1, 2.0 or 3.0)
 	 */
 	public int getVersion();
+	
+	/**
+	 * Get custom property
+	 * @see java.util.Map#get(Object)
+	 * @param key 
+	 * @return property
+	 */
+	public Object get(String key); 
+	
+	/**
+	 * Check whether custom property is in the context
+	 * @see java.util.Map#containsKey(Object)
+	 * @param key
+	 * @return true if and only if key exists in updatable property keys
+	 */
+	public boolean containsKey(String key); 
+	
+	/**
+	 * Puts custom property in the context
+	 * @see java.util.Map#put(Object, Object)
+	 * @param key
+	 * @param val
+	 */
+	public void put(String key, Object val);
+	
+	/**
+	 * Removes custom property from the context
+	 * @see java.util.Map#remove(Object)
+	 * @param key
+	 * @return the previous value associated with key, or null if there was no mapping for key.
+	 */
+	public Object remove(String key);
 }

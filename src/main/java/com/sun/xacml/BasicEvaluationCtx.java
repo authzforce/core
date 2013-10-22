@@ -67,7 +67,6 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinder;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * A basic implementation of <code>EvaluationCtx</code> that is created from an
@@ -283,7 +282,10 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 			throw new ParsingException("Request must a contain subject");
 		}
 		/*
-		 * FIXME: RF; Cyril: SubjectCategory is fixed, cannot handle multiple subjects (different categories), 'subject' variable not used
+		 * FIXME: RF; Cyril: SubjectCategory is fixed, cannot handle multiple subjects (different categories), 'subject' variable not used.
+		 * Fix alternatives:
+		 * 1) Every category different from the resource/action/environment category is a subject category
+		 * 2) Extra/custom subject categories have to be defined as parameters to PDP initialization.
 		 */
 		// now go through the subject attributes
 		for (Attribute subject : subjects) {		
@@ -652,6 +654,9 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		if (map == null) {
 			// the request didn't have that category, so we should try asking
 			// the attribute finder
+			/*
+			 * FIXME: the result is not added to the subjectMap. So it will be called again for all attributes of subject in this category. Optimize this.
+			 */
 			return callHelper(type, id, issuer, category,
 					AttributeDesignator.SUBJECT_TARGET);
 		}
@@ -897,5 +902,31 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 
 	public int getVersion() {
 		return version;
+	}
+	
+	private Map<String, Object> updatableProperties = new HashMap<String, Object>();
+
+	@Override
+	public Object get(String key)
+	{
+		return updatableProperties.get(key);
+	}
+
+	@Override
+	public boolean containsKey(String key)
+	{
+		return updatableProperties.containsKey(key);
+	}
+
+	@Override
+	public void put(String key, Object val)
+	{
+		updatableProperties.put(key, val);
+	}
+
+	@Override
+	public Object remove(String key)
+	{
+		return updatableProperties.remove(key);
 	}
 }

@@ -78,7 +78,7 @@ import com.sun.xacml.xacmlv3.Target;
  * @author Marco Barreno
  */
 public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet {
-
+	
 	// atributes associated with this policy
 	// private URI idAttr;
 	// private String version;
@@ -279,7 +279,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		// ...and make sure it's the right kind
 		if (policyPrefix.equals("PolicySet")) {
 			if (!(combiningAlg instanceof PolicyCombiningAlgorithm))
-				throw new ParsingException("PolicySet must use a Policy "
+				throw new ParsingException("PolicySet (id=" + this.policySetId + ") must use a Policy "
 						+ "Combining Algorithm");
 		}
 
@@ -352,9 +352,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			if (node.getNodeName().equals("ObligationExpression")) {
 				JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions> match = null;
 				try {
-					JAXBContext jc = JAXBContext
-							.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-					Unmarshaller u = jc.createUnmarshaller();
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 					match = u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions.class);
 					obligationExpressions = match.getValue();
 				} catch (Exception e) {
@@ -556,6 +554,8 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	}
 
 	/**
+	 * FIXME: remove this method since PolicySet cannot have Rules as children, and this seems not to be used by anyone.
+	 * 
 	 * Sets the child policy tree elements for this node, which are passed to
 	 * the combining algorithm on evaluation. The <code>List</code> must contain
 	 * <code>CombinerElement</code>s, which in turn will contain
