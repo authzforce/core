@@ -96,7 +96,7 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	private static oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf unmarshallAllOfType(Node root) {
 		final JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> allOf;
 		try {
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 			allOf = u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf.class);
 			return allOf.getValue();
 		} catch (Exception e) {

@@ -1,11 +1,8 @@
 package com.thalesgroup.authzforce.pdp.core.test.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -126,13 +123,12 @@ public class TestUtils
 		return marshallResponseType(doc);
 	}
 
-	@SuppressWarnings("unchecked")
 	private static Request marshallRequestType(Node root)
 	{
 		Request request = null;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 			JAXBElement<Request> jaxbElt = u.unmarshal(root, Request.class);
 			request = jaxbElt.getValue();
 		} catch (Exception e)
@@ -143,13 +139,12 @@ public class TestUtils
 		return request;
 	}
 
-	@SuppressWarnings("unchecked")
 	private static Response marshallResponseType(Node root)
 	{
 		Response allOf = null;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 			allOf = (Response) u.unmarshal(root);
 		} catch (Exception e)
 		{
@@ -164,7 +159,7 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(request, writer);
 		} catch (Exception e)
 		{
@@ -179,7 +174,7 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(response, writer);
 		} catch (Exception e)
 		{
@@ -342,7 +337,7 @@ public class TestUtils
 
 		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
 				policyLocations);
-		Set<PolicyFinderModule> policyModules = new HashSet<PolicyFinderModule>();
+		List<PolicyFinderModule> policyModules = new ArrayList<PolicyFinderModule>();
 		policyModules.add(testPolicyFinderModule);
 		finder.setModules(policyModules);
 

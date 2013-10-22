@@ -53,11 +53,11 @@ public class BindingUtility {
 	/**
 	 * JAXB context for (un)marshalling from/to JAXB objects derived from XACML 3.0 schema
 	 */	
-    public static final JAXBContext XACML30_JAXB_CONTEXT;
+    public static final JAXBContext XACML3_0_JAXB_CONTEXT;
     static {
     	try
 		{
-			XACML30_JAXB_CONTEXT = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17", BindingUtility.class.getClassLoader());
+			XACML3_0_JAXB_CONTEXT = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17", BindingUtility.class.getClassLoader());
 		} catch (JAXBException e)
 		{
 			throw new RuntimeException("Error instantiating JAXB context for (un)marshalling from/to XACML 3.0 objects", e);

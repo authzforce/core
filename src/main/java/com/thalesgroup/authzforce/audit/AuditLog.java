@@ -205,7 +205,7 @@ public class AuditLog
 		final StringWriter sw = new StringWriter();
 		try
 		{
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(request, sw);
 			result = sw.toString();
 		} catch (Exception e)

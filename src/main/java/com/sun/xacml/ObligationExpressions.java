@@ -58,7 +58,7 @@ public class ObligationExpressions extends oasis.names.tc.xacml._3_0.core.schema
 			if (node.getNodeName().equals("ObligationExpression")) {
 				final JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions> match;
 				try {
-					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 					match =  u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions.class);
 					obligationExpressions = match.getValue();
 				} catch (Exception e) {

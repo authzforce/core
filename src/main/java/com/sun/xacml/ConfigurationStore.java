@@ -43,7 +43,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -372,7 +371,7 @@ public class ConfigurationStore
      */
     private PDPConfig parsePDPConfig(Node root) throws ParsingException {
         ArrayList attrModules = new ArrayList();
-        HashSet policyModules = new HashSet();
+        ArrayList policyModules = new ArrayList();
         ArrayList rsrcModules = new ArrayList();
         ArrayList cacheModules = new ArrayList();
 

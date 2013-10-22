@@ -156,7 +156,7 @@ public class AttributeDesignator extends AttributeDesignatorType implements
 	public static AttributeDesignator getInstance(Node root) {
 		final JAXBElement<AttributeDesignatorType> match;
 		try {
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 			match = u.unmarshal(root, AttributeDesignatorType.class);
 			AttributeDesignatorType attrDes = match.getValue();
 			AttributeDesignator myAttr = new AttributeDesignator(attrDes);

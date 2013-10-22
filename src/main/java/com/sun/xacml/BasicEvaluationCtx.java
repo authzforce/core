@@ -881,7 +881,7 @@ public class BasicEvaluationCtx implements EvaluationCtx {
 		final DocumentBuilder docBuilder = BindingUtility.getDocumentBuilder(true);
 		try {
 			if (requestRoot == null) {
-				Marshaller m = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+				Marshaller m = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 				Document doc = docBuilder.newDocument();
 				m.marshal(request, doc);
 				requestRoot = doc.getDocumentElement();

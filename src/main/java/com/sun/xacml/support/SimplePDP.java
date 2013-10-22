@@ -133,7 +133,7 @@ public class SimplePDP
 
         // next, setup the PolicyFinder that this PDP will use
         PolicyFinder policyFinder = new PolicyFinder();
-        Set policyModules = new HashSet();
+        List policyModules = new ArrayList();
         policyModules.add(staticModule);
         policyModules.add(staticRefModule);
         policyModules.add(urlModule);
@@ -174,7 +174,7 @@ public class SimplePDP
         throws IOException, ParsingException, JAXBException
     {
         // setup the request based on the file
-        Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+        Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
         File requestFile = new File(requestFilename);
         Request request = u.unmarshal(new StreamSource(requestFile), Request.class).getValue();
 

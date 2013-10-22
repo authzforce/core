@@ -360,7 +360,7 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Obligation", e);

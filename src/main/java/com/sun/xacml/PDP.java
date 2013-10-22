@@ -82,8 +82,7 @@ public class PDP {
 	private ResourceFinder resourceFinder;
 
 	// the logger we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(PDP.class
-			.getName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(PDP.class);
 
 	private static CacheManager cacheManager;
 
@@ -181,6 +180,16 @@ public class PDP {
 		// Used to reload
 		getPolicyFinder();
 	}
+	
+	/**
+	 * Get the Attribute Finder, in order to update its attribute finder modules
+	 * 
+	 * @return the AttributeFinder used by the PDP
+	 */
+	public AttributeFinder getAttributeFinder()
+	{
+		return attributeFinder;
+	}
 
 	/**
 	 * Attempts to evaluate the request against the policies known to this PDP.
@@ -264,7 +273,7 @@ public class PDP {
 				code.setValue(Status.STATUS_SYNTAX_ERROR);
 				oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 				status.setStatusCode(code);
-				status.setStatusMessage("Ressource or Subject or Action attributes needs to be filled");
+				status.setStatusMessage("Resource or Subject or Action attributes needs to be filled");
 				return Arrays.asList(new ResponseCtx(new Result(
 						DecisionType.INDETERMINATE, status)));
 			}
@@ -366,7 +375,7 @@ public class PDP {
 			}
 			return myResponse;
 		} catch (ParsingException pe) {
-			LOGGER.debug("the PDP receieved an invalid request", pe);
+			LOGGER.debug("the PDP received an invalid request", pe);
 
 			// there was something wrong with the request, so we return
 			// Indeterminate with a status of syntax error...though this

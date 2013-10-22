@@ -434,7 +434,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Advice")) {
 				try {
-					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 					JAXBElement<Advice> advice = u.unmarshal(node, Advice.class);
 					advices.getAdvices().add(advice.getValue());
 				} catch (JAXBException e) {
@@ -458,7 +458,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("Attribute")) {
 				try {
-					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 					JAXBElement<Attributes> attrs = u.unmarshal(root, Attributes.class);
 					attributes.add(attrs.getValue());
 				} catch (JAXBException e) {
@@ -616,7 +616,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Result", e);

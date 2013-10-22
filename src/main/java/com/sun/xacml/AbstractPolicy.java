@@ -306,7 +306,7 @@ public abstract class AbstractPolicy extends oasis.names.tc.xacml._3_0.core.sche
 			if (node.getNodeName().equals("ObligationExpression")) {
 				JAXBElement<ObligationExpressions> match = null;
 				try {
-					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 					match = u.unmarshal(root, ObligationExpressions.class);
 					obligationExpressions = match.getValue();
 				} catch (Exception e) {
@@ -328,7 +328,7 @@ public abstract class AbstractPolicy extends oasis.names.tc.xacml._3_0.core.sche
 			if (node.getNodeName().equals("AdviceExpressions")) {
 				final JAXBElement<AdviceExpressions> match;
 				try {
-					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 					match = u.unmarshal(root, AdviceExpressions.class);
 					adviceExpressions = match.getValue();
 				} catch (Exception e) {

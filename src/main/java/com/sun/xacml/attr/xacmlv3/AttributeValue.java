@@ -112,7 +112,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	public static AttributeValue getInstance(Node root, PolicyMetaData metadata) {
 		final JAXBElement<AttributeValueType> attrValue;
 		try {
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 			attrValue = u.unmarshal(root, AttributeValueType.class);
 			return new AttributeValue(
 					URI.create(attrValue.getValue().getDataType()), attrValue
@@ -236,7 +236,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable {
 	public String encode() {
 		StringWriter out = new StringWriter();
 		try {
-			Marshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling AttributeValue to String", e);

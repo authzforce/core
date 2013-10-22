@@ -33,22 +33,22 @@
  */
 package com.sun.xacml.finder;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.PolicyReference;
-import com.sun.xacml.VersionConstraints;
-
-import com.sun.xacml.ctx.Status;
-
+import java.io.File;
 import java.net.URI;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.PolicyReference;
+import com.sun.xacml.VersionConstraints;
+import com.sun.xacml.ctx.Status;
 
 /**
  * This class is used by the PDP to find all policies used in evaluation. A PDP is given a
@@ -74,44 +74,90 @@ import org.slf4j.LoggerFactory;
  */
 public class PolicyFinder
 {
-
-	// all modules in this finder
-	private Set allModules;
+	/**
+	 * Base directory for finder modules to resolve relative policy file paths as relative to this
+	 */
+	private final File baseDirectory;
+	
+	/**
+	 *  All modules in this finder (List type is used because order matters, for instance, referenceModules should be loaded before other modules if the latter load policies making PolicyReference to policies that have to be loaded before by referenceModules
+	 *  If not, we would fail or would not be able to check resoved PolicyReference when loading the modules.
+	 *  Besides, using Set type makes no sense since PolicyFinderModule class does not implement equals().
+	 */
+	private List allModules;
 
 	// all the request modules
-	private Set requestModules;
+	private List requestModules;
 
 	// all the reference modules
-	private Set referenceModules;
+	private List referenceModules;
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(PolicyFinder.class);
-
+	
 	/**
-	 * Returns the unordered <code>Set</code> of <code>PolicyFinderModule</code>s used by this class
+	 * Creates PolicyFinder instance
+	 * 
+	 * @param base
+	 *            Base directory for finder modules to resolve relative policy file paths as
+	 *            relative to this
+	 */
+	public PolicyFinder(File base)
+	{
+		if (base != null)
+		{
+			if (!base.exists())
+			{
+				throw new IllegalArgumentException("File specified as PolicyFinder base arg does not exist: " + base.getAbsolutePath());
+			}
+
+			if (!base.isDirectory())
+			{
+				throw new IllegalArgumentException("File specified as PolicyFinder base arg is not a directory: " + base.getAbsolutePath());
+			}
+
+			if (!base.canRead())
+			{
+				throw new IllegalArgumentException("File specified as PolicyFinder base arg cannot be read: " + base.getAbsolutePath());
+			}
+		}
+
+		this.baseDirectory = base;
+	}
+	
+	/**
+	 * Creates PolicyFinder instance
+	 */
+	public PolicyFinder()
+	{
+		this.baseDirectory = null;
+	}
+	
+	/**
+	 * Returns the ordered <code>List</code> of <code>PolicyFinderModule</code>s used by this class
 	 * to find policies.
 	 * 
-	 * @return a <code>Set</code> of <code>PolicyFinderModule</code>s
+	 * @return a <code>List</code> of <code>PolicyFinderModule</code>s in order of declaration/registration
 	 */
-	public Set getModules()
+	public List getModules()
 	{
-		return new HashSet(allModules);
+		return new ArrayList(allModules);
 	}
 
 	/**
-	 * Sets the unordered <code>Set</code> of <code>PolicyFinderModule</code>s used by this class to
+	 * Sets the ordered <code>List</code> of <code>PolicyFinderModule</code>s used by this class to
 	 * find policies.
 	 * 
 	 * @param modules
-	 *            a <code>Set</code> of <code>PolicyFinderModule</code>s
+	 *            a <code>List</code> of <code>PolicyFinderModule</code>s
 	 */
-	public void setModules(Set modules)
+	public void setModules(List modules)
 	{
 		Iterator it = modules.iterator();
 
-		allModules = new HashSet(modules);
-		requestModules = new HashSet();
-		referenceModules = new HashSet();
+		allModules = new ArrayList(modules);
+		requestModules = new ArrayList();
+		referenceModules = new ArrayList();
 
 		while (it.hasNext())
 		{
@@ -180,8 +226,10 @@ public class PolicyFinder
 				// ...if we already had found a policy, this is an error...
 				if (result != null)
 				{
-					LOGGER.info("More than one top-level applicable policy for the request");
-
+					if(LOGGER.isInfoEnabled()) {
+						LOGGER.info("More than one top-level applicable policy found for the request: {}, {}...", result.getPolicy(), newResult.getPolicy());
+					}
+					
 					ArrayList code = new ArrayList();
 					code.add(Status.STATUS_PROCESSING_ERROR);
 					Status status = new Status(code, "too many applicable top-level policies");
@@ -247,7 +295,7 @@ public class PolicyFinder
 			{
 				if (LOGGER.isInfoEnabled())
 				{
-					LOGGER.info("An error occured while trying to find the referenced policy {}: ", newResult.getStatus().getMessage());
+					LOGGER.info("An error occured while trying to find the referenced policy '{}': {}", idReference, newResult.getStatus().getMessage());
 				}
 
 				return newResult;
@@ -281,6 +329,15 @@ public class PolicyFinder
 			LOGGER.info("No policies were resolved for the reference: {}", idReference);
 			return new PolicyFinderResult();
 		}
+	}
+	
+	/**
+	 * @return Base directory for finder modules to resolve relative policy file paths as relative
+	 *         to this
+	 */
+	public File getBaseDirectory()
+	{
+		return this.baseDirectory;
 	}
 
 }

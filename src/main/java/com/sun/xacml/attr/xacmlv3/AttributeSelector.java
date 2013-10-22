@@ -168,7 +168,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 		final JAXBElement<AttributeSelectorType> attrSelector;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 			attrSelector = u.unmarshal(root, AttributeSelectorType.class);
 			return attrSelector.getValue();
 		} catch (Exception e)

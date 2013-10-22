@@ -57,7 +57,7 @@ public class AdviceExpressions extends oasis.names.tc.xacml._3_0.core.schema.wd_
 			if (node.getNodeName().equals("AdviceExpression")) {
 				final JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions> match;
 				try {
-					Unmarshaller u = BindingUtility.XACML30_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
 					match =  u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions.class);
 					adviceExpressions = match.getValue();
 				} catch (Exception e) {
