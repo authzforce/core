@@ -404,10 +404,12 @@ public class ConfigurationStore
         ResourceFinder rsrcFinder = new ResourceFinder();
         rsrcFinder.setModules(rsrcModules);
         
+        CacheManager cacheManager = cacheModules.isEmpty()? null: (CacheManager)cacheModules.get(0);
+        
 //        CacheManager cacheManager = CacheManager.getInstance();        
 //        return new PDPConfig(attrFinder, policyFinder, rsrcFinder);
         
-        return new PDPConfig(attrFinder, policyFinder, rsrcFinder, (CacheManager)cacheModules.get(0));
+        return new PDPConfig(attrFinder, policyFinder, rsrcFinder, cacheManager);
     }
 
     /**
