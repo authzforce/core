@@ -48,6 +48,7 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 /**
  * This class is used by the PDP to find attribute values that weren't originally supplied in the

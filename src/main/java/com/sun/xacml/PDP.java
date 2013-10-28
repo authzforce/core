@@ -40,15 +40,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -59,8 +60,10 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderResult;
+import com.thalesgroup.authzforce.audit.AuditLogs;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * This is the core class for the XACML engine, providing the starting point for
@@ -82,7 +85,8 @@ public class PDP {
 	private ResourceFinder resourceFinder;
 
 	// the logger we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(PDP.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(PDP.class
+			.getName());
 
 	private static CacheManager cacheManager;
 
@@ -273,7 +277,7 @@ public class PDP {
 				code.setValue(Status.STATUS_SYNTAX_ERROR);
 				oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 				status.setStatusCode(code);
-				status.setStatusMessage("Resource or Subject or Action attributes needs to be filled");
+				status.setStatusMessage("Ressource or Subject or Action attributes needs to be filled");
 				return Arrays.asList(new ResponseCtx(new Result(
 						DecisionType.INDETERMINATE, status)));
 			}
@@ -375,7 +379,7 @@ public class PDP {
 			}
 			return myResponse;
 		} catch (ParsingException pe) {
-			LOGGER.debug("the PDP received an invalid request", pe);
+			LOGGER.debug("the PDP receieved an invalid request", pe);
 
 			// there was something wrong with the request, so we return
 			// Indeterminate with a status of syntax error...though this
