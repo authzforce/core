@@ -527,9 +527,6 @@ public class PDP {
 		}
 
 		// we found a valid policy, so we can do the evaluation
-		if (finderResult.getType().equals("PolicySet")) {
-			return finderResult.getPolicySet().evaluate(context);
-		}
 		return finderResult.getPolicy().evaluate(context);
 	}
 }
