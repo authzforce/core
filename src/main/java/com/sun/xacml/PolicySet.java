@@ -41,11 +41,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyCombinerParameters;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetCombinerParameters;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +58,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.combine.CombinerParameter;
+import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.PolicyCombinerElement;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 import com.sun.xacml.xacmlv3.Target;
 
@@ -73,6 +80,8 @@ public class PolicySet extends AbstractPolicySet
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(PolicySet.class);
 
+	private static final CombiningAlgFactory COMBINING_ALG_FACTORY = CombiningAlgFactory.getInstance();
+
 	/**
 	 * Creates a new <code>PolicySet</code> with only the required elements.
 	 * 
@@ -82,10 +91,11 @@ public class PolicySet extends AbstractPolicySet
 	 *            the <code>CombiningAlgorithm</code> used on the policies in this set
 	 * @param target
 	 *            the <code>Target</code> for this set
+	 * @throws ParsingException
 	 */
-	public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg, Target target)
+	public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg, Target target) throws ParsingException
 	{
-		this(id, null, combiningAlg, null, target, null, null, null, null);
+		this(id, combiningAlg, target, null);
 	}
 
 	/**
@@ -98,15 +108,15 @@ public class PolicySet extends AbstractPolicySet
 	 * @param target
 	 *            the <code>Target</code> for this set
 	 * @param policies
-	 *            a list of <code>AbstractPolicy</code> objects
+	 *            a list of <code>IPolicy</code> objects
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the <code>List</code> of policies contains an object that is not an
-	 *             <code>AbstractPolicy</code>
+	 *             <code>IPolicy</code>
 	 */
-	public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg, Target target, List policies)
+	public PolicySet(URI id, PolicyCombiningAlgorithm combiningAlg, Target target, List<IPolicy> policies)
 	{
-		this(id, null, combiningAlg, null, target, policies, null, null, null);
+		this(id, null, combiningAlg, null, target, policies, null);
 	}
 
 	/**
@@ -125,15 +135,34 @@ public class PolicySet extends AbstractPolicySet
 	 * @param target
 	 *            the <code>Target</code> for this set
 	 * @param policies
-	 *            a list of <code>AbstractPolicy</code> objects
+	 *            a list of <code>IPolicy</code> objects
+	 * @param defaultVersion
+	 *            default XPath version
+	 * @param obligations
+	 * @param advices
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the <code>List</code> of policies contains an object that is not an
-	 *             <code>AbstractPolicy</code>
+	 *             <code>IPolicy</code>
 	 */
-	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description, Target target, List policies)
+	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description, Target target, List<IPolicy> policies,
+			String defaultVersion, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations, AdviceExpressions advices)
 	{
-		this(id, version, combiningAlg, description, target, policies, null, null, null);
+		super(id, version, combiningAlg, description, target, defaultVersion);
+
+		final List<PolicyCombinerElement> elements = new ArrayList<>();
+		for (final IPolicy policyElt : policies)
+		{
+			elements.add(new PolicyCombinerElement(policyElt));
+		}
+
+		// finally, set the list of Policies
+		/*
+		 * FIXME: this is using a JAXB class member of type List<Object> for non-JAXB classes (not
+		 * serializable/marshallable), therefore not what it is intended for, why? Would be more
+		 * readable and simple to have another member of type List<PolicyCombinerElement>
+		 */
+		this.policySetsAndPoliciesAndPolicySetIdReferences = new ArrayList<Object>(Collections.unmodifiableList(elements));
 	}
 
 	/**
@@ -152,73 +181,18 @@ public class PolicySet extends AbstractPolicySet
 	 * @param target
 	 *            the <code>Target</code> for this set
 	 * @param policies
-	 *            a list of <code>AbstractPolicy</code> objects
+	 *            a list of <code>IPolicy</code> objects
 	 * @param defaultVersion
 	 *            the XPath version to use
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the <code>List</code> of policies contains an object that is not an
-	 *             <code>AbstractPolicy</code>
+	 *             <code>IPolicy</code>
 	 */
-	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, List policies, String defaultVersion)
+	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description, Target target, List<IPolicy> policies,
+			String defaultVersion)
 	{
 		this(id, version, combiningAlg, description, target, policies, defaultVersion, null, null);
-	}
-
-	/**
-	 * Creates a new <code>PolicySet</code> with the required elements plus some policies, a String
-	 * description, policy defaults, and obligations.
-	 * 
-	 * @param id
-	 *            the policy set identifier
-	 * @param version
-	 *            the policy version or null for the default (this is always null for pre-2.0
-	 *            policies)
-	 * @param combiningAlg
-	 *            the <code>CombiningAlgorithm</code> used on the policies in this set
-	 * @param description
-	 *            a <code>String</code> describing the policy
-	 * @param target
-	 *            the <code>Target</code> for this set
-	 * @param policies
-	 *            a list of <code>AbstractPolicy</code> objects
-	 * @param defaultVersion
-	 *            the XPath version to use
-	 * @param obligations
-	 *            a set of <code>Obligation</code> objects
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the <code>List</code> of policies contains an object that is not an
-	 *             <code>AbstractPolicy</code>
-	 */
-	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, List policies, String defaultVersion,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations, AdviceExpressions advices)
-	{
-		super(id, version, combiningAlg, description, target, defaultVersion, obligations, advices, null);
-
-		List list = null;
-
-		// check that the list contains only AbstractPolicy objects
-		if (policies != null)
-		{
-			list = new ArrayList();
-			Iterator it = policies.iterator();
-			while (it.hasNext())
-			{
-				Object o = it.next();
-				if (!(o instanceof Policy))
-				{
-					throw new IllegalArgumentException("non-Policy " + "in policies");
-				}
-				list.add(new PolicyCombinerElement((Policy) o));
-			}
-		}
-		List policyList = new ArrayList();
-		policyList = Collections.unmodifiableList(list);
-		this.policySetsAndPoliciesAndPolicySetIdReferences = ((List<Object>) policyList);
-		// setChildren(list);
 	}
 
 	/**
@@ -239,41 +213,161 @@ public class PolicySet extends AbstractPolicySet
 	 *            a <code>String</code> describing the policy or null if there is no description
 	 * @param target
 	 *            the <code>Target</code> for this policy
-	 * @param policyElements
-	 *            a list of <code>CombinerElement</code> objects or null if there are no policies
+	 * @param policySetChoiceElements
+	 *            a list of objects in PolicySet choice elements (or null if there are none):
+	 *            Policy(IdReference)s, PolicySet(IdReference)s, CombinerParameters,
+	 *            Policy(Set)CombinerParameters
 	 * @param defaultVersion
 	 *            the XPath version to use or null if there is no default version
 	 * @param obligations
 	 *            a set of <code>Obligations</code> objects or null if there are no obligations
-	 * @param parameters
-	 *            the <code>List</code> of <code>CombinerParameter</code>s provided for general use
-	 *            by the combining algorithm
+	 * @param advices
+	 * @param finder
+	 * @throws ParsingException
 	 * 
-	 * @throws IllegalArgumentException
-	 *             if the <code>List</code> of rules contains an object that is not a
-	 *             <code>Rule</code>
 	 */
-	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description, Target target, List policyElements,
-			String defaultVersion, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations, AdviceExpressions advices,
-			List parameters)
+	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description,
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, List<Object> policySetChoiceElements, String defaultVersion,
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations, AdviceExpressions advices, PolicyFinder finder)
+			throws ParsingException
 	{
-		super(id, version, combiningAlg, description, target, defaultVersion, obligations, advices, parameters);
+		super(id, version, combiningAlg, description, target, defaultVersion, obligations, advices, null);
 
-		// check that the list contains only CombinerElements
-		if (policyElements != null)
+		final List<IPolicy> policies = new ArrayList<>();
+		final List<CombinerParameter> combinerParamHandlers = new ArrayList<>();
+		final Map<String, List<CombinerParameter>> policyCombinerParamHandlers = new HashMap<>();
+		final Map<String, List<CombinerParameter>> policySetCombinerParamHandlers = new HashMap<>();
+		final PolicyMetaData metaData = getMetaData();
+
+		// collect instances of Policy(Set)(IdReference) and (Policy(Set))CombinerParameters from
+		// XACML model
+		this.target = new Target(target, metaData);
+		for (final Object policyElt : policySetChoiceElements)
 		{
-			Iterator it = policyElements.iterator();
-			while (it.hasNext())
+			if (policyElt instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
 			{
-				Object o = it.next();
-				if (!(o instanceof PolicyCombinerElement))
+				final oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy = (oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) policyElt;
+				try
 				{
-					throw new IllegalArgumentException("non-PolicyCombinerElement " + "in policies");
+					policies.add(Policy.getInstance((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) policyElt));
+				} catch (UnknownIdentifierException e)
+				{
+					throw new ParsingException("Invalid child Policy '" + policy.getPolicyId() + "' in  PolicySet '" + id + "'", e);
 				}
+			} else if (policyElt instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
+			{
+				final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySet = (oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) policyElt;
+				try
+				{
+					policies.add(PolicySet.getInstance(policySet, finder));
+				} catch (UnknownIdentifierException e)
+				{
+					throw new ParsingException("Unknown combining algorithm for policy: " + policySet.getPolicySetId(), e);
+				}
+			} else if (policyElt instanceof JAXBElement)
+			{
+				final JAXBElement<?> jaxbElt = (JAXBElement<?>) policyElt;
+				final String eltName = jaxbElt.getName().getLocalPart();
+				if (eltName.equals("PolicyIdReference"))
+				{
+					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
+					policies.add(new PolicyReference(idRef, PolicyReference.POLICY_REFERENCE, finder, metaData));
+				} else if (eltName.equals("PolicySetIdReference"))
+				{
+					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
+					policies.add(new PolicyReference(idRef, PolicyReference.POLICYSET_REFERENCE, finder, metaData));
+				} else if (eltName.equals("CombinerParameters"))
+				{
+					final CombinerParametersType combinerParams = (CombinerParametersType) jaxbElt.getValue();
+					parseCombinerParameters(combinerParams.getCombinerParameters(), combinerParamHandlers);
+				}
+			} else if (policyElt instanceof PolicyCombinerParameters)
+			{
+				final PolicyCombinerParameters policyCombinerParams = (PolicyCombinerParameters) policyElt;
+				parsePolicyCombinerParameters(policyCombinerParams, policyCombinerParamHandlers);
+			} else if (policyElt instanceof PolicySetCombinerParameters)
+			{
+				final PolicySetCombinerParameters policySetCombinerParams = (PolicySetCombinerParameters) policyElt;
+				parsePolicySetCombinerParameters(policySetCombinerParams, policySetCombinerParamHandlers);
 			}
 		}
 
-		// setChildren(policyElements);
+		/*
+		 * Checking PolicyCombinerParameters IdRefs match Policy(IdReference)s, and
+		 * PolicySetCombinerParameters IdRefs match PolicySet(IdReference)s
+		 */
+		// right now we have to go though each policy and based on several
+		// possible cases figure out what parameters might apply...but
+		// there should be a better way to do this
+		final List<PolicyCombinerElement> elements = new ArrayList<>();
+		for (final IPolicy policyElt : policies)
+		{
+			final List<CombinerParameter> paramList;
+			if (policyElt instanceof Policy)
+			{
+				paramList = policyCombinerParamHandlers.remove(policyElt.getId());
+			} else if (policyElt instanceof PolicySet)
+			{
+				paramList = policySetCombinerParamHandlers.remove(policyElt.getId());
+			} else if (policyElt instanceof PolicyReference)
+			{
+				final PolicyReference ref = (PolicyReference) policyElt;
+				if (ref.getReferenceType() == PolicyReference.POLICY_REFERENCE)
+				{
+					paramList = policyCombinerParamHandlers.remove(policyElt.getId());
+				} else
+				{
+					paramList = policySetCombinerParamHandlers.remove(policyElt.getId());
+				}
+			} else
+			{
+				paramList = null;
+			}
+
+			elements.add(new PolicyCombinerElement(policyElt, paramList));
+		}
+
+		// ...and that there aren't extra parameters
+		if (!policyCombinerParamHandlers.isEmpty())
+		{
+			throw new ParsingException("PolicyCombinerParameters PolicyIdRefs not matched by any PolicyId/PolicyIdReference: "
+					+ policyCombinerParamHandlers.keySet());
+		}
+		if (!policySetCombinerParamHandlers.isEmpty())
+		{
+			throw new ParsingException("PolicySetCombinerParameters PolicySetIdRefs not matched by any PolicySetId/PolicySetIdReference: "
+					+ policySetCombinerParamHandlers.keySet());
+		}
+		// finally, set the list of Policies
+		/*
+		 * FIXME: this is using a JAXB class member of type List<Object> for non-JAXB classes (not
+		 * serializable/marshallable), therefore not what it is intended for, why? Would be more
+		 * readable and simple to have another member of type List<PolicyCombinerElement>, because
+		 * here we lose the type of element stored in the list, therefore code is more prone to
+		 * bugs.
+		 */
+		this.policySetsAndPoliciesAndPolicySetIdReferences = new ArrayList<Object>(Collections.unmodifiableList(elements));
+		// setChildren(elements);
+
+	}
+
+	/**
+	 * @param policySetElement
+	 *            PolicySet Element from XACML model
+	 * @param finder
+	 * @return PolicySet handler
+	 * @throws UnknownIdentifierException
+	 *             if policyset-combining-algorithm ID is unknown
+	 * @throws ParsingException
+	 */
+	public static PolicySet getInstance(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySetElement, PolicyFinder finder)
+			throws UnknownIdentifierException, ParsingException
+	{
+		return new PolicySet(URI.create(policySetElement.getPolicySetId()), policySetElement.getVersion(),
+				(PolicyCombiningAlgorithm) COMBINING_ALG_FACTORY.createAlgorithm(URI.create(policySetElement.getPolicyCombiningAlgId())),
+				policySetElement.getDescription(), policySetElement.getTarget(), policySetElement.getPolicySetsAndPoliciesAndPolicySetIdReferences(),
+				policySetElement.getPolicySetDefaults() == null ? null : policySetElement.getPolicySetDefaults().getXPathVersion(),
+				policySetElement.getObligationExpressions(), policySetElement.getAdviceExpressions(), finder);
 	}
 
 	/**
@@ -285,7 +379,7 @@ public class PolicySet extends AbstractPolicySet
 	{
 		super(root, "PolicySet", "PolicyCombiningAlgId");
 
-		List policies = new ArrayList();
+		List<IPolicy> policies = new ArrayList<>();
 		HashMap policyParameters = new HashMap();
 		HashMap policySetParameters = new HashMap();
 		PolicyMetaData metaData = getMetaData();
@@ -319,12 +413,16 @@ public class PolicySet extends AbstractPolicySet
 			{
 				paramaterHelper(policySetParameters, child, "PolicySet");
 			}
+
+			/*
+			 * FIXME: CombinerParameters element not supported
+			 */
 		}
 
 		// now make sure that we can match up any parameters we may have
 		// found to a cooresponding Policy or PolicySet...
 		List elements = new ArrayList();
-		Iterator it = policies.iterator();
+		Iterator<IPolicy> it = policies.iterator();
 
 		// right now we have to go though each policy and based on several
 		// possible cases figure out what parameters might apply...but
@@ -332,7 +430,7 @@ public class PolicySet extends AbstractPolicySet
 
 		while (it.hasNext())
 		{
-			Object policy = (Object) (it.next());
+			IPolicy policy = it.next();
 			List list = null;
 
 			if (policy instanceof Policy)
@@ -355,13 +453,9 @@ public class PolicySet extends AbstractPolicySet
 					list = (List) (policySetParameters.remove(id));
 				}
 			}
-			if (policy instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
-			{
-				elements.add(new PolicyCombinerElement((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) policy, list));
-			} else if (policy instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
-			{
-				elements.add(new PolicyCombinerElement((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) policy, list));
-			}
+			
+			elements.add(new PolicyCombinerElement(policy, list));
+			
 		}
 
 		// ...and that there aren't extra parameters
@@ -374,6 +468,11 @@ public class PolicySet extends AbstractPolicySet
 			throw new ParsingException("Unmatched parameters in PolicySet");
 		}
 		// finally, set the list of Policies
+		/*
+		 * FIXME: this is using a JAXB class member of type List<Object> for non-JAXB classes (not
+		 * serializable/marshallable), therefore not what it is intended for, why? Would be more
+		 * readable and simple to have another member of type List<PolicyCombinerElement>
+		 */
 		this.policySetsAndPoliciesAndPolicySetIdReferences.addAll((List<JAXBElement<?>>) Collections.unmodifiableList(elements));
 		// setChildren(elements);
 	}
@@ -397,10 +496,44 @@ public class PolicySet extends AbstractPolicySet
 		}
 	}
 
+	private static void parsePolicyCombinerParameters(PolicyCombinerParameters policyCombinerParams, Map<String, List<CombinerParameter>> parameters)
+			throws ParsingException
+	{
+		final String policyIdRef = policyCombinerParams.getPolicyIdRef();
+		final List<CombinerParameter> paramHandlerList;
+		if (parameters.containsKey(policyIdRef))
+		{
+			paramHandlerList = parameters.get(policyIdRef);
+		} else
+		{
+			paramHandlerList = new ArrayList<>();
+			parameters.put(policyIdRef, paramHandlerList);
+		}
+
+		parseCombinerParameters(policyCombinerParams.getCombinerParameters(), paramHandlerList);
+	}
+
+	private static void parsePolicySetCombinerParameters(PolicySetCombinerParameters policySetCombinerParams,
+			Map<String, List<CombinerParameter>> parameters) throws ParsingException
+	{
+		final String policySetIdRef = policySetCombinerParams.getPolicySetIdRef();
+		final List<CombinerParameter> paramHandlerList;
+		if (parameters.containsKey(policySetIdRef))
+		{
+			paramHandlerList = parameters.get(policySetIdRef);
+		} else
+		{
+			paramHandlerList = new ArrayList<CombinerParameter>();
+			parameters.put(policySetIdRef, paramHandlerList);
+		}
+
+		parseCombinerParameters(policySetCombinerParams.getCombinerParameters(), paramHandlerList);
+	}
+
 	/**
 	 * Private helper method that handles parsing a single parameter.
 	 */
-	private void parseParameters(List parameters, Node root) throws ParsingException
+	private static void parseParameters(List parameters, Node root) throws ParsingException
 	{
 		NodeList nodes = root.getChildNodes();
 
@@ -412,6 +545,16 @@ public class PolicySet extends AbstractPolicySet
 		}
 	}
 
+	private static void parseCombinerParameters(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter> parameters,
+			List<CombinerParameter> parameterHandlerList) throws ParsingException
+	{
+		for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param : parameters)
+		{
+			final CombinerParameter parameterHandler = new CombinerParameter(param);
+			parameterHandlerList.add(parameterHandler);
+		}
+	}
+
 	/**
 	 * Creates an instance of a <code>PolicySet</code> object based on a DOM node. The node must be
 	 * the root of PolicySetType XML object, otherwise an exception is thrown. This
@@ -420,6 +563,7 @@ public class PolicySet extends AbstractPolicySet
 	 * 
 	 * @param root
 	 *            the DOM root of a PolicySetType XML type
+	 * @return PolicySet
 	 * 
 	 * @throws ParsingException
 	 *             if the PolicySetType is invalid

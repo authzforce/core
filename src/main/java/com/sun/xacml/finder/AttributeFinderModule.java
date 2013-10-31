@@ -41,6 +41,7 @@ import org.w3c.dom.Node;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 
 /**
@@ -160,6 +161,7 @@ public abstract class AttributeFinderModule
      * @return the result of attribute retrieval, which will be a bag of
      *         attributes or an error
      */
+    @Audit(type = Audit.Type.ATTRIBUTE)
     public EvaluationResult findAttribute(URI attributeType, URI attributeId,
                                           URI issuer, URI subjectCategory,
                                           EvaluationCtx context,

@@ -34,6 +34,7 @@
 package com.sun.xacml.cond;
 
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.ParsingException;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 
@@ -45,6 +46,8 @@ import java.util.List;
  * directly (<code>AttributeDesignator</code>, <code>Apply</code>,
  * <code>AttributeValue</code>, etc.). As of version 2.0 several methods
  * were extracted to the new <code>Expression</code> super-interface.
+ * 
+ * FIXME: should extend Expression
  *
  * @since 1.0
  * @author Seth Proctor

@@ -71,5 +71,4 @@ public class ObligationExpressions extends oasis.names.tc.xacml._3_0.core.schema
 		
 		return obligationExpressions;
 	}
-
 }

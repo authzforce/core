@@ -39,6 +39,7 @@ package com.sun.xacml.cond.xacmlv3;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.xml.bind.Marshaller;
@@ -57,24 +58,35 @@ import org.slf4j.LoggerFactory;
 import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.Evaluatable;
+import com.sun.xacml.cond.FunctionFactory;
+import com.sun.xacml.cond.FunctionTypeException;
+import com.sun.xacml.cond.VariableManager;
+import com.sun.xacml.cond.VariableReference;
 
 /**
  * @author Romain Ferrari
  * 
  *         Implementation of utils to back ExpressionType up from the OASIS
  *         schema. 
- *         
+ *                  
  *         SuperClass for:
  *         -	AttributeDesignatorType.class
  *         -	VariableReferenceType.class,
  *         -	ApplyType.class
  *         -	FunctionType.class
- *         -	AttributeSelectorType.class
+ *         -	AttributeSelectorType.class 
+ *         - 	FunctionType
+ *         -	AttributeValueType
+ *         
+ *         FIXME: Having Expression as a subtype of Evaluatable does not make sense. Should be the opposite (as it was in original Sunxacml version): Evaluatable is a special type of Expression (which is Evaluatable).
+ *  E.g. Other types of Expression such as VariableReferenceType are not evaluatable (e.g. Evaluatable#getChildren method do not apply to this class).
+ *  Maybe this class should be an Interface for all, and move the "utils" in ExpressionTools (it seems to be the case already
  */
 
 public abstract class Expression extends ExpressionType implements Evaluatable {
@@ -85,37 +97,6 @@ public abstract class Expression extends ExpressionType implements Evaluatable {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Expression.class);
 	
-	public static ExpressionType getInstance(ExpressionType expression) throws UnknownIdentifierException {
-		ExpressionType expr = null;		
-		// We check what type of Expression is contained within the
-		// AttributeAssignmentExpressionType
-		// it can be: <Apply>, <AttributeSelector>, <AttributeValue>,
-		// <Function>, <VariableReference> and <AttributeDesignator>.
-		
-		if (expression instanceof AttributeDesignatorType) {
-			expr = AttributeDesignator.getInstance((AttributeDesignatorType)expression);
-		} else if ((expression.getClass() == ApplyType.class)) {
-
-		} else if ((expression.getClass() == AttributeSelectorType.class)) {
-			expr = AttributeSelector.getInstance((AttributeSelectorType)expression);
-		} else if ((expression.getClass() == FunctionType.class)) {
-
-		} else if ((expression.getClass() == VariableReferenceType.class)) {
-
-		} else if ((expression.getClass() == AttributeValueType.class)) {
-			expr = AttributeValue.getInstance((AttributeValueType)expression);
-		} else {
-			throw new UnknownIdentifierException(
-					"Attributes of type "
-							+ expression.getClass()
-							+ " aren't supported. "
-							+ "You must use Apply, AttributeSelector, AttributeValue (Not Implemented Yet), "
-							+ "Function, VariableReference or AttributeDesignator");
-		}
-
-		return expr;
-	}
-
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {

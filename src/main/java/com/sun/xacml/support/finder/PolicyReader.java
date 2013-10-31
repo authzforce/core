@@ -39,9 +39,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,23 +82,16 @@ public class PolicyReader implements ErrorHandler
 	 */
 	public static final String POLICY_SCHEMA_PROPERTY = "com.sun.xacml.PolicySchema";
 
-	// the standard attribute for specifying the XML schema language
-	private static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
+	private static final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-	// the standard identifier for the XML schema specification
-	private static final String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
-
-	// the standard attribute for specifying schema source
-	private static final String JAXP_SCHEMA_SOURCE = "http://java.sun.com/xml/jaxp/properties/schemaSource";
-
-	// the finder, which is used by PolicySets
-	private PolicyFinder finder;
+	// the finder, which is used by PolicySets (actually never used in this class!)
+//	private PolicyFinder finder;
 
 	// the builders used to create DOM documents
 	/**
-	 * DocumentBuilder is not thread-safe and cannot be used multiple times without calling
-	 * reset(). So we need to make sure a PolicyReader instance cannot be used by multiple threads,
-	 * and reset() called if multiple parsing with same DocumentBuilder.
+	 * DocumentBuilder is not thread-safe and cannot be used multiple times without calling reset().
+	 * So we need to make sure a PolicyReader instance cannot be used by multiple threads, and
+	 * reset() called if multiple parsing with same DocumentBuilder.
 	 */
 	private DocumentBuilder builder;
 
@@ -127,32 +123,45 @@ public class PolicyReader implements ErrorHandler
 	public PolicyReader(File schemaFile, PolicyFinder finder)
 	{
 		this.logger = LoggerFactory.getLogger(PolicyReader.class);
-		this.finder = finder;
+//		this.finder = finder;
 
-		// create the factory
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		// Create the Policy document builder factory
+		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setIgnoringComments(true);
 		factory.setNamespaceAware(true);
+		
+		/*
+		 * Create the XML schema object for validating the document if schemaFile not null. As
+		 * said in Javadoc for javax.xml.parsers.DocumentBuilderFactory.setSchema(Schema
+		 * schema), it is an error to use the
+		 * http://java.sun.com/xml/jaxp/properties/schemaSource property and/or the
+		 * http://java.sun.com/xml/jaxp/properties/schemaLanguage property in conjunction with a
+		 * Schema object; and factory schema is null by default, and #isValidating() returns
+		 * false, i.e. no validation.
+		 */
+		if (schemaFile != null)
+		{
 
-		// see if we want to schema-validate policies
-		if (schemaFile == null)
-		{
-			factory.setValidating(false);
-		} else
-		{
-			factory.setValidating(true);
-			factory.setAttribute(JAXP_SCHEMA_LANGUAGE, W3C_XML_SCHEMA);
-			factory.setAttribute(JAXP_SCHEMA_SOURCE, schemaFile);
+			try
+			{
+				final Schema schema = schemaFactory.newSchema(schemaFile);
+				factory.setSchema(schema);
+			} catch (SAXException e)
+			{
+				throw new IllegalArgumentException("Failed to load schema from file '"+schemaFile.getAbsolutePath()+"' for validating policy documents: ", e);
+			}
 		}
 
-		// now use the factory to create the document builder
 		try
 		{
+			
+
+			// now use the factory to create the document builder
 			builder = factory.newDocumentBuilder();
 			builder.setErrorHandler(this);
 		} catch (ParserConfigurationException pce)
 		{
-			throw new IllegalArgumentException("Filed to setup reader: " + pce.toString());
+			throw new IllegalArgumentException("Failed to setup policy reader: ", pce);
 		}
 	}
 
@@ -192,6 +201,9 @@ public class PolicyReader implements ErrorHandler
 		} catch (SAXException saxe)
 		{
 			throw new ParsingException("Failed to parse the file", saxe);
+		} finally
+		{
+			builder.reset();
 		}
 	}
 
@@ -247,7 +259,7 @@ public class PolicyReader implements ErrorHandler
 	 *             if an error occurs while reading or parsing the policy, or if the URL can't be
 	 *             resolved
 	 */
-	public synchronized Policy readPolicy(URL url) throws ParsingException
+	public Policy readPolicy(URL url) throws ParsingException
 	{
 		try
 		{
@@ -261,14 +273,14 @@ public class PolicyReader implements ErrorHandler
 	/**
 	 * A private method that handles reading the policy and creates the correct kind of Policy.
 	 */
-	private Policy handleDocument(Document doc) throws ParsingException
+	private static Policy handleDocument(Document doc) throws ParsingException
 	{
 		// handle the policy, if it's a known type
 		Element root = doc.getDocumentElement();
 		String name = root.getTagName();
 
 		// see what type of policy this is
-		if (name.equals("Policy") || name.equals("PolicyType"))
+		if (name.equals("Policy"))
 		{
 			return Policy.getInstance(root);
 		} else
@@ -282,14 +294,14 @@ public class PolicyReader implements ErrorHandler
 	 * A private method that handles reading the policySet and creates the correct kind of
 	 * PolicySet.
 	 */
-	private PolicySet handlePolicySetDocument(Document doc) throws ParsingException
+	private static PolicySet handlePolicySetDocument(Document doc) throws ParsingException
 	{
 		// handle the policy, if it's a known type
 		Element root = doc.getDocumentElement();
 		String name = root.getTagName();
 
 		// see what type of policy this is
-		if (name.equals("PolicySet") || name.equals("PolicySetType"))
+		if (name.equals("PolicySet"))
 		{
 			return PolicySet.getInstance(root);
 		} else
@@ -307,7 +319,7 @@ public class PolicyReader implements ErrorHandler
 	 */
 	public void warning(SAXParseException exception) throws SAXException
 	{
-			logger.warn("Error reading policy", exception);
+		logger.warn("Error reading policy", exception);
 	}
 
 	/**
@@ -321,7 +333,7 @@ public class PolicyReader implements ErrorHandler
 	 */
 	public void error(SAXParseException exception) throws SAXException
 	{
-			logger.warn("Error reading Policy ... Policy will not be available", exception);
+		logger.warn("Error reading Policy ... Policy will not be available", exception);
 		throw new SAXException("error parsing policy");
 	}
 
@@ -336,8 +348,8 @@ public class PolicyReader implements ErrorHandler
 	 */
 	public void fatalError(SAXParseException exception) throws SAXException
 	{
-			logger.warn("Fatal error reading policy ... Policy will not be available", exception);
-		
+		logger.warn("Fatal error reading policy ... Policy will not be available", exception);
+
 		throw new SAXException("fatal error parsing policy");
 	}
 

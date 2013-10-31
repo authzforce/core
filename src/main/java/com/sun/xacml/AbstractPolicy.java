@@ -613,7 +613,7 @@ public abstract class AbstractPolicy extends oasis.names.tc.xacml._3_0.core.sche
 			((CombinerElement) (it.next())).encode(output, indenter);
 		}
 
-		if (obligationExpressions.getObligationExpressions().size() != 0) {
+		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty()) {
 			PrintStream out = new PrintStream(output);
 			String indent = indenter.makeString();
 
@@ -626,6 +626,22 @@ public abstract class AbstractPolicy extends oasis.names.tc.xacml._3_0.core.sche
 			}
 
 			out.println(indent + "</Obligations>");
+			indenter.out();
+		}
+		
+		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty()) {
+			PrintStream out = new PrintStream(output);
+			String indent = indenter.makeString();
+
+			out.println(indent + "<AssociateAdvice>");
+			indenter.in();
+
+			it = adviceExpressions.getAdviceExpressions().iterator();
+			while (it.hasNext()) {
+				((Obligation) (it.next())).encode(output, indenter);
+			}
+
+			out.println(indent + "</AssociateAdvice>");
 			indenter.out();
 		}
 	}

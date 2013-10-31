@@ -33,7 +33,16 @@
  */
 package com.sun.xacml.cond.xacmlv3;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
 import org.w3c.dom.Node;
 
@@ -66,6 +75,7 @@ public class ExpressionTools {
 	 * 
 	 * @return an <code>Expression</code> or null if the root node cannot be
 	 *         parsed as a valid Expression
+	 * @throws ParsingException 
 	 */
 	// public static ExpressionType getExpression(Node root,
 	// PolicyMetaData metaData, VariableManager manager)
@@ -152,6 +162,66 @@ public class ExpressionTools {
 
 		return myExpr;
 	}
+	
+	/**
+	 * @param expr
+	 * @param manager
+	 * @param funcFactory
+	 * @return d
+	 * @throws ParsingException error parsing instance of ExpressionType
+	 */
+	public static ExpressionType getInstance(ExpressionType expr, FunctionFactory funcFactory, VariableManager manager) throws ParsingException {
+		final ExpressionType exprHandler;		
+		// We check all types of Expression: <Apply>, <AttributeSelector>, <AttributeValue>,
+		// <Function>, <VariableReference> and <AttributeDesignator>
+		if (expr instanceof ApplyType) {
+			exprHandler = Apply.getInstance((ApplyType) expr, funcFactory, manager);
+		} else if (expr instanceof AttributeDesignatorType) {
+			exprHandler = AttributeDesignator.getInstance( (AttributeDesignatorType) expr);
+		} else if (expr instanceof AttributeSelectorType) {
+			exprHandler = AttributeSelector.getInstance((AttributeSelectorType) expr);
+		} else if (expr instanceof AttributeValueType) {
+			try
+			{
+				exprHandler = AttributeValue.getInstance((AttributeValueType) expr);
+			} catch (UnknownIdentifierException e)
+			{
+				throw new ParsingException("Unknown AttributeValue datatype", e);
+			}
+		} else if (expr instanceof FunctionType) {
+			final FunctionType func = (FunctionType) expr;
+			try {
+				final URI funcId = new URI(func.getFunctionId());
+				exprHandler = funcFactory.createFunction(funcId);
+			} catch (URISyntaxException use) {
+				throw new ParsingException("Error parsing Apply", use);
+			} catch (UnknownIdentifierException uie) {
+				throw new ParsingException("Unknown FunctionId", uie);
+			} catch (FunctionTypeException fte) {
+				// try to create an abstract function
+//				try {
+//					URI funcId = new URI(funcName);
+//					xpr = factory.createAbstractFunction(funcId, root);
+//				} catch (Exception e) {
+					// any exception here is an error
+					throw new ParsingException("Unsupported function ID: " + func.getFunctionId(), fte);
+//				}
+			}
+		} else if (expr instanceof VariableReferenceType) {
+			final VariableReferenceType varRefElt = (VariableReferenceType) expr;
+			exprHandler = new VariableReference(varRefElt.getVariableId(), manager);
+		} else {
+			throw new ParsingException(
+					"Expression of type "
+							+ expr.getClass().getSimpleName()
+							+ " aren't supported. "
+							+ "You must use Apply, AttributeSelector, AttributeValue, "
+							+ "Function, VariableReference or AttributeDesignator");
+		}
+
+		return exprHandler;
+	}
+
 
 	/**
 	 * Helper method that tries to get a function instance

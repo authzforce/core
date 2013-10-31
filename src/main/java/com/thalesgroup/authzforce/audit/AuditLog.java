@@ -23,6 +23,8 @@ import java.util.List;
 
 import javax.xml.bind.Marshaller;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.slf4j.Logger;
@@ -32,6 +34,8 @@ import com.sun.xacml.BindingUtility;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
+import com.sun.xacml.finder.AttributeFinder;
+import com.sun.xacml.finder.AttributeFinderModule;
 import com.sun.xacml.xacmlv3.Policy;
 
 public class AuditLog
@@ -195,6 +199,17 @@ public class AuditLog
 				i++;
 			}
 		}
+		if (this.getAttrResolv().size() > 0)
+		{
+			int i = 0;
+			for (AttributesResolved attrResolved : this.getAttrResolv())
+			{
+				sb.append("\t");				
+				sb.append("\tAttribute ID:\t" + attrResolved.getAttributeId() + SEPARATOR + "Value:\t" + attrResolved.getAttributeValue().getContent());
+				sb.append("\n");
+				i++;
+			}
+		}
 
 		return sb.toString();
 	}
@@ -223,5 +238,10 @@ public class AuditLog
 		}
 
 		return result;
+	}
+
+	public void addAttrResolved(AttributeFinderModule attributeFinderModule) {
+		System.out.println("addAttrResolved");
+		
 	}
 }

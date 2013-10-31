@@ -41,12 +41,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
@@ -67,7 +67,7 @@ import com.sun.xacml.combine.PolicyCombinerElement;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.AdviceExpressions;
-import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Target;
 
 /**
@@ -77,7 +77,7 @@ import com.sun.xacml.xacmlv3.Target;
  * @author Seth Proctor
  * @author Marco Barreno
  */
-public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet {
+public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet implements IPolicy {
 	
 	// atributes associated with this policy
 	// private URI idAttr;
@@ -202,17 +202,26 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			this.version = version;
 		}
 
-		// FIXME: this needs to fill in the meta-data correctly
-		metaData = null;
+		metaData = new PolicyMetaData(PolicyMetaData.XACML_3_0_IDENTIFIER, defaultVersion);
 
 		if (obligations == null) {
-			this.obligationExpressions = new oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions();
+			/*
+			 * obligationExpressions must be null by default, if you create new
+			 * ObligationExpressions() in this case, the result Obligations will be marshalled to
+			 * empty <Obligations /> element which is NOT VALID against the XACML schema.
+			 */
+			this.obligationExpressions = null;
 		} else {
 			this.obligationExpressions = obligations;
 		}
 
 		if (advices == null) {
-			this.adviceExpressions = new oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions();
+			/*
+			 * adviceExpressions must be null by default, if you create new
+			 * AdviceExpressions() in this case, the result AssociatedAdvice will be marshalled to
+			 * empty <AssociatedAdvice /> element which is NOT VALID against the XACML schema.
+			 */
+			this.adviceExpressions = null;
 		} else {
 			this.adviceExpressions = advices;
 		}
@@ -297,9 +306,19 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		metaData = new PolicyMetaData(root.getNamespaceURI(), defaultVersion);
 
 		// now read the remaining policy elements
-		obligationExpressions = new oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions();
+		/*
+		 * obligationExpressions must be null by default, if you create new
+		 * ObligationExpressions() in this case, the result Obligations will be marshalled to
+		 * empty <Obligations /> element which is NOT VALID against the XACML schema.
+		 */
+		obligationExpressions = null;
 		this.policySetsAndPoliciesAndPolicySetIdReferences = new ArrayList();
-		adviceExpressions = new oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions();
+		/*
+		 * obligationExpressions must be null by default, if you create new
+		 * AdviceExpressions() in this case, the result AssociatedAdvice will be marshalled to
+		 * empty <AssociatedAdvice /> element which is NOT VALID against the XACML schema.
+		 */
+		adviceExpressions = null;
 		_children = root.getChildNodes();
 		List myPolicies = new ArrayList();
 
@@ -442,11 +461,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		return version;
 	}
 
-	/**
-	 * Returns the combining algorithm used by this policy
-	 * 
-	 * @return the combining algorithm
-	 */
+	@Override
 	public CombiningAlgorithm getCombiningAlg() {
 		return combiningAlg;
 	}
@@ -467,6 +482,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * 
 	 * @return the description or null
 	 */
+	@Override
 	public String getDescription() {
 		return description;
 	}
@@ -496,8 +512,9 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * 
 	 * @return a <code>List</code> of child nodes
 	 */
+	@Override
 	public List getChildren() {
-		return children;
+		return policySetsAndPoliciesAndPolicySetIdReferences;
 	}
 
 	/**
@@ -508,8 +525,9 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * 
 	 * @return a <code>List</code> of <code>CombinerElement</code>s
 	 */
+	@Override
 	public List getChildElements() {
-		return childElements;
+		return policySetsAndPoliciesAndPolicySetIdReferences;
 	}
 
 	/**
@@ -524,6 +542,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	/**
 	 * Returns the meta-data associated with this policy
 	 */
+	@Override
 	public PolicyMetaData getMetaData() {
 		return metaData;
 	}
@@ -539,6 +558,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * 
 	 * @return the result of trying to match the policy and the request
 	 */
+	@Override
 	public MatchResult match(EvaluationCtx context) {
 		/**
 		 * Romain Ferrari (Thales)
@@ -598,25 +618,26 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * 
 	 * @return the result of evaluation
 	 */
+	@Override
 	public Result evaluate(EvaluationCtx context) {
 		Result result = null;
-		List policies = new ArrayList();
+		List<IPolicy> policies = new ArrayList<>();
 		CombinerParametersType combParams = new CombinerParametersType();
 		for (Object element : this.policySetsAndPoliciesAndPolicySetIdReferences) {
 			if (element instanceof PolicyCombinerElement) {
-				if (((PolicyCombinerElement) element).getElement() instanceof Policy) {
-					policies.add((Policy) ((PolicyCombinerElement) element)
-							.getElement());
-				} else if (((PolicyCombinerElement) element).getElement() instanceof PolicySet) {
-					policies.add((PolicySet) ((PolicyCombinerElement) element)
-							.getElement());
+				final Object combinerElt = ((PolicyCombinerElement) element).getElement();
+				if (combinerElt instanceof IPolicy) {	
+					policies.add((IPolicy) combinerElt);
+				} else {
+					continue;
 				}
+
 			}
 		}
 		// evaluate
 		result = this.combiningAlg.combine(context, combParams, policies);
 
-		if (obligationExpressions.getObligationExpressions().size() > 0) {
+		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty()) {
 			// now, see if we should add any obligations to the set
 			int effect = result.getDecision().ordinal();
 
@@ -634,13 +655,23 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			}
 		}
 		/* If we have advice, it's definitely a 3.0 policy */
-		if (adviceExpressions.getAdviceExpressions().size() > 0) {
+		if (adviceExpressions != null  && !adviceExpressions.getAdviceExpressions().isEmpty()) {
 			int effect = result.getDecision().ordinal();
 
 			if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal())) {
 				// we didn't permit/deny, so we never return advices
 				return result;
 			}
+			
+			final AssociatedAdvice returnAssociatedAdvice = result.getAssociatedAdvice();
+			final AssociatedAdvice newAssociatedAdvice;
+			if(returnAssociatedAdvice == null) {
+				newAssociatedAdvice = new AssociatedAdvice();
+				result.setAssociatedAdvice(newAssociatedAdvice);
+			} else {
+				newAssociatedAdvice = returnAssociatedAdvice;
+			}
+			
 			for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions()) {
 				if (adviceExpr.getAppliesTo().ordinal() == effect) {
 					Advice advice = new Advice();
@@ -655,6 +686,8 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 						myAttrAssType.setIssuer(attrExpr.getIssuer());
 						advice.getAttributeAssignments().add(myAttrAssType);
 					}
+					
+					newAssociatedAdvice.getAdvices().add(advice);
 				}
 			}
 		}
@@ -680,7 +713,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			((CombinerElement) (it.next())).encode(output, indenter);
 		}
 
-		if (obligationExpressions.getObligationExpressions().size() != 0) {
+		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty()) {
 			PrintStream out = new PrintStream(output);
 			String indent = indenter.makeString();
 
@@ -693,6 +726,22 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			}
 
 			out.println(indent + "</Obligations>");
+			indenter.out();
+		}
+		
+		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty()) {
+			PrintStream out = new PrintStream(output);
+			String indent = indenter.makeString();
+
+			out.println(indent + "<AssociatedAdvice>");
+			indenter.in();
+
+			it = adviceExpressions.getAdviceExpressions().iterator();
+			while (it.hasNext()) {
+				((Obligation) (it.next())).encode(output, indenter);
+			}
+
+			out.println(indent + "</AssociatedAdvice>");
 			indenter.out();
 		}
 	}

@@ -45,6 +45,7 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 
 
@@ -63,16 +64,26 @@ public class PolicyCombinerElement extends CombinerElement
      *
      * @param policy an <code>AbstractPolicy</code> to use in combining
      */
-    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy) {
-        super(policy);
-    }
-    
-    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy, List args) {
-        super(policy, args);
-    }
+//    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy) {
+//        super(policy);
+//    }
+//    
+//    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy, List args) {
+//        super(policy, args);
+//    }
     
     public PolicyCombinerElement(PolicySet policy, List args) {
         super(policy, args);
+    }
+    
+    /**
+     * Constructor that only takes an <code>AbstractPolicy</code. No parameters
+     * are associated with this <code>AbstractPolicy</code> when combining.
+     *
+     * @param policy an <code>AbstractPolicy</code> to use in combining
+     */
+    public PolicyCombinerElement(IPolicy policy) {
+        super(policy);
     }
     
     /**
@@ -84,7 +95,7 @@ public class PolicyCombinerElement extends CombinerElement
      *                   <code>CombinerParameter<code>s provided for general
      *                   use (for all pre-2.0 policies this must be empty)
      */
-    public PolicyCombinerElement(AbstractPolicy policy, List parameters) {
+    public PolicyCombinerElement(IPolicy policy, List parameters) {
         super(policy, parameters);
     }
 

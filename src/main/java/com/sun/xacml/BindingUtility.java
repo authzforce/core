@@ -38,11 +38,13 @@
 
 package com.sun.xacml;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.validation.SchemaFactory;
 
 /**
  *
@@ -123,12 +125,6 @@ public class BindingUtility {
 			return docBuilder;
 		}
 	};
-
-    public static  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory contextFac =
-            new  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory();
-    public static  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory policyFac =
-            new  oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory();
-
     
     /**
      * Get thread-local document builder. The client must call the {@link DocumentBuilder#reset()} after calling any parse() methods to preserve thread-safety..

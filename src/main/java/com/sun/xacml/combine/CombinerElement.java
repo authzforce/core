@@ -43,7 +43,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.PolicyTreeElement;
 import com.sun.xacml.Rule;
-import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.IPolicy;
 
 
 /**
@@ -118,6 +118,35 @@ public abstract class CombinerElement extends PolicyTreeElement
                 unmodifiableList(new ArrayList(parameters));
             this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = Collections.unmodifiableList(parameters);
         }
+    }
+    
+    /**
+     * Constructor that only takes an element. No parameters are associated
+     * with this element when combining.
+     *
+     * @param element a <code>PolicyTreeElement</code> to use in combining
+     */
+    public CombinerElement(IPolicy element) {
+        this(element, null);
+    }
+    
+    /**
+     * Constructor that takes both the element to combine and its associated
+     * combiner parameters.
+     *
+     * @param element a <code>PolicyTreeElement</code> to use in combining
+     * @param parameters a (possibly empty) non-null <code>List</code> of
+     *                   <code>CombinerParameter<code>s provided for general
+     *                   use (for all pre-2.0 policies this must be empty)
+     */
+    public CombinerElement(IPolicy element, List parameters) {
+        this.element = element;
+
+        if (parameters == null)
+            this.parameters = Collections.unmodifiableList(new ArrayList());
+        else
+            this.parameters = Collections.
+                unmodifiableList(new ArrayList(parameters));
     }
 
     /**

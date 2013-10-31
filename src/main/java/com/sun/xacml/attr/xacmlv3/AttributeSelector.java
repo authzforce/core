@@ -74,12 +74,6 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	// the data type returned by this selector
 	private URI type;
 
-	// the XPath to search
-	private String contextPath;
-
-	// must resolution find something
-	private boolean mustBePresent;
-
 	// the xpath version we've been told to use
 	private String xpathVersion;
 
@@ -106,36 +100,36 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	{
 		this(type, contextPath, null, mustBePresent, xpathVersion);
 	}
-
-	/**
-	 * Creates a new <code>AttributeSelector</code>.
-	 * 
-	 * @param type
-	 *            the data type of the attribute values this selector looks for
-	 * @param contextPath
-	 *            the XPath to query
-	 * @param policyRoot
-	 *            the root DOM Element for the policy containing this selector, which defines
-	 *            namespace mappings
-	 * @param mustBePresent
-	 *            must resolution find a match
-	 * @param xpathVersion
-	 *            the XPath version to use, which must be a valid XPath version string (the
-	 *            identifier for XPath 1.0 is provided in <code>PolicyMetaData</code>)
-	 */
+	
 	public AttributeSelector(String type, String contextPath, Node policyRoot, boolean mustBePresent, String xpathVersion)
 	{
-		this.type = URI.create(type);
-		this.contextPath = contextPath;
+		this.type = URI.create(type); 
+		this.path = contextPath;
 		this.mustBePresent = mustBePresent;
 		this.xpathVersion = xpathVersion;
 		this.policyRoot = policyRoot;
 
 		this.dataType = type;
+		/*
+		 * FIXME: why assign Xpath value to contextSelectorId? 
+		 */
 		this.contextSelectorId = contextPath;
-		this.mustBePresent = mustBePresent;
-		this.path = xpathVersion;
-		this.policyRoot = policyRoot;
+	}
+	
+	/**
+	 * 
+	 * @param attrSelectorElement
+	 * @param xpathVersion
+	 */
+	public AttributeSelector(AttributeSelectorType attrSelectorElement, PolicyMetaData metaData)
+	{
+		this.type = URI.create(attrSelectorElement.getDataType());
+		this.path = attrSelectorElement.getPath();
+		this.mustBePresent = attrSelectorElement.isMustBePresent();
+		this.dataType = attrSelectorElement.getDataType();
+		this.contextSelectorId = attrSelectorElement.getContextSelectorId();
+		
+		this.xpathVersion = metaData.getXPathIdentifier();
 	}
 
 	/**
@@ -255,7 +249,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 		return new AttributeSelector(type.toASCIIString(), contextPath, policyRoot, mustBePresent, xpathVersion);
 	}
 
-	public static ExpressionType getInstance(AttributeSelectorType attrSelector)
+	public static AttributeSelector getInstance(AttributeSelectorType attrSelector)
 	{
 		return new AttributeSelector(attrSelector.getDataType(), attrSelector.getContextSelectorId(), attrSelector.isMustBePresent(),
 				attrSelector.getPath());
@@ -278,7 +272,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	 */
 	public String getContextPath()
 	{
-		return contextPath;
+		return path;
 	}
 
 	/**
@@ -352,7 +346,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	public EvaluationResult evaluate(EvaluationCtx context)
 	{
 		// query the context
-		EvaluationResult result = context.getAttribute(contextPath, policyRoot, type, xpathVersion);
+		EvaluationResult result = context.getAttribute(path, policyRoot, type, xpathVersion);
 
 		// see if we got anything
 		if (!result.indeterminate())
@@ -366,11 +360,11 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 				if (mustBePresent)
 				{
 					// this is an error
-					LOGGER.info("AttributeSelector failed to resolve a value for a required attribute: {} ", contextPath);
+					LOGGER.info("AttributeSelector failed to resolve a value for a required attribute: {} ", path);
 
 					ArrayList code = new ArrayList();
 					code.add(Status.STATUS_MISSING_ATTRIBUTE);
-					String message = "couldn't resolve XPath expression " + contextPath + " for type " + type.toString();
+					String message = "couldn't resolve XPath expression " + path + " for type " + type.toString();
 					return new EvaluationResult(new Status(code, message));
 				} else
 				{
@@ -415,7 +409,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 		PrintStream out = new PrintStream(output);
 		String indent = indenter.makeString();
 
-		String tag = "<AttributeSelector RequestContextPath=\"" + contextPath + "\" DataType=\"" + type.toString() + "\"";
+		String tag = "<AttributeSelector RequestContextPath=\"" + path + "\" DataType=\"" + type.toString() + "\"";
 
 		if (mustBePresent)
 			tag += " MustBePresent=\"true\"";

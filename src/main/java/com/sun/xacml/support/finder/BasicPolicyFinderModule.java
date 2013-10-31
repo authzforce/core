@@ -40,13 +40,12 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.PolicySet;
 import com.sun.xacml.VersionConstraints;
-import com.sun.xacml.combine.PolicyCombinerElement;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
+import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 
 /**
@@ -209,63 +208,76 @@ public class BasicPolicyFinderModule extends PolicyFinderModule
 	 * 
 	 * @return the result of trying to find an applicable policy
 	 */
-	// public PolicyFinderResult findPolicy(EvaluationCtx context) {
-	// try {
-	// Policy policy = (Policy)ctxPolicies.getPolicy(context);
-	//
-	// if (policy == null) {
-	// return new PolicyFinderResult();
-	// } else {
-	// return new PolicyFinderResult(policy);
-	// }
-	// } catch (TopLevelPolicyException tlpe) {
-	// return new PolicyFinderResult(tlpe.getStatus());
-	// }
-	// }
 	public PolicyFinderResult findPolicy(EvaluationCtx context)
 	{
-		try
-		{
-			Object myPolicies = this.ctxPolicies.getPolicy(context);
-			if (myPolicies == null)
-			{
-				myPolicies = this.ctxPolicies.getPolicySet(context);
-			}
-			if (myPolicies instanceof PolicySet)
-			{
-				PolicySet policySet = (PolicySet) myPolicies;
-				// Retrieving combining algorithm
-				PolicyCombiningAlgorithm myCombiningAlg = (PolicyCombiningAlgorithm) policySet.getCombiningAlg();
-				PolicyCollection myPolcollection = new PolicyCollection(myCombiningAlg, URI.create(policySet.getPolicySetId()));
-				for (Object elt : policySet.getPolicySetsAndPoliciesAndPolicySetIdReferences())
-				{
-					if (elt instanceof PolicyCombinerElement)
-					{
-						myPolcollection.addPolicy((Policy) ((PolicyCombinerElement) elt).getElement());
-					}
-				}
-				Object policy = myPolcollection.getPolicy(context);
-				// The finder found more than one applicable policy so it build a new PolicySet
-				if (policy instanceof PolicySet)
-				{
-					return new PolicyFinderResult((PolicySet) policy, myCombiningAlg);
-				}
-				// The finder found only one applicable policy
-				else if (policy instanceof Policy)
-				{
-					return new PolicyFinderResult((Policy) policy);
-				}
-			} else if (myPolicies instanceof Policy)
-			{
-				Policy policies = (Policy) myPolicies;
-				return new PolicyFinderResult((Policy) policies);
-			}
-			// None of the policies/policySets matched
-			return new PolicyFinderResult();
-		} catch (TopLevelPolicyException tlpe)
-		{
-			return new PolicyFinderResult(tlpe.getStatus());
-		}
+//		try
+//		{
+//			final IPolicy policyInstance;
+//			try
+//			{
+//				policyInstance = this.ctxPolicies.getPolicy(context);
+//			} catch (ParsingException e)
+//			{
+//				LOGGER.error("Error matching policy against context", e);
+//				return new PolicyFinderResult();
+//			}
+//			
+//			if (policyInstance instanceof PolicySet)
+//			{
+//				PolicySet policySet = (PolicySet) policyInstance;
+//				// Retrieving combining algorithm
+//				PolicyCombiningAlgorithm myCombiningAlg = (PolicyCombiningAlgorithm) policySet.getCombiningAlg();
+//				PolicyCollection myPolcollection = new PolicyCollection(myCombiningAlg, URI.create(policySet.getPolicySetId()));
+//				for (Object elt : policySet.getPolicySetsAndPoliciesAndPolicySetIdReferences())
+//				{
+//					if (elt instanceof PolicyCombinerElement)
+//					{
+//						myPolcollection.addPolicy((Policy) ((PolicyCombinerElement) elt).getElement());
+//					}
+//				}
+//				
+//				final IPolicy policyTreeElement;
+//				try
+//				{
+//					policyTreeElement = myPolcollection.getPolicy(context);
+//				} catch (ParsingException e)
+//				{
+//					LOGGER.error("Error matching PolicySet CombinerElements against context", e);
+//					return new PolicyFinderResult();
+//				}
+//				
+//				// The finder found more than one applicable policy so it build a new PolicySet
+//				if (policyTreeElement instanceof PolicySet)
+//				{
+//					return new PolicyFinderResult((PolicySet) policyTreeElement);
+//				}
+//				// The finder found only one applicable policy
+//				else if (policyTreeElement instanceof Policy)
+//				{
+//					return new PolicyFinderResult((Policy) policyTreeElement);
+//				}
+//			} else if (policyInstance instanceof Policy)
+//			{
+//				Policy policy = (Policy) policyInstance;
+//				return new PolicyFinderResult(policy);
+//			}
+//			// None of the policies/policySets matched
+//			return new PolicyFinderResult();
+//		} catch (TopLevelPolicyException tlpe)
+//		{
+//			return new PolicyFinderResult(tlpe.getStatus());
+//		}
+		
+		 try {
+	            final IPolicy policy = ctxPolicies.getPolicy(context);
+
+	            if (policy == null)
+	                return new PolicyFinderResult();
+	            else
+	                return new PolicyFinderResult(policy);
+	        } catch (TopLevelPolicyException tlpe) {
+	            return new PolicyFinderResult(tlpe.getStatus());
+	        }
 	}
 
 	/**
@@ -288,12 +300,15 @@ public class BasicPolicyFinderModule extends PolicyFinderModule
 	 */
 	public PolicyFinderResult findPolicy(URI idReference, int type, VersionConstraints constraints, PolicyMetaData parentMetaData)
 	{
-		Policy policy = refPolicies.getPolicy(idReference.toString(), type, constraints);
+		IPolicy policyInstance = refPolicies.getPolicy(idReference.toString(), type, constraints);
 
-		if (policy == null)
+		if (policyInstance == null)
 			return new PolicyFinderResult();
-		else
-			return new PolicyFinderResult(policy);
+		else if(policyInstance instanceof Policy) {
+			return new PolicyFinderResult((Policy) policyInstance);
+		} else {
+			throw new UnsupportedOperationException("Finding policy instances of '"+policyInstance.getClass()+"' is not supported");
+		}
 	}
 
 }

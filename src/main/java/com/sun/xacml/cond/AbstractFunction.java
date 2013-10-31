@@ -47,6 +47,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
@@ -120,9 +121,10 @@ public abstract class AbstractFunction extends Function {
      *
      * @return <code>null</code> if no errors were encountered, otherwise
      *         an <code>EvaluationResult</code> representing the error
+     * @throws ParsingException 
      */
     protected EvaluationResult evalArgs(List<Evaluatable> params, EvaluationCtx context,
-                                        List<AttributeValueType> paramValues) {
+                                        List<AttributeValueType> paramValues) throws ParsingException {
         for (Evaluatable param : params) {
             EvaluationResult result = param.evaluate(context);
 

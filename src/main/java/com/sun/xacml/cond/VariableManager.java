@@ -50,289 +50,298 @@ import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.cond.xacmlv3.ExpressionTools;
 
 /**
- * This class is used by the parsing routines to handle the relationships
- * between variable references and definitions. Specifically, it takes care
- * of the fact that definitions can be placed after their first reference,
- * and can use references to create circular or recursive relationships. It
- * keeps track of what's in the process of being parsed and will pre-parse
+ * This class is used by the parsing routines to handle the relationships between variable
+ * references and definitions. Specifically, it takes care of the fact that definitions can be
+ * placed after their first reference, and can use references to create circular or recursive
+ * relationships. It keeps track of what's in the process of being parsed and will pre-parse
  * elements as needed.
  * <p>
- * Note that you should never have to use this class directly. It is really
- * meant only as a utility for the internal parsing routines. Also, note that
- * the operations on this class are not thread-safe. Typically this doesn't
- * matter, since the code doesn't support using more than one thread to
- * parse a single Policy.
- *
+ * Note that you should never have to use this class directly. It is really meant only as a utility
+ * for the internal parsing routines. Also, note that the operations on this class are not
+ * thread-safe. Typically this doesn't matter, since the code doesn't support using more than one
+ * thread to parse a single Policy.
+ * 
  * @since 2.0
  * @author Seth Proctor
  */
 public class VariableManager extends ExpressionType
 {
-    
-    // the map from identifiers to internal data
-    private Map idMap;
 
-    // the meta-data for the containing policy
-    private PolicyMetaData metaData;
+	// the map from identifiers to internal data
+	private Map<String, VariableState> idMap;
 
-    /**
-     * Creates a manager with a fixed set of supported identifiers. For
-     * each of these identifiers, the map supplies a cooresponding DOM node
-     * used to parse the definition. This is used if, in the course of
-     * parsing one definition, a reference requires that you have information
-     * about another definition available. All parsed definitions are cached
-     * so that each is only parsed once. If a node is not provided, then the
-     * parsing code may throw an exception if out-of-order or circular
-     * refereces are used.
-     * <p>
-     * Note that the use of a DOM node may change to an arbitrary interface,
-     * so that you could use your own mechanism, but this is still being
-     * hashed out. This interface will be forzed before a 2.0 release.
-     *
-     * @param variableIds a <code>Map</code> from an identifier to the
-     *                    <code>Node</code> that is the root of the
-     *                    cooresponding variable definition, or null
-     * @param metaData the meta-data associated with the containing policy
-     */
-    public VariableManager(Map variableIds, PolicyMetaData metaData) {
-        idMap = new HashMap();
+	// the meta-data for the containing policy
+	private PolicyMetaData metaData;
 
-        Iterator it = variableIds.keySet().iterator();
-        while (it.hasNext()) {
-            Object key = it.next();
-            Node node = (Node)(variableIds.get(key));
-            idMap.put(key, new VariableState(null, node, null, false, false));
-        }
+	/**
+	 * Creates a manager with a fixed set of supported identifiers. For each of these identifiers,
+	 * the map supplies a cooresponding DOM node used to parse the definition. This is used if, in
+	 * the course of parsing one definition, a reference requires that you have information about
+	 * another definition available. All parsed definitions are cached so that each is only parsed
+	 * once. If a node is not provided, then the parsing code may throw an exception if out-of-order
+	 * or circular refereces are used.
+	 * <p>
+	 * Note that the use of a DOM node may change to an arbitrary interface, so that you could use
+	 * your own mechanism, but this is still being hashed out. This interface will be forzed before
+	 * a 2.0 release.
+	 * 
+	 * @param variableIds
+	 *            a <code>Map</code> from an identifier to the <code>Node</code> that is the root of
+	 *            the cooresponding variable definition, or null
+	 * @param metaData
+	 *            the meta-data associated with the containing policy
+	 */
+	public VariableManager(Map<String, Node> variableIds, PolicyMetaData metaData)
+	{
+		idMap = new HashMap<>();
 
-        this.metaData = metaData;
-    }
+		Iterator<String> it = variableIds.keySet().iterator();
+		while (it.hasNext())
+		{
+			String key = it.next();
+			Node node = variableIds.get(key);
+			idMap.put(key, new VariableState(null, node, null, false, false));
+		}
 
-    /**
-     * Returns the definition with the given identifier. If the definition
-     * is not available, then this method will try to get the definition
-     * based on the DOM node given for this identifier. If parsing the
-     * definition requires loading another definition (because of a reference)
-     * then this method will be recursively invoked. This may make it slow
-     * to call this method once, but all retrieved definitions are cached,
-     * and once this manager has started parsing a definition it will never
-     * try parsing that definition again. If the definition cannot be
-     * retrieved, then an exception is thrown.
-     *
-     * @param variableId the definition's identifier
-     *
-     * @return the identified definition
-     *
-     * @throws ProcessingException if the definition cannot be resolved
-     */
-    public VariableDefinition getDefinition(String variableId) {
-        VariableState state = (VariableState)(idMap.get(variableId));
+		this.metaData = metaData;
+	}
 
-        // make sure this is an identifier we handle
-        if (state == null)
-            throw new ProcessingException("variable is unsupported: " +
-                                          variableId);
+	/**
+	 * Add VariableDefinition to be managed
+	 * @param var VariableDefinition
+	 * @throws IllegalArgumentException if VariableId already used 
+	 */
+	public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition var)
+	{
+		final String varId = var.getVariableId();
+		final VariableDefinition varDef = new VariableDefinition(varId, var.getExpression().getValue());
+		final VariableState varState = new VariableState(varDef, null, null, false, false);
+		final VariableState state = idMap.put(varId, varState);
+		if(state != null) {
+			throw new IllegalArgumentException("Duplicate VariableDefinion VariableId: " + varId);
+		}
+	}
 
-        // if we've resolved the definition before, then we're done
-        if (state.definition != null)
-            return state.definition;
+	/**
+	 * Returns the definition with the given identifier. If the definition is not available, then
+	 * this method will try to get the definition based on the DOM node given for this identifier.
+	 * If parsing the definition requires loading another definition (because of a reference) then
+	 * this method will be recursively invoked. This may make it slow to call this method once, but
+	 * all retrieved definitions are cached, and once this manager has started parsing a definition
+	 * it will never try parsing that definition again. If the definition cannot be retrieved, then
+	 * an exception is thrown.
+	 * 
+	 * @param variableId
+	 *            the definition's identifier
+	 * 
+	 * @return the identified definition
+	 * 
+	 * @throws ProcessingException
+	 *             if the definition cannot be resolved
+	 */
+	public VariableDefinition getDefinition(String variableId)
+	{
+		VariableState state = idMap.get(variableId);
 
-        // we don't have the definition, so get the DOM node
-        Node node = state.rootNode;
-        
-        // we can't keep going unless we have a node to work with
-        if (node != null) {
-            // if we've already started parsing this node before, then
-            // don't start again
-            if (state.handled)
-                throw new ProcessingException("processing in progress");
+		// make sure this is an identifier we handle
+		if (state == null)
+			throw new ProcessingException("variable is unsupported: " + variableId);
 
-            // keep track of the fact that we're parsing this node, and
-            // also get the type (if it's an Apply node)
-            state.handled = true;
-            discoverApplyType(node, state);
+		// if we've resolved the definition before, then we're done
+		if (state.definition != null)
+			return state.definition;
 
-            try {
-                // now actually try parsing the definition...remember that
-                // if its expression has a reference, we could end up
-                // calling this manager method again
-                state.definition =
-                    VariableDefinition.getInstance(state.rootNode,
-                                                   metaData, this);
+		// we don't have the definition, so get the DOM node
+		Node node = state.rootNode;
 
-                return state.definition;
-            } catch (ParsingException pe) {
-                // we failed to parse the definition for some reason
-                throw new ProcessingException("failed to parse the definition",
-                                              pe);
-            }
-        }
+		// we can't keep going unless we have a node to work with
+		if (node != null)
+		{
+			// if we've already started parsing this node before, then
+			// don't start again
+			if (state.handled)
+				throw new ProcessingException("processing in progress");
 
-        // we couldn't figure out how to resolve the definition
-        throw new ProcessingException("couldn't retrieve definition: " +
-                                      variableId);
-    }
+			// keep track of the fact that we're parsing this node, and
+			// also get the type (if it's an Apply node)
+			state.handled = true;
+			discoverApplyType(node, state);
 
-    /**
-     * Private helper method to get the type of an expression, but only if
-     * that expression is an Apply. Basically, if there is a circular
-     * reference, then we'll need to know the types before we're done
-     * parsing one of the definitions. But, a circular reference that
-     * requires type-checking can only happen if the definition's expression
-     * is an Apply. So, we look here, and if it's an Apply, we get the
-     * type information and store that for later use, just in case.
-     * <p>
-     * Note that we could wait until later to try this, or we could check
-     * first to see if there will be a circular reference. Comparatively,
-     * however, this isn't too expensive, and it makes the system much
-     * simpler. Still, it's worth re-examining this to see if there's a
-     * way that makes more sense.
-     */
-    private void discoverApplyType(Node root, VariableState state) {
-        // get the first element, which is the expression node
-        NodeList nodes = root.getChildNodes();
-        Node xprNode = nodes.item(0);
-        int i = 1;
-        while (xprNode.getNodeType() != Node.ELEMENT_NODE)
-            xprNode = nodes.item(i++);
+			try
+			{
+				// now actually try parsing the definition...remember that
+				// if its expression has a reference, we could end up
+				// calling this manager method again
+				state.definition = VariableDefinition.getInstance(state.rootNode, metaData, this);
 
-        // now see if the node is an Apply
-        if (xprNode.getNodeName().equals("Apply")) {
-            try {
-                // get the function in the Apply...
-                ExpressionType function = ExpressionTools.
-                    getFunction(xprNode, metaData,
-                                FunctionFactory.getGeneralInstance());
-                
-                // ...and store the type information in the variable state
-                state.type = ((Expression)function).getType();
-                state.returnsBag = ((Expression)function).returnsBag();
-            } catch (ParsingException pe) {
-                // we can just ignore this...if there really is an error,
-                // then it will come up during parsing in a code path that
-                // can handle the error cleanly
-            }
-        }
-    }
+				return state.definition;
+			} catch (ParsingException pe)
+			{
+				// we failed to parse the definition for some reason
+				throw new ProcessingException("failed to parse the definition", pe);
+			}
+		}
 
-    /**
-     * Returns the datatype that the identified definition's expression
-     * resolves to on evaluation. Note that this method makes every attempt
-     * to discover this value, including parsing dependent definitions if
-     * needed and possible.
-     *
-     * @param variableId the identifier for the definition
-     *
-     * @return the datatype that the identified definition's expression
-     *         evaluates to
-     *
-     * @throws ProcessingException if the identifier is not supported or if
-     *                             the result cannot be resolved
-     */
-    public URI getVariableType(String variableId) {
-        VariableState state = (VariableState)(idMap.get(variableId));
+		// we couldn't figure out how to resolve the definition
+		throw new ProcessingException("couldn't retrieve definition: " + variableId);
+	}
 
-        // make sure the variable is supported
-        if (state == null)
-            throw new ProcessingException("variable not supported: " +
-                                          variableId);
+	/**
+	 * Private helper method to get the type of an expression, but only if that expression is an
+	 * Apply. Basically, if there is a circular reference, then we'll need to know the types before
+	 * we're done parsing one of the definitions. But, a circular reference that requires
+	 * type-checking can only happen if the definition's expression is an Apply. So, we look here,
+	 * and if it's an Apply, we get the type information and store that for later use, just in case.
+	 * <p>
+	 * Note that we could wait until later to try this, or we could check first to see if there will
+	 * be a circular reference. Comparatively, however, this isn't too expensive, and it makes the
+	 * system much simpler. Still, it's worth re-examining this to see if there's a way that makes
+	 * more sense.
+	 */
+	private void discoverApplyType(Node root, VariableState state)
+	{
+		// get the first element, which is the expression node
+		NodeList nodes = root.getChildNodes();
+		Node xprNode = nodes.item(0);
+		int i = 1;
+		while (xprNode.getNodeType() != Node.ELEMENT_NODE)
+			xprNode = nodes.item(i++);
 
-        // if we've previously figured out the type, then return that
-        if (state.type != null)
-            return state.type;
+		// now see if the node is an Apply
+		if (xprNode.getNodeName().equals("Apply"))
+		{
+			try
+			{
+				// get the function in the Apply...
+				ExpressionType function = ExpressionTools.getFunction(xprNode, metaData, FunctionFactory.getGeneralInstance());
 
-        // we haven't figured out the type already, so see if we have or
-        // can resolve the definition
-        VariableDefinition definition = state.definition;
-        if (definition == null)
-            definition = getDefinition(variableId);
+				// ...and store the type information in the variable state
+				state.type = ((Expression) function).getType();
+				state.returnsBag = ((Expression) function).returnsBag();
+			} catch (ParsingException pe)
+			{
+				// we can just ignore this...if there really is an error,
+				// then it will come up during parsing in a code path that
+				// can handle the error cleanly
+			}
+		}
+	}
 
-        // if we could get the definition, then ask it for the type
-        if (definition != null)
-            return ((Expression)definition.getExpression().getValue()).getType();
+	/**
+	 * Returns the datatype that the identified definition's expression resolves to on evaluation.
+	 * Note that this method makes every attempt to discover this value, including parsing dependent
+	 * definitions if needed and possible.
+	 * 
+	 * @param variableId
+	 *            the identifier for the definition
+	 * 
+	 * @return the datatype that the identified definition's expression evaluates to
+	 * 
+	 * @throws ProcessingException
+	 *             if the identifier is not supported or if the result cannot be resolved
+	 */
+	public URI getVariableType(String variableId)
+	{
+		VariableState state = idMap.get(variableId);
 
-        // we exhausted all our ways to get the right answer
-        throw new ProcessingException("we couldn't establish the type: " +
-                                      variableId);
-    }
+		// make sure the variable is supported
+		if (state == null)
+			throw new ProcessingException("variable not supported: " + variableId);
 
-    /**
-     * Returns true if the identified definition's expression resolves to
-     * a bag on evaluation. Note that this method makes every attempt to
-     * discover this value, including parsing dependent definitions if
-     * needed and possible.
-     *
-     * @param variableId the identifier for the definition
-     *
-     * @return true if the identified definition's expression evaluates
-     *         to a bag
-     *
-     * @throws ProcessingException if the identifier is not supported or if
-     *                             the result cannot be resolved
-     */
-    public boolean returnsBag(String variableId) {
-        VariableState state = (VariableState)(idMap.get(variableId));
+		// if we've previously figured out the type, then return that
+		if (state.type != null)
+			return state.type;
 
-        // make sure the variable is supported
-        if (state == null)
-            throw new ProcessingException("variable not supported: " +
-                                          variableId);
+		// we haven't figured out the type already, so see if we have or
+		// can resolve the definition
+		VariableDefinition definition = state.definition;
+		if (definition == null)
+			definition = getDefinition(variableId);
 
-        // the flag is only valid if a type has also been determined
-        if (state.type != null)
-            return state.returnsBag;
+		// if we could get the definition, then ask it for the type
+		if (definition != null)
+			return ((Expression) definition.getExpression().getValue()).getType();
 
-        // we haven't figured out the type already, so see if we have or
-        // can resolve the definition
-        VariableDefinition definition = state.definition;
-        if (definition == null)
-            definition = getDefinition(variableId);
+		// we exhausted all our ways to get the right answer
+		throw new ProcessingException("we couldn't establish the type: " + variableId);
+	}
 
-        // if we could get the definition, then ask it for the bag return
-        if (definition != null)
-            return ((Expression)definition.getExpression().getValue()).returnsBag();
+	/**
+	 * Returns true if the identified definition's expression resolves to a bag on evaluation. Note
+	 * that this method makes every attempt to discover this value, including parsing dependent
+	 * definitions if needed and possible.
+	 * 
+	 * @param variableId
+	 *            the identifier for the definition
+	 * 
+	 * @return true if the identified definition's expression evaluates to a bag
+	 * 
+	 * @throws ProcessingException
+	 *             if the identifier is not supported or if the result cannot be resolved
+	 */
+	public boolean returnsBag(String variableId)
+	{
+		VariableState state = idMap.get(variableId);
 
-        // we exhausted all our ways to get the right answer
-        throw new ProcessingException("couldn't establish bag return for " +
-                                      variableId);
-    }
+		// make sure the variable is supported
+		if (state == null)
+			throw new ProcessingException("variable not supported: " + variableId);
 
-    /**
-     * Inner class that is used simply to manage fields associated with a
-     * given identifier.
-     */
-    class VariableState {
+		// the flag is only valid if a type has also been determined
+		if (state.type != null)
+			return state.returnsBag;
 
-        // the resolved definition for the identifier
-        public VariableDefinition definition;
+		// we haven't figured out the type already, so see if we have or
+		// can resolve the definition
+		VariableDefinition definition = state.definition;
+		if (definition == null)
+			definition = getDefinition(variableId);
 
-        // the DOM node used to parse the definition
-        public Node rootNode;
+		// if we could get the definition, then ask it for the bag return
+		if (definition != null)
+			return ((Expression) definition.getExpression().getValue()).returnsBag();
 
-        // the datatype returned when evaluating the definition
-        public URI type;
+		// we exhausted all our ways to get the right answer
+		throw new ProcessingException("couldn't establish bag return for " + variableId);
+	}
 
-        // whether the definition's root evaluates to a Bag
-        public boolean returnsBag;
+	/**
+	 * Inner class that is used simply to manage fields associated with a given identifier.
+	 */
+	class VariableState
+	{
 
-        // whether the definition is being parsed and constructed 
-        public boolean handled;
+		// the resolved definition for the identifier
+		public VariableDefinition definition;
 
-        public VariableState() {
-            this.definition = null;
-            this.rootNode = null;
-            this.type = null;
-            this.returnsBag = false;
-            this.handled = false;
-        }
+		// the DOM node used to parse the definition
+		public Node rootNode;
 
-        public VariableState(VariableDefinition definition, Node rootNode,
-                             URI type, boolean returnsBag,
-                             boolean handled) {
-            this.definition = definition;
-            this.rootNode = rootNode;
-            this.type = type;
-            this.returnsBag = returnsBag;
-            this.handled = handled;
-        }
-    }
+		// the datatype returned when evaluating the definition
+		public URI type;
+
+		// whether the definition's root evaluates to a Bag
+		public boolean returnsBag;
+
+		// whether the definition is being parsed and constructed
+		public boolean handled;
+
+		public VariableState()
+		{
+			this.definition = null;
+			this.rootNode = null;
+			this.type = null;
+			this.returnsBag = false;
+			this.handled = false;
+		}
+
+		public VariableState(VariableDefinition definition, Node rootNode, URI type, boolean returnsBag, boolean handled)
+		{
+			this.definition = definition;
+			this.rootNode = rootNode;
+			this.type = type;
+			this.returnsBag = returnsBag;
+			this.handled = handled;
+		}
+	}
 }

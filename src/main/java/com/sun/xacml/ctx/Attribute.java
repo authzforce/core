@@ -59,6 +59,7 @@ import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.DateTimeAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
@@ -68,53 +69,52 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute implements Serializable {
+public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute implements Serializable
+{
 
 	/**
-	 * Generated Serial ID 
+	 * Generated Serial ID
 	 */
 	private static final long serialVersionUID = -2976070663545305371L;
-	
-	
+
 	// required meta-data attributes
-//	private URI id;
+	// private URI id;
 	private URI type;
 	private URI category;
 
 	// optional meta-data attributes
-//	private String issuer = null;
+	// private String issuer = null;
 	private DateTimeAttribute issueInstant = null;
 
 	// the single value associated with this attribute
-//	private List<AttributeValue> attributeValues;
+	// private List<AttributeValue> attributeValues;
 
 	/**
-	 * whether to include this attribute in the result. This is useful to
-	 * correlate requests with their responses in case of multiple requests.
-	 * optional one defined only in XACML3
+	 * whether to include this attribute in the result. This is useful to correlate requests with
+	 * their responses in case of multiple requests. optional one defined only in XACML3
 	 */
-//	private boolean includeInResult;
+	// private boolean includeInResult;
 
+	/*
+	 * FIXME: This is never used 
+	 */
 	private int xacmlVersion;
-	
+
 	/**
 	 * Logger used for all classes
 	 */
-	private static final Logger LOGGER =LoggerFactory
-			.getLogger(Attribute.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Attribute.class);
 
 	/**
 	 * Creates a new <code>Attribute</code> of the type specified in the given
-	 * <code>AttributeValue</code>.for XACML 3 with one
-	 * <code>AttributeValue</code>
+	 * <code>AttributeValue</code>.for XACML 3 with one <code>AttributeValue</code>
 	 * 
 	 * @param id
 	 *            the id of the attribute
 	 * @param issuer
 	 *            the attribute's issuer or null if there is none
 	 * @param issueInstant
-	 *            the moment when the attribute was issued, or null if it's
-	 *            unspecified
+	 *            the moment when the attribute was issued, or null if it's unspecified
 	 * @param value
 	 *            the actual value associated with the attribute meta-data
 	 * @param includeInResult
@@ -122,16 +122,14 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param version
 	 *            XACML version
 	 */
-	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant,
-			AttributeValueType value, boolean includeInResult, int version) {
-		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value),
-				includeInResult, version);
+	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant, AttributeValueType value, boolean includeInResult, int version)
+	{
+		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value), includeInResult, version);
 	}
-	
+
 	/**
 	 * Creates a new <code>Attribute</code> of the type specified in the given
-	 * <code>AttributeValue</code>.for XACML 3 with one
-	 * <code>AttributeValue</code>
+	 * <code>AttributeValue</code>.for XACML 3 with one <code>AttributeValue</code>
 	 * 
 	 * @param id
 	 *            the id of the attribute
@@ -140,8 +138,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param category
 	 *            the attribute's category (XACML 3.0)
 	 * @param issueInstant
-	 *            the moment when the attribute was issued, or null if it's
-	 *            unspecified
+	 *            the moment when the attribute was issued, or null if it's unspecified
 	 * @param value
 	 *            the actual value associated with the attribute meta-data
 	 * @param includeInResult
@@ -149,10 +146,10 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param version
 	 *            XACML version
 	 */
-	public Attribute(URI id, String issuer, URI category, DateTimeAttribute issueInstant,
-			AttributeValueType value, boolean includeInResult, int version) {
-		this(id, URI.create(value.getDataType()), category, issuer, issueInstant, Arrays.asList(value),
-				includeInResult, version);
+	public Attribute(URI id, String issuer, URI category, DateTimeAttribute issueInstant, AttributeValue value, boolean includeInResult,
+			int version)
+	{
+		this(id, URI.create(value.getDataType()), category, issuer, issueInstant, Arrays.asList(value), includeInResult, version);
 	}
 
 	/**
@@ -164,19 +161,16 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param issuer
 	 *            the attribute's issuer or null if there is none
 	 * @param issueInstant
-	 *            the moment when the attribute was issued, or null if it's
-	 *            unspecified
+	 *            the moment when the attribute was issued, or null if it's unspecified
 	 * @param value
-	 *            actual <code>List</code> of <code>AttributeValue</code>
-	 *            associated with
+	 *            actual <code>List</code> of <code>AttributeValue</code> associated with
 	 * @param version
 	 *            XACML version
 	 */
-	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant,
-			AttributeValueType value, int version) {
+	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant, AttributeValueType value, int version)
+	{
 
-		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value),
-				false, version);
+		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value), false, version);
 	}
 
 	/**
@@ -189,20 +183,17 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param issuer
 	 *            the attribute's issuer or null if there is none
 	 * @param issueInstant
-	 *            the moment when the attribute was issued, or null if it's
-	 *            unspecified
+	 *            the moment when the attribute was issued, or null if it's unspecified
 	 * @param attributeValues
-	 *            actual <code>List</code> of <code>AttributeValue</code>
-	 *            associated with
+	 *            actual <code>List</code> of <code>AttributeValue</code> associated with
 	 * @param includeInResult
 	 *            whether to include this attribute in the result.
 	 * @param xacmlVersion
 	 *            xacml version
 	 */
-	public Attribute(URI id, URI type, String issuer,
-			DateTimeAttribute issueInstant,
-			List<AttributeValueType> attributeValues, boolean includeInResult,
-			int xacmlVersion) {
+	public Attribute(URI id, URI type, String issuer, DateTimeAttribute issueInstant, List<AttributeValueType> attributeValues,
+			boolean includeInResult, int xacmlVersion)
+	{
 		this.attributeId = id.toASCIIString();
 		this.attributeValues = attributeValues;
 		this.type = type;
@@ -212,7 +203,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 		this.xacmlVersion = xacmlVersion;
 		this.category = null;
 	}
-	
+
 	/**
 	 * Creates a new <code>Attribute</code>
 	 * 
@@ -220,131 +211,151 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 *            the id of the attribute
 	 * @param type
 	 *            the type of the attribute
+	 * @param category 
 	 * @param issuer
 	 *            the attribute's issuer or null if there is none
 	 * @param issueInstant
-	 *            the moment when the attribute was issued, or null if it's
-	 *            unspecified
+	 *            the moment when the attribute was issued, or null if it's unspecified
 	 * @param attributeValues
-	 *            actual <code>List</code> of <code>AttributeValue</code>
-	 *            associated with
+	 *            actual <code>List</code> of <code>AttributeValue</code> associated with
 	 * @param includeInResult
 	 *            whether to include this attribute in the result.
 	 * @param xacmlVersion
 	 *            xacml version
 	 */
-	public Attribute(URI id, URI type, URI category, String issuer,
-			DateTimeAttribute issueInstant,
-			List<AttributeValueType> attributeValues, boolean includeInResult,
-			int xacmlVersion) {
+	public Attribute(URI id, URI type, URI category, String issuer, DateTimeAttribute issueInstant, List<AttributeValue> attributeValues,
+			boolean includeInResult, int xacmlVersion)
+	{
 		this.attributeId = id.toASCIIString();
 		this.type = type;
 		this.category = category;
 		this.issuer = issuer;
 		this.issueInstant = issueInstant;
-		this.attributeValues = attributeValues;
+		this.attributeValues = new ArrayList<AttributeValueType>(attributeValues);
 		this.includeInResult = includeInResult;
-		this.xacmlVersion = xacmlVersion;		
+		this.xacmlVersion = xacmlVersion;
 	}
 
 	/**
-	 * Creates an instance of an <code>Attribute</code> based on the root DOM
-	 * node of the XML data.
+	 * Creates an instance of an <code>Attribute</code> based on the root DOM node of the XML data.
 	 * 
 	 * @param root
 	 *            the DOM root of the AttributeType XML type
-	 * @param includeInResult
+	 * @param version
+	 *            XACML version
 	 * 
 	 * @return the attribute
 	 * 
 	 *         throws ParsingException if the data is invalid
+	 * @throws ParsingException
 	 */
-	public static Attribute getInstance(Node root, int version)
-			throws ParsingException {
+	public static Attribute getInstance(Node root, int version) throws ParsingException
+	{
 		URI id = null;
 		URI type = null;
 		URI category = null;
 		String issuer = null;
 		DateTimeAttribute issueInstant = null;
-		List<AttributeValueType> values = new ArrayList<AttributeValueType>();
+		List<AttributeValue> values = new ArrayList<>();
 		boolean includeInResult = false;
 
 		AttributeFactory attrFactory = AttributeFactory.getInstance();
 
 		// First check that we're really parsing an Attribute
-		if (!root.getNodeName().equals("Attribute")) {
-			throw new ParsingException("Attribute object cannot be created "
-					+ "with root node of type: " + root.getNodeName());
+		if (!root.getNodeName().equals("Attribute"))
+		{
+			throw new ParsingException("Attribute object cannot be created " + "with root node of type: " + root.getNodeName());
 		}
 
 		NamedNodeMap attrs = root.getAttributes();
 
-		try {
-			type = new URI(attrs.getNamedItem("DataType").getNodeValue());
-		} catch (Exception e) {
-			throw new ParsingException("Error parsing required attribute "
-					+ "DataType in AttributeType", e);
+		try
+		{
+			id = new URI(attrs.getNamedItem("AttributeId").getNodeValue());
+		} catch (Exception e)
+		{
+			throw new ParsingException("Error parsing required attribute " + "AttributeId in AttributeType", e);
 		}
 
-		if (version == PolicyMetaData.XACML_VERSION_3_0) {
-			try {
-				String includeInResultString = attrs.getNamedItem(
-						"IncludeInResult").getNodeValue();
-				if ("true".equals(includeInResultString)) {
+		/**
+		 * XACML 2.0 AttributeType has a DataType attribute. For XACML v3.0, no such attribute,
+		 * DataType defined in each child AttributeValue.
+		 */
+		try
+		{
+			type = new URI(attrs.getNamedItem("DataType").getNodeValue());
+		} catch (Exception e)
+		{
+			throw new ParsingException("Error parsing required attribute " + "DataType in AttributeType", e);
+		}
+
+		if (version == PolicyMetaData.XACML_VERSION_3_0)
+		{
+			try
+			{
+				String includeInResultString = attrs.getNamedItem("IncludeInResult").getNodeValue();
+				if ("true".equals(includeInResultString))
+				{
 					includeInResult = true;
 				}
-			} catch (Exception e) {
-				throw new ParsingException("Error parsing required attribute "
-						+ "IncludeInResult in AttributeType", e);
+			} catch (Exception e)
+			{
+				throw new ParsingException("Error parsing required attribute " + "IncludeInResult in AttributeType", e);
 			}
 		}
 
-		try {
+		try
+		{
 			Node issuerNode = attrs.getNamedItem("Issuer");
 			if (issuerNode != null)
 				issuer = issuerNode.getNodeValue();
-			if (!(version == PolicyMetaData.XACML_VERSION_3_0)) {
+			if (!(version == PolicyMetaData.XACML_VERSION_3_0))
+			{
 				Node instantNode = attrs.getNamedItem("IssueInstant");
-				if (instantNode != null) {
-					issueInstant = DateTimeAttribute.getInstance(instantNode
-							.getNodeValue());
+				if (instantNode != null)
+				{
+					issueInstant = DateTimeAttribute.getInstance(instantNode.getNodeValue());
 				}
 			}
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			// shouldn't happen, but just in case...
-			throw new ParsingException("Error parsing optional AttributeType"
-					+ " attribute", e);
+			throw new ParsingException("Error parsing optional AttributeType" + " attribute", e);
 		}
 
 		// now we get the attribute value
 		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++) {
+		for (int i = 0; i < nodes.getLength(); i++)
+		{
 			Node node = nodes.item(i);
-			if (node.getNodeName().equals("AttributeValue")) {
-				if (version ==  PolicyMetaData.XACML_VERSION_3_0) {
+			if (node.getNodeName().equals("AttributeValue"))
+			{
+				if (version == PolicyMetaData.XACML_VERSION_3_0)
+				{
 					NamedNodeMap dataTypeAttribute = node.getAttributes();
-					try {
-						type = new URI(dataTypeAttribute.getNamedItem(
-								"DataType").getNodeValue());
-						category = new URI(dataTypeAttribute.getNamedItem(
-								"Category").getNodeValue());
-					} catch (Exception e) {
-						throw new ParsingException(
-								"Error parsing required attribute "
-										+ "DataType in AttributeType", e);
+					try
+					{
+						type = new URI(dataTypeAttribute.getNamedItem("DataType").getNodeValue());
+						category = new URI(dataTypeAttribute.getNamedItem("Category").getNodeValue());
+					} catch (Exception e)
+					{
+						throw new ParsingException("Error parsing required attribute " + "DataType in AttributeType", e);
 					}
 				}
 				// now get the value
-				try {
+				try
+				{
 					values.add(attrFactory.createValue(node, type));
-				} catch (UnknownIdentifierException uie) {
+				} catch (UnknownIdentifierException uie)
+				{
 					throw new ParsingException("Unknown AttributeId", uie);
 				}
 			}
 		}
 
 		// make sure we got a value
-		if (values != null && values.size() < 1) {
+		if (values.size() < 1)
+		{
 			throw new ParsingException("Attribute must contain a value");
 		}
 
@@ -352,11 +363,41 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	}
 
 	/**
+	 * Creates Attribute handler from Attribute element, as defined in OASIS XACML model
+	 * 
+	 * @param attrElt
+	 * @param xacmlVersion
+	 *            XACML version
+	 * @return attribute handler
+	 * @throws ParsingException if one of the attribute value cannot be parsed according to specified value datatype
+	 * @throws UnknownIdentifierException if one of the attribute value datatype is unknown/not supported
+	 */
+	public static Attribute getInstance(oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute attrElt, int xacmlVersion) throws ParsingException, UnknownIdentifierException
+	{
+		final URI id = URI.create(attrElt.getAttributeId());
+		/*
+		 * Attribute element has no datatype attribute in XACML v3. Defined by each child
+		 * AttributeValue. So type arg is null.
+		 * Category is defined in parent Attributes element not at the Attribute level in XACML v3. So category arg is null.
+		 */
+		final AttributeFactory attrValueFactory = AttributeFactory.getInstance();
+		final List<AttributeValue> values = new ArrayList<>();
+		for(final AttributeValueType attrValElt: attrElt.getAttributeValues()) {
+			final AttributeValue attrVal = attrValueFactory.createValue(attrValElt);
+			values.add(attrVal);
+		}
+		
+		return new Attribute(id, null, null, attrElt.getIssuer(), null, values, attrElt.isIncludeInResult(), xacmlVersion);
+	}
+
+	/**
 	 * Returns whether attribute must be present in response or not
 	 * 
 	 * @return true/false
 	 */
-	public boolean isIncludeInResult() {
+	@Override
+	public boolean isIncludeInResult()
+	{
 		return includeInResult;
 	}
 
@@ -365,12 +406,13 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * 
 	 * @return the attribute id
 	 */
-	public URI getId() {
-		if(attributeId != null) {
+	public URI getId()
+	{
+		if (attributeId != null)
+		{
 			return URI.create(attributeId);
-		} else {
-			return null;
 		}
+		return null;
 	}
 
 	/**
@@ -378,7 +420,8 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * 
 	 * @return the attribute's data type
 	 */
-	public URI getType() {
+	public URI getType()
+	{
 		return type;
 	}
 
@@ -387,7 +430,9 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * 
 	 * @return the issuer or null
 	 */
-	public String getIssuer() {
+	@Override
+	public String getIssuer()
+	{
 		return issuer;
 	}
 
@@ -396,20 +441,22 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * 
 	 * @return the issuer or null
 	 */
-	public URI getCategory() {
-		if(category != null) {
+	public URI getCategory()
+	{
+		if (category != null)
+		{
 			return category;
-		} 
+		}
 		return URI.create("");
 	}
 
 	/**
-	 * Returns the moment at which the attribute was issued, or null if no issue
-	 * time was provided
+	 * Returns the moment at which the attribute was issued, or null if no issue time was provided
 	 * 
 	 * @return the time of issuance or null
 	 */
-	public DateTimeAttribute getIssueInstant() {
+	public DateTimeAttribute getIssueInstant()
+	{
 		return issueInstant;
 	}
 
@@ -418,7 +465,8 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * 
 	 * @return the attribute's value or null
 	 */
-	public List<AttributeValueType> getValues() {
+	public List<AttributeValueType> getValues()
+	{
 		return attributeValues;
 	}
 
@@ -427,8 +475,10 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * 
 	 * @return the attribute's value or null
 	 */
-	public AttributeValueType getValue() {
-		if (attributeValues != null && attributeValues.size() > 0) {
+	public AttributeValueType getValue()
+	{
+		if (attributeValues != null && attributeValues.size() > 0)
+		{
 			return attributeValues.get(0);
 		}
 
@@ -436,52 +486,59 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	}
 
 	/**
-	 * Encodes this attribute into its XML representation and writes this
-	 * encoding to the given <code>OutputStream</code> with no indentation.
+	 * Encodes this attribute into its XML representation and writes this encoding to the given
+	 * <code>OutputStream</code> with no indentation.
 	 * 
 	 * @param output
 	 *            a stream into which the XML-encoded data is written
 	 */
-	public void encode(OutputStream output) {
+	public void encode(OutputStream output)
+	{
 		encode(output, new Indenter(0));
 	}
 
 	/**
-	 * Encodes this attribute into its XML representation and writes this
-	 * encoding to the given <code>OutputStream</code> with indentation.
+	 * Encodes this attribute into its XML representation and writes this encoding to the given
+	 * <code>OutputStream</code> with indentation.
 	 * 
 	 * @param output
 	 *            a stream into which the XML-encoded data is written
 	 * @param indenter
 	 *            an object that creates indentation strings
 	 */
-	public void encode(OutputStream output, Indenter indenter) {
+	public void encode(OutputStream output, Indenter indenter)
+	{
 		PrintStream out = new PrintStream(output);
-		try {
+		try
+		{
 			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			LOGGER.error("Error marshalling Attribute", e);
 		}
 	}
 
 	/**
-	 * Simple encoding method that returns the text-encoded version of this
-	 * attribute with no formatting.
+	 * Simple encoding method that returns the text-encoded version of this attribute with no
+	 * formatting.
 	 * 
 	 * @return the text-encoded XML
 	 */
-	public String encode() {
+	public String encode()
+	{
 		StringWriter attribute = new StringWriter();
 		String str = "";
-		try {
+		try
+		{
 			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, attribute);
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			LOGGER.error("Error marshalling Attribute to String", e);
 		}
 		attribute.write(str);
-		
+
 		return str;
 	}
 

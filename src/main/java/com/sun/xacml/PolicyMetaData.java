@@ -69,7 +69,7 @@ public class PolicyMetaData
      * XACML 3.0 identifier
      */
     public static final String XACML_3_0_IDENTIFIER =
-        "urn:oasis:names:tc:xacml:3.0:policy:schema:os";
+        "urn:oasis:names:tc:xacml:3.0:core:schema:wd-17";
 
     /**
      * Version identifier for XACML 1.0

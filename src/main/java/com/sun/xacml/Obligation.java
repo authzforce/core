@@ -64,11 +64,10 @@ import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-import com.sun.xacml.cond.xacmlv3.Expression;
+import com.sun.xacml.cond.xacmlv3.ExpressionTools;
 import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.Result;
 import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents the ObligationType XML type in XACML. This also stores all the
@@ -221,11 +220,9 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 			EvaluationCtx context) throws ParsingException {
 		String id;
 		int fulfillOn = -1;
-		List<AttributeAssignment> assignments = new ArrayList<AttributeAssignment>();
+		List<AttributeAssignment> assignments = new ArrayList<>();
 		boolean indeterminate = false;
 		EvaluationResult result = null;
-
-		AttributeFactory attrFactory = AttributeFactory.getInstance();
 
 		id = root.getObligationId();
 
@@ -236,13 +233,7 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 			URI attrId = URI.create(attrsAssignment.getAttributeId());
 			String issuer = attrsAssignment.getIssuer();
 
-			ExpressionType myExpr = null;
-			try {
-				myExpr = Expression.getInstance(attrsAssignment.getExpression().getValue());
-			} catch (UnknownIdentifierException e) {
-				LOGGER.error("Error parsing Expression", e);
-				return new Obligation(id, fulfillOn, assignments, true);
-			}
+			ExpressionType myExpr = ExpressionTools.getInstance(attrsAssignment.getExpression().getValue(), null, null);
 			
 			// Check what type of expression this is
 			if (myExpr instanceof ApplyType) {

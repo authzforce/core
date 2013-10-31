@@ -19,21 +19,13 @@
 package com.sun.xacml.xacmlv3;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
@@ -42,8 +34,6 @@ import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.TargetMatchGroup;
 import com.sun.xacml.TargetSection;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * @author Romain Ferrari
@@ -54,16 +44,22 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	/**
 	 * Logger used for all classes
 	 */
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(AnyOf.class);
+//	private static final Logger LOGGER = LoggerFactory
+//			.getLogger(AnyOf.class);
 	
 	// the list of match groups
     private List matchGroups;
 
 	// the match type contained in this group
+    /**
+     * FIXME: this variable is never used
+     */
     private int matchType;
 
     // the version of XACML used by the containing Target
+    /**
+     * FIXME: this variable is never used
+     */
     private int xacmlVersion;
 
     public AnyOf() {
@@ -73,9 +69,9 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
         this.xacmlVersion = PolicyMetaData.XACML_VERSION_3_0;
     }
     
-	public AnyOf(oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfType, int xacmlVersion) {
-		this(Arrays.asList(allOfType), xacmlVersion);
-	}
+//	public AnyOf(oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfType, int xacmlVersion) {
+//		this(Arrays.asList(allOfType), xacmlVersion);
+//	}
 
 	/**
 	 * Constructor that creates a new <code>AnyOfSelection</code> based on the
@@ -84,26 +80,36 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	 * @param allOfSelections
 	 *            a <code>List</code> of <code>AllOfSelection</code> elements
 	 */
-	public AnyOf(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> allOfType, int xacmlVersion) {
+	public AnyOf(List<AllOf> allOfType, int xacmlVersion) {
 		if (allOfType == null) {
-			this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>();
+			this.allOves = new ArrayList<>();
 		} else {
-			this.allOves = allOfType;
+			this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>(allOfType);
 		}
-        this.xacmlVersion = xacmlVersion;
+        this.xacmlVersion = xacmlVersion;   
 	}
 
-	private static oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf unmarshallAllOfType(Node root) {
-		final JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> allOf;
-		try {
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
-			allOf = u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf.class);
-			return allOf.getValue();
-		} catch (Exception e) {
-			LOGGER.error("Error unmarshalling AllOf", e);
+	/**
+	 * creates a <code>AnyOf</code> handler based on JAXB AnyOf element.
+	 * @param anyOf JAXB AnyOf
+	 * @param metadata  
+	 * @return a new <code>AnyOf</code>
+	 * 
+	 * @throws ParsingException
+	 *             if AnyOf element is invalid
+	 */
+	public static AnyOf getInstance(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf anyOf, PolicyMetaData metadata) throws ParsingException
+	{
+		final List<AllOf> allOfList = new ArrayList<>();
+		for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfElement: anyOf.getAllOves()) {
+			allOfList.add(AllOf.getInstance(allOfElement, metadata));
 		}
-		
-		return null;
+
+		if (allOfList.isEmpty()) {
+			throw new ParsingException("AnyOf element must contain at least one AllOf element");
+		}
+
+		return new AnyOf(allOfList, PolicyMetaData.XACML_VERSION_3_0);
 	}
 
 	/**
@@ -121,7 +127,7 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	 */
 	public static AnyOf getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
-		List allOf = new ArrayList();
+		List<AllOf> allOf = new ArrayList<AllOf>();
 		NodeList children = root.getChildNodes();
 
 		for (int i = 0; i < children.getLength(); i++) {

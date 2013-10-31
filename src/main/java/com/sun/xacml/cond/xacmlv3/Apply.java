@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
@@ -303,8 +304,7 @@ public class Apply extends ApplyType implements Evaluatable
 //                xprs.add(xpr);
 //            }
 //        }
-    	
-		AttributeFactory attrFactory = AttributeFactory.getInstance();
+  
 
 		// get the function type, making sure that it's really a correct
 		// Target function
@@ -373,6 +373,38 @@ public class Apply extends ApplyType implements Evaluatable
     	
 
         return new Apply(function, xprs);
+    }
+    
+    /**
+     * Get instance of Apply handler based on Apply element from OASIS XACML model
+     * @param applyElt
+     * @param funcFactory function factory for instantiating functions in Apply
+     * @param varManager
+     * @return Apply handler
+     * @throws ParsingException
+     */
+    public static Apply getInstance(ApplyType applyElt, FunctionFactory funcFactory, VariableManager varManager) throws ParsingException {
+    	final Function function;
+    	final URI funcId;
+    	try {
+			funcId = new URI(applyElt.getFunctionId());
+			function = funcFactory.createFunction(funcId);
+		} catch (URISyntaxException use) {
+			throw new ParsingException("Error parsing Apply", use);
+		} catch (UnknownIdentifierException uie) {
+			throw new ParsingException("Unknown FunctionId", uie);
+		} catch (FunctionTypeException fte) {
+			// try to create an abstract function
+			throw new ParsingException("Unsupported function: " + applyElt.getFunctionId(), fte);
+		}
+    	
+    	final List<ExpressionType> exprHandlers = new ArrayList<>();
+    	for(final JAXBElement<? extends ExpressionType> exprElt: applyElt.getExpressions()) {
+    		final ExpressionType exprHandler = ExpressionTools.getInstance(exprElt.getValue(), funcFactory, varManager);
+    		exprHandlers.add(exprHandler);
+    	}  	
+    	
+    	return new Apply(function, exprHandlers);
     }
     
     /**

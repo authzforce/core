@@ -36,10 +36,11 @@ package com.sun.xacml;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
-import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.IPolicy;
 
 /**
  * This class is used as a placeholder for the PolicyIdReference and PolicySetIdReference fields in
@@ -68,8 +69,10 @@ import com.sun.xacml.xacmlv3.Policy;
  * 
  * @since 1.0
  * @author Seth Proctor
+ * 
+ * FIXME: why 'extends ...Policy'? This extension can be removed, (Policy members/attributes never used)
  */
-public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy
+public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy implements IPolicy
 {
 
 	/**
@@ -155,6 +158,16 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 		this.finder = finder;
 		this.parentMetaData = parentMetaData;
 	}
+	
+	/**
+	 * @param idRef ID reference to policy
+	 * @param policyType type of reference
+	 * @param finder the <code>PolicyFinder</code> used to handle the reference
+	 * @param parentMetaData the meta-data associated with the containing (parent) policy
+	 */
+	public PolicyReference(IdReferenceType idRef, int policyType, PolicyFinder finder, PolicyMetaData parentMetaData) {
+		this(URI.create(idRef.getValue()), policyType, new VersionConstraints(idRef.getVersion(), idRef.getEarliestVersion(), idRef.getLatestVersion()), finder, parentMetaData);
+	}
 
 	/**
 	 * Creates an instance of a <code>PolicyReference</code> object based on a DOM node.
@@ -167,6 +180,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 *            the DOM root of a PolicyIdReference or a PolicySetIdReference XML type
 	 * @param finder
 	 *            the <code>PolicyFinder</code> used to handle the reference
+	 * @return PolicyIdReference/PolicySetIdReference handler
 	 * 
 	 * @exception ParsingException
 	 *                if the node is invalid
@@ -185,6 +199,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 *            the <code>PolicyFinder</code> used to handle the reference
 	 * @param metaData
 	 *            the meta-data associated with the containing policy
+	 * @return PolicyIdReference/PolicySetIdReference handler
 	 * 
 	 * @exception ParsingException
 	 *                if the node is invalid
@@ -269,7 +284,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 */
 	public int getReferenceType()
 	{
-		return POLICY_REFERENCE;
+		return policyType;
 	}
 
 	/**
@@ -281,9 +296,10 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
-	public String getId()
+	@Override
+	public URI getId()
 	{
-		return resolvePolicy().getPolicyId();
+		return resolvePolicy().getId();
 	}
 
 	/**
@@ -295,6 +311,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
+	@Override
 	public String getVersion()
 	{
 		return resolvePolicy().getVersion();
@@ -309,9 +326,10 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
+	@Override
 	public CombiningAlgorithm getCombiningAlg()
 	{
-		return resolvePolicy().getRuleCombiningAlg();
+		return resolvePolicy().getCombiningAlg();
 	}
 
 	/**
@@ -323,6 +341,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
+	@Override
 	public String getDescription()
 	{
 		return resolvePolicy().getDescription();
@@ -337,6 +356,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
+	@Override
 	public oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget()
 	{
 		return resolvePolicy().getTarget();
@@ -365,9 +385,10 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
+	@Override
 	public List getChildren()
 	{
-		return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
+		return resolvePolicy().getChildren();
 	}
 
 	/**
@@ -379,9 +400,10 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
+	@Override
 	public List getChildElements()
 	{
-		return resolvePolicy().getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
+		return resolvePolicy().getChildElements();
 	}
 
 	/**
@@ -410,6 +432,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
 	 */
+	@Override
 	public PolicyMetaData getMetaData()
 	{
 		return resolvePolicy().getMetaData();
@@ -426,17 +449,16 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * 
 	 * @return the result of trying to match the policy and the request
 	 */
+	@Override
 	public MatchResult match(EvaluationCtx context)
 	{
 		try
 		{
-			return ((Target) getTarget()).match(context);
+			return ((com.sun.xacml.xacmlv3.Target) getTarget()).match(context);
 		} catch (ProcessingException pe)
 		{
 			// this means that we couldn't resolve the policy
-			ArrayList code = new ArrayList();
-			code.add(Status.STATUS_PROCESSING_ERROR);
-			Status status = new Status(code, "couldn't resolve policy ref");
+			Status status = new Status(Collections.singletonList(Status.STATUS_PROCESSING_ERROR), "couldn't resolve policy ref");
 			return new MatchResult(MatchResult.INDETERMINATE, status);
 		}
 	}
@@ -444,23 +466,23 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	/**
 	 * Private helper method that tried to resolve the policy
 	 */
-	private Policy resolvePolicy()
+	private IPolicy resolvePolicy()
 	{
 		// see if this reference was setup with a finder
 		if (finder == null)
 		{
-			LOGGER.warn("PolicyReference with id {} was queried but was not configured with a PolicyFinder", reference);
+			LOGGER.warn("PolicyReference with id '{}' was queried but was not configured with a PolicyFinder", reference);
 			throw new ProcessingException("couldn't find the policy with " + "a null finder");
 		}
 
 		PolicyFinderResult pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
 
-		if (pfr.notApplicable())
+		if (pfr.notApplicable()) {
 			throw new ProcessingException("couldn't resolve the policy");
-
-		if (pfr.indeterminate())
+		}
+		if (pfr.indeterminate()) {
 			throw new ProcessingException("error resolving the policy");
-
+		}
 		return pfr.getPolicy();
 	}
 
@@ -474,6 +496,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * 
 	 * @return the result of evaluation
 	 */
+	@Override
 	public Result evaluate(EvaluationCtx context)
 	{
 		// if there is no finder, then we return NotApplicable
@@ -536,17 +559,16 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	private String encodeConstraints()
 	{
 		String str = "";
-		VersionConstraints version = getConstraints();
-
-		String v = version.getVersionConstraint();
+		VersionConstraints versionConstraints = getConstraints();
+		String v = versionConstraints.getVersionConstraint();
 		if (v != null)
 			str += " Version=\"" + v + "\"";
 
-		String e = version.getEarliestConstraint();
+		String e = versionConstraints.getEarliestConstraint();
 		if (e != null)
 			str += " EarliestVersion=\"" + e + "\"";
 
-		String l = version.getLatestConstraint();
+		String l = versionConstraints.getLatestConstraint();
 		if (l != null)
 			str += " LatestVersion=\"" + l + "\"";
 
