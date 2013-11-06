@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.PDP;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
 
 /**
@@ -79,7 +80,7 @@ public class TestPdp {
 		subjId.getAttributeValues().add(subjAttrValue);
 		
 		subjAttributes.add(subjId);
-		subjCategory.setCategory(XACMLAttributeId.XACML_1_0_SUBJECT_CATEGORY_SUBJECT.value());
+		subjCategory.setCategory(XACMLCategory.XACML_1_0_SUBJECT_CATEGORY_ACCESS_SUBJECT.value());
 		subjCategory.getAttributes().addAll(subjAttributes);
 		
 		/* Resource category configuration */
@@ -93,7 +94,7 @@ public class TestPdp {
 		
 		rscAttributes.add(rscId);
 		
-		rscCategory.setCategory(XACMLAttributeId.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value());
+		rscCategory.setCategory(XACMLCategory.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value());
 		rscCategory.getAttributes().addAll(rscAttributes);
 		
 		/* Action category configuration */
@@ -107,7 +108,7 @@ public class TestPdp {
 		
 		actAttributes.add(actId);
 		
-		actCategory.setCategory(XACMLAttributeId.XACML_3_0_ACTION_CATEGORY_ACTION.value());
+		actCategory.setCategory(XACMLCategory.XACML_3_0_ACTION_CATEGORY_ACTION.value());
 		actCategory.getAttributes().addAll(actAttributes);
 		
 		

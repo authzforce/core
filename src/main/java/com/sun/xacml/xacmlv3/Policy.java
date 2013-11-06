@@ -53,7 +53,6 @@ import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.Rule;
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.combine.CombinerParameter;
 import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.cond.VariableManager;
@@ -350,9 +349,8 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	public Result evaluate(EvaluationCtx context)
 	{
 		Result result = null;
-		List<Rule> rules = new ArrayList<Rule>();
+		List<Rule> rules = new ArrayList<>();
 		CombinerParametersType combParams = new CombinerParametersType();
-		CombinerParameter combParam = null;
 		for (Object element : this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions)
 		{
 			if (element instanceof CombinerParametersType)
@@ -451,10 +449,9 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		if (policyId != null)
 		{
 			return URI.create(policyId);
-		} else
-		{
-			return null;
 		}
+		
+		return null;
 	}
 
 	@Override

@@ -51,6 +51,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * instantiated whenever the PDP gets a request and needs to perform an
  * evaluation as a result. The <code>BasicEvaluationCtx</code> class provides a
  * basic implementation that is used by default.
+ * TODO: merge get*Attribute() methods into one method getAttribute(AttributeDesignator)
  * 
  * @since 1.0
  * @author Seth Proctor
