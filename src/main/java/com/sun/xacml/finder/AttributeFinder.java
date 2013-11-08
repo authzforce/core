@@ -109,6 +109,15 @@ public class AttributeFinder
 	 */
 	public void setModules(List modules)
 	{
+		/**
+    	 * BEGIN CHANGE
+    	 * Invalidate caches of old/replaced modules since they are no longer used
+    	 */
+    	// 
+    	for(final Object module: this.allModules) {
+    		((AttributeFinderModule) module).invalidateCache();
+    	}
+		
 		Iterator it = modules.iterator();
 
 		allModules = new ArrayList(modules);
@@ -188,6 +197,9 @@ public class AttributeFinder
 				 * 
 				 * @author romain.ferrari[AT]thalesgroup.com
 				 */
+				/**
+                 * FIXME: explain why the module cache needs to be invalidated here. Is there a reason?
+                 */
 				module.invalidateCache();
 
 				// if the result wasn't empty, then return the result

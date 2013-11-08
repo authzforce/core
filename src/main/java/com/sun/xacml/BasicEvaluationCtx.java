@@ -91,7 +91,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	Node requestRoot = null;
 
 	// the 4 maps that contain the attribute data
-	private Map<String, Map<String, Set<Attribute>>> subjectMap;
+	private final Map<String, Map<String, Set<Attribute>>> subjectMap = new HashMap<>();
 	private Map<String, Set<Attribute>> resourceMap;
 	private Map<String, Set<Attribute>> actionMap;
 	private Map<String, Set<Attribute>> environmentMap;
@@ -220,7 +220,6 @@ public class BasicEvaluationCtx implements EvaluationCtx
 		this.version = version;
 		actionMap = new HashMap<>();
 		resourceMap = new HashMap<>();
-		subjectMap = new HashMap<>();
 		environmentMap = new HashMap<>();
 		customMap = new HashMap<>();
 
@@ -333,7 +332,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 		// make sure there resource-id attribute was included
 		if (!resourceMap.containsKey(RESOURCE_ID))
 		{
-			System.err.println("Resource must contain resource-id attr");
+			LOGGER.error("Resource missing resource-id attr");
 			throw new ParsingException("resource missing resource-id");
 		}
 
@@ -355,7 +354,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 			// make sure there's only one value for resource-scope
 			if (set.size() > 1)
 			{
-				System.err.println("Resource may contain only one " + "resource-scope Attribute");
+				LOGGER.error("Resource may contain only one resource-scope Attribute");
 				throw new ParsingException("too many resource-scope attrs");
 			}
 
@@ -676,26 +675,31 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	@Override
 	public EvaluationResult getSubjectAttribute(URI type, URI id, URI issuer, URI category)
 	{
+		final String catStr = category.toString();
 		// This is the same as the other three lookups except that this
 		// has an extra level of indirection that needs to be handled first
-		Map<String, Set<Attribute>> map = null;
-		if (subjectMap != null)
-		{
-			map = subjectMap.get(category.toString());
-		}
-
-		if (map == null)
+		/*
+		 * Check if some subject attribute map already in current evaluation context for category
+		 * arg (initially based on input Request)
+		 */
+		final Map<String, Set<Attribute>> oldAttrMap = subjectMap.get(catStr);
+		/*
+		 * Map to be actually updated with new attribute (different from old one only if no map
+		 * found in current context for category arg)
+		 */
+		final Map<String, Set<Attribute>> newAttrMap;
+		if (oldAttrMap == null)
 		{
 			// the request didn't have that category, so we should try asking
 			// the attribute finder
-			/*
-			 * FIXME: the result is not added to the subjectMap. So it will be called again for all
-			 * attributes of subject in this category. Optimize this.
-			 */
-			return callHelper(type, id, issuer, category, AttributeDesignator.SUBJECT_TARGET);
+			newAttrMap = new HashMap<>();
+			subjectMap.put(catStr, newAttrMap);
+		} else
+		{
+			newAttrMap = oldAttrMap;
 		}
 
-		return getGenericAttributes(type, id, issuer, map, category, AttributeDesignator.SUBJECT_TARGET);
+		return getGenericAttributes(type, id, issuer, newAttrMap, category, AttributeDesignator.SUBJECT_TARGET);
 	}
 
 	/**
@@ -775,92 +779,159 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	}
 
 	/**
-	 * Helper function for the resource, action and environment methods to get an attribute.
+	 * Get attribute values from attributes but only with matching issuer and matching value
+	 * datatype
+	 * 
+	 * @param issuer
+	 *            attribute issuer
+	 * @param type
+	 *            attribute value datatype
+	 * @param attrs
+	 *            set of source attributes
+	 * @return attribute values
+	 * @throws ParsingException
+	 *             if parsing of attribute values failed
 	 */
-	private EvaluationResult getGenericAttributes(URI type, URI id, URI issuer, Map<String, Set<Attribute>> map, URI category, int designatorType)
+	private static List<AttributeValue> getAttributeValues(Set<Attribute> attrs, String issuer, String type) throws ParsingException
 	{
-		// try to find the id
-		Set<Attribute> attrSet = map.get(id.toString());
-		if (attrSet == null)
+		final List<AttributeValue> resultList = new ArrayList<>();
+		for (final Attribute attr : attrs)
 		{
-			// the request didn't have an attribute with that id, so we should
-			// try asking the attribute finder
-			return callHelper(type, id, issuer, category, designatorType);
-		}
+			// Check issuer: if issuer arg is defined but attribute issuer is not or not equal,
+			// then NO MATCH, skip it.
+			if (issuer != null && (attr.getIssuer() == null || !attr.getIssuer().equals(issuer)))
+			{
+				continue;
+			}
 
-		// now go through each, considering each Attribute object
-		List<AttributeValue> attributeValues = new ArrayList<>();
-		for (Attribute attr : attrSet)
-		{
 			for (AttributeValueType attributeValue : attr.getAttributeValues())
 			{
-				// make sure the type and issuer are correct
-				if ((attributeValue.getDataType().equals(type.toString()))
-						&& ((issuer == null) || ((attr.getIssuer() != null) && (attr.getIssuer().equals(issuer.toString())))))
+				// make sure the datatype matches
+				if (attributeValue.getDataType().equals(type))
 				{
-					// if we got here, then we found a match, so we want to
-					// pull
-					// out the values and put them in out list
+					/*
+					 * If we got here, then we found a match. So we want to pull out the value and
+					 * put it in output list.
+					 */
 					try
 					{
-						attributeValues.addAll(AttributeValue.convertFromJAXB(attr.getAttributeValues()));
-					} catch (ParsingException e)
+						/**
+						 * FIXME: this conversion can be avoided if we simply change return type of
+						 * Attribute#getAttributeValues() to List<AttributeValue> (no need to catch
+						 * any exception in this case).
+						 */
+						resultList.add(AttributeValue.getInstance(attributeValue));
+					} catch (Exception e)
 					{
-						LOGGER.error("Error converting JAXB Attribute Value to com.sun.xacml.attr.xacmlv3.AttributeValue", e);
-					} catch (UnknownIdentifierException e)
-					{
-						LOGGER.error("Error converting JAXB Attribute Value to com.sun.xacml.attr.xacmlv3.AttributeValue", e);
+						throw new ParsingException("Error converting instance of " + AttributeValueType.class + " (JAXB) to " + AttributeValue.class,
+								e);
 					}
 				}
 			}
 		}
 
-		// see if we found any acceptable attributes
-		if (attributeValues.size() == 0)
+		return resultList;
+	}
+
+	/**
+	 * Helper function for the resource, action and environment methods to get an attribute.
+	 */
+	private EvaluationResult getGenericAttributes(URI type, URI id, URI issuer, Map<String, Set<Attribute>> map, URI category, int designatorType)
+	{
+		/**
+		 * Requirement #1: When the attribute finder is called via callHelper(), the result must be
+		 * saved in the evaluation context to guarantee the same result/value next time it is used
+		 * in the same context. At least 3 reasons: 1. Performance optimization: calling attribute
+		 * finder costs more than getting it from the context attribute map. 2. ACCOUNTING/AUDIT: if
+		 * you call the attribute finder more than once for the same attribute, you may have value
+		 * changes from a call to another. If you log attribute values for accounting/audit reasons,
+		 * which value do you log? This is critical to have the correct information in order to
+		 * understand/investigate a posteriori why a given access was permitted/denied. 3. Policy
+		 * decision consistency: this is pretty close to the previous reason, expressed in more
+		 * generic terms. If the value of a given attribute changed from one attribute finding to
+		 * another when it is used/required more than once in the same decision request context, the
+		 * PDP ends up evaluating different parts of the <PolicySet> based on different values of
+		 * the same attribute, again, for the same decision request. And the longer the evaluation
+		 * takes time to process, the more changes can occur, and the more inconsistent the
+		 * evaluation will be.
+		 */
+		// try to find the id
+		final String idStr = id.toString();
+		final String issuerStr = (issuer == null) ? null : issuer.toString();
+		final String typeStr = type.toString();
+		/*
+		 * Check if some attributes already (found) in current evaluation context for attribute 'id'
+		 * arg
+		 */
+		final Set<Attribute> attrSet = map.get(idStr);
+		final List<AttributeValue> attributeValues;
+		// Map to be updated with new attributes resulting from call to AttributeFinder
+		final Set<Attribute> newAttrSet;
+		if (attrSet == null)
 		{
-			// we failed to find any that matched the type/issuer, or all the
-			// Attribute types were empty...so ask the finder
-			LOGGER.debug("Attribute not in request: {} ... querying AttributeFinder", id);
-
+			// the request didn't have an attribute with that id, so no attribute values yet
+			attributeValues = new ArrayList<>();
+			newAttrSet = new HashSet<>();
+			map.put(idStr, newAttrSet);
+		} else
+		{
 			/*
-			 * Code Updated [romain.guignard[at]thalesgroup.com] Allow to store value retrieves by
-			 * an attributeFinder for a specific evaluationContext see also
-			 * http://jira.theresis.thales:8180/browse/APPSEC-167
+			 * Found Attributes matching input attribute 'id' in current evaluation context. Now we
+			 * have to select the ones matching the (data-)'type' and - if issuer != null - 'issuer'
+			 * args only. Note: result attribute values may be empty as well if nothing matched.
 			 */
-			EvaluationResult result = callHelper(type, id, issuer, category, designatorType);
-			String issuerString = null;
-			if (issuer != null)
+			try
 			{
-				issuerString = issuer.toString();
-			}
-			if (result.getAttributeValue() instanceof BagAttribute)
+				attributeValues = getAttributeValues(attrSet, issuerStr, typeStr);
+			} catch (ParsingException e)
 			{
-				BagAttribute bagAttribute = (BagAttribute) result.getAttributeValue();
-				Iterator iit = bagAttribute.getValue().iterator();
-				HashSet<Attribute> attrset = new HashSet<>();
-
-				int i = 0;
-				while (iit.hasNext())
-				{
-					AttributeValueType attributeValue = (AttributeValueType) iit.next();
-					Attribute attribute = new Attribute();
-					attribute.setAttributeId(id.toASCIIString());
-					attribute.setIssuer(issuerString);
-					attribute.getAttributeValues().add(attributeValue);
-					attribute.getAttributeValues().get(i).setDataType(type.toASCIIString());
-					attrset.add(attribute);
-					i++;
-				}
-				i = 0;
-				map.put(id.toString(), attrset);
-				return result;
+				throw new RuntimeException(e);
 			}
 
-			throw new IllegalArgumentException("CallHelper didn't return BagAttribute");
+			newAttrSet = attrSet;
 		}
 
-		// if we got here, then we found at least one useful AttributeValue
-		return new EvaluationResult(new BagAttribute(type, attributeValues));
+		// see if we found any acceptable attributes
+		if (!attributeValues.isEmpty())
+		{
+			// yes we found
+			return new EvaluationResult(new BagAttribute(type, attributeValues));
+		}
+
+		/*
+		 * FIXME: this does not work as expected (Requirement #1) if AttributeFinder already called
+		 * to find attribute with same (category,issuer,id,type) but result was actually an empty
+		 * bag or an error. So we need to find a better way to indicate the attribute has already
+		 * been searched for even if bad result. To solve this, we need to change the way we store
+		 * attribute map in the request context.
+		 */
+		// No acceptable attribute found matching type/issuer... so ask the finder
+		LOGGER.debug("Attribute id='{}' not in request context... querying AttributeFinder", id);
+		/*
+		 * Code Updated [romain.guignard[at]thalesgroup.com] Allow to store value retrieved by an
+		 * attributeFinder for a specific evaluationContext see also
+		 * http://jira.theresis.thales:8180/browse/APPSEC-167
+		 */
+		final EvaluationResult result = callHelper(type, id, issuer, category, designatorType);
+		final AttributeValueType resultAttrVal = result.getAttributeValue();
+		if (resultAttrVal instanceof BagAttribute)
+		{
+			BagAttribute bagAttribute = (BagAttribute) resultAttrVal;
+			Iterator iter = bagAttribute.getValue().iterator();
+			while (iter.hasNext())
+			{
+				AttributeValueType attributeValue = (AttributeValueType) iter.next();
+				Attribute attribute = new Attribute();
+				attribute.setAttributeId(idStr);
+				attribute.setIssuer(issuerStr);
+				attribute.getAttributeValues().add(attributeValue);
+				newAttrSet.add(attribute);
+			}
+
+			return result;
+		}
+
+		throw new IllegalArgumentException("CallHelper didn't return BagAttribute");
 	}
 
 	/**
@@ -873,7 +944,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 			return finder.findAttribute(type, id, issuer, category, this, adType);
 		}
 
-		LOGGER.warn("Context tried to invoke AttributeFinder but was " + "not configured with one");
+		LOGGER.warn("Context tried to invoke AttributeFinder but was not configured with one");
 
 		return new EvaluationResult(BagAttribute.createEmptyBag(type));
 	}

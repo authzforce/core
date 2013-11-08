@@ -70,34 +70,35 @@ import com.sun.xacml.ctx.Result;
 import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
 
 /**
- * Represents the ObligationType XML type in XACML. This also stores all the
- * AttriubteAssignmentType XML types.
+ * Represents the ObligationType XML type in XACML. This also stores all the AttriubteAssignmentType
+ * XML types.
  * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation {
+public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation
+{
 
 	// the obligation id
-//	private URI id;
+	// private URI id;
 
 	// effect to fulfill on, as defined in Result
 	private int fulfillOn;
 
 	// the attribute assignments
-//	private List<AttributeAssignmentType> assignments;
+	// private List<AttributeAssignmentType> assignments;
 
 	private boolean isIndeterminate = false;
-	
+
 	/**
 	 * Logger used for all classes
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Obligation.class);
 
 	/**
-	 * Constructor that takes all the data associated with an obligation. The
-	 * attribute assignment list contains <code>Attribute</code> objects, but
-	 * only the fields used by the AttributeAssignmentType are used.
+	 * Constructor that takes all the data associated with an obligation. The attribute assignment
+	 * list contains <code>Attribute</code> objects, but only the fields used by the
+	 * AttributeAssignmentType are used.
 	 * 
 	 * @param id
 	 *            the obligation's id
@@ -106,14 +107,15 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	 * @param assignments
 	 *            a <code>List</code> of <code>Attribute</code>s
 	 */
-	public Obligation(String id, int fulfillOn, List assignments) {
+	public Obligation(String id, int fulfillOn, List assignments)
+	{
 		this(id, fulfillOn, assignments, false);
 	}
 
 	/**
-	 * Constructor that takes all the data associated with an obligation. The
-	 * attribute assignment list contains <code>Attribute</code> objects, but
-	 * only the fields used by the AttributeAssignmentType are used.
+	 * Constructor that takes all the data associated with an obligation. The attribute assignment
+	 * list contains <code>Attribute</code> objects, but only the fields used by the
+	 * AttributeAssignmentType are used.
 	 * 
 	 * @param id
 	 *            the obligation's id
@@ -121,20 +123,18 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	 *            the effect denoting when to fulfill this obligation
 	 * @param assignments
 	 *            a <code>List</code> of <code>Attribute</code>s
-	 * @param isIndeterminate 
+	 * @param isIndeterminate
 	 */
-	public Obligation(String id, int fulfillOn, List assignments,
-			boolean isIndeterminate) {
+	public Obligation(String id, int fulfillOn, List assignments, boolean isIndeterminate)
+	{
 		this.obligationId = id;
 		this.fulfillOn = fulfillOn;
-		this.attributeAssignments = Collections.unmodifiableList(new ArrayList(
-				assignments));
+		this.attributeAssignments = Collections.unmodifiableList(new ArrayList(assignments));
 		this.isIndeterminate = isIndeterminate;
 	}
 
 	/**
-	 * Creates an instance of <code>Obligation</code> based on the DOM root
-	 * node.
+	 * Creates an instance of <code>Obligation</code> based on the DOM root node.
 	 * 
 	 * @param root
 	 *            the DOM root of the ObligationType XML type
@@ -144,7 +144,8 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	 * @throws ParsingException
 	 *             if the structure isn't valid
 	 */
-	public static Obligation getInstance(Node root) throws ParsingException {
+	public static Obligation getInstance(Node root) throws ParsingException
+	{
 		String id;
 		int fulfillOn = -1;
 		List assignments = new ArrayList();
@@ -152,50 +153,55 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 		AttributeFactory attrFactory = AttributeFactory.getInstance();
 		NamedNodeMap attrs = root.getAttributes();
 
-		try {
+		try
+		{
 			id = attrs.getNamedItem("ObligationId").getNodeValue();
-		} catch (Exception e) {
-			throw new ParsingException("Error parsing required attriubte "
-					+ "ObligationId", e);
+		} catch (Exception e)
+		{
+			throw new ParsingException("Error parsing required attriubte " + "ObligationId", e);
 		}
 
 		String effect = null;
 
-		try {
+		try
+		{
 			effect = attrs.getNamedItem("FulfillOn").getNodeValue();
-		} catch (Exception e) {
-			throw new ParsingException("Error parsing required attriubte "
-					+ "FulfillOn", e);
+		} catch (Exception e)
+		{
+			throw new ParsingException("Error parsing required attriubte " + "FulfillOn", e);
 		}
 
-		if (effect.equals("Permit")) {
+		if (effect.equals("Permit"))
+		{
 			fulfillOn = Result.DECISION_PERMIT;
-		} else if (effect.equals("Deny")) {
+		} else if (effect.equals("Deny"))
+		{
 			fulfillOn = Result.DECISION_DENY;
-		} else {
+		} else
+		{
 			throw new ParsingException("Invalid Effect type: " + effect);
 		}
 
 		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++) {
+		for (int i = 0; i < nodes.getLength(); i++)
+		{
 			Node node = nodes.item(i);
-			if (node.getNodeName().equals("AttributeAssignment")
-					|| node.getNodeName().equals(
-							"AttributeAssignmentExpression")) {
-				try {
-					URI attrId = new URI(node.getAttributes()
-							.getNamedItem("AttributeId").getNodeValue());
+			if (node.getNodeName().equals("AttributeAssignment") || node.getNodeName().equals("AttributeAssignmentExpression"))
+			{
+				try
+				{
+					URI attrId = new URI(node.getAttributes().getNamedItem("AttributeId").getNodeValue());
 					AttributeValue attrValue = attrFactory.createValue(node);
-					assignments.add(new Attribute(attrId, null, null,
-							attrValue,
-							PolicyMetaData.XACML_VERSION_3_0));
-				} catch (URISyntaxException use) {
+					assignments.add(new Attribute(attrId, null, null, attrValue, PolicyMetaData.XACML_VERSION_3_0));
+				} catch (URISyntaxException use)
+				{
 					throw new ParsingException("Error parsing URI", use);
-				} catch (UnknownIdentifierException uie) {
+				} catch (UnknownIdentifierException uie)
+				{
 					throw new ParsingException("Unknown AttributeId", uie);
-				} catch (Exception e) {
-					throw new ParsingException("Error parsing attribute "
-							+ "assignments", e);
+				} catch (Exception e)
+				{
+					throw new ParsingException("Error parsing attribute " + "assignments", e);
 				}
 			}
 		}
@@ -204,20 +210,19 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	}
 
 	/**
-	 * Creates an instance of <code>Obligation</code> based on the DOM root
-	 * node.
+	 * Creates an instance of <code>Obligation</code> based on the DOM root node.
 	 * 
 	 * @param root
 	 *            the DOM root of the ObligationType XML type
-	 * @param context 
+	 * @param context
 	 * 
 	 * @return an instance of an obligation
 	 * 
 	 * @throws ParsingException
 	 *             if the structure isn't valid
 	 */
-	public static Obligation getInstance(ObligationExpression root,
-			EvaluationCtx context) throws ParsingException {
+	public static Obligation getInstance(ObligationExpression root, EvaluationCtx context) throws ParsingException
+	{
 		String id;
 		int fulfillOn = -1;
 		List<AttributeAssignment> assignments = new ArrayList<>();
@@ -228,61 +233,81 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 
 		fulfillOn = root.getFulfillOn().ordinal();
 
-		for (AttributeAssignmentExpression attrsAssignment : root
-				.getAttributeAssignmentExpressions()) {
+		for (AttributeAssignmentExpression attrsAssignment : root.getAttributeAssignmentExpressions())
+		{
 			URI attrId = URI.create(attrsAssignment.getAttributeId());
 			String issuer = attrsAssignment.getIssuer();
 
 			ExpressionType myExpr = ExpressionTools.getInstance(attrsAssignment.getExpression().getValue(), null, null);
-			
+
 			// Check what type of expression this is
-			if (myExpr instanceof ApplyType) {
+			if (myExpr instanceof ApplyType)
+			{
 				// TODO: Not Implemented
 				throw new ParsingException("Obligation with Apply not implemented yet");
-			} else if (myExpr instanceof AttributeSelectorType) {
+			} else if (myExpr instanceof AttributeSelectorType)
+			{
 				// TODO: Not Implemented
 				throw new ParsingException("Obligation with AttributeSelector not implemented yet");
-//			Not implemented yet	
-			} else if (myExpr instanceof AttributeValueType) {
-				AttributeValueType attrValue = (AttributeValueType)myExpr;
+				// Not implemented yet
+			} else if (myExpr instanceof AttributeValueType)
+			{
+				AttributeValueType attrValue = (AttributeValueType) myExpr;
 				URI datatype = URI.create(XACMLDatatypes.XACML_DATATYPE_STRING.value());
-				if (attrValue.getDataType() != null) {
+				if (attrValue.getDataType() != null)
+				{
 					datatype = URI.create(attrValue.getDataType());
 				}
 				/*
 				 * Evaluation
 				 */
-				result = ((AttributeValue)attrValue).evaluate(context);
-				if (result.indeterminate()) {
+				result = ((AttributeValue) attrValue).evaluate(context);
+				if (result.indeterminate())
+				{
 					indeterminate = true;
 				}
 				// an AD/AS will always return a bag
-//				BagAttribute bag = (BagAttribute) (result.getAttributeValue());
+				// BagAttribute bag = (BagAttribute) (result.getAttributeValue());
 				AttributeValueType bag = result.getAttributeValue();
-				for (Serializable attributeAssignmentType : bag.getContent()) {
+				for (Serializable attributeAssignmentType : bag.getContent())
+				{
 					AttributeAssignment attrAsgnType = new AttributeAssignment();
 					attrAsgnType.getContent().add(attributeAssignmentType);
 					attrAsgnType.setAttributeId(attrId.toASCIIString());
 					attrAsgnType.setCategory(attrsAssignment.getCategory());
 					attrAsgnType.setDataType(datatype.toASCIIString());
-					attrAsgnType.setIssuer(issuer);					
+					attrAsgnType.setIssuer(issuer);
 					assignments.add(attrAsgnType);
 				}
-			} else if (myExpr instanceof FunctionType) {
+			} else if (myExpr instanceof FunctionType)
+			{
 				// TODO: Not Implemented
 				throw new ParsingException("Obligation with FunctionType not implemented yet");
-			} else if (myExpr instanceof VariableReferenceType) {
+			} else if (myExpr instanceof VariableReferenceType)
+			{
 				// TODO: Not Implemented
 				throw new ParsingException("Obligation with VariableReference not implemented yet");
-			} else if (myExpr instanceof AttributeDesignator) {
+			} else if (myExpr instanceof AttributeDesignator)
+			{
 				AttributeDesignator attrExpression = (AttributeDesignator) myExpr;
 				/*
 				 * Evaluation
 				 */
 				result = attrExpression.evaluate(context);
-				if (result.indeterminate()) {
+				if (result.indeterminate())
+				{
 					indeterminate = true;
 				}
+
+				/*
+				 * FIXME: something is missing! Create/add new attributes assignments to 'assignments' variable.
+				 * NOTA BENE: according to spec, if result empty bag, no AttributeAssignment; if
+				 * non-empty bag, one <AttributeAssignment> per value in the bag.
+				 * Make at least 3 unit tests: 
+				 * 1) If <AttributeAssignmentExpression> is static <AttributeValue>;
+				 * 2) If <AttributeAssignmentExpression> evaluates to empty bag (-> no <AttributeAssignment>);
+				 * 3) If <AttributeAssignmentExpression> evaluates to non-empty bag.
+				 */
 			}
 		}
 
@@ -294,66 +319,72 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	 * 
 	 * @return the id
 	 */
-	public String getId() {
+	public String getId()
+	{
 		return obligationId;
 	}
 
 	/**
-	 * Returns effect that will cause this obligation to be included in a
-	 * response
+	 * Returns effect that will cause this obligation to be included in a response
 	 * 
 	 * @return the fulfillOn effect
 	 */
-	public int getFulfillOn() {
+	public int getFulfillOn()
+	{
 		return fulfillOn;
 	}
 
 	/**
-	 * Returns the attribute assignment data in this obligation. The
-	 * <code>List</code> contains objects of type <code>Attribute</code> with
-	 * only the correct attribute fields being used.
+	 * Returns the attribute assignment data in this obligation. The <code>List</code> contains
+	 * objects of type <code>Attribute</code> with only the correct attribute fields being used.
 	 * 
 	 * @return the assignments
 	 */
-	public List<AttributeAssignment> getAssignments() {
+	public List<AttributeAssignment> getAssignments()
+	{
 		return attributeAssignments;
 	}
 
 	/**
-	 * Return true if AttributeAssignement return an indeterminate
-	 * evaluation
+	 * Return true if AttributeAssignement return an indeterminate evaluation
+	 * 
 	 * @return true if and only if Indeterminate AttributeAssignment
 	 */
-	public boolean getIsIndeterminate() {
+	public boolean getIsIndeterminate()
+	{
 		return isIndeterminate;
 	}
 
 	/**
-	 * Encodes this <code>Obligation</code> into its XML form and writes this
-	 * out to the provided <code>OutputStream<code> with no indentation.
+	 * Encodes this <code>Obligation</code> into its XML form and writes this out to the provided
+	 * <code>OutputStream<code> with no indentation.
 	 * 
 	 * @param output
 	 *            a stream into which the XML-encoded data is written
 	 */
-	public void encode(OutputStream output) {
+	public void encode(OutputStream output)
+	{
 		encode(output, new Indenter(0));
 	}
 
 	/**
-	 * Encodes this <code>Obligation</code> into its XML form and writes this
-	 * out to the provided <code>OutputStream<code> with indentation.
+	 * Encodes this <code>Obligation</code> into its XML form and writes this out to the provided
+	 * <code>OutputStream<code> with indentation.
 	 * 
 	 * @param output
 	 *            a stream into which the XML-encoded data is written
 	 * @param indenter
 	 *            an object that creates indentation strings
 	 */
-	public void encode(OutputStream output, Indenter indenter) {
+	public void encode(OutputStream output, Indenter indenter)
+	{
 		PrintStream out = new PrintStream(output);
-		try {
+		try
+		{
 			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			LOGGER.error("Error marshalling Obligation", e);
 		}
 	}

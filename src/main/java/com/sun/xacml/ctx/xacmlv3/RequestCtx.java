@@ -301,6 +301,8 @@ public class RequestCtx
      * method, you probably want to turn on validation by setting the
      * context schema file (see the programmer guide for more information
      * on this).
+     * 
+     * FIXME: This method is not thread-safe! Remove if not used anymore.
      *
      * @param input a stream providing the XML data
      *

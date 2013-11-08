@@ -107,9 +107,10 @@ public class InputParser implements ErrorHandler
     
     /**
      * Tries to Parse the given output as a Context document.
+     * FIXME: This method is not thread-safe! Remove if not used anymore.
      *
      * @param input the stream to parse
-     * @param rootTage either "Request" or "Response"
+     * @param rootTag either "Request" or "Response"
      *
      * @return the root node of the request/response
      *
@@ -119,8 +120,11 @@ public class InputParser implements ErrorHandler
         throws ParsingException
     {
         NodeList nodes = null;
-
+        
         try {
+        	/*
+        	 * This is not thread-safe (DocumentBuilderFactory and DocumentBuilder are not).
+        	 */
             DocumentBuilderFactory factory =
                 DocumentBuilderFactory.newInstance();
             factory.setIgnoringComments(true);

@@ -336,7 +336,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 			return null;
 		}
 
-		final List<AttributeValue> resultAvts = new ArrayList<AttributeValue>();
+		final List<AttributeValue> resultAvts = new ArrayList<>();
 		for (final AttributeValueType avt : avts)
 		{
 			final AttributeValue newAvt = AttributeValue.getInstance(avt);

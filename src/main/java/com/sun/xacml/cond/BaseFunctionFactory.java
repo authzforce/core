@@ -173,7 +173,7 @@ public class BaseFunctionFactory extends FunctionFactory
 
         // make sure this doesn't already exist
         if (functionMap.containsKey(id)) {
-            throw new IllegalArgumentException("function already exists");
+            throw new IllegalArgumentException("function (id="+id+") already exists");
         }
 
         // add to the superset factory
