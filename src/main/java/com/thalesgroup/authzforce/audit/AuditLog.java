@@ -23,8 +23,6 @@ import java.util.List;
 
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.slf4j.Logger;
@@ -34,15 +32,17 @@ import com.sun.xacml.BindingUtility;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.AttributeFinderModule;
 import com.sun.xacml.xacmlv3.Policy;
 
 public class AuditLog
 {
 
-	private static final String SEPARATOR = "\t--\t";
-
+	private static final String SEPARATOR = " -- ";
+	private static final String ELT_SEPARATOR = " | ";
+	private static final String START_COLLECTION = "[ ";
+	private static final Object END_COLLECTION = " ]";
+	
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuditLog.class);
 
 	protected String id;
@@ -168,47 +168,46 @@ public class AuditLog
 	public String print()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("ID: " + this.getId() + SEPARATOR);
-		sb.append("Timestamp: " + this.getDate() + "\n");
-		sb.append("Request:\n" + request2String(this.getRequest()) + "\n");
+		
+		sb.append("ID: " + this.getId() + ELT_SEPARATOR);
+		sb.append("Timestamp: " + this.getDate() + ELT_SEPARATOR);
+		sb.append("Request:" + request2String(this.getRequest()) + ELT_SEPARATOR);
 		if (this.getMatchPolicies().size() > 0)
 		{
 			int i = 0;
-			sb.append("Matched Policies:\n");
+			sb.append("Policies " + START_COLLECTION);
 			for (Policy policy : this.getMatchPolicies())
 			{
 				// We fetch the string after "rule-combining-algorithm:" in order to display only
 				// the algorithm
 				String ruleCombAlg = policy.getRuleCombiningAlgId().substring(
 						policy.getRuleCombiningAlgId().indexOf("rule-combining-algorithm") + "rule-combining-algorithm:".length());
-				sb.append("\t");
-				sb.append("Policy ID:\t" + policy.getPolicyId() + SEPARATOR + ruleCombAlg + SEPARATOR + "Combinated Evaluation:\t"
-						+ ((Result) this.getResultMatchPolicy().get(i)).getDecision());
-				sb.append("\n");
+				sb.append("ID:" + policy.getPolicyId() + SEPARATOR + ruleCombAlg + SEPARATOR + ((Result) this.getResultMatchPolicy().get(i)).getDecision() + SEPARATOR);
 				i++;
 			}
+			sb.append(END_COLLECTION);
 		}
 		if (this.getRules().size() > 0)
 		{
+			sb.append(ELT_SEPARATOR);
+			sb.append("Rules " + START_COLLECTION);
 			int i = 0;
 			for (Rule rule : this.getRules())
 			{
-				sb.append("\t");
-				sb.append("\tRule ID:\t" + rule.getRuleId() + SEPARATOR + "Evaluation:\t" + ((Result) this.getResultRule().get(i)).getDecision());
-				sb.append("\n");
+				sb.append("ID:" + rule.getRuleId() + SEPARATOR + ((Result) this.getResultRule().get(i)).getDecision() + SEPARATOR);
 				i++;
 			}
+			sb.append(END_COLLECTION);
 		}
 		if (this.getAttrResolv().size() > 0)
 		{
-			int i = 0;
+			sb.append(ELT_SEPARATOR);
+			sb.append("Attributes " + START_COLLECTION);
 			for (AttributesResolved attrResolved : this.getAttrResolv())
 			{
-				sb.append("\t");				
-				sb.append("\tAttribute ID:\t" + attrResolved.getAttributeId() + SEPARATOR + "Value:\t" + attrResolved.getAttributeValue().getContent());
-				sb.append("\n");
-				i++;
+				sb.append("ID:" + attrResolved.getAttributeId() + SEPARATOR + attrResolved.getAttributeValue().getContent() + SEPARATOR);
 			}
+			sb.append(END_COLLECTION);
 		}
 
 		return sb.toString();

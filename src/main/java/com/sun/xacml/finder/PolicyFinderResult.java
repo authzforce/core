@@ -33,6 +33,8 @@
  */
 package com.sun.xacml.finder;
 
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.xacmlv3.IPolicy;
 
@@ -57,6 +59,9 @@ public class PolicyFinderResult
 
     // status that represents an error occurred
     private Status status;
+    
+    // The policyCombiningAlgorithm when it's a PolicySet
+    private PolicyCombiningAlgorithm policyCombiningAlg;
 
     /**
      * Creates a result saying that no applicable policies were found.
@@ -76,6 +81,11 @@ public class PolicyFinderResult
         status = null;
     }
 
+    public PolicyFinderResult(IPolicy policy, PolicyCombiningAlgorithm myCombiningAlg) {
+    	this.policy = policy;
+    	this.policyCombiningAlg = myCombiningAlg;
+	}
+    
     /**
      * Create a result of Indeterminate, including Status data.
      *
@@ -86,7 +96,7 @@ public class PolicyFinderResult
         this.status = status;
     }
 
-    /**
+	/**
      * Returns true if the result was NotApplicable.
      *
      * @return true if the result was NotApplicable
@@ -122,5 +132,19 @@ public class PolicyFinderResult
     public Status getStatus() {
         return status;
     }
+
+	/**
+	 * @return the policyCombiningAlg
+	 */
+	protected PolicyCombiningAlgorithm getPolicyCombiningAlg() {
+		return policyCombiningAlg;
+	}
+
+	/**
+	 * @param policyCombiningAlg the policyCombiningAlg to set
+	 */
+	protected void setPolicyCombiningAlg(PolicyCombiningAlgorithm policyCombiningAlg) {
+		this.policyCombiningAlg = policyCombiningAlg;
+	}
 
 }

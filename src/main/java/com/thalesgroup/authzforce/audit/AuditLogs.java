@@ -157,7 +157,7 @@ public final class AuditLogs
 		}
 		
 		// Releasing memory 
-		auditTmp = null;
+		auditTmp = null;		
 //		System.out.println(sb);		
 	}
 }
