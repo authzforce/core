@@ -60,9 +60,6 @@ public class PolicyFinderResult
     // status that represents an error occurred
     private Status status;
     
-    // The policyCombiningAlgorithm when it's a PolicySet
-    private PolicyCombiningAlgorithm policyCombiningAlg;
-
     /**
      * Creates a result saying that no applicable policies were found.
      */
@@ -80,11 +77,6 @@ public class PolicyFinderResult
         this.policy = policy;
         status = null;
     }
-
-    public PolicyFinderResult(IPolicy policy, PolicyCombiningAlgorithm myCombiningAlg) {
-    	this.policy = policy;
-    	this.policyCombiningAlg = myCombiningAlg;
-	}
     
     /**
      * Create a result of Indeterminate, including Status data.
@@ -132,19 +124,4 @@ public class PolicyFinderResult
     public Status getStatus() {
         return status;
     }
-
-	/**
-	 * @return the policyCombiningAlg
-	 */
-	protected PolicyCombiningAlgorithm getPolicyCombiningAlg() {
-		return policyCombiningAlg;
-	}
-
-	/**
-	 * @param policyCombiningAlg the policyCombiningAlg to set
-	 */
-	protected void setPolicyCombiningAlg(PolicyCombiningAlgorithm policyCombiningAlg) {
-		this.policyCombiningAlg = policyCombiningAlg;
-	}
-
 }
