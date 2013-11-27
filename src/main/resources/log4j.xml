@@ -2,27 +2,21 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 	<appender class="org.apache.log4j.RollingFileAppender" name="Appender1">
-		<param value="/etc/AuthZForce/logs/cache-3.0.0.log" name="File" />
+		<param value="/etc/AuthZForce/logs/cache.log" name="File" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param value="%-4r [%t] [%d] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
 	<appender class="org.apache.log4j.RollingFileAppender" name="Appender2">
-		<param value="/etc/AuthZForce/logs/pdp-3.0.0.log" name="File" />
+		<param value="/etc/AuthZForce/logs/pdp.log" name="File" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param value="%-4r [%t] [%d] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
 	<appender class="org.apache.log4j.RollingFileAppender" name="Appender3">
-		<param value="/etc/AuthZForce/logs/tests-3.0.0.log" name="File" />
+		<param value="/etc/AuthZForce/logs/tests.log" name="File" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param value="%-4r [%t] [%d] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
-		</layout>
-	</appender>
-	<appender class="org.apache.log4j.RollingFileAppender" name="AuditAppender">
-		<param value="/etc/AuthZForce/logs/pdp-3.0.0-audit.log" name="File" />
-		<layout class="org.apache.log4j.EnhancedPatternLayout">
-			<param value="%-4r [%t] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
 	<appender class="org.apache.log4j.ConsoleAppender" name="stdout">
@@ -31,55 +25,69 @@
 			<param value="%-4r [%t] [%d] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
 		</layout>
 	</appender>
+	<appender class="org.apache.log4j.net.SyslogAppender" name="SyslogAuditAppender">
+		<param name="Facility" value="USER" />
+		<param name="SyslogHost" value="localhost" />
+		<param name="Threshold" value="WARN" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{MMM dd HH:mm:ss} MYAPP: %-5p %m%n" />
+		</layout>
+	</appender>
+	<appender class="org.apache.log4j.RollingFileAppender" name="FileAuditAppender">
+		<param value="/etc/AuthZForce/logs/pdp-audit-3.0.0.log" name="File" />
+		<layout class="org.apache.log4j.EnhancedPatternLayout">
+			<param value="%-4r [%t] %5p [%C:%M] (%F:%L) - %m%n" name="ConversionPattern" />
+		</layout>
+	</appender>
 	
 	<!-- AUDIT LOGGER -->
-	<logger name="com.thalesgroup.authzforce.audit.AuditLogs" additivity="false">
-		<appender-ref ref="AuditAppender" />
+	<logger name="com.thalesgroup.authzforce.audit.AuditLogs">
+		<appender-ref ref="SyslogAuditAppender" />
 	</logger>
 	<!-- /AUDIT LOGGER -->
 	
-	<logger name="com.sun.xacml.cond.BaseFunctionFactory" additivity="false">
+	<logger name="com.sun.xacml.cond.BaseFunctionFactory">
 		<level value="info" />
 		<appender-ref ref="Appender2" />
 	</logger>
-	<logger name="com.sun.xacml.cond.StandardFunctionFactory" additivity="false">
+	<logger name="com.sun.xacml.cond.StandardFunctionFactory">
 		<level value="info" />
 		<appender-ref ref="Appender2" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicFunctionV3" additivity="false">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicFunctionV3">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
 	<logger
-		name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicMultipleRequestV3" additivity="false">
+		name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicMultipleRequestV3">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicV3" additivity="false">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicV3">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.ConformanceV3" additivity="false">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.ConformanceV3">
 		<level value="debug" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils" additivity="false">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils">
 		<level value="debug" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.MainTest" additivity="false">
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.MainTest">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="net.sf.ehcache" additivity="false">
+	<logger name="net.sf.ehcache">
 		<level value="warn" />
 		<appender-ref ref="Appender1" />
 	</logger>
-	<logger name="org.apache.axis.ConfigurationException" additivity="false">
+	<logger name="org.apache.axis.ConfigurationException">
 		<level value="info" />
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="org.apache.commons.digester" additivity="false">
+	<logger name="org.apache.commons.digester">
 		<level value="debug" />
 		<appender-ref ref="stdout" />
 	</logger>
