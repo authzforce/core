@@ -61,6 +61,7 @@ import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.combine.RuleCombiningAlgorithm;
 import com.sun.xacml.xacmlv3.Target;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents an instance of an XACML policy.

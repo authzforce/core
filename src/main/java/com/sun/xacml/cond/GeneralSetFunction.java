@@ -36,8 +36,8 @@ package com.sun.xacml.cond;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.sun.xacml.EvaluationCtx;
@@ -61,16 +61,16 @@ public class GeneralSetFunction extends SetFunction
     private static final int ID_BASE_UNION = 1;
 
     // mapping of function name to its associated id and parameter type
-    private static HashMap idMap;
-    private static HashMap typeMap;
+    private static Map<String, Integer> idMap;
+    private static Map<String, String> typeMap;
 
     /**
      * Static initializer that sets up the paramater info for all the
      * supported functions.
      */
     static {
-        idMap = new HashMap();
-        typeMap = new HashMap();
+        idMap = new HashMap<>();
+        typeMap = new HashMap<>();
 
         idMap.put(NAME_BASE_INTERSECTION, Integer.valueOf(ID_BASE_INTERSECTION));
         idMap.put(NAME_BASE_UNION, Integer.valueOf(ID_BASE_UNION));
@@ -100,7 +100,7 @@ public class GeneralSetFunction extends SetFunction
             typeMap.put(baseName + NAME_BASE_INTERSECTION, baseType);
             typeMap.put(baseName + NAME_BASE_UNION, baseType);
         }
-    };
+    }
     
     /**
      * Constructor that is used to create one of the general-purpose standard
@@ -139,7 +139,7 @@ public class GeneralSetFunction extends SetFunction
      * given standard function.
      */
     private static int getId(String functionName) {
-        Integer id = (Integer)(idMap.get(functionName));
+        Integer id = idMap.get(functionName);
 
         if (id == null)
             throw new IllegalArgumentException("unknown set function " +
@@ -155,7 +155,7 @@ public class GeneralSetFunction extends SetFunction
      * is present.
      */
     private static String getArgumentType(String functionName) {
-        return (String)(typeMap.get(functionName));
+        return typeMap.get(functionName);
     }
 
     /**
@@ -178,7 +178,8 @@ public class GeneralSetFunction extends SetFunction
      * @return an <code>EvaluationResult</code> representing the
      *         function's result
      */
-    public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+    @Override
+	public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
@@ -192,7 +193,7 @@ public class GeneralSetFunction extends SetFunction
         bags[1] = (BagAttribute)(argValues[1]);
 
         AttributeValue result = null;
-        Set set = new HashSet();
+        Set<AttributeValue> set = new HashSet<>();
         
         switch(Integer.parseInt(getFunctionId())) {
 
@@ -202,11 +203,8 @@ public class GeneralSetFunction extends SetFunction
             // create a bag with the common elements of both inputs, removing
             // all duplicate values
 
-            Iterator it = bags[0].iterator();
-
             // find all the things in bags[0] that are also in bags[1]
-            while (it.hasNext()) {
-                AttributeValue value = (AttributeValue)(it.next());
+            for (AttributeValue value:  bags[0].getValues()) {
                 if (bags[1].contains(value)) {
                     // sets won't allow duplicates, so this addition is ok
                     set.add(value);
@@ -222,19 +220,16 @@ public class GeneralSetFunction extends SetFunction
         case ID_BASE_UNION:
             // create a bag with all the elements from both inputs, removing
             // all duplicate values
-
-            Iterator it0 = bags[0].iterator();
-            while (it0.hasNext()) {
+            for (AttributeValue val: bags[0].getValues()) {
                 // first off, add all elements from the first bag...the set
                 // will ignore all duplicates
-                set.add(it0.next());
+                set.add(val);
             }
             
-            Iterator it1 = bags[1].iterator();
-            while (it1.hasNext()) {
+            for (AttributeValue val: bags[1].getValues()) {
                 // now add all the elements from the second bag...again, all
                 // duplicates will be ignored by the set
-                set.add(it1.next());
+                set.add(val);
             }
 
             result = new BagAttribute(bags[0].getType(), set);

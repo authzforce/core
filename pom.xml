@@ -17,7 +17,6 @@
 	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
 	<inceptionYear>2011</inceptionYear>
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<copyrightOwner>Thales Services - ThereSIS</copyrightOwner>
 		<jdk.source>1.7</jdk.source>
 		<jdk.target>1.7</jdk.target>
@@ -37,14 +36,13 @@
 		<!-- /Authzforce optionnal dependencies -->
 		<!-- Authzforce dependencies -->
 		<dependency>
-			<groupId>com.thalesgroup.authzforce.core</groupId>
+			<groupId>com.thalesgroup.authzforce</groupId>
 			<artifactId>authzforce-model</artifactId>
-			<version>3.2.2-SNAPSHOT</version>
 		</dependency>
 		<!-- /Authzforce dependencies -->
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
+			<groupId>com.thalesgroup.ktd.scis</groupId>
+			<artifactId>oasis-xacml-model</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.ehcache</groupId>
@@ -58,10 +56,6 @@
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.ktd.scis</groupId>
-			<artifactId>oasis-xacml-model</artifactId>
 		</dependency>
 		<!-- Test dependencies -->
 		<!-- FIXME: Dependency no longer used. Remove it? -->

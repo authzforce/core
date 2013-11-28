@@ -27,13 +27,13 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents the TargetType XML type in XACML. This also stores several other XML types: Subjects,

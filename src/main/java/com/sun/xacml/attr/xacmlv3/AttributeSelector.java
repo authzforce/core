@@ -44,14 +44,12 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
@@ -60,6 +58,7 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Supports the standard selector functionality in XACML, which uses XPath expressions to resolve

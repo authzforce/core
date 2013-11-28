@@ -69,6 +69,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Target;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents an instance of an XACML policy.

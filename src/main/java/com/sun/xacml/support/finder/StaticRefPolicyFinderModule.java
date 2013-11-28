@@ -37,20 +37,29 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
+
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.VersionConstraints;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * This is a simple implementation of <code>PolicyFinderModule</code> that supports retrieval based
@@ -83,8 +92,8 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 	// the map of policies
 	private PolicyCollection policies;
 
-	// the optional schema file
-	private File schemaFile = null;
+	// the optional schema 
+	private Schema schema = null;
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(StaticRefPolicyFinderModule.class);
@@ -96,38 +105,63 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 	 * <code>PolicyReader.POLICY_SCHEMA_PROPERTY</code>. If the retrieved property is null, then no
 	 * schema validation will occur.
 	 * 
-	 * @param policyLocationList
+	 * @param policyLocations
 	 *            a <code>List</code> of <code>String</code>s that represent URLs or files pointing
 	 *            to XACML policies
 	 */
-	public StaticRefPolicyFinderModule(List<String> policyLocationList)
+	public StaticRefPolicyFinderModule(List<String> policyLocations)
 	{
-		this.policyLocationList = policyLocationList;
+		this.policyLocationList = policyLocations;
 		this.policies = new PolicyCollection();
 
-		String schemaName = System.getProperty(PolicyReader.POLICY_SCHEMA_PROPERTY);
-		if (schemaName != null)
-			schemaFile = new File(schemaName);
+		final String schemaFilename = System.getProperty(PolicyReader.POLICY_SCHEMA_PROPERTY);
+		if (schemaFilename == null)
+		{
+			schema = null;
+		} else
+		{
+			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			try
+			{
+				schema = schemaFactory.newSchema(new File(schemaFilename));
+			} catch (SAXException e)
+			{
+				throw new IllegalArgumentException("Unable to load policy validation schema from file defined by system property '"
+						+ PolicyReader.POLICY_SCHEMA_PROPERTY + "': '" + schemaFilename + "'", e);
+			}
+		}
 	}
 
 	/**
 	 * Creates a <code>StaticRefPolicyFinderModule</code> that provides access to the given
-	 * collection of policyLocationList.
+	 * collection of policyLocations.
 	 * 
-	 * @param policyLocationList
+	 * @param policyLocations
 	 *            a <code>List</code> of <code>String</code>s that represent URLs or files pointing
 	 *            to XACML policies
-	 * @param schemaFile
+	 * @param schemaFilename
 	 *            the schema file to validate policies against, or null if schema validation is not
 	 *            desired
 	 */
-	public StaticRefPolicyFinderModule(List<String> policyLocationList, String schemaFile)
+	public StaticRefPolicyFinderModule(List<String> policyLocations, String schemaFilename)
 	{
-		this.policyLocationList = policyLocationList;
+		this.policyLocationList = policyLocations;
 		this.policies = new PolicyCollection();
 
-		if (schemaFile != null)
-			this.schemaFile = new File(schemaFile);
+		if (schemaFilename == null)
+		{
+			schema = null;
+		} else
+		{
+			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			try
+			{
+				schema = schemaFactory.newSchema(new File(schemaFilename));
+			} catch (SAXException e)
+			{
+				throw new IllegalArgumentException("Unable to load policy validation schema from file: '" + schemaFilename + "'", e);
+			}
+		}
 	}
 
 	/**
@@ -151,33 +185,84 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 	public void init(PolicyFinder finder)
 	{
 		// now that we have the PolicyFinder, we can load the policies
-		PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
-
-		Iterator<String> it = policyLocationList.iterator();
-		while (it.hasNext())
+		// PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
+		final File baseDir = finder.getBaseDirectory();
+		for (final String policyLocation : policyLocationList)
 		{
-			String str = it.next();
-			Policy policy = null;
-
+			Object jaxbObj;
+			final Unmarshaller unmarshaller;
 			try
 			{
+				unmarshaller = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+			}
+				catch (JAXBException e1)
+				{
+					throw new IllegalArgumentException("Failed to create JAXB marshaller for unmarshalling Policy XML document", e1);
+				}
+			
+				unmarshaller.setSchema(schema);
+			try {
+				// first try to load it as a URL
+				final URL url = new URL(policyLocation);
+				jaxbObj = unmarshaller.unmarshal(url);
+			} catch (MalformedURLException murle)
+			{
+				// assume that this is a filename, and try again
+				final File file = new File(policyLocation);
+				final File policyFile;
+				if (!file.isAbsolute() && baseDir != null)
+				{
+					policyFile = new File(baseDir, policyLocation);
+				} else
+				{
+					policyFile = file;
+				}
+				
 				try
 				{
-					// first try to load it as a URL
-					URL url = new URL(str);
-					policy = reader.readPolicy(url);
-				} catch (MalformedURLException murle)
+					jaxbObj = unmarshaller.unmarshal(policyFile);
+				} catch (JAXBException e)
 				{
-					// assume that this is a filename, and try again
-					policy = reader.readPolicy(new File(str));
+					throw new IllegalArgumentException("Failed to unmarshall Policy XML document from policy location: " + policyLocation, e);
 				}
-
-				// we loaded the policy, so try putting it in the collection
-				if (!policies.addPolicy(policy))
-					LOGGER.warn("tried to load the same policy multiple times: {}", str);
-			} catch (ParsingException pe)
+			} catch (JAXBException e1)
 			{
-				LOGGER.warn("Error reading policy: {}", str, pe);
+				throw new IllegalArgumentException("Failed to unmarshall Policy XML document from policy location: " + policyLocation, e1);
+			}
+
+			final IPolicy policyInstance;
+			if (jaxbObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
+			{
+				final oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policyElement = (oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbObj;
+				try
+				{
+					policyInstance = Policy.getInstance(policyElement);
+				} catch (ParsingException|UnknownIdentifierException e)
+				{
+					throw new IllegalArgumentException("Error parsing Policy: " + policyElement.getPolicyId(), e);
+				} 
+			} else if (jaxbObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
+			{
+				final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySetElement = (oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbObj;
+				try
+				{
+					policyInstance = PolicySet.getInstance(policySetElement, finder);
+				} catch (UnknownIdentifierException e)
+				{
+					throw new IllegalArgumentException("Unknown policy combining algorithm ID", e);
+				} catch (ParsingException e)
+				{
+					throw new IllegalArgumentException("Error parsing PolicySet: " + policySetElement.getPolicySetId(), e);
+				}
+			} else
+			{
+				throw new IllegalArgumentException("Unexpected element found as root of the policy document: " + jaxbObj.getClass().getSimpleName());
+			}
+
+			// we loaded the policy, so try putting it in the collection
+			if (!policies.addPolicy(policyInstance))
+			{
+				LOGGER.warn("Tried to load the same policy multiple times: {}", policyLocation);
 			}
 		}
 	}

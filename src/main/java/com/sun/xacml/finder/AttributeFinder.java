@@ -35,7 +35,6 @@ package com.sun.xacml.finder;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -48,7 +47,6 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 /**
  * This class is used by the PDP to find attribute values that weren't originally supplied in the
@@ -69,13 +67,13 @@ public class AttributeFinder
 {
 
 	// the list of all modules
-	private List allModules;
+	private List<AttributeFinderModule> allModules;
 
 	//
-	private List designatorModules;
+	private List<AttributeFinderModule> designatorModules;
 
 	//
-	private List selectorModules;
+	private List<AttributeFinderModule> selectorModules;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeFinder.class);
 
@@ -84,9 +82,9 @@ public class AttributeFinder
 	 */
 	public AttributeFinder()
 	{
-		allModules = new ArrayList();
-		designatorModules = new ArrayList();
-		selectorModules = new ArrayList();
+		allModules = new ArrayList<>();
+		designatorModules = new ArrayList<>();
+		selectorModules = new ArrayList<>();
 	}
 
 	/**
@@ -95,9 +93,9 @@ public class AttributeFinder
 	 * 
 	 * @return a list of <code>AttributeFinderModule</code>s
 	 */
-	public List getModules()
+	public List<AttributeFinderModule> getModules()
 	{
-		return new ArrayList(allModules);
+		return new ArrayList<>(allModules);
 	}
 
 	/**
@@ -107,7 +105,7 @@ public class AttributeFinder
 	 * @param modules
 	 *            a list of <code>AttributeFinderModule</code>s
 	 */
-	public void setModules(List modules)
+	public void setModules(List<AttributeFinderModule> modules)
 	{
 		/**
     	 * BEGIN CHANGE
@@ -117,17 +115,13 @@ public class AttributeFinder
     	for(final Object module: this.allModules) {
     		((AttributeFinderModule) module).invalidateCache();
     	}
-		
-		Iterator it = modules.iterator();
 
-		allModules = new ArrayList(modules);
-		designatorModules = new ArrayList();
-		selectorModules = new ArrayList();
+		allModules = new ArrayList<>(modules);
+		designatorModules = new ArrayList<>();
+		selectorModules = new ArrayList<>();
 
-		while (it.hasNext())
+		for (AttributeFinderModule module: modules)
 		{
-			AttributeFinderModule module = (AttributeFinderModule) (it.next());
-
 			if (module.isDesignatorSupported())
 			{
 				designatorModules.add(module);
@@ -165,15 +159,11 @@ public class AttributeFinder
 	public EvaluationResult findAttribute(URI attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context,
 			int designatorType)
 	{
-		Iterator it = designatorModules.iterator();
-
 		// go through each module in order
-		while (it.hasNext())
+		for (AttributeFinderModule module: designatorModules)
 		{
-			AttributeFinderModule module = (AttributeFinderModule) (it.next());
-
 			// see if the module supports this type
-			Set types = module.getSupportedDesignatorTypes();
+			Set<Integer> types = module.getSupportedDesignatorTypes();
 			if ((types == null) || (types.contains(Integer.valueOf(designatorType))))
 			{
 				// see if the module can find an attribute value
@@ -268,13 +258,9 @@ public class AttributeFinder
 	 */
 	public EvaluationResult findAttribute(String contextPath, Node namespaceNode, URI attributeType, EvaluationCtx context, String xpathVersion)
 	{
-		Iterator it = selectorModules.iterator();
-
 		// go through each module in order
-		while (it.hasNext())
+		for (AttributeFinderModule module: selectorModules)
 		{
-			AttributeFinderModule module = (AttributeFinderModule) (it.next());
-
 			// see if the module can find an attribute value
 			EvaluationResult result = module.findAttribute(contextPath, namespaceNode, attributeType, context, xpathVersion);
 

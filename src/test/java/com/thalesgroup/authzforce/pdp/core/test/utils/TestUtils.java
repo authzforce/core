@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.ResponseCtx;
@@ -31,6 +30,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.support.finder.FilePolicyModule;
+import com.thalesgroup.authzforce.BindingUtility;
 
 public class TestUtils
 {

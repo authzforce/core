@@ -35,7 +35,6 @@ package com.sun.xacml;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -44,15 +43,11 @@ import java.util.List;
 
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,13 +56,13 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.ExpressionTools;
-import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.Result;
-import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents the ObligationType XML type in XACML. This also stores all the AttriubteAssignmentType
@@ -107,7 +102,7 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	 * @param assignments
 	 *            a <code>List</code> of <code>Attribute</code>s
 	 */
-	public Obligation(String id, int fulfillOn, List assignments)
+	public Obligation(String id, int fulfillOn, List<AttributeAssignment> assignments)
 	{
 		this(id, fulfillOn, assignments, false);
 	}
@@ -125,11 +120,11 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	 *            a <code>List</code> of <code>Attribute</code>s
 	 * @param isIndeterminate
 	 */
-	public Obligation(String id, int fulfillOn, List assignments, boolean isIndeterminate)
+	public Obligation(String id, int fulfillOn, List<AttributeAssignment> assignments, boolean isIndeterminate)
 	{
 		this.obligationId = id;
 		this.fulfillOn = fulfillOn;
-		this.attributeAssignments = Collections.unmodifiableList(new ArrayList(assignments));
+		this.attributeAssignments = Collections.unmodifiableList(assignments);
 		this.isIndeterminate = isIndeterminate;
 	}
 
@@ -148,7 +143,7 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	{
 		String id;
 		int fulfillOn = -1;
-		List assignments = new ArrayList();
+		List<AttributeAssignment> assignments = new ArrayList<>();
 
 		AttributeFactory attrFactory = AttributeFactory.getInstance();
 		NamedNodeMap attrs = root.getAttributes();
@@ -191,8 +186,16 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 				try
 				{
 					URI attrId = new URI(node.getAttributes().getNamedItem("AttributeId").getNodeValue());
+					String cat = node.getAttributes().getNamedItem("Category").getNodeValue();
+					String issuer = node.getAttributes().getNamedItem("Issuer").getNodeValue();
 					AttributeValue attrValue = attrFactory.createValue(node);
-					assignments.add(new Attribute(attrId, null, null, attrValue, PolicyMetaData.XACML_VERSION_3_0));
+					AttributeAssignment assignt = new AttributeAssignment();
+					assignt.setAttributeId(attrId.toASCIIString());
+					assignt.setCategory(cat);
+					assignt.setIssuer(issuer);
+					assignt.setDataType(attrValue.getDataType());
+					assignt.getContent().addAll(attrValue.getContent());
+					assignments.add(assignt);
 				} catch (URISyntaxException use)
 				{
 					throw new ParsingException("Error parsing URI", use);
@@ -223,95 +226,85 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 	 */
 	public static Obligation getInstance(ObligationExpression root, EvaluationCtx context) throws ParsingException
 	{
-		String id;
-		int fulfillOn = -1;
-		List<AttributeAssignment> assignments = new ArrayList<>();
+		int fulfillOn = root.getFulfillOn().ordinal();
 		boolean indeterminate = false;
-		EvaluationResult result = null;
-
-		id = root.getObligationId();
-
-		fulfillOn = root.getFulfillOn().ordinal();
-
-		for (AttributeAssignmentExpression attrsAssignment : root.getAttributeAssignmentExpressions())
+		String id = root.getObligationId();
+		
+		final List<AttributeAssignment> assignments = new ArrayList<>();
+		for (AttributeAssignmentExpression attrAssignmentExpr : root.getAttributeAssignmentExpressions())
 		{
-			URI attrId = URI.create(attrsAssignment.getAttributeId());
-			String issuer = attrsAssignment.getIssuer();
+			String attrId = attrAssignmentExpr.getAttributeId();
+			String issuer = attrAssignmentExpr.getIssuer();
 
-			ExpressionType myExpr = ExpressionTools.getInstance(attrsAssignment.getExpression().getValue(), null, null);
+			ExpressionType myExpr = ExpressionTools.getInstance(attrAssignmentExpr.getExpression().getValue(), null, null);
 
-			// Check what type of expression this is
-			if (myExpr instanceof ApplyType)
+			if (myExpr instanceof FunctionType)
 			{
-				// TODO: Not Implemented
-				throw new ParsingException("Obligation with Apply not implemented yet");
-			} else if (myExpr instanceof AttributeSelectorType)
-			{
-				// TODO: Not Implemented
-				throw new ParsingException("Obligation with AttributeSelector not implemented yet");
-				// Not implemented yet
-			} else if (myExpr instanceof AttributeValueType)
-			{
-				AttributeValueType attrValue = (AttributeValueType) myExpr;
-				URI datatype = URI.create(XACMLDatatypes.XACML_DATATYPE_STRING.value());
-				if (attrValue.getDataType() != null)
-				{
-					datatype = URI.create(attrValue.getDataType());
-				}
-				/*
-				 * Evaluation
-				 */
-				result = ((AttributeValue) attrValue).evaluate(context);
-				if (result.indeterminate())
-				{
-					indeterminate = true;
-				}
-				// an AD/AS will always return a bag
-				// BagAttribute bag = (BagAttribute) (result.getAttributeValue());
-				AttributeValueType bag = result.getAttributeValue();
-				for (Serializable attributeAssignmentType : bag.getContent())
-				{
-					AttributeAssignment attrAsgnType = new AttributeAssignment();
-					attrAsgnType.getContent().add(attributeAssignmentType);
-					attrAsgnType.setAttributeId(attrId.toASCIIString());
-					attrAsgnType.setCategory(attrsAssignment.getCategory());
-					attrAsgnType.setDataType(datatype.toASCIIString());
-					attrAsgnType.setIssuer(issuer);
-					assignments.add(attrAsgnType);
-				}
-			} else if (myExpr instanceof FunctionType)
-			{
-				// TODO: Not Implemented
-				throw new ParsingException("Obligation with FunctionType not implemented yet");
-			} else if (myExpr instanceof VariableReferenceType)
-			{
-				// TODO: Not Implemented
-				throw new ParsingException("Obligation with VariableReference not implemented yet");
-			} else if (myExpr instanceof AttributeDesignator)
-			{
-				AttributeDesignator attrExpression = (AttributeDesignator) myExpr;
-				/*
-				 * Evaluation
-				 */
-				result = attrExpression.evaluate(context);
-				if (result.indeterminate())
-				{
-					indeterminate = true;
-				}
+				throw new ParsingException(
+						"<Function> NOT allowed as <AttributeAssignmentExpression> of <ObligationExpression> BUT only as child of an <Apply> element");
+			}
 
-				/*
-				 * FIXME: something is missing! Create/add new attributes assignments to 'assignments' variable.
-				 * NOTA BENE: according to spec, if result empty bag, no AttributeAssignment; if
-				 * non-empty bag, one <AttributeAssignment> per value in the bag.
-				 * Make at least 3 unit tests: 
-				 * 1) If <AttributeAssignmentExpression> is static <AttributeValue>;
-				 * 2) If <AttributeAssignmentExpression> evaluates to empty bag (-> no <AttributeAssignment>);
-				 * 3) If <AttributeAssignmentExpression> evaluates to non-empty bag.
-				 */
+			if (!(myExpr instanceof Evaluatable))
+			{
+				throw new ParsingException(myExpr.getClass().getSimpleName()
+						+ " element NOT supported as <AttributeAssignmentExpression> of <ObligationExpression>");
+			}
+
+			// Expression is Evaluatable
+			final Evaluatable evaluatable = (Evaluatable) myExpr;
+			final EvaluationResult result = evaluatable.evaluate(context);
+			/*
+			 * According to XACML 3.0 spec, if result is empty bag, no AttributeAssignment; if
+			 * non-empty bag, one <AttributeAssignment> per value in the bag.
+			 */
+			if (result.indeterminate())
+			{
+				LOGGER.error(
+						"Evaluation of {} element as <AttributeAssignmentExpression> (id='{}') of <ObligationExpression> (id='{}') returned Indeterminate",
+						myExpr.getClass().getSimpleName(), attrId, id);
+				indeterminate = true;
+				// assignments remains an empty list
+			} else
+			{
+				assignments.addAll(toAssignments(id, attrAssignmentExpr.getCategory(), attrId, issuer, result.getAttributeValue(), true));
 			}
 		}
 
 		return new Obligation(id, fulfillOn, assignments, indeterminate);
+	}
+
+	private static List<AttributeAssignment> toAssignments(String obligationId, String category, String attrId, String issuer,
+			AttributeValue attrVal, boolean isRootBag) throws ParsingException
+	{
+		final List<AttributeAssignment> assignts = new ArrayList<>();
+		if (attrVal.isBag())
+		{
+			// nested bags (not the root bag in attribute value) not allowed
+			if (!isRootBag)
+			{
+				throw new ParsingException(
+						String.format(
+								"Evaluation of <AttributeAssignmentExpression> (id='%s') of <ObligationExpression> (id='%s') resulted in bag with nested bags, which is not allowed",
+								attrId, obligationId));
+			}
+
+			// If bag, create one assignment per value
+			for (final AttributeValue childVal : ((BagAttribute) attrVal).getValues())
+			{
+				assignts.addAll(toAssignments(obligationId, category, attrId, issuer, childVal, false));
+			}
+		} else
+		{
+			final AttributeAssignment attrAssignt = new AttributeAssignment();
+			attrAssignt.setCategory(category);
+			attrAssignt.setAttributeId(attrId);
+			attrAssignt.setIssuer(issuer);
+			attrAssignt.setDataType(attrVal.getDataType());
+			attrAssignt.getContent().addAll(attrVal.getContent());
+			assignts.add(attrAssignt);
+		}
+
+		return assignts;
 	}
 
 	/**

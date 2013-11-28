@@ -53,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
@@ -63,6 +62,7 @@ import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * The base type for all datatypes used in a policy or request/response, this abstract class

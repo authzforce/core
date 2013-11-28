@@ -23,20 +23,17 @@ import java.util.List;
 
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.AttributeFinderModule;
 import com.sun.xacml.xacmlv3.Policy;
+import com.thalesgroup.authzforce.BindingUtility;
 
 public class AuditLog
 {

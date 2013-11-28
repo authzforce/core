@@ -36,7 +36,6 @@ package com.sun.xacml.cond;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -75,8 +74,8 @@ public class ConditionSetFunction extends SetFunction
      * supported functions.
      */
     static {
-        idMap = new HashMap<String, Integer>();
-        typeMap = new HashMap<String, String>();
+        idMap = new HashMap<>();
+        typeMap = new HashMap<>();
 
         for (int i = 0; i < baseTypes.length; i++) {
             String baseName = FUNCTION_NS + simpleTypes[i];
@@ -111,13 +110,13 @@ public class ConditionSetFunction extends SetFunction
         }
 
         supportedIds = Collections.
-            unmodifiableSet(new HashSet<String>(idMap.keySet()));
+            unmodifiableSet(new HashSet<>(idMap.keySet()));
 
         idMap.put(NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
                   Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
         idMap.put(NAME_BASE_SUBSET, Integer.valueOf(ID_BASE_SUBSET));
         idMap.put(NAME_BASE_SET_EQUALS, Integer.valueOf(ID_BASE_SET_EQUALS));
-    };
+    }
     
     /**
      * Constructor that is used to create one of the condition standard
@@ -157,7 +156,7 @@ public class ConditionSetFunction extends SetFunction
      * given standard function.
      */
     private static int getId(String functionName) {
-        Integer id = (Integer)(idMap.get(functionName));
+        Integer id = idMap.get(functionName);
 
         if (id == null)
             throw new IllegalArgumentException("unknown set function " +
@@ -173,7 +172,7 @@ public class ConditionSetFunction extends SetFunction
      * is present.
      */
     private static String getArgumentType(String functionName) {
-        return (String)(typeMap.get(functionName));
+        return typeMap.get(functionName);
     }
 
     /**
@@ -196,7 +195,8 @@ public class ConditionSetFunction extends SetFunction
      * @return an <code>EvaluationResult</code> representing the
      *         function's result
      */
-    public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+    @Override
+	public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
@@ -219,10 +219,9 @@ public class ConditionSetFunction extends SetFunction
             // second argument (using the *-is-in semantics)
 
             result = BooleanAttribute.getFalseInstance();
-            Iterator<?> it = bags[0].iterator();
 
-            while (it.hasNext()) {
-                if (bags[1].contains((AttributeValue)(it.next()))) {
+            for (AttributeValue bag0Val: bags[0].getValues()) {
+                if (bags[1].contains(bag0Val)) {
                     result = BooleanAttribute.getTrueInstance();
                     break;
                 }

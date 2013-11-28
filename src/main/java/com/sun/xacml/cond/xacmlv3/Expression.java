@@ -39,35 +39,19 @@ package com.sun.xacml.cond.xacmlv3;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
-import com.sun.xacml.attr.xacmlv3.AttributeSelector;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.Evaluatable;
-import com.sun.xacml.cond.FunctionFactory;
-import com.sun.xacml.cond.FunctionTypeException;
-import com.sun.xacml.cond.VariableManager;
-import com.sun.xacml.cond.VariableReference;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * @author Romain Ferrari

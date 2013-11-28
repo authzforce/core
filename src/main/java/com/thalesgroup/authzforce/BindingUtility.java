@@ -1,50 +1,35 @@
 /**
+ * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
  *
- *  Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ *        http://www.apache.org/licenses/LICENSE-2.0
  *
- *    1. Redistribution of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *    2. Redistribution in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of Sun Microsystems, Inc. or the names of contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
- *
- *  This software is provided "AS IS," without a warranty of any kind. ALL
- *  EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
- *  ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- *  OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
- *  AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
- *  AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
- *  DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
- *  REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
- *  INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
- *  OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
- *  EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- *  You acknowledge that this software is not designed or intended for use in
- *  the design, construction, operation or maintenance of any nuclear facility.
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
  */
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
-package com.sun.xacml;
+package com.thalesgroup.authzforce;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Schema;
+
+import org.w3c.dom.Element;
 
 /**
  *
@@ -141,5 +126,33 @@ public class BindingUtility {
     	
     	return docBuilder;
     }
+    
+	/**
+	 * Instantiates JAXB-annotated class from XML configuration element (DOM API) of PDP extension module
+	 * @param <T>
+	 * 
+	 * @param elt
+	 *            XML data
+	 * @param declaredType
+	 *            appropriate JAXB mapped class to hold XML element data.
+	 * @param schema
+	 *            schema for validation the XML data, null for no validation (not recommended)
+	 * @param jaxbctx JAXB context for unmarshalling XML data
+	 * @return instance of JAXB-mapped class bound to XML element
+	 * @throws JAXBException
+	 */
+	public static <T> T getJaxbInstance(Element elt, Class<T> declaredType, Schema schema, JAXBContext jaxbctx)
+			throws JAXBException
+	{		
+		final Unmarshaller u = jaxbctx.createUnmarshaller();
+		if (schema != null)
+		{
+			u.setSchema(schema);
+		}
+		
+		final JAXBElement<T> rootElt = u.unmarshal(elt, declaredType);
+		final T conf = rootElt.getValue();
+		return conf;
+	}
     
 }

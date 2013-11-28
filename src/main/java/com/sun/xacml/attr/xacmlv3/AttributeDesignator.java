@@ -49,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.PolicyMetaData;
@@ -57,6 +56,7 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.BindingUtility;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 
 public class AttributeDesignator extends AttributeDesignatorType implements Evaluatable
@@ -454,11 +454,15 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 	{
 		PrintStream out = new PrintStream(output);
 		String indent = indenter.makeString();
-
-		String tag = "<" + targetTypes[target] + "AttributeDesignator";
+		out.println(indent + this);
+	}
+	
+	@Override
+	public String toString() {
+		String tag = "<AttributeDesignator";
 
 		if ((target == SUBJECT_TARGET) && (category != null))
-			tag += " SubjectCategory=\"" + category.toString() + "\"";
+			tag += " Category=\"" + category.toString() + "\"";
 
 		tag += " AttributeId=\"" + this.getId().toASCIIString() + "\"";
 		tag += " DataType=\"" + dataType.toString() + "\"";
@@ -470,7 +474,7 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 			tag += " MustBePresent=\"true\"";
 
 		tag += "/>";
-
-		out.println(indent + tag);
+		
+		return tag;
 	}
 }

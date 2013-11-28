@@ -102,7 +102,7 @@ public abstract class AttributeFinderModule
      *
      * @return a <code>Set</code> of <code>Integer</code>s, or null
      */
-    public Set getSupportedDesignatorTypes() {
+    public Set<Integer> getSupportedDesignatorTypes() {
         return null;
     }
 

@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.DOMHelper;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
@@ -65,6 +64,7 @@ import com.sun.xacml.cond.xacmlv3.Apply;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.cond.xacmlv3.ExpressionTools;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents the XACML ConditionType type. It contains exactly one child expression that is boolean

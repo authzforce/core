@@ -45,6 +45,7 @@ import com.sun.xacml.attr.DateAttribute;
 import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.TimeAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinderModule;
 
@@ -90,7 +91,8 @@ public class CurrentEnvModule extends AttributeFinderModule
      *
      * @return true always
      */
-    public boolean isDesignatorSupported() {
+    @Override
+	public boolean isDesignatorSupported() {
         return true;
     }
 
@@ -102,8 +104,9 @@ public class CurrentEnvModule extends AttributeFinderModule
      * @return a <code>Set</code> with
      * <code>AttributeDesignator.ENVIRONMENT_TARGET</code> included
      */
-    public Set getSupportedDesignatorTypes() {
-        Set<Integer> set = new HashSet<Integer>();
+    @Override
+	public Set getSupportedDesignatorTypes() {
+        Set<Integer> set = new HashSet<>();
         set.add(Integer.valueOf((AttributeDesignator.ENVIRONMENT_TARGET)));
         return set;
     }
@@ -130,7 +133,8 @@ public class CurrentEnvModule extends AttributeFinderModule
      * @return the result of attribute retrieval, which will be a bag with
      *         a single attribute, an empty bag, or an error
      */
-    public EvaluationResult findAttribute(URI attributeType, URI attributeId,
+    @Override
+	public EvaluationResult findAttribute(URI attributeType, URI attributeId,
                                           URI issuer, URI subjectCategory,
                                           EvaluationCtx context,
                                           int designatorType) {
@@ -145,11 +149,11 @@ public class CurrentEnvModule extends AttributeFinderModule
         String attrName = attributeId.toString();
 
         if (attrName.equals(ENVIRONMENT_CURRENT_TIME)) {
-            return handleTime(attributeType, issuer, context);
+            return handleTime(attributeType, /*issuer,*/ context);
         } else if (attrName.equals(ENVIRONMENT_CURRENT_DATE)) {
-            return handleDate(attributeType, issuer, context);
+            return handleDate(attributeType, /*issuer,*/ context);
         } else if (attrName.equals(ENVIRONMENT_CURRENT_DATETIME)) {
-            return handleDateTime(attributeType, issuer, context);
+            return handleDateTime(attributeType, /*issuer,*/ context);
         }
 
         // if we got here, then it's an attribute that we don't know
@@ -160,7 +164,7 @@ public class CurrentEnvModule extends AttributeFinderModule
     /**
      * Handles requests for the current Time.
      */
-    private EvaluationResult handleTime(URI type, URI issuer,
+    private static EvaluationResult handleTime(URI type, /*URI issuer,*/
                                         EvaluationCtx context) {
         // make sure they're asking for a time attribute
         if (! type.toString().equals(TimeAttribute.identifier))
@@ -176,7 +180,7 @@ public class CurrentEnvModule extends AttributeFinderModule
     /**
      * Handles requests for the current Date.
      */
-    private EvaluationResult handleDate(URI type, URI issuer,
+    private static EvaluationResult handleDate(URI type, /*URI issuer,*/
                                         EvaluationCtx context) {
         // make sure they're asking for a date attribute
         if (! type.toString().equals(DateAttribute.identifier))
@@ -192,7 +196,7 @@ public class CurrentEnvModule extends AttributeFinderModule
     /**
      * Handles requests for the current DateTime.
      */
-    private EvaluationResult handleDateTime(URI type, URI issuer,
+    private static EvaluationResult handleDateTime(URI type, /*URI issuer,*/
                                             EvaluationCtx context) {
         // make sure they're asking for a dateTime attribute
         if (! type.toString().equals(DateTimeAttribute.identifier))
@@ -218,9 +222,9 @@ public class CurrentEnvModule extends AttributeFinderModule
     /**
      * Private helper that makes a bag containing only the given attribute.
      */
-    private EvaluationResult makeBag(AttributeValueType attribute) {
-        Set<AttributeValueType> set = new HashSet<AttributeValueType>();
-        set.add(attribute);
+    private static EvaluationResult makeBag(AttributeValueType attribute) {
+        Set<AttributeValue> set = new HashSet<>();
+        set.add((AttributeValue) attribute);
 
         BagAttribute bag = new BagAttribute(URI.create(attribute.getDataType()), set);
 

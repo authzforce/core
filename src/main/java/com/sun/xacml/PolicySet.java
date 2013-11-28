@@ -65,6 +65,7 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 import com.sun.xacml.xacmlv3.Target;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents one of the two top-level constructs in XACML, the PolicySetType. This can contain

@@ -57,11 +57,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.Obligation;
 import com.sun.xacml.ParsingException;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Result XML object from the Context

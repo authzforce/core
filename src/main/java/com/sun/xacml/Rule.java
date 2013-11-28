@@ -66,6 +66,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.Target;
+import com.thalesgroup.authzforce.BindingUtility;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 /**

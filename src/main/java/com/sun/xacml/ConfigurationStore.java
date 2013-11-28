@@ -34,7 +34,6 @@
 package com.sun.xacml;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -48,9 +47,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.validation.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +81,7 @@ import com.sun.xacml.cond.cluster.FunctionCluster;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.ResourceFinder;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * This class supports run-time loading of configuration data. It loads the configurations from an
@@ -156,7 +156,7 @@ public class ConfigurationStore
 
 		try
 		{
-			setupConfig(new File(configFile));
+			setupConfig(new File(configFile), null, null);
 		} catch (ParsingException pe)
 		{
 			LOGGER.error("Runtime config file couldn't be loaded" + " so no configurations will be available", pe);
@@ -170,15 +170,38 @@ public class ConfigurationStore
 	 * specify a configuration file, or if you want to use more then one configuration file. If the
 	 * file can't be accessed, or if the file is invalid, then an exception is thrown.
 	 * 
+	 * @param configFile
+	 *            PDP XML configuration file
+	 * @param jaxbctx
+	 *            JAXB context for unmarshalling XML configuration of the finder modules/classes
+	 *            with configuration enclosed in 'xml' tag. Such classes must have at least one
+	 *            constructor with argument types in this order: org.w3c.dom.Element,
+	 *            Javax.xml.bind.JAXContext, javax.xml.validation.Schema. This argument may be null
+	 *            if not using JAXB for loading module configurations (i.e. not enclosed in
+	 *            'xml'tag). Example:
+	 * 
+	 *            <pre>
+	 * {@code 
+	 * <attributeFinderModule class="com.example.MyAttributeFinderModule">
+	 *   <xml>
+	 *     <az:attributeFinder xmlns:az="http://thalesgroup.com/authz/model/3.0" ...>...</az>
+	 *   </xml>
+	 * </attributeFinderModule>
+	 * 	}
+	 * </pre>
+	 * @param schema
+	 *            XML schema for validating XML configurations of finder modules (enclosed in 'xml'
+	 *            tag). This argument is optional: use a null value to cancel schema validation.
+	 * 
 	 * @throws ParsingException
 	 *             if anything goes wrong during the parsing of the configuration file, the class
 	 *             loading, or the factory and pdp setup
 	 */
-	public ConfigurationStore(File configFile) throws ParsingException
+	public ConfigurationStore(File configFile, JAXBContext jaxbctx, Schema schema) throws ParsingException
 	{
 		try
 		{
-			setupConfig(configFile);
+			setupConfig(configFile, jaxbctx, schema);
 		} catch (ParsingException pe)
 		{
 			LOGGER.error("Runtime config file couldn't be loaded" + " so no configurations will be available", pe);
@@ -191,8 +214,19 @@ public class ConfigurationStore
 	 * 
 	 * Private helper function used by both constructors to actually load the configuration data.
 	 * This is the root of several private methods used to setup all the pdps and factories.
+	 * 
+	 * @param jaxbctx
+	 *            JAXB context for unmarshalling XML configuration of the finder modules/classes
+	 *            with configuration enclosed in 'xml' tag. Such classes must have at least one
+	 *            constructor with argument types in this order: org.w3c.dom.Element,
+	 *            Javax.xml.bind.JAXContext, javax.xml.validation.Schema. This argument may be null
+	 *            if not using JAXB for loading module configurations (i.e. not enclosed in
+	 *            'xml'tag).
+	 * 
+	 * @param schema
+	 *            schema for validating XML configuration of PDP (finder) modules
 	 */
-	private void setupConfig(File configFile) throws ParsingException
+	private void setupConfig(File configFile, JAXBContext jaxbctx, Schema schema) throws ParsingException
 	{
 		LOGGER.info("Loading runtime configuration");
 
@@ -241,7 +275,7 @@ public class ConfigurationStore
 				{
 					throw new ParsingException("more that one pdp with " + "name \"" + elementName + "\"");
 				}
-				pdpConfigMap.put(elementName, parsePDPConfig(child, configFile));
+				pdpConfigMap.put(elementName, parsePDPConfig(child, configFile, jaxbctx, schema));
 			} else if (childName.equals("attributeFactory"))
 			{
 				LOGGER.info("Loading AttributeFactory: {}", elementName);
@@ -360,10 +394,20 @@ public class ConfigurationStore
 	/**
 	 * Private helper that handles the pdp elements.
 	 * 
-	 * TODO: use XML schema and JAXB for configuration parsing to clean the code and provide INPUT
-	 * VALIDATION against defined schema.
+	 * TODO: use XML schema and JAXB for configuration parsing to clean the code
+	 * 
+	 * @param jaxbctx
+	 *            JAXB context for unmarshalling XML configuration of the finder modules/classes
+	 *            with configuration enclosed in 'xml' tag. Such classes must have at least one
+	 *            constructor with argument types in this order: org.w3c.dom.Element,
+	 *            Javax.xml.bind.JAXContext, javax.xml.validation.Schema. This argument may be null
+	 *            if not using JAXB for loading module configurations (i.e. not enclosed in
+	 *            'xml'tag).
+	 * @param schema
+	 *            XML schema for validating configurations of PDP modules (esp. finders), when
+	 *            enclosed with 'xml' tag
 	 */
-	private PDPConfig parsePDPConfig(Node root, File configFile) throws ParsingException
+	private PDPConfig parsePDPConfig(Node root, File configFile, JAXBContext jaxbctx, Schema schema) throws ParsingException
 	{
 		ArrayList attrModules = new ArrayList();
 		ArrayList policyModules = new ArrayList();
@@ -379,13 +423,14 @@ public class ConfigurationStore
 
 			if (name.equals("policyFinderModule"))
 			{
-				policyModules.add(loadClass("module", child));
+				policyModules.add(loadClass("module", child, jaxbctx, schema));
 			} else if (name.equals("attributeFinderModule"))
 			{
-				attrModules.add(loadClass("module", child));
+				attrModules.add(loadClass("module", child, jaxbctx, schema));
 			} else if (name.equals("resourceFinderModule"))
 			{
-				rsrcModules.add(loadClass("module", child));
+				// TODO:
+				rsrcModules.add(loadClass("module", child, jaxbctx, schema));
 			} else if (name.equals("cache"))
 			{
 				cacheModules.add(loadClass("module", child));
@@ -625,11 +670,28 @@ public class ConfigurationStore
 		}
 	}
 
+	private Object loadClass(String prefix, Node root) throws ParsingException
+	{
+		return loadClass(prefix, root, null, null);
+	}
+
 	/**
 	 * Private helper that is used by all the code to load an instance of the given class...this
 	 * assumes that the class is in the classpath, both for simplicity and for stronger security
+	 * 
+	 * @param jaxbctx
+	 *            JAXB context for unmarshalling XML configuration of the finder modules/classes
+	 *            with configuration enclosed in 'xml' tag. Such classes must have at least one
+	 *            constructor with argument types in this order: org.w3c.dom.Element,
+	 *            Javax.xml.bind.JAXContext, javax.xml.validation.Schema. This argument may be null
+	 *            if not using JAXB for loading module configurations (i.e. not enclosed in
+	 *            'xml'tag).
+	 * 
+	 * @param schema
+	 *            XML schema for validating XML elements enclosed with node named 'xml'
+	 *            (configuration of PDP modules), argument is optional (may be null)
 	 */
-	private Object loadClass(String prefix, Node root) throws ParsingException
+	private Object loadClass(String prefix, Node root, JAXBContext jaxbctx, Schema schema) throws ParsingException
 	{
 		// get the name of the class
 		String className = root.getAttributes().getNamedItem("class").getNodeValue();
@@ -667,7 +729,8 @@ public class ConfigurationStore
 			List args = null;
 			try
 			{
-				args = getArgs(root);
+				// JAXB context and schema will be used in args only if root node is named 'xml'
+				args = getArgs(root, jaxbctx, schema);
 			} catch (IllegalArgumentException iae)
 			{
 				throw new ParsingException("illegal class arguments", iae);
@@ -725,7 +788,7 @@ public class ConfigurationStore
 			// make sure we found a matching constructor
 			if (constructor == null)
 			{
-				throw new ParsingException("couldn't find a matching " + "constructor");
+				throw new ParsingException("couldn't find a matching constructor");
 			}
 
 			// finally, instantiate the class
@@ -737,7 +800,7 @@ public class ConfigurationStore
 				throw new ParsingException("couldn't instantiate " + className, ie);
 			} catch (IllegalAccessException iae)
 			{
-				throw new ParsingException("couldn't get access to instance " + "of " + className, iae);
+				throw new ParsingException("couldn't get access to instance of " + className, iae);
 			} catch (InvocationTargetException ite)
 			{
 				throw new ParsingException("couldn't create " + className, ite);
@@ -749,11 +812,14 @@ public class ConfigurationStore
 
 	/**
 	 * Private helper that gets the constructor arguments for a given class. Right now this just
-	 * supports String and List, but it's trivial to add support for other types should that be
-	 * needed. Right now, it's not clear that there's any need for other types.
+	 * supports String, List and XML elements, but it's trivial to add support for other types
+	 * should that be needed. Right now, it's not clear that there's any need for other types. The
+	 * JAXB context and schema arguments are added to the result arguments for JAXB unmarshalling
+	 * and schema validation if root node is named 'xml'. Schema argument may be null to cancel
+	 * validation.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private List getArgs(Node root)
+	private List getArgs(Node root, JAXBContext jaxbctx, Schema schema)
 	{
 		List args = new ArrayList();
 		NodeList children = root.getChildNodes();
@@ -782,13 +848,16 @@ public class ConfigurationStore
 					}
 
 					args.add(nodes.item(0));
+					args.add(jaxbctx);
+					args.add(schema);
 				}
-				
+
 				/*
 				 * FIXME: 'xml' is generic enough to address all types of configuration below. We
 				 * should not address all possible FinderModule configuration types here because we
 				 * expect to add new ones dynamically at runtime. Each FinderModule must document
-				 * and parse the actual configuration options in his own class/doc, for loose coupling.
+				 * and parse the actual configuration options in his own class/doc, for loose
+				 * coupling.
 				 * 
 				 * BEGIN REMOVE ALL THIS
 				 */
@@ -818,12 +887,12 @@ public class ConfigurationStore
 					args.add(getArgs(child));
 				} else if (name.equals("url"))
 				{
-					Map<String, String> myMap = new HashMap<String, String>();
+					Map<String, String> myMap = new HashMap<>();
 					myMap.put("url", child.getFirstChild().getNodeValue());
 					args.add(myMap);
 				} else if (name.equals("attributeSupportedId"))
 				{
-					Map<String, String> myMap = new HashMap<String, String>();
+					Map<String, String> myMap = new HashMap<>();
 					myMap.put("attributeSupportedId", child.getFirstChild().getNodeValue());
 					args.add(myMap);
 				} else if (name.equals("substituteVmId"))
@@ -933,6 +1002,11 @@ public class ConfigurationStore
 			}
 		}
 		return args;
+	}
+
+	private List getArgs(Node root)
+	{
+		return getArgs(root, null, null);
 	}
 
 	/**
