@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -44,34 +46,32 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	/**
 	 * Logger used for all classes
 	 */
-//	private static final Logger LOGGER = LoggerFactory
-//			.getLogger(AnyOf.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AnyOf.class);
 	
+	// private static final Logger LOGGER = LoggerFactory
+	// .getLogger(AnyOf.class);
+
 	// the list of match groups
-    private List matchGroups;
+	private List matchGroups;
 
 	// the match type contained in this group
-    /**
-     * FIXME: this variable is never used
-     */
-    private int matchType;
+	/**
+	 * FIXME: this variable is never used
+	 */
+	private int matchType;
 
-    // the version of XACML used by the containing Target
-    /**
-     * FIXME: this variable is never used
-     */
-    private int xacmlVersion;
+	// the version of XACML used by the containing Target
+	/**
+	 * FIXME: this variable is never used
+	 */
+	private int xacmlVersion;
 
-    public AnyOf() {
-    	this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>();
-    	this.matchGroups = Collections.unmodifiableList(new ArrayList());
-    	this.matchType = -1;
-        this.xacmlVersion = PolicyMetaData.XACML_VERSION_3_0;
-    }
-    
-//	public AnyOf(oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfType, int xacmlVersion) {
-//		this(Arrays.asList(allOfType), xacmlVersion);
-//	}
+	public AnyOf() {
+		this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>();
+		this.matchGroups = Collections.unmodifiableList(new ArrayList());
+		this.matchType = -1;
+		this.xacmlVersion = PolicyMetaData.XACML_VERSION_3_0;
+	}
 
 	/**
 	 * Constructor that creates a new <code>AnyOfSelection</code> based on the
@@ -84,29 +84,35 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 		if (allOfType == null) {
 			this.allOves = new ArrayList<>();
 		} else {
-			this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>(allOfType);
+			this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>(
+					allOfType);
 		}
-        this.xacmlVersion = xacmlVersion;   
+		this.xacmlVersion = xacmlVersion;
 	}
 
 	/**
 	 * creates a <code>AnyOf</code> handler based on JAXB AnyOf element.
-	 * @param anyOf JAXB AnyOf
-	 * @param metadata  
+	 * 
+	 * @param anyOf
+	 *            JAXB AnyOf
+	 * @param metadata
 	 * @return a new <code>AnyOf</code>
 	 * 
 	 * @throws ParsingException
 	 *             if AnyOf element is invalid
 	 */
-	public static AnyOf getInstance(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf anyOf, PolicyMetaData metadata) throws ParsingException
-	{
+	public static AnyOf getInstance(
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf anyOf,
+			PolicyMetaData metadata) throws ParsingException {
 		final List<AllOf> allOfList = new ArrayList<>();
-		for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfElement: anyOf.getAllOves()) {
+		for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfElement : anyOf
+				.getAllOves()) {
 			allOfList.add(AllOf.getInstance(allOfElement, metadata));
 		}
 
 		if (allOfList.isEmpty()) {
-			throw new ParsingException("AnyOf element must contain at least one AllOf element");
+			throw new ParsingException(
+					"AnyOf element must contain at least one AllOf element");
 		}
 
 		return new AnyOf(allOfList, PolicyMetaData.XACML_VERSION_3_0);
@@ -153,7 +159,46 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 		return null;
 	}
 
+	/**
+	 * Determines whether this <code>AnyOf</code> matches the input request
+	 * (whether it is applicable). If all the AllOf values is No_Match so it's a
+	 * No_Match. If all matches it's a Match. If None matches and at least one
+	 * “Indeterminate” it's Indeterminate <code>
+	 * 		<AllOf> values 						<AnyOf> value 
+	 * 		At Least one "No Match" 			“Match” 
+	 * 		None matches and 
+	 * 		at least one Indeterminate 			“Indeterminate”
+	 * 		All "No Match"						"No Match"
+	 * </code>
+	 * 
+	 * @param context
+	 *            the representation of the request
+	 * 
+	 * @return the result of trying to match the {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf} and the request
+	 */
 	public MatchResult match(EvaluationCtx context) {
+		MatchResult result = null;
+		MatchResult resultInd = null;
+		boolean indeterminate = false;
+		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : this.getAllOves()) {
+			AllOf allOf = (AllOf) jaxbAllOf;
+			result = allOf.match(context);
+			if(result.getResult() == MatchResult.MATCH) {
+				return result;
+			} else if(result.getResult() == MatchResult.INDETERMINATE) {
+				indeterminate = true;
+				result = new MatchResult(MatchResult.INDETERMINATE, result.getStatus());
+			}
+		}
+		// If we got here then none matched
+		if(indeterminate) {
+			result = resultInd;
+		}
+
+		return result;
+	}
+
+	public MatchResult oldMatch(EvaluationCtx context) {
 		// if we apply to anything, then we always match
 		if (matchGroups.isEmpty()) {
 			return new MatchResult(MatchResult.MATCH);
