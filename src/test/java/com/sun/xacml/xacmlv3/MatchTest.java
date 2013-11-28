@@ -1,7 +1,5 @@
 package com.sun.xacml.xacmlv3;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -10,6 +8,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
@@ -29,7 +28,7 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
  * @author Romain Ferrari
  *
  */
-public class AllOfTest {
+public class MatchTest {
 	
 	private static EvaluationCtx context;
 	private static Request request = null;
@@ -38,8 +37,9 @@ public class AllOfTest {
 	private static Rule ruleNoMatch;
 	private static Rule ruleMatch;
 	
-	private final static int ONE_MATCH = 0;
+	private final static int ONE_ALL_OF = 0;
 	private final static int MULTI_MATCH = 1;
+	private final static int MULTI_ALL_OF = 2;
 	
 	private final static int RULE_NO_MATCH = 0;
 	private final static int RULE_MATCH = 1;
@@ -63,46 +63,56 @@ public class AllOfTest {
 	
 	@Test
 	public final void testMatch_noMatch() throws ParsingException {
-		allOf = ruleNoMatch.getTarget().getAnyOves().get(ONE_MATCH).getAllOves();
+		AnyOf anyOf = ruleNoMatch.getTarget().getAnyOves().get(ONE_ALL_OF);
 		MatchResult result = null;
-		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : allOf) {
-			com.sun.xacml.xacmlv3.AllOf myAllOf = com.sun.xacml.xacmlv3.AllOf.getInstance(jaxbAllOf, new PolicyMetaData());
-			result = myAllOf.match(context);
-		}
+		com.sun.xacml.xacmlv3.AnyOf myAnyOf = com.sun.xacml.xacmlv3.AnyOf.getInstance(anyOf, new PolicyMetaData());
+		result = myAnyOf.match(context);
 		Assert.assertEquals(MatchResult.NO_MATCH, result.getResult());
 	}
 	
 	@Test
-	public final void testMatch_match() throws ParsingException {
-		allOf = ruleMatch.getTarget().getAnyOves().get(ONE_MATCH).getAllOves();
+	public final void testMatch_MultinoMatch() throws ParsingException {
+		AnyOf anyOf = ruleNoMatch.getTarget().getAnyOves().get(MULTI_MATCH);
 		MatchResult result = null;
-		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : allOf) {
-			com.sun.xacml.xacmlv3.AllOf myAllOf = com.sun.xacml.xacmlv3.AllOf.getInstance(jaxbAllOf, new PolicyMetaData());
-			result = myAllOf.match(context);
-		}
+		com.sun.xacml.xacmlv3.AnyOf myAnyOf = com.sun.xacml.xacmlv3.AnyOf.getInstance(anyOf, new PolicyMetaData());
+		result = myAnyOf.match(context);
+		Assert.assertEquals(MatchResult.NO_MATCH, result.getResult());
+	}
+
+	
+	@Test
+	public final void testMatchMultiple_NoMatch() throws ParsingException {
+		AnyOf anyOf = ruleNoMatch.getTarget().getAnyOves().get(MULTI_ALL_OF);
+		MatchResult result = null;
+		com.sun.xacml.xacmlv3.AnyOf myAnyOf = com.sun.xacml.xacmlv3.AnyOf.getInstance(anyOf, new PolicyMetaData());
+		result = myAnyOf.match(context);
+		Assert.assertEquals(MatchResult.NO_MATCH, result.getResult());
+	}
+	
+	@Test
+	public final void testMatch_Match() throws ParsingException {
+		AnyOf anyOf = ruleMatch.getTarget().getAnyOves().get(ONE_ALL_OF);
+		MatchResult result = null;
+		com.sun.xacml.xacmlv3.AnyOf myAnyOf = com.sun.xacml.xacmlv3.AnyOf.getInstance(anyOf, new PolicyMetaData());
+		result = myAnyOf.match(context);
+		Assert.assertEquals(MatchResult.MATCH, result.getResult());
+	}
+
+	@Test
+	public final void testMatchMultiple_MultiMatch() throws ParsingException {
+		AnyOf anyOf = ruleMatch.getTarget().getAnyOves().get(MULTI_MATCH);
+		MatchResult result = null;
+		com.sun.xacml.xacmlv3.AnyOf myAnyOf = com.sun.xacml.xacmlv3.AnyOf.getInstance(anyOf, new PolicyMetaData());
+		result = myAnyOf.match(context);
 		Assert.assertEquals(MatchResult.MATCH, result.getResult());
 	}
 	
 	@Test
-	public final void testMatchMultiple_NoMatch() throws ParsingException {
-		allOf = ruleNoMatch.getTarget().getAnyOves().get(MULTI_MATCH).getAllOves();
-		MatchResult result = null;
-		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : allOf) {
-			com.sun.xacml.xacmlv3.AllOf myAllOf = com.sun.xacml.xacmlv3.AllOf.getInstance(jaxbAllOf, new PolicyMetaData());
-			result = myAllOf.match(context);
-		}
-		Assert.assertEquals(MatchResult.NO_MATCH, result.getResult());
-	}
-	
-	@Test
 	public final void testMatchMultiple_Match() throws ParsingException {
-		allOf = ruleMatch.getTarget().getAnyOves().get(MULTI_MATCH).getAllOves();
+		AnyOf anyOf = ruleMatch.getTarget().getAnyOves().get(MULTI_ALL_OF);
 		MatchResult result = null;
-		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : allOf) {
-			com.sun.xacml.xacmlv3.AllOf myAllOf = com.sun.xacml.xacmlv3.AllOf.getInstance(jaxbAllOf, new PolicyMetaData());
-			result = myAllOf.match(context);
-			if(result.getResult() == MatchResult.MATCH) break;
-		}
+		com.sun.xacml.xacmlv3.AnyOf myAnyOf = com.sun.xacml.xacmlv3.AnyOf.getInstance(anyOf, new PolicyMetaData());
+		result = myAnyOf.match(context);
 		Assert.assertEquals(MatchResult.MATCH, result.getResult());
 	}
 }

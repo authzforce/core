@@ -165,7 +165,7 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	 * No_Match. If all matches it's a Match. If None matches and at least one
 	 * “Indeterminate” it's Indeterminate <code>
 	 * 		<AllOf> values 						<AnyOf> value 
-	 * 		At Least one "No Match" 			“Match” 
+	 * 		At Least one "Match"	 			“Match” 
 	 * 		None matches and 
 	 * 		at least one Indeterminate 			“Indeterminate”
 	 * 		All "No Match"						"No Match"

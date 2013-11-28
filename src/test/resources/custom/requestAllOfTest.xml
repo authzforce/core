@@ -15,8 +15,7 @@
 		</Attribute>
 		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-role"
 			IncludeInResult="false">
-			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">administrator
-			</AttributeValue>
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">administrator</AttributeValue>
 		</Attribute>
 	</Attributes>
 	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">

@@ -27,28 +27,16 @@
             <AnyOf>
                <AllOf>
                   <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">DeleteContainer</AttributeValue>
+                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">CreateContainer</AttributeValue>
                      <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
                   </Match>
-               </AllOf>
-               <AllOf>
-                  <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ListContainer</AttributeValue>
-                     <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
+                   <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">9343a22d-4d37-11e3-b79e-005056a2287a</AttributeValue>
+                     <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
                   </Match>
                </AllOf>
-               <AllOf>
-                  <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">DeleteObject</AttributeValue>
-                     <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
-                  </Match>
-               </AllOf>
-               <AllOf>
-                  <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">GetObject</AttributeValue>
-                     <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
-                  </Match>
-               </AllOf>
+            </AnyOf>
+            <AnyOf>               
                <AllOf>
                   <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
                      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">PutObject</AttributeValue>
@@ -86,11 +74,23 @@
             <AnyOf>
                <AllOf>
                   <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ListContainer</AttributeValue>
+                     <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
+                  </Match>
+                  <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                     <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">9343a22d-4d37-11e3-b79e-005056a2287a</AttributeValue>
+                     <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
+                  </Match>
+               </AllOf>
+            </AnyOf>
+            <AnyOf>
+               <AllOf>
+                  <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
                      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">DeleteContainer</AttributeValue>
                      <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
                   </Match>
                </AllOf>
-               <AllOf>
+               <AllOf>                  
                   <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
                      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ListContainer</AttributeValue>
                      <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
