@@ -165,20 +165,19 @@ public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target {
 	 * @return the result of trying to match the {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf} and the request
 	 */
 	public MatchResult match(EvaluationCtx context) {
-		MatchResult result = null;
+		MatchResult result = new MatchResult(MatchResult.INDETERMINATE);
 
 		// before matching, see if this target matches any request
 		if (matchesAny(context.getVersion())) {
 			return new MatchResult(MatchResult.MATCH);
 		}
 
-		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf : this
-				.getAnyOves()) {
+		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf : this.getAnyOves()) {
 			AnyOf anyOfTmp = (AnyOf) jaxbAnyOf;
 			result = anyOfTmp.match(context);
 			// We check that the Match element is a Match. Otherwise we return
 			// the result
-			if (result.getResult() != MatchResult.MATCH) {
+			if (result == null || result.getResult() != MatchResult.MATCH) {
 				LOGGER.error("failed to match any element of Target");
 				return result;
 			}

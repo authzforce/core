@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Request ReturnPolicyIdList="false" CombinedDecision="false"
+	xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+	<Attributes
+		Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+			IncludeInResult="true">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">b19ab276-45fb-11e3-a504-005056a27bfa
+			</AttributeValue>
+		</Attribute>
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-mail"
+			IncludeInResult="true">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">testauthz5@testauthz.com
+			</AttributeValue>
+		</Attribute>
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-role"
+			IncludeInResult="false">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">administrator
+			</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+			IncludeInResult="false">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">9343a22d-4d37-11e3-b79e-005056a2287a</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+			IncludeInResult="false">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ListContainer</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes
+		Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:environment:environment-id"
+			IncludeInResult="false">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string"/>
+		</Attribute>
+	</Attributes>
+</Request>
