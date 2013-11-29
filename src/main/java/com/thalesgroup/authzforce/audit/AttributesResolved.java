@@ -17,12 +17,14 @@ package com.thalesgroup.authzforce.audit;
 
 import java.net.URI;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 public class AttributesResolved {
 	
 	
 	private URI attributeId;
 	
-	private String attributeValue;
+	private AttributeValueType attributeValue;
 
 	public URI getAttributeId() {
 		return attributeId;
@@ -32,11 +34,11 @@ public class AttributesResolved {
 		this.attributeId = attributeId;
 	}
 
-	public String getAttributeValue() {
+	public AttributeValueType getAttributeValue() {
 		return attributeValue;
 	}
 
-	public void setAttributeValue(String attributeValue) {
+	public void setAttributeValue(AttributeValueType attributeValue) {
 		this.attributeValue = attributeValue;
 	}
 

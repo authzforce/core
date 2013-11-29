@@ -228,13 +228,16 @@ public class BagAttribute extends AttributeValue
         
     }
 
-    /**
-     * Because a bag cannot be included in a request/response or a 
-     * policy, this will always throw an
-     * <code>UnsupportedOperationException</code>.
-     */
-    public String encode() {
-        throw new UnsupportedOperationException("Bags cannot be encoded");
+
+    @Override
+	public String encode() {
+    	final StringBuilder encoded = new StringBuilder();
+    	for(final Object valObj: bag) {
+    		final AttributeValue val = (AttributeValue) valObj;
+    		encoded.append(val.encodeWithTags(true));
+    	}
+    	
+    	return encoded.toString();
     }
 
     public Collection getValue() {

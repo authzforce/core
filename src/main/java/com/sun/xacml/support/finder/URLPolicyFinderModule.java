@@ -49,7 +49,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -79,9 +80,9 @@ public class URLPolicyFinderModule extends PolicyFinderModule
     // the reader used to load all policies
     private PolicyReader reader;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(URLPolicyFinderModule.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(URLPolicyFinderModule.class);
 
     /**
      * Creates a <code>URLPolicyFinderModule</code>. The schema file used
@@ -125,7 +126,7 @@ public class URLPolicyFinderModule extends PolicyFinderModule
      * @param finder the <code>PolicyFinder</code> using this module
      */
     public void init(PolicyFinder finder) {
-        reader = new PolicyReader(finder, logger, schemaFile);
+        reader = new PolicyReader(finder, LOGGER, schemaFile);
     }
 
     /**

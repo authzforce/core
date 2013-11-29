@@ -41,12 +41,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 
 /**
@@ -66,9 +64,9 @@ public class TargetMatchGroup
     // the match type contained in this group
     private int matchType;
 
-    // the logger we'll use for all messages
-    private static final Logger logger =
-        Logger.getLogger(Target.class.getName());
+    // the LOGGER we'll use for all messages
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(Target.class);
 
     /**
      * Constructor that creates a new <code>TargetMatchGroup</code> based
@@ -106,7 +104,7 @@ public class TargetMatchGroup
         /*
          * XACML 3.0 hook
          */
-        if (Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()) == metaData.getXACMLVersion()) {        	
+        if (PolicyMetaData.XACML_VERSION_3_0 == metaData.getXACMLVersion()) {        	
         	NodeList myRoot = (NodeList)root;
         	String name = DOMHelper.getLocalName(root);
             if (name.equals(TargetMatch.NAMES[TargetMatch.MATCH])) {

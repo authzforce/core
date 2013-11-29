@@ -39,35 +39,35 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
-import com.sun.xacml.PolicySet;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.IPolicy;
 
 /**
- * This is the standard Permit Overrides policy combining algorithm. It allows a
- * single evaluation of Permit to take precedence over any number of deny, not
- * applicable or indeterminate results. Note that since this implementation does
- * an ordered evaluation, this class also supports the Ordered Permit Overrides
- * algorithm.
+ * This is the standard Permit Overrides policy combining algorithm. It allows a single evaluation
+ * of Permit to take precedence over any number of deny, not applicable or indeterminate results.
+ * Note that since this implementation does an ordered evaluation, this class also supports the
+ * Ordered Permit Overrides algorithm.
  * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
+public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
+{
 
-	private static final org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger
-			.getLogger(PermitOverridesPolicyAlg.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(PermitOverridesPolicyAlg.class);
 
 	/**
 	 * The standard URN used to identify this algorithm
 	 */
-	public static final String algId = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:"
-			+ "permit-overrides";
+	public static final String algId = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:" + "permit-overrides";
 
 	// a URI form of the identifier
 	private static final URI identifierURI = URI.create(algId);
@@ -75,7 +75,8 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 	/**
 	 * Standard constructor.
 	 */
-	public PermitOverridesPolicyAlg() {
+	public PermitOverridesPolicyAlg()
+	{
 		super(identifierURI);
 	}
 
@@ -85,127 +86,127 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 	 * @param identifier
 	 *            the algorithm's identifier
 	 */
-	protected PermitOverridesPolicyAlg(URI identifier) {
+	protected PermitOverridesPolicyAlg(URI identifier)
+	{
 		super(identifier);
 	}
 
 	/**
-	 * Applies the combining rule to the set of policies based on the evaluation
-	 * context.
+	 * Applies the combining rule to the set of policies based on the evaluation context.
 	 * 
 	 * @param context
 	 *            the context from the request
 	 * @param parameters
-	 *            a (possibly empty) non-null <code>List</code> of
-	 *            <code>CombinerParameter<code>s
+	 *            a (possibly empty) non-null <code>List</code> of <code>CombinerParameter<code>s
 	 * @param policyElements
 	 *            the policies to combine
 	 * 
 	 * @return the result of running the combining algorithm
 	 */
-	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-			List policyElements) {
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List policyElements)
+	{
 		boolean atLeastOneError = false;
 		boolean atLeastOneDeny = false;
-		ObligationsType denyObligations = new ObligationsType();
-		StatusType firstIndeterminateStatus = null;
+		Obligations denyObligations = new Obligations();
+		Status firstIndeterminateStatus = null;
 		Iterator it = policyElements.iterator();
 
 		/**
-		 * BEGINING
-		 * Romain Guignard
+		 * BEGINING Romain Guignard
 		 */
-//		AuditLogs audit = AuditLogs.getInstance();
+		// AuditLogs audit = AuditLogs.getInstance();
 		/**
 		 * END
 		 */
-//		List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
-		while (it.hasNext()) {
-			Object policy = (it.next());
+		// List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
+		while (it.hasNext())
+		{
+			Object policyElement = (it.next());
 			MatchResult match = null;
 			Result result = null;
 			// make sure that the policy matches the context
-			if(policy instanceof Policy) {
-				match = ((Policy)policy).match(context);				
-			} else if(policy instanceof PolicySet) {
-				match = ((PolicySet)policy).match(context);
-			}
-
-			if (match.getResult() == MatchResult.INDETERMINATE) {
+			if (!(policyElement instanceof IPolicy))
+			{
 				atLeastOneError = true;
-
-				// keep track of the first error, regardless of cause
-				if (firstIndeterminateStatus == null)
-					firstIndeterminateStatus = match.getStatus();
-			} else if (match.getResult() == MatchResult.MATCH) {
-				// now we evaluate the policy
-				if(policy instanceof Policy) {
-				result = ((Policy)policy).evaluate(context);
-				} else if(policy instanceof PolicySet) {
-					result = ((PolicySet)policy).evaluate(context);	
-				}
-				/**
-				 * BEGINING
-				 * Romain Guignard
-				 */
-//				log4jLogger.debug("Found a policy that match the request");
-//				log4jLogger.debug("PolicyId: " + policy.getId());
-//				log4jLogger.debug("Policy_Version: " + policy.getVersion());
-//				MatchPolicies matchpolicies = new MatchPolicies();
-//				matchpolicies.setPolicyId(policy.getId().toString());
-//				matchpolicies.setPolicyVersion(policy.getVersion());
-//				policiesList.add(matchpolicies);
-				/**
-				 * END
-				 */
-				int effect = result.getDecision().ordinal();
-
-				// this is a little different from DenyOverrides...
-
-				if (effect == Result.DECISION_PERMIT) {
-					/**
-					 * BEGINING
-					 * Romain Guignard
-					 */
-//					audit.setMatchPolicies(policiesList);
-					/**
-					 * END
-					 */
-					return result;
-				}
-				if (effect == Result.DECISION_DENY) {
-					atLeastOneDeny = true;
-					denyObligations = result.getObligations();
-				} else if (effect == Result.DECISION_INDETERMINATE) {
+				LOGGER.error("Unexpected combined element during evaluation: " + policyElement.getClass());
+			} else
+			{
+				final IPolicy policy = (IPolicy) policyElement;
+				match = policy.match(context);
+				if (match == null)
+				{
+					atLeastOneError = true;
+				} else if (match.getResult() == MatchResult.INDETERMINATE)
+				{
 					atLeastOneError = true;
 
 					// keep track of the first error, regardless of cause
 					if (firstIndeterminateStatus == null)
-						firstIndeterminateStatus = result.getStatus();
+						firstIndeterminateStatus = match.getStatus();
+				} else if (match.getResult() == MatchResult.MATCH)
+				{
+					// now we evaluate the policy
+					result = policy.evaluate(context);
+					/**
+					 * BEGINING Romain Guignard
+					 */
+					// LOGGER.debug("Found a policy that match the request");
+					// LOGGER.debug("PolicyId: " + policy.getId());
+					// LOGGER.debug("Policy_Version: " + policy.getVersion());
+					// MatchPolicies matchpolicies = new MatchPolicies();
+					// matchpolicies.setPolicyId(policy.getId().toString());
+					// matchpolicies.setPolicyVersion(policy.getVersion());
+					// policiesList.add(matchpolicies);
+					/**
+					 * END
+					 */
+					int effect = result.getDecision().ordinal();
+
+					// this is a little different from DenyOverrides...
+
+					if (effect == Result.DECISION_PERMIT)
+					{
+						/**
+						 * BEGINING Romain Guignard
+						 */
+						// audit.setMatchPolicies(policiesList);
+						/**
+						 * END
+						 */
+						return result;
+					}
+					if (effect == Result.DECISION_DENY)
+					{
+						atLeastOneDeny = true;
+						denyObligations = result.getObligations();
+					} else if (effect == Result.DECISION_INDETERMINATE)
+					{
+						atLeastOneError = true;
+
+						// keep track of the first error, regardless of cause
+						if (firstIndeterminateStatus == null)
+							firstIndeterminateStatus = result.getStatus();
+					}
 				}
+				/**
+				 * BEGINING Romain Guignard
+				 */
+				// audit.setMatchPolicies(policiesList);
+				/**
+				 * END
+				 */
 			}
-			/**
-			 * BEGINING
-			 * Romain Guignard
-			 */
-//			audit.setMatchPolicies(policiesList);
-			/**
-			 * END
-			 */
 		}
 
 		// if we got a DENY, return it
 		if (atLeastOneDeny)
-			return new Result(DecisionType.DENY, context.getResourceId()
-					.encode(), denyObligations);
+			return new Result(DecisionType.DENY, context.getResourceId().encode(), denyObligations);
 
 		// if we got an INDETERMINATE, return it
 		if (atLeastOneError)
-			return new Result(DecisionType.INDETERMINATE,
-					firstIndeterminateStatus, context.getResourceId().encode());
+			return new Result(DecisionType.INDETERMINATE, firstIndeterminateStatus, context.getResourceId().encode());
 
 		// if we got here, then nothing applied to us
-		return new Result(DecisionType.NOT_APPLICABLE, context
-				.getResourceId().encode());
+		return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
 	}
 }

@@ -41,17 +41,15 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressionsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -62,7 +60,6 @@ import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.combine.RuleCombiningAlgorithm;
-import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.Target;
 
 /**
@@ -72,7 +69,7 @@ import com.sun.xacml.xacmlv3.Target;
  * @author Seth Proctor
  * @author Marco Barreno
  */
-public abstract class AbstractPolicy extends PolicyType {
+public abstract class AbstractPolicy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy {
 
 	// atributes associated with this policy
 	private CombiningAlgorithm combiningAlg;
@@ -89,11 +86,7 @@ public abstract class AbstractPolicy extends PolicyType {
 	// ...or the CombinerElements that are passed to combining algorithms
 	private List childElements;
 
-	/**
-	 * Logger used for all classes
-	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
-			.getLogger(AbstractPolicy.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPolicy.class);
 
 	/**
 	 * Constructor used by <code>PolicyReference</code>, which supplies its own
@@ -120,7 +113,7 @@ public abstract class AbstractPolicy extends PolicyType {
 	 */
 	protected AbstractPolicy(URI id, String version,
 			CombiningAlgorithm combiningAlg, String description,
-			TargetType target) {
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target) {
 		this(id, version, combiningAlg, description, target, null);
 	}
 
@@ -143,7 +136,7 @@ public abstract class AbstractPolicy extends PolicyType {
 	 */
 	protected AbstractPolicy(URI id, String version,
 			CombiningAlgorithm combiningAlg, String description,
-			TargetType target, String defaultVersion) {
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, String defaultVersion) {
 		this(id, version, combiningAlg, description, target, defaultVersion,
 				null, null);
 	}
@@ -169,7 +162,7 @@ public abstract class AbstractPolicy extends PolicyType {
 	 */
 	protected AbstractPolicy(URI id, String version,
 			CombiningAlgorithm combiningAlg, String description,
-			TargetType target, String defaultVersion, Set obligations,
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, String defaultVersion, Set obligations,
 			List parameters) {
 		this.policyId = id.toASCIIString();
 		this.combiningAlg = combiningAlg;
@@ -187,17 +180,17 @@ public abstract class AbstractPolicy extends PolicyType {
 		metaData = null;
 
 		if (obligations == null) {
-			this.obligationExpressions = new ObligationExpressionsType();
+			this.obligationExpressions = new ObligationExpressions();
 		} else {
-			ObligationExpressionsType oblExpr = new ObligationExpressionsType();
-			oblExpr.getObligationExpression().addAll(obligations);
+			ObligationExpressions oblExpr = new ObligationExpressions();
+			oblExpr.getObligationExpressions().addAll(obligations);
 			this.obligationExpressions = oblExpr;
 		}
 		
 		if (parameters == null) {
-			this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.EMPTY_LIST;
+			this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = Collections.EMPTY_LIST;
 		} else {
-			this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = Collections.unmodifiableList(new ArrayList(
+			this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = Collections.unmodifiableList(new ArrayList(
 					parameters));
 		}
 	}
@@ -276,9 +269,9 @@ public abstract class AbstractPolicy extends PolicyType {
 		metaData = new PolicyMetaData(root.getNamespaceURI(), defaultVersion);
 
 		// now read the remaining policy elements
-		obligationExpressions = new ObligationExpressionsType();
-		this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = new ArrayList();
-		adviceExpressions = new AdviceExpressionsType();
+		obligationExpressions = new ObligationExpressions();
+		this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = new ArrayList();
+		adviceExpressions = new AdviceExpressions();
 		_children = root.getChildNodes();
 
 		for (int i = 0; i < _children.getLength(); i++) {
@@ -293,7 +286,7 @@ public abstract class AbstractPolicy extends PolicyType {
 			} else if (cname.equals("Obligations")) {
 				parseObligations(child);
 			} else if (cname.equals("CombinerParameters")) {
-				this.combinerParametersOrRuleCombinerParametersOrVariableDefinition = handleParameters(child);
+				this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = handleParameters(child);
 			} else if (cname.equals("ObligationExpressions")) {
 				parseObligations(child);
 			} else if (cname.equals("AdviceExpressions")) {
@@ -311,18 +304,16 @@ public abstract class AbstractPolicy extends PolicyType {
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("ObligationExpression")) {
-				JAXBElement<ObligationExpressionsType> match = null;
+				JAXBElement<ObligationExpressions> match = null;
 				try {
-					JAXBContext jc = JAXBContext
-							.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-					Unmarshaller u = jc.createUnmarshaller();
-					match = (JAXBElement<ObligationExpressionsType>) u
-							.unmarshal(root);
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+					match = u.unmarshal(root, ObligationExpressions.class);
+					obligationExpressions = match.getValue();
 				} catch (Exception e) {
-					System.err.println(e);
+					LOGGER.error("Error unmarshalling ObligationExpressions", e);
 				}
-
-				obligationExpressions= match.getValue();
+				
+				break;
 			}
 		}
 	}
@@ -335,18 +326,16 @@ public abstract class AbstractPolicy extends PolicyType {
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("AdviceExpressions")) {
-				JAXBElement<AdviceExpressionsType> match = null;
+				final JAXBElement<AdviceExpressions> match;
 				try {
-					JAXBContext jc = JAXBContext
-							.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-					Unmarshaller u = jc.createUnmarshaller();
-					match = (JAXBElement<AdviceExpressionsType>) u
-							.unmarshal(root);
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+					match = u.unmarshal(root, AdviceExpressions.class);
+					adviceExpressions = match.getValue();
 				} catch (Exception e) {
-					LOGGER.error(e);
+					LOGGER.error("Error unmarshalling AdviceExpressions", e);
 				}
 
-				adviceExpressions = match.getValue();
+				break;
 			}
 		}
 	}
@@ -423,7 +412,7 @@ public abstract class AbstractPolicy extends PolicyType {
 	 * @return a <code>List</code> of <code>CombinerParameter</code>s
 	 */
 	public List getCombiningParameters() {
-		return this.combinerParametersOrRuleCombinerParametersOrVariableDefinition;
+		return this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions;
 	}
 
 	/**
@@ -441,7 +430,7 @@ public abstract class AbstractPolicy extends PolicyType {
 	 * 
 	 * @return the policy's target
 	 */
-	public TargetType getTarget() {
+	public oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget() {
 		return target;
 	}
 
@@ -482,7 +471,7 @@ public abstract class AbstractPolicy extends PolicyType {
 	 * 
 	 * @return the policy's obligations
 	 */
-	public ObligationExpressionsType getObligations() {
+	public ObligationExpressions getObligations() {
 		return obligationExpressions;
 	}
 
@@ -624,19 +613,35 @@ public abstract class AbstractPolicy extends PolicyType {
 			((CombinerElement) (it.next())).encode(output, indenter);
 		}
 
-		if (obligationExpressions.getObligationExpression().size() != 0) {
+		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty()) {
 			PrintStream out = new PrintStream(output);
 			String indent = indenter.makeString();
 
 			out.println(indent + "<Obligations>");
 			indenter.in();
 
-			it = obligationExpressions.getObligationExpression().iterator();
+			it = obligationExpressions.getObligationExpressions().iterator();
 			while (it.hasNext()) {
 				((Obligation) (it.next())).encode(output, indenter);
 			}
 
 			out.println(indent + "</Obligations>");
+			indenter.out();
+		}
+		
+		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty()) {
+			PrintStream out = new PrintStream(output);
+			String indent = indenter.makeString();
+
+			out.println(indent + "<AssociateAdvice>");
+			indenter.in();
+
+			it = adviceExpressions.getAdviceExpressions().iterator();
+			while (it.hasNext()) {
+				((Obligation) (it.next())).encode(output, indenter);
+			}
+
+			out.println(indent + "</AssociateAdvice>");
 			indenter.out();
 		}
 	}

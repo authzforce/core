@@ -41,8 +41,8 @@ import java.net.URI;
 
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
 
 /**
@@ -54,7 +54,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.TargetType;
  * @since 1.1
  * @author seth proctor
  */
-public abstract class PolicyTreeElement extends PolicyType
+public abstract class PolicyTreeElement extends Policy
 {
 
     /**
@@ -89,7 +89,7 @@ public abstract class PolicyTreeElement extends PolicyType
      *
      * @return the element's target
      */
-    public abstract TargetType getTarget();
+    public abstract Target getTarget();
 
     /**
      * Given the input context sees whether or not the request matches this

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- For assistance related to logback-translator or configuration -->
+<!-- files in general, please contact the logback user mailing list -->
+<!-- at http://www.qos.ch/mailman/listinfo/logback-user -->
+<!-- -->
+<!-- For professional support please see -->
+<!-- http://www.qos.ch/shop/products/professionalSupport -->
+<!-- -->
+<!-- More information: http://logback.qos.ch/faq.html#sharedConfiguration -->
+<configuration>
+	<appender name="cache" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender -->
+		<!-- FIXME: use fixed constant filepath is bad practice! Use a placeholder for environment variable/Java 
+			system property that will be replaced at runtime according to environment, such as (for Tomcat): <File>${catalina.home}/logs/cache.log</File> 
+			Replace 'catalina.home' with 'com.sun.aas.instanceRoot' for Glassfish. -->
+		<File>/opt/AuthZForce/logs/cache.log</File>
+		<encoder>
+			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>1</maxIndex>
+			<FileNamePattern>/opt/AuthZForce/logs/cache.log.%i</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>100KB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="pdp" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender -->
+		<!-- FIXME: use fixed constant filepath is bad practice! Use a placeholder for environment variable/Java 
+			system property that will be replaced at runtime according to environment, such as (for Tomcat): <File>${catalina.home}/logs/cache.log</File> 
+			Replace 'catalina.home' with 'com.sun.aas.instanceRoot' for Glassfish. -->
+		<File>/opt/AuthZForce/logs/pdp.log</File>
+		<encoder>
+			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>1</maxIndex>
+			<FileNamePattern>/opt/AuthZForce/logs/pdp.log.%i</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>100KB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="test" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender -->
+		<!-- FIXME: use fixed constant filepath is bad practice! Use a placeholder for environment variable/Java 
+			system property that will be replaced at runtime according to environment, such as (for Tomcat): <File>${catalina.home}/logs/cache.log</File> 
+			Replace 'catalina.home' with 'com.sun.aas.instanceRoot' for Glassfish. -->
+		<File>/opt/AuthZForce/logs/tests.log</File>
+		<encoder>
+			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>1</maxIndex>
+			<FileNamePattern>/opt/AuthZForce/logs/tests.log.%i</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>100KB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>localhost</syslogHost>
+        <facility>USER</facility>
+        <suffixPattern>[%thread] %logger %msg</suffixPattern>
+    </appender>
+	<appender name="audit" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender -->
+		<!-- FIXME: use fixed constant filepath is bad practice! Use a placeholder for environment variable/Java 
+			system property that will be replaced at runtime according to environment, such as (for Tomcat): <File>${catalina.home}/logs/cache.log</File> 
+			Replace 'catalina.home' with 'com.sun.aas.instanceRoot' for Glassfish. -->
+		<File>/opt/AuthZForce/logs/pdp-audit.log</File>
+		<encoder>
+			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<maxIndex>1</maxIndex>
+			<FileNamePattern>/opt/AuthZForce/logs/pdp-audit.log.%i</FileNamePattern>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>100KB</MaxFileSize>
+		</triggeringPolicy>
+	</appender>
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+		</encoder>
+	</appender>
+  <!-- AUDIT LOGGER -->
+	<!-- For better performance in audit logging, use this asynchronous appender -->
+	<!-- <appender name="auditAsync" class="ch.qos.logback.classic.AsyncAppender"> -->
+	<!-- <appender-ref ref="audit" /> -->
+	<!-- </appender> -->
+	<logger name="com.thalesgroup.authzforce.audit.AuditLogs" additivity="false" level="INFO">
+		<appender-ref ref="SYSLOG" />
+	</logger>
+	<!-- /AUDIT LOGGER -->
+
+	<logger name="com.sun.xacml.cond.BaseFunctionFactory" additivity="false" level="INFO">
+		<appender-ref ref="pdp" />
+	</logger>
+	<logger name="com.sun.xacml.cond.StandardFunctionFactory" additivity="false" level="INFO">
+		<appender-ref ref="pdp" />
+	</logger>
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicFunctionV3" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicMultipleRequestV3" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.BasicV3" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.ConformanceV3" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="com.thalesgroup.authzforce.pdp.core.test.impl.MainTest" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="net.sf.ehcache" additivity="false" level="WARN">
+		<appender-ref ref="cache" />
+	</logger>
+	<logger name="org.apache.axis.ConfigurationException" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<logger name="org.apache.commons.digester" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
+	<root level="INFO">
+		<appender-ref ref="pdp" />
+	</root>
+</configuration>

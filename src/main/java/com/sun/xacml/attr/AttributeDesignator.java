@@ -156,8 +156,6 @@
 //    private URI subjectCategory;
 //
 //    // the logger we'll use for all messages
-//    private static final Logger logger =
-//        Logger.getLogger(AttributeDesignator.class.getName());
 //
 //    /**
 //     * Creates a new <code>AttributeDesignator</code> without the optional

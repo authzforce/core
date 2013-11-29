@@ -175,12 +175,6 @@ public class BaseAttributeFactory extends AttributeFactory
     {
         return createValue(root, dataType.toString());
     }
-    
-    public AttributeValueType createValue(AttributeValueType root, URI dataType)
-            throws UnknownIdentifierException, ParsingException
-        {
-            return createValue(root, dataType.toString());
-        }
 
     /**
      * Creates a value based on the given DOM root node and data type.
@@ -213,10 +207,12 @@ public class BaseAttributeFactory extends AttributeFactory
         }
     }
     
-    public AttributeValue createValue(AttributeValueType attrVal, String type)
+    @Override
+    public AttributeValue createValue(AttributeValueType attrVal)
             throws UnknownIdentifierException, ParsingException
         {
-            AttributeProxy proxy = (AttributeProxy)(attributeMap.get(type));
+        final String type = attrVal.getDataType();    
+    	AttributeProxy proxy = (AttributeProxy)(attributeMap.get(type));
 
             if (proxy != null) {
                 try {
@@ -224,7 +220,7 @@ public class BaseAttributeFactory extends AttributeFactory
 //                    return proxy.getInstance(root);
                 } catch (Exception e) {
                     throw new ParsingException("couldn't create " + type +
-                                               " attribute based on DOM node");
+                                               " attribute based on JAXB AttributeValueType");
                 }
             } else {
                 throw new UnknownIdentifierException("Attributes of type " + type +

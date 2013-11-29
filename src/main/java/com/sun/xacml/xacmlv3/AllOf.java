@@ -21,61 +21,83 @@ package com.sun.xacml.xacmlv3;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOfType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.MatchType;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.DOMHelper;
+import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.MatchResult;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.TargetSection;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 
 /**
  * @author Romain Ferrari
  * 
  */
-public class AllOf extends AllOfType {
-
+public class AllOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf {
 	/**
-	 * the version of XACML used by the containing Match element
+	 * Logger used for all classes
 	 */
-    private int xacmlVersion;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AllOf.class);
 
 	/**
-	 * Constructor that creates a <code>AllOfSelection</code> from components.
+	 * the version of XACML used by the containing Match element (never used
+	 * actually!)
+	 */
+	// private int xacmlVersion;
+
+	/**
+	 * Constructor that creates a <code>AllOf</code> from components. In
+	 * {@link com.sun.xacml.xacmlv3.Target#match(com.sun.xacml.EvaluationCtx)},
+	 * {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.Match} objects are
+	 * cast to {@link Match}, so we need to make sure this is the {@link Match}
+	 * type that is passed as constructor argument here to prevent
+	 * ClassCastException.
 	 * 
 	 * @param matches
-	 *            a <code>List</code> of <code>TargetMatch</code> elements
+	 *            a <code>List</code> of <code>Match</code> elements
+	 * @param version
+	 *            XACML version
 	 */
-	public AllOf(List<MatchType> match, int version) {
-		if(match == null) {
-			this.match = new ArrayList<MatchType>();
+	public AllOf(List<Match> matches, int version) {
+		if (matches == null) {
+			this.matches = new ArrayList<>();
 		} else {
-			this.match = match;
+			this.matches = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.Match>(
+					matches);
 		}
-		this.xacmlVersion = version;
+		// this.xacmlVersion = version;
 	}
 
-	private static MatchType unmarshallMatchType(Node root) {
-		JAXBElement<MatchType> match = null;
-		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Unmarshaller u = jc.createUnmarshaller();
-			match = (JAXBElement<MatchType>) u.unmarshal(root);
-		} catch (Exception e) {
-			System.err.println(e);
+	/**
+	 * Creates AllOf in internal model based on AllOf element as defined in
+	 * OASIS XACML model (JAXB)
+	 * 
+	 * @param allOfElement
+	 * @param metadata
+	 * @return AllOf handler
+	 * @throws ParsingException
+	 *             if invalid AllOf element
+	 */
+	public static AllOf getInstance(
+			oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf allOfElement,
+			PolicyMetaData metadata) throws ParsingException {
+		final List<Match> matchList = new ArrayList<>();
+		for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.Match matchElement : allOfElement
+				.getMatches()) {
+			final Match match = Match.getInstance(matchElement, metadata);
+			matchList.add(match);
 		}
 
-		return match.getValue();
+		if (matchList.isEmpty()) {
+			throw new ParsingException("AllOf must contain at least one Match");
+		}
+
+		return new AllOf(matchList, PolicyMetaData.XACML_VERSION_3_0);
 	}
 
 	/**
@@ -92,7 +114,7 @@ public class AllOf extends AllOfType {
 	public static AllOf getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
 
-		List<MatchType> matchType = new ArrayList<MatchType>();
+		List<Match> matchType = new ArrayList<>();
 		NodeList children = root.getChildNodes();
 
 		for (int i = 0; i < children.getLength(); i++) {
@@ -106,7 +128,7 @@ public class AllOf extends AllOfType {
 			throw new ParsingException("AllOf must contain at least one Match");
 		}
 
-		return new AllOf(matchType, Integer.parseInt(XACMLAttributeId.XACML_VERSION_3_0.value()));
+		return new AllOf(matchType, PolicyMetaData.XACML_VERSION_3_0);
 	}
 
 	public static List<TargetSection> getTargetSection(Node root,
@@ -142,5 +164,54 @@ public class AllOf extends AllOfType {
 		}
 
 		return targetSection;
+	}
+
+	/**
+	 * Determines whether this <code>AllOf</code> matches the input request
+	 * (whether it is applicable).Here is the table shown in the specification:
+	 * <code>
+	 * 		<Match> values 						<AllOf> value 
+	 * 		All True				 			“Match” 
+	 * 		No False and at least 
+	 * 		one "Indeterminate" 				“Indeterminate”
+	 * 		At least one False					"No Match"
+	 * </code>
+	 * 
+	 * @param context
+	 *            the representation of the request
+	 * 
+	 * @return the result of trying to match the
+	 *         {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.Match} and the
+	 *         request
+	 */
+	public MatchResult match(EvaluationCtx context) {
+		MatchResult result = null;
+		MatchResult resultInd = null;
+		MatchResult resultFalse = null;
+		boolean atLeastOneIndeterminate = false;
+		boolean atLeastOneFalse = false;
+
+		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Match jaxbMatch : this
+				.getMatches()) {
+			Match match = (Match) jaxbMatch;
+			result = match.match(context);
+			if (result.getResult() != MatchResult.MATCH) {
+				if (result.getResult() == MatchResult.INDETERMINATE) {
+					atLeastOneIndeterminate = true;
+					resultInd = result;
+				} else {
+					atLeastOneFalse = true;
+					resultFalse = result;
+				}
+			}
+		}
+		if (atLeastOneIndeterminate && !atLeastOneFalse) {
+			result = resultInd;
+		}
+		if (atLeastOneFalse) {
+			result = resultFalse;
+		}
+
+		return result;
 	}
 }

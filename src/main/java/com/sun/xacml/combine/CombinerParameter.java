@@ -75,6 +75,28 @@ public class CombinerParameter extends CombinerParametersType
     }
 
     /**
+     * Creates a new CombinerParameter handler.
+     * 
+     * @param param CombinerParameter as defined by OASIS XACML model
+     * @throws ParsingException
+     */
+    public CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param) throws ParsingException
+	{
+    	// get the attribute value, the only child of this element
+        AttributeFactory attrFactory = AttributeFactory.getInstance();
+        AttributeValue value = null;
+
+        try {
+            value = attrFactory.createValue(param.getAttributeValue());
+        } catch (UnknownIdentifierException uie) {
+            throw new ParsingException("Unknown AttributeId", uie);
+        }
+        
+        this.name = param.getParameterName();
+        this.value = value;
+	}
+
+	/**
      * Returns a new instance of the <code>CombinerParameter</code> class
      * based on a DOM node. The node must be the root of an XML
      * CombinerParameterType.

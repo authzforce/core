@@ -223,7 +223,7 @@ public class TargetMatch {
 		ExpressionType eval = null;
 		AttributeValue attrValue = null;
 
-		AttributeFactory attrFactory = AttributeFactory.getInstance();
+		AttributeFactory attrFactory = metaData.getAttributeFactory();
 
 		// get the function type, making sure that it's really a correct
 		// Target function

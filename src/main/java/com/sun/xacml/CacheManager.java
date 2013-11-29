@@ -18,13 +18,14 @@ package com.sun.xacml;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CacheManager {
 
@@ -41,7 +42,7 @@ public class CacheManager {
 	private Cache cache;
 	private Cache memoryOnlyCache;
 	
-	private final static Logger LOGGER = Logger.getLogger(CacheManager.class); 
+	private final static Logger LOGGER = LoggerFactory.getLogger(CacheManager.class); 
 
 	public static CacheManager getInstance() {
 		if (null == INSTANCE) {
@@ -100,12 +101,12 @@ public class CacheManager {
 		 * 
 		 * @author romain.ferrari[AT]thalesgroup.com
 		 */
-		LOGGER.debug("Cache activated: " + activate);
-		LOGGER.debug("maxElementsInMemory = " + maxElementsInMemory);
-		LOGGER.debug("overflowToDisk: " + overflowToDisk);
-		LOGGER.debug("eternal: " + eternal);
-		LOGGER.debug("timeToLiveSeconds = " + timeToLiveInSeconds);
-		LOGGER.debug("timeToIdleSeconds = " + timeToIdleInSeconds);
+		LOGGER.debug("Cache activated: {}", activate);
+		LOGGER.debug("maxElementsInMemory = {}", maxElementsInMemory);
+		LOGGER.debug("overflowToDisk: {}", overflowToDisk);
+		LOGGER.debug("eternal: {}", eternal);
+		LOGGER.debug("timeToLiveSeconds = {}", timeToLiveInSeconds);
+		LOGGER.debug("timeToIdleSeconds = {}", timeToIdleInSeconds);
 		
 //		cacheManager = net.sf.ehcache.CacheManager.getInstance();
 		cacheManager = new net.sf.ehcache.CacheManager();
@@ -151,12 +152,12 @@ public class CacheManager {
 		 * 
 		 * @author romain.ferrari[AT]thalesgroup.com
 		 */
-		LOGGER.debug("Cache activated: " + activate);
-		LOGGER.debug("maxElementsInMemory = " + maxElementsInMemory);
-		LOGGER.debug("overflowToDisk: " + overflowToDisk);
-		LOGGER.debug("eternal: " + eternal);
-		LOGGER.debug("timeToLiveSeconds = " + timeToLiveInSeconds);
-		LOGGER.debug("timeToIdleSeconds = " + timeToIdleInSeconds);
+		LOGGER.debug("Cache activated: {}", activate);
+		LOGGER.debug("maxElementsInMemory = {}", maxElementsInMemory);
+		LOGGER.debug("overflowToDisk: {}", overflowToDisk);
+		LOGGER.debug("eternal: {}", eternal);
+		LOGGER.debug("timeToLiveSeconds = {}", timeToLiveInSeconds);
+		LOGGER.debug("timeToIdleSeconds = {}", timeToIdleInSeconds);
 		
 		initCache();
 	}
@@ -205,7 +206,7 @@ public class CacheManager {
 	 */
 	public Object checkCache(String hash) {
 		Element myElt;
-		LOGGER.debug("checkCache with " + hash);
+		LOGGER.debug("checkCache with {}", hash);
 		myElt = cache.get(hash);
 		if (myElt != null) {
 			return myElt.getObjectValue();
@@ -221,7 +222,7 @@ public class CacheManager {
 	 * @param storedObject
 	 */
 	public void updateCache(String hash, Object storedObject) {
-		LOGGER.debug("Updating cache with: " + hash);
+		LOGGER.debug("Updating cache with: {}", hash);
 		cache.put(new Element(hash, storedObject));
 	}
 

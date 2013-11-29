@@ -37,14 +37,14 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -85,8 +85,8 @@ import com.sun.xacml.finder.AttributeFinderModule;
  */
 public class SelectorModule extends AttributeFinderModule
 {
-    private static final Logger logger =
-        Logger.getLogger(SelectorModule.class.getName());
+    private static final Logger LOGGER =
+        LoggerFactory.getLogger(SelectorModule.class);
     Map<String, XPathExpression> xpathExpressionMap = new HashMap<String, XPathExpression>();
 
     /**
@@ -213,7 +213,7 @@ public class SelectorModule extends AttributeFinderModule
             //Folowing code was when we used xalan as dependency for XPath
             //matches = XPathAPI.selectNodeList(root, rootPath + path, nsNode);
         } catch (Exception e) {
-            logger.log(Level.ALL, "Error during xpath.evaluate(...)", e);
+            LOGGER.error("Error during xpath.evaluate(...)", e);
             
             // in the case of any exception, we need to return an error
             return createProcessingError("error in XPath: " + e.getMessage());

@@ -33,12 +33,10 @@
  */
 package com.sun.xacml.finder;
 
-import com.sun.xacml.ObligationExpressions;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.combine.PolicyCombiningAlgorithm;
 import com.sun.xacml.ctx.Status;
-import com.sun.xacml.xacmlv3.AdviceExpressions;
-import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.IPolicy;
 
 
 /**
@@ -56,17 +54,12 @@ import com.sun.xacml.xacmlv3.Policy;
 public class PolicyFinderResult
 {
 
-    // the single policy being returned
-    private Policy policy;
-    
-    private PolicySet policySet;
-    private PolicyCombiningAlgorithm policyCombiningAlg;
+    // the single policy(set) being returned
+    private IPolicy policy;
 
     // status that represents an error occurred
     private Status status;
-
-	private String type;
-
+    
     /**
      * Creates a result saying that no applicable policies were found.
      */
@@ -80,24 +73,11 @@ public class PolicyFinderResult
      *
      * @param policy the applicable policy
      */
-    public PolicyFinderResult(Policy policy) {
+    public PolicyFinderResult(IPolicy policy) {
         this.policy = policy;
         status = null;
-        this.type = "Policy";
     }
     
-    /**
-     * Creates a result containing a single applicable policy.
-     *
-     * @param policy the applicable policy
-     */
-    public PolicyFinderResult(PolicySet policySet, PolicyCombiningAlgorithm policyCombiningAlg) {
-        this.policySet = policySet;
-        this.policyCombiningAlg = policyCombiningAlg;
-        status = null;
-        this.type = "PolicySet";
-    }
-
     /**
      * Create a result of Indeterminate, including Status data.
      *
@@ -108,13 +88,13 @@ public class PolicyFinderResult
         this.status = status;
     }
 
-    /**
+	/**
      * Returns true if the result was NotApplicable.
      *
      * @return true if the result was NotApplicable
      */
     public boolean notApplicable() {
-        return ((policy == null) && (status == null) && (policySet == null));
+        return ((policy == null) && (status == null) && (policy == null));
     }
 
     /**
@@ -127,23 +107,13 @@ public class PolicyFinderResult
     }
 
     /**
-     * Returns the found policy, or null if there was an error or no policy
+     * Returns the found policy(set), or null if there was an error or no policy
      * was found.
      *
-     * @return the applicable policy or null
+     * @return the applicable policy(set) or null
      */
-    public Policy getPolicy() {
+    public IPolicy getPolicy() {
         return policy;
-    }
-    
-    /**
-     * Returns the found policy, or null if there was an error or no policy
-     * was found.
-     *
-     * @return the applicable policy or null
-     */
-    public PolicySet getPolicySet() {
-        return policySet;
     }
 
     /**
@@ -154,9 +124,4 @@ public class PolicyFinderResult
     public Status getStatus() {
         return status;
     }
-
-	public String getType() {
-		return type;
-	}
-
 }

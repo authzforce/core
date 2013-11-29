@@ -49,5 +49,4 @@ public class PolicyDefaults extends DefaultsType {
 		
 		return new PolicyDefaults(xpathVersion);
 	}
-
 }

@@ -122,9 +122,6 @@
 //    // the policy root, where we get namespace mapping details
 //    private Node policyRoot;
 //
-//    // the logger we'll use for all messages
-//    private static final Logger logger =
-//        Logger.getLogger(AttributeSelector.class.getName());
 //
 //    /**
 //     * Creates a new <code>AttributeSelector</code> with no policy root.

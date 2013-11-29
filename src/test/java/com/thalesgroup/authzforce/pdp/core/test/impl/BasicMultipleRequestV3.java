@@ -12,12 +12,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ResponseType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
@@ -46,7 +48,7 @@ public class BasicMultipleRequestV3 {
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(BasicMultipleRequestV3.class);
 
 	/**
@@ -70,11 +72,11 @@ public class BasicMultipleRequestV3 {
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
 		policies.add("TestPolicy_0014.xml");
-//		PDP pdp = getPDPNewInstance(policies);
+		// PDP pdp = getPDPNewInstance(policies);
 		LOGGER.info("Basic Test 0014 is started");
 		ResponseCtx response = null;
-		ResponseType expectedResponse = null;
-		RequestType request = null;
+		Response expectedResponse = null;
+		Request request = null;
 
 		for (int i = 1; i < 3; i++) {
 			if (i < 10) {
@@ -88,7 +90,7 @@ public class BasicMultipleRequestV3 {
 			if (request != null) {
 				LOGGER.debug("Request that is sent to the PDP :  "
 						+ TestUtils.printRequest(request));
-				response = getPDPNewInstance(policies).evaluate(request);
+				response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policies).evaluate(request);
 				if (response != null) {
 					LOGGER.info("Response that is received from the PDP :  "
 							+ response.getEncoded());
@@ -121,46 +123,6 @@ public class BasicMultipleRequestV3 {
 			}
 			LOGGER.info("Basic Test 0014 is finished");
 		}
-	}
-
-	/**
-	 * Returns a new PDP instance with new XACML policies
-	 * 
-	 * @param policies
-	 *            Set of XACML policy file names
-	 * @return a PDP instance
-	 */
-	private static PDP getPDPNewInstance(Set<String> policies) {
-
-		PolicyFinder finder = new PolicyFinder();
-		List<String> policyLocations = new ArrayList<String>();
-
-		for (String policy : policies) {
-			try {
-				String policyPath = (new File(".")).getCanonicalPath()
-						+ File.separator + TestConstants.RESOURCE_PATH.value()
-						+ File.separator + ROOT_DIRECTORY + File.separator
-						+ VERSION_DIRECTORY + File.separator
-						+ TestConstants.POLICY_DIRECTORY.value()
-						+ File.separator + policy;
-				policyLocations.add(policyPath);
-			} catch (IOException e) {
-				LOGGER.error(e);
-			}
-		}
-
-		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
-				policyLocations);
-		Set<PolicyFinderModule> policyModules = new HashSet<PolicyFinderModule>();
-		policyModules.add(testPolicyFinderModule);
-		finder.setModules(policyModules);
-
-		PDP authzforce = PDP.getInstance();
-		PDPConfig pdpConfig = authzforce.getPDPConfig();
-		pdpConfig = new PDPConfig(pdpConfig.getAttributeFinder(), finder,
-				pdpConfig.getResourceFinder(), null);
-		return new PDP(pdpConfig);
-
 	}
 
 	private static void showResults() throws Exception {

@@ -35,10 +35,8 @@ package com.sun.xacml;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributesType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import org.w3c.dom.Node;
 
@@ -53,6 +51,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * instantiated whenever the PDP gets a request and needs to perform an
  * evaluation as a result. The <code>BasicEvaluationCtx</code> class provides a
  * basic implementation that is used by default.
+ * TODO: merge get*Attribute() methods into one method getAttribute(AttributeDesignator)
  * 
  * @since 1.0
  * @author Seth Proctor
@@ -126,7 +125,7 @@ public interface EvaluationCtx {
 	 * 
 	 * @return the set of attributes that need to be include in the result
 	 */
-	public List<AttributesType> getIncludeInResults();
+	public List<Attributes> getIncludeInResults();
 
 	/**
 	 * Changes the value of the resource-id attribute in this context. This is
@@ -305,4 +304,36 @@ public interface EvaluationCtx {
 	 * @return version the type of xacml standard used (1.0, 1.1, 2.0 or 3.0)
 	 */
 	public int getVersion();
+	
+	/**
+	 * Get custom property
+	 * @see java.util.Map#get(Object)
+	 * @param key 
+	 * @return property
+	 */
+	public Object get(String key); 
+	
+	/**
+	 * Check whether custom property is in the context
+	 * @see java.util.Map#containsKey(Object)
+	 * @param key
+	 * @return true if and only if key exists in updatable property keys
+	 */
+	public boolean containsKey(String key); 
+	
+	/**
+	 * Puts custom property in the context
+	 * @see java.util.Map#put(Object, Object)
+	 * @param key
+	 * @param val
+	 */
+	public void put(String key, Object val);
+	
+	/**
+	 * Removes custom property from the context
+	 * @see java.util.Map#remove(Object)
+	 * @param key
+	 * @return the previous value associated with key, or null if there was no mapping for key.
+	 */
+	public Object remove(String key);
 }

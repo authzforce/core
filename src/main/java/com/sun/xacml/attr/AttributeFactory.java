@@ -232,6 +232,16 @@ public abstract class AttributeFactory extends AttributeValueType {
 	 */
 	public abstract AttributeValue createValue(Node root)
 			throws UnknownIdentifierException, ParsingException;
+	
+	/**
+	 * Create internal model's AttributeValue
+	 * 
+	 * @param value AttributeValue from OASIS XACML model
+	 * @return SunXACML AttributeValue
+	 * @throws ParsingException if value cannot be parsed into the value's defined datatype
+	 * @throws UnknownIdentifierException value datatype unknown/not supported
+	 */
+	public abstract AttributeValue createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value) throws UnknownIdentifierException, ParsingException;
 
 	/**
 	 * Creates a value based on the given DOM root node. The type of the

@@ -33,18 +33,17 @@
  */
 package com.sun.xacml.ctx;
 
-import com.sun.xacml.ParsingException;
-
 import java.io.ByteArrayInputStream;
-
 import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import com.sun.xacml.BindingUtility;
+import com.sun.xacml.ParsingException;
 
 
 /**
@@ -124,19 +123,17 @@ public class StatusDetail
     /**
      * Private helper routine that converts text into a node
      */
-    private Node textToNode(String encoded) throws ParsingException {
+    private static Node textToNode(String encoded) throws ParsingException {
+    	final DocumentBuilder db = BindingUtility.getDocumentBuilder(false);
         try {
             String text = "<?xml version=\"1.0\"?>\n";
             byte [] bytes = (text + encoded).getBytes();
-
-            DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = factory.newDocumentBuilder();
             Document doc = db.parse(new ByteArrayInputStream(bytes));
-
             return doc.getDocumentElement();
         } catch (Exception e) {
             throw new ParsingException("invalid XML for status detail");
+        } finally {
+        	db.reset();
         }
     }
     

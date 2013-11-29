@@ -1,9 +1,20 @@
 -------------------------
-AuthZForce CORE - Release Notes
+AuthZForce CORE version @version- Release Notes
 -------------------------
 
 -------------------
--- Version 3.4.2 --
+-- Version @version
+-------------------
+
+-------------------
+-- Version 3.5.2-SNAPSHOT
+-------------------
+Bug fixed when there were more than one AnyOf and AllOf. 
+Only the Match element was evaluated with the "match(context)" function
+Unitary tests were added to complete and prevent that for happening again
+
+-------------------
+-- Version 3.4.2
 -------------------
 Fixing bug on Rule Algorithm: 
 	- DenyUnlessPermitRuleAlg.java
@@ -11,7 +22,7 @@ Fixing bug on Rule Algorithm:
 => A cast was misplaced and an error occured on the combination of rules
 
 -------------------
--- Version 3.4.0 --
+-- Version 3.4.0
 -------------------
 Implementation working with XACML 3.0 requests and policies. Based on OASIS model (xsd)
 Artifact name refactored => authzforce-core-authzforce in order to be more clear in the Nexus repository
@@ -41,6 +52,6 @@ OK	urn:oasis:names:tc:xacml:3.0:function:string-substring
 
 
 -------------------
--- Version 2.1.4 --
+-- Version 2.1.4
 -------------------
 Stable version working with XACML 2.0

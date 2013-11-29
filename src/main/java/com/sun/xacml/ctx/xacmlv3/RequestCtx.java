@@ -48,9 +48,11 @@ import org.w3c.dom.NodeList;
 
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.ctx.Attribute;
 import com.sun.xacml.ctx.InputParser;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Represents a request made to the PDP. This is the class that contains all
@@ -283,7 +285,7 @@ public class RequestCtx
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             if (node.getNodeName().equals("Attribute")) {
-                set.add(Attribute.getInstance(node, Integer.parseInt(XACMLAttributeId.XACML_2_0_IDENTIFIER.value())));
+                set.add(Attribute.getInstance(node, PolicyMetaData.XACML_VERSION_2_0));
             }
         }
 
@@ -299,6 +301,8 @@ public class RequestCtx
      * method, you probably want to turn on validation by setting the
      * context schema file (see the programmer guide for more information
      * on this).
+     * 
+     * FIXME: This method is not thread-safe! Remove if not used anymore.
      *
      * @param input a stream providing the XML data
      *

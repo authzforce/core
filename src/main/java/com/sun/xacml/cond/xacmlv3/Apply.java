@@ -41,15 +41,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
@@ -97,7 +100,7 @@ public class Apply extends ApplyType implements Evaluatable
     /**
 	 * Logger used for all classes
 	 */
-	private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger
+	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Apply.class);
 
     /**
@@ -119,7 +122,7 @@ public class Apply extends ApplyType implements Evaluatable
 
         // if everything checks out, then store the inputs
     	this.functionId = function.getFunctionId();
-        this.expression = Collections.unmodifiableList(new ArrayList(xprs));
+        this.expressions = Collections.unmodifiableList(new ArrayList(xprs));
     	this.function = function;
     	
 //        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
@@ -160,7 +163,7 @@ public class Apply extends ApplyType implements Evaluatable
         // if everything checks out, then store the inputs
         this.function = function;
 //        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
-        this.expression = Collections.unmodifiableList(new ArrayList(xprs));
+        this.expressions = Collections.unmodifiableList(new ArrayList(xprs));
     }
 
     /**
@@ -301,8 +304,7 @@ public class Apply extends ApplyType implements Evaluatable
 //                xprs.add(xpr);
 //            }
 //        }
-    	
-		AttributeFactory attrFactory = AttributeFactory.getInstance();
+  
 
 		// get the function type, making sure that it's really a correct
 		// Target function
@@ -374,6 +376,38 @@ public class Apply extends ApplyType implements Evaluatable
     }
     
     /**
+     * Get instance of Apply handler based on Apply element from OASIS XACML model
+     * @param applyElt
+     * @param funcFactory function factory for instantiating functions in Apply
+     * @param varManager
+     * @return Apply handler
+     * @throws ParsingException
+     */
+    public static Apply getInstance(ApplyType applyElt, FunctionFactory funcFactory, VariableManager varManager) throws ParsingException {
+    	final Function function;
+    	final URI funcId;
+    	try {
+			funcId = new URI(applyElt.getFunctionId());
+			function = funcFactory.createFunction(funcId);
+		} catch (URISyntaxException use) {
+			throw new ParsingException("Error parsing Apply", use);
+		} catch (UnknownIdentifierException uie) {
+			throw new ParsingException("Unknown FunctionId", uie);
+		} catch (FunctionTypeException fte) {
+			// try to create an abstract function
+			throw new ParsingException("Unsupported function: " + applyElt.getFunctionId(), fte);
+		}
+    	
+    	final List<ExpressionType> exprHandlers = new ArrayList<>();
+    	for(final JAXBElement<? extends ExpressionType> exprElt: applyElt.getExpressions()) {
+    		final ExpressionType exprHandler = ExpressionTools.getInstance(exprElt.getValue(), funcFactory, varManager);
+    		exprHandlers.add(exprHandler);
+    	}  	
+    	
+    	return new Apply(function, exprHandlers);
+    }
+    
+    /**
 	 * Helper method that tries to get a function instance
 	 */
 	public static Function getFunction(Node root, PolicyMetaData metaData,
@@ -418,7 +452,7 @@ public class Apply extends ApplyType implements Evaluatable
      */
     @Override
     public List getChildren() {
-        return expression;
+        return expressions;
     }
 
     /**
@@ -445,7 +479,7 @@ public class Apply extends ApplyType implements Evaluatable
      */
     @Override
     public EvaluationResult evaluate(EvaluationCtx context) {
-        return function.evaluate(expression, context);
+        return function.evaluate(expressions, context);
     }
 
     /**
@@ -509,12 +543,10 @@ public class Apply extends ApplyType implements Evaluatable
     public void encode(OutputStream output, Indenter indenter) {
     	PrintStream out = new PrintStream(output);
 		try {
-			JAXBContext jc = JAXBContext
-					.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-			Marshaller u = jc.createMarshaller();
+			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
-			LOGGER.error(e);
+			LOGGER.error("Error marshalling Apply",e);
 		}  
     }
 

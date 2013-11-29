@@ -20,49 +20,51 @@ package com.sun.xacml.xacmlv3;
 
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressionsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.xacml.BindingUtility;
 
 /**
  * @author Romain Ferrari
  * 
  */
-public class AdviceExpressions extends AdviceExpressionsType {
+public class AdviceExpressions extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions {
 
-	public static AdviceExpressionsType getInstance(
-			Set<AdviceExpressionType> advice) {
-		AdviceExpressionsType adviceExpr = new AdviceExpressionsType();
-		adviceExpr.getAdviceExpression().addAll(advice);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AdviceExpressions.class);
+
+	public static oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions getInstance(
+			Set<AdviceExpression> advice) {
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions adviceExpr = new oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions();
+		adviceExpr.getAdviceExpressions().addAll(advice);
 
 		return adviceExpr;
 	}
 
-	public static AdviceExpressionsType getInstance(Node root) {
+	public static oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions getInstance(Node root) {
 		NodeList nodes = root.getChildNodes();
-		AdviceExpressionsType adviceExpressions = null;
+		oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions adviceExpressions = null;
 		
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node node = nodes.item(i);
 			if (node.getNodeName().equals("AdviceExpression")) {
-				JAXBElement<AdviceExpressionsType> match = null;
+				final JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions> match;
 				try {
-					JAXBContext jc = JAXBContext
-							.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17");
-					Unmarshaller u = jc.createUnmarshaller();
-					match = (JAXBElement<AdviceExpressionsType>) u
-							.unmarshal(root);
+					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+					match =  u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions.class);
+					adviceExpressions = match.getValue();
 				} catch (Exception e) {
-					System.err.println(e);
+					LOGGER.error("Error unmarshalling AdviceExpressions", e);
 				}
-
-				adviceExpressions = match.getValue();
+				
+				break;
 			}
 		}
 		
