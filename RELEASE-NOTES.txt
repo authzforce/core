@@ -7,6 +7,13 @@ AuthZForce CORE version @version- Release Notes
 -------------------
 
 -------------------
+-- Version 3.5.2-SNAPSHOT
+-------------------
+Bug fixed when there were more than one AnyOf and AllOf. 
+Only the Match element was evaluated with the "match(context)" function
+Unitary tests were added to complete and prevent that for happening again
+
+-------------------
 -- Version 3.4.2
 -------------------
 Fixing bug on Rule Algorithm: 

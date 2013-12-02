@@ -15,13 +15,12 @@
  */
 package com.thalesgroup.authzforce.audit.aspect;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.BasicEvaluationCtx;
 import com.sun.xacml.Rule;
@@ -35,6 +34,8 @@ import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 @Aspect
 public class AuditAspect {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AuditAspect.class);
 
 	@Pointcut("execution (@com.thalesgroup.authzforce.audit.annotations * *.*(..))")
 	public void searchAnnotation() {

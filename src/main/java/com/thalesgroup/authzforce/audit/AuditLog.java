@@ -17,11 +17,13 @@ package com.thalesgroup.authzforce.audit;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.xml.bind.Marshaller;
+import javax.xml.bind.JAXBContext;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
@@ -35,16 +37,18 @@ import com.sun.xacml.finder.AttributeFinderModule;
 import com.sun.xacml.xacmlv3.Policy;
 import com.thalesgroup.authzforce.BindingUtility;
 
-public class AuditLog
-{
+public class AuditLog {
 
-	private static final String SEPARATOR = "\t--\t";
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(AuditLog.class);
+	private static final String SEPARATOR = " ";
+	private static final String ELT_SEPARATOR = " ";
+	private static final String START_COLLECTION = "[ ";
+	private static final Object END_COLLECTION = " ]";
+	private static final Logger LOGGER = LoggerFactory
+			.getLogger(AuditLog.class);
 
 	protected String id;
 
-	protected Timestamp date;
+	protected String date;
 
 	protected Request request;
 
@@ -60,9 +64,9 @@ public class AuditLog
 
 	protected List<AttributesResolved> attrResolv;
 
-	public AuditLog()
-	{
-		date = new Timestamp((new java.util.Date()).getTime());
+	public AuditLog() {		
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
+		date = dateFormat.format(new Date());
 		rules = new LinkedList<Rule>();
 		resultRule = new LinkedList<Result>();
 		matchPolicies = new LinkedList<Policy>();
@@ -71,47 +75,40 @@ public class AuditLog
 		attrResolv = new LinkedList<AttributesResolved>();
 	}
 
-	public String getId()
-	{
+	public String getId() {
 		return id;
 	}
 
 	/**
-	 * This should only be called by the AuditsLog class since the ID MUST be unique and fixed by a
-	 * higher class
+	 * This should only be called by the AuditsLog class since the ID MUST be
+	 * unique and fixed by a higher class
 	 * 
 	 * @param id
 	 */
-	public void setId(String id)
-	{
+	public void setId(String id) {
 		this.id = id;
 	}
 
-	public Request getRequest()
-	{
+	public Request getRequest() {
 		return request;
 	}
 
-	public void setRequest(Request request)
-	{
+	public void setRequest(Request request) {
 		this.request = request;
 	}
 
-	public List<Rule> getRules()
-	{
+	public List<Rule> getRules() {
 		return rules;
 	}
 
-	public void addRule(Rule rule)
-	{
+	public void addRule(Rule rule) {
 		this.rules.add(rule);
 	}
 
 	/**
 	 * @return the resultRule
 	 */
-	protected LinkedList<Result> getResultRule()
-	{
+	protected LinkedList<Result> getResultRule() {
 		return resultRule;
 	}
 
@@ -119,118 +116,112 @@ public class AuditLog
 	 * @param resultRule
 	 *            the resultRule to set
 	 */
-	public void addResultRule(Result resultRule)
-	{
+	public void addResultRule(Result resultRule) {
 		this.resultRule.add(resultRule);
 	}
 
-	public String getDate()
-	{
+	public String getDate() {
 		return date.toString();
 	}
 
-	public List<Policy> getMatchPolicies()
-	{
+	public List<Policy> getMatchPolicies() {
 		return matchPolicies;
 	}
 
-	public void addMatchPolicies(Policy matchPolicy)
-	{
+	public void addMatchPolicies(Policy matchPolicy) {
 		this.matchPolicies.add(matchPolicy);
 	}
 
-	public void addResultMatchPolicy(Result result)
-	{
+	public void addResultMatchPolicy(Result result) {
 		resultPolicies.add(result);
 	}
 
 	/**
 	 * @return the resultMatchPolicies
 	 */
-	protected LinkedList<Result> getResultMatchPolicy()
-	{
+	protected LinkedList<Result> getResultMatchPolicy() {
 		return resultPolicies;
 	}
 
-	public List<AttributesResolved> getAttrResolv()
-	{
+	public List<AttributesResolved> getAttrResolv() {
 		return attrResolv;
 	}
 
-	public void setAttrResolv(List<AttributesResolved> attrResolv)
-	{
+	public void setAttrResolv(List<AttributesResolved> attrResolv) {
 		this.attrResolv = attrResolv;
 	}
 
-	public String print()
-	{
+	public String print() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("ID: " + this.getId() + SEPARATOR);
-		sb.append("Timestamp: " + this.getDate() + "\n");
-		sb.append("Request:\n" + request2String(this.getRequest()) + "\n");
-		if (this.getMatchPolicies().size() > 0)
-		{
+
+		sb.append(this.getId() + ELT_SEPARATOR);
+		sb.append(this.getDate() + ELT_SEPARATOR);
+		sb.append(request2String(this.getRequest()) + ELT_SEPARATOR);
+		if (this.getMatchPolicies().size() > 0) {
 			int i = 0;
-			sb.append("Matched Policies:\n");
-			for (Policy policy : this.getMatchPolicies())
-			{
-				// We fetch the string after "rule-combining-algorithm:" in order to display only
+			sb.append(START_COLLECTION);
+			for (Policy policy : this.getMatchPolicies()) {
+				// We fetch the string after "rule-combining-algorithm:" in
+				// order to display only
 				// the algorithm
 				String ruleCombAlg = policy.getRuleCombiningAlgId().substring(
-						policy.getRuleCombiningAlgId().indexOf("rule-combining-algorithm") + "rule-combining-algorithm:".length());
-				sb.append("\t");
-				sb.append("Policy ID:\t" + policy.getPolicyId() + SEPARATOR + ruleCombAlg + SEPARATOR + "Combinated Evaluation:\t"
-						+ ((Result) this.getResultMatchPolicy().get(i)).getDecision());
-				sb.append("\n");
+						policy.getRuleCombiningAlgId().indexOf(
+								"rule-combining-algorithm")
+								+ "rule-combining-algorithm:".length());
+				sb.append(policy.getPolicyId()
+						+ SEPARATOR
+						+ ruleCombAlg
+						+ SEPARATOR
+						+ ((Result) this.getResultMatchPolicy().get(i))
+								.getDecision() + SEPARATOR);
 				i++;
 			}
+			sb.append(END_COLLECTION);
 		}
-		if (this.getRules().size() > 0)
-		{
+		if (this.getRules().size() > 0) {
+			sb.append(ELT_SEPARATOR);
+			sb.append(START_COLLECTION);
 			int i = 0;
-			for (Rule rule : this.getRules())
-			{
-				sb.append("\t");
-				sb.append("\tRule ID:\t" + rule.getRuleId() + SEPARATOR + "Evaluation:\t" + ((Result) this.getResultRule().get(i)).getDecision());
-				sb.append("\n");
+			for (Rule rule : this.getRules()) {
+				sb.append(rule.getRuleId() + SEPARATOR
+						+ ((Result) this.getResultRule().get(i)).getDecision()
+						+ SEPARATOR);
 				i++;
 			}
+			sb.append(END_COLLECTION);
 		}
-		if (this.getAttrResolv().size() > 0)
-		{
-			int i = 0;
-			for (AttributesResolved attrResolved : this.getAttrResolv())
-			{
-				sb.append("\t");				
-				sb.append("\tAttribute ID:\t" + attrResolved.getAttributeId() + SEPARATOR + "Value:\t" + attrResolved.getAttributeValue().getContent());
-				sb.append("\n");
-				i++;
+		if (this.getAttrResolv().size() > 0) {
+			sb.append(ELT_SEPARATOR);
+			sb.append(START_COLLECTION);
+			for (AttributesResolved attrResolved : this.getAttrResolv()) {
+				sb.append(attrResolved.getAttributeId() + SEPARATOR
+						+ attrResolved.getAttributeValue().getContent()
+						+ SEPARATOR);
 			}
+			sb.append(END_COLLECTION);
 		}
 
 		return sb.toString();
 	}
 
-	private String request2String(Request request)
-	{
+	private String request2String(Request request) {
 		String result = null;
 		final StringWriter sw = new StringWriter();
-		try
-		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
-			u.marshal(request, sw);
+		try {
+			// Marshaller u =
+			// BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			// u.marshal(request, sw);
+			JAXBContext.newInstance(Request.class).createMarshaller()
+					.marshal(request, sw);
 			result = sw.toString();
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			LOGGER.error("Error marshalling Request", e);
-		} finally
-		{
-			try
-			{
+		} finally {
+			try {
 				sw.close();
-			} catch (IOException e)
-			{
-				LOGGER.error("Error closing StringWriter for marshalling Request", e);
+			} catch (IOException e) {
+				LOGGER.error(
+						"Error closing StringWriter for marshalling Request", e);
 			}
 		}
 
@@ -239,6 +230,6 @@ public class AuditLog
 
 	public void addAttrResolved(AttributeFinderModule attributeFinderModule) {
 		System.out.println("addAttrResolved");
-		
+
 	}
 }

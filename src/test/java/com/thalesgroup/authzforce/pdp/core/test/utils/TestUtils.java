@@ -23,8 +23,13 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import com.sun.xacml.BasicEvaluationCtx;
+import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.finder.PolicyFinder;
@@ -347,5 +352,18 @@ public class TestUtils
 				pdpConfig.getResourceFinder(), null);
 
 		return new PDP(pdpConfig);
+	}
+	
+	public static EvaluationCtx createContext(Request request) {
+		BasicEvaluationCtx evaluationCtx = null;
+		try {
+			evaluationCtx = new BasicEvaluationCtx(request);
+		} catch (NumberFormatException | ParsingException
+				| UnknownIdentifierException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return evaluationCtx;
 	}
 }

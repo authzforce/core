@@ -59,6 +59,11 @@
 			<MaxFileSize>100KB</MaxFileSize>
 		</triggeringPolicy>
 	</appender>
+	<appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>localhost</syslogHost>
+        <facility>USER</facility>
+        <suffixPattern>[%thread] %logger %msg</suffixPattern>
+    </appender>
 	<appender name="audit" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<!--See also http://logback.qos.ch/manual/appenders.html#RollingFileAppender -->
 		<!-- FIXME: use fixed constant filepath is bad practice! Use a placeholder for environment variable/Java 
@@ -87,7 +92,7 @@
 	<!-- <appender-ref ref="audit" /> -->
 	<!-- </appender> -->
 	<logger name="com.thalesgroup.authzforce.audit.AuditLogs" additivity="false" level="INFO">
-		<appender-ref ref="audit" />
+		<appender-ref ref="SYSLOG" />
 	</logger>
 	<!-- /AUDIT LOGGER -->
 

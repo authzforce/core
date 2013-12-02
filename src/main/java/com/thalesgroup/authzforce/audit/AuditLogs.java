@@ -146,7 +146,6 @@ public final class AuditLogs
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.append(auditElt.print());
-			sb.append("\n");
 
 			/**
 			 * To disable audit logging at this point, just change log level for logger named
@@ -157,7 +156,7 @@ public final class AuditLogs
 		}
 		
 		// Releasing memory 
-		auditTmp = null;
+		auditTmp = null;		
 //		System.out.println(sb);		
 	}
 }

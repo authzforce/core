@@ -109,7 +109,7 @@ public interface IPolicy
 	 * @return the policy's target
 	 */
 	oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget();
-
+	
 	/**
 	 * Returns the given description of this policy or null if there is no description
 	 * 

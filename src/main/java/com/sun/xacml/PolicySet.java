@@ -74,7 +74,7 @@ import com.thalesgroup.authzforce.BindingUtility;
  * @since 1.0
  * @author Seth Proctor
  */
-public class PolicySet extends AbstractPolicySet
+public class PolicySet extends AbstractPolicySet implements IPolicy
 {
 	/**
 	 * Logger used for all classes
@@ -146,7 +146,7 @@ public class PolicySet extends AbstractPolicySet
 	 *             if the <code>List</code> of policies contains an object that is not an
 	 *             <code>IPolicy</code>
 	 */
-	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description, Target target, List<IPolicy> policies,
+	public PolicySet(URI id, String version, PolicyCombiningAlgorithm combiningAlg, String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, List<IPolicy> policies,
 			String defaultVersion, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations, AdviceExpressions advices)
 	{
 		super(id, version, combiningAlg, description, target, defaultVersion);

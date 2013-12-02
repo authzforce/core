@@ -117,7 +117,14 @@ public class MatchResult
         return status;
     }
 
-    @Override
+    /**
+	 * @param status the status to set
+	 */
+	protected void setStatus(Status status) {
+		this.status = status;
+	}
+
+	@Override
     public String toString() {
         String matchResult = null;
 
