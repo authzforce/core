@@ -524,7 +524,7 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 			paramHandlerList = parameters.get(policySetIdRef);
 		} else
 		{
-			paramHandlerList = new ArrayList<CombinerParameter>();
+			paramHandlerList = new ArrayList<>();
 			parameters.put(policySetIdRef, paramHandlerList);
 		}
 

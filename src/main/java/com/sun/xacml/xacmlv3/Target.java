@@ -178,7 +178,6 @@ public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target {
 			// We check that the Match element is a Match. Otherwise we return
 			// the result
 			if (result == null || result.getResult() != MatchResult.MATCH) {
-				LOGGER.error("failed to match any element of Target");
 				return result;
 			}
 		}

@@ -9,6 +9,9 @@
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
+	<!-- WARNING: this version must be the same as the managed version (defined in POM dependencyManagement 
+		element) in parent 'authzforce' project in order for reverse dependencies (such as project 'authzforce-core-ext-utils') 
+		to stay up-to-date. So any change here must be re-done there. -->
 	<version>3.5.2-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: AuthZForce AuthoriZation Server</name>
 	<organization>
@@ -36,7 +39,7 @@
 		<!-- /Authzforce optionnal dependencies -->
 		<!-- Authzforce dependencies -->
 		<dependency>
-			<groupId>com.thalesgroup.authzforce</groupId>
+			<groupId>com.thalesgroup.authzforce.core</groupId>
 			<artifactId>authzforce-model</artifactId>
 		</dependency>
 		<!-- /Authzforce dependencies -->
@@ -59,12 +62,12 @@
 		</dependency>
 		<!-- Test dependencies -->
 		<!-- FIXME: Dependency no longer used. Remove it? -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.jvnet.jaxb2_commons</groupId> -->
-<!-- 			<artifactId>testing</artifactId> -->
-<!-- 			<version>0.4.1.5</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.jvnet.jaxb2_commons</groupId> -->
+		<!-- <artifactId>testing</artifactId> -->
+		<!-- <version>0.4.1.5</version> -->
+		<!-- <scope>test</scope> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>commons-jxpath</groupId>
 			<artifactId>commons-jxpath</artifactId>
@@ -89,8 +92,8 @@
 		<!-- <artifactId>logback-classic</artifactId> -->
 		<!-- <version>1.0.7</version> -->
 		<!-- <scope>test</scope> -->
-		<!-- </dependency> -->	
-		<!-- /Test dependencies -->	
+		<!-- </dependency> -->
+		<!-- /Test dependencies -->
 	</dependencies>
 	<build>
 		<plugins>

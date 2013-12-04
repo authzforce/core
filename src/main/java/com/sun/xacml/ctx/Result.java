@@ -35,6 +35,7 @@ package com.sun.xacml.ctx;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -584,5 +585,22 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 		{
 			LOGGER.error("Error marshalling Result", e);
 		}
+	}
+	
+	@Override
+	public String toString() {
+		final StringWriter out = new StringWriter();
+		try
+		{
+			final Marshaller marshaller = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			// Property to remove XML prolog
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+			marshaller.marshal(this, out);
+		} catch (Exception e)
+		{
+			LOGGER.error("Error marshalling Result to String", e);
+		}
+
+		return out.toString();
 	}
 }

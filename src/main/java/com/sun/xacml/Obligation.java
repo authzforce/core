@@ -261,7 +261,7 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 			{
 				LOGGER.error(
 						"Evaluation of {} element as <AttributeAssignmentExpression> (id='{}') of <ObligationExpression> (id='{}') returned Indeterminate",
-						myExpr.getClass().getSimpleName(), attrId, id);
+						new Object[] {myExpr.getClass().getSimpleName(), attrId, id});
 				indeterminate = true;
 				// assignments remains an empty list
 			} else
