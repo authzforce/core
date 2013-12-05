@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+	xmlns:tns="http://authzforce.thalesgroup.com/audit/schema/pdp"
+	targetNamespace="http://authzforce.thalesgroup.com/audit/schema/pdp"
+	version="1.0" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
+
+	<!-- <element name="AuditLogs"> -->
+	<!-- <complexType> -->
+	<!-- <sequence> -->
+	<!-- <sequence minOccurs="0" maxOccurs="unbounded"> -->
+	<!-- <element type="tns:AuditLog" name="auditLog" minOccurs="0" /> -->
+	<!-- </sequence> -->
+	<!-- </sequence> -->
+	<!-- </complexType> -->
+	<!-- </element> -->
+
+	<element name="AuditLog">
+		<complexType>
+			<sequence>
+				<element name="id" type="string" minOccurs="1" maxOccurs="1" />
+				<element name="date" type="string" minOccurs="1" maxOccurs="1" />
+				<element name="request" type="xacml:RequestType" minOccurs="1"
+					maxOccurs="1" />
+
+				<element name="matchPolicieSet" type="tns:AuditedPolicySet"
+					minOccurs="0" maxOccurs="unbounded" />
+				<element name="matchedPolicies" type="tns:AuditedPolicy"
+					minOccurs="1" maxOccurs="unbounded" />
+				<element name="rules" type="tns:AuditedRule" minOccurs="1"
+					maxOccurs="unbounded" />
+				<element name="result" type="tns:AuditedResult" minOccurs="1"
+					maxOccurs="1" />
+					
+				<element name="subjectId" type="string" minOccurs="1" maxOccurs="1" />
+				<element name="resourceId" type="string" minOccurs="1" maxOccurs="1" />
+				<element name="actionId" type="string" minOccurs="1" maxOccurs="1" />	
+			</sequence>
+		</complexType>
+	</element>
+	<complexType name="AuditedPolicySet">
+		<sequence>
+			<element name="id" type="string" minOccurs="1" maxOccurs="1" />
+			<element name="policyCombiningAlgorithm" type="string"
+				minOccurs="1" maxOccurs="1" />
+			<element name="policies" type="tns:AuditedPolicy" minOccurs="1"
+				maxOccurs="unbounded" />
+			<element name="result" type="tns:AuditedResult" minOccurs="1"
+				maxOccurs="1" />
+		</sequence>
+	</complexType>
+	<complexType name="AuditedPolicy">
+		<sequence>
+			<element name="id" type="string" minOccurs="1" maxOccurs="1" />
+			<element name="ruleCombiningAlgorithm" type="string"
+				minOccurs="1" maxOccurs="1" />
+			<element name="rules" type="tns:AuditedRule" minOccurs="1"
+				maxOccurs="unbounded" />
+			<element name="result" type="tns:AuditedResult" minOccurs="1"
+				maxOccurs="1" />
+		</sequence>
+	</complexType>
+	<complexType name="AuditedRule">
+		<sequence>
+			<element name="id" type="string" minOccurs="1" maxOccurs="1" />
+			<element name="resolvedAttributes" type="tns:AuditedAttributesResolved"
+				minOccurs="0" maxOccurs="unbounded" />
+			<element name="result" type="tns:AuditedResult" minOccurs="1"
+				maxOccurs="1" />
+		</sequence>
+	</complexType>
+	<complexType name="AuditedAttributesResolved">
+		<sequence>
+			<element name="attributeId" type="anyURI" minOccurs="1"
+				maxOccurs="1" />
+			<element name="attributeValue" type="xacml:AttributeValueType"
+				minOccurs="1" maxOccurs="1" />
+		</sequence>
+	</complexType>
+	<simpleType name="AuditedResult">
+		<restriction base="string">
+			<enumeration value="Permit" />
+			<enumeration value="Deny" />
+			<enumeration value="Indeterminate" />
+			<enumeration value="NotApplicable" />
+		</restriction>
+	</simpleType>
+</schema>
