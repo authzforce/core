@@ -883,6 +883,9 @@ public class BasicEvaluationCtx implements EvaluationCtx
 			 */
 			try
 			{
+				/*
+				 * FIXME: We need to use the getContent() method to retrieve attributeValues
+				 */
 				attributeValues = getAttributeValues(attrSet, issuerStr, typeStr);
 			} catch (ParsingException e)
 			{

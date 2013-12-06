@@ -33,18 +33,16 @@
  */
 package com.sun.xacml.attr;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.ProcessingException;
-
 import java.net.URI;
-
 import java.text.ParseException;
-
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.ProcessingException;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
@@ -221,7 +219,7 @@ public class TimeAttribute extends AttributeValue
             if (timeGMT < 0)
                 timeGMT += DateAttribute.MILLIS_PER_DAY;
         }
-        this.getContent().add(this.toString());
+        this.getContent().add(new SimpleDateFormat("HH:mm:ss.S").format(this.getValue()));
     }
 
     /**
