@@ -135,17 +135,27 @@ public class AuditAspect {
 
 	private AuditLog setAttributes(AuditLog audit,
 			BasicEvaluationCtx basicEvaluationCtx) {
-		audit.setSubjectId(String.valueOf(((BasicEvaluationCtx) basicEvaluationCtx)
-				.getSubjectAttribute(
+		if (((BasicEvaluationCtx) basicEvaluationCtx).getSubjectAttribute(
+				URI.create(XACMLDatatypes.XACML_DATATYPE_STRING.value()),
+				URI.create(XACMLAttributeId.XACML_SUBJECT_SUBJECT_ID.value()),
+				URI.create(XACMLAttributeId.SUBJECT_CATEGORY.value())) != null) {
+			if(((BasicEvaluationCtx) basicEvaluationCtx).getSubjectAttribute(
 						URI.create(XACMLDatatypes.XACML_DATATYPE_STRING.value()),
-						URI.create(XACMLAttributeId.XACML_SUBJECT_SUBJECT_ID
-								.value()),
-						URI.create(XACMLAttributeId.SUBJECT_CATEGORY.value()))
-				.getAttributeValue().getContent().get(0)));
+						URI.create(XACMLAttributeId.XACML_SUBJECT_SUBJECT_ID.value()),
+						URI.create(XACMLAttributeId.SUBJECT_CATEGORY.value())).getAttributeValue().getContent().size() > 0) {
+							String subjectId = (String) ((BasicEvaluationCtx) basicEvaluationCtx).getSubjectAttribute(
+									URI.create(XACMLDatatypes.XACML_DATATYPE_STRING.value()),
+									URI.create(XACMLAttributeId.XACML_SUBJECT_SUBJECT_ID.value()),
+									URI.create(XACMLAttributeId.SUBJECT_CATEGORY.value())).getAttributeValue().getContent().get(0);
+							
+							audit.setSubjectId(subjectId);	
+						}
+		}
 
-		AttributeValue resourceId = ((BasicEvaluationCtx) basicEvaluationCtx)
-				.getResourceId();
-		audit.setResourceId(String.valueOf(resourceId.getContent().get(0)));
+		AttributeValue resourceId = ((BasicEvaluationCtx) basicEvaluationCtx).getResourceId();
+		if(resourceId.getContent().size() > 0) {
+			audit.setResourceId(String.valueOf(resourceId.getContent().get(0)));	
+		}
 
 		// FIXME: Set the ActionId attribute
 		// audit.setActionId();

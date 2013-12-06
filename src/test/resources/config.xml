@@ -1,181 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://theresis.thalesgroup.com/shared/schema/config/pdp"
-        defaultAttributeFactory="attr"
-        defaultCombiningAlgFactory="comb" defaultFunctionFactory="func" defaultPDP="AuthZForce-REST"
-        xmlns:config="http://theresis.thalesgroup.com/shared/schema/config/pdp"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://theresis.thalesgroup.com/shared/schema/config/pdp ../../../../../schema/pdp.xsd ">
-        <pdp name="AuthZForce-REST">
-                <!-- attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.NovaAttributeFinder">
-                        <map>
-                                <url>http://172.17.13.106:8774/v2/</url>
-                                <attributeSupportedId>metadata:Security_Lvl</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:resource:resource-id</substituteValue>
-                                <substituteVmId>urn:oasis:names:tc:xacml:1.0:resource:resource-vm-id</substituteVmId>
-                                <substituteTokenId>urn:oasis:names:tc:xacml:1.0:token:token-id</substituteTokenId>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule>
-                <attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.KeystoneAttributeFinder">
-                        <map>
-                                <url>http://172.17.13.102:35357/v2.0/</url>
-                                <attributeSupportedId>keystoneUsername</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <adminToken>ADMIN</adminToken>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule>
-                <attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.KeystoneAttributeFinder">
-                        <map>
-                                <url>http://172.17.13.102:35357/v2.0/</url>
-                                <attributeSupportedId>keystoneTenantId</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <adminToken>ADMIN</adminToken>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule>
-                <attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.KeystoneAttributeFinder">
-                        <map>
-                                <url>http://172.17.13.102:35357/v2.0/</url>
-                                <attributeSupportedId>keystoneTenantName</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <adminToken>ADMIN</adminToken>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule>
-                <attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.KeystoneAttributeFinder">
-                        <map>
-                                <url>http://172.17.13.102:35357/v2.0/</url>
-                                <attributeSupportedId>keystoneRole</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <adminToken>ADMIN</adminToken>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule>
-                <attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.KeystoneAttributeFinder">
-                        <map>
-                                <url>http://172.17.13.102:35357/v2.0/</url>
-                                <attributeSupportedId>keystoneDateExpire</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <adminToken>ADMIN</adminToken>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule -->
-                <!-- attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.FortressAttributeFinder">
-                        <map>
-                                <url>1.0-RC23</url>
-                                <attributeSupportedId>fortressRoleName</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <tenantSubstituteValue>urn:oasis:names:tc:xacml:1.0:resource:tenant-id</tenantSubstituteValue>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>true</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <timeToLiveSeconds>10</timeToLiveSeconds>
-                                        <eternal>false</eternal>
-                                </cache>
-                        </map>
-
-                </attributeFinderModule -->
-                <!-- attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.LdapAttributeFinder">
-                        <map>
-                                <url>ldap://172.17.13.118:389/</url>
-                                <username>cn=Manager,dc=jts,dc=com</username>
-                                <password>secret</password>
-                                <attributeSupportedId>fortressRoleName</attributeSupportedId>
-                                <ldapAttribute>ftRA</ldapAttribute>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <baseDn>ou=People,dc=jts,dc=com</baseDn>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule>
-                <attributeFinderModule
-                        class="com.thalesgroup.authzforce.attributefinder.SqlAttributeFinder">
-                        <map>
-                                <url>jdbc:mysql://10.222.148.108:3306/</url>
-                                <username>T0101841</username>
-                                <password>password</password>
-                                <attributeSupportedId>tenantMember</attributeSupportedId>
-                                <substituteValue>urn:oasis:names:tc:xacml:1.0:subject:subject-id</substituteValue>
-                                <dbName>test</dbName>
-                                <driver>com.mysql.jdbc.Driver</driver>
-                                <sqlRequest>select role as $alias from role where user=$filter</sqlRequest>
-                                <cache class="com.sun.xacml.CacheManager">
-                                        <activate>false</activate>
-                                        <maxElementsInMemory>10000</maxElementsInMemory>
-                                        <overflowToDisk>false</overflowToDisk>
-                                        <eternal>true</eternal>
-                                </cache>
-                        </map>
-                </attributeFinderModule>
-                -->
-                <attributeFinderModule class="com.sun.xacml.finder.impl.SelectorModule" />
-                <attributeFinderModule class="com.sun.xacml.finder.impl.CurrentEnvModule" />
-                <policyFinderModule
-                        class="com.thalesgroup.authzforce.policyfinder.FilePolicyFinder">
-                        <list>
-                                <!-- string>/opt/AuthZForce/Policy/Cassiopeia.xml</string -->
-                                <string>/opt/AuthZForce/Policy/xacml_v3_test.xml</string>
-                        </list>
-                </policyFinderModule>
-                <cache class="com.sun.xacml.CacheManager">
-                    <map>
-                        <activate>true</activate>
-                        <maxElementsInMemory>10000</maxElementsInMemory>
-                        <overflowToDisk>false</overflowToDisk>
-                        <eternal>false</eternal>
-                    </map>
-            </cache>
-            <resourceFinderModule class="com.sun.xacml.finder.impl.MultipleResourceFinder" />
-            <resourceFinder class="com.sun.xacml.finder.ResourceFinder" />
-        </pdp>
-        <attributeFactory name="attr" useStandardDatatypes="true" />
-        <combiningAlgFactory name="comb"
-                useStandardAlgorithms="true" />
-        <functionFactory name="func" useStandardFunctions="true">
-                <!-- <condition> <function class="TimeInRangeFunction"/> </condition> -->
-        </functionFactory>
+	defaultAttributeFactory="attr" defaultCombiningAlgFactory="comb"
+	defaultFunctionFactory="func" defaultPDP="AuthZForce-REST"
+	xmlns:config="http://theresis.thalesgroup.com/shared/schema/config/pdp"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://theresis.thalesgroup.com/shared/schema/config/pdp ../../../../../schema/pdp.xsd ">
+	<pdp name="AuthZForce-REST">
+		<attributeFinderModule class="com.sun.xacml.finder.impl.SelectorModule" />
+		<attributeFinderModule class="com.sun.xacml.finder.impl.CurrentEnvModule" />
+		<resourceFinderModule
+			class="com.sun.xacml.finder.impl.MultipleResourceFinder" />
+		<resourceFinder class="com.sun.xacml.finder.ResourceFinder" />
+	</pdp>
+	<attributeFactory name="attr" useStandardDatatypes="true" />
+	<combiningAlgFactory name="comb"
+		useStandardAlgorithms="true" />
+	<functionFactory name="func" useStandardFunctions="true">
+		<!-- <condition> <function class="TimeInRangeFunction"/> </condition> -->
+	</functionFactory>
 </config>
