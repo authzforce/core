@@ -40,6 +40,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -107,8 +108,9 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 		 * ....DataType="..." />
 		 */
 		try
-		{
-			returnData = attrFactory.createValue(URI.create(attrValue.getDataType()), String.valueOf(attrValue.getContent().get(0)));
+		{			
+			Serializable attrValueContent = attrValue.getContent().get(0);
+			returnData = attrFactory.createValue(URI.create(attrValue.getDataType()), String.valueOf(attrValueContent));
 			// FIXME: comment on why SecurityException/IllegalArgumentException may occur
 		} catch (SecurityException e)
 		{

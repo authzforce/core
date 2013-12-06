@@ -221,6 +221,7 @@ public class TimeAttribute extends AttributeValue
             if (timeGMT < 0)
                 timeGMT += DateAttribute.MILLIS_PER_DAY;
         }
+        this.getContent().add(this.toString());
     }
 
     /**

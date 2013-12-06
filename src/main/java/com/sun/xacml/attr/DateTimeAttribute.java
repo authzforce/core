@@ -234,6 +234,7 @@ public class DateTimeAttribute extends AttributeValue
         this.nanoseconds = combineNanos(this.value, nanoseconds);
         this.timeZone = timeZone;
         this.defaultedTimeZone = defaultedTimeZone;
+        this.getContent().add(this.toString());
     }
 
     /**
