@@ -4,14 +4,14 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.0</version>
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
 	<!-- WARNING: this version must be the same as the managed version (defined in POM dependencyManagement 
 		element) in parent 'authzforce' project in order for reverse dependencies (such as project 'authzforce-core-ext-utils') 
 		to stay up-to-date. So any change here must be re-done there. -->
-	<version>3.5.3-SNAPSHOT</version>
+	<version>3.5.3</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales</name>
