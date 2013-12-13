@@ -45,7 +45,6 @@ import java.util.TreeSet;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
-import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyReference;
 import com.sun.xacml.PolicySet;
 import com.sun.xacml.VersionConstraints;
@@ -85,7 +84,7 @@ public class PolicyCollection
 {
 
 	// the actual collection of policies
-	private Map<String, TreeSet<IPolicy>> policies = new HashMap<String, TreeSet<IPolicy>>();
+	private Map<String, TreeSet<IPolicy>> policies = new HashMap<>();
 
 	// the single instance of the comparator we'll use for managing versions
 	private VersionComparator versionComparator = new VersionComparator();
@@ -175,14 +174,13 @@ public class PolicyCollection
 			// already in the set
 			TreeSet<IPolicy> set = policies.get(identifier);
 			return set.add(policy);
-		} else
-		{
-			// this identifier isn't already being used, so create a new
-			// set in the map for it, and add the policy
-			TreeSet<IPolicy> set = new TreeSet<IPolicy>(versionComparator);
-			policies.put(identifier, set);
-			return set.add(policy);
 		}
+		
+		// this identifier isn't already being used, so create a new
+		// set in the map for it, and add the policy
+		TreeSet<IPolicy> set = new TreeSet<>(versionComparator);
+		policies.put(identifier, set);
+		return set.add(policy);
 	}
 
 	/**
@@ -203,7 +201,7 @@ public class PolicyCollection
 	public IPolicy getPolicy(EvaluationCtx context) throws TopLevelPolicyException
 	{
 		// setup a list of matching policies
-		List<IPolicy> list = new ArrayList<IPolicy>();
+		List<IPolicy> list = new ArrayList<>();
 		// get an iterator over all the identifiers
 		Iterator<TreeSet<IPolicy>> it = policies.values().iterator();
 
@@ -227,7 +225,7 @@ public class PolicyCollection
 				// we automaticlly nest policies
 				if ((combiningAlg == null) && (list.size() > 0))
 				{
-					List code = new ArrayList();
+					List<String> code = new ArrayList<>();
 					code.add(Status.STATUS_PROCESSING_ERROR);
 					Status status = new Status(code, "too many applicable" + " top-level policies");
 					throw new TopLevelPolicyException(status);
@@ -375,6 +373,9 @@ public class PolicyCollection
 		}
 	}
 
+	/**
+	 * @return number of items (policies/policysets) in the collection
+	 */
 	public int getNbPolicies()
 	{
 		return this.policies.size();

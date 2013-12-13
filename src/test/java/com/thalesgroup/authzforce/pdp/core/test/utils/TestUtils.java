@@ -41,6 +41,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.support.finder.FilePolicyModule;
+import com.sun.xacml.support.finder.StaticPolicyFinderModule;
 import com.thalesgroup.authzforce.BindingUtility;
 
 public class TestUtils
@@ -347,7 +348,7 @@ public class TestUtils
 		
 
 		PolicyFinder policyFinder = new PolicyFinder();
-		List<String> policyLocations = new ArrayList<String>();
+		List<String> policyLocations = new ArrayList<>();
 
 		for (String policyfilename : policyfilenames) {
 			/**
@@ -365,9 +366,9 @@ public class TestUtils
 			policyLocations.add(policyFileURL.getPath());
 		}
 
-		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
+		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(
 				policyLocations);
-		List<PolicyFinderModule> policyModules = new ArrayList<PolicyFinderModule>();
+		List<PolicyFinderModule> policyModules = new ArrayList<>();
 		policyModules.add(testPolicyFinderModule);
 		policyFinder.setModules(policyModules);
 
