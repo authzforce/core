@@ -42,8 +42,8 @@ import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.ParsingException;
+import com.thalesgroup.authzforce.BindingUtility;
 
 
 /**

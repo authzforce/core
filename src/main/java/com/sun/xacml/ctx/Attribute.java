@@ -52,7 +52,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
@@ -60,8 +59,7 @@ import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents the AttributeType XML type found in the context schema.

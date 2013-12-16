@@ -66,6 +66,7 @@ import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinder;
+import com.thalesgroup.authzforce.BindingUtility;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 
 /**
@@ -882,6 +883,9 @@ public class BasicEvaluationCtx implements EvaluationCtx
 			 */
 			try
 			{
+				/*
+				 * FIXME: We need to use the getContent() method to retrieve attributeValues
+				 */
 				attributeValues = getAttributeValues(attrSet, issuerStr, typeStr);
 			} catch (ParsingException e)
 			{
@@ -917,7 +921,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 		if (resultAttrVal instanceof BagAttribute)
 		{
 			BagAttribute bagAttribute = (BagAttribute) resultAttrVal;
-			Iterator iter = bagAttribute.getValue().iterator();
+			Iterator iter = bagAttribute.getValues().iterator();
 			while (iter.hasNext())
 			{
 				AttributeValueType attributeValue = (AttributeValueType) iter.next();

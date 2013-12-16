@@ -35,6 +35,7 @@ package com.sun.xacml.attr;
 
 import com.sun.xacml.ParsingException;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import java.text.DateFormat;
@@ -234,6 +235,7 @@ public class DateTimeAttribute extends AttributeValue
         this.nanoseconds = combineNanos(this.value, nanoseconds);
         this.timeZone = timeZone;
         this.defaultedTimeZone = defaultedTimeZone;
+        this.getContent().add(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").format(this.getValue()));
     }
 
     /**

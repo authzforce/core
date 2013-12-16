@@ -53,6 +53,7 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.Expression;
 
@@ -94,7 +95,7 @@ class MapFunction extends Function
      * @return a <code>Set</code> of <code>String</code>s
      */
     public static Set<String> getSupportedIdentifiers() {
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
 
         set.add(NAME_MAP);
 
@@ -158,7 +159,8 @@ class MapFunction extends Function
      *
      * @return the function's identifier
      */
-    public URI getIdentifier() {
+    @Override
+	public URI getIdentifier() {
         return identifier;
     }
 
@@ -177,7 +179,8 @@ class MapFunction extends Function
      *
      * @return the return type
      */
-    public URI getReturnType() {
+    @Override
+	public URI getReturnType() {
         return returnType;
     }
 
@@ -186,7 +189,8 @@ class MapFunction extends Function
      *
      * @return true
      */
-    public boolean returnsBag() {
+    @Override
+	public boolean returnsBag() {
         return true;
     }
 
@@ -208,7 +212,8 @@ class MapFunction extends Function
      *
      * @return the result of evaluation
      */
-    public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+    @Override
+	public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
 
         // get the inputs, which we expect to be correct
         Iterator<?> iterator = inputs.iterator();
@@ -238,19 +243,18 @@ class MapFunction extends Function
         // the value and put the function result in a new bag that
         // is ultimately returned
 
-        Iterator<?> it = bag.iterator();
-        List<AttributeValueType> outputs = new ArrayList<AttributeValueType>();
+        List<AttributeValue> outputs = new ArrayList<>();
 
-        while (it.hasNext()) {
+       for(AttributeValue value: bag.getValues()) {
             List params = new ArrayList();
-            params.add(it.next());
+            params.add(value);
             result = function.evaluate(params, context);
 
             if (result.indeterminate()) {
                 return result;
             }
-
-            outputs.add(result.getAttributeValue());
+            
+            outputs.add((AttributeValue) result.getAttributeValue());
         }
 
         return new EvaluationResult(new BagAttribute(returnType, outputs));
@@ -263,7 +267,8 @@ class MapFunction extends Function
      *
      * @throws IllegalArgumentException if the inputs cannot be evaluated
      */
-    public void checkInputs(List inputs) throws IllegalArgumentException {
+    @Override
+	public void checkInputs(List inputs) throws IllegalArgumentException {
         Object [] list = inputs.toArray();
 
         // check that we've got the right number of arguments
@@ -277,7 +282,7 @@ class MapFunction extends Function
         if (list[0] instanceof Function) {
             function = (Function)(list[0]);
         } else if (list[0] instanceof VariableReference) {
-            ExpressionType xpr = (ExpressionType) ((VariableReference)(list[0])).getReferencedDefinition().getExpression().getValue();
+            ExpressionType xpr = ((VariableReference)(list[0])).getReferencedDefinition().getExpression().getValue();
             if (xpr instanceof Function) {
                 function = (Function)xpr;
             }

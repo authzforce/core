@@ -35,6 +35,7 @@ package com.sun.xacml.ctx;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,11 +58,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.Obligation;
 import com.sun.xacml.ParsingException;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Result XML object from the Context
@@ -584,5 +585,22 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 		{
 			LOGGER.error("Error marshalling Result", e);
 		}
+	}
+	
+	@Override
+	public String toString() {
+		final StringWriter out = new StringWriter();
+		try
+		{
+			final Marshaller marshaller = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			// Property to remove XML prolog
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+			marshaller.marshal(this, out);
+		} catch (Exception e)
+		{
+			LOGGER.error("Error marshalling Result to String", e);
+		}
+
+		return out.toString();
 	}
 }

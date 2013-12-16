@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * @author Romain Ferrari

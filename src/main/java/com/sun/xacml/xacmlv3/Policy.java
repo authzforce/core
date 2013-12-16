@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
@@ -112,9 +113,9 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		if (obligations == null)
 		{
 			/*
-			 * obligationExpressions must be null, if you create new
-			 * ObligationExpressions() in this case, the result Obligations will be marshalled to
-			 * empty <Obligations /> element which is NOT VALID against the XACML schema.
+			 * obligationExpressions must be null, if you create new ObligationExpressions() in this
+			 * case, the result Obligations will be marshalled to empty <Obligations /> element
+			 * which is NOT VALID against the XACML schema.
 			 */
 			this.obligationExpressions = null;
 		} else
@@ -124,9 +125,9 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		if (advices == null)
 		{
 			/*
-			 * adviceExpressions must be null, if you create new
-			 * AdviceExpressions() in this case, the result AdviceExpressions will be marshalled  to
-			 * empty <AssociateAdvice /> element which is NOT VALID against the XACML schema.
+			 * adviceExpressions must be null, if you create new AdviceExpressions() in this case,
+			 * the result AdviceExpressions will be marshalled to empty <AssociateAdvice /> element
+			 * which is NOT VALID against the XACML schema.
 			 */
 			this.adviceExpressions = null;
 		} else
@@ -299,7 +300,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 
 	private static VariableManager createVariableManager(Node root, PolicyMetaData metaData) throws ParsingException
 	{
-		HashMap variableIds = new HashMap();
+		Map<String, Node> variableIds = new HashMap<>();
 		// first off, go through and look for any definitions to get their
 		// identifiers up front, since before we parse any references we'll
 		// need to know what definitions we support
@@ -363,72 +364,79 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		}
 		// evaluate
 		result = this.ruleCombiningAlg.combine(context, combParams, rules);
-
-		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
+		try
 		{
-			// now, see if we should add any obligations to the set
-			int effect = result.getDecision().ordinal();
-
-			if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal()))
+			if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
 			{
-				// we didn't permit/deny, so we never return obligations
-				return result;
-			}
+				// now, see if we should add any obligations to the set
+				int effect = result.getDecision().ordinal();
 
-			for (ObligationExpression myObligation : obligationExpressions.getObligationExpressions())
-			{
-				if (myObligation.getFulfillOn().ordinal() == effect)
+				if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal()))
 				{
-					result.addObligation(myObligation, context);
+					// we didn't permit/deny, so we never return obligations
+					return result;
 				}
-			}
-		}
-		/* If we have advice, it's definitely a 3.0 policy */
-		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
-		{
-			int effect = result.getDecision().ordinal();
 
-			if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal()))
-			{
-				// we didn't permit/deny, so we never return advices
-				return result;
-			}
-			
-			final AssociatedAdvice returnAssociatedAdvice = result.getAssociatedAdvice();
-			final AssociatedAdvice newAssociatedAdvice;
-			if(returnAssociatedAdvice == null) {
-				newAssociatedAdvice = new AssociatedAdvice();
-				result.setAssociatedAdvice(newAssociatedAdvice);
-			} else {
-				newAssociatedAdvice = returnAssociatedAdvice;
-			}
-			
-			for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions())
-			{
-				if (adviceExpr.getAppliesTo().ordinal() == effect)
+				for (ObligationExpression myObligation : obligationExpressions.getObligationExpressions())
 				{
-					Advice advice = new Advice();
-					advice.setAdviceId(adviceExpr.getAdviceId());
-					for (AttributeAssignmentExpression attrExpr : adviceExpr.getAttributeAssignmentExpressions())
+					if (myObligation.getFulfillOn().ordinal() == effect)
 					{
-						AttributeAssignment myAttrAssType = new AttributeAssignment();
-						myAttrAssType.setAttributeId(attrExpr.getAttributeId());
-						myAttrAssType.setCategory(attrExpr.getCategory());
-						myAttrAssType.setIssuer(attrExpr.getIssuer());
-						if ((attrExpr.getExpression().getDeclaredType() == AttributeValueType.class))
-						{
-							myAttrAssType.setDataType(((AttributeValueType) attrExpr.getExpression().getValue()).getDataType());
-							myAttrAssType.getContent().addAll(((AttributeValueType) attrExpr.getExpression().getValue()).getContent());
-						}
-						advice.getAttributeAssignments().add(myAttrAssType);
+						result.addObligation(myObligation, context);
 					}
-					
-					newAssociatedAdvice.getAdvices().add(advice);
 				}
 			}
-		}
+			/* If we have advice, it's definitely a 3.0 policy */
+			if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
+			{
+				int effect = result.getDecision().ordinal();
 
-		return result;
+				if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal()))
+				{
+					// we didn't permit/deny, so we never return advices
+					return result;
+				}
+
+				final AssociatedAdvice returnAssociatedAdvice = result.getAssociatedAdvice();
+				final AssociatedAdvice newAssociatedAdvice;
+				if (returnAssociatedAdvice == null)
+				{
+					newAssociatedAdvice = new AssociatedAdvice();
+					result.setAssociatedAdvice(newAssociatedAdvice);
+				} else
+				{
+					newAssociatedAdvice = returnAssociatedAdvice;
+				}
+
+				for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions())
+				{
+					if (adviceExpr.getAppliesTo().ordinal() == effect)
+					{
+						Advice advice = new Advice();
+						advice.setAdviceId(adviceExpr.getAdviceId());
+						for (AttributeAssignmentExpression attrExpr : adviceExpr.getAttributeAssignmentExpressions())
+						{
+							AttributeAssignment myAttrAssType = new AttributeAssignment();
+							myAttrAssType.setAttributeId(attrExpr.getAttributeId());
+							myAttrAssType.setCategory(attrExpr.getCategory());
+							myAttrAssType.setIssuer(attrExpr.getIssuer());
+							if ((attrExpr.getExpression().getDeclaredType() == AttributeValueType.class))
+							{
+								myAttrAssType.setDataType(((AttributeValueType) attrExpr.getExpression().getValue()).getDataType());
+								myAttrAssType.getContent().addAll(((AttributeValueType) attrExpr.getExpression().getValue()).getContent());
+							}
+							advice.getAttributeAssignments().add(myAttrAssType);
+						}
+
+						newAssociatedAdvice.getAdvices().add(advice);
+					}
+				}
+			}
+
+			return result;
+		} finally
+		{
+			LOGGER.debug("{} returned: {}", this, result);
+		}
 	}
 
 	@Override
@@ -450,7 +458,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		{
 			return URI.create(policyId);
 		}
-		
+
 		return null;
 	}
 

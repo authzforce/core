@@ -37,9 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -47,7 +45,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.PDP;
@@ -62,6 +59,7 @@ import com.sun.xacml.finder.impl.SelectorModule;
 import com.sun.xacml.support.finder.StaticPolicyFinderModule;
 import com.sun.xacml.support.finder.StaticRefPolicyFinderModule;
 import com.sun.xacml.support.finder.URLPolicyFinderModule;
+import com.thalesgroup.authzforce.BindingUtility;
 
 
 /**

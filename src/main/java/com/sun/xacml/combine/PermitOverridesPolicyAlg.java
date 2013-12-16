@@ -133,6 +133,7 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 			{
 				final IPolicy policy = (IPolicy) policyElement;
 				match = policy.match(context);
+				LOGGER.debug("{} - {}", policy, match);
 				if (match == null)
 				{
 					atLeastOneError = true;

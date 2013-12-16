@@ -38,7 +38,6 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
@@ -341,20 +340,19 @@ public class TargetMatch {
 		}
 
 		// an AD/AS will always return a bag
-		BagAttribute bag = (BagAttribute) (result.getAttributeValue());
+		BagAttribute resultBag = (BagAttribute) (result.getAttributeValue());
 
-		if (!bag.isEmpty()) {
+		if (!resultBag.isEmpty()) {
 			// we got back a set of attributes, so we need to iterate through
 			// them, seeing if at least one matches
-			Iterator it = bag.iterator();
 			boolean atLeastOneError = false;
 			Status firstIndeterminateStatus = null;
 
-			while (it.hasNext()) {
+			for (AttributeValue resultValue: resultBag.getValues()) {
 				ArrayList inputs = new ArrayList();
 
 				inputs.add(attrValue);
-				inputs.add(it.next());
+				inputs.add(resultValue);
 
 				// do the evaluation
 				MatchResult match = evaluateMatch(inputs, context);
@@ -377,18 +375,19 @@ public class TargetMatch {
 
 			// if we got here, then nothing matched, so we'll either return
 			// INDETERMINATE or NO_MATCH
-			if (atLeastOneError)
+			if (atLeastOneError) {
 				return new MatchResult(MatchResult.INDETERMINATE,
 						firstIndeterminateStatus);
-			else
-				return new MatchResult(MatchResult.NO_MATCH);
-
-		} else {
-			// this is just an optimization, since the loop above will
-			// actually handle this case, but this is just a little
-			// quicker way to handle an empty bag
+			}
+			
 			return new MatchResult(MatchResult.NO_MATCH);
+
 		}
+		
+		// this is just an optimization, since the loop above will
+		// actually handle this case, but this is just a little
+		// quicker way to handle an empty bag
+		return new MatchResult(MatchResult.NO_MATCH);
 	}
 
 	/**
@@ -406,10 +405,11 @@ public class TargetMatch {
 		// otherwise, we figure out if it was a match
 		BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
 
-		if (bool.getValue())
+		if (bool.getValue()) {
 			return new MatchResult(MatchResult.MATCH);
-		else
-			return new MatchResult(MatchResult.NO_MATCH);
+		}
+		
+		return new MatchResult(MatchResult.NO_MATCH);
 	}
 
 	/**

@@ -50,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicySet;
@@ -62,6 +61,7 @@ import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * This is a simple implementation of <code>PolicyFinderModule</code> that supports retrieval based
@@ -95,7 +95,7 @@ public class StaticPolicyFinderModule extends PolicyFinderModule
 	// the map of policies
 	private PolicyCollection policies;
 
-	// the optional schema file
+	// the optional schema
 	private final Schema schema;
 
 	// the policy identifier for any policy sets we dynamically create

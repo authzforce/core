@@ -16,8 +16,8 @@
 package com.sun.xacml.finder.impl;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
@@ -49,10 +49,12 @@ public class MultipleResourceFinder extends ResourceFinderModule {
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
 	public boolean isChildSupported() {
 		return true;
 	}
 	
+	@Override
 	public ResourceFinderResult findChildResources(
 			AttributeValue parentResourceId, EvaluationCtx context) {
 		// todo: check if evalresult not null
@@ -62,7 +64,7 @@ public class MultipleResourceFinder extends ResourceFinderModule {
 			throw new ProcessingException();
 		}
 		AttributeValueType attrVal = evalResult.getAttributeValue();
-		List<AttributeValueType> attrSubVals = (List<AttributeValueType>) ((BagAttribute) attrVal).getValue();
-		return new ResourceFinderResult(new HashSet<AttributeValueType>(attrSubVals));
+		Collection<AttributeValue> attrSubVals =  ((BagAttribute) attrVal).getValues();
+		return new ResourceFinderResult(new HashSet<>(attrSubVals));
 	}
 }

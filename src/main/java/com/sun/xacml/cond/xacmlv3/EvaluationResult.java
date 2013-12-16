@@ -33,9 +33,8 @@
  */
 package com.sun.xacml.cond.xacmlv3;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
 import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.ctx.Status;
 
 
@@ -55,7 +54,7 @@ public class EvaluationResult
     
     //
     private boolean wasInd;
-    private AttributeValueType value;
+    private AttributeValue value;
     private Status status;
 
     /**
@@ -73,7 +72,7 @@ public class EvaluationResult
      *
      * @param value the attribute value
      */
-    public EvaluationResult(AttributeValueType value) {
+    public EvaluationResult(AttributeValue value) {
         wasInd = false;
         this.value = value;
         this.status = null;
@@ -105,7 +104,7 @@ public class EvaluationResult
      *
      * @return the attribute value or null
      */
-    public AttributeValueType getAttributeValue() {
+    public AttributeValue getAttributeValue() {
         return value;
     }
 
@@ -127,10 +126,11 @@ public class EvaluationResult
      *         appropriate value
      */
     public static EvaluationResult getInstance(boolean value) {
-        if (value)
+        if (value) {
             return getTrueInstance();
-        else
-            return getFalseInstance();
+        }
+        
+		return getFalseInstance();
     }
 
     /**

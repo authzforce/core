@@ -36,10 +36,7 @@ package com.sun.xacml.finder;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,13 +81,13 @@ public class PolicyFinder
 	 *  If not, we would fail or would not be able to check resoved PolicyReference when loading the modules.
 	 *  Besides, using Set type makes no sense since PolicyFinderModule class does not implement equals().
 	 */
-	private List allModules;
+	private List<PolicyFinderModule> allModules;
 
 	// all the request modules
-	private List requestModules;
+	private List<PolicyFinderModule> requestModules;
 
 	// all the reference modules
-	private List referenceModules;
+	private List<PolicyFinderModule> referenceModules;
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(PolicyFinder.class);
@@ -139,9 +136,9 @@ public class PolicyFinder
 	 * 
 	 * @return a <code>List</code> of <code>PolicyFinderModule</code>s in order of declaration/registration
 	 */
-	public List getModules()
+	public List<PolicyFinderModule> getModules()
 	{
-		return new ArrayList(allModules);
+		return new ArrayList<>(allModules);
 	}
 
 	/**
@@ -151,18 +148,14 @@ public class PolicyFinder
 	 * @param modules
 	 *            a <code>List</code> of <code>PolicyFinderModule</code>s
 	 */
-	public void setModules(List modules)
+	public void setModules(List<PolicyFinderModule> modules)
 	{
-		Iterator it = modules.iterator();
+		allModules = new ArrayList<>(modules);
+		requestModules = new ArrayList<>();
+		referenceModules = new ArrayList<>();
 
-		allModules = new ArrayList(modules);
-		requestModules = new ArrayList();
-		referenceModules = new ArrayList();
-
-		while (it.hasNext())
+		for (PolicyFinderModule module: modules)
 		{
-			PolicyFinderModule module = (PolicyFinderModule) (it.next());
-
 			if (module.isRequestSupported())
 				requestModules.add(module);
 
@@ -177,12 +170,9 @@ public class PolicyFinder
 	public void init()
 	{
 		LOGGER.debug("Initializing PolicyFinder");
-
-		Iterator it = allModules.iterator();
-
-		while (it.hasNext())
+		
+		for (PolicyFinderModule module: allModules)
 		{
-			PolicyFinderModule module = (PolicyFinderModule) (it.next());
 			module.init(this);
 		}
 	}
@@ -200,12 +190,10 @@ public class PolicyFinder
 	public PolicyFinderResult findPolicy(EvaluationCtx context)
 	{
 		PolicyFinderResult result = null;
-		Iterator it = requestModules.iterator();
-
+		
 		// look through all of the modules
-		while (it.hasNext())
+		for (PolicyFinderModule module: requestModules)
 		{
-			PolicyFinderModule module = (PolicyFinderModule) (it.next());
 			PolicyFinderResult newResult = module.findPolicy(context);
 
 			// if there was an error, we stop right away
@@ -230,7 +218,7 @@ public class PolicyFinder
 						LOGGER.info("More than one top-level applicable policy found for the request: {}, {}...", result.getPolicy(), newResult.getPolicy());
 					}
 					
-					ArrayList code = new ArrayList();
+					List<String> code = new ArrayList<>();
 					code.add(Status.STATUS_PROCESSING_ERROR);
 					Status status = new Status(code, "too many applicable top-level policies");
 					return new PolicyFinderResult(status);
@@ -246,12 +234,11 @@ public class PolicyFinder
 		if (result != null)
 		{
 			return result;
-		} else
-		{
-			LOGGER.info("No applicable policies were found for the request");
-
-			return new PolicyFinderResult();
 		}
+		
+		LOGGER.info("No applicable policies were found for the request");
+
+		return new PolicyFinderResult();
 	}
 
 	/**
@@ -279,15 +266,13 @@ public class PolicyFinder
 			throws IllegalArgumentException
 	{
 		PolicyFinderResult result = null;
-		Iterator it = referenceModules.iterator();
 
 		if ((type != PolicyReference.POLICY_REFERENCE) && (type != PolicyReference.POLICYSET_REFERENCE))
 			throw new IllegalArgumentException("Unknown reference type");
 
 		// look through all of the modules
-		while (it.hasNext())
+		for (PolicyFinderModule module: referenceModules)
 		{
-			PolicyFinderModule module = (PolicyFinderModule) (it.next());
 			PolicyFinderResult newResult = module.findPolicy(idReference, type, constraints, parentMetaData);
 
 			// if there was an error, we stop right away
@@ -308,7 +293,7 @@ public class PolicyFinder
 				if (result != null)
 				{
 					LOGGER.info("More than one policy applies for the reference: {}", idReference);
-					ArrayList code = new ArrayList();
+					List<String> code = new ArrayList<>();
 					code.add(Status.STATUS_PROCESSING_ERROR);
 					Status status = new Status(code, "too many applicable top-level policies");
 					return new PolicyFinderResult(status);
@@ -324,11 +309,10 @@ public class PolicyFinder
 		if (result != null)
 		{
 			return result;
-		} else
-		{
-			LOGGER.info("No policies were resolved for the reference: {}", idReference);
-			return new PolicyFinderResult();
 		}
+		
+		LOGGER.info("No policies were resolved for the reference: {}", idReference);
+		return new PolicyFinderResult();
 	}
 	
 	/**

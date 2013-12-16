@@ -52,13 +52,11 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
@@ -68,6 +66,7 @@ import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionTypeException;
 import com.sun.xacml.cond.VariableManager;
 import com.sun.xacml.cond.VariableReference;
+import com.thalesgroup.authzforce.BindingUtility;
 
 
 /**

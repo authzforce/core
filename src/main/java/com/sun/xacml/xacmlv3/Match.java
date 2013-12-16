@@ -20,7 +20,6 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.Marshaller;
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.BindingUtility;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.MatchResult;
@@ -54,6 +52,7 @@ import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionTypeException;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.BindingUtility;
 
 /**
  * Represents the SubjectMatch, ResourceMatch, ActionMatch, or EnvironmentMatch (in XACML 2.0 and
@@ -131,24 +130,22 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		if (attrValue == null)
 		{
 			throw new ParsingException("A Match element need to contained at list one AttributeValue");
-		} else
-		{
-			this.attributeValue = (AttributeValue) attrValue;
 		}
+		
+		this.attributeValue = attrValue;
 		if (exprType == null)
 		{
 			throw new ParsingException("A Match element need to contained at list one AttributeDesignator " + "or one AttributeSelector");
-		} else
+		}
+		
+		if (exprType instanceof AttributeDesignatorType)
 		{
-			if (exprType instanceof AttributeDesignatorType)
-			{
-				this.attributeDesignator = (AttributeDesignator) exprType;
-				this.eval = (Evaluatable) exprType;
-			} else if (exprType instanceof AttributeSelectorType)
-			{
-				this.attributeSelector = (AttributeSelector) exprType;
-				this.eval = (Evaluatable) exprType;
-			}
+			this.attributeDesignator = (AttributeDesignator) exprType;
+			this.eval = (Evaluatable) exprType;
+		} else if (exprType instanceof AttributeSelectorType)
+		{
+			this.attributeSelector = (AttributeSelector) exprType;
+			this.eval = (Evaluatable) exprType;
 		}
 
 		if (func != null)
@@ -403,7 +400,6 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		{
 			// we got back a set of attributes, so we need to iterate through
 			// them, seeing if at least one matches
-			Iterator it = bag.iterator();
 			boolean atLeastOneError = false;
 			Status firstIndeterminateStatus = null;
 
@@ -426,8 +422,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 				// there are no rules about exactly what status data
 				// should be returned here, so like in the combining
 				// algs, we'll just track the first error
-				if (firstIndeterminateStatus == null)
-					firstIndeterminateStatus = match.getStatus();
+				firstIndeterminateStatus = match.getStatus();
 			}
 
 			// while (it.hasNext()) {
@@ -457,18 +452,18 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 
 			// if we got here, then nothing matched, so we'll either return
 			// INDETERMINATE or NO_MATCH
-			if (atLeastOneError)
+			if (atLeastOneError) {
 				return new MatchResult(MatchResult.INDETERMINATE, firstIndeterminateStatus);
-			else
-				return new MatchResult(MatchResult.NO_MATCH);
-
-		} else
-		{
-			// this is just an optimization, since the loop above will
-			// actually handle this case, but this is just a little
-			// quicker way to handle an empty bag
+			}
+			
 			return new MatchResult(MatchResult.NO_MATCH);
+
 		}
+		
+		// this is just an optimization, since the loop above will
+		// actually handle this case, but this is just a little
+		// quicker way to handle an empty bag
+		return new MatchResult(MatchResult.NO_MATCH);
 	}
 
 	/**
@@ -489,10 +484,9 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		if ((Boolean) bool.getContent().get(0))
 		{
 			return new MatchResult(MatchResult.MATCH);
-		} else
-		{
-			return new MatchResult(MatchResult.NO_MATCH);
 		}
+		
+		return new MatchResult(MatchResult.NO_MATCH);
 	}
 
 	/**

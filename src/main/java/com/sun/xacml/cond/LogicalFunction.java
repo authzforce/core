@@ -154,7 +154,7 @@ public class LogicalFunction extends FunctionBase
             }
         }
 
-        if (Integer.parseInt(getFunctionId()) == ID_OR)
+        if (getId(getFunctionName()) == ID_OR)
             return EvaluationResult.getFalseInstance();
         else
             return EvaluationResult.getTrueInstance();

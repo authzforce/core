@@ -1,10 +1,15 @@
 package com.thalesgroup.authzforce.pdp.core.test.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
@@ -18,24 +23,26 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.BasicEvaluationCtx;
-import com.sun.xacml.BindingUtility;
+import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.support.finder.FilePolicyModule;
+import com.sun.xacml.support.finder.StaticPolicyFinderModule;
+import com.thalesgroup.authzforce.BindingUtility;
 
 public class TestUtils
 {
@@ -320,9 +327,28 @@ public class TestUtils
 	 * @return a PDP instance
 	 */
 	public static PDP getPDPNewInstance(String rootDir, String versionDir, Set<String> policyfilenames) {
+		Properties properties = new Properties();		
+		ConfigurationStore testConfigurationStore = null;
+		try {
+			properties.load(new FileInputStream(new File("src/test/resources", "authzforce.test.properties")));
+			PropertyConfigurator.configure(properties.getProperty("logProperties"));
+			File configFile = new File(properties.getProperty("configFile"));
+			
+			testConfigurationStore = new ConfigurationStore(configFile, null, null);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParsingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 
-		PolicyFinder finder = new PolicyFinder();
-		List<String> policyLocations = new ArrayList<String>();
+		PolicyFinder policyFinder = new PolicyFinder();
+		List<String> policyLocations = new ArrayList<>();
 
 		for (String policyfilename : policyfilenames) {
 			/**
@@ -340,16 +366,21 @@ public class TestUtils
 			policyLocations.add(policyFileURL.getPath());
 		}
 
-		FilePolicyModule testPolicyFinderModule = new FilePolicyModule(
+		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(
 				policyLocations);
-		List<PolicyFinderModule> policyModules = new ArrayList<PolicyFinderModule>();
+		List<PolicyFinderModule> policyModules = new ArrayList<>();
 		policyModules.add(testPolicyFinderModule);
-		finder.setModules(policyModules);
+		policyFinder.setModules(policyModules);
 
 		PDP authzforce = PDP.getInstance();
 		PDPConfig pdpConfig = authzforce.getPDPConfig();
-		pdpConfig = new PDPConfig(pdpConfig.getAttributeFinder(), finder,
-				pdpConfig.getResourceFinder(), null);
+		try {
+			pdpConfig = new PDPConfig(testConfigurationStore.getDefaultPDPConfig().getAttributeFinder(), policyFinder,
+					testConfigurationStore.getDefaultPDPConfig().getResourceFinder(), null);
+		} catch (UnknownIdentifierException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 
 		return new PDP(pdpConfig);
 	}
