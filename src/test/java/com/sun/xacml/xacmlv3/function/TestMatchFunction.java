@@ -20,6 +20,11 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.cond.MatchFunction;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
+/**
+ * 
+ * @author romain.ferrari[AT]thalesgroup.com
+ *
+ */
 public class TestMatchFunction {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestMatchFunction.class);
@@ -123,19 +128,12 @@ public class TestMatchFunction {
 		testFunctions.add(NAME_STRING_ENDS_WITH);
 		testFunctions.add(NAME_STRING_CONTAINS);
 		
-		LOGGER.debug("Function to be tested");
-		LOGGER.debug(NAME_REGEXP_STRING_MATCH);
-		LOGGER.debug(NAME_X500NAME_MATCH);
-		LOGGER.debug(NAME_RFC822NAME_MATCH);
-		LOGGER.debug(NAME_STRING_REGEXP_MATCH);
-		LOGGER.debug(NAME_ANYURI_REGEXP_MATCH);
-		LOGGER.debug(NAME_IPADDRESS_REGEXP_MATCH);
-		LOGGER.debug(NAME_DNSNAME_REGEXP_MATCH);
-		LOGGER.debug(NAME_RFC822NAME_REGEXP_MATCH);
-		LOGGER.debug(NAME_X500NAME_REGEXP_MATCH);
-		LOGGER.debug(NAME_STRING_STARTS_WITH);
-		LOGGER.debug(NAME_STRING_ENDS_WITH);
-		LOGGER.debug(NAME_STRING_CONTAINS);
+		if(LOGGER.isDebugEnabled()) {
+	        LOGGER.debug("Function to be tested");
+	        for (String functionToBeTested : testFunctions) {
+	        	LOGGER.debug(functionToBeTested);	
+			}
+        }
 	}
 
 	@Test

@@ -163,9 +163,9 @@ public class StringFunction extends FunctionBase
         	} else if(str.equalsIgnoreCase("false")) {
         		result = new EvaluationResult(BooleanAttribute.getFalseInstance());
         	} else {
-        		Status status = new Status(Arrays.asList(Status.STATUS_PROCESSING_ERROR));
+        		Status status = new Status(Arrays.asList(Status.STATUS_SYNTAX_ERROR));
         		StatusCode code = new StatusCode();
-				code.setValue(Status.STATUS_PROCESSING_ERROR);
+				code.setValue(Status.STATUS_SYNTAX_ERROR);
 				status.setStatusCode(code);
         		result = new EvaluationResult(status);
         	}

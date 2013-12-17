@@ -8,8 +8,9 @@ import org.junit.runners.Suite.SuiteClasses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.xacmlv3.MatchTest;
+import com.sun.xacml.xacmlv3.TestMatchAlg;
 import com.sun.xacml.xacmlv3.function.TestMatchFunction;
+import com.sun.xacml.xacmlv3.function.TestStringFunction;
 
 /**
  * @author Romain Ferrari
@@ -26,8 +27,9 @@ import com.sun.xacml.xacmlv3.function.TestMatchFunction;
  */
 @RunWith(Suite.class)
 @SuiteClasses(value={
-		MatchTest.class,
+		TestMatchAlg.class,
 		TestMatchFunction.class,
+		TestStringFunction.class,
 		ConformanceV3.class,
 		BasicV3_1.class,
 		BasicV3_2.class,
