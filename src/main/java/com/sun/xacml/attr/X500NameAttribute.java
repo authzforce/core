@@ -34,7 +34,6 @@
 package com.sun.xacml.attr;
 
 import java.net.URI;
-import java.util.Arrays;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -44,6 +43,7 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
  * Representation of an X500 Name.
+ * FIXME: fix all the reference to value and replace them by reference to content
  *
  * @since 1.0
  * @author Marco Barreno
@@ -110,11 +110,15 @@ public class X500NameAttribute extends AttributeValue
 
     /**
      * Returns the name value represented by this object
-     *
+     * FIXME: Check in the Spec if the list of value should be equal to one and only one
      * @return the name
      */
     public X500Principal getValue() {
-        return value;
+    	if(this.content.size() > 0) {
+    		return (X500Principal) content.get(0);
+    	} else {
+    		return null;
+    	}
     }
 
     /**
