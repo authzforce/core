@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.security.auth.x500.X500Principal;
+
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.junit.Assert;
@@ -17,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.X500NameAttribute;
 import com.sun.xacml.cond.MatchFunction;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
@@ -142,12 +145,40 @@ public class TestMatchFunction {
 		MatchFunction testMatchFunction = new MatchFunction(NAME_REGEXP_STRING_MATCH);
 		List<StringAttribute> goodInputs = new ArrayList<StringAttribute>(Arrays.asList(StringAttribute.getInstance("string$"), StringAttribute.getInstance("This is my test string")));
 		List<StringAttribute> wrongInputs = new ArrayList<StringAttribute>(Arrays.asList(StringAttribute.getInstance("hello$"), StringAttribute.getInstance("This is my test string")));
-		
 				
 		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
 		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
 		
 		LOGGER.info("Function: " + NAME_REGEXP_STRING_MATCH + ": OK");
+	}
+	
+	@Test
+	public final void testX500NameMatch() {
+						
+		X500Principal x500PrincipalArg0Good = new X500Principal("O=Medico Corp,C=US");
+		X500NameAttribute x500NameAttributeArg0Good = new X500NameAttribute(x500PrincipalArg0Good);
+		
+		X500Principal x500PrincipalArg0Wrong = new X500Principal("O=Medico Corp,C=FR");
+		X500NameAttribute x500NameAttributeArg0Wrong = new X500NameAttribute(x500PrincipalArg0Wrong);
+		
+		X500Principal x500PrincipalArg1 = new X500Principal("cn=John Smith,o=Medico Corp, c=US");
+		X500NameAttribute x500NameAttributeArg1 = new X500NameAttribute(x500PrincipalArg1);
+		
+		LOGGER.info("Testing function: " + NAME_X500NAME_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_X500NAME_MATCH);
+		
+		List<X500NameAttribute> goodInputs = new ArrayList<X500NameAttribute>();
+		goodInputs.add(x500NameAttributeArg0Good);
+		goodInputs.add(x500NameAttributeArg1);
+
+		List<X500NameAttribute> wrongInputs = new ArrayList<X500NameAttribute>();
+		wrongInputs.add(x500NameAttributeArg0Wrong);
+		wrongInputs.add(x500NameAttributeArg1);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_X500NAME_MATCH + ": OK");
 	}
 
 	@Test
