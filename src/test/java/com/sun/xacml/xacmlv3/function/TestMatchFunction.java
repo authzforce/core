@@ -11,6 +11,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BooleanAttribute;
@@ -19,9 +21,14 @@ import com.sun.xacml.cond.MatchFunction;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
 public class TestMatchFunction {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(TestMatchFunction.class);
+	
 	private static final String FUNCTION_NS = "urn:oasis:names:tc:xacml:1.0:function:";
 	private static final String FUNCTION_NS_2 = "urn:oasis:names:tc:xacml:2.0:function:";
 	private static final String FUNCTION_NS_3 = "urn:oasis:names:tc:xacml:3.0:function:";
+	
+	private static final EvaluationCtx globalContext = TestUtils.createContext(new Request());
 
 	/**
 	 * Standard identifier for the regexp-string-match function.
@@ -100,6 +107,8 @@ public class TestMatchFunction {
 
 	@Before
 	public void setUp() throws Exception {
+		LOGGER.info("Begining testing for MatchFunctions");
+		
 		Set<String> testFunctions = new HashSet<String>();
 		testFunctions.add(NAME_REGEXP_STRING_MATCH);
 		testFunctions.add(NAME_X500NAME_MATCH);
@@ -113,17 +122,34 @@ public class TestMatchFunction {
 		testFunctions.add(NAME_STRING_STARTS_WITH);
 		testFunctions.add(NAME_STRING_ENDS_WITH);
 		testFunctions.add(NAME_STRING_CONTAINS);
+		
+		LOGGER.debug("Function to be tested");
+		LOGGER.debug(NAME_REGEXP_STRING_MATCH);
+		LOGGER.debug(NAME_X500NAME_MATCH);
+		LOGGER.debug(NAME_RFC822NAME_MATCH);
+		LOGGER.debug(NAME_STRING_REGEXP_MATCH);
+		LOGGER.debug(NAME_ANYURI_REGEXP_MATCH);
+		LOGGER.debug(NAME_IPADDRESS_REGEXP_MATCH);
+		LOGGER.debug(NAME_DNSNAME_REGEXP_MATCH);
+		LOGGER.debug(NAME_RFC822NAME_REGEXP_MATCH);
+		LOGGER.debug(NAME_X500NAME_REGEXP_MATCH);
+		LOGGER.debug(NAME_STRING_STARTS_WITH);
+		LOGGER.debug(NAME_STRING_ENDS_WITH);
+		LOGGER.debug(NAME_STRING_CONTAINS);
 	}
 
 	@Test
 	public final void testRegexpStringMatch() {
+		LOGGER.info("Testing function: " + NAME_REGEXP_STRING_MATCH);
 		MatchFunction testMatchFunction = new MatchFunction(NAME_REGEXP_STRING_MATCH);
 		List<StringAttribute> goodInputs = new ArrayList<StringAttribute>(Arrays.asList(StringAttribute.getInstance("string$"), StringAttribute.getInstance("This is my test string")));
 		List<StringAttribute> wrongInputs = new ArrayList<StringAttribute>(Arrays.asList(StringAttribute.getInstance("hello$"), StringAttribute.getInstance("This is my test string")));
-		EvaluationCtx context = TestUtils.createContext(new Request());
+		
 				
-		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, context).getAttributeValue()).encode()));
-		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, context).getAttributeValue()).encode()));
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_REGEXP_STRING_MATCH + ": OK");
 	}
 
 	@Test

@@ -44,7 +44,6 @@ import java.util.List;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
@@ -52,7 +51,6 @@ import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Status;
 
 /**

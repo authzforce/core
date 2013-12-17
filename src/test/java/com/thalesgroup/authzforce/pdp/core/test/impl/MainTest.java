@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.xacmlv3.MatchTest;
+import com.sun.xacml.xacmlv3.function.TestMatchFunction;
 
 /**
  * @author Romain Ferrari
@@ -26,6 +27,7 @@ import com.sun.xacml.xacmlv3.MatchTest;
 @RunWith(Suite.class)
 @SuiteClasses(value={
 		MatchTest.class,
+		TestMatchFunction.class,
 		ConformanceV3.class,
 		BasicV3_1.class,
 		BasicV3_2.class,
