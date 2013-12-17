@@ -11,7 +11,7 @@
 	<!-- WARNING: this version must be the same as the managed version (defined in POM dependencyManagement 
 		element) in parent 'authzforce' project in order for reverse dependencies (such as project 'authzforce-core-ext-utils') 
 		to stay up-to-date. So any change here must be re-done there. -->
-	<version>3.5.3</version>
+	<version>3.5.3-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales</name>
