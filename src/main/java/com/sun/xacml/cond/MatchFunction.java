@@ -262,6 +262,8 @@ public class MatchFunction extends FunctionBase {
 			return stringStartsWithParams;
 		} else if (functionName.equals(NAME_STRING_ENDS_WITH)) {
 			return stringEndsWithParams;
+		} else if (functionName.equals(NAME_STRING_CONTAINS)) {
+			return stringContainsParams;
 		}
 
 		return null;
@@ -274,19 +276,20 @@ public class MatchFunction extends FunctionBase {
 	 * @return a <code>Set</code> of <code>String</code>s
 	 */
 	public static Set getSupportedIdentifiers() {
-		Set set = new HashSet();
+		Set<String> set = new HashSet<String>();
 
 		set.add(NAME_REGEXP_STRING_MATCH);
 		set.add(NAME_X500NAME_MATCH);
 		set.add(NAME_RFC822NAME_MATCH);
-		set.add(NAME_STRING_REGEXP_MATCH);
+		set.add(NAME_STRING_REGEXP_MATCH);		
 		set.add(NAME_ANYURI_REGEXP_MATCH);
 		set.add(NAME_IPADDRESS_REGEXP_MATCH);
 		set.add(NAME_DNSNAME_REGEXP_MATCH);
-		set.add(NAME_RFC822NAME_MATCH);
-		set.add(NAME_X500NAME_MATCH);
+		set.add(NAME_RFC822NAME_REGEXP_MATCH);
+		set.add(NAME_X500NAME_REGEXP_MATCH);
 		set.add(NAME_STRING_STARTS_WITH);
 		set.add(NAME_STRING_ENDS_WITH);
+		set.add(NAME_STRING_CONTAINS);
 
 		return set;
 	}
@@ -413,33 +416,38 @@ public class MatchFunction extends FunctionBase {
 		}
 
 		case ID_STRING_STARTS_WITH: {
+			// FIXME: to be tested with unitary tests
 			String str1 = "";
 			String str2 = "";
 			str1 = ((StringAttribute) argValues[0]).getValue();
 			str2 = ((StringAttribute) argValues[1]).getValue();
-			// try to match the begining of str2 to str1
+			// try to match the begining of str1 to str2
 			boolResult = regexpHelper(REGEX_STARTS + str1 + REGEX_ANY_CHAR, str2);
 			break;
 		}
 
 		case ID_STRING_ENDS_WITH: {
+			// FIXME: to be tested with unitary tests
 			String str1 = "";
 			String str2 = "";
 			str1 = ((StringAttribute) argValues[0]).getValue();
 			str2 = ((StringAttribute) argValues[1]).getValue();
-			// try to match the ends of str2 to str1
+			// try to match the ends of str1 to str2
 			boolResult = regexpHelper(REGEX_ANY_CHAR + str1 + REGEX_ENDS,
 					str2);
 			break;
 		}
 		
+		/**
+		 * try to verify if str1 contains str2 
+		 */
 		case ID_STRING_CONTAINS: {
+			// FIXME: to be tested with unitary tests
 			String str1 = "";
 			String str2 = "";
 			str1 = ((StringAttribute) argValues[0]).getValue();
 			str2 = ((StringAttribute) argValues[1]).getValue();
-			// try to verify if str2 contains str1
-			boolResult = str2.contains(str1);
+			boolResult = str1.contains(str2);
 			
 			break;
 		}

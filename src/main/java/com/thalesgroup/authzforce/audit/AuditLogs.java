@@ -30,6 +30,7 @@ import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.thalesgroup.authzforce.audit.schema.pdp.AuditLog;
 import com.thalesgroup.authzforce.audit.schema.pdp.AuditedPolicy;
 import com.thalesgroup.authzforce.audit.schema.pdp.AuditedRule;
 
@@ -148,8 +149,12 @@ public final class AuditLogs {
 	@Override
 	public String toString() {
 		StringWriter sw = new StringWriter();
+		Map<String, AuditLog> tmpMap;
+		synchronized (INSTANCE) {
+			tmpMap = getAudits();	
+		}		
 		try {
-			for (String hash : getAudits().keySet()) {
+			for (String hash : tmpMap.keySet()) {
 				// JAXBContext.newInstance(AuditLog.class).createMarshaller().marshal(getAudits().get(hash),
 				// sw);
 
@@ -158,19 +163,20 @@ public final class AuditLogs {
 				// make serializer use JAXB annotations (only)
 				mapper.getSerializationConfig().withAnnotationIntrospector(
 						introspector);
-				mapper.writeValue(sw, getAudits().get(hash));
+				synchronized (INSTANCE) {
+					mapper.writeValue(sw, getAudits().get(hash));	
+				}				
 			}
 		} catch (JsonGenerationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		clearAudits();
+		synchronized (INSTANCE) {
+			clearAudits();	
+		}		
 		return sw.toString();
 	}
 

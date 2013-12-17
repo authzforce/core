@@ -158,9 +158,11 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 						(AttributeValue) expr);
 			} else if ("Function".equals(DOMHelper.getLocalName(child)))
 			{
+				// FIXME: TO BE IMPLEMENTED
 				throw new ParsingException("Function in condition not implemented yet");
 			} else if ("VariableReference".equals(DOMHelper.getLocalName(child)))
 			{
+				// FIXME: TO BE IMPLEMENTED
 				throw new ParsingException("Variable Reference in condition not implemented yet");
 			} else if ("AttributeDesignator".equals(DOMHelper.getLocalName(child)))
 			{
