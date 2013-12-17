@@ -34,6 +34,7 @@
 package com.sun.xacml.attr;
 
 import java.net.URI;
+import java.util.Arrays;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -71,8 +72,9 @@ public class X500NameAttribute extends AttributeValue
      *
      * @param value the X500 Name to be represented
      */
-    public X500NameAttribute(X500Principal value) {
+    public X500NameAttribute(X500Principal value) {    	
         super(identifierURI);
+        this.content.add(value);
         this.value = value;
     }
 
