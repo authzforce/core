@@ -42,124 +42,129 @@ import org.w3c.dom.Node;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
- * Representation of an X500 Name.
- * FIXME: fix all the reference to value and replace them by reference to content
- *
+ * Representation of an X500 Name. FIXME: fix all the reference to value and
+ * replace them by reference to content
+ * 
  * @since 1.0
  * @author Marco Barreno
  * @author Seth Proctor
  */
-public class X500NameAttribute extends AttributeValue
-{
-   
-    /**
-     * Official name of this type
-     */
-    public static final String identifier =
-        "urn:oasis:names:tc:xacml:1.0:data-type:x500Name";
- 
-    // the actual value being stored
-    private X500Principal value;
+public class X500NameAttribute extends AttributeValue {
 
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
+	/**
+	 * Official name of this type
+	 */
+	public static final String identifier = "urn:oasis:names:tc:xacml:1.0:data-type:x500Name";
 
-    /**
-     * Creates a new <code>X500NameAttribute</code> that represents the
-     * value supplied.
-     *
-     * @param value the X500 Name to be represented
-     */
-    public X500NameAttribute(X500Principal value) {    	
-        super(identifierURI);
-        this.content.add(value);
-        this.value = value;
-    }
+	// the actual value being stored
+	private X500Principal value;
 
-    /**
-     * Returns a new <codeX500NameAttribute</code> that represents
-     * the X500 Name at a particular DOM node.
-     *
-     * @param root the <code>Node</code> that contains the desired value
-     * @return a new <code>X500NameAttribute</code> representing the
-     *         appropriate value
-     * @throws IllegalArgumentException if value is improperly specified
-     */
-    public static X500NameAttribute getInstance(Node root) 
-        throws IllegalArgumentException
-    {
-        return getInstance(root.getFirstChild().getNodeValue());
-    }
+	/**
+	 * URI version of name for this type
+	 */
+	public static final URI identifierURI = URI.create(identifier);
 
-    /**
-     * Returns a new <code>X500NameAttribute</code> that represents
-     * the X500 Name value indicated by the string provided.
-     *
-     * @param value a string representing the desired value
-     * @return a new <code>X500NameAttribute</code> representing the
-     *         appropriate value
-     * @throws IllegalArgumentException if value is improperly specified
-     */
-    public static X500NameAttribute getInstance(String value)
-        throws IllegalArgumentException
-    {
-        return new X500NameAttribute(new X500Principal(value));
-    }
+	/**
+	 * Creates a new <code>X500NameAttribute</code> that represents the value
+	 * supplied.
+	 * 
+	 * @param value
+	 *            the X500 Name to be represented
+	 */
+	public X500NameAttribute(X500Principal value) {
+		super(identifierURI);		
+		this.value = value;
+		
+		// FIXME: avoid to use this encode method and replace all legacy
+		// attributes with XACML 3.0 scheme attributes
+		this.getContent().add(this.encode());
+	}
 
-    /**
-     * Returns the name value represented by this object
-     * FIXME: Check in the Spec if the list of value should be equal to one and only one
-     * @return the name
-     */
-    public X500Principal getValue() {
-    	if(this.content.size() > 0) {
-    		return (X500Principal) content.get(0);
-    	} else {
-    		return null;
-    	}
-    }
+	/**
+	 * Returns a new <codeX500NameAttribute</code> that represents the X500 Name
+	 * at a particular DOM node.
+	 * 
+	 * @param root
+	 *            the <code>Node</code> that contains the desired value
+	 * @return a new <code>X500NameAttribute</code> representing the appropriate
+	 *         value
+	 * @throws IllegalArgumentException
+	 *             if value is improperly specified
+	 */
+	public static X500NameAttribute getInstance(Node root)
+			throws IllegalArgumentException {
+		return getInstance(root.getFirstChild().getNodeValue());
+	}
 
-    /**
-     * Returns true if the input is an instance of this class and if its
-     * value equals the value contained in this class. This method 
-     * deviates slightly from the XACML spec in the way that it handles
-     * RDNs with multiple attributeTypeAndValue pairs and some
-     * additional canonicalization steps. This method uses
-     * the procedure used by 
-     * <code>javax.security.auth.x500.X500Principal.equals()</code>, while the
-     * XACML spec uses a slightly different procedure. In practice, it is
-     * expected that this difference will not be noticeable. For more
-     * details, refer to the javadoc for <code>X500Principal.equals()</code> 
-     * and the XACML specification.
-     *
-     * @param o the object to compare
-     *
-     * @return true if this object and the input represent the same value
-     */
-    public boolean equals(Object o) {
-        if (! (o instanceof X500NameAttribute))
-            return false;
+	/**
+	 * Returns a new <code>X500NameAttribute</code> that represents the X500
+	 * Name value indicated by the string provided.
+	 * 
+	 * @param value
+	 *            a string representing the desired value
+	 * @return a new <code>X500NameAttribute</code> representing the appropriate
+	 *         value
+	 * @throws IllegalArgumentException
+	 *             if value is improperly specified
+	 */
+	public static X500NameAttribute getInstance(String value)
+			throws IllegalArgumentException {
+		return new X500NameAttribute(new X500Principal(value));
+	}
 
-        X500NameAttribute other = (X500NameAttribute)o;
+	/**
+	 * Returns the name value represented by this object FIXME: Check in the
+	 * Spec if the list of value should be equal to one and only one
+	 * 
+	 * @return the name
+	 */
+	public X500Principal getValue() {
+		if (this.content.size() > 0) {
+			return (X500Principal) content.get(0);
+		} else {
+			return null;
+		}
+	}
 
-        return value.equals(other.value);
-    }
+	/**
+	 * Returns true if the input is an instance of this class and if its value
+	 * equals the value contained in this class. This method deviates slightly
+	 * from the XACML spec in the way that it handles RDNs with multiple
+	 * attributeTypeAndValue pairs and some additional canonicalization steps.
+	 * This method uses the procedure used by
+	 * <code>javax.security.auth.x500.X500Principal.equals()</code>, while the
+	 * XACML spec uses a slightly different procedure. In practice, it is
+	 * expected that this difference will not be noticeable. For more details,
+	 * refer to the javadoc for <code>X500Principal.equals()</code> and the
+	 * XACML specification.
+	 * 
+	 * @param o
+	 *            the object to compare
+	 * 
+	 * @return true if this object and the input represent the same value
+	 */
+	public boolean equals(Object o) {
+		if (!(o instanceof X500NameAttribute))
+			return false;
 
-    /**
-     * Returns the hashcode value used to index and compare this object with
-     * others of the same type. Typically this is the hashcode of the backing
-     * data object.
-     *
-     * @return the object's hashcode value
-     */
-    public int hashCode() {
-        return value.hashCode();
-    }
+		X500NameAttribute other = (X500NameAttribute) o;
 
-    public String encode() {
-        return value.getName();
-    }
+		return value.equals(other.value);
+	}
+
+	/**
+	 * Returns the hashcode value used to index and compare this object with
+	 * others of the same type. Typically this is the hashcode of the backing
+	 * data object.
+	 * 
+	 * @return the object's hashcode value
+	 */
+	public int hashCode() {
+		return value.hashCode();
+	}
+
+	public String encode() {
+		return value.getName();
+	}
 
 }

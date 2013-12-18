@@ -409,7 +409,8 @@ public class MatchFunction extends FunctionBase {
 		case ID_X500NAME_REGEXP_MATCH: {
 			// arg0 is a regular expression; arg1 is a general string
 			String arg0 = ((StringAttribute) (argValues[0])).getValue();
-			String arg1 = ((X500NameAttribute) (argValues[1])).encode();
+			//FIXME: is the case important ?
+			String arg1 = ((X500NameAttribute) (argValues[1])).encode().toLowerCase();
 
 			boolResult = regexpHelper(arg0, arg1);
 
