@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.xacmlv3.TestMatchAlg;
+import com.sun.xacml.xacmlv3.function.TestDateMathFunction;
 import com.sun.xacml.xacmlv3.function.TestMatchFunction;
 import com.sun.xacml.xacmlv3.function.TestStringFunction;
 
@@ -30,6 +31,7 @@ import com.sun.xacml.xacmlv3.function.TestStringFunction;
 		TestMatchAlg.class,
 		TestMatchFunction.class,
 		TestStringFunction.class,
+		TestDateMathFunction.class,
 		ConformanceV3.class,
 		BasicV3_1.class,
 		BasicV3_2.class,

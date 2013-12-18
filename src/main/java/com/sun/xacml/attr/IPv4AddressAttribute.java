@@ -160,7 +160,7 @@ public class IPv4AddressAttribute extends IPAddressAttribute
         String str = getAddress().getHostAddress();
 
         if (getMask() != null)
-            str += getMask().getHostAddress();
+            str += "/" + getMask().getHostAddress();
 
         if (! getRange().isUnbound())
             str += ":" + getRange().encode();

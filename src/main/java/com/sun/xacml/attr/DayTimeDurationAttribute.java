@@ -225,7 +225,7 @@ public class DayTimeDurationAttribute extends AttributeValue {
 			// The numbers are small, so do it the fast way.
 			totalMillis = ((((((days * 24) + hours) * 60) + minutes) * 60) + seconds) * 1000;
 		}
-		// FIXME: re implment all the class to use properly all elements and not
+		// FIXME: re implement all the class to use properly all elements and not
 		// do pattern matching with regex that take far too long
 		this.getContent().add(this.encode());
 	}
