@@ -13,6 +13,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +57,8 @@ public class TestStringFunction {
 	/**
 	 * @throws java.lang.Exception
 	 */
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUp() {
 		LOGGER.info("Begining testing for String Functions");
 		Set<String> testFunctions = new HashSet<String>();
 
