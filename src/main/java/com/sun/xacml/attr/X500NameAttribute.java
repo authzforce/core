@@ -77,7 +77,7 @@ public class X500NameAttribute extends AttributeValue {
 		
 		// FIXME: avoid to use this encode method and replace all legacy
 		// attributes with XACML 3.0 scheme attributes
-		this.getContent().add(this.encode());
+		this.getContent().add(value);
 	}
 
 	/**
