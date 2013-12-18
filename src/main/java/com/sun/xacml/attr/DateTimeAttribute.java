@@ -176,7 +176,7 @@ public class DateTimeAttribute extends AttributeValue
      *                 with the nanoseconds parameter.
      */
     public DateTimeAttribute(Date dateTime) {
-        super(identifierURI);
+        super(identifierURI);        
 
         int currOffset = getDefaultTZOffset(dateTime);
         init(dateTime, 0, currOffset, currOffset);
@@ -235,7 +235,7 @@ public class DateTimeAttribute extends AttributeValue
         this.nanoseconds = combineNanos(this.value, nanoseconds);
         this.timeZone = timeZone;
         this.defaultedTimeZone = defaultedTimeZone;
-        this.getContent().add(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S").format(this.getValue()));
+        this.getContent().add((Date) date.clone());
     }
 
     /**
