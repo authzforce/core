@@ -355,7 +355,8 @@ public class MatchFunction extends FunctionBase {
 				boolResult = normalized.equals(arg1);
 			} else if (arg0.charAt(0) == '.') {
 				// this is case #3 : a sub-domain
-				boolResult = arg1.endsWith(arg0.toLowerCase());
+				// Removing the first dot
+				boolResult = arg1.endsWith(arg0.substring(1).toLowerCase());
 			} else {
 				// this is case #2 : any mailbox at a specific domain
 				String mailDomain = arg1.substring(arg1.indexOf('@') + 1);

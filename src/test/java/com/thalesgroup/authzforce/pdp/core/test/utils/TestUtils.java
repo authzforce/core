@@ -270,7 +270,7 @@ public class TestUtils
 		{
 			LOGGER.debug("Result number comparaison OK");
 			int i = 0;
-			LOGGER.debug("Begining result decision comparison");
+			LOGGER.debug("Begining result decision comparaison");
 			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : currentResult)
 			{
 				// Compare the decision
@@ -336,13 +336,10 @@ public class TestUtils
 			
 			testConfigurationStore = new ConfigurationStore(configFile, null, null);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParsingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

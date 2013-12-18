@@ -194,7 +194,7 @@ public class TestMatchFunction {
 	public final void testNameRFC822NameMatch() {
 						
 		LOGGER.info("Testing function: " + NAME_RFC822NAME_MATCH);
-		MatchFunction testMatchFunction = new MatchFunction(NAME_X500NAME_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_RFC822NAME_MATCH);
 		
 		//In order to match a particular address in the second argument, the first argument must specify the 
 		// complete mail address to be matched. For example, if the first argument is 
