@@ -352,6 +352,8 @@ public class TestMatchFunction {
 			
 		//TEST with IPV4
 		LOGGER.info("Testing function: " + NAME_IPADDRESS_REGEXP_MATCH+", with IP V4 Address");
+
+		// FIXME: WTF is this pattern ???????
 		StringAttribute stringArg0 = new StringAttribute("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
 		
 		IPAddressAttribute ipv4AddressGood  = null;
