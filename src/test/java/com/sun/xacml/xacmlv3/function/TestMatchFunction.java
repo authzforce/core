@@ -1,5 +1,8 @@
 package com.sun.xacml.xacmlv3.function;
 
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,7 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.AnyURIAttribute;
 import com.sun.xacml.attr.BooleanAttribute;
+import com.sun.xacml.attr.IPAddressAttribute;
+import com.sun.xacml.attr.IPv4AddressAttribute;
+import com.sun.xacml.attr.PortRange;
+import com.sun.xacml.attr.RFC822NameAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.X500NameAttribute;
 import com.sun.xacml.cond.MatchFunction;
@@ -180,7 +188,343 @@ public class TestMatchFunction {
 		
 		LOGGER.info("Function: " + NAME_X500NAME_MATCH + ": OK");
 	}
+	
+	@Test
+	public final void testNameRFC822NameMatch() {
+						
+		LOGGER.info("Testing function: " + NAME_RFC822NAME_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_X500NAME_MATCH);
+		
+		//In order to match a particular address in the second argument, the first argument must specify the 
+		// complete mail address to be matched. For example, if the first argument is 
+		//“Anderson@sun.com”, this matches a value in the second argument of “Anderson@sun.com” 
+		//and “Anderson@SUN.COM”, but not “Anne.Anderson@sun.com”, “anderson@sun.com” or “Anderson@east.sun.com”. 
+		
+		LOGGER.info(NAME_RFC822NAME_MATCH +"function: Testing to match a particular address in the second argument, the first argument specify the complete mail address to be matched");
+		
+		StringAttribute stringArg0 = new StringAttribute("Anderson@sun.com");
+		RFC822NameAttribute rfc822Arg1Good1 = new RFC822NameAttribute("Anderson@sun.com");
+		RFC822NameAttribute rfc822Arg1Good2 = new RFC822NameAttribute("Anderson@SUN.COM");
+		RFC822NameAttribute rfc822Arg1Wrong1 = new RFC822NameAttribute("Anne.Anderson@sun.com");
+		RFC822NameAttribute rfc822Arg1Wrong2 = new RFC822NameAttribute("anderson@sun.com");
+		RFC822NameAttribute rfc822Arg1Wrong3 = new RFC822NameAttribute("Anderson@east.sun.com");
 
+		List<Object> goodInputs1 = new ArrayList<Object>();
+		goodInputs1.add(stringArg0);
+		goodInputs1.add(rfc822Arg1Good1);
+		
+		List<Object> goodInputs2 = new ArrayList<Object>();
+		goodInputs2.add(stringArg0);
+		goodInputs2.add(rfc822Arg1Good2);
+		
+		List<Object> wrongInputs1 = new ArrayList<Object>();
+		wrongInputs1.add(stringArg0);
+		wrongInputs1.add(rfc822Arg1Wrong1);
+		
+		List<Object> wrongInputs2 = new ArrayList<Object>();
+		wrongInputs2.add(stringArg0);
+		wrongInputs2.add(rfc822Arg1Wrong2);
+		
+		List<Object> wrongInputs3 = new ArrayList<Object>();
+		wrongInputs3.add(stringArg0);
+		wrongInputs3.add(rfc822Arg1Wrong3);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs1, globalContext).getAttributeValue()).encode()));
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs2, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs1, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs2, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs3, globalContext).getAttributeValue()).encode()));
+
+		// In order to match any address at a particular domain in the second argument, the first argument 
+		//must specify only a domain name (usually a DNS name). For example, if the first argument is 
+		//“sun.com”, this matches a value in the second argument of “Anderson@sun.com” or 
+		//“Baxter@SUN.COM”, but not “Anderson@east.sun.com”. 
+		
+		LOGGER.info(NAME_RFC822NAME_MATCH +"function: Testing to match any address at a particular domain in the second argument, the first argument specify only a domain name (usually a DNS name)");
+
+		stringArg0 = new StringAttribute("sun.com");
+		rfc822Arg1Good1 = new RFC822NameAttribute("Anderson@sun.com");
+		rfc822Arg1Good2 = new RFC822NameAttribute("Baxter@SUN.COM");
+		rfc822Arg1Wrong1 = new RFC822NameAttribute("Anderson@east.sun.com");
+
+		goodInputs1 = new ArrayList<Object>();
+		goodInputs1.add(stringArg0);
+		goodInputs1.add(rfc822Arg1Good1);
+		
+		goodInputs2 = new ArrayList<Object>();
+		goodInputs2.add(stringArg0);
+		goodInputs2.add(rfc822Arg1Good2);
+		
+		wrongInputs1 = new ArrayList<Object>();
+		wrongInputs1.add(stringArg0);
+		wrongInputs1.add(rfc822Arg1Wrong1);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs1, globalContext).getAttributeValue()).encode()));
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs2, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs1, globalContext).getAttributeValue()).encode()));	
+		
+		
+		//In order to match any address in a particular domain in the second argument, the first argument 
+		//must specify the desired domain-part with a leading ".". For example, if the first argument is 
+		//“.east.sun.com”, this matches a value in the second argument of "Anderson@east.sun.com" and 
+		//"anne.anderson@ISRG.EAST.SUN.COM" but not "Anderson@sun.com".
+	
+		LOGGER.info(NAME_RFC822NAME_MATCH +"function: Testing to match any address in a particular domain in the second argument,the first argument specify the desired domain-part with a leading . ");
+
+		stringArg0 = new StringAttribute(".east.sun.com");
+		rfc822Arg1Good1 = new RFC822NameAttribute("Anderson@east.sun.com");
+		rfc822Arg1Good2 = new RFC822NameAttribute("anne.anderson@ISRG.EAST.SUN.COM");
+		rfc822Arg1Wrong1 = new RFC822NameAttribute("Anderson@sun.com");
+
+		goodInputs1 = new ArrayList<Object>();
+		goodInputs1.add(stringArg0);
+		goodInputs1.add(rfc822Arg1Good1);
+		
+		goodInputs2 = new ArrayList<Object>();
+		goodInputs2.add(stringArg0);
+		goodInputs2.add(rfc822Arg1Good2);
+		
+		wrongInputs1 = new ArrayList<Object>();
+		wrongInputs1.add(stringArg0);
+		wrongInputs1.add(rfc822Arg1Wrong1);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs1, globalContext).getAttributeValue()).encode()));
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs2, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs1, globalContext).getAttributeValue()).encode()));	
+		
+		LOGGER.info("Function: " + NAME_RFC822NAME_MATCH + ": OK");
+	}	
+	
+	@Test
+	public final void testNameStringRegexpMatch() {
+						
+		LOGGER.info("Testing function: " + NAME_STRING_REGEXP_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_STRING_REGEXP_MATCH); 
+				
+		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@thalesgroup.com");
+		StringAttribute stringGood = new StringAttribute("romainguignard@thalesgroup.com");
+		StringAttribute stringWrong = new StringAttribute("romain.guignard@thalesgroup.com");
+
+		List<StringAttribute> goodInputs = new ArrayList<StringAttribute>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(stringGood);
+		
+		List<StringAttribute> wrongInputs = new ArrayList<StringAttribute>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(stringWrong);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+	
+		LOGGER.info("Function: " + NAME_STRING_REGEXP_MATCH + ": OK");
+	}	
+	
+	@Test
+	public final void testNameAnyURIRegexpMatch() {
+						
+		LOGGER.info("Testing function: " + NAME_ANYURI_REGEXP_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_ANYURI_REGEXP_MATCH); 
+				
+		StringAttribute stringArg0 = new StringAttribute("^http://.+");
+		AnyURIAttribute stringGood = new AnyURIAttribute(URI.create("http://www.thalesgroup.com"));
+		AnyURIAttribute stringWrong = new AnyURIAttribute(URI.create("https://www.thalesgroup.com"));
+
+		List<Object> goodInputs = new ArrayList<Object>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(stringGood);
+		
+		List<Object> wrongInputs = new ArrayList<Object>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(stringWrong);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+	
+		LOGGER.info("Function: " + NAME_ANYURI_REGEXP_MATCH + ": OK");
+	}	
+	
+	@Test
+	public final void testNameIPAddressRegexpMatch() {
+						
+		LOGGER.info("Testing function: " + NAME_IPADDRESS_REGEXP_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_IPADDRESS_REGEXP_MATCH); 
+			
+		//TEST with IPV4
+		LOGGER.info("Testing function: " + NAME_IPADDRESS_REGEXP_MATCH+", with IP V4 Address");
+		StringAttribute stringArg0 = new StringAttribute("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+		
+		IPAddressAttribute ipv4AddressGood  = null;
+		try {
+			byte[] ipGoodAddrByte = new byte[]{10, 10 , 10 , 10 };
+			InetAddress ipGood = InetAddress.getByAddress(ipGoodAddrByte);
+			byte[] ipGoodMaskByte = new byte[]{(byte)255, (byte)255 , (byte)255 , 0 };
+			InetAddress ipmaskGood = InetAddress.getByAddress(ipGoodMaskByte);
+			PortRange portGood = new PortRange(80);
+			ipv4AddressGood = new IPv4AddressAttribute(ipGood,ipmaskGood,portGood);
+		} catch (UnknownHostException e1) {
+			LOGGER.error("Exception: "+e1);
+			e1.printStackTrace();
+		}
+		
+		IPAddressAttribute ipv4AddressWrong  = null;
+		try {
+			byte[] ipWrongAddrByte = new byte[]{(byte)256, 10 , 10 , 10 };
+			InetAddress ipWrong = InetAddress.getByAddress(ipWrongAddrByte);
+			byte[] ipWrongMaskByte = new byte[]{(byte)255, (byte)255 , (byte)255 , 0 };
+			InetAddress ipmaskWrong = InetAddress.getByAddress(ipWrongMaskByte);
+			PortRange portWrong = new PortRange(80);
+			ipv4AddressWrong = new IPv4AddressAttribute(ipWrong,ipmaskWrong,portWrong);
+		} catch (UnknownHostException e) {
+			LOGGER.error("Exception: "+e);
+			e.printStackTrace();
+		}
+		
+		List<Object> goodInputs = new ArrayList<Object>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(ipv4AddressGood);
+		
+		List<Object> wrongInputs = new ArrayList<Object>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(ipv4AddressWrong);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_IPADDRESS_REGEXP_MATCH +" with IP V4 Address"+ ": OK");
+
+		//TODO: Test with IPV6 Address		
+	}	
+	
+	@Test
+	public final void testNameStringContainsMatch() {
+		
+		LOGGER.info("Testing function: " + NAME_STRING_CONTAINS);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_STRING_CONTAINS); 			
+		
+		StringAttribute stringArg0 = new StringAttribute("test");
+		StringAttribute goodStringArg1 = new StringAttribute("testing");
+		StringAttribute wrongStringArg1 = new StringAttribute("tasting");
+		
+		List<Object> goodInputs = new ArrayList<Object>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(goodStringArg1);
+		
+		List<Object> wrongInputs = new ArrayList<Object>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(wrongStringArg1);
+		
+		//FIXME:  SHALL return a "http://www.w3.org/2001/XMLSchema#boolean". The result SHALL be true if the second string 
+		//contains the first string, and false otherwise
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_STRING_CONTAINS +": OK");				
+		
+	}	
+	
+	@Test
+	public final void testNameStringEndsWithMatch() {
+		
+		LOGGER.info("Testing function: " + NAME_STRING_ENDS_WITH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_STRING_ENDS_WITH); 			
+		
+		StringAttribute stringArg0 = new StringAttribute("ing");
+		StringAttribute goodStringArg1 = new StringAttribute("testing");
+		StringAttribute wrongStringArg1 = new StringAttribute("testang");
+		
+		List<Object> goodInputs = new ArrayList<Object>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(goodStringArg1);
+		
+		List<Object> wrongInputs = new ArrayList<Object>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(wrongStringArg1);
+
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_STRING_ENDS_WITH +": OK");				
+	}	
+	
+	@Test
+	public final void testNameStringStartsWithMatch() {
+		
+		LOGGER.info("Testing function: " + NAME_STRING_STARTS_WITH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_STRING_STARTS_WITH); 			
+		
+		StringAttribute stringArg0 = new StringAttribute("test");
+		StringAttribute goodStringArg1 = new StringAttribute("testing");
+		StringAttribute wrongStringArg1 = new StringAttribute("tasting");
+		
+		List<Object> goodInputs = new ArrayList<Object>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(goodStringArg1);
+		
+		List<Object> wrongInputs = new ArrayList<Object>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(wrongStringArg1);
+
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_STRING_STARTS_WITH +": OK");				
+	}		
+		
+	//TODO: Test NAME_DNSNAME_REGEXP_MATCH;
+	
+	@Test
+	public final void testNameX500NameRegexpMatch() {
+		
+		LOGGER.info("Testing function: " + NAME_X500NAME_REGEXP_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_X500NAME_REGEXP_MATCH);
+		
+		StringAttribute stringArg0 = new StringAttribute(".*dc=example,dc=com");
+		
+		X500Principal x500PrincipalArg0Good = new X500Principal("ou=test,dc=example,dc=com");
+		X500NameAttribute x500NameAttributeArg0Good = new X500NameAttribute(x500PrincipalArg0Good);
+		
+		X500Principal x500PrincipalArg0Wrong = new X500Principal("ou=test,dc=example,dc=fr");
+		X500NameAttribute x500NameAttributeArg0Wrong = new X500NameAttribute(x500PrincipalArg0Wrong);	
+		
+		List<Object> goodInputs = new ArrayList<Object>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(x500NameAttributeArg0Good);
+
+		List<Object> wrongInputs = new ArrayList<Object>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(x500NameAttributeArg0Wrong);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_X500NAME_REGEXP_MATCH + ": OK");
+	}
+
+	@Test
+	public final void testNameRFC822NameRegexpMatch() {
+						
+		LOGGER.info("Testing function: " + NAME_RFC822NAME_REGEXP_MATCH);
+		MatchFunction testMatchFunction = new MatchFunction(NAME_RFC822NAME_REGEXP_MATCH);
+			
+		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@thalesgroup.com");
+		RFC822NameAttribute rfc822Arg1Good = new RFC822NameAttribute("romainguignard@thalesgroup.com");
+		RFC822NameAttribute rfc822Arg1Wrong = new RFC822NameAttribute("romain.guignard@thalesgroup.com");
+		
+		List<Object> goodInputs = new ArrayList<Object>();
+		goodInputs.add(stringArg0);
+		goodInputs.add(rfc822Arg1Good);
+		
+		List<Object> wrongInputs = new ArrayList<Object>();
+		wrongInputs.add(stringArg0);
+		wrongInputs.add(rfc822Arg1Wrong);
+		
+		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
+		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
+		
+		LOGGER.info("Function: " + NAME_RFC822NAME_REGEXP_MATCH + ": OK");
+
+	}
+	
 	@Test
 	public final void testCheckInputsList() {
 		// fail("Not yet implemented"); // TODO
