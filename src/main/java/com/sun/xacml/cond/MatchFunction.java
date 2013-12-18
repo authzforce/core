@@ -438,17 +438,15 @@ public class MatchFunction extends FunctionBase {
 			break;
 		}
 		
-		/**
-		 * try to verify if str1 contains str2 
+		/*
+		 * try to verify if the second string contains the first string 
 		 */
 		case ID_STRING_CONTAINS: {
-			// FIXME: to be tested with unitary tests
-			// FIXME:The specification specify: The result SHALL be true if the second string contains the first string, and false otherwise
 			String str1 = "";
 			String str2 = "";
 			str1 = ((StringAttribute) argValues[0]).getValue();
 			str2 = ((StringAttribute) argValues[1]).getValue();
-			boolResult = str1.contains(str2);
+			boolResult = str2.contains(str1);
 			
 			break;
 		}

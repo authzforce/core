@@ -470,7 +470,10 @@ public class TestMatchFunction {
 		LOGGER.info("Function: " + NAME_STRING_STARTS_WITH +": OK");				
 	}		
 		
-	//TODO: Test NAME_DNSNAME_REGEXP_MATCH;
+	@Test
+	public final void testNameDnsNameRegexpMatch() {
+		Assert.fail(" Test not implemented");
+	}
 	
 	@Test
 	public final void testNameX500NameRegexpMatch() {
@@ -524,15 +527,4 @@ public class TestMatchFunction {
 		LOGGER.info("Function: " + NAME_RFC822NAME_REGEXP_MATCH + ": OK");
 
 	}
-	
-	@Test
-	public final void testCheckInputsList() {
-		// fail("Not yet implemented"); // TODO
-	}
-
-	@Test
-	public final void testCheckInputsNoBagList() {
-		// fail("Not yet implemented"); // TODO
-	}
-
 }
