@@ -119,8 +119,8 @@ public class X500NameAttribute extends AttributeValue {
 	 * @return the name
 	 */
 	public X500Principal getValue() {
-		if (this.content.size() > 0) {
-			return (X500Principal) content.get(0);
+		if (this.getContent().size() > 0) {
+			return ((X500Principal)this.getContent().get(0));
 		} else {
 			return null;
 		}
@@ -163,7 +163,7 @@ public class X500NameAttribute extends AttributeValue {
 		return value.hashCode();
 	}
 
-	public String encode() {
+	public String encode() {		
 		return value.getName();
 	}
 
