@@ -181,6 +181,7 @@ public class YearMonthDurationAttribute extends AttributeValue
             // The numbers are small, so do it the fast way.
             totalMonths = ((years * 12) + months) * (negative ? -1 : 1);
         }
+        this.getContent().add(this.encode());
     }
 
     /**

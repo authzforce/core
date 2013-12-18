@@ -234,6 +234,8 @@ public class DateAttribute extends AttributeValue
         millis -= currOffset * MILLIS_PER_MINUTE;
         date.setTime(millis);
         init(date, currOffset, currOffset);
+        
+        this.getContent().add(this.encode());
     }
 
     /**

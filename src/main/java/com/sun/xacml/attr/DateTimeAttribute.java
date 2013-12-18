@@ -119,6 +119,11 @@ public class DateTimeAttribute extends AttributeValue
     public static final int TZ_UNSPECIFIED = -1000000;
 
     /**
+     * The simple date format defined for all DateTimeAttribute objects
+     */
+	private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+
+    /**
      * The actual date and time that this object represents (in GMT,
      * as with all Date objects). If no time zone was specified, the
      * local time zone is used to convert to GMT.
@@ -235,7 +240,8 @@ public class DateTimeAttribute extends AttributeValue
         this.nanoseconds = combineNanos(this.value, nanoseconds);
         this.timeZone = timeZone;
         this.defaultedTimeZone = defaultedTimeZone;
-        this.getContent().add((Date) date.clone());
+        
+        this.getContent().add(this.encode());
     }
 
     /**
@@ -276,8 +282,9 @@ public class DateTimeAttribute extends AttributeValue
 
         // If string ends with Z, it's in GMT. Chop off the Z and
         // add +00:00 to make the time zone explicit.
-        if (value.endsWith("Z"))
+        if (value.endsWith("Z")) {
             value = value.substring(0, value.length()-1) + "+00:00";
+        }
 
         // Figure out if the string has a time zone.
         // If string ends with +XX:XX or -XX:XX, it must have
@@ -330,8 +337,9 @@ public class DateTimeAttribute extends AttributeValue
             
             len = value.length();
             
-            Date gmtValue = strictParse(zoneParser,
-                                        value.substring(0,len-6) + "+0000");
+            Date gmtValue = strictParse(zoneParser, value.substring(0,len-6) + "+0000");
+//            Date gmtValue = cvtToGmt(new SimpleDateFormat(DATE_FORMAT).parse(value.substring(0,len-6)));
+            
             value = value.substring(0, len-3) +
                 value.substring(len-2, len);
             dateValue = strictParse(zoneParser, value);
@@ -378,6 +386,29 @@ public class DateTimeAttribute extends AttributeValue
             throw new ParseException("", 0);
         return ret;
     }
+    
+    /**
+     * Convert date to GMT format
+     * 
+     * @param date which could be in any format
+     * @return Date converted to GMT
+     */
+    private static Date cvtToGmt( Date date ){
+        TimeZone tz = TimeZone.getDefault();
+        Date ret = new Date( date.getTime() - tz.getRawOffset() );
+
+        // if we are now in DST, back off by the delta.  Note that we are checking the GMT date, this is the KEY.
+        if ( tz.inDaylightTime( ret )){
+            Date dstDate = new Date( ret.getTime() - tz.getDSTSavings() );
+
+            // check to make sure we have not crossed back into standard time
+            // this happens when we are on the cusp of DST (7pm the day before the change for PDT)
+            if ( tz.inDaylightTime( dstDate )){
+                ret = dstDate;
+            }
+         }
+         return ret;
+    }
 
     /**
      * Initialize the parser objects.
@@ -391,7 +422,7 @@ public class DateTimeAttribute extends AttributeValue
         // so we don't end up using a half-way initialized parser
         synchronized (identifierURI) {
             // This simple parser has no time zone
-            simpleParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            simpleParser = new SimpleDateFormat(DATE_FORMAT);
             simpleParser.setLenient(false);
 
             // This parser has a four digit offset to GMT with sign
