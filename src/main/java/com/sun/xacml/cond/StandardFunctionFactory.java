@@ -158,7 +158,7 @@ public class StandardFunctionFactory extends BaseFunctionFactory
         targetFunctions.addAll((new MatchFunctionCluster()).getSupportedFunctions());
         
         if(LOGGER.isDebugEnabled()) {
-        	LOGGER.debug("Added Target functions: {}", StringUtils.join(targetFunctions.toArray(), ','));
+        	LOGGER.debug("Added Target functions: {}", StringUtils.join(targetFunctions.toArray(), '\n'));
         }
 
         targetAbstractFunctions = new HashMap();

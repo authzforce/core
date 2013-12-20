@@ -72,7 +72,7 @@ public class BaseFunctionFactory extends FunctionFactory
 {
 
     // the backing maps for the Function objects
-    private HashMap functionMap = null;
+    private HashMap<String, Object> functionMap = null;
 
     // the superset factory chained to this factory
     private FunctionFactory superset = null;
@@ -100,7 +100,7 @@ public class BaseFunctionFactory extends FunctionFactory
      * @param superset the superset factory or null
      */
     public BaseFunctionFactory(FunctionFactory superset) {
-        functionMap = new HashMap();
+        functionMap = new HashMap<String, Object>();
 
         this.superset = superset;
     }
@@ -113,8 +113,8 @@ public class BaseFunctionFactory extends FunctionFactory
      * @param supportedAbstractFunctions a mapping from <code>URI</code> to
      *                                   <code>FunctionProxy</code>
      */
-    public BaseFunctionFactory(Set supportedFunctions,
-                               Map supportedAbstractFunctions) {
+    public BaseFunctionFactory(Set<?> supportedFunctions,
+                               Map<?, ?> supportedAbstractFunctions) {
         this(null, supportedFunctions, supportedAbstractFunctions);
     }
 
@@ -132,11 +132,11 @@ public class BaseFunctionFactory extends FunctionFactory
      *                                   <code>FunctionProxy</code>
      */
     public BaseFunctionFactory(FunctionFactory superset,
-                               Set supportedFunctions,
-                               Map supportedAbstractFunctions) {
+                               Set<?> supportedFunctions,
+                               Map<?, ?> supportedAbstractFunctions) {
         this(superset);
 
-        Iterator it = supportedFunctions.iterator();
+        Iterator<?> it = supportedFunctions.iterator();
         while (it.hasNext()) {
             Function function = (Function)(it.next());
             LOGGER.debug("Adding supported function to the functionMap: "+function.getIdentifier());
@@ -222,11 +222,12 @@ public class BaseFunctionFactory extends FunctionFactory
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
-    public Set getSupportedFunctions() {
-        Set set = new HashSet(functionMap.keySet());
+    public Set<String> getSupportedFunctions() {
+        Set<String> set = new HashSet<String>(functionMap.keySet());
 
-        if (superset != null)
+        if (superset != null) {
             set.addAll(superset.getSupportedFunctions());
+        }
 
         return set;
     }

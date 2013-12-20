@@ -15,16 +15,10 @@
  */
 package com.thalesgroup.authzforce.audit.aspect;
 
-import java.io.StringWriter;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule;
@@ -85,7 +79,9 @@ public class AuditAspect {
 
 			audit.getRules().add(auditedRule);
 
-			AuditLogs.getInstance().addAudit(audit);
+			synchronized (audit) {
+				AuditLogs.getInstance().addAudit(audit);	
+			}			
 			break;
 
 		case POLICY:
@@ -105,7 +101,9 @@ public class AuditAspect {
 				}
 			}
 			audit.getMatchedPolicies().add(auditedPolicy);
-			AuditLogs.getInstance().addAudit(audit);
+			synchronized (audit) {
+				AuditLogs.getInstance().addAudit(audit);	
+			}	
 			break;
 
 		case ATTRIBUTE:
@@ -129,8 +127,7 @@ public class AuditAspect {
 			System.out.println(AuditLogs.getInstance().toString());
 			break;
 		default:
-			System.err.println("Type unknown: " + annotation.type());
-			;
+			LOGGER.error("Type unknown: " + annotation.type());
 		}
 	}
 
