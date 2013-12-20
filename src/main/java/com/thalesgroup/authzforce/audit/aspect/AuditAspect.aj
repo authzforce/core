@@ -126,6 +126,7 @@ public class AuditAspect {
 		// Used to display and clean the audit log pool
 		case DISPLAY:
 			LOGGER.info(AuditLogs.getInstance().toString());
+			System.out.println(AuditLogs.getInstance().toString());
 			break;
 		default:
 			System.err.println("Type unknown: " + annotation.type());
