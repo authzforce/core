@@ -139,6 +139,8 @@ public class IPv4AddressAttribute extends IPAddressAttribute
                 // there's no range, so just get the mask
                 mask = InetAddress.getByName(value.substring(maskPos + 1,
                                                              value.length()));
+                // if the range is null, then create it as unbound
+                range = new PortRange();
             }
         } else {
             // there is a range, but no mask
@@ -146,9 +148,6 @@ public class IPv4AddressAttribute extends IPAddressAttribute
             range = PortRange.getInstance(value.substring(rangePos + 1,
                                                           value.length()));
         }
-
-        // if the range is null, then create it as unbound
-        range = new PortRange();
 
         return new IPv4AddressAttribute(address, mask, range);
     }
