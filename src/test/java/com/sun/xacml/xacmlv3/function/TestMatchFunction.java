@@ -14,7 +14,6 @@ import javax.security.auth.x500.X500Principal;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -44,6 +43,12 @@ public class TestMatchFunction {
 	private static final String FUNCTION_NS = "urn:oasis:names:tc:xacml:1.0:function:";
 	private static final String FUNCTION_NS_2 = "urn:oasis:names:tc:xacml:2.0:function:";
 	private static final String FUNCTION_NS_3 = "urn:oasis:names:tc:xacml:3.0:function:";
+	
+	private static final String IP_REGEX_PATTERN = 
+			"^10\\.10\\.10\\." +
+			"([01]?\\d\\d?|2[0-4]\\d|25[0-5])" +
+			"/255\\.255\\.255\\.0" +
+			":80$";
 	
 	private static final EvaluationCtx globalContext = TestUtils.createContext(new Request());
 
@@ -353,8 +358,7 @@ public class TestMatchFunction {
 		//TEST with IPV4
 		LOGGER.info("Testing function: " + NAME_IPADDRESS_REGEXP_MATCH+", with IP V4 Address");
 
-		// FIXME: WTF is this pattern ???????
-		StringAttribute stringArg0 = new StringAttribute("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+		StringAttribute stringArg0 = new StringAttribute(IP_REGEX_PATTERN);
 		
 		IPAddressAttribute ipv4AddressGood  = null;
 		try {
@@ -371,11 +375,11 @@ public class TestMatchFunction {
 		
 		IPAddressAttribute ipv4AddressWrong  = null;
 		try {
-			byte[] ipWrongAddrByte = new byte[]{(byte)256, 10 , 10 , 10 };
-			InetAddress ipWrong = InetAddress.getByAddress(ipWrongAddrByte);
+			byte[] ipWrongAddrByte = new byte[]{(byte)192, (byte)168 , 1 , 10 };
+			InetAddress ipWrong = InetAddress.getByAddress(ipWrongAddrByte);			
 			byte[] ipWrongMaskByte = new byte[]{(byte)255, (byte)255 , (byte)255 , 0 };
 			InetAddress ipmaskWrong = InetAddress.getByAddress(ipWrongMaskByte);
-			PortRange portWrong = new PortRange(80);
+			PortRange portWrong = new PortRange(8080);
 			ipv4AddressWrong = new IPv4AddressAttribute(ipWrong,ipmaskWrong,portWrong);
 		} catch (UnknownHostException e) {
 			LOGGER.error("Exception: "+e);
