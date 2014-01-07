@@ -8,9 +8,10 @@
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<!-- WARNING: this version must be the same as the managed version (defined in POM dependencyManagement 
-		element) in parent 'authzforce' project in order for reverse dependencies (such as project 'authzforce-core-ext-utils') 
-		to stay up-to-date. So any change here must be re-done there. -->
+	<!-- WARNING: this version must be the same as the managed version (defined 
+		in POM dependencyManagement element) in parent 'authzforce' project in order 
+		for reverse dependencies (such as project 'authzforce-core-ext-utils') to 
+		stay up-to-date. So any change here must be re-done there. -->
 	<version>3.5.4-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
@@ -42,6 +43,10 @@
 			<groupId>com.thalesgroup.authzforce.core</groupId>
 			<artifactId>authzforce-model</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.ktd.scis</groupId>
+			<artifactId>oasis-xacml-model</artifactId>
+		</dependency>
 		<!-- /Authzforce dependencies -->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
@@ -67,12 +72,12 @@
 		</dependency>
 		<!-- Test dependencies -->
 		<!-- FIXME: Dependency no longer used. Remove it? -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.jvnet.jaxb2_commons</groupId> -->
-<!-- 			<artifactId>testing</artifactId> -->
-<!-- 			<version>0.4.1.5</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
+		<!-- <dependency> -->
+		<!-- <groupId>org.jvnet.jaxb2_commons</groupId> -->
+		<!-- <artifactId>testing</artifactId> -->
+		<!-- <version>0.4.1.5</version> -->
+		<!-- <scope>test</scope> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>commons-jxpath</groupId>
 			<artifactId>commons-jxpath</artifactId>
@@ -86,7 +91,8 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
-		<!-- Uncoment dependency below to use log4j as SLFJ implementation for test logs -->
+		<!-- Uncoment dependency below to use log4j as SLFJ implementation for 
+			test logs -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -97,13 +103,14 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- Uncoment dependency below to use logback as SLFJ implementation for test logs -->
+		<!-- Uncoment dependency below to use logback as SLFJ implementation for 
+			test logs -->
 		<!-- <dependency> -->
 		<!-- <groupId>ch.qos.logback</groupId> -->
 		<!-- <artifactId>logback-classic</artifactId> -->
 		<!-- <version>1.0.7</version> -->
 		<!-- <scope>test</scope> -->
-		<!-- </dependency> -->		
+		<!-- </dependency> -->
 	</dependencies>
 	<build>
 		<plugins>
