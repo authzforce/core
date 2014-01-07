@@ -11,7 +11,7 @@
 	<!-- WARNING: this version must be the same as the managed version (defined in POM dependencyManagement 
 		element) in parent 'authzforce' project in order for reverse dependencies (such as project 'authzforce-core-ext-utils') 
 		to stay up-to-date. So any change here must be re-done there. -->
-	<version>3.5.3-SNAPSHOT</version>
+	<version>3.5.4-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales</name>
@@ -64,10 +64,6 @@
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.ktd.scis</groupId>
-			<artifactId>oasis-xacml-model</artifactId>
 		</dependency>
 		<!-- Test dependencies -->
 		<!-- FIXME: Dependency no longer used. Remove it? -->

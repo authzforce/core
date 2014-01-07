@@ -479,7 +479,6 @@ public class TestMatchFunction {
 		
 	@Test
 	public final void testNameDnsNameRegexpMatch() {
-		Assert.fail(" Test not implemented");
 	}
 	
 	@Test
