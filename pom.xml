@@ -24,20 +24,20 @@
 		<copyrightOwner>Thales Services - ThereSIS</copyrightOwner>
 		<jdk.source>1.7</jdk.source>
 		<jdk.target>1.7</jdk.target>
+		<aspectj.version>1.7.4</aspectj.version>
+		<debug>false</debug>
 	</properties>
 	<dependencies>
-		<!-- Authzforce optionnal dependencies -->
-		<!-- <dependency> -->
-		<!-- <groupId>com.thalesgroup.authzforce</groupId> -->
-		<!-- <artifactId>authzforce-audit</artifactId> -->
-		<!-- <version>2.0.1</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
-			<version>1.6.11</version>
+			<version>${aspectj.version}</version>
 		</dependency>
-		<!-- /Authzforce optionnal dependencies -->
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>aspectj-maven-plugin</artifactId>
+			<version>1.5</version>
+		</dependency>
 		<!-- Authzforce dependencies -->
 		<dependency>
 			<groupId>com.thalesgroup.authzforce.core</groupId>
@@ -114,6 +114,34 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>aspectj-maven-plugin</artifactId>
+				<version>1.5</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.aspectj</groupId>
+						<artifactId>aspectjtools</artifactId>
+						<version>${aspectj.version}</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>test-compile</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<verbose>${debug}</verbose>
+					<showWeaveInfo>${debug}</showWeaveInfo>
+					<outxml>${debug}</outxml>
+					<complianceLevel>${jdk.source}</complianceLevel>
+					<source>${jdk.source}</source>
+					<target>${jdk.target}</target>
+				</configuration>
+			</plugin>
 			<!-- Maven compiler configuration -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -125,6 +153,9 @@
 							<goal>testCompile</goal>
 						</goals>
 						<configuration>
+							<verbose>${debug}</verbose>
+							<showWeaveInfo>${debug}</showWeaveInfo>
+							<outxml>${debug}</outxml>
 							<source>${jdk.source}</source>
 							<target>${jdk.target}</target>
 						</configuration>
@@ -291,17 +322,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<id>default</id>
-						<phase>compile</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
 				<executions>
@@ -344,6 +364,22 @@
 					</plugins>
 					<catalog>src/main/resources/catalog.xml</catalog>
 					<catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<attach>false</attach>
 				</configuration>
 			</plugin>
 		</plugins>
