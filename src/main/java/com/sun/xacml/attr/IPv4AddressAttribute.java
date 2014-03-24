@@ -124,6 +124,7 @@ public class IPv4AddressAttribute extends IPAddressAttribute
         if (maskPos == rangePos) {
             // the sting is just an address
             address = InetAddress.getByName(value);
+            range = new PortRange();
         } else if (maskPos != -1) {
             // there is also a mask (and maybe a range)
             address = InetAddress.getByName(value.substring(0, maskPos));
