@@ -21,6 +21,7 @@ import com.sun.xacml.ctx.Status;
  * 
  */
 @RunWith(Parameterized.class)
+@Deprecated
 public class ComparisonFunctionTest extends AbstractFunctionTest {
 
 	@Parameters(name = "{index}: {0}")
