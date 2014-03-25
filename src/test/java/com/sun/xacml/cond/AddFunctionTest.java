@@ -25,31 +25,40 @@ public class AddFunctionTest extends AbstractFunctionTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() {
-		return Arrays.asList(
+		return Arrays
+				.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-add
 				// TODO: Indeterminate case
 				new Object[] { AddFunction.NAME_INTEGER_ADD,
-						Arrays.asList(new IntegerAttribute(45)),
-						Status.STATUS_OK, new IntegerAttribute(45) },
-				new Object[] {
-						AddFunction.NAME_INTEGER_ADD,
-						Arrays.asList(new IntegerAttribute(45),
-								new IntegerAttribute(-56),
-								new IntegerAttribute(0),
-								new IntegerAttribute(3)), Status.STATUS_OK,
-						new IntegerAttribute(-8) },
+						Arrays.asList(IntegerAttribute.getInstance("45")),
+						Status.STATUS_OK, IntegerAttribute.getInstance("45") },
+						new Object[] {
+								AddFunction.NAME_INTEGER_ADD,
+								Arrays.asList(
+										IntegerAttribute.getInstance("45"),
+										IntegerAttribute.getInstance("-56"),
+										IntegerAttribute.getInstance("0"),
+										IntegerAttribute.getInstance("3")),
+								Status.STATUS_OK,
+								IntegerAttribute.getInstance("-8") },
 
-				// urn:oasis:names:tc:xacml:1.0:function:double-add
-				// TODO: Indeterminate case
-				new Object[] { AddFunction.NAME_DOUBLE_ADD,
-						Arrays.asList(new DoubleAttribute(45.734)),
-						Status.STATUS_OK, new DoubleAttribute(45.734) },
-				new Object[] {
-						AddFunction.NAME_DOUBLE_ADD,
-						Arrays.asList(new DoubleAttribute(45.734),
-								new DoubleAttribute(-56.), new DoubleAttribute(
-										0.), new DoubleAttribute(3.33)),
-						Status.STATUS_OK, new DoubleAttribute(-7.296) });
+						// urn:oasis:names:tc:xacml:1.0:function:double-add
+						// TODO: Indeterminate case
+						new Object[] {
+								AddFunction.NAME_DOUBLE_ADD,
+								Arrays.asList(DoubleAttribute
+										.getInstance("45.734")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("45.734") },
+						new Object[] {
+								AddFunction.NAME_DOUBLE_ADD,
+								Arrays.asList(
+										DoubleAttribute.getInstance("45.734"),
+										DoubleAttribute.getInstance("-56."),
+										DoubleAttribute.getInstance("0."),
+										DoubleAttribute.getInstance("3.33")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("-7.296") });
 	}
 
 	public AddFunctionTest(final String functionName,

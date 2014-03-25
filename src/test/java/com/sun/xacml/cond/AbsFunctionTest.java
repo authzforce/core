@@ -25,22 +25,31 @@ public class AbsFunctionTest extends AbstractFunctionTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() {
-		return Arrays.asList(
+		return Arrays
+				.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-abs
 				new Object[] { AbsFunction.NAME_INTEGER_ABS,
-						Arrays.asList(new IntegerAttribute(45)),
-						Status.STATUS_OK, new IntegerAttribute(45) },
-				new Object[] { AbsFunction.NAME_INTEGER_ABS,
-						Arrays.asList(new IntegerAttribute(-56)),
-						Status.STATUS_OK, new IntegerAttribute(56) },
+						Arrays.asList(IntegerAttribute.getInstance("45")),
+						Status.STATUS_OK, IntegerAttribute.getInstance("45") },
+						new Object[] {
+								AbsFunction.NAME_INTEGER_ABS,
+								Arrays.asList(IntegerAttribute
+										.getInstance("-56")), Status.STATUS_OK,
+								IntegerAttribute.getInstance("56") },
 
-				// urn:oasis:names:tc:xacml:1.0:function:double-abs
-				new Object[] { AbsFunction.NAME_DOUBLE_ABS,
-						Arrays.asList(new DoubleAttribute(45.734)),
-						Status.STATUS_OK, new DoubleAttribute(45.734) },
-				new Object[] { AbsFunction.NAME_DOUBLE_ABS, Status.STATUS_OK,
-						Arrays.asList(new DoubleAttribute(-56.)),
-						new DoubleAttribute(56.) });
+						// urn:oasis:names:tc:xacml:1.0:function:double-abs
+						new Object[] {
+								AbsFunction.NAME_DOUBLE_ABS,
+								Arrays.asList(DoubleAttribute
+										.getInstance("45.734")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("45.734") },
+						new Object[] {
+								AbsFunction.NAME_DOUBLE_ABS,
+								Status.STATUS_OK,
+								Arrays.asList(DoubleAttribute
+										.getInstance("-56.")),
+								DoubleAttribute.getInstance("56.") });
 	}
 
 	public AbsFunctionTest(final String functionName,

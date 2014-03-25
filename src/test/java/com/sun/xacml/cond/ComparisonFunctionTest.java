@@ -25,40 +25,51 @@ public class ComparisonFunctionTest extends AbstractFunctionTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() {
-		return Arrays.asList(
+		return Arrays
+				.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than
 				new Object[] {
 						ComparisonFunction.NAME_INTEGER_GREATER_THAN,
-						Arrays.asList(new IntegerAttribute(45),
-								new IntegerAttribute(44)), Status.STATUS_OK,
-						BooleanAttribute.getInstance(true) },
-				new Object[] {
-						ComparisonFunction.NAME_INTEGER_GREATER_THAN,
-						Arrays.asList(new IntegerAttribute(45),
-								new IntegerAttribute(46)), Status.STATUS_OK,
-						BooleanAttribute.getInstance(false) },
-				new Object[] {
-						ComparisonFunction.NAME_INTEGER_GREATER_THAN,
-						Arrays.asList(new IntegerAttribute(45),
-								new IntegerAttribute(45)), Status.STATUS_OK,
-						BooleanAttribute.getInstance(false) },
+						Arrays.asList(IntegerAttribute.getInstance("45"),
+								IntegerAttribute.getInstance("44")),
+						Status.STATUS_OK, BooleanAttribute.getInstance(true) },
+						new Object[] {
+								ComparisonFunction.NAME_INTEGER_GREATER_THAN,
+								Arrays.asList(
+										IntegerAttribute.getInstance("45"),
+										IntegerAttribute.getInstance("46")),
+								Status.STATUS_OK,
+								BooleanAttribute.getInstance(false) },
+						new Object[] {
+								ComparisonFunction.NAME_INTEGER_GREATER_THAN,
+								Arrays.asList(
+										IntegerAttribute.getInstance("45"),
+										IntegerAttribute.getInstance("45")),
+								Status.STATUS_OK,
+								BooleanAttribute.getInstance(false) },
 
-				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal
-				new Object[] {
-						ComparisonFunction.NAME_INTEGER_GREATER_THAN_OR_EQUAL,
-						Arrays.asList(new IntegerAttribute(45),
-								new IntegerAttribute(44)), Status.STATUS_OK,
-						BooleanAttribute.getInstance(true) },
-				new Object[] {
-						ComparisonFunction.NAME_INTEGER_GREATER_THAN_OR_EQUAL,
-						Arrays.asList(new IntegerAttribute(45),
-								new IntegerAttribute(46)), Status.STATUS_OK,
-						BooleanAttribute.getInstance(false) },
-				new Object[] {
-						ComparisonFunction.NAME_INTEGER_GREATER_THAN_OR_EQUAL,
-						Arrays.asList(new IntegerAttribute(45),
-								new IntegerAttribute(45)), Status.STATUS_OK,
-						BooleanAttribute.getInstance(true) });
+						// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal
+						new Object[] {
+								ComparisonFunction.NAME_INTEGER_GREATER_THAN_OR_EQUAL,
+								Arrays.asList(
+										IntegerAttribute.getInstance("45"),
+										IntegerAttribute.getInstance("44")),
+								Status.STATUS_OK,
+								BooleanAttribute.getInstance(true) },
+						new Object[] {
+								ComparisonFunction.NAME_INTEGER_GREATER_THAN_OR_EQUAL,
+								Arrays.asList(
+										IntegerAttribute.getInstance("45"),
+										IntegerAttribute.getInstance("46")),
+								Status.STATUS_OK,
+								BooleanAttribute.getInstance(false) },
+						new Object[] {
+								ComparisonFunction.NAME_INTEGER_GREATER_THAN_OR_EQUAL,
+								Arrays.asList(
+										IntegerAttribute.getInstance("45"),
+										IntegerAttribute.getInstance("45")),
+								Status.STATUS_OK,
+								BooleanAttribute.getInstance(true) });
 	}
 
 	public ComparisonFunctionTest(final String functionName,

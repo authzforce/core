@@ -30,27 +30,35 @@ public class StringFunctionTest extends AbstractFunctionTest {
 				// urn:oasis:names:tc:xacml:2.0:function:string-concatenate
 				new Object[] {
 						StringFunction.NAME_STRING_CONCATENATE,
-						Arrays.asList(new StringAttribute("foo"),
-								new StringAttribute("bar")), Status.STATUS_OK,
-						new StringAttribute("foobar") },
+						Arrays.asList(StringAttribute.getInstance("foo"),
+								StringAttribute.getInstance("bar")),
+						Status.STATUS_OK, StringAttribute.getInstance("foobar") },
 						new Object[] {
 								StringFunction.NAME_STRING_CONCATENATE,
-								Arrays.asList(new StringAttribute("foo"),
-										new StringAttribute(""),
-										new StringAttribute("bar")),
-								Status.STATUS_OK, new StringAttribute("foobar") },
+								Arrays.asList(
+										StringAttribute.getInstance("foo"),
+										StringAttribute.getInstance(""),
+										StringAttribute.getInstance("bar")),
+								Status.STATUS_OK,
+								StringAttribute.getInstance("foobar") },
 
 						// urn:oasis:names:tc:xacml:3.0:function:boolean-from-string
-						new Object[] { StringFunction.NAME_BOOLEAN_FROM_STRING,
-								Arrays.asList(new StringAttribute("true")),
+						new Object[] {
+								StringFunction.NAME_BOOLEAN_FROM_STRING,
+								Arrays.asList(StringAttribute
+										.getInstance("true")),
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
-						new Object[] { StringFunction.NAME_BOOLEAN_FROM_STRING,
-								Arrays.asList(new StringAttribute("false")),
+						new Object[] {
+								StringFunction.NAME_BOOLEAN_FROM_STRING,
+								Arrays.asList(StringAttribute
+										.getInstance("false")),
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(false) },
-						new Object[] { StringFunction.NAME_BOOLEAN_FROM_STRING,
-								Arrays.asList(new StringAttribute("error")),
+						new Object[] {
+								StringFunction.NAME_BOOLEAN_FROM_STRING,
+								Arrays.asList(StringAttribute
+										.getInstance("error")),
 								Status.STATUS_SYNTAX_ERROR, null });
 	}
 
