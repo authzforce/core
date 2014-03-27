@@ -44,8 +44,17 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 								DayTimeDurationAttribute.getInstance("P1DT2H")),
 						Status.STATUS_OK,
 						DateTimeAttribute.getInstance("2002-09-25T11:30:15") },
+						new Object[] {
+								NAME_DATETIME_ADD_DAYTIMEDURATION,
+								Arrays.asList(DateTimeAttribute
+										.getInstance("2002-09-24T09:30:15"),
+										DayTimeDurationAttribute
+												.getInstance("-P1DT2H")),
+								Status.STATUS_OK,
+								DateTimeAttribute
+										.getInstance("2002-09-23T07:30:15") },
 
-				// urn:oasis:names:tc:xacml:3.0:function:dateTime-add-yearMonthDuration
+						// urn:oasis:names:tc:xacml:3.0:function:dateTime-add-yearMonthDuration
 						new Object[] {
 								NAME_DATETIME_ADD_YEARMONTHDURATION,
 								Arrays.asList(DateTimeAttribute
@@ -55,6 +64,15 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								DateTimeAttribute
 										.getInstance("2003-11-24T09:30:15") },
+						new Object[] {
+								NAME_DATETIME_ADD_YEARMONTHDURATION,
+								Arrays.asList(DateTimeAttribute
+										.getInstance("2002-09-24T09:30:15"),
+										YearMonthDurationAttribute
+												.getInstance("-P1Y2M")),
+								Status.STATUS_OK,
+								DateTimeAttribute
+										.getInstance("2001-07-24T09:30:15") },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dateTime-subtract-dayTimeDuration
 						new Object[] {
@@ -66,6 +84,15 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								DateTimeAttribute
 										.getInstance("2002-09-23T07:30:15") },
+						new Object[] {
+								NAME_DATETIME_SUBTRACT_DAYTIMEDURATION,
+								Arrays.asList(DateTimeAttribute
+										.getInstance("2002-09-24T09:30:15"),
+										DayTimeDurationAttribute
+												.getInstance("-P1DT2H")),
+								Status.STATUS_OK,
+								DateTimeAttribute
+										.getInstance("2002-09-25T11:30:15") },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dateTime-subtract-yearMonthDuration
 						new Object[] {
@@ -77,6 +104,15 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								DateTimeAttribute
 										.getInstance("2001-07-24T09:30:15") },
+						new Object[] {
+								NAME_DATETIME_SUBTRACT_YEARMONTHDURATION,
+								Arrays.asList(DateTimeAttribute
+										.getInstance("2002-09-24T09:30:15"),
+										YearMonthDurationAttribute
+												.getInstance("-P1Y2M")),
+								Status.STATUS_OK,
+								DateTimeAttribute
+										.getInstance("2003-11-24T09:30:15") },
 
 						// urn:oasis:names:tc:xacml:3.0:function:date-add-yearMonthDuration
 						new Object[] {
@@ -87,6 +123,14 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 												.getInstance("P1Y2M")),
 								Status.STATUS_OK,
 								DateAttribute.getInstance("2003-11-24") },
+						new Object[] {
+								NAME_DATE_ADD_YEARMONTHDURATION,
+								Arrays.asList(DateAttribute
+										.getInstance("2002-09-24"),
+										YearMonthDurationAttribute
+												.getInstance("-P1Y2M")),
+								Status.STATUS_OK,
+								DateAttribute.getInstance("2001-07-24") },
 
 						// urn:oasis:names:tc:xacml:3.0:function:date-subtract-yearMonthDuration
 						new Object[] {
@@ -96,7 +140,15 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 										YearMonthDurationAttribute
 												.getInstance("P1Y2M")),
 								Status.STATUS_OK,
-								DateAttribute.getInstance("2001-07-24") });
+								DateAttribute.getInstance("2001-07-24") },
+						new Object[] {
+								NAME_DATE_SUBTRACT_YEARMONTHDURATION,
+								Arrays.asList(DateAttribute
+										.getInstance("2002-09-24"),
+										YearMonthDurationAttribute
+												.getInstance("-P1Y2M")),
+								Status.STATUS_OK,
+								DateAttribute.getInstance("2003-11-24") });
 	}
 
 	public DateTimeArithmeticFunctionsTest(final String functionName,
