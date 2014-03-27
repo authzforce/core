@@ -201,37 +201,115 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										IntegerAttribute.getInstance("-3")),
 								Status.STATUS_OK,
 								IntegerAttribute.getInstance("0") },
+
 						// urn:oasis:names:tc:xacml:1.0:function:double-divide
+						new Object[] {
+								NAME_DOUBLE_DIVIDE,
+								Arrays.asList(
+										DoubleAttribute.getInstance("6.5"),
+										DoubleAttribute.getInstance("2.5")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("2.6") },
+						new Object[] {
+								NAME_DOUBLE_DIVIDE,
+								Arrays.asList(
+										DoubleAttribute.getInstance("7."),
+										DoubleAttribute.getInstance("-2.")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("-3.5") },
+						new Object[] {
+								NAME_DOUBLE_DIVIDE,
+								Arrays.asList(
+										DoubleAttribute.getInstance("0."),
+										DoubleAttribute.getInstance("-3.14")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("0.") },
+
 						// urn:oasis:names:tc:xacml:1.0:function:integer-mod
+						new Object[] {
+								NAME_INTEGER_MOD,
+								Arrays.asList(
+										IntegerAttribute.getInstance("6"),
+										IntegerAttribute.getInstance("3")),
+								Status.STATUS_OK,
+								IntegerAttribute.getInstance("0") },
+						new Object[] {
+								NAME_INTEGER_MOD,
+								Arrays.asList(
+										IntegerAttribute.getInstance("7"),
+										IntegerAttribute.getInstance("3")),
+								Status.STATUS_OK,
+								IntegerAttribute.getInstance("1") },
+						new Object[] {
+								NAME_INTEGER_MOD,
+								Arrays.asList(
+										IntegerAttribute.getInstance("0"),
+										IntegerAttribute.getInstance("-3")),
+								Status.STATUS_OK,
+								IntegerAttribute.getInstance("0") },
+
 						// urn:oasis:names:tc:xacml:1.0:function:integer-abs
 						new Object[] {
 								NAME_INTEGER_ABS,
-								Arrays.asList(IntegerAttribute
-										.getInstance("45")), Status.STATUS_OK,
-								IntegerAttribute.getInstance("45") },
+								Arrays.asList(IntegerAttribute.getInstance("5")),
+								Status.STATUS_OK,
+								IntegerAttribute.getInstance("5") },
 						new Object[] {
 								NAME_INTEGER_ABS,
 								Arrays.asList(IntegerAttribute
-										.getInstance("-56")), Status.STATUS_OK,
-								IntegerAttribute.getInstance("56") },
+										.getInstance("-5")), Status.STATUS_OK,
+								IntegerAttribute.getInstance("5") },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-abs
 						new Object[] {
 								NAME_DOUBLE_ABS,
 								Arrays.asList(DoubleAttribute
-										.getInstance("45.734")),
+										.getInstance("5.25")),
 								Status.STATUS_OK,
-								DoubleAttribute.getInstance("45.734") },
+								DoubleAttribute.getInstance("5.25") },
 						new Object[] {
 								NAME_DOUBLE_ABS,
-								Status.STATUS_OK,
 								Arrays.asList(DoubleAttribute
-										.getInstance("-56.")),
-								DoubleAttribute.getInstance("56.") }
+										.getInstance("-5.")), Status.STATUS_OK,
+								DoubleAttribute.getInstance("5.") },
 
-				// urn:oasis:names:tc:xacml:1.0:function:round
-				// urn:oasis:names:tc:xacml:1.0:function:floor
-				);
+						// urn:oasis:names:tc:xacml:1.0:function:round
+						new Object[] {
+								NAME_ROUND,
+								Arrays.asList(DoubleAttribute
+										.getInstance("5.25")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("5.") },
+						new Object[] {
+								NAME_ROUND,
+								Arrays.asList(DoubleAttribute
+										.getInstance("-5.75")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("-6.") },
+						new Object[] {
+								NAME_ROUND,
+								Arrays.asList(DoubleAttribute
+										.getInstance("5.5")), Status.STATUS_OK,
+								DoubleAttribute.getInstance("6.") },
+
+						// urn:oasis:names:tc:xacml:1.0:function:floor
+						new Object[] {
+								NAME_FLOOR,
+								Arrays.asList(DoubleAttribute
+										.getInstance("5.25")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("5.") },
+						new Object[] {
+								NAME_FLOOR,
+								Arrays.asList(DoubleAttribute
+										.getInstance("-5.75")),
+								Status.STATUS_OK,
+								DoubleAttribute.getInstance("-5.") },
+						new Object[] {
+								NAME_FLOOR,
+								Arrays.asList(DoubleAttribute
+										.getInstance("5.5")), Status.STATUS_OK,
+								DoubleAttribute.getInstance("5.") });
 	}
 
 	public ArithmeticFunctionsTest(final String functionName,

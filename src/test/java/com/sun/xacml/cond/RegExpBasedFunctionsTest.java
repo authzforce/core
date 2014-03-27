@@ -26,140 +26,27 @@ import com.sun.xacml.ctx.Status;
  * 
  */
 @RunWith(Parameterized.class)
-@Deprecated
-public class MatchFunctionTest extends AbstractFunctionTest {
+public class RegExpBasedFunctionsTest extends AbstractFunctionTest {
+
+	private static final String NAME_STRING_REGEXP_MATCH = "urn:oasis:names:tc:xacml:1.0:function:string-regexp-match";
+	private static final String NAME_ANYURI_REGEXP_MATCH = "urn:oasis:names:tc:xacml:2.0:function:anyURI-regexp-match";
+	private static final String NAME_IPADDRESS_REGEXP_MATCH = "urn:oasis:names:tc:xacml:2.0:function:ipAddress-regexp-match";
+	private static final String NAME_DNSNAME_REGEXP_MATCH = "urn:oasis:names:tc:xacml:2.0:function:dnsName-regexp-match";
+	private static final String NAME_RFC822NAME_REGEXP_MATCH = "urn:oasis:names:tc:xacml:2.0:function:rfc822Name-regexp-match";
+	private static final String NAME_X500NAME_REGEXP_MATCH = "urn:oasis:names:tc:xacml:2.0:function:x500Name-regexp-match";
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() throws Exception {
 		return Arrays
 				.asList(
-				// urn:oasis:names:tc:xacml:1.0:function:x500Name-match
+				// urn:oasis:names:tc:xacml:1.0:function:string-regexp-match
 				new Object[] {
-						MatchFunction.NAME_X500NAME_MATCH,
-						Arrays.asList(
-								X500NameAttribute
-										.getInstance("O=Medico Corp,C=US"),
-								X500NameAttribute
-										.getInstance("cn=John Smith,o=Medico Corp, c=US")),
+						NAME_STRING_REGEXP_MATCH,
+						Arrays.asList(StringAttribute.getInstance("John.*"),
+								StringAttribute.getInstance("John Doe")),
 						Status.STATUS_OK, BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_X500NAME_MATCH,
-								Arrays.asList(
-										X500NameAttribute
-												.getInstance("O=Another Corp,C=US"),
-										X500NameAttribute
-												.getInstance("cn=John Smith,o=Medico Corp, c=US")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-
-						// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance("Anderson@sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance("Anderson@sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anderson@SUN.COM")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance("Anderson@sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anne.Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance("Anderson@sun.com"),
-										RFC822NameAttribute
-												.getInstance("anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance("Anderson@sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anderson@east.sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute.getInstance("sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(StringAttribute
-										.getInstance("sun.com"),
-										RFC822NameAttribute
-												.getInstance("Baxter@SUN.COM")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute.getInstance("sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anderson@east.sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance(".east.sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anderson@east.sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance(".east.sun.com"),
-										RFC822NameAttribute
-												.getInstance("anne.anderson@ISRG.EAST.SUN.COM")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								MatchFunction.NAME_RFC822NAME_MATCH,
-								Arrays.asList(
-										StringAttribute
-												.getInstance(".east.sun.com"),
-										RFC822NameAttribute
-												.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-
-						// urn:oasis:names:tc:xacml:1.0:function:string-regexp-match
-						new Object[] {
-								MatchFunction.NAME_STRING_REGEXP_MATCH,
-								Arrays.asList(
-										StringAttribute.getInstance("John.*"),
-										StringAttribute.getInstance("John Doe")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								MatchFunction.NAME_STRING_REGEXP_MATCH,
+								NAME_STRING_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute.getInstance("John.*"),
 										StringAttribute.getInstance("Jane Doe")),
@@ -168,7 +55,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 
 						// urn:oasis:names:tc:xacml:2.0:function:anyURI-regexp-match
 						new Object[] {
-								MatchFunction.NAME_ANYURI_REGEXP_MATCH,
+								NAME_ANYURI_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^http://.+"),
@@ -177,7 +64,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_ANYURI_REGEXP_MATCH,
+								NAME_ANYURI_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^http://.+"),
@@ -188,7 +75,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 
 						// urn:oasis:names:tc:xacml:2.0:function:ipAddress-regexp-match
 						new Object[] {
-								MatchFunction.NAME_IPADDRESS_REGEXP_MATCH,
+								NAME_IPADDRESS_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"),
@@ -197,7 +84,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_IPADDRESS_REGEXP_MATCH,
+								NAME_IPADDRESS_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"),
@@ -206,7 +93,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(false) },
 						new Object[] {
-								MatchFunction.NAME_IPADDRESS_REGEXP_MATCH,
+								NAME_IPADDRESS_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"),
@@ -215,7 +102,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_IPADDRESS_REGEXP_MATCH,
+								NAME_IPADDRESS_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"),
@@ -224,7 +111,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(false) },
 						new Object[] {
-								MatchFunction.NAME_IPADDRESS_REGEXP_MATCH,
+								NAME_IPADDRESS_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"),
@@ -233,7 +120,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_IPADDRESS_REGEXP_MATCH,
+								NAME_IPADDRESS_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"),
@@ -244,7 +131,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 
 						// urn:oasis:names:tc:xacml:2.0:function:dnsName-regexp-match
 						new Object[] {
-								MatchFunction.NAME_DNSNAME_REGEXP_MATCH,
+								NAME_DNSNAME_REGEXP_MATCH,
 								Arrays.asList(StringAttribute
 										.getInstance("\\.com$"),
 										DNSNameAttribute
@@ -252,7 +139,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_DNSNAME_REGEXP_MATCH,
+								NAME_DNSNAME_REGEXP_MATCH,
 								Arrays.asList(StringAttribute
 										.getInstance("\\.org$"),
 										DNSNameAttribute
@@ -262,7 +149,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 
 						// urn:oasis:names:tc:xacml:2.0:function:rfc822Name-regexp-match
 						new Object[] {
-								MatchFunction.NAME_RFC822NAME_REGEXP_MATCH,
+								NAME_RFC822NAME_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^[a-zA-Z0-9]+\\.[a-zA-Z0-9]+@.+"),
@@ -271,7 +158,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_RFC822NAME_REGEXP_MATCH,
+								NAME_RFC822NAME_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance("^[a-zA-Z0-9]+\\.[a-zA-Z0-9]+@.+"),
@@ -282,7 +169,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 
 						// urn:oasis:names:tc:xacml:2.0:function:x500Name-regexp-match
 						new Object[] {
-								MatchFunction.NAME_X500NAME_REGEXP_MATCH,
+								NAME_X500NAME_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance(".*dc=example,dc=com"),
@@ -291,7 +178,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								Status.STATUS_OK,
 								BooleanAttribute.getInstance(true) },
 						new Object[] {
-								MatchFunction.NAME_X500NAME_REGEXP_MATCH,
+								NAME_X500NAME_REGEXP_MATCH,
 								Arrays.asList(
 										StringAttribute
 												.getInstance(".*dc=example,dc=com"),
@@ -301,7 +188,7 @@ public class MatchFunctionTest extends AbstractFunctionTest {
 								BooleanAttribute.getInstance(false) });
 	}
 
-	public MatchFunctionTest(final String functionName,
+	public RegExpBasedFunctionsTest(final String functionName,
 			final List<Evaluatable> inputs, final String expectedStatus,
 			final AttributeValue expectedValue) {
 		super(functionName, inputs, expectedStatus, expectedValue);
