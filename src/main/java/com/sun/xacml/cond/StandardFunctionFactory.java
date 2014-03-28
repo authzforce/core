@@ -158,7 +158,7 @@ public class StandardFunctionFactory extends BaseFunctionFactory
         targetFunctions.addAll((new MatchFunctionCluster()).getSupportedFunctions());
         
         if(LOGGER.isDebugEnabled()) {
-        	LOGGER.debug("Added Target functions: {}", StringUtils.join(targetFunctions.toArray(), ','));
+        	LOGGER.debug("Added Target functions: \n{}", StringUtils.join(targetFunctions.toArray(), '\n'));
         }
 
         targetAbstractFunctions = new HashMap();
@@ -188,6 +188,10 @@ public class StandardFunctionFactory extends BaseFunctionFactory
         // add condition functions from HigherOrderFunction
         conditionFunctions.addAll((new HigherOrderFunctionCluster()).
                                   getSupportedFunctions());
+        
+        if(LOGGER.isDebugEnabled()) {
+        	LOGGER.debug("Added Conditions functions: \n{}", StringUtils.join(conditionFunctions.toArray(), '\n'));
+        }
 
         conditionAbstractFunctions = new HashMap(targetAbstractFunctions);
     }
@@ -248,6 +252,9 @@ public class StandardFunctionFactory extends BaseFunctionFactory
         generalFunctions.addAll((new StringFunctionCluster()).
                                 getSupportedFunctions());
 
+        if(LOGGER.isDebugEnabled()) {
+        	LOGGER.debug("Added General functions: \n{}", StringUtils.join(generalFunctions.toArray(), '\n'));
+        }
 
         generalAbstractFunctions = new HashMap(conditionAbstractFunctions);
 

@@ -66,8 +66,9 @@ public class StringFunctionCluster implements FunctionCluster
             iterator();
 
         LOGGER.debug("Initialize String function");
-        while (it.hasNext())
+        while (it.hasNext()) {
             set.add(new StringFunction((String)(it.next())));
+        }
 
         set.add(new URLStringCatFunction());
 

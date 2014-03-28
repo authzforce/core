@@ -358,13 +358,13 @@ public class PDP
 //			}
 //			for (Request Request : requests)
 //			{
-				ResponseCtx response = this.evaluate(requestList);
+				ResponseCtx response = this.evaluatePrivate(requestList);
 				responses.add(response);
 			}
 		}
 
 		return responses;
-	}
+	}	
 
 	/**
 	 * Attempts to evaluate the request against the policies known to this PDP. This is really the
@@ -379,8 +379,15 @@ public class PDP
 	 *            the request to evaluate
 	 * 
 	 * @return a response paired to the request
+	 * 
+	 * @deprecated Use evaluateList instead
 	 */
-	public ResponseCtx evaluate(Request request)
+	@Audit(type = Audit.Type.DISPLAY)
+	public ResponseCtx evaluate(Request request) {
+		return evaluatePrivate(request);
+	}
+	
+	private ResponseCtx evaluatePrivate(Request request)
 	{
 		String hash = "";
 

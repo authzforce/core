@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.AnnotationIntrospector;
@@ -56,10 +57,10 @@ public final class AuditLogs {
 
 	protected static volatile AuditLogs INSTANCE;
 
-	protected static HashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog> audits;
+	protected static ConcurrentHashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog> audits;
 
 	private AuditLogs() {
-		audits = new HashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog>();
+		audits = new ConcurrentHashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog>();
 	}
 
 	public synchronized static AuditLogs getInstance() {
@@ -87,7 +88,7 @@ public final class AuditLogs {
 	public synchronized static void addAudit(
 			com.thalesgroup.authzforce.audit.schema.pdp.AuditLog audit) {
 		if (audits == null) {
-			audits = new HashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog>();
+			audits = new ConcurrentHashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog>();
 		}
 		try {
 			MessageDigest digest = MessageDigest.getInstance(HASH_ALG);

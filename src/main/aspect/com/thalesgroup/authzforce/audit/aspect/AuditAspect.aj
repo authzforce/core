@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2013 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,16 +15,10 @@
  */
 package com.thalesgroup.authzforce.audit.aspect;
 
-import java.io.StringWriter;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule;
@@ -85,7 +79,9 @@ public class AuditAspect {
 
 			audit.getRules().add(auditedRule);
 
-			AuditLogs.getInstance().addAudit(audit);
+			synchronized (audit) {
+				AuditLogs.getInstance().addAudit(audit);	
+			}			
 			break;
 
 		case POLICY:
@@ -105,7 +101,9 @@ public class AuditAspect {
 				}
 			}
 			audit.getMatchedPolicies().add(auditedPolicy);
-			AuditLogs.getInstance().addAudit(audit);
+			synchronized (audit) {
+				AuditLogs.getInstance().addAudit(audit);	
+			}	
 			break;
 
 		case ATTRIBUTE:
@@ -126,11 +124,9 @@ public class AuditAspect {
 		// Used to display and clean the audit log pool
 		case DISPLAY:
 			LOGGER.info(AuditLogs.getInstance().toString());
-			System.out.println(AuditLogs.getInstance().toString());
 			break;
 		default:
-			System.err.println("Type unknown: " + annotation.type());
-			;
+			LOGGER.error("Type unknown: " + annotation.type());
 		}
 	}
 
