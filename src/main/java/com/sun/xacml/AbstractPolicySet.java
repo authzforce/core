@@ -769,50 +769,50 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * @param indenter
 	 *            an object that creates indentation strings
 	 */
-	protected void encodeCommonElements(OutputStream output, Indenter indenter)
-	{
-		Iterator it = childElements.iterator();
-		while (it.hasNext())
-		{
-			((CombinerElement) (it.next())).encode(output, indenter);
-		}
-
-		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
-		{
-			PrintStream out = new PrintStream(output);
-			String indent = indenter.makeString();
-
-			out.println(indent + "<Obligations>");
-			indenter.in();
-
-			it = obligationExpressions.getObligationExpressions().iterator();
-			while (it.hasNext())
-			{
-				((Obligation) (it.next())).encode(output, indenter);
-			}
-
-			out.println(indent + "</Obligations>");
-			indenter.out();
-		}
-
-		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
-		{
-			PrintStream out = new PrintStream(output);
-			String indent = indenter.makeString();
-
-			out.println(indent + "<AssociatedAdvice>");
-			indenter.in();
-
-			it = adviceExpressions.getAdviceExpressions().iterator();
-			while (it.hasNext())
-			{
-				((Obligation) (it.next())).encode(output, indenter);
-			}
-
-			out.println(indent + "</AssociatedAdvice>");
-			indenter.out();
-		}
-	}
+//	protected void encodeCommonElements(OutputStream output, Indenter indenter)
+//	{
+//		Iterator it = childElements.iterator();
+//		while (it.hasNext())
+//		{
+//			((CombinerElement) (it.next())).encode(output, indenter);
+//		}
+//
+//		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
+//		{
+//			PrintStream out = new PrintStream(output);
+//			String indent = indenter.makeString();
+//
+//			out.println(indent + "<Obligations>");
+//			indenter.in();
+//
+//			it = obligationExpressions.getObligationExpressions().iterator();
+//			while (it.hasNext())
+//			{
+//				((Obligation) (it.next())).encode(output, indenter);
+//			}
+//
+//			out.println(indent + "</Obligations>");
+//			indenter.out();
+//		}
+//
+//		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
+//		{
+//			PrintStream out = new PrintStream(output);
+//			String indent = indenter.makeString();
+//
+//			out.println(indent + "<AssociatedAdvice>");
+//			indenter.in();
+//
+//			it = adviceExpressions.getAdviceExpressions().iterator();
+//			while (it.hasNext())
+//			{
+//				((Obligation) (it.next())).encode(output, indenter);
+//			}
+//
+//			out.println(indent + "</AssociatedAdvice>");
+//			indenter.out();
+//		}
+//	}
 
 	@Override
 	public String toString()

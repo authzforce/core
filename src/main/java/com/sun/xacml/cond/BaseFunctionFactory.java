@@ -139,7 +139,7 @@ public class BaseFunctionFactory extends FunctionFactory
         Iterator it = supportedFunctions.iterator();
         while (it.hasNext()) {
             Function function = (Function)(it.next());
-            LOGGER.debug("Adding supported function to the functionMap: "+function.getIdentifier());
+            LOGGER.debug("Adding supported function to the functionMap: {}", function.getIdentifier());
             functionMap.put(function.getIdentifier().toString(), function);
         }
 
@@ -148,7 +148,7 @@ public class BaseFunctionFactory extends FunctionFactory
             URI id = (URI)(it.next());
             FunctionProxy proxy =
                 (FunctionProxy)(supportedAbstractFunctions.get(id));
-            LOGGER.debug("Adding abstract function to the functionMap: "+id.toString());
+            LOGGER.debug("Adding abstract function to the functionMap: {}", id);
             functionMap.put(id.toString(), proxy);
         }
     }

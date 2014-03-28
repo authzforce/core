@@ -3,14 +3,9 @@ package com.thalesgroup.authzforce.pdp.core.test.impl;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -26,13 +21,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.PDP;
-import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ctx.ResponseCtx;
-import com.sun.xacml.finder.PolicyFinder;
-import com.sun.xacml.finder.PolicyFinderModule;
-import com.sun.xacml.support.finder.FilePolicyModule;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestConstants;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
 /**
@@ -96,7 +85,7 @@ public class ConformanceV3 {
 				policyNumber = Integer.toString(numTest);
 			}
 
-			LOGGER.debug("Conformance Test IIIA" + policyNumber + " is started");
+			LOGGER.debug("Conformance Test IIIA{} is started", policyNumber);
 
 			request = TestUtils.createRequest(ROOT_DIRECTORY,
 					VERSION_DIRECTORY, "IIIA" + policyNumber
