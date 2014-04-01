@@ -13,8 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.sun.xacml.attr.DoubleAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.ctx.Status;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -47,14 +46,14 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 						NAME_INTEGER_ADD,
 						Arrays.asList(IntegerAttribute.getInstance("2"),
 								IntegerAttribute.getInstance("1")),
-						Status.STATUS_OK, IntegerAttribute.getInstance("3") },
+						new EvaluationResult(IntegerAttribute.getInstance("3")) },
 						new Object[] {
 								NAME_INTEGER_ADD,
 								Arrays.asList(
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("-1")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("1") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("1")) },
 						new Object[] {
 								NAME_INTEGER_ADD,
 								Arrays.asList(
@@ -62,8 +61,8 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										IntegerAttribute.getInstance("-1"),
 										IntegerAttribute.getInstance("0"),
 										IntegerAttribute.getInstance("1")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("2") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("2")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-add
 						new Object[] {
@@ -71,15 +70,15 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										DoubleAttribute.getInstance("1.5"),
 										DoubleAttribute.getInstance("2.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("4.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("4.")) },
 						new Object[] {
 								NAME_DOUBLE_ADD,
 								Arrays.asList(
 										DoubleAttribute.getInstance("1.5"),
 										DoubleAttribute.getInstance("-2.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("-1.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("-1.")) },
 						new Object[] {
 								NAME_DOUBLE_ADD,
 								Arrays.asList(
@@ -87,8 +86,8 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										DoubleAttribute.getInstance("-2.75"),
 										DoubleAttribute.getInstance("0."),
 										DoubleAttribute.getInstance("2.")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("0.5") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("0.5")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-subtract
 						new Object[] {
@@ -96,15 +95,15 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("1")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("1") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("1")) },
 						new Object[] {
 								NAME_INTEGER_SUBTRACT,
 								Arrays.asList(
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("-1")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("3") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("3")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-subtract
 						new Object[] {
@@ -112,15 +111,15 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										DoubleAttribute.getInstance("1.5"),
 										DoubleAttribute.getInstance("2.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("-1.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("-1.")) },
 						new Object[] {
 								NAME_DOUBLE_SUBTRACT,
 								Arrays.asList(
 										DoubleAttribute.getInstance("1.5"),
 										DoubleAttribute.getInstance("-2.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("4.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("4.")) },
 						new Object[] {
 								NAME_DOUBLE_SUBTRACT,
 								Arrays.asList(
@@ -128,8 +127,8 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										DoubleAttribute.getInstance("-2.75"),
 										DoubleAttribute.getInstance("0."),
 										DoubleAttribute.getInstance("1.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("2.5") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("2.5")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-multiply
 						new Object[] {
@@ -137,23 +136,23 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("3")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("6") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("6")) },
 						new Object[] {
 								NAME_INTEGER_MULTIPLY,
 								Arrays.asList(
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("0")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("0") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("0")) },
 						new Object[] {
 								NAME_INTEGER_MULTIPLY,
 								Arrays.asList(
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("-1"),
 										IntegerAttribute.getInstance("1")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("-2") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("-2")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-multiply
 						new Object[] {
@@ -161,23 +160,23 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										DoubleAttribute.getInstance("1.5"),
 										DoubleAttribute.getInstance("2.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("3.75") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("3.75")) },
 						new Object[] {
 								NAME_DOUBLE_MULTIPLY,
 								Arrays.asList(
 										DoubleAttribute.getInstance("1.5"),
 										DoubleAttribute.getInstance("0")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("0") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("0")) },
 						new Object[] {
 								NAME_DOUBLE_MULTIPLY,
 								Arrays.asList(
 										DoubleAttribute.getInstance("1.25"),
 										DoubleAttribute.getInstance("-2.75"),
 										DoubleAttribute.getInstance("1.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("-5.15625") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("-5.15625")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-divide
 						new Object[] {
@@ -185,22 +184,22 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										IntegerAttribute.getInstance("6"),
 										IntegerAttribute.getInstance("3")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("2") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("2")) },
 						new Object[] {
 								NAME_INTEGER_DIVIDE,
 								Arrays.asList(
 										IntegerAttribute.getInstance("7"),
 										IntegerAttribute.getInstance("-3")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("-2") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("-2")) },
 						new Object[] {
 								NAME_INTEGER_DIVIDE,
 								Arrays.asList(
 										IntegerAttribute.getInstance("0"),
 										IntegerAttribute.getInstance("-3")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("0") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("0")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-divide
 						new Object[] {
@@ -208,22 +207,22 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										DoubleAttribute.getInstance("6.5"),
 										DoubleAttribute.getInstance("2.5")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("2.6") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("2.6")) },
 						new Object[] {
 								NAME_DOUBLE_DIVIDE,
 								Arrays.asList(
 										DoubleAttribute.getInstance("7."),
 										DoubleAttribute.getInstance("-2.")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("-3.5") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("-3.5")) },
 						new Object[] {
 								NAME_DOUBLE_DIVIDE,
 								Arrays.asList(
 										DoubleAttribute.getInstance("0."),
 										DoubleAttribute.getInstance("-3.14")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("0.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("0.")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-mod
 						new Object[] {
@@ -231,91 +230,95 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										IntegerAttribute.getInstance("6"),
 										IntegerAttribute.getInstance("3")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("0") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("0")) },
 						new Object[] {
 								NAME_INTEGER_MOD,
 								Arrays.asList(
 										IntegerAttribute.getInstance("7"),
 										IntegerAttribute.getInstance("3")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("1") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("1")) },
 						new Object[] {
 								NAME_INTEGER_MOD,
 								Arrays.asList(
 										IntegerAttribute.getInstance("0"),
 										IntegerAttribute.getInstance("-3")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("0") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("0")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-abs
 						new Object[] {
 								NAME_INTEGER_ABS,
 								Arrays.asList(IntegerAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("5") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("5")) },
 						new Object[] {
 								NAME_INTEGER_ABS,
 								Arrays.asList(IntegerAttribute
-										.getInstance("-5")), Status.STATUS_OK,
-								IntegerAttribute.getInstance("5") },
+										.getInstance("-5")),
+								new EvaluationResult(IntegerAttribute
+										.getInstance("5")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-abs
 						new Object[] {
 								NAME_DOUBLE_ABS,
 								Arrays.asList(DoubleAttribute
 										.getInstance("5.25")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("5.25") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("5.25")) },
 						new Object[] {
 								NAME_DOUBLE_ABS,
 								Arrays.asList(DoubleAttribute
-										.getInstance("-5.")), Status.STATUS_OK,
-								DoubleAttribute.getInstance("5.") },
+										.getInstance("-5.")),
+								new EvaluationResult(DoubleAttribute
+										.getInstance("5.")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:round
 						new Object[] {
 								NAME_ROUND,
 								Arrays.asList(DoubleAttribute
 										.getInstance("5.25")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("5.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("5.")) },
 						new Object[] {
 								NAME_ROUND,
 								Arrays.asList(DoubleAttribute
 										.getInstance("-5.75")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("-6.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("-6.")) },
 						new Object[] {
 								NAME_ROUND,
 								Arrays.asList(DoubleAttribute
-										.getInstance("5.5")), Status.STATUS_OK,
-								DoubleAttribute.getInstance("6.") },
+										.getInstance("5.5")),
+								new EvaluationResult(DoubleAttribute
+										.getInstance("6.")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:floor
 						new Object[] {
 								NAME_FLOOR,
 								Arrays.asList(DoubleAttribute
 										.getInstance("5.25")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("5.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("5.")) },
 						new Object[] {
 								NAME_FLOOR,
 								Arrays.asList(DoubleAttribute
 										.getInstance("-5.75")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("-5.") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("-5.")) },
 						new Object[] {
 								NAME_FLOOR,
 								Arrays.asList(DoubleAttribute
-										.getInstance("5.5")), Status.STATUS_OK,
-								DoubleAttribute.getInstance("5.") });
+										.getInstance("5.5")),
+								new EvaluationResult(DoubleAttribute
+										.getInstance("5.")) });
 	}
 
-	public ArithmeticFunctionsTest(final String functionName,
-			final List<Evaluatable> inputs, final String expectedStatus,
-			final AttributeValue expectedValue) {
-		super(functionName, inputs, expectedStatus, expectedValue);
+	public ArithmeticFunctionsTest(String functionName,
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
+			throws Exception {
+		super(functionName, inputs, expectedResult);
 	}
 
 }

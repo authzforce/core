@@ -15,8 +15,7 @@ import com.sun.xacml.attr.DateAttribute;
 import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.DayTimeDurationAttribute;
 import com.sun.xacml.attr.YearMonthDurationAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.ctx.Status;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -42,17 +41,16 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 						Arrays.asList(DateTimeAttribute
 								.getInstance("2002-09-24T09:30:15"),
 								DayTimeDurationAttribute.getInstance("P1DT2H")),
-						Status.STATUS_OK,
-						DateTimeAttribute.getInstance("2002-09-25T11:30:15") },
+						new EvaluationResult(DateTimeAttribute
+								.getInstance("2002-09-25T11:30:15")) },
 						new Object[] {
 								NAME_DATETIME_ADD_DAYTIMEDURATION,
 								Arrays.asList(DateTimeAttribute
 										.getInstance("2002-09-24T09:30:15"),
 										DayTimeDurationAttribute
 												.getInstance("-P1DT2H")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2002-09-23T07:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2002-09-23T07:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dateTime-add-yearMonthDuration
 						new Object[] {
@@ -61,18 +59,16 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 										.getInstance("2002-09-24T09:30:15"),
 										YearMonthDurationAttribute
 												.getInstance("P1Y2M")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2003-11-24T09:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2003-11-24T09:30:15")) },
 						new Object[] {
 								NAME_DATETIME_ADD_YEARMONTHDURATION,
 								Arrays.asList(DateTimeAttribute
 										.getInstance("2002-09-24T09:30:15"),
 										YearMonthDurationAttribute
 												.getInstance("-P1Y2M")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2001-07-24T09:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2001-07-24T09:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dateTime-subtract-dayTimeDuration
 						new Object[] {
@@ -81,18 +77,16 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 										.getInstance("2002-09-24T09:30:15"),
 										DayTimeDurationAttribute
 												.getInstance("P1DT2H")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2002-09-23T07:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2002-09-23T07:30:15")) },
 						new Object[] {
 								NAME_DATETIME_SUBTRACT_DAYTIMEDURATION,
 								Arrays.asList(DateTimeAttribute
 										.getInstance("2002-09-24T09:30:15"),
 										DayTimeDurationAttribute
 												.getInstance("-P1DT2H")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2002-09-25T11:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2002-09-25T11:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dateTime-subtract-yearMonthDuration
 						new Object[] {
@@ -101,18 +95,16 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 										.getInstance("2002-09-24T09:30:15"),
 										YearMonthDurationAttribute
 												.getInstance("P1Y2M")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2001-07-24T09:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2001-07-24T09:30:15")) },
 						new Object[] {
 								NAME_DATETIME_SUBTRACT_YEARMONTHDURATION,
 								Arrays.asList(DateTimeAttribute
 										.getInstance("2002-09-24T09:30:15"),
 										YearMonthDurationAttribute
 												.getInstance("-P1Y2M")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2003-11-24T09:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2003-11-24T09:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:date-add-yearMonthDuration
 						new Object[] {
@@ -121,16 +113,16 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 										.getInstance("2002-09-24"),
 										YearMonthDurationAttribute
 												.getInstance("P1Y2M")),
-								Status.STATUS_OK,
-								DateAttribute.getInstance("2003-11-24") },
+								new EvaluationResult(DateAttribute
+										.getInstance("2003-11-24")) },
 						new Object[] {
 								NAME_DATE_ADD_YEARMONTHDURATION,
 								Arrays.asList(DateAttribute
 										.getInstance("2002-09-24"),
 										YearMonthDurationAttribute
 												.getInstance("-P1Y2M")),
-								Status.STATUS_OK,
-								DateAttribute.getInstance("2001-07-24") },
+								new EvaluationResult(DateAttribute
+										.getInstance("2001-07-24")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:date-subtract-yearMonthDuration
 						new Object[] {
@@ -139,22 +131,22 @@ public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
 										.getInstance("2002-09-24"),
 										YearMonthDurationAttribute
 												.getInstance("P1Y2M")),
-								Status.STATUS_OK,
-								DateAttribute.getInstance("2001-07-24") },
+								new EvaluationResult(DateAttribute
+										.getInstance("2001-07-24")) },
 						new Object[] {
 								NAME_DATE_SUBTRACT_YEARMONTHDURATION,
 								Arrays.asList(DateAttribute
 										.getInstance("2002-09-24"),
 										YearMonthDurationAttribute
 												.getInstance("-P1Y2M")),
-								Status.STATUS_OK,
-								DateAttribute.getInstance("2003-11-24") });
+								new EvaluationResult(DateAttribute
+										.getInstance("2003-11-24")) });
 	}
 
-	public DateTimeArithmeticFunctionsTest(final String functionName,
-			final List<Evaluatable> inputs, final String expectedStatus,
-			final AttributeValue expectedValue) {
-		super(functionName, inputs, expectedStatus, expectedValue);
+	public DateTimeArithmeticFunctionsTest(String functionName,
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
+			throws Exception {
+		super(functionName, inputs, expectedResult);
 	}
 
 }

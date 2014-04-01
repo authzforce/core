@@ -11,12 +11,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.RFC822NameAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.X500NameAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.ctx.Status;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -40,7 +38,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 										.getInstance("O=Medico Corp,C=US"),
 								X500NameAttribute
 										.getInstance("cn=John Smith,o=Medico Corp, c=US")),
-						Status.STATUS_OK, BooleanAttribute.getInstance(true) },
+						EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_X500NAME_MATCH,
 								Arrays.asList(
@@ -48,8 +46,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance("O=Another Corp,C=US"),
 										X500NameAttribute
 												.getInstance("cn=John Smith,o=Medico Corp, c=US")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match
 						new Object[] {
@@ -59,8 +56,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance("Anderson@sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
@@ -68,8 +64,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance("Anderson@sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anderson@SUN.COM")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
@@ -77,8 +72,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance("Anderson@sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anne.Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
@@ -86,8 +80,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance("Anderson@sun.com"),
 										RFC822NameAttribute
 												.getInstance("anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
@@ -95,32 +88,28 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance("Anderson@sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anderson@east.sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
 										StringAttribute.getInstance("sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(StringAttribute
 										.getInstance("sun.com"),
 										RFC822NameAttribute
 												.getInstance("Baxter@SUN.COM")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
 										StringAttribute.getInstance("sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anderson@east.sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
@@ -128,8 +117,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance(".east.sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anderson@east.sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
@@ -137,8 +125,7 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance(".east.sun.com"),
 										RFC822NameAttribute
 												.getInstance("anne.anderson@ISRG.EAST.SUN.COM")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_RFC822NAME_MATCH,
 								Arrays.asList(
@@ -146,14 +133,12 @@ public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
 												.getInstance(".east.sun.com"),
 										RFC822NameAttribute
 												.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) });
+								EvaluationResult.getInstance(false) });
 	}
 
-	public SpecialMatchFunctionsTest(final String functionName,
-			final List<Evaluatable> inputs, final String expectedStatus,
-			final AttributeValue expectedValue) {
-		super(functionName, inputs, expectedStatus, expectedValue);
+	public SpecialMatchFunctionsTest(String functionName,
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
+			throws Exception {
+		super(functionName, inputs, expectedResult);
 	}
-
 }

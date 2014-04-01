@@ -25,7 +25,7 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
 import com.sun.xacml.attr.X500NameAttribute;
 import com.sun.xacml.attr.YearMonthDurationAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 
 /**
@@ -80,29 +80,28 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 						NAME_STRING_CONCATENATE,
 						Arrays.asList(StringAttribute.getInstance("foo"),
 								StringAttribute.getInstance("bar")),
-						Status.STATUS_OK, StringAttribute.getInstance("foobar") },
+						new EvaluationResult(StringAttribute
+								.getInstance("foobar")) },
 						new Object[] {
 								NAME_STRING_CONCATENATE,
 								Arrays.asList(
 										StringAttribute.getInstance("foo"),
 										StringAttribute.getInstance(""),
 										StringAttribute.getInstance("bar")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("foobar") },
+								new EvaluationResult(StringAttribute
+										.getInstance("foobar")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:boolean-from-string
 						new Object[] {
 								NAME_BOOLEAN_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("true")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_BOOLEAN_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("false")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 						new Object[] {
 								NAME_BOOLEAN_FROM_STRING,
 								Arrays.asList(StringAttribute
@@ -113,232 +112,232 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 						new Object[] {
 								NAME_STRING_FROM_BOOLEAN,
 								Arrays.asList(BooleanAttribute
-										.getInstance(false)), Status.STATUS_OK,
-								StringAttribute.getInstance("false") },
+										.getInstance(false)),
+								new EvaluationResult(StringAttribute
+										.getInstance("false")) },
 						new Object[] {
 								NAME_STRING_FROM_BOOLEAN,
 								Arrays.asList(BooleanAttribute
-										.getInstance(true)), Status.STATUS_OK,
-								StringAttribute.getInstance("true") },
+										.getInstance(true)),
+								new EvaluationResult(StringAttribute
+										.getInstance("true")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:integer-from-string
 						new Object[] {
 								NAME_INTEGER_FROM_STRING,
 								Arrays.asList(StringAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("5") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("5")) },
 						new Object[] {
 								NAME_INTEGER_FROM_STRING,
 								Arrays.asList(StringAttribute.getInstance("-5")),
-								Status.STATUS_OK,
-								IntegerAttribute.getInstance("-5") },
+								new EvaluationResult(IntegerAttribute
+										.getInstance("-5")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-integer
 						new Object[] {
 								NAME_STRING_FROM_INTEGER,
 								Arrays.asList(IntegerAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("5") },
+								new EvaluationResult(StringAttribute
+										.getInstance("5")) },
 						new Object[] {
 								NAME_STRING_FROM_INTEGER,
 								Arrays.asList(IntegerAttribute
-										.getInstance("-5")), Status.STATUS_OK,
-								StringAttribute.getInstance("-5") },
+										.getInstance("-5")),
+								new EvaluationResult(StringAttribute
+										.getInstance("-5")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:double-from-string
 						new Object[] {
 								NAME_DOUBLE_FROM_STRING,
 								Arrays.asList(StringAttribute
-										.getInstance("5.2")), Status.STATUS_OK,
-								DoubleAttribute.getInstance("5.2") },
+										.getInstance("5.2")),
+								new EvaluationResult(DoubleAttribute
+										.getInstance("5.2")) },
 						new Object[] {
 								NAME_DOUBLE_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("-5.2")),
-								Status.STATUS_OK,
-								DoubleAttribute.getInstance("-5.2") },
+								new EvaluationResult(DoubleAttribute
+										.getInstance("-5.2")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-double
 						new Object[] {
 								NAME_STRING_FROM_DOUBLE,
 								Arrays.asList(DoubleAttribute
-										.getInstance("5.2")), Status.STATUS_OK,
-								StringAttribute.getInstance("5.2") },
+										.getInstance("5.2")),
+								new EvaluationResult(StringAttribute
+										.getInstance("5.2")) },
 						new Object[] {
 								NAME_STRING_FROM_DOUBLE,
 								Arrays.asList(DoubleAttribute
 										.getInstance("-5.2")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("-5.2") },
+								new EvaluationResult(StringAttribute
+										.getInstance("-5.2")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:time-from-string
 						new Object[] {
 								NAME_TIME_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("09:30:15")),
-								Status.STATUS_OK,
-								TimeAttribute.getInstance("09:30:15") },
+								new EvaluationResult(TimeAttribute
+										.getInstance("09:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-time
 						new Object[] {
 								NAME_STRING_FROM_TIME,
 								Arrays.asList(TimeAttribute
 										.getInstance("09:30:15")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("09:30:15") },
+								new EvaluationResult(StringAttribute
+										.getInstance("09:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:date-from-string
 						new Object[] {
 								NAME_DATE_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("2002-09-24")),
-								Status.STATUS_OK,
-								DateAttribute.getInstance("2002-09-24") },
+								new EvaluationResult(DateAttribute
+										.getInstance("2002-09-24")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-date
 						new Object[] {
 								NAME_STRING_FROM_DATE,
 								Arrays.asList(DateAttribute
 										.getInstance("2002-09-24")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("2002-09-24") },
+								new EvaluationResult(StringAttribute
+										.getInstance("2002-09-24")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dateTime-from-string
 						new Object[] {
 								NAME_DATETIME_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("2002-09-24T09:30:15")),
-								Status.STATUS_OK,
-								DateTimeAttribute
-										.getInstance("2002-09-24T09:30:15") },
+								new EvaluationResult(DateTimeAttribute
+										.getInstance("2002-09-24T09:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-dateTime
 						new Object[] {
 								NAME_STRING_FROM_DATETIME,
 								Arrays.asList(DateTimeAttribute
 										.getInstance("2002-09-24T09:30:15")),
-								Status.STATUS_OK,
-								StringAttribute
-										.getInstance("2002-09-24T09:30:15") },
+								new EvaluationResult(StringAttribute
+										.getInstance("2002-09-24T09:30:15")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:anyURI-from-string
 						new Object[] {
 								NAME_ANYURI_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								AnyURIAttribute
-										.getInstance("http://www.example.com") },
+								new EvaluationResult(AnyURIAttribute
+										.getInstance("http://www.example.com")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-anyURI
 						new Object[] {
 								NAME_STRING_FROM_ANYURI,
 								Arrays.asList(AnyURIAttribute
 										.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								StringAttribute
-										.getInstance("http://www.example.com") },
+								new EvaluationResult(StringAttribute
+										.getInstance("http://www.example.com")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-from-string
 						new Object[] {
 								NAME_DAYTIMEDURATION_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("P1DT2H")),
-								Status.STATUS_OK,
-								DayTimeDurationAttribute.getInstance("P1DT2H") },
+								new EvaluationResult(DayTimeDurationAttribute
+										.getInstance("P1DT2H")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-dayTimeDuration
 						new Object[] {
 								NAME_STRING_FROM_DAYTIMEDURATION,
 								Arrays.asList(DayTimeDurationAttribute
 										.getInstance("P1DT2H")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("P1DT2H") },
+								new EvaluationResult(StringAttribute
+										.getInstance("P1DT2H")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:yearMonthDuration-from-string
 						new Object[] {
 								NAME_YEARMONTHDURATION_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("P1Y2M")),
-								Status.STATUS_OK,
-								YearMonthDurationAttribute.getInstance("P1Y2M") },
+								new EvaluationResult(YearMonthDurationAttribute
+										.getInstance("P1Y2M")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-yearMonthDuration
 						new Object[] {
 								NAME_STRING_FROM_YEARMONTHDURATION,
 								Arrays.asList(YearMonthDurationAttribute
 										.getInstance("P1Y2M")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("P1Y2M") },
+								new EvaluationResult(StringAttribute
+										.getInstance("P1Y2M")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:x500Name-from-string
 						new Object[] {
 								NAME_X500NAME_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("cn=John Smith, o=Medico Corp, c=US")),
-								Status.STATUS_OK,
-								X500NameAttribute
-										.getInstance("cn=John Smith, o=Medico Corp, c=US") },
+								new EvaluationResult(
+										X500NameAttribute
+												.getInstance("cn=John Smith, o=Medico Corp, c=US")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-x500Name
 						new Object[] {
 								NAME_STRING_FROM_X500NAME,
 								Arrays.asList(X500NameAttribute
 										.getInstance("cn=John Smith, o=Medico Corp, c=US")),
-								Status.STATUS_OK,
-								StringAttribute
-										.getInstance("cn=John Smith, o=Medico Corp, c=US") },
+								new EvaluationResult(
+										StringAttribute
+												.getInstance("cn=John Smith, o=Medico Corp, c=US")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:rfc822Name-from-string
 						new Object[] {
 								NAME_RFC822NAME_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								RFC822NameAttribute
-										.getInstance("Anderson@sun.com") },
+								new EvaluationResult(RFC822NameAttribute
+										.getInstance("Anderson@sun.com")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-rfc822Name
 						new Object[] {
 								NAME_STRING_FROM_RFC822NAME,
 								Arrays.asList(RFC822NameAttribute
 										.getInstance("Anderson@sun.com")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("Anderson@sun.com") },
+								new EvaluationResult(StringAttribute
+										.getInstance("Anderson@sun.com")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:ipAddress-from-string
 						new Object[] {
 								NAME_IPADDRESS_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("192.168.1.10/255.255.255.0:8080")),
-								Status.STATUS_OK,
-								IPAddressAttribute
-										.getInstance("192.168.1.10/255.255.255.0:8080") },
+								new EvaluationResult(
+										IPAddressAttribute
+												.getInstance("192.168.1.10/255.255.255.0:8080")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-ipAddress
 						new Object[] {
 								NAME_STRING_FROM_IPADDRESS,
 								Arrays.asList(IPAddressAttribute
 										.getInstance("192.168.1.10/255.255.255.0:8080")),
-								Status.STATUS_OK,
-								StringAttribute
-										.getInstance("192.168.1.10/255.255.255.0:8080") },
+								new EvaluationResult(
+										StringAttribute
+												.getInstance("192.168.1.10/255.255.255.0:8080")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dnsName-from-string
 						new Object[] {
 								NAME_DNSNAME_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("thalesgroup.com")),
-								Status.STATUS_OK,
-								DNSNameAttribute.getInstance("thalesgroup.com") },
+								new EvaluationResult(DNSNameAttribute
+										.getInstance("thalesgroup.com")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-dnsName
 						new Object[] {
 								NAME_STRING_FROM_DNSNAME,
 								Arrays.asList(DNSNameAttribute
 										.getInstance("thalesgroup.com")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("thalesgroup.com") },
+								new EvaluationResult(StringAttribute
+										.getInstance("thalesgroup.com")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-starts-with
 						new Object[] {
@@ -346,15 +345,13 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(StringAttribute
 										.getInstance("First"), StringAttribute
 										.getInstance("First test")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_STRING_STARTS_WITH,
 								Arrays.asList(StringAttribute
 										.getInstance("test"), StringAttribute
 										.getInstance("First test")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:anyURI-starts-with
 						new Object[] {
@@ -362,15 +359,13 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(StringAttribute
 										.getInstance("http"), AnyURIAttribute
 										.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_ANYURI_STARTS_WITH,
 								Arrays.asList(StringAttribute
 										.getInstance(".com"), AnyURIAttribute
 										.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-ends-with
 						new Object[] {
@@ -378,15 +373,13 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(StringAttribute
 										.getInstance("First"), StringAttribute
 										.getInstance("First test")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 						new Object[] {
 								NAME_STRING_ENDS_WITH,
 								Arrays.asList(StringAttribute
 										.getInstance("test"), StringAttribute
 										.getInstance("First test")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:anyURI-ends-with
 						new Object[] {
@@ -394,15 +387,13 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(StringAttribute
 										.getInstance("http"), AnyURIAttribute
 										.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 						new Object[] {
 								NAME_ANYURI_ENDS_WITH,
 								Arrays.asList(StringAttribute
 										.getInstance(".com"), AnyURIAttribute
 										.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-contains
 						new Object[] {
@@ -410,15 +401,13 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(StringAttribute
 										.getInstance("test"), StringAttribute
 										.getInstance("First test")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_STRING_CONTAINS,
 								Arrays.asList(StringAttribute
 										.getInstance("Error"), StringAttribute
 										.getInstance("First test")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:anyURI-contains
 						new Object[] {
@@ -428,8 +417,7 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 												.getInstance("example.com"),
 										AnyURIAttribute
 												.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+								EvaluationResult.getInstance(true) },
 						new Object[] {
 								NAME_ANYURI_CONTAINS,
 								Arrays.asList(
@@ -437,8 +425,7 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 												.getInstance("thalesgroup.com"),
 										AnyURIAttribute
 												.getInstance("http://www.example.com")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+								EvaluationResult.getInstance(false) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-substring
 						// TODO: error cases
@@ -448,16 +435,16 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 										.getInstance("First test"),
 										IntegerAttribute.getInstance("0"),
 										IntegerAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("First") },
+								new EvaluationResult(StringAttribute
+										.getInstance("First")) },
 						new Object[] {
 								NAME_STRING_SUBSTRING,
 								Arrays.asList(StringAttribute
 										.getInstance("First test"),
 										IntegerAttribute.getInstance("6"),
 										IntegerAttribute.getInstance("-1")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("test") },
+								new EvaluationResult(StringAttribute
+										.getInstance("test")) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:anyURI-substring
 						// TODO: error cases
@@ -467,22 +454,21 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 										.getInstance("http://www.example.com"),
 										IntegerAttribute.getInstance("0"),
 										IntegerAttribute.getInstance("7")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("http://") },
+								new EvaluationResult(StringAttribute
+										.getInstance("http://")) },
 						new Object[] {
 								NAME_ANYURI_SUBSTRING,
 								Arrays.asList(AnyURIAttribute
 										.getInstance("http://www.example.com"),
 										IntegerAttribute.getInstance("11"),
 										IntegerAttribute.getInstance("-1")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("example.com") });
+								new EvaluationResult(StringAttribute
+										.getInstance("example.com")) });
 	}
 
-	public StringFunctionsTest(final String functionName,
-			final List<Evaluatable> inputs, final String expectedStatus,
-			final AttributeValue expectedValue) {
-		super(functionName, inputs, expectedStatus, expectedValue);
+	public StringFunctionsTest(String functionName, List<Evaluatable> inputs,
+			EvaluationResult expectedResult) throws Exception {
+		super(functionName, inputs, expectedResult);
 	}
 
 }

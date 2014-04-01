@@ -12,8 +12,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.sun.xacml.attr.StringAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.ctx.Status;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -30,35 +29,37 @@ public class StringConversionFunctionsTest extends AbstractFunctionTest {
 		return Arrays
 				.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:string-normalize-space
-				new Object[] { NAME_STRING_NORMALIZE_SPACE,
+				new Object[] {
+						NAME_STRING_NORMALIZE_SPACE,
 						Arrays.asList(StringAttribute.getInstance("test")),
-						Status.STATUS_OK, StringAttribute.getInstance("test") },
+						new EvaluationResult(StringAttribute
+								.getInstance("test")) },
 						new Object[] {
 								NAME_STRING_NORMALIZE_SPACE,
 								Arrays.asList(StringAttribute
 										.getInstance("   test   ")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("test") },
+								new EvaluationResult(StringAttribute
+										.getInstance("test")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case
 						new Object[] {
 								NAME_STRING_NORMALIZE_TO_LOWER_CASE,
 								Arrays.asList(StringAttribute
 										.getInstance("test")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("test") },
+								new EvaluationResult(StringAttribute
+										.getInstance("test")) },
 						new Object[] {
 								NAME_STRING_NORMALIZE_TO_LOWER_CASE,
 								Arrays.asList(StringAttribute
 										.getInstance("TeST")),
-								Status.STATUS_OK,
-								StringAttribute.getInstance("test") });
+								new EvaluationResult(StringAttribute
+										.getInstance("test")) });
 	}
 
-	public StringConversionFunctionsTest(final String functionName,
-			final List<Evaluatable> inputs, final String expectedStatus,
-			final AttributeValue expectedValue) {
-		super(functionName, inputs, expectedStatus, expectedValue);
+	public StringConversionFunctionsTest(String functionName,
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
+			throws Exception {
+		super(functionName, inputs, expectedResult);
 	}
 
 }

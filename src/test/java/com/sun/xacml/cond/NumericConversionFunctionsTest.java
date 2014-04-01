@@ -10,8 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.sun.xacml.attr.DoubleAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.ctx.Status;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -25,25 +24,31 @@ public class NumericConversionFunctionsTest extends AbstractFunctionTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() throws Exception {
-		return Arrays.asList(
+		return Arrays
+				.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:double-to-integer
 				new Object[] { NAME_DOUBLE_TO_INTEGER,
 						Arrays.asList(DoubleAttribute.getInstance("5.25")),
-						Status.STATUS_OK, IntegerAttribute.getInstance("5") },
-				new Object[] { NAME_DOUBLE_TO_INTEGER,
-						Arrays.asList(DoubleAttribute.getInstance("5.75")),
-						Status.STATUS_OK, IntegerAttribute.getInstance("5") },
+						new EvaluationResult(IntegerAttribute.getInstance("5")) },
+						new Object[] {
+								NAME_DOUBLE_TO_INTEGER,
+								Arrays.asList(DoubleAttribute
+										.getInstance("5.75")),
+								new EvaluationResult(IntegerAttribute
+										.getInstance("5")) },
 
-				// urn:oasis:names:tc:xacml:1.0:function:integer-to-double
-				new Object[] { NAME_INTEGER_TO_DOUBLE,
-						Arrays.asList(IntegerAttribute.getInstance("5")),
-						Status.STATUS_OK, DoubleAttribute.getInstance("5.") });
+						// urn:oasis:names:tc:xacml:1.0:function:integer-to-double
+						new Object[] {
+								NAME_INTEGER_TO_DOUBLE,
+								Arrays.asList(IntegerAttribute.getInstance("5")),
+								new EvaluationResult(DoubleAttribute
+										.getInstance("5.")) });
 	}
 
-	public NumericConversionFunctionsTest(final String functionName,
-			final List<Evaluatable> inputs, final String expectedStatus,
-			final AttributeValue expectedValue) {
-		super(functionName, inputs, expectedStatus, expectedValue);
+	public NumericConversionFunctionsTest(String functionName,
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
+			throws Exception {
+		super(functionName, inputs, expectedResult);
 	}
 
 }

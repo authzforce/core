@@ -8,11 +8,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.DoubleAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.ctx.Status;
+import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -32,195 +30,148 @@ public class NumericComparisonFunctionsTest extends AbstractFunctionTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() throws Exception {
-		return Arrays
-				.asList(
+		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than
 				new Object[] {
 						NAME_INTEGER_GREATER_THAN,
 						Arrays.asList(IntegerAttribute.getInstance("5"),
 								IntegerAttribute.getInstance("4")),
-						Status.STATUS_OK, BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_INTEGER_GREATER_THAN,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_INTEGER_GREATER_THAN,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_INTEGER_GREATER_THAN,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("6")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_INTEGER_GREATER_THAN,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("5")),
+						EvaluationResult.getInstance(false) },
 
-						// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal
-						new Object[] {
-								NAME_INTEGER_GREATER_THAN_OR_EQUAL,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("4")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_INTEGER_GREATER_THAN_OR_EQUAL,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_INTEGER_GREATER_THAN_OR_EQUAL,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal
+				new Object[] {
+						NAME_INTEGER_GREATER_THAN_OR_EQUAL,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("4")),
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_INTEGER_GREATER_THAN_OR_EQUAL,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("6")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_INTEGER_GREATER_THAN_OR_EQUAL,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("5")),
+						EvaluationResult.getInstance(true) },
 
-						// urn:oasis:names:tc:xacml:1.0:function:integer-less-than
-						new Object[] {
-								NAME_INTEGER_LESS_THAN,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("4")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_INTEGER_LESS_THAN,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_INTEGER_LESS_THAN,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+				// urn:oasis:names:tc:xacml:1.0:function:integer-less-than
+				new Object[] {
+						NAME_INTEGER_LESS_THAN,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("4")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_INTEGER_LESS_THAN,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("6")),
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_INTEGER_LESS_THAN,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("5")),
+						EvaluationResult.getInstance(false) },
 
-						// urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal
-						new Object[] {
-								NAME_INTEGER_LESS_THAN_OR_EQUAL,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("4")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_INTEGER_LESS_THAN_OR_EQUAL,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_INTEGER_LESS_THAN_OR_EQUAL,
-								Arrays.asList(
-										IntegerAttribute.getInstance("5"),
-										IntegerAttribute.getInstance("5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+				// urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal
+				new Object[] {
+						NAME_INTEGER_LESS_THAN_OR_EQUAL,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("4")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_INTEGER_LESS_THAN_OR_EQUAL,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("6")),
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_INTEGER_LESS_THAN_OR_EQUAL,
+						Arrays.asList(IntegerAttribute.getInstance("5"),
+								IntegerAttribute.getInstance("5")),
+						EvaluationResult.getInstance(true) },
 
-						// urn:oasis:names:tc:xacml:1.0:function:double-greater-than
-						new Object[] {
-								NAME_DOUBLE_GREATER_THAN,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.4")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_DOUBLE_GREATER_THAN,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_DOUBLE_GREATER_THAN,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+				// urn:oasis:names:tc:xacml:1.0:function:double-greater-than
+				new Object[] {
+						NAME_DOUBLE_GREATER_THAN,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.4")),
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_DOUBLE_GREATER_THAN,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.6")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_DOUBLE_GREATER_THAN,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.5")),
+						EvaluationResult.getInstance(false) },
 
-						// urn:oasis:names:tc:xacml:1.0:function:double-greater-than-or-equal
-						new Object[] {
-								NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.4")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
+				// urn:oasis:names:tc:xacml:1.0:function:double-greater-than-or-equal
+				new Object[] {
+						NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.4")),
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.6")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_DOUBLE_GREATER_THAN_OR_EQUAL,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.5")),
+						EvaluationResult.getInstance(true) },
 
-						// urn:oasis:names:tc:xacml:1.0:function:double-less-than
-						new Object[] {
-								NAME_DOUBLE_LESS_THAN,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.4")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_DOUBLE_LESS_THAN,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_DOUBLE_LESS_THAN,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
+				// urn:oasis:names:tc:xacml:1.0:function:double-less-than
+				new Object[] {
+						NAME_DOUBLE_LESS_THAN,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.4")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_DOUBLE_LESS_THAN,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.6")),
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_DOUBLE_LESS_THAN,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.5")),
+						EvaluationResult.getInstance(false) },
 
-						// urn:oasis:names:tc:xacml:1.0:function:double-less-than-or-equal
-						new Object[] {
-								NAME_DOUBLE_LESS_THAN_OR_EQUAL,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.4")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(false) },
-						new Object[] {
-								NAME_DOUBLE_LESS_THAN_OR_EQUAL,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.6")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) },
-						new Object[] {
-								NAME_DOUBLE_LESS_THAN_OR_EQUAL,
-								Arrays.asList(
-										DoubleAttribute.getInstance("5.5"),
-										DoubleAttribute.getInstance("5.5")),
-								Status.STATUS_OK,
-								BooleanAttribute.getInstance(true) });
+				// urn:oasis:names:tc:xacml:1.0:function:double-less-than-or-equal
+				new Object[] {
+						NAME_DOUBLE_LESS_THAN_OR_EQUAL,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.4")),
+						EvaluationResult.getInstance(false) },
+				new Object[] {
+						NAME_DOUBLE_LESS_THAN_OR_EQUAL,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.6")),
+						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_DOUBLE_LESS_THAN_OR_EQUAL,
+						Arrays.asList(DoubleAttribute.getInstance("5.5"),
+								DoubleAttribute.getInstance("5.5")),
+						EvaluationResult.getInstance(true) });
 	}
 
-	public NumericComparisonFunctionsTest(final String functionName,
-			final List<Evaluatable> inputs, final String expectedStatus,
-			final AttributeValue expectedValue) {
-		super(functionName, inputs, expectedStatus, expectedValue);
+	public NumericComparisonFunctionsTest(String functionName,
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
+			throws Exception {
+		super(functionName, inputs, expectedResult);
 	}
 
 }
