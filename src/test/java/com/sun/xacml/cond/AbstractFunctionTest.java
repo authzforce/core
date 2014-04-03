@@ -29,7 +29,7 @@ public abstract class AbstractFunctionTest {
 	private final List<Evaluatable> inputs;
 	private final EvaluationResult expectedResult;
 
-	private static final FunctionFactory FUNCTION_FACTORY = FunctionFactory
+	protected static final FunctionFactory FUNCTION_FACTORY = FunctionFactory
 			.getGeneralInstance();
 	private static final EvaluationCtx CTX = TestUtils
 			.createContext(new Request());

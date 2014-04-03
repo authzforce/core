@@ -73,19 +73,19 @@ public class HigherOrderFunction extends Function
      * Standard identifier for the any-of function.
      */
     public static final String NAME_ANY_OF =
-        FunctionBase.FUNCTION_NS + "any-of";
+        FunctionBase.FUNCTION_NS_3 + "any-of";
 
     /**
      * Standard identifier for the all-of function.
      */
     public static final String NAME_ALL_OF =
-        FunctionBase.FUNCTION_NS + "all-of";
+        FunctionBase.FUNCTION_NS_3 + "all-of";
 
     /**
      * Standard identifier for the any-of-any function.
      */
     public static final String NAME_ANY_OF_ANY =
-        FunctionBase.FUNCTION_NS + "any-of-any";
+        FunctionBase.FUNCTION_NS_3 + "any-of-any";
 
     /**
      * Standard identifier for the all-of-any function.

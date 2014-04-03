@@ -9,8 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.cond.ArithmeticFunctionsTest;
+import com.sun.xacml.cond.BagFunctionsTest;
 import com.sun.xacml.cond.DateTimeArithmeticFunctionsTest;
 import com.sun.xacml.cond.EqualityFunctionsTest;
+import com.sun.xacml.cond.HigherOrderFunctionsTest;
 import com.sun.xacml.cond.LogicalFunctionsTest;
 import com.sun.xacml.cond.NonNumericComparisonFunctionsTest;
 import com.sun.xacml.cond.NumericComparisonFunctionsTest;
@@ -38,6 +40,7 @@ import com.sun.xacml.xacmlv3.function.TestStringFunction;
 		NumericComparisonFunctionsTest.class,
 		DateTimeArithmeticFunctionsTest.class,
 		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class,
+		BagFunctionsTest.class, HigherOrderFunctionsTest.class,
 		RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class
 // TestMatchAlg.class,
 // TestMatchFunction.class,
