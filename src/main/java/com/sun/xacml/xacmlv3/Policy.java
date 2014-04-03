@@ -356,7 +356,9 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		{
 			if (element instanceof CombinerParametersType)
 			{
-				combParams.getCombinerParameters().add((oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter) element);
+				CombinerParametersType jaxbCombinerParams = (CombinerParametersType) element;
+				
+				combParams.getCombinerParameters().addAll(jaxbCombinerParams.getCombinerParameters());
 			} else if (element instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule)
 			{
 				rules.add((Rule) element);

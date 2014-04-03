@@ -213,11 +213,11 @@ public class VariableManager extends ExpressionType
 			try
 			{
 				// get the function in the Apply...
-				ExpressionType function = ExpressionTools.getFunction(xprNode, metaData, FunctionFactory.getGeneralInstance());
+				Function function = ExpressionTools.getFunction(xprNode, metaData, FunctionFactory.getGeneralInstance());
 
 				// ...and store the type information in the variable state
-				state.type = ((Expression) function).getType();
-				state.returnsBag = ((Expression) function).returnsBag();
+				state.type = function.getReturnType();
+				state.returnsBag = function.returnsBag();
 			} catch (ParsingException pe)
 			{
 				// we can just ignore this...if there really is an error,
