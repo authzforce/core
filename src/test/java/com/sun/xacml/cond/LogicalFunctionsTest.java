@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -60,7 +61,6 @@ public class LogicalFunctionsTest extends AbstractFunctionTest {
 						EvaluationResult.getInstance(false) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:n-of
-				// TODO: Indeterminate case
 				new Object[] {
 						NAME_N_OF,
 						Arrays.asList(IntegerAttribute.getInstance("0"),
@@ -89,6 +89,22 @@ public class LogicalFunctionsTest extends AbstractFunctionTest {
 								BooleanAttribute.getInstance(true),
 								BooleanAttribute.getInstance(true)),
 						EvaluationResult.getInstance(true) },
+				new Object[] {
+						NAME_N_OF,
+						Arrays.asList(IntegerAttribute.getInstance("4"),
+								BooleanAttribute.getInstance(true),
+								BooleanAttribute.getInstance(true),
+								BooleanAttribute.getInstance(true)),
+						new EvaluationResult(new Status(Arrays
+								.asList(Status.STATUS_PROCESSING_ERROR))) },
+				new Object[] {
+						NAME_N_OF,
+						Arrays.asList(IntegerAttribute.getInstance("-1"),
+								BooleanAttribute.getInstance(true),
+								BooleanAttribute.getInstance(true),
+								BooleanAttribute.getInstance(true)),
+						new EvaluationResult(new Status(Arrays
+								.asList(Status.STATUS_PROCESSING_ERROR))) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:not
 				new Object[] { NAME_NOT,

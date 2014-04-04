@@ -29,10 +29,14 @@ public abstract class AbstractFunctionTest {
 	private final List<Evaluatable> inputs;
 	private final EvaluationResult expectedResult;
 
-	protected static final FunctionFactory FUNCTION_FACTORY = FunctionFactory
-			.getGeneralInstance();
 	private static final EvaluationCtx CTX = TestUtils
 			.createContext(new Request());
+
+	/**
+	 * A factory to create functions
+	 */
+	protected static final FunctionFactory FUNCTION_FACTORY = FunctionFactory
+			.getGeneralInstance();
 
 	/**
 	 * 
@@ -63,8 +67,12 @@ public abstract class AbstractFunctionTest {
 		// Assertions
 		Assert.assertEquals(expectedResult.indeterminate(),
 				actualResult.indeterminate());
-		Assert.assertEquals(expectedResult.getStatus(),
-				actualResult.getStatus());
+		if (expectedResult.getStatus() == null) {
+			Assert.assertNull(actualResult.getStatus());
+		} else {
+			Assert.assertTrue(actualResult.getStatus().getCode()
+					.containsAll(expectedResult.getStatus().getCode()));
+		}
 		Assert.assertEquals(expectedResult.getAttributeValue(),
 				actualResult.getAttributeValue());
 	}

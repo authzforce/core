@@ -106,7 +106,8 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 								NAME_BOOLEAN_FROM_STRING,
 								Arrays.asList(StringAttribute
 										.getInstance("error")),
-								Status.STATUS_SYNTAX_ERROR, null },
+								new EvaluationResult(new Status(Arrays
+										.asList(Status.STATUS_SYNTAX_ERROR))) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-from-boolean
 						new Object[] {
@@ -428,7 +429,6 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 								EvaluationResult.getInstance(false) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:string-substring
-						// TODO: error cases
 						new Object[] {
 								NAME_STRING_SUBSTRING,
 								Arrays.asList(StringAttribute
@@ -445,9 +445,35 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 										IntegerAttribute.getInstance("-1")),
 								new EvaluationResult(StringAttribute
 										.getInstance("test")) },
+						new Object[] {
+								NAME_STRING_SUBSTRING,
+								Arrays.asList(StringAttribute
+										.getInstance("First test"),
+										IntegerAttribute.getInstance("6"),
+										IntegerAttribute.getInstance("106")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) },
+						new Object[] {
+								NAME_STRING_SUBSTRING,
+								Arrays.asList(StringAttribute
+										.getInstance("First test"),
+										IntegerAttribute.getInstance("106"),
+										IntegerAttribute.getInstance("-1")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) },
+						new Object[] {
+								NAME_STRING_SUBSTRING,
+								Arrays.asList(StringAttribute
+										.getInstance("First test"),
+										IntegerAttribute.getInstance("-1"),
+										IntegerAttribute.getInstance("-1")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) },
 
 						// urn:oasis:names:tc:xacml:3.0:function:anyURI-substring
-						// TODO: error cases
 						new Object[] {
 								NAME_ANYURI_SUBSTRING,
 								Arrays.asList(AnyURIAttribute
@@ -463,7 +489,34 @@ public class StringFunctionsTest extends AbstractFunctionTest {
 										IntegerAttribute.getInstance("11"),
 										IntegerAttribute.getInstance("-1")),
 								new EvaluationResult(StringAttribute
-										.getInstance("example.com")) });
+										.getInstance("example.com")) },
+						new Object[] {
+								NAME_ANYURI_SUBSTRING,
+								Arrays.asList(AnyURIAttribute
+										.getInstance("http://www.example.com"),
+										IntegerAttribute.getInstance("11"),
+										IntegerAttribute.getInstance("106")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) },
+						new Object[] {
+								NAME_ANYURI_SUBSTRING,
+								Arrays.asList(AnyURIAttribute
+										.getInstance("http://www.example.com"),
+										IntegerAttribute.getInstance("-1"),
+										IntegerAttribute.getInstance("7")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) },
+						new Object[] {
+								NAME_ANYURI_SUBSTRING,
+								Arrays.asList(AnyURIAttribute
+										.getInstance("http://www.example.com"),
+										IntegerAttribute.getInstance("-1"),
+										IntegerAttribute.getInstance("-1")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) });
 	}
 
 	public StringFunctionsTest(String functionName, List<Evaluatable> inputs,

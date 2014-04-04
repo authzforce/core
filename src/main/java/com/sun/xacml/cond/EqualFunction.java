@@ -122,13 +122,13 @@ public class EqualFunction extends FunctionBase
      * Standard identifier for the dayTimeDuration-equal function.
      */
     public static final String NAME_DAYTIME_DURATION_EQUAL =
-        FUNCTION_NS + "dayTimeDuration-equal";
+        FUNCTION_NS_3 + "dayTimeDuration-equal";
 
     /**
      * Standard identifier for the yearMonthDuration-equal function.
      */
     public static final String NAME_YEARMONTH_DURATION_EQUAL =
-        FUNCTION_NS + "yearMonthDuration-equal";
+        FUNCTION_NS_3 + "yearMonthDuration-equal";
 
     /**
      * Standard identifier for the anyURI-equal function.

@@ -14,6 +14,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.sun.xacml.attr.DoubleAttribute;
 import com.sun.xacml.attr.IntegerAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
 
 /**
  * @author Cyrille MARTINS (Thales)
@@ -38,7 +39,6 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() throws Exception {
-		// TODO: Indeterminate cases
 		return Arrays
 				.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-add
@@ -200,6 +200,14 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										IntegerAttribute.getInstance("-3")),
 								new EvaluationResult(IntegerAttribute
 										.getInstance("0")) },
+						new Object[] {
+								NAME_INTEGER_DIVIDE,
+								Arrays.asList(
+										IntegerAttribute.getInstance("-3"),
+										IntegerAttribute.getInstance("0")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-divide
 						new Object[] {
@@ -223,6 +231,14 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										DoubleAttribute.getInstance("-3.14")),
 								new EvaluationResult(DoubleAttribute
 										.getInstance("0.")) },
+						new Object[] {
+								NAME_DOUBLE_DIVIDE,
+								Arrays.asList(
+										DoubleAttribute.getInstance("-3.14"),
+										DoubleAttribute.getInstance("0.")),
+								new EvaluationResult(
+										new Status(
+												Arrays.asList(Status.STATUS_PROCESSING_ERROR))) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-mod
 						new Object[] {
