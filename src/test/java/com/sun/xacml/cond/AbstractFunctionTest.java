@@ -11,7 +11,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
 /**
@@ -68,12 +70,27 @@ public abstract class AbstractFunctionTest {
 		Assert.assertEquals(expectedResult.indeterminate(),
 				actualResult.indeterminate());
 		if (expectedResult.getStatus() == null) {
+			// Compare status
 			Assert.assertNull(actualResult.getStatus());
 		} else {
-			Assert.assertTrue(actualResult.getStatus().getCode()
-					.containsAll(expectedResult.getStatus().getCode()));
+			// Compare status codes
+			Status expectedStatus = expectedResult.getStatus();
+			Status actualStatus = actualResult.getStatus();
+			Assert.assertTrue(actualStatus.getCode().containsAll(
+					expectedStatus.getCode()));
 		}
-		Assert.assertEquals(expectedResult.getAttributeValue(),
-				actualResult.getAttributeValue());
+		if (expectedResult.getAttributeValue() != null
+				&& expectedResult.getAttributeValue() instanceof BagAttribute) {
+			// Compare bag contents (regardless of order)
+			BagAttribute expectedBag = (BagAttribute) expectedResult
+					.getAttributeValue();
+			BagAttribute actualBag = (BagAttribute) actualResult
+					.getAttributeValue();
+			Assert.assertTrue(actualBag.containsAll(expectedBag));
+		} else {
+			// Compare attribute values
+			Assert.assertEquals(expectedResult.getAttributeValue(),
+					actualResult.getAttributeValue());
+		}
 	}
 }
