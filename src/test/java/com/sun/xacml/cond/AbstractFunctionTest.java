@@ -87,6 +87,7 @@ public abstract class AbstractFunctionTest {
 			BagAttribute actualBag = (BagAttribute) actualResult
 					.getAttributeValue();
 			Assert.assertTrue(actualBag.containsAll(expectedBag));
+			Assert.assertTrue(expectedBag.containsAll(actualBag));
 		} else {
 			// Compare attribute values
 			Assert.assertEquals(expectedResult.getAttributeValue(),
