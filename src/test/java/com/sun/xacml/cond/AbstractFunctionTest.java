@@ -3,7 +3,9 @@
  */
 package com.sun.xacml.cond;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
@@ -12,6 +14,7 @@ import org.junit.Test;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
@@ -69,29 +72,38 @@ public abstract class AbstractFunctionTest {
 		// Assertions
 		Assert.assertEquals(expectedResult.indeterminate(),
 				actualResult.indeterminate());
-		if (expectedResult.getStatus() == null) {
-			// Compare status
-			Assert.assertNull(actualResult.getStatus());
-		} else {
+
+		if (expectedResult.getStatus() != null) {
+			Assert.assertNotNull(actualResult.getStatus());
 			// Compare status codes
 			Status expectedStatus = expectedResult.getStatus();
 			Status actualStatus = actualResult.getStatus();
 			Assert.assertTrue(actualStatus.getCode().containsAll(
 					expectedStatus.getCode()));
-		}
-		if (expectedResult.getAttributeValue() != null
-				&& expectedResult.getAttributeValue() instanceof BagAttribute) {
-			// Compare bag contents (regardless of order)
-			BagAttribute expectedBag = (BagAttribute) expectedResult
-					.getAttributeValue();
-			BagAttribute actualBag = (BagAttribute) actualResult
-					.getAttributeValue();
-			Assert.assertTrue(actualBag.containsAll(expectedBag));
-			Assert.assertTrue(expectedBag.containsAll(actualBag));
 		} else {
-			// Compare attribute values
-			Assert.assertEquals(expectedResult.getAttributeValue(),
-					actualResult.getAttributeValue());
+			Assert.assertNull(actualResult.getStatus());
+		}
+
+		if (expectedResult.getAttributeValue() != null) {
+			Assert.assertNotNull(actualResult.getAttributeValue());
+			if (expectedResult.getAttributeValue() instanceof BagAttribute) {
+				// Compare bag content as sets (regardless of order)
+				BagAttribute expectedBag = (BagAttribute) expectedResult
+						.getAttributeValue();
+				BagAttribute actualBag = (BagAttribute) actualResult
+						.getAttributeValue();
+				Set<AttributeValue> expectedValues = new HashSet<>(
+						expectedBag.getValues());
+				Set<AttributeValue> actualValues = new HashSet<>(
+						actualBag.getValues());
+				Assert.assertEquals(expectedValues, actualValues);
+			} else {
+				// Compare attribute values
+				Assert.assertEquals(expectedResult.getAttributeValue(),
+						actualResult.getAttributeValue());
+			}
+		} else {
+			Assert.assertNull(actualResult.getAttributeValue());
 		}
 	}
 }
