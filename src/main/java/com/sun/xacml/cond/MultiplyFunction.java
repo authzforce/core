@@ -150,17 +150,22 @@ public class MultiplyFunction extends FunctionBase
         // in the manner appropriate for the type of the arguments.
         switch (getId(getFunctionName())) {
         case ID_INTEGER_MULTIPLY: {
-            long arg0 = ((IntegerAttribute) argValues[0]).getValue();
-            long arg1 = ((IntegerAttribute) argValues[1]).getValue();
-            long product = arg0 * arg1;
+        	long product = 1;
+            for (int index = 0; index < argValues.length; index++) {
+                long arg = ((IntegerAttribute) argValues[index]).getValue();
+                product *= arg;
+            }
 
             result = new EvaluationResult(new IntegerAttribute(product));
             break;
         }
         case ID_DOUBLE_MULTIPLY: {
-            double arg0 = ((DoubleAttribute) argValues[0]).getValue();
-            double arg1 = ((DoubleAttribute) argValues[1]).getValue();
-            double product = arg0 * arg1;
+        	double product = 1;
+            for (int index = 0; index < argValues.length; index++) {
+                double arg =
+                    ((DoubleAttribute) argValues[index]).getValue();
+                product *= arg;
+            }
 
             result = new EvaluationResult(new DoubleAttribute(product));
             break;
