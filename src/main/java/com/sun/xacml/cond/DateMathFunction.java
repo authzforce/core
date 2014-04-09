@@ -263,7 +263,7 @@ public class DateMathFunction extends FunctionBase
 
             // Decide what sign goes with duration
             int sign = 1;
-            if (Integer.parseInt(getFunctionId()) == ID_DATETIME_SUBTRACT_DAYTIMEDURATION)
+            if (getId(getFunctionName()) == ID_DATETIME_SUBTRACT_DAYTIMEDURATION)
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;
@@ -296,7 +296,7 @@ public class DateMathFunction extends FunctionBase
             
             // Decide what sign goes with duration
             int sign = 1;
-            if (Integer.parseInt(getFunctionId()) == ID_DATETIME_SUBTRACT_YEARMONTHDURATION)
+            if (getId(getFunctionName()) == ID_DATETIME_SUBTRACT_YEARMONTHDURATION)
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;
@@ -330,7 +330,7 @@ public class DateMathFunction extends FunctionBase
             
             // Decide what sign goes with duration
             int sign = 1;
-            if (Integer.parseInt(getFunctionId()) == ID_DATE_SUBTRACT_YEARMONTHDURATION)
+            if (getId(getFunctionName()) == ID_DATE_SUBTRACT_YEARMONTHDURATION)
                 sign = -sign;
             if (duration.isNegative())
                 sign = -sign;
