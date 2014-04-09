@@ -276,7 +276,7 @@ public class HigherOrderFunction extends Function
         // now we're ready to do the evaluation
         result = null;
 
-        switch(Integer.parseInt(function.getFunctionId())) {
+        switch(idMap.get(this.getFunctionId())) {
             
         case ID_ANY_OF: {
             
@@ -580,5 +580,18 @@ public class HigherOrderFunction extends Function
         out.println(indenter.makeString() + "<Function FunctionId=\"" +
                     getIdentifier().toString() + "\"/>");
     }
+    
+    @Override
+	public boolean equals(Object func) {
+		if(func instanceof Function && this instanceof Function) {
+			Function cmp = (Function)func;
+			Function cur = (Function)this;
+			
+			if(cmp.getIdentifier().equals(cur.getIdentifier())) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }
