@@ -70,22 +70,23 @@ public abstract class AbstractFunctionTest {
 		EvaluationResult actualResult = function.evaluate((List) inputs, CTX);
 
 		// Assertions
-		Assert.assertEquals(expectedResult.indeterminate(),
+		Assert.assertEquals("Indeterminate", expectedResult.indeterminate(),
 				actualResult.indeterminate());
 
 		if (expectedResult.getStatus() != null) {
-			Assert.assertNotNull(actualResult.getStatus());
+			Assert.assertNotNull("Status", actualResult.getStatus());
 			// Compare status codes
 			Status expectedStatus = expectedResult.getStatus();
 			Status actualStatus = actualResult.getStatus();
-			Assert.assertTrue(actualStatus.getCode().containsAll(
-					expectedStatus.getCode()));
+			Assert.assertTrue("Status codes", actualStatus.getCode()
+					.containsAll(expectedStatus.getCode()));
 		} else {
-			Assert.assertNull(actualResult.getStatus());
+			Assert.assertNull("Status", actualResult.getStatus());
 		}
 
 		if (expectedResult.getAttributeValue() != null) {
-			Assert.assertNotNull(actualResult.getAttributeValue());
+			Assert.assertNotNull("Attribute value",
+					actualResult.getAttributeValue());
 			if (expectedResult.getAttributeValue() instanceof BagAttribute) {
 				// Compare bag content as sets (regardless of order)
 				BagAttribute expectedBag = (BagAttribute) expectedResult
@@ -96,14 +97,17 @@ public abstract class AbstractFunctionTest {
 						expectedBag.getValues());
 				Set<AttributeValue> actualValues = new HashSet<>(
 						actualBag.getValues());
-				Assert.assertEquals(expectedValues, actualValues);
+				Assert.assertEquals("Bag attribute content", expectedValues,
+						actualValues);
 			} else {
 				// Compare attribute values
-				Assert.assertEquals(expectedResult.getAttributeValue(),
+				Assert.assertEquals("Attribute value",
+						expectedResult.getAttributeValue(),
 						actualResult.getAttributeValue());
 			}
 		} else {
-			Assert.assertNull(actualResult.getAttributeValue());
+			Assert.assertNull("Attribute value",
+					actualResult.getAttributeValue());
 		}
 	}
 }

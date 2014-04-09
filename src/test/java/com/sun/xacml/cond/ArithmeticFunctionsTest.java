@@ -60,9 +60,9 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("-1"),
 										IntegerAttribute.getInstance("0"),
-										IntegerAttribute.getInstance("1")),
+										IntegerAttribute.getInstance("3")),
 								new EvaluationResult(IntegerAttribute
-										.getInstance("2")) },
+										.getInstance("4")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-add
 						new Object[] {
@@ -85,9 +85,9 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										DoubleAttribute.getInstance("1.25"),
 										DoubleAttribute.getInstance("-2.75"),
 										DoubleAttribute.getInstance("0."),
-										DoubleAttribute.getInstance("2.")),
+										DoubleAttribute.getInstance("4.")),
 								new EvaluationResult(DoubleAttribute
-										.getInstance("0.5")) },
+										.getInstance("2.5")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-subtract
 						new Object[] {
@@ -120,15 +120,6 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 										DoubleAttribute.getInstance("-2.5")),
 								new EvaluationResult(DoubleAttribute
 										.getInstance("4.")) },
-						new Object[] {
-								NAME_DOUBLE_SUBTRACT,
-								Arrays.asList(
-										DoubleAttribute.getInstance("1.25"),
-										DoubleAttribute.getInstance("-2.75"),
-										DoubleAttribute.getInstance("0."),
-										DoubleAttribute.getInstance("1.5")),
-								new EvaluationResult(DoubleAttribute
-										.getInstance("2.5")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-multiply
 						new Object[] {
@@ -150,9 +141,9 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 								Arrays.asList(
 										IntegerAttribute.getInstance("2"),
 										IntegerAttribute.getInstance("-1"),
-										IntegerAttribute.getInstance("1")),
+										IntegerAttribute.getInstance("3")),
 								new EvaluationResult(IntegerAttribute
-										.getInstance("-2")) },
+										.getInstance("-6")) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-multiply
 						new Object[] {
@@ -320,9 +311,9 @@ public class ArithmeticFunctionsTest extends AbstractFunctionTest {
 						new Object[] {
 								NAME_FLOOR,
 								Arrays.asList(DoubleAttribute
-										.getInstance("-5.75")),
+										.getInstance("-5.25")),
 								new EvaluationResult(DoubleAttribute
-										.getInstance("-5.")) },
+										.getInstance("-6.")) },
 						new Object[] {
 								NAME_FLOOR,
 								Arrays.asList(DoubleAttribute
