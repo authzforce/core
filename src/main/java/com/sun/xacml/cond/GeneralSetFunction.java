@@ -100,6 +100,19 @@ public class GeneralSetFunction extends SetFunction
             typeMap.put(baseName + NAME_BASE_INTERSECTION, baseType);
             typeMap.put(baseName + NAME_BASE_UNION, baseType);
         }
+        
+        for (int i = 0; i < baseTypes3.length; i++) {
+            String baseName = FUNCTION_NS_3 + simpleTypes3[i];
+            String baseType = baseTypes3[i];
+
+            idMap.put(baseName + NAME_BASE_INTERSECTION,
+                      Integer.valueOf(ID_BASE_INTERSECTION));
+            idMap.put(baseName + NAME_BASE_UNION,
+                      Integer.valueOf(ID_BASE_UNION));
+
+            typeMap.put(baseName + NAME_BASE_INTERSECTION, baseType);
+            typeMap.put(baseName + NAME_BASE_UNION, baseType);
+        }
     }
     
     /**

@@ -77,6 +77,13 @@ public class ConditionBagFunction extends BagFunction
             argMap.put(FUNCTION_NS_2 + simpleTypes2[i] + NAME_BASE_IS_IN,
                        args);
         }
+        
+        for (int i = 0; i < baseTypes3.length; i++) {
+            String [] args = { baseTypes3[i], baseTypes3[i] };
+            
+            argMap.put(FUNCTION_NS_3 + simpleTypes3[i] + NAME_BASE_IS_IN,
+                       args);
+        }
     }
 
     /**

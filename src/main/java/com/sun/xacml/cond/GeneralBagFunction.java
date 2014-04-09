@@ -99,6 +99,19 @@ public class GeneralBagFunction extends BagFunction
 
 			paramMap.put(functionBaseName + NAME_BASE_BAG, new BagParameters(ID_BASE_BAG, baseType, false, -1, baseType, true));
 		}
+		
+		for (int i = 0; i < baseTypes3.length; i++)
+		{
+			String baseType = baseTypes3[i];
+			String functionBaseName = FUNCTION_NS_3 + simpleTypes3[i];
+
+			paramMap.put(functionBaseName + NAME_BASE_ONE_AND_ONLY, new BagParameters(ID_BASE_ONE_AND_ONLY, baseType, true, 1, baseType, false));
+
+			paramMap.put(functionBaseName + NAME_BASE_BAG_SIZE, new BagParameters(ID_BASE_BAG_SIZE, baseType, true, 1, IntegerAttribute.identifier,
+					false));
+
+			paramMap.put(functionBaseName + NAME_BASE_BAG, new BagParameters(ID_BASE_BAG, baseType, false, -1, baseType, true));
+		}
 
 		supportedIds = Collections.unmodifiableSet(new HashSet<>(paramMap.keySet()));
 

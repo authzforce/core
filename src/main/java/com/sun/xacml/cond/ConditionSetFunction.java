@@ -108,6 +108,22 @@ public class ConditionSetFunction extends SetFunction
             typeMap.put(baseName + NAME_BASE_SUBSET, baseType);
             typeMap.put(baseName + NAME_BASE_SET_EQUALS, baseType);
         }
+        
+        for (int i = 0; i < baseTypes3.length; i++) {
+            String baseName = FUNCTION_NS_3 + simpleTypes3[i];
+            String baseType = baseTypes3[i];
+
+            idMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF,
+                      Integer.valueOf(ID_BASE_AT_LEAST_ONE_MEMBER_OF));
+            idMap.put(baseName + NAME_BASE_SUBSET,
+                      Integer.valueOf(ID_BASE_SUBSET));
+            idMap.put(baseName + NAME_BASE_SET_EQUALS,
+                      Integer.valueOf(ID_BASE_SET_EQUALS));
+
+            typeMap.put(baseName + NAME_BASE_AT_LEAST_ONE_MEMBER_OF, baseType);
+            typeMap.put(baseName + NAME_BASE_SUBSET, baseType);
+            typeMap.put(baseName + NAME_BASE_SET_EQUALS, baseType);
+        }
 
         supportedIds = Collections.
             unmodifiableSet(new HashSet<>(idMap.keySet()));
