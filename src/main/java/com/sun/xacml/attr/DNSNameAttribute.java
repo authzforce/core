@@ -108,6 +108,8 @@ public class DNSNameAttribute extends AttributeValue
 
         this.hostname = hostname;
         this.range = range;
+        
+        this.getContent().add(this.encode());
     }
 
     /**
