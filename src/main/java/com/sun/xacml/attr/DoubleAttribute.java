@@ -77,6 +77,7 @@ public class DoubleAttribute extends AttributeValue
     public DoubleAttribute(double value) {
         super(identifierURI);
         this.value = value;
+        this.content.add(value);
     }
 
     /**

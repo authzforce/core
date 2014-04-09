@@ -87,6 +87,8 @@ public class HexBinaryAttribute extends AttributeValue
         // This will throw a NullPointerException if value == null.
         // That's what we want in that case.
         this.value = (byte []) value.clone();
+        
+        this.getContent().add(this.encode());
     }
 
     /**

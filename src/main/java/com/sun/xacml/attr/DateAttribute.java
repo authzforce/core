@@ -278,6 +278,8 @@ public class DateAttribute extends AttributeValue
         this.value = (Date) date.clone();
         this.timeZone = timeZone;
         this.defaultedTimeZone = defaultedTimeZone;
+        
+        this.getContent().add(this.encode());
     }
 
     /**
