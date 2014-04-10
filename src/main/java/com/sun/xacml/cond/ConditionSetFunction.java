@@ -227,7 +227,7 @@ public class ConditionSetFunction extends SetFunction
 
         AttributeValue result = null;
         
-        switch(Integer.parseInt(getFunctionId())) {
+        switch(idMap.get(functionId)) {
             // *-at-least-one-member-of takes two bags of the same type and
             // returns a boolean
         case ID_BASE_AT_LEAST_ONE_MEMBER_OF:

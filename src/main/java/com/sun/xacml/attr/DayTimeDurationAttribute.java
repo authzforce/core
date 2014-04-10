@@ -225,7 +225,8 @@ public class DayTimeDurationAttribute extends AttributeValue {
 			// The numbers are small, so do it the fast way.
 			totalMillis = ((((((days * 24) + hours) * 60) + minutes) * 60) + seconds) * 1000;
 		}
-		// FIXME: re implement all the class to use properly all elements and not
+		// FIXME: re implement all the class to use properly all elements and
+		// not
 		// do pattern matching with regex that take far too long
 		this.getContent().add(this.encode());
 	}
@@ -446,7 +447,7 @@ public class DayTimeDurationAttribute extends AttributeValue {
 		DayTimeDurationAttribute other = (DayTimeDurationAttribute) o;
 
 		return ((totalMillis == other.totalMillis)
-				&& (nanoseconds == other.nanoseconds) && (negative == other.negative));
+				&& (nanoseconds == other.nanoseconds) && ((negative == other.negative) || (totalMillis == 0 && nanoseconds == 0)));
 	}
 
 	/**

@@ -208,7 +208,7 @@ public class GeneralSetFunction extends SetFunction
         AttributeValue result = null;
         Set<AttributeValue> set = new HashSet<>();
         
-        switch(Integer.parseInt(getFunctionId())) {
+        switch(idMap.get(functionId)) {
 
             // *-intersection takes two bags of the same type and returns
             // a bag of that type

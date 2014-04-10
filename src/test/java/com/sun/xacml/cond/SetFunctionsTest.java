@@ -875,7 +875,7 @@ public class SetFunctionsTest extends AbstractFunctionTest {
 																.getInstance("3.14"),
 														(ExpressionType) DoubleAttribute
 																.getInstance("3.14")))),
-								EvaluationResult.getInstance(true) },
+								EvaluationResult.getInstance(false) },
 
 						// urn:oasis:names:tc:xacml:1.0:function:time-at-least-one-member-of
 						new Object[] {

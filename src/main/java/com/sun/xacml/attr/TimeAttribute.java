@@ -219,7 +219,8 @@ public class TimeAttribute extends AttributeValue
             if (timeGMT < 0)
                 timeGMT += DateAttribute.MILLIS_PER_DAY;
         }
-        this.getContent().add(new SimpleDateFormat("HH:mm:ss.S").format(this.getValue()));
+
+        this.getContent().add(this.encode());
     }
 
     /**

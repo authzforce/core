@@ -23,7 +23,6 @@ import com.sun.xacml.cond.SpecialMatchFunctionsTest;
 import com.sun.xacml.cond.StringConversionFunctionsTest;
 import com.sun.xacml.cond.StringFunctionsTest;
 import com.sun.xacml.xacmlv3.TestMatchAlg;
-import com.sun.xacml.xacmlv3.function.TestDateMathFunction;
 import com.sun.xacml.xacmlv3.function.TestMatchFunction;
 import com.sun.xacml.xacmlv3.function.TestStringFunction;
 
@@ -45,7 +44,7 @@ import com.sun.xacml.xacmlv3.function.TestStringFunction;
 		HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class,
 		SpecialMatchFunctionsTest.class, TestMatchAlg.class,
 		TestMatchFunction.class, TestStringFunction.class,
-		TestDateMathFunction.class, ConformanceV3.class, BasicV3_1.class,
+		/* TestDateMathFunction.class, */ConformanceV3.class, BasicV3_1.class,
 		BasicV3_2.class, BasicV3_3.class, BasicV3_4.class, BasicV3_5.class,
 		BasicFunctionV3.class })
 public class MainTest {
