@@ -25,7 +25,7 @@
     <Rule RuleId="rule1" Effect="Permit">
     <Description>Rule to match value in content element using XPath</Description>
         <Condition>
-            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:any-of">
+            <Apply FunctionId="urn:oasis:names:tc:xacml:3.0:function:any-of">
                 <Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal"/>
                 <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
                     <AttributeDesignator

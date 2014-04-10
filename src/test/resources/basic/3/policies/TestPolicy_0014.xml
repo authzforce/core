@@ -45,7 +45,7 @@
             </AnyOf>
         </Target>
         <Condition>
-            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:any-of">
+            <Apply FunctionId="urn:oasis:names:tc:xacml:3.0:function:any-of">
                 <Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal"/>
                 <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">bob</AttributeValue>
                 <AttributeDesignator
@@ -79,7 +79,7 @@
             </AnyOf>
         </Target>
         <Condition>
-            <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:any-of">
+            <Apply FunctionId="urn:oasis:names:tc:xacml:3.0:function:any-of">
                 <Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal"/>
                 <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">alice</AttributeValue>
                 <AttributeDesignator
