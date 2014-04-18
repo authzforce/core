@@ -19,7 +19,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  */
 @RunWith(Parameterized.class)
-public class StringConversionFunctionsTest extends AbstractFunctionTest {
+public class StringConversionFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_STRING_NORMALIZE_SPACE = "urn:oasis:names:tc:xacml:1.0:function:string-normalize-space";
 	private static final String NAME_STRING_NORMALIZE_TO_LOWER_CASE = "urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case";

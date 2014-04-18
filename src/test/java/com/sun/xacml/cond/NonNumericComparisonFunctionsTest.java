@@ -22,7 +22,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  */
 @RunWith(Parameterized.class)
-public class NonNumericComparisonFunctionsTest extends AbstractFunctionTest {
+public class NonNumericComparisonFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_STRING_GREATER_THAN = "urn:oasis:names:tc:xacml:1.0:function:string-greater-than";
 	private static final String NAME_STRING_GREATER_THAN_OR_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:string-greater-than-or-equal";

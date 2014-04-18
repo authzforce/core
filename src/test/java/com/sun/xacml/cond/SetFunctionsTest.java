@@ -37,7 +37,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  */
 @RunWith(Parameterized.class)
-public class SetFunctionsTest extends AbstractFunctionTest {
+public class SetFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_STRING_INTERSECTION = "urn:oasis:names:tc:xacml:1.0:function:string-intersection";
 	private static final String NAME_BOOLEAN_INTERSECTION = "urn:oasis:names:tc:xacml:1.0:function:boolean-intersection";

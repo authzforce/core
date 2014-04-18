@@ -41,7 +41,7 @@ import com.sun.xacml.ctx.Status;
  * 
  */
 @RunWith(Parameterized.class)
-public class BagFunctionsTest extends AbstractFunctionTest {
+public class BagFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_STRING_ONE_AND_ONLY = "urn:oasis:names:tc:xacml:1.0:function:string-one-and-only";
 	private static final String NAME_BOOLEAN_ONE_AND_ONLY = "urn:oasis:names:tc:xacml:1.0:function:boolean-one-and-only";

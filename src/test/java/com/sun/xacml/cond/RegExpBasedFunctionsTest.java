@@ -24,7 +24,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  */
 @RunWith(Parameterized.class)
-public class RegExpBasedFunctionsTest extends AbstractFunctionTest {
+public class RegExpBasedFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_STRING_REGEXP_MATCH = "urn:oasis:names:tc:xacml:1.0:function:string-regexp-match";
 	private static final String NAME_ANYURI_REGEXP_MATCH = "urn:oasis:names:tc:xacml:2.0:function:anyURI-regexp-match";

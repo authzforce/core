@@ -22,7 +22,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  */
 @RunWith(Parameterized.class)
-public class DateTimeArithmeticFunctionsTest extends AbstractFunctionTest {
+public class DateTimeArithmeticFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_DATETIME_ADD_DAYTIMEDURATION = "urn:oasis:names:tc:xacml:3.0:function:dateTime-add-dayTimeDuration";
 	private static final String NAME_DATETIME_ADD_YEARMONTHDURATION = "urn:oasis:names:tc:xacml:3.0:function:dateTime-add-yearMonthDuration";

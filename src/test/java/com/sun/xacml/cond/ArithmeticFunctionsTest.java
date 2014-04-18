@@ -21,7 +21,7 @@ import com.sun.xacml.ctx.Status;
  * 
  */
 @RunWith(Parameterized.class)
-public class ArithmeticFunctionsTest extends AbstractFunctionTest {
+public class ArithmeticFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_INTEGER_ADD = "urn:oasis:names:tc:xacml:1.0:function:integer-add";
 	private static final String NAME_DOUBLE_ADD = "urn:oasis:names:tc:xacml:1.0:function:double-add";

@@ -18,7 +18,7 @@ import com.sun.xacml.ctx.Status;
  * 
  */
 @RunWith(Parameterized.class)
-public class LogicalFunctionsTest extends AbstractFunctionTest {
+public class LogicalFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_OR = "urn:oasis:names:tc:xacml:1.0:function:or";
 	private static final String NAME_AND = "urn:oasis:names:tc:xacml:1.0:function:and";

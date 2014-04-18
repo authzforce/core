@@ -33,7 +33,7 @@ import com.sun.xacml.ctx.Status;
  * 
  */
 @RunWith(Parameterized.class)
-public class StringFunctionsTest extends AbstractFunctionTest {
+public class StringFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_STRING_CONCATENATE = "urn:oasis:names:tc:xacml:2.0:function:string-concatenate";
 	private static final String NAME_BOOLEAN_FROM_STRING = "urn:oasis:names:tc:xacml:3.0:function:boolean-from-string";

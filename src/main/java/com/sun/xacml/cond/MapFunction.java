@@ -70,7 +70,7 @@ class MapFunction extends Function
     /**
      * The name of this function
      */
-    public static final String NAME_MAP = FunctionBase.FUNCTION_NS + "map";
+    public static final String NAME_MAP = FunctionBase.FUNCTION_NS_3 + "map";
 
     // the return type for this instance
     private URI returnType;
@@ -120,7 +120,7 @@ class MapFunction extends Function
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
 
-            if (node.getNodeName().equals("Function")) {
+            if (node.getNodeName().equalsIgnoreCase("function")) {
                 String funcName = node.getAttributes().
                     getNamedItem("FunctionId").getNodeValue();
                 FunctionFactory factory = FunctionFactory.getGeneralInstance();

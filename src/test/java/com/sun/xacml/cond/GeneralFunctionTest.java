@@ -3,14 +3,21 @@
  */
 package com.sun.xacml.cond;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
@@ -28,7 +35,7 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
  * @author Cyrille MARTINS (Thales)
  * 
  */
-public abstract class AbstractFunctionTest {
+public abstract class GeneralFunctionTest {
 
 	private final String functionName;
 	private final List<Evaluatable> inputs;
@@ -54,7 +61,7 @@ public abstract class AbstractFunctionTest {
 	 *            The expected function evaluation result, according to the
 	 *            given inputs
 	 */
-	protected AbstractFunctionTest(final String functionName,
+	protected GeneralFunctionTest(final String functionName,
 			final List<Evaluatable> inputs,
 			final EvaluationResult expectedResult) throws Exception {
 		this.functionName = functionName;
@@ -65,7 +72,7 @@ public abstract class AbstractFunctionTest {
 	@Test
 	public void testEvaluate() throws Exception {
 		// Execution
-		Function function = FUNCTION_FACTORY.createFunction(functionName);
+		Function function = getFunction();
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		EvaluationResult actualResult = function.evaluate((List) inputs, CTX);
 
@@ -109,5 +116,34 @@ public abstract class AbstractFunctionTest {
 			Assert.assertNull("Attribute value",
 					actualResult.getAttributeValue());
 		}
+	}
+
+	private Function getFunction() throws Exception {
+		Function function;
+		try {
+			function = FUNCTION_FACTORY.createFunction(functionName);
+		} catch (FunctionTypeException e) {
+			// Build a node to instantiate an abstract function
+			String encodedInputs = "";
+			for (Object input : inputs) {
+				try {
+					Method encodeMethod = input.getClass().getMethod("encode",
+							OutputStream.class);
+					ByteArrayOutputStream output = new ByteArrayOutputStream();
+					encodeMethod.invoke(input, output);
+					encodedInputs += new String(output.toByteArray());
+				} catch (NoSuchMethodException nsme) {
+				}
+			}
+			String encodedNode = "<Apply FunctionId=\"" + functionName + "\">"
+					+ encodedInputs + "</Apply>";
+			Node root = DocumentBuilderFactory.newInstance()
+					.newDocumentBuilder()
+					.parse(new ByteArrayInputStream(encodedNode.getBytes()))
+					.getDocumentElement();
+			function = FUNCTION_FACTORY.createAbstractFunction(functionName,
+					root);
+		}
+		return function;
 	}
 }

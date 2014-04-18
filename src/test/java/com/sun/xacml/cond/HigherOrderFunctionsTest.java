@@ -25,7 +25,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  */
 @RunWith(Parameterized.class)
-public class HigherOrderFunctionsTest extends AbstractFunctionTest {
+public class HigherOrderFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_ANY_OF = "urn:oasis:names:tc:xacml:3.0:function:any-of";
 	private static final String NAME_ALL_OF = "urn:oasis:names:tc:xacml:3.0:function:all-of";

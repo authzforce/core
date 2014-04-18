@@ -21,7 +21,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  */
 @RunWith(Parameterized.class)
-public class SpecialMatchFunctionsTest extends AbstractFunctionTest {
+public class SpecialMatchFunctionsTest extends GeneralFunctionTest {
 
 	private static final String NAME_X500NAME_MATCH = "urn:oasis:names:tc:xacml:1.0:function:x500Name-match";
 	private static final String NAME_RFC822NAME_MATCH = "urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match";
