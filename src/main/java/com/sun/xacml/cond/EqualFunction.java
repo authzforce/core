@@ -171,6 +171,11 @@ public class EqualFunction extends FunctionBase
      */
     public static final String NAME_DNSNAME_EQUAL =
         FUNCTION_NS_2 + "dnsName-equal";
+    
+    /**
+     * Standard identifier for the string-equal-ignore-case function.
+     */
+    public static final String NAME_STRING_EQUAL_IGNORE_CASE = FUNCTION_NS_3 + "string-equal-ignore-case";
 
     // private mapping of standard functions to their argument types
     private static HashMap typeMap;
@@ -206,6 +211,7 @@ public class EqualFunction extends FunctionBase
         typeMap.put(NAME_BASE64BINARY_EQUAL, Base64BinaryAttribute.identifier);
         typeMap.put(NAME_IPADDRESS_EQUAL, IPAddressAttribute.identifier);
         typeMap.put(NAME_DNSNAME_EQUAL, DNSNameAttribute.identifier);
+        typeMap.put(NAME_STRING_EQUAL_IGNORE_CASE, StringAttribute.identifier);
     }
 
     /**
@@ -301,6 +307,11 @@ public class EqualFunction extends FunctionBase
             return result;
 
         // Now that we have real values, perform the equals operation
+        if(this.getFunctionName().equals(NAME_STRING_EQUAL_IGNORE_CASE)) {
+        	String arg0 = (String) argValues[0].getContent().get(0);
+        	String arg1 = (String) argValues[1].getContent().get(0);
+        	return EvaluationResult.getInstance(arg0.equalsIgnoreCase(arg1));
+        }
         return EvaluationResult.getInstance(argValues[0].equals(argValues[1]));
     }
 
