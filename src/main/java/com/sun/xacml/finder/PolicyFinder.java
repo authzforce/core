@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.PolicyReference;
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.VersionConstraints;
 import com.sun.xacml.ctx.Status;
 
@@ -261,9 +262,10 @@ public class PolicyFinder
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if <code>type</code> is invalid
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID
 	 */
 	public PolicyFinderResult findPolicy(URI idReference, int type, VersionConstraints constraints, PolicyMetaData parentMetaData)
-			throws IllegalArgumentException
+			throws UnknownIdentifierException
 	{
 		PolicyFinderResult result = null;
 

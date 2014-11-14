@@ -56,6 +56,7 @@ import org.xml.sax.SAXParseException;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicySet;
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.xacmlv3.Policy;
 
@@ -189,8 +190,9 @@ public class PolicyReader implements ErrorHandler
 	 * 
 	 * @throws ParsingException
 	 *             if an error occurs while reading or parsing the policy
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID
 	 */
-	public synchronized Policy readPolicy(File file) throws ParsingException
+	public synchronized Policy readPolicy(File file) throws ParsingException, UnknownIdentifierException
 	{
 		try
 		{
@@ -217,8 +219,9 @@ public class PolicyReader implements ErrorHandler
 	 * 
 	 * @throws ParsingException
 	 *             if an error occurs while reading or parsing the policy
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID
 	 */
-	public synchronized Policy readPolicy(InputStream input) throws ParsingException
+	public synchronized Policy readPolicy(InputStream input) throws ParsingException, UnknownIdentifierException
 	{
 		try
 		{
@@ -232,7 +235,13 @@ public class PolicyReader implements ErrorHandler
 		}
 	}
 
-	public synchronized PolicySet readPolicySet(InputStream input) throws ParsingException
+	/**
+	 * @param input
+	 * @return
+	 * @throws ParsingException
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID in one of the child policies
+	 */
+	public synchronized PolicySet readPolicySet(InputStream input) throws ParsingException, UnknownIdentifierException
 	{
 		try
 		{
@@ -258,8 +267,9 @@ public class PolicyReader implements ErrorHandler
 	 * @throws ParsingException
 	 *             if an error occurs while reading or parsing the policy, or if the URL can't be
 	 *             resolved
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID
 	 */
-	public Policy readPolicy(URL url) throws ParsingException
+	public Policy readPolicy(URL url) throws ParsingException, UnknownIdentifierException
 	{
 		try
 		{
@@ -272,8 +282,9 @@ public class PolicyReader implements ErrorHandler
 
 	/**
 	 * A private method that handles reading the policy and creates the correct kind of Policy.
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID
 	 */
-	private static Policy handleDocument(Document doc) throws ParsingException
+	private static Policy handleDocument(Document doc) throws ParsingException, UnknownIdentifierException
 	{
 		// handle the policy, if it's a known type
 		Element root = doc.getDocumentElement();
@@ -293,8 +304,9 @@ public class PolicyReader implements ErrorHandler
 	/**
 	 * A private method that handles reading the policySet and creates the correct kind of
 	 * PolicySet.
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID in one of the child policies
 	 */
-	private static PolicySet handlePolicySetDocument(Document doc) throws ParsingException
+	private static PolicySet handlePolicySetDocument(Document doc) throws ParsingException, UnknownIdentifierException
 	{
 		// handle the policy, if it's a known type
 		Element root = doc.getDocumentElement();
@@ -353,7 +365,7 @@ public class PolicyReader implements ErrorHandler
 		throw new SAXException("fatal error parsing policy");
 	}
 
-	public String getType(FileInputStream input) throws ParsingException, SAXException, IOException
+	public String getType(InputStream input) throws ParsingException, SAXException, IOException
 	{
 		// handle the policy, if it's a known type
 		Document doc = builder.parse(input);

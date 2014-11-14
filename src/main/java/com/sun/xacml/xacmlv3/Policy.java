@@ -91,11 +91,13 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	 * @param ruleCombiningAlgId
 	 * @param maxDelegationDepth
 	 * @param metadata
+	 * @throws UnknownIdentifierException
+	 *             Unknown rule combining algorithm ID
 	 */
 	public Policy(String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer issuer, DefaultsType policyDefault, Target target,
 			List policyElements, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations,
 			oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices, String policyId, String version, String ruleCombiningAlgId,
-			BigInteger maxDelegationDepth, PolicyMetaData metadata)
+			BigInteger maxDelegationDepth, PolicyMetaData metadata) throws UnknownIdentifierException
 	{
 
 		this.metaData = metadata;
@@ -139,16 +141,8 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		this.ruleCombiningAlgId = ruleCombiningAlgId;
 		this.maxDelegationDepth = maxDelegationDepth;
 		CombiningAlgFactory factory = CombiningAlgFactory.getInstance();
-		try
-		{
-			this.ruleCombiningAlg = factory.createAlgorithm(URI.create(this.ruleCombiningAlgId));
-		} catch (DOMException e)
-		{
-			LOGGER.error("Error instantiating algorithm '{}'", this.ruleCombiningAlgId, e);
-		} catch (UnknownIdentifierException e)
-		{
-			LOGGER.error("Error instantiating algorithm '{}'", this.ruleCombiningAlgId, e);
-		}
+		this.ruleCombiningAlg = factory.createAlgorithm(URI.create(this.ruleCombiningAlgId));
+
 	}
 
 	/**
@@ -157,8 +151,9 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	 * 
 	 * @param root
 	 * @return Policy handler
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID
 	 */
-	public static Policy getInstance(Node root)
+	public static Policy getInstance(Node root) throws UnknownIdentifierException
 	{
 		String ruleCombiningAlgId = null;
 		List policyElements = new ArrayList();
@@ -357,7 +352,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 			if (element instanceof CombinerParametersType)
 			{
 				CombinerParametersType jaxbCombinerParams = (CombinerParametersType) element;
-				
+
 				combParams.getCombinerParameters().addAll(jaxbCombinerParams.getCombinerParameters());
 			} else if (element instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule)
 			{

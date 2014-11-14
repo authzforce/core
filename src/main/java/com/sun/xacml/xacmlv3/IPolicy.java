@@ -26,6 +26,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.ctx.Result;
 
@@ -121,5 +122,8 @@ public interface IPolicy
 	
 	List getChildElements();
 
+	/**
+	 * @return combining algorithm (policy combining for PolicySets, rule combining for Policies)
+	 */
 	CombiningAlgorithm getCombiningAlg();
 }
