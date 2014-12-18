@@ -19,6 +19,22 @@
 	</organization>
 	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
 	<inceptionYear>2011</inceptionYear>
+	<scm>
+		<connection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</connection>
+		<developerConnection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</url>
+	</scm>
+	<distributionManagement>
+		<repository>
+			<id>theresis</id>
+			<url>http://nexus.dev.theresis.org/nexus/content/repositories/theresis/</url>
+		</repository>
+		<snapshotRepository>
+			<id>theresis-snapshot</id>
+			<url>http://nexus.dev.theresis.org/nexus/content/repositories/theresis-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<copyrightOwner>Thales Services - ThereSIS</copyrightOwner>
