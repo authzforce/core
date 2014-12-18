@@ -37,6 +37,7 @@ import com.sun.xacml.xacmlv3.Policy;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.PolicyReference;
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.VersionConstraints;
 
 import com.sun.xacml.finder.PolicyFinder;
@@ -149,10 +150,11 @@ public class URLPolicyFinderModule extends PolicyFinderModule
      *                       provides XACML version, factories, etc.
      *
      * @return the result of looking for a matching policy
+     * @throws UnknownIdentifierException unknown rule combining algorithm ID
      */
     public PolicyFinderResult findPolicy(URI idReference, int type,
                                          VersionConstraints constraints,
-                                         PolicyMetaData parentMetaData) {
+                                         PolicyMetaData parentMetaData) throws UnknownIdentifierException {
         // see if the URI is in fact a URL
         URL url = null;
         try {

@@ -150,7 +150,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 
 		// check if input policyType is a valid value
 		if ((policyType != POLICY_REFERENCE) && (policyType != POLICYSET_REFERENCE))
-			throw new IllegalArgumentException("Input policyType is not a" + "valid value");
+			throw new IllegalArgumentException("Input policyType is not a valid value");
 
 		this.reference = reference;
 		this.policyType = policyType;
@@ -427,7 +427,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * referenced policy, not the meta-data for the parent policy (which is what gets provided to
 	 * the constructors of this class).
 	 * 
-	 * @return the policy's meta-data
+	 * @return the policy's meta-data 
 	 * 
 	 * @throws ProcessingException
 	 *             if the referenced policy can't be retrieved
@@ -465,23 +465,32 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 
 	/**
 	 * Private helper method that tried to resolve the policy
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID
+	 * @throws IllegalArgumentException 
 	 */
 	private IPolicy resolvePolicy()
 	{
 		// see if this reference was setup with a finder
 		if (finder == null)
 		{
-			LOGGER.warn("PolicyReference with id '{}' was queried but was not configured with a PolicyFinder", reference);
-			throw new ProcessingException("couldn't find the policy with " + "a null finder");
+			LOGGER.warn("Policy(Set)Reference with id '{}' was queried but was not configured with a PolicyFinder", reference);
+			throw new ProcessingException("couldn't find the policy with a null finder");
 		}
 
-		PolicyFinderResult pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
+		PolicyFinderResult pfr;
+		try
+		{
+			pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
+		} catch (UnknownIdentifierException e)
+		{
+			throw new ProcessingException("Invalid policy #"+reference+"/"+constraints);
+		}
 
 		if (pfr.notApplicable()) {
-			throw new ProcessingException("couldn't resolve the policy");
+			throw new ProcessingException("couldn't resolve the policy#"+reference+"/"+constraints);
 		}
 		if (pfr.indeterminate()) {
-			throw new ProcessingException("error resolving the policy");
+			throw new ProcessingException("error resolving the policy#"+reference+"/"+constraints);
 		}
 		return pfr.getPolicy();
 	}
@@ -494,7 +503,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 * @param context
 	 *            the representation of the request
 	 * 
-	 * @return the result of evaluation
+	 * @return the result of evaluation 
 	 */
 	@Override
 	public Result evaluate(EvaluationCtx context)
@@ -503,7 +512,14 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 		if (finder == null)
 			return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
 
-		PolicyFinderResult pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
+		PolicyFinderResult pfr;
+		try
+		{
+			pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
+		} catch (UnknownIdentifierException e)
+		{
+			throw new ProcessingException("Invalid combining algorithm in Policy(Set) referenced by '"+ reference+"/" + encodeConstraints() + "'");
+		}
 
 		// if we found nothing, then we return NotApplicable
 		if (pfr.notApplicable())

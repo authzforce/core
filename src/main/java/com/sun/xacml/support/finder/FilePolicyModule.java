@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,6 +49,8 @@ import org.xml.sax.SAXException;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
+import com.sun.xacml.ProcessingException;
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
@@ -81,7 +84,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	private File schemaFile = null;
 
 	// the filenames for the files we'll load
-	private Set fileNames;
+	private Set<String> fileNames;
 
 	// the actual loaded policies
 	private PolicyCollection policies;
@@ -96,7 +99,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	 */
 	public FilePolicyModule()
 	{
-		fileNames = new HashSet();
+		fileNames = new HashSet<>();
 		policies = new PolicyCollection();
 
 		String schemaName = System.getProperty(PolicyReader.POLICY_SCHEMA_PROPERTY);
@@ -115,7 +118,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	 */
 	public FilePolicyModule(File schemaFile)
 	{
-		fileNames = new HashSet();
+		fileNames = new HashSet<>();
 		policies = new PolicyCollection();
 
 		this.schemaFile = schemaFile;
@@ -142,7 +145,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	 * @param fileNames
 	 *            a <code>List</code> of <code>String</code>s that identify policy files
 	 */
-	public FilePolicyModule(List fileNames)
+	public FilePolicyModule(List<String> fileNames)
 	{
 		this();
 
@@ -160,7 +163,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	 *            the schema file to validate policies against, or null if schema validation is not
 	 *            desired.
 	 */
-	public FilePolicyModule(List fileNames, String schemaFile)
+	public FilePolicyModule(List<String> fileNames, String schemaFile)
 	{
 		this(schemaFile);
 
@@ -176,6 +179,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	 * 
 	 * @param filename
 	 *            the file to add to this module's collection of files
+	 * @return true iff filename was not already in the list
 	 */
 	public boolean addPolicy(String filename)
 	{
@@ -188,6 +192,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	 * 
 	 * @return true, since finding policies based on requests is supported
 	 */
+	@Override
 	public boolean isRequestSupported()
 	{
 		return true;
@@ -201,24 +206,22 @@ public class FilePolicyModule extends PolicyFinderModule
 	 * @param finder
 	 *            a PolicyFinder used to help in instantiating PolicySets
 	 */
+	@Override
 	public void init(PolicyFinder finder)
 	{
 		PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
 
-		Iterator it = fileNames.iterator();
-		while (it.hasNext())
-		{
-			String fname = (String) (it.next());
+		for(String fname: fileNames) {
 			final IPolicy policy;
-			try
+			try(final InputStream fileIn = new FileInputStream(fname))
 			{
-				String typePolicy = reader.getType(new FileInputStream(fname));
+				String typePolicy = reader.getType(fileIn);
 				if (typePolicy.equals("Policy"))
 				{
-					policy = reader.readPolicy(new FileInputStream(fname));
+					policy = reader.readPolicy(fileIn);
 				} else if (typePolicy.equals("PolicySet"))
 				{
-					policy = reader.readPolicySet(new FileInputStream(fname));
+					policy = reader.readPolicySet(fileIn);
 				} else
 				{
 					throw new IllegalArgumentException("Invalid type of Policy Element: " + typePolicy);
@@ -230,16 +233,19 @@ public class FilePolicyModule extends PolicyFinderModule
 				}
 			} catch (FileNotFoundException fnfe)
 			{
-				LOGGER.error("File couldn't be read: {}", fname, fnfe);
+				throw new ProcessingException("Policy file '"+fname+"' not found", fnfe);
 			} catch (ParsingException pe)
 			{
-				LOGGER.error("File couldn't be parsed: {}", fname, pe);
+				throw new ProcessingException("Policy file '"+fname+"' couldn't be parsed into XACML",  pe);
 			} catch (SAXException e)
 			{
-				LOGGER.error("File couldn't be parsed: {}", fname, e);
+				throw new ProcessingException("Policy file '"+fname+"' couldn't be parsed into XML", e);
 			} catch (IOException e)
 			{
-				LOGGER.error("File couldn't be read: {}", fname, e);
+				throw new ProcessingException("Policy file '"+fname+"' couldn't be read", e);
+			} catch (UnknownIdentifierException e)
+			{
+				throw new ProcessingException("Invalid combining algorithm ID found in policy file "+fname, e);
 			}
 		}
 	}
@@ -255,6 +261,7 @@ public class FilePolicyModule extends PolicyFinderModule
 	 * 
 	 * @return the result of trying to find an applicable policy
 	 */
+	@Override
 	public PolicyFinderResult findPolicy(EvaluationCtx context)
 	{
 //		try
@@ -319,10 +326,11 @@ public class FilePolicyModule extends PolicyFinderModule
 		
 		try {
             final IPolicy policy = policies.getPolicy(context);
-            if (policy == null)
+            if (policy == null) {
                 return new PolicyFinderResult();
-            else
-                return new PolicyFinderResult(policy);
+            } 
+            
+			return new PolicyFinderResult(policy);
         } catch (TopLevelPolicyException tlpe) {
             return new PolicyFinderResult(tlpe.getStatus());
         }

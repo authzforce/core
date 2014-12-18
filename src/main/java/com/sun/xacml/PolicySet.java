@@ -375,8 +375,9 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 	 * Creates a new PolicySet based on the given root node. This is private since every class is
 	 * supposed to use a getInstance() method to construct from a Node, but since we want some
 	 * common code in the parent class, we need this functionality in a constructor.
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID in one of the child policies
 	 */
-	private PolicySet(Node root, PolicyFinder finder) throws ParsingException
+	private PolicySet(Node root, PolicyFinder finder) throws ParsingException, UnknownIdentifierException
 	{
 		super(root, "PolicySet", "PolicyCombiningAlgId");
 
@@ -422,7 +423,7 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 
 		// now make sure that we can match up any parameters we may have
 		// found to a cooresponding Policy or PolicySet...
-		List elements = new ArrayList();
+		List<PolicyCombinerElement> elements = new ArrayList<>();
 		Iterator<IPolicy> it = policies.iterator();
 
 		// right now we have to go though each policy and based on several
@@ -474,24 +475,24 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 		 * serializable/marshallable), therefore not what it is intended for, why? Would be more
 		 * readable and simple to have another member of type List<PolicyCombinerElement>
 		 */
-		this.policySetsAndPoliciesAndPolicySetIdReferences.addAll((List<JAXBElement<?>>) Collections.unmodifiableList(elements));
+		this.policySetsAndPoliciesAndPolicySetIdReferences.addAll(Collections.unmodifiableList(elements));
 		// setChildren(elements);
 	}
 
 	/**
 	 * Private helper method that handles parsing a collection of parameters
 	 */
-	private void paramaterHelper(HashMap parameters, Node root, String prefix) throws ParsingException
+	private static void paramaterHelper(HashMap<String, List<CombinerParameter>> parameters, Node root, String prefix) throws ParsingException
 	{
 		String ref = root.getAttributes().getNamedItem(prefix + "IdRef").getNodeValue();
 
 		if (parameters.containsKey(ref))
 		{
-			List list = (List) (parameters.get(ref));
+			List<CombinerParameter> list = parameters.get(ref);
 			parseParameters(list, root);
 		} else
 		{
-			List list = new ArrayList();
+			List<CombinerParameter> list = new ArrayList<>();
 			parseParameters(list, root);
 			parameters.put(ref, list);
 		}
@@ -534,7 +535,7 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 	/**
 	 * Private helper method that handles parsing a single parameter.
 	 */
-	private static void parseParameters(List parameters, Node root) throws ParsingException
+	private static void parseParameters(List<CombinerParameter> parameters, Node root) throws ParsingException
 	{
 		NodeList nodes = root.getChildNodes();
 
@@ -568,8 +569,9 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 	 * 
 	 * @throws ParsingException
 	 *             if the PolicySetType is invalid
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID in one of the child policies
 	 */
-	public static PolicySet getInstance(Node root) throws ParsingException
+	public static PolicySet getInstance(Node root) throws ParsingException, UnknownIdentifierException
 	{
 		return getInstance(root, null);
 	}
@@ -587,8 +589,9 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 	 * 
 	 * @throws ParsingException
 	 *             if the PolicySetType is invalid
+	 * @throws UnknownIdentifierException unknown rule combining algorithm ID in one of the child policies
 	 */
-	public static PolicySet getInstance(Node root, PolicyFinder finder) throws ParsingException
+	public static PolicySet getInstance(Node root, PolicyFinder finder) throws ParsingException, UnknownIdentifierException
 	{
 		// first off, check that it's the right kind of node
 		if (!(root.getNodeName().equals("PolicySet") || root.getNodeName().equals("PolicySetType")))
