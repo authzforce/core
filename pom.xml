@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
@@ -12,7 +11,7 @@
 		in POM dependencyManagement element) in parent 'authzforce' project in order 
 		for reverse dependencies (such as project 'authzforce-core-ext-utils') to 
 		stay up-to-date. So any change here must be re-done there. -->
-	<version>3.5.4-SNAPSHOT</version>
+	<version>3.5.4</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales</name>
