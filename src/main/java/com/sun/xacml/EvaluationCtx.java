@@ -55,7 +55,6 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  * 
  * @since 1.0
  * @author Seth Proctor
- * @author Romain Ferrari
  */
 public interface EvaluationCtx {
 

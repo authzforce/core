@@ -23,10 +23,6 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypes;
 
-/**
- * @author romain.ferrari@thalesgroup.com
- *
- */
 public class TestPdp {
 	
 	/**

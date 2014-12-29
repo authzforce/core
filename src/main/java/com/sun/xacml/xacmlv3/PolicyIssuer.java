@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -34,10 +34,6 @@ import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.ctx.Attribute;
 
-/**
- * @author Romain Ferrari
- * 
- */
 public class PolicyIssuer extends oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer
 {
 

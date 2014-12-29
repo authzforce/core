@@ -51,6 +51,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.validation.Schema;
 
+import net.sf.ehcache.Cache;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -81,7 +83,7 @@ import com.sun.xacml.cond.cluster.FunctionCluster;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.ResourceFinder;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.appsec.util.Utils;
 
 /**
  * This class supports run-time loading of configuration data. It loads the
@@ -387,8 +389,7 @@ public class ConfigurationStore {
 	 * Private helper that parses the file and sets up the DOM tree.
 	 */
 	private Node getRootNode(File configFile) throws ParsingException {
-		final DocumentBuilder threadLocalDocBuilder = BindingUtility
-				.getDocumentBuilder(true);
+		final DocumentBuilder threadLocalDocBuilder = Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.get();
 
 		Document doc = null;
 		try {
@@ -470,13 +471,13 @@ public class ConfigurationStore {
 		ResourceFinder rsrcFinder = new ResourceFinder();
 		rsrcFinder.setModules(rsrcModules);
 
-		CacheManager cacheManager = cacheModules.isEmpty() ? null
-				: (CacheManager) cacheModules.get(0);
+		Cache cache = cacheModules.isEmpty() ? null
+				: (Cache) cacheModules.get(0);
 
 		// CacheManager cacheManager = CacheManager.getInstance();
 		// return new PDPConfig(attrFinder, policyFinder, rsrcFinder);
 
-		return new PDPConfig(attrFinder, policyFinder, rsrcFinder, cacheManager);
+		return new PDPConfig(attrFinder, policyFinder, rsrcFinder, cache);
 	}
 
 	/**

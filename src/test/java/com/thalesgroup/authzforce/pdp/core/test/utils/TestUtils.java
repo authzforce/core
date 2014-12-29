@@ -40,9 +40,8 @@ import com.sun.xacml.ctx.ResponseCtx;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
-import com.sun.xacml.support.finder.FilePolicyModule;
 import com.sun.xacml.support.finder.StaticPolicyFinderModule;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 public class TestUtils
 {
@@ -140,7 +139,7 @@ public class TestUtils
 		Request request = null;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			JAXBElement<Request> jaxbElt = u.unmarshal(root, Request.class);
 			request = jaxbElt.getValue();
 		} catch (Exception e)
@@ -156,7 +155,7 @@ public class TestUtils
 		Response allOf = null;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			allOf = (Response) u.unmarshal(root);
 		} catch (Exception e)
 		{
@@ -171,7 +170,7 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(request, writer);
 		} catch (Exception e)
 		{
@@ -186,7 +185,7 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(response, writer);
 		} catch (Exception e)
 		{
@@ -365,7 +364,7 @@ public class TestUtils
 
 		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(
 				policyLocations);
-		List<PolicyFinderModule> policyModules = new ArrayList<>();
+		List<PolicyFinderModule<?>> policyModules = new ArrayList<>();
 		policyModules.add(testPolicyFinderModule);
 		policyFinder.setModules(policyModules);
 

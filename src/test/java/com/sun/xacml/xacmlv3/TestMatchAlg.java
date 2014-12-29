@@ -25,10 +25,6 @@ import com.sun.xacml.PolicyMetaData;
 import com.thalesgroup.authzforce.pdp.core.test.impl.MainTest;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
-/**
- * @author Romain Ferrari
- *
- */
 public class TestMatchAlg {
 	
 	private static EvaluationCtx context;

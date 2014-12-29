@@ -27,7 +27,6 @@ import com.sun.xacml.xacmlv3.function.TestMatchFunction;
 import com.sun.xacml.xacmlv3.function.TestStringFunction;
 
 /**
- * @author Romain Ferrari
  * 
  *         class to use for the testSuite MatchTest.class, ConformanceV3.class,
  *         BasicV3_1.class, BasicV3_2.class, BasicV3_3.class, BasicV3_4.class,

@@ -14,10 +14,6 @@ import org.junit.runners.Parameterized.Parameters;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
-/**
- * @author Cyrille MARTINS (Thales)
- * 
- */
 @RunWith(Parameterized.class)
 public class StringConversionFunctionsTest extends GeneralFunctionTest {
 

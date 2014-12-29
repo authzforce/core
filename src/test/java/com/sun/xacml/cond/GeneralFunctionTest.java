@@ -31,9 +31,7 @@ import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
  * function name, a list of arguments, and expected result. In order to perform
  * a function test, simply extend this class and give the test values on
  * construction.
- * 
- * @author Cyrille MARTINS (Thales)
- * 
+ *  
  */
 public abstract class GeneralFunctionTest {
 

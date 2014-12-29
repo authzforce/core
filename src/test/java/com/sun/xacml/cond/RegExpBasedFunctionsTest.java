@@ -19,10 +19,6 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.X500NameAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
-/**
- * @author Cyrille MARTINS (Thales)
- * 
- */
 @RunWith(Parameterized.class)
 public class RegExpBasedFunctionsTest extends GeneralFunctionTest {
 

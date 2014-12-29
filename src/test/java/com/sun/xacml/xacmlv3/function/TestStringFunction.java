@@ -27,10 +27,6 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
-/**
- * @author romain.ferrari[AT]thalesgroup.com
- * 
- */
 public class TestStringFunction {
 
 	private static final Logger LOGGER = LoggerFactory

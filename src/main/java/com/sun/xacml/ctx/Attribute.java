@@ -59,7 +59,7 @@ import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents the AttributeType XML type found in the context schema.
@@ -509,7 +509,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 		PrintStream out = new PrintStream(output);
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{
@@ -529,7 +529,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 		String str = "";
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, attribute);
 		} catch (Exception e)
 		{

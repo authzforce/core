@@ -59,7 +59,7 @@ import com.sun.xacml.finder.impl.SelectorModule;
 import com.sun.xacml.support.finder.StaticPolicyFinderModule;
 import com.sun.xacml.support.finder.StaticRefPolicyFinderModule;
 import com.sun.xacml.support.finder.URLPolicyFinderModule;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 
 /**
@@ -172,7 +172,7 @@ public class SimplePDP
         throws IOException, ParsingException, JAXBException
     {
         // setup the request based on the file
-        Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+        Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
         File requestFile = new File(requestFilename);
         Request request = u.unmarshal(new StreamSource(requestFile), Request.class).getValue();
 

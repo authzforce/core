@@ -33,12 +33,14 @@
  */
 package com.sun.xacml.finder;
 
+import java.net.URI;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.VersionConstraints;
-
-import java.net.URI;
+import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
+import com.thalesgroup.authzforce.core.IPdpExtension;
 
 /**
  * This is the abstract class that all <code>PolicyFinder</code> modules extend. All methods have
@@ -47,8 +49,9 @@ import java.net.URI;
  * 
  * @since 1.0
  * @author Seth Proctor
+ * @param <T> type of configuration supported by this module for initialization
  */
-public abstract class PolicyFinderModule
+public abstract class PolicyFinderModule<T extends AbstractPolicyFinder> implements IPdpExtension<T>
 {
 
 	/**

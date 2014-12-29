@@ -136,11 +136,12 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 		}
 
 		// if we got a PERMIT, return it, otherwise it's NOT_APPLICABLE
-		if (atLeastOnePermit)
+		if (atLeastOnePermit) {
 			return new Result(DecisionType.PERMIT, context.getResourceId()
 					.encode(), permitObligations);
-		else
-			return new Result(DecisionType.NOT_APPLICABLE, context
+		}
+		
+		return new Result(DecisionType.NOT_APPLICABLE, context
 					.getResourceId().encode());
 	}
 

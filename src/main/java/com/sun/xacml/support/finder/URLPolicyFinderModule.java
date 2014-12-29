@@ -33,25 +33,24 @@
  */
 package com.sun.xacml.support.finder;
 
-import com.sun.xacml.xacmlv3.Policy;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.PolicyReference;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.VersionConstraints;
-
-import com.sun.xacml.finder.PolicyFinder;
-import com.sun.xacml.finder.PolicyFinderModule;
-import com.sun.xacml.finder.PolicyFinderResult;
-
 import java.io.File;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.PolicyReference;
+import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.VersionConstraints;
+import com.sun.xacml.finder.PolicyFinder;
+import com.sun.xacml.finder.PolicyFinderModule;
+import com.sun.xacml.finder.PolicyFinderResult;
+import com.sun.xacml.xacmlv3.Policy;
+import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
 
 
 /**
@@ -72,7 +71,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.0
  * @author Seth Proctor
  */
-public class URLPolicyFinderModule extends PolicyFinderModule
+public class URLPolicyFinderModule extends PolicyFinderModule<AbstractPolicyFinder>
 {
 
     // the optional schema file for validating policies
@@ -200,5 +199,12 @@ public class URLPolicyFinderModule extends PolicyFinderModule
         // the correct type, so return it
         return new PolicyFinderResult(policy);
     }
+
+	@Override
+	public void init(AbstractPolicyFinder conf)
+	{
+		throw new UnsupportedOperationException("Initialization method not supported. Use the constructors instead.");
+		
+	}
 
 }

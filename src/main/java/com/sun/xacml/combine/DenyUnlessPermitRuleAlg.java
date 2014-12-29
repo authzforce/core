@@ -1,55 +1,20 @@
-/**
- *
- *  Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *
- *    1. Redistribution of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *    2. Redistribution in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of Sun Microsystems, Inc. or the names of contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
- *
- *  This software is provided "AS IS," without a warranty of any kind. ALL
- *  EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
- *  ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- *  OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
- *  AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
- *  AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
- *  DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
- *  REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
- *  INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
- *  OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
- *  EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- *  You acknowledge that this software is not designed or intended for use in
- *  the design, construction, operation or maintenance of any nuclear facility.
- */
-/**
- * 
- */
 package com.sun.xacml.combine;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
 
-/**
- * @author Romain Ferrari
- * 
- */
 public class DenyUnlessPermitRuleAlg extends RuleCombiningAlgorithm {
 
 	/**
@@ -91,24 +56,34 @@ public class DenyUnlessPermitRuleAlg extends RuleCombiningAlgorithm {
 	 *            a (possibly empty) non-null <code>List</code> of
 	 *            <code>CombinerParameter<code>s
 	 * @param ruleElements
-	 *            a <code>List</code> of <code>CombinerElement<code>s
+	 *            combined rules
 	 * 
 	 * @return a single unified result based on the combining logic
 	 */
 	@Override
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-			List ruleElements) {
-		Result result = null;
-		for (Rule rule: (List<Rule>)ruleElements) {
-			result = rule.evaluate(context);
-			int value = result.getDecision().ordinal();
-			if (value == Result.DECISION_PERMIT) {
+			List<Rule> ruleElements) {
+		
+		final Obligations combinedObligations = new Obligations();
+		final AssociatedAdvice combinedAssociatedAdvice = new AssociatedAdvice();
+		for (Rule rule: ruleElements) {
+			final Result result = rule.evaluate(context);
+			if(result.getDecision() == DecisionType.PERMIT) {
 				return result;
+			}
+			
+			final Obligations resultObligations = result.getObligations();
+			if(resultObligations != null) {
+				combinedObligations.getObligations().addAll(resultObligations.getObligations());
+			}
+			
+			final AssociatedAdvice resultAssociatedAdvice = result.getAssociatedAdvice();
+			if(resultAssociatedAdvice != null) {
+				combinedAssociatedAdvice.getAdvices().addAll(resultAssociatedAdvice.getAdvices());
 			}
 		}
 		
-		// FIXME: NPE if result doesn't get filled at least once (i.e. no rule)
-		return new Result(DecisionType.DENY, result.getStatus(), context.getResourceId().encode(), result.getObligations(), result.getAssociatedAdvice(), result.getAttributes());
+		return new Result(DecisionType.DENY, null, context.getResourceId().encode(), combinedObligations, combinedAssociatedAdvice, null);
 	}
 	
 

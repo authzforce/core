@@ -56,7 +56,7 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 
 public class AttributeDesignator extends AttributeDesignatorType implements Evaluatable
@@ -88,7 +88,7 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 	public static final String SUBJECT_CATEGORY_DEFAULT = "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject";
 
 	// helper array of strings
-	static final private String[] targetTypes = { "Subject", "Resource", "Action", "Environment" };
+	public static final String[] targetTypes = { "Subject", "Resource", "Action", "Environment" };
 
 	// the type of designator we are
 	private int target;
@@ -172,7 +172,7 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 		final JAXBElement<AttributeDesignatorType> match;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			match = u.unmarshal(root, AttributeDesignatorType.class);
 			AttributeDesignatorType attrDes = match.getValue();
 			AttributeDesignator myAttr = getInstance(attrDes);
@@ -476,5 +476,63 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 		tag += "/>";
 		
 		return tag;
+	}
+	
+	private final static String ATTRIBUTE_DESIGNATOR_DESCRIPTION = "AttributeDesignator[category=%s, id=%s, issuer=%s, datatype=%s]";
+
+	/**
+	 * Get description
+	 * 
+	 * @param attrDes
+	 * @return description
+	 */
+	public static String toString(AttributeDesignatorType attrDes)
+	{
+		return String.format(ATTRIBUTE_DESIGNATOR_DESCRIPTION, attrDes.getCategory(), attrDes.getAttributeId(), attrDes.getIssuer(),
+				attrDes.getDataType());
+	}
+	
+	/**
+	 * Creates JAXB SubjectAttributeDesignator
+	 * 
+	 * @param category
+	 *            attribute category
+	 * @param id
+	 *            attribute ID
+	 * @param type
+	 *            attribtue datatype
+	 * @param issuer
+	 *            attribute issuer
+	 * @return JAXB SubjectAttributeDesignatorType instance
+	 */
+	public static AttributeDesignatorType getAttributeDesignatorType(URI category, URI id, URI type, URI issuer)
+	{
+		if (id == null)
+		{
+			throw new IllegalArgumentException(
+					"Undefined id for AttributeDesignatorType ('AttributeId' is a required attribute of this element)");
+		}
+
+		if (type == null)
+		{
+			throw new IllegalArgumentException(
+					"Undefined datatype for AttributeDesignatorType ('DataType' is a required attribute of this element)");
+		}
+
+		final AttributeDesignatorType attrDes = new AttributeDesignatorType();
+		if (category != null)
+		{
+			attrDes.setCategory(category.toString());
+		}
+
+		attrDes.setAttributeId(id.toString());
+		attrDes.setDataType(type.toString());
+
+		if (issuer != null)
+		{
+			attrDes.setIssuer(issuer.toString());
+		}
+
+		return attrDes;
 	}
 }

@@ -41,7 +41,9 @@ import org.w3c.dom.Node;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.thalesgroup.authz.model.ext._3.AbstractAttributeFinder;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
+import com.thalesgroup.authzforce.core.IPdpExtension;
 
 
 /**
@@ -52,8 +54,9 @@ import com.thalesgroup.authzforce.audit.annotations.Audit;
  *
  * @since 1.0
  * @author Seth Proctor
+ * @param <T> type of configuration supported by this module for initialization
  */
-public abstract class AttributeFinderModule
+public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> implements IPdpExtension<T>
 {
 
     /**

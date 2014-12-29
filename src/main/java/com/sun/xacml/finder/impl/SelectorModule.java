@@ -58,6 +58,7 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinderModule;
+import com.thalesgroup.authz.model.ext._3.AbstractAttributeFinder;
 
 
 /**
@@ -83,7 +84,7 @@ import com.sun.xacml.finder.AttributeFinderModule;
  * @since 1.0
  * @author Seth Proctor
  */
-public class SelectorModule extends AttributeFinderModule
+public class SelectorModule extends AttributeFinderModule<AbstractAttributeFinder>
 {
     private static final Logger LOGGER =
         LoggerFactory.getLogger(SelectorModule.class);
@@ -125,7 +126,8 @@ public class SelectorModule extends AttributeFinderModule
      * @return the result of attribute retrieval, which will be a bag of
      *         attributes or an error
      */
-    public EvaluationResult findAttribute(String path, Node namespaceNode,
+    @Override
+	public EvaluationResult findAttribute(String path, Node namespaceNode,
                                           URI type, EvaluationCtx context,
                                           String xpathVersion) {
         // we only support 1.0
@@ -257,6 +259,12 @@ public class SelectorModule extends AttributeFinderModule
             return createProcessingError("unknown attribute type: " + type);
         }
     }
+
+	@Override
+	public void init(AbstractAttributeFinder conf)
+	{
+		throw new UnsupportedOperationException("Initialization method not supported. Use the default constructor instead.");
+	}
 
 //	@Override
 //	public String getAttributeSupportedId() {

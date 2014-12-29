@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.cond.ComparisonFunction;
+import com.sun.xacml.cond.Function;
 
 
 /**
@@ -54,7 +55,7 @@ public class ComparisonFunctionCluster implements FunctionCluster
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(ComparisonFunctionCluster.class);
 
-    public Set<ComparisonFunction> getSupportedFunctions() {
+    public Set<Function> getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = ComparisonFunction.getSupportedIdentifiers().iterator();
         

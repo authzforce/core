@@ -36,10 +36,6 @@ import com.sun.xacml.cond.xacmlv3.Apply;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 
-/**
- * @author Cyrille MARTINS (Thales)
- * 
- */
 @RunWith(Parameterized.class)
 public class BagFunctionsTest extends GeneralFunctionTest {
 

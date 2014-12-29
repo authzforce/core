@@ -33,21 +33,16 @@
  */
 package com.sun.xacml.support.finder;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
@@ -59,7 +54,8 @@ import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * This is a simple implementation of <code>PolicyFinderModule</code> that supports retrieval based
@@ -83,53 +79,40 @@ import com.thalesgroup.authzforce.BindingUtility;
  * @since 2.0
  * @author Seth Proctor
  */
-public class StaticRefPolicyFinderModule extends PolicyFinderModule
+public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPolicyFinder>
 {
 
-	// the list of policy URLs passed to the constructor
-	private List<String> policyLocationList;
+	/*
+	 * The list of policy URLs passed to the constructor. Order matters because one PolicySet can
+	 * make reference to another one which has to be previously defined. Not null only if the finder
+	 * module is initialized from locations of XACML <PolicySet>s.
+	 */
+	private List<URL> policyLocationList = null;
+
+	/*
+	 * List of <PolicySet>s. Not null only if the finder module is initialized directly from XACML
+	 * <PolicySet>s (JAXB).
+	 */
+	private List<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> policySetList = null;
 
 	// the map of policies
 	private PolicyCollection policies;
 
-	// the optional schema 
+	// the optional schema
 	private Schema schema = null;
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(StaticRefPolicyFinderModule.class);
 
 	/**
-	 * Creates a <code>StaticRefPolicyFinderModule</code> that provides access to the given
-	 * collection of policies. Any policy that cannot be loaded will be noted in the log, but will
-	 * not cause an error. The schema file used to validate policies is defined by the property
-	 * <code>PolicyReader.POLICY_SCHEMA_PROPERTY</code>. If the retrieved property is null, then no
-	 * schema validation will occur.
+	 * Creates policy by-reference finder module based on list of XACML PolicySets as JAXB elements
 	 * 
-	 * @param policyLocations
-	 *            a <code>List</code> of <code>String</code>s that represent URLs or files pointing
-	 *            to XACML policies
+	 * @param policySets
+	 *            a <code>List</code> of XACML <PolicySet>s
 	 */
-	public StaticRefPolicyFinderModule(List<String> policyLocations)
+	public StaticRefPolicyFinderModule(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> policySets)
 	{
-		this.policyLocationList = policyLocations;
-		this.policies = new PolicyCollection();
-
-		final String schemaFilename = System.getProperty(PolicyReader.POLICY_SCHEMA_PROPERTY);
-		if (schemaFilename == null)
-		{
-			schema = null;
-		} else
-		{
-			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			try
-			{
-				schema = schemaFactory.newSchema(new File(schemaFilename));
-			} catch (SAXException e)
-			{
-				throw new IllegalArgumentException("Unable to load policy validation schema from file defined by system property '"
-						+ PolicyReader.POLICY_SCHEMA_PROPERTY + "': '" + schemaFilename + "'", e);
-			}
-		}
+		this.policySetList = policySets;
 	}
 
 	/**
@@ -137,31 +120,17 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 	 * collection of policyLocations.
 	 * 
 	 * @param policyLocations
-	 *            a <code>List</code> of <code>String</code>s that represent URLs or files pointing
-	 *            to XACML policies
-	 * @param schemaFilename
+	 *            a <code>List</code> of <code>URL</code>s that represent URLs or files pointing to
+	 *            XACML policies
+	 * @param xacmlSchema
 	 *            the schema file to validate policies against, or null if schema validation is not
 	 *            desired
 	 */
-	public StaticRefPolicyFinderModule(List<String> policyLocations, String schemaFilename)
+	public StaticRefPolicyFinderModule(List<URL> policyLocations, Schema xacmlSchema)
 	{
 		this.policyLocationList = policyLocations;
 		this.policies = new PolicyCollection();
-
-		if (schemaFilename == null)
-		{
-			schema = null;
-		} else
-		{
-			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			try
-			{
-				schema = schemaFactory.newSchema(new File(schemaFilename));
-			} catch (SAXException e)
-			{
-				throw new IllegalArgumentException("Unable to load policy validation schema from file: '" + schemaFilename + "'", e);
-			}
-		}
+		this.schema = xacmlSchema;
 	}
 
 	/**
@@ -170,9 +139,42 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 	 * 
 	 * @return true
 	 */
+	@Override
 	public boolean isIdReferenceSupported()
 	{
 		return true;
+	}
+
+	private static IPolicy getPolicyInstanceFromJaxb(Object policyOrPolicySetJaxbObject, PolicyFinder finder)
+	{
+		final IPolicy policyInstance;
+		if (policyOrPolicySetJaxbObject instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
+		{
+			final oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policyElement = (oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) policyOrPolicySetJaxbObject;
+			try
+			{
+				policyInstance = Policy.getInstance(policyElement);
+			} catch (ParsingException | UnknownIdentifierException e)
+			{
+				throw new IllegalArgumentException("Error parsing Policy: " + policyElement.getPolicyId(), e);
+			}
+		} else if (policyOrPolicySetJaxbObject instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
+		{
+			final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySetElement = (oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) policyOrPolicySetJaxbObject;
+			try
+			{
+				policyInstance = PolicySet.getInstance(policySetElement, finder);
+			} catch (ParsingException | UnknownIdentifierException e)
+			{
+				throw new IllegalArgumentException("Error parsing PolicySet: " + policySetElement.getPolicySetId(), e);
+			}
+		} else
+		{
+			throw new IllegalArgumentException("Unexpected element found as root of the policy document: "
+					+ policyOrPolicySetJaxbObject.getClass().getSimpleName());
+		}
+
+		return policyInstance;
 	}
 
 	/**
@@ -182,83 +184,52 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 	 * @param finder
 	 *            the <code>PolicyFinder</code> using this module
 	 */
+	@Override
 	public void init(PolicyFinder finder)
 	{
 		// now that we have the PolicyFinder, we can load the policies
 		// PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
-		final File baseDir = finder.getBaseDirectory();
-		for (final String policyLocation : policyLocationList)
+
+		/*
+		 * Try loading from JAXB <PolicySet>s first.
+		 */
+		if (policySetList != null)
+		{
+			for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySet : policySetList)
+			{
+				final IPolicy policyInstance = getPolicyInstanceFromJaxb(policySet, finder);
+				if (!policies.addPolicy(policyInstance))
+				{
+					LOGGER.warn("Tried to load the same policy multiple times: id={}", policyInstance.getId());
+				}
+			}
+
+			return;
+		}
+
+		// Else load from list of policy locations
+		for (final URL policyLocation : policyLocationList)
 		{
 			Object jaxbObj;
 			final Unmarshaller unmarshaller;
 			try
 			{
-				unmarshaller = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
-			}
-				catch (JAXBException e1)
-				{
-					throw new IllegalArgumentException("Failed to create JAXB marshaller for unmarshalling Policy XML document", e1);
-				}
-			
-				unmarshaller.setSchema(schema);
-			try {
-				// first try to load it as a URL
-				final URL url = new URL(policyLocation);
-				jaxbObj = unmarshaller.unmarshal(url);
-			} catch (MalformedURLException murle)
-			{
-				// assume that this is a filename, and try again
-				final File file = new File(policyLocation);
-				final File policyFile;
-				if (!file.isAbsolute() && baseDir != null)
-				{
-					policyFile = new File(baseDir, policyLocation);
-				} else
-				{
-					policyFile = file;
-				}
-				
-				try
-				{
-					jaxbObj = unmarshaller.unmarshal(policyFile);
-				} catch (JAXBException e)
-				{
-					throw new IllegalArgumentException("Failed to unmarshall Policy XML document from policy location: " + policyLocation, e);
-				}
+				unmarshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			} catch (JAXBException e1)
 			{
-				throw new IllegalArgumentException("Failed to unmarshall Policy XML document from policy location: " + policyLocation, e1);
+				throw new IllegalArgumentException("Failed to create JAXB marshaller for unmarshalling Policy XML document", e1);
 			}
 
-			final IPolicy policyInstance;
-			if (jaxbObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
+			unmarshaller.setSchema(schema);
+			try
 			{
-				final oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policyElement = (oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbObj;
-				try
-				{
-					policyInstance = Policy.getInstance(policyElement);
-				} catch (ParsingException|UnknownIdentifierException e)
-				{
-					throw new IllegalArgumentException("Error parsing Policy: " + policyElement.getPolicyId(), e);
-				} 
-			} else if (jaxbObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
+				jaxbObj = unmarshaller.unmarshal(policyLocation);
+			} catch (JAXBException e)
 			{
-				final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySetElement = (oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbObj;
-				try
-				{
-					policyInstance = PolicySet.getInstance(policySetElement, finder);
-				} catch (UnknownIdentifierException e)
-				{
-					throw new IllegalArgumentException("Unknown policy combining algorithm ID", e);
-				} catch (ParsingException e)
-				{
-					throw new IllegalArgumentException("Error parsing PolicySet: " + policySetElement.getPolicySetId(), e);
-				}
-			} else
-			{
-				throw new IllegalArgumentException("Unexpected element found as root of the policy document: " + jaxbObj.getClass().getSimpleName());
+				throw new IllegalArgumentException("Failed to unmarshall Policy XML document from policy location: " + policyLocation, e);
 			}
 
+			final IPolicy policyInstance = getPolicyInstanceFromJaxb(jaxbObj, finder);
 			// we loaded the policy, so try putting it in the collection
 			if (!policies.addPolicy(policyInstance))
 			{
@@ -285,6 +256,7 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 	 * 
 	 * @return the result of looking for a matching policy
 	 */
+	@Override
 	public PolicyFinderResult findPolicy(URI idReference, int type, VersionConstraints constraints, PolicyMetaData parentMetaData)
 	{
 		final IPolicy policyInstance = policies.getPolicy(idReference.toString(), type, constraints);
@@ -295,6 +267,13 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule
 		}
 
 		return new PolicyFinderResult(policyInstance);
+	}
+
+	@Override
+	public void init(AbstractPolicyFinder conf)
+	{
+		throw new UnsupportedOperationException("Initialization method not supported. Use the constructors instead.");
+		
 	}
 
 }

@@ -20,10 +20,6 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.Apply;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
-/**
- * @author Cyrille MARTINS (Thales)
- * 
- */
 @RunWith(Parameterized.class)
 public class HigherOrderFunctionsTest extends GeneralFunctionTest {
 

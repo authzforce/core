@@ -67,13 +67,13 @@ public class AttributeFinder
 {
 
 	// the list of all modules
-	private List<AttributeFinderModule> allModules;
+	private List<AttributeFinderModule<?>> allModules;
 
 	//
-	private List<AttributeFinderModule> designatorModules;
+	private List<AttributeFinderModule<?>> designatorModules;
 
 	//
-	private List<AttributeFinderModule> selectorModules;
+	private List<AttributeFinderModule<?>> selectorModules;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeFinder.class);
 
@@ -93,7 +93,7 @@ public class AttributeFinder
 	 * 
 	 * @return a list of <code>AttributeFinderModule</code>s
 	 */
-	public List<AttributeFinderModule> getModules()
+	public List<AttributeFinderModule<?>> getModules()
 	{
 		return new ArrayList<>(allModules);
 	}
@@ -105,22 +105,21 @@ public class AttributeFinder
 	 * @param modules
 	 *            a list of <code>AttributeFinderModule</code>s
 	 */
-	public void setModules(List<AttributeFinderModule> modules)
+	public void setModules(List<AttributeFinderModule<?>> modules)
 	{
 		/**
-    	 * BEGIN CHANGE
     	 * Invalidate caches of old/replaced modules since they are no longer used
-    	 */
-    	// 
-    	for(final Object module: this.allModules) {
-    		((AttributeFinderModule) module).invalidateCache();
+    	 */ 
+    	for(final AttributeFinderModule<?> module: this.allModules) {
+    		module.invalidateCache();
     	}
+    	
+    	allModules.clear();
+		allModules.addAll(modules);
+		designatorModules.clear();
+		selectorModules.clear();
 
-		allModules = new ArrayList<>(modules);
-		designatorModules = new ArrayList<>();
-		selectorModules = new ArrayList<>();
-
-		for (AttributeFinderModule module: modules)
+		for (AttributeFinderModule<?> module: modules)
 		{
 			if (module.isDesignatorSupported())
 			{
@@ -160,7 +159,7 @@ public class AttributeFinder
 			int designatorType)
 	{
 		// go through each module in order
-		for (AttributeFinderModule module: designatorModules)
+		for (AttributeFinderModule<?> module: designatorModules)
 		{
 			// see if the module supports this type
 			Set<Integer> types = module.getSupportedDesignatorTypes();
@@ -179,13 +178,8 @@ public class AttributeFinder
 					return result;
 				}
 
-				// LOGGER.debug("Finish to resolv attribute value for attribute: "+attributeId
-				// +" values are : ");
-				// AuditLogs audit = AuditLogs.getInstance();
 				/*
 				 * Cache management (Deleting cache)
-				 * 
-				 * @author romain.ferrari[AT]thalesgroup.com
 				 */
 				/**
                  * FIXME: explain why the module cache needs to be invalidated here. Is there a reason?
@@ -194,35 +188,6 @@ public class AttributeFinder
 
 				// if the result wasn't empty, then return the result
 				BagAttribute bag = (BagAttribute) (result.getAttributeValue());
-				// BagAttribute auditBag = bag;
-				// Iterator iter = auditBag.getValue().iterator();
-				// AttributesResolved attrResolv = null;
-				/*
-				 * Parsing for auditlog (FIX: Romain Ferrari)
-				 * 
-				 * @author romain.guignard[AT]thalesgroup.com
-				 */
-				// while (iter.hasNext()){
-				// String attrval = iter.next().toString();
-				// attrResolv = new AttributesResolved();
-				// try {
-				// if (attributeType.equals(new URI("http://www.w3.org/2001/XMLSchema#string"))) {
-				// attrResolv.setAttributeValue(attrval.split(":")[1]);
-				// } else if (attributeType.equals(new
-				// URI("http://www.w3.org/2001/XMLSchema#integer"))) {
-				// attrResolv.setAttributeValue(attrval.split("@")[1]);
-				// }
-				// } catch (URISyntaxException e) {
-				// LOGGER.fatal("Error while building URI");
-				// LOGGER.fatal(e.getLocalizedMessage());
-				// }
-				// attrResolv.setAttributeId(attributeId);
-				// audit.getAttrResolv().add(attrResolv);
-				// LOGGER.debug("Val : "+attrval);
-				// }
-				/*
-				 * End of parsing for auditlog (NOTE: Romain Guignard)
-				 */
 				if (!bag.isEmpty())
 				{
 					return result;
@@ -259,7 +224,7 @@ public class AttributeFinder
 	public EvaluationResult findAttribute(String contextPath, Node namespaceNode, URI attributeType, EvaluationCtx context, String xpathVersion)
 	{
 		// go through each module in order
-		for (AttributeFinderModule module: selectorModules)
+		for (AttributeFinderModule<?> module: selectorModules)
 		{
 			// see if the module can find an attribute value
 			EvaluationResult result = module.findAttribute(contextPath, namespaceNode, attributeType, context, xpathVersion);

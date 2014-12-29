@@ -47,6 +47,8 @@ import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
+import com.thalesgroup.authz.model.ext._3.AbstractPdpExtension;
+import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
 
 /**
  * This is a basic implementation of <code>PolicyFinderModule</code> that accepts already created
@@ -64,7 +66,7 @@ import com.sun.xacml.xacmlv3.Policy;
  * @since 2.0
  * @author Seth Proctor
  */
-public class BasicPolicyFinderModule extends PolicyFinderModule
+public class BasicPolicyFinderModule extends PolicyFinderModule<AbstractPolicyFinder>
 {
 
 	// the collections used to handle both kinds of policies
@@ -309,6 +311,12 @@ public class BasicPolicyFinderModule extends PolicyFinderModule
 		} else {
 			throw new UnsupportedOperationException("Finding policy instances of '"+policyInstance.getClass()+"' is not supported");
 		}
+	}
+
+	@Override
+	public void init(AbstractPolicyFinder conf)
+	{
+		throw new UnsupportedOperationException("Initialization method not supported. Use the constructors instead.");
 	}
 
 }

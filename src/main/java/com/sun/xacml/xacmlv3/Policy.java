@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -56,20 +55,17 @@ import com.sun.xacml.Rule;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgorithm;
+import com.sun.xacml.combine.RuleCombiningAlgorithm;
 import com.sun.xacml.cond.VariableManager;
 import com.sun.xacml.ctx.Result;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
 
-/**
- * @author Romain Ferrari
- * 
- */
 public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy implements IPolicy
 {
 
 	// the meta-data associated with this policy
 	private PolicyMetaData metaData;
-	private CombiningAlgorithm ruleCombiningAlg;
+	private RuleCombiningAlgorithm ruleCombiningAlg;
 
 	/**
 	 * Logger used for all classes
@@ -327,11 +323,6 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	@Override
 	public MatchResult match(EvaluationCtx context)
 	{
-		/**
-		 * Romain Ferrari (Thales)
-		 * 
-		 * @BUG: NPE
-		 */
 		if (target == null)
 		{
 			throw new RuntimeException("No target found in policy with id=" + policyId);

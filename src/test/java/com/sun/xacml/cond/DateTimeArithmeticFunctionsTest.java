@@ -17,10 +17,6 @@ import com.sun.xacml.attr.DayTimeDurationAttribute;
 import com.sun.xacml.attr.YearMonthDurationAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
-/**
- * @author Cyrille MARTINS (Thales)
- * 
- */
 @RunWith(Parameterized.class)
 public class DateTimeArithmeticFunctionsTest extends GeneralFunctionTest {
 

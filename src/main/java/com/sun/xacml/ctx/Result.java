@@ -62,7 +62,7 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.Obligation;
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Result XML object from the Context
@@ -309,8 +309,8 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 			AssociatedAdvice advices, List<Attributes> attributes) throws IllegalArgumentException
 	{
 		// check that decision is valid
-		if ((decision.ordinal() != DECISION_PERMIT) && (decision.ordinal() != DECISION_DENY) && (decision.ordinal() != DECISION_INDETERMINATE)
-				&& (decision.ordinal() != DECISION_NOT_APPLICABLE))
+		if ((decision != DecisionType.PERMIT) && (decision != DecisionType.DENY) && (decision != DecisionType.INDETERMINATE)
+				&& (decision != DecisionType.NOT_APPLICABLE))
 			throw new IllegalArgumentException("invalid decision value");
 
 		this.decision = decision;
@@ -453,7 +453,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 			{
 				try
 				{
-					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 					JAXBElement<Advice> advice = u.unmarshal(node, Advice.class);
 					advices.getAdvices().add(advice.getValue());
 				} catch (JAXBException e)
@@ -481,7 +481,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 			{
 				try
 				{
-					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 					JAXBElement<Attributes> attrs = u.unmarshal(root, Attributes.class);
 					attributes.add(attrs.getValue());
 				} catch (JAXBException e)
@@ -579,7 +579,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 		PrintStream out = new PrintStream(output);
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{
@@ -592,7 +592,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 		final StringWriter out = new StringWriter();
 		try
 		{
-			final Marshaller marshaller = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			final Marshaller marshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			// Property to remove XML prolog
 			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 			marshaller.marshal(this, out);

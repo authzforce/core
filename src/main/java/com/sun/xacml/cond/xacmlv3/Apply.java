@@ -66,7 +66,7 @@ import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionTypeException;
 import com.sun.xacml.cond.VariableManager;
 import com.sun.xacml.cond.VariableReference;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 
 /**
@@ -542,7 +542,7 @@ public class Apply extends ApplyType implements Evaluatable
     public void encode(OutputStream output, Indenter indenter) {
     	PrintStream out = new PrintStream(output);
 		try {
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Apply",e);

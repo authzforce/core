@@ -39,17 +39,15 @@ package com.sun.xacml.combine;
 import java.net.URI;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
 
-/**
- * @author Romain Ferrari
- * 
- */
 public class PermitUnlessDenyRuleAlg extends RuleCombiningAlgorithm {
 
 	/**
@@ -97,18 +95,27 @@ public class PermitUnlessDenyRuleAlg extends RuleCombiningAlgorithm {
 	 */
 	@Override
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-			List ruleElements) {
-		Result result = null;
-		for (Rule rule: (List<Rule>) ruleElements) {
-			result = rule.evaluate(context);
-			int value = result.getDecision().ordinal();
-			if (value == DecisionType.DENY.ordinal()) {
+			List<Rule> ruleElements) {
+		final Obligations combinedObligations = new Obligations();
+		final AssociatedAdvice combinedAssociatedAdvice = new AssociatedAdvice();
+		for (Rule rule: ruleElements) {
+			final Result result = rule.evaluate(context);
+			if(result.getDecision() == DecisionType.DENY) {
 				return result;
 			}
+			
+			final Obligations resultObligations = result.getObligations();
+			if(resultObligations != null) {
+				combinedObligations.getObligations().addAll(resultObligations.getObligations());
+			}
+			
+			final AssociatedAdvice resultAssociatedAdvice = result.getAssociatedAdvice();
+			if(resultAssociatedAdvice != null) {
+				combinedAssociatedAdvice.getAdvices().addAll(resultAssociatedAdvice.getAdvices());
+			}
 		}
-
-		// FIXME: NPE if result doesn't get filled at least once (i.e. no rule)
-		return new Result(DecisionType.PERMIT, result.getStatus(), context.getResourceId().encode(), result.getObligations(), result.getAssociatedAdvice(), result.getAttributes());
+		
+		return new Result(DecisionType.PERMIT, null, context.getResourceId().encode(), combinedObligations, combinedAssociatedAdvice, null);
 	}
 
 }

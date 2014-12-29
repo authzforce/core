@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -46,82 +46,27 @@ import com.sun.xacml.ctx.Result;
  * these handler classes (ie. use composition instead of extension), and these Policy handler class
  * could then extend AbstractPolicy like before.
  * 
- * @author Cyril DANGERVILLE
- * 
  */
-public interface IPolicy
+public interface IPolicy extends IDecidable
 {
-	/**
-	 * Given the input context sees whether or not the request matches this policy element. This must be
-	 * called by combining algorithms before they evaluate a policy. This is also used in the
-	 * initial policy finding operation to determine which top-level policies might apply to the
-	 * request.
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return the result of trying to match the policy and the request
-	 */
-	MatchResult match(EvaluationCtx context);
-
-	/**
-	 * Tries to evaluate the policy by calling the combining algorithm on the given policies or
-	 * rules. The <code>match</code> method must always be called first, and must always return
-	 * MATCH, before this method is called.
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return the result of evaluation
-	 */
-	Result evaluate(EvaluationCtx context);
-
-	/**
-	 * Get metadata
-	 * 
-	 * @return metadata
-	 */
-	PolicyMetaData getMetaData();
-
-	/**
-	 * Get element ID
-	 * 
-	 * @return ID
-	 */
-	URI getId();
-
 	/**
 	 * Get element version
 	 * 
 	 * @return version identifier
 	 */
 	String getVersion();
-
-	/**
-	 * Returns the Set of obligations for this policy, which may be empty
-	 * 
-	 * @return the policy's obligations
-	 */
-	ObligationExpressions getObligationExpressions();
-
-	/**
-	 * Returns the target for this policy
-	 * 
-	 * @return the policy's target
-	 */
-	oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget();
 	
 	/**
-	 * Returns the given description of this policy or null if there is no description
+	 * Get metadata
 	 * 
-	 * @return the description or null
+	 * @return metadata
 	 */
-	String getDescription();
+	PolicyMetaData getMetaData();
 	
 	List getChildren();
 	
 	List getChildElements();
-
+	
 	/**
 	 * @return combining algorithm (policy combining for PolicySets, rule combining for Policies)
 	 */

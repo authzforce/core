@@ -40,6 +40,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.xacml.cond.Function;
 import com.sun.xacml.cond.NotFunction;
 
 
@@ -57,7 +58,7 @@ public class NotFunctionCluster implements FunctionCluster
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(NotFunctionCluster.class);
 	
-    public Set<NotFunction> getSupportedFunctions() {
+    public Set<Function> getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = NotFunction.getSupportedIdentifiers().iterator();
 

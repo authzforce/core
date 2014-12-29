@@ -64,7 +64,7 @@ import com.sun.xacml.cond.xacmlv3.Apply;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.cond.xacmlv3.ExpressionTools;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents the XACML ConditionType type. It contains exactly one child expression that is boolean
@@ -378,7 +378,7 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 		PrintStream out = new PrintStream(output);
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{

@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.cond.EqualFunction;
+import com.sun.xacml.cond.Function;
 
 
 /**
@@ -57,9 +58,9 @@ public class EqualFunctionCluster implements FunctionCluster
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(EqualFunctionCluster.class);
 
-    public Set<EqualFunction> getSupportedFunctions() {
+    public Set<Function> getSupportedFunctions() {
     	
-    	Set<EqualFunction> result = new HashSet<EqualFunction>();
+    	Set<Function> result = new HashSet<>();
     	LOGGER.debug("Initialize Equals function");
     	Set<String> supportedEqualFunction = EqualFunction.getSupportedIdentifiers();
     	for (String equalFunction : supportedEqualFunction) {

@@ -17,10 +17,6 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
-/**
- * @author Cyrille MARTINS (Thales)
- * 
- */
 @RunWith(Parameterized.class)
 public class NonNumericComparisonFunctionsTest extends GeneralFunctionTest {
 

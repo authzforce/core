@@ -34,8 +34,9 @@
 package com.sun.xacml.finder;
 
 import com.sun.xacml.EvaluationCtx;
-
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.thalesgroup.authz.model.ext._3.AbstractResourceFinder;
+import com.thalesgroup.authzforce.core.IPdpExtension;
 
 
 /**
@@ -46,8 +47,9 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
  *
  * @since 1.0
  * @author Seth Proctor
+ * @param <T> type of configuration supported by this module for initialization
  */
-public abstract class ResourceFinderModule
+public abstract class ResourceFinderModule<T extends AbstractResourceFinder> implements IPdpExtension<T>
 {
 
     /**

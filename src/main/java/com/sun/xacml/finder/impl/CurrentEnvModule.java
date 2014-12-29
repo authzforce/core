@@ -48,6 +48,7 @@ import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinderModule;
+import com.thalesgroup.authz.model.ext._3.AbstractAttributeFinder;
 
 
 /**
@@ -65,7 +66,7 @@ import com.sun.xacml.finder.AttributeFinderModule;
  * @since 1.0
  * @author Seth Proctor
  */
-public class CurrentEnvModule extends AttributeFinderModule
+public class CurrentEnvModule extends AttributeFinderModule<AbstractAttributeFinder>
 {
     
     /**
@@ -230,4 +231,10 @@ public class CurrentEnvModule extends AttributeFinderModule
 
         return new EvaluationResult(bag);
     }
+
+	@Override
+	public void init(AbstractAttributeFinder conf)
+	{
+		throw new UnsupportedOperationException("Initialization method not supported. Use the default constructor instead.");
+	}
 }

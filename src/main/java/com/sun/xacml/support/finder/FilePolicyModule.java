@@ -39,7 +39,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -55,6 +54,7 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.xacmlv3.IPolicy;
+import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
 
 /**
  * This module represents a collection of files containing polices, each of which will be searched
@@ -77,7 +77,7 @@ import com.sun.xacml.xacmlv3.IPolicy;
  * @since 1.0
  * @author Seth Proctor
  */
-public class FilePolicyModule extends PolicyFinderModule
+public class FilePolicyModule extends PolicyFinderModule<AbstractPolicyFinder>
 {
 
 	// the schema file we're using, if any
@@ -334,6 +334,12 @@ public class FilePolicyModule extends PolicyFinderModule
         } catch (TopLevelPolicyException tlpe) {
             return new PolicyFinderResult(tlpe.getStatus());
         }
+	}
+
+	@Override
+	public void init(AbstractPolicyFinder conf)
+	{
+		throw new UnsupportedOperationException("Initialization method not supported. Use the constructors instead.");
 	}
 
 }

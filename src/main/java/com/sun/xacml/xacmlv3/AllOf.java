@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -12,9 +12,6 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- */
-/**
- * 
  */
 package com.sun.xacml.xacmlv3;
 
@@ -34,10 +31,6 @@ import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.TargetSection;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 
-/**
- * @author Romain Ferrari
- * 
- */
 public class AllOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf {
 	/**
 	 * Logger used for all classes

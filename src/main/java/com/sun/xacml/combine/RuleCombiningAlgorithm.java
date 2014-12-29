@@ -39,8 +39,8 @@ import java.util.List;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 
 import com.sun.xacml.EvaluationCtx;
+import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
-import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 
 /**
@@ -74,6 +74,6 @@ public abstract class RuleCombiningAlgorithm extends CombiningAlgorithm
      * @return a single unified result based on the combining logic
      */    
     public abstract Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                                   List ruleElements);
+                                   List<Rule> ruleElements);
 
 }

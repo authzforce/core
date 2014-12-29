@@ -210,7 +210,7 @@ public abstract class CombiningAlgFactory
      *
      * @throws UnknownIdentifierException algId is unknown
      */
-    public abstract CombiningAlgorithm createAlgorithm(URI algId)
+    public abstract <T extends CombiningAlgorithm> T createAlgorithm(URI algId)
         throws UnknownIdentifierException;
 
     /**

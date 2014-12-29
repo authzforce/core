@@ -40,6 +40,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.xacml.cond.Function;
 import com.sun.xacml.cond.MatchFunction;
 
 /**
@@ -55,8 +56,8 @@ public class MatchFunctionCluster implements FunctionCluster {
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(MatchFunctionCluster.class);
 
-	public Set<MatchFunction> getSupportedFunctions() {
-		Set<MatchFunction> set = new HashSet<MatchFunction>();
+	public Set<Function> getSupportedFunctions() {
+		Set<Function> set = new HashSet<>();
 		Iterator it = MatchFunction.getSupportedIdentifiers().iterator();
 		
 		LOGGER.debug("Initialize Match function");

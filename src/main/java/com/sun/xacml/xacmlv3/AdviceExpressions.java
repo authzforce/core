@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,12 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
-/**
- * @author Romain Ferrari
- * 
- */
 public class AdviceExpressions extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AdviceExpressions.class);
@@ -57,7 +53,7 @@ public class AdviceExpressions extends oasis.names.tc.xacml._3_0.core.schema.wd_
 			if (node.getNodeName().equals("AdviceExpression")) {
 				final JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions> match;
 				try {
-					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 					match =  u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions.class);
 					adviceExpressions = match.getValue();
 				} catch (Exception e) {

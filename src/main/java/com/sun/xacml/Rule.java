@@ -35,6 +35,7 @@ package com.sun.xacml;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -65,9 +66,10 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.xacmlv3.AdviceExpressions;
+import com.sun.xacml.xacmlv3.IDecidable;
 import com.sun.xacml.xacmlv3.Target;
-import com.thalesgroup.authzforce.BindingUtility;
 import com.thalesgroup.authzforce.audit.annotations.Audit;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XACML type. This has a target for
@@ -77,7 +79,7 @@ import com.thalesgroup.authzforce.audit.annotations.Audit;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
+public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule implements IDecidable
 {
 
 	// the attributes associated with this Rule
@@ -89,6 +91,8 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 	// private TargetType target = null;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Rule.class);
+	
+	private final URI uri;
 
 	/**
 	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
@@ -115,6 +119,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 			oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices)
 	{
 		this.ruleId = id;
+		this.uri = URI.create(ruleId);
 		this.effect = effect;
 		this.description = description;
 		this.target = target;
@@ -146,6 +151,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations)
 	{
 		this.ruleId = id;
+		this.uri = URI.create(ruleId);
 		this.effect = effect;
 		this.description = description;
 		this.target = target;
@@ -173,6 +179,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 			oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition)
 	{
 		this.ruleId = id;
+		this.uri = URI.create(ruleId);
 		this.effect = effect;
 		this.description = description;
 		this.target = target;
@@ -201,6 +208,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 	public Rule(String id, EffectType effect, String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, Apply condition)
 	{
 		this.ruleId = id;
+		this.uri = URI.create(ruleId);
 		this.effect = effect;
 		this.description = description;
 		this.target = target;
@@ -347,6 +355,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 	 * 
 	 * @return the result of trying to match this rule and the request
 	 */
+	@Override
 	public MatchResult match(EvaluationCtx context)
 	{
 		if (target == null)
@@ -376,6 +385,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 	 * 
 	 * @return the result of the evaluation
 	 */
+	@Override
 	@Audit(type = Audit.Type.RULE)
 	public Result evaluate(EvaluationCtx context)
 	{
@@ -407,11 +417,6 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 					return returnResult;
 				}
 			}
-
-			// LOGGER.debug("Found a rule that match the request");
-			// LOGGER.debug("RuleId: "+idAttr);
-			// AuditLogs audit = AuditLogs.getInstance();
-			// audit.setRuleId(idAttr.toString());
 
 			// if there's no condition, then we just return the effect...
 			if (condition == null)
@@ -544,7 +549,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 		PrintStream out = new PrintStream(output);
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{
@@ -556,6 +561,12 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule
 	public String toString()
 	{
 		return this.getClass().getSimpleName() + " id: \"" + this.ruleId + "\"";
+	}
+
+	@Override
+	public URI getId()
+	{
+		return uri;
 	}
 
 }

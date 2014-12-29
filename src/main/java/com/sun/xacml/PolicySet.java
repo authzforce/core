@@ -39,7 +39,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +64,7 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 import com.sun.xacml.xacmlv3.Target;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents one of the two top-level constructs in XACML, the PolicySetType. This can contain
@@ -381,9 +380,9 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 	{
 		super(root, "PolicySet", "PolicyCombiningAlgId");
 
-		List<IPolicy> policies = new ArrayList<>();
-		HashMap policyParameters = new HashMap();
-		HashMap policySetParameters = new HashMap();
+		final List<IPolicy> policies = new ArrayList<>();
+		final Map<String, List<CombinerParameter>> policyParameters = new HashMap<>();
+		final Map<String, List<CombinerParameter>> policySetParameters = new HashMap<>();
 		PolicyMetaData metaData = getMetaData();
 
 		// collect the PolicySet-specific elements
@@ -422,26 +421,22 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 		}
 
 		// now make sure that we can match up any parameters we may have
-		// found to a cooresponding Policy or PolicySet...
-		List<PolicyCombinerElement> elements = new ArrayList<>();
-		Iterator<IPolicy> it = policies.iterator();
+		// found to a corresponding Policy or PolicySet...
+		final List<PolicyCombinerElement> elements = new ArrayList<>();
 
 		// right now we have to go though each policy and based on several
 		// possible cases figure out what parameters might apply...but
 		// there should be a better way to do this
-
-		while (it.hasNext())
+		for (final IPolicy policy: policies)
 		{
-			IPolicy policy = it.next();
-			List list = null;
-
+			final List<CombinerParameter> combinerParamList;
 			if (policy instanceof Policy)
 			{
-				list = (List) (policyParameters.remove(((Policy) policy).getPolicyId()));
+				combinerParamList = policyParameters.remove(policy.getId());
 			} else if (policy instanceof PolicySet)
 			{
 				// TODO: Handle PolicySetIdReference
-				list = (List) (policySetParameters.remove(((PolicySet) policy).getPolicySetId()));
+				combinerParamList = policySetParameters.remove(policy.getId());
 			} else
 			{
 				PolicyReference ref = (PolicyReference) policy;
@@ -449,14 +444,14 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 
 				if (ref.getReferenceType() == PolicyReference.POLICY_REFERENCE)
 				{
-					list = (List) (policyParameters.remove(id));
+					combinerParamList = policyParameters.remove(id);
 				} else
 				{
-					list = (List) (policySetParameters.remove(id));
+					combinerParamList = policySetParameters.remove(id);
 				}
 			}
 			
-			elements.add(new PolicyCombinerElement(policy, list));
+			elements.add(new PolicyCombinerElement(policy, combinerParamList));
 			
 		}
 
@@ -482,7 +477,7 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 	/**
 	 * Private helper method that handles parsing a collection of parameters
 	 */
-	private static void paramaterHelper(HashMap<String, List<CombinerParameter>> parameters, Node root, String prefix) throws ParsingException
+	private static void paramaterHelper(Map<String, List<CombinerParameter>> parameters, Node root, String prefix) throws ParsingException
 	{
 		String ref = root.getAttributes().getNamedItem(prefix + "IdRef").getNodeValue();
 
@@ -628,7 +623,7 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 		PrintStream out = new PrintStream(output);
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{

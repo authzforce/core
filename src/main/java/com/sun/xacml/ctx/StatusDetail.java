@@ -43,7 +43,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.appsec.util.Utils;
 
 
 /**
@@ -124,7 +124,7 @@ public class StatusDetail
      * Private helper routine that converts text into a node
      */
     private static Node textToNode(String encoded) throws ParsingException {
-    	final DocumentBuilder db = BindingUtility.getDocumentBuilder(false);
+    	final DocumentBuilder db = Utils.THREAD_LOCAL_NS_UNAWARE_DOC_BUILDER.get();
         try {
             String text = "<?xml version=\"1.0\"?>\n";
             byte [] bytes = (text + encoded).getBytes();

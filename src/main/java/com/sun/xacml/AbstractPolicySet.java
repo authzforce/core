@@ -33,12 +33,9 @@
  */
 package com.sun.xacml;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -59,7 +56,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.xacml.combine.CombinerElement;
 import com.sun.xacml.combine.CombinerParameter;
 import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgorithm;
@@ -69,7 +65,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Target;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents an instance of an XACML policy.
@@ -84,32 +80,13 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	// atributes associated with this policy
 	// private URI idAttr;
 	// private String version;
-	private CombiningAlgorithm combiningAlg;
-
-	// the elements in the policy
-	// private String description;
-	// private TargetType target;
+	private PolicyCombiningAlgorithm combiningAlg;
 
 	// the value in defaults, or null if there was no default value
 	private String defaultVersion;
 
 	// the meta-data associated with this policy
 	private PolicyMetaData metaData;
-
-	// the child elements under this policy represented simply as the
-	// PolicyTreeElements...
-	private List children;
-	// ...or the CombinerElements that are passed to combining algorithms
-	private List childElements;
-
-	// any obligations held by this policy
-	// private Set obligations;
-
-	// any obligations held by this policy
-	// private Set advice;
-
-	// the list of combiner parameters
-	// private List parameters;
 
 	// the logger we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPolicySet.class);
@@ -238,7 +215,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			this.policySetsAndPoliciesAndPolicySetIdReferences = Collections.EMPTY_LIST;
 		} else
 		{
-			this.policySetsAndPoliciesAndPolicySetIdReferences = Collections.unmodifiableList(new ArrayList(parameters));
+			this.policySetsAndPoliciesAndPolicySetIdReferences = Collections.unmodifiableList(new ArrayList<>(parameters));
 		}
 	}
 
@@ -292,13 +269,6 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			throw new ParsingException("Error parsing policy combining algorithm" + " in " + policyPrefix, e);
 		}
 
-		// ...and make sure it's the right kind
-		if (policyPrefix.equals("PolicySet"))
-		{
-			if (!(combiningAlg instanceof PolicyCombiningAlgorithm))
-				throw new ParsingException("PolicySet (id=" + this.policySetId + ") must use a Policy " + "Combining Algorithm");
-		}
-
 		// do an initial pass through the elements to pull out the
 		// defaults, if any, so we can setup the meta-data
 		NodeList _children = root.getChildNodes();
@@ -320,7 +290,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		 * which is NOT VALID against the XACML schema.
 		 */
 		obligationExpressions = null;
-		this.policySetsAndPoliciesAndPolicySetIdReferences = new ArrayList();
+		this.policySetsAndPoliciesAndPolicySetIdReferences = new ArrayList<>();
 		/*
 		 * obligationExpressions must be null by default, if you create new AdviceExpressions() in
 		 * this case, the result AssociatedAdvice will be marshalled to empty <AssociatedAdvice />
@@ -328,7 +298,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		 */
 		adviceExpressions = null;
 		_children = root.getChildNodes();
-		List myPolicies = new ArrayList();
+//		List myPolicies = new ArrayList<>();
 
 		for (int i = 0; i < _children.getLength(); i++)
 		{
@@ -380,7 +350,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	/**
 	 * Helper routine to parse the obligation data
 	 */
-	private void parseObligations(Node root) throws ParsingException
+	private void parseObligations(Node root)
 	{
 		NodeList nodes = root.getChildNodes();
 		for (int i = 0; i < nodes.getLength(); i++)
@@ -391,7 +361,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 				JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions> match = null;
 				try
 				{
-					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+					Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 					match = u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions.class);
 					obligationExpressions = match.getValue();
 				} catch (Exception e)
@@ -405,38 +375,11 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	}
 
 	/**
-	 * Helper routine to parse the obligation data
-	 */
-	private void parseAdvicesExpressions(Node root) throws ParsingException
-	{
-		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++)
-		{
-			Node node = nodes.item(i);
-			if (node.getNodeName().equals("AdviceExpressions"))
-			{
-				JAXBElement<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions> match = null;
-				try
-				{
-					Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
-					match = u.unmarshal(root, oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions.class);
-					adviceExpressions = match.getValue();
-				} catch (Exception e)
-				{
-					LOGGER.error("Error unmarshalling AdviceExpressions", e);
-				}
-
-				break;
-			}
-		}
-	}
-
-	/**
 	 * There used to be multiple things in the defaults type, but now there's just the one string
 	 * that must be a certain value, so it doesn't seem all that useful to have a class for
 	 * this...we could always bring it back, however, if it started to do more
 	 */
-	private void handleDefaults(Node root) throws ParsingException
+	private void handleDefaults(Node root)
 	{
 		defaultVersion = null;
 		NodeList nodes = root.getChildNodes();
@@ -452,10 +395,10 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	/**
 	 * Handles all the CombinerParameters in the policy or policy set
 	 */
-	private List handleParameters(Node root) throws ParsingException
+	private static List handleParameters(Node root) throws ParsingException
 	{
 		NodeList nodes = root.getChildNodes();
-		List parameters = new ArrayList();
+		final List<CombinerParameter> parameters = new ArrayList<>();
 
 		for (int i = 0; i < nodes.getLength(); i++)
 		{
@@ -472,26 +415,15 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * 
 	 * @return the policy id
 	 */
+	@Override
 	public URI getId()
 	{
 		if (policySetId != null)
 		{
 			return URI.create(policySetId);
-		} else
-		{
-			return null;
 		}
-	}
-
-	/**
-	 * Returns the version of this policy. If this is an XACML 1.x policy then this will always
-	 * return <code>"1.0"</code>.
-	 * 
-	 * @return the policy version
-	 */
-	public String getVersion()
-	{
-		return version;
+		
+		return null;
 	}
 
 	@Override
@@ -509,27 +441,6 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	public List getCombiningParameters()
 	{
 		return this.policySetsAndPoliciesAndPolicySetIdReferences;
-	}
-
-	/**
-	 * Returns the given description of this policy or null if there is no description
-	 * 
-	 * @return the description or null
-	 */
-	@Override
-	public String getDescription()
-	{
-		return description;
-	}
-
-	/**
-	 * Returns the target for this policy
-	 * 
-	 * @return the policy's target
-	 */
-	public oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget()
-	{
-		return target;
 	}
 
 	/**
@@ -569,16 +480,6 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	}
 
 	/**
-	 * Returns the Set of obligations for this policy, which may be empty
-	 * 
-	 * @return the policy's obligations
-	 */
-	public oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions getObligations()
-	{
-		return obligationExpressions;
-	}
-
-	/**
 	 * Returns the meta-data associated with this policy
 	 */
 	@Override
@@ -601,54 +502,12 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	@Override
 	public MatchResult match(EvaluationCtx context)
 	{
-		/**
-		 * Romain Ferrari (Thales)
-		 * 
-		 * @BUG: NPE
-		 */
 		if (target == null)
 		{
 			throw new RuntimeException("No target found in policySet with id=" + policySetId);
 		}
 
 		return ((Target) target).match(context);
-	}
-
-	/**
-	 * FIXME: remove this method since PolicySet cannot have Rules as children, and this seems not
-	 * to be used by anyone.
-	 * 
-	 * Sets the child policy tree elements for this node, which are passed to the combining
-	 * algorithm on evaluation. The <code>List</code> must contain <code>CombinerElement</code>s,
-	 * which in turn will contain <code>Rule</code>s or <code>AbstractPolicy</code>s, but may not
-	 * contain both types of elements.
-	 * 
-	 * @param children
-	 *            a <code>List</code> of <code>CombinerElement</code>s representing the child
-	 *            elements used by the combining algorithm
-	 */
-	protected void setChildren(List<Rule> children)
-	{
-		// we always want a concrete list, since we're going to pass it to
-		// a combiner that expects a non-null input
-		if (children == null)
-		{
-			this.children = Collections.EMPTY_LIST;
-		} else
-		{
-			// NOTE: since this is only getting called by known child
-			// classes we don't check that the types are all the same
-			// List list = new ArrayList();
-			// Iterator it = children.iterator();
-			//
-			// while (it.hasNext()) {
-			// CombinerElement element = (CombinerElement) (it.next());
-			// list.add(element.getElement());
-			// }
-
-			this.children = Collections.unmodifiableList(children);
-			childElements = Collections.unmodifiableList(children);
-		}
 	}
 
 	/**
@@ -660,6 +519,8 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 *            the representation of the request
 	 * 
 	 * @return the result of evaluation
+	 * 
+	 * FIXME: the match logic should be done by evaluate, doing two different function calls (match + evaluate) every time is useless
 	 */
 	@Override
 	public Result evaluate(EvaluationCtx context)
@@ -759,60 +620,6 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 			LOGGER.debug("{} returned: {}", this, result);
 		}
 	}
-
-	/**
-	 * Routine used by <code>Policy</code> and <code>PolicySet</code> to encode some common
-	 * elements.
-	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
-	 * @param indenter
-	 *            an object that creates indentation strings
-	 */
-//	protected void encodeCommonElements(OutputStream output, Indenter indenter)
-//	{
-//		Iterator it = childElements.iterator();
-//		while (it.hasNext())
-//		{
-//			((CombinerElement) (it.next())).encode(output, indenter);
-//		}
-//
-//		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
-//		{
-//			PrintStream out = new PrintStream(output);
-//			String indent = indenter.makeString();
-//
-//			out.println(indent + "<Obligations>");
-//			indenter.in();
-//
-//			it = obligationExpressions.getObligationExpressions().iterator();
-//			while (it.hasNext())
-//			{
-//				((Obligation) (it.next())).encode(output, indenter);
-//			}
-//
-//			out.println(indent + "</Obligations>");
-//			indenter.out();
-//		}
-//
-//		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
-//		{
-//			PrintStream out = new PrintStream(output);
-//			String indent = indenter.makeString();
-//
-//			out.println(indent + "<AssociatedAdvice>");
-//			indenter.in();
-//
-//			it = adviceExpressions.getAdviceExpressions().iterator();
-//			while (it.hasNext())
-//			{
-//				((Obligation) (it.next())).encode(output, indenter);
-//			}
-//
-//			out.println(indent + "</AssociatedAdvice>");
-//			indenter.out();
-//		}
-//	}
 
 	@Override
 	public String toString()

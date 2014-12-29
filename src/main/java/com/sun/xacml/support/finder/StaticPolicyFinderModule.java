@@ -61,7 +61,8 @@ import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * This is a simple implementation of <code>PolicyFinderModule</code> that supports retrieval based
@@ -86,7 +87,7 @@ import com.thalesgroup.authzforce.BindingUtility;
  * @since 2.0
  * @author Seth Proctor
  */
-public class StaticPolicyFinderModule extends PolicyFinderModule
+public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyFinder>
 {
 
 	// the list of policy URLs/filenames passed to the constructor
@@ -303,7 +304,7 @@ public class StaticPolicyFinderModule extends PolicyFinderModule
 			final Unmarshaller unmarshaller;
 			try
 			{
-				unmarshaller = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+				unmarshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			}
 				catch (JAXBException e1)
 				{
@@ -454,6 +455,13 @@ public class StaticPolicyFinderModule extends PolicyFinderModule
         } catch (TopLevelPolicyException tlpe) {
             return new PolicyFinderResult(tlpe.getStatus());
         }
+	}
+
+	@Override
+	public void init(AbstractPolicyFinder conf)
+	{
+		throw new UnsupportedOperationException("Initialization method not supported. Use the constructors instead.");
+		
 	}
 
 }

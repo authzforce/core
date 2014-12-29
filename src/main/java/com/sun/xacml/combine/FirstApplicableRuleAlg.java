@@ -42,8 +42,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Rule;
 import com.sun.xacml.ctx.Result;
-import com.thalesgroup.authzforce.audit.annotations.Audit;
-import com.thalesgroup.authzforce.audit.annotations.Audit.Type;
 
 
 /**
@@ -85,18 +83,20 @@ public class FirstApplicableRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-//    @Audit(type = Audit.Type.RULE)
+    @Override
     public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                          List ruleElements) {
-        Result result = null;
-        for (Rule rule : (List<Rule>)ruleElements) {
-			result = rule.evaluate(context);
-			int value = result.getDecision().ordinal();
-			if (value != Result.DECISION_NOT_APPLICABLE) {
+                          List<Rule> ruleElements) {
+        for (final Rule rule : ruleElements) {
+        	final Result result = rule.evaluate(context);
+        	final DecisionType value = result.getDecision();
+			if (value != DecisionType.NOT_APPLICABLE) {
 				return result;
 			}
+			
+			// Decision is NOT_APPLICABLE, therefore continue
 		}
-     // if we got here, then none of the rules applied
+        
+        // if we got here, then none of the rules applied
         return new Result(DecisionType.NOT_APPLICABLE,
                           context.getResourceId().encode());
     }

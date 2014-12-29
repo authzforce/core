@@ -4,30 +4,26 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.2-SNAPSHOT</version>
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<!-- WARNING: this version must be the same as the managed version (defined 
-		in POM dependencyManagement element) in parent 'authzforce' project in order 
-		for reverse dependencies (such as project 'authzforce-core-ext-utils') to 
-		stay up-to-date. So any change here must be re-done there. -->
 	<version>3.5.4-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
-		<name>Thales</name>
+		<name>Thales Services SAS</name>
 	</organization>
 	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
 	<inceptionYear>2011</inceptionYear>
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<copyrightOwner>Thales Services - ThereSIS</copyrightOwner>
+		<!-- JDK versions for AspectJ -->
 		<jdk.source>1.7</jdk.source>
 		<jdk.target>1.7</jdk.target>
 		<aspectj.version>1.7.4</aspectj.version>
 		<debug>false</debug>
 	</properties>
 	<dependencies>
+		<!-- Dependencies of audit feature only -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
@@ -38,38 +34,52 @@
 			<artifactId>aspectj-maven-plugin</artifactId>
 			<version>1.5</version>
 		</dependency>
-		<!-- Authzforce dependencies -->
-		<dependency>
-			<groupId>com.thalesgroup.authzforce.core</groupId>
-			<artifactId>authzforce-model</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.ktd.scis</groupId>
-			<artifactId>oasis-xacml-model</artifactId>
-		</dependency>
-		<!-- /Authzforce dependencies -->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>1.9.13</version>
+		</dependency>
+		<!-- END dependencies of audit feature -->
+		<dependency>
+			<groupId>com.thalesgroup.appsec</groupId>
+			<artifactId>thales-appsec-common-utils</artifactId>
+			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.ws</groupId>
+			<artifactId>spring-xml</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.yaml</groupId> -->
+		<!-- <artifactId>snakeyaml</artifactId> -->
+		<!-- <version>1.11</version> -->
+		<!-- </dependency> -->
 		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.11</version>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-core</artifactId>
 		</dependency>
+		<!-- Include cxf-rt-core/xercesImpl optional dependency: xml-resolver (do not include xercesImpl because 
+			conflicts with JRE) -->
 		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
+			<groupId>xml-resolver</groupId>
+			<artifactId>xml-resolver</artifactId>
+			<version>1.2</version>
 		</dependency>
+		<!-- Authzforce dependencies -->
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-core-model</artifactId>
+		</dependency>
+		<!-- /Authzforce dependencies -->
+
 		<!-- Test dependencies -->
 		<!-- FIXME: Dependency no longer used. Remove it? -->
 		<!-- <dependency> -->
@@ -91,8 +101,7 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
-		<!-- Uncoment dependency below to use log4j as SLFJ implementation for 
-			test logs -->
+		<!-- Uncoment dependency below to use log4j as SLFJ implementation for test logs -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -103,17 +112,82 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- Uncoment dependency below to use logback as SLFJ implementation for 
-			test logs -->
-		<!-- <dependency> -->
-		<!-- <groupId>ch.qos.logback</groupId> -->
-		<!-- <artifactId>logback-classic</artifactId> -->
-		<!-- <version>1.0.7</version> -->
-		<!-- <scope>test</scope> -->
-		<!-- </dependency> -->
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<!-- Apache license Headers -->
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-apache-license</id>
+						<phase>process-sources</phase>
+						<configuration>
+							<!-- Template location -->
+							<header>license/fileHeader.apache2.txt</header>
+							<properties>
+								<!-- Values to be substituted in template -->
+								<inceptionYear>${project.inceptionYear}</inceptionYear>
+								<currentYear>${currentYear}</currentYear>
+								<copyrightOwner>${project.organization.name}</copyrightOwner>
+							</properties>
+							<strictCheck>true</strictCheck>
+							<excludes>
+								<exclude>**/*.html</exclude>
+								<exclude>**/*.xml</exclude>
+								<exclude>**/*.txt</exclude>
+								<exclude>**/*.ec</exclude>
+								<exclude>**/*.log</exclude>
+								<exclude>**/*.css</exclude>
+								<exclude>**/*.js</exclude>
+								<exclude>**/*.jsp</exclude>
+								<exclude>**/*.md</exclude>
+								<exclude>**/*.properties</exclude>
+								<exclude>**/*.gitignore</exclude>
+								<exclude>src/main/java/com/sun/xacml/cond/xacmlv3/Apply.java</exclude>
+							</excludes>
+							<includes>
+								<include>src/main/java/com/sun/xacml/xacmlv3/**</include>
+								<include>src/main/java/com/sun/xacml/cond/xacmlv3/**</include>
+								<include>src/main/java/com/sun/xacml/ctx/xacmlv3/**</include>
+								<include>src/main/java/com/sun/xacml/CacheManager.java</include>
+								<include>src/main/java/com/sun/xacml/ObligationExpressions.java</include>
+								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</include>
+								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</include>
+								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
+								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
+								<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
+							</includes>
+						</configuration>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>add-gpl-license</id>
+						<phase>process-sources</phase>
+						<configuration>
+							<!-- Template location -->
+							<header>license/thales-gpl.txt</header>
+							<properties>
+								<!-- Values to be substituted in template -->
+								<inceptionYear>${project.inceptionYear}</inceptionYear>
+								<currentYear>${currentYear}</currentYear>
+								<copyrightOwner>${project.organization.name}</copyrightOwner>
+								<projectName>AuthZForce</projectName>
+							</properties>
+							<strictCheck>true</strictCheck>
+							<includes>
+								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
+							</includes>
+						</configuration>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
@@ -198,129 +272,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Creating current year element for license headers -->
-			<plugin>
-				<groupId>org.codehaus.gmaven</groupId>
-				<artifactId>gmaven-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>execute</goal>
-						</goals>
-						<configuration>
-							<source>
-								import java.util.Date
-								import java.text.MessageFormat
-								def
-								vartimestamp =
-								MessageFormat.format("{0,date,yyyy}", new Date())
-								project.properties['currentYear'] =
-								vartimestamp
-							</source>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Adding header to file -->
-			<!-- Sun License Header -->
-			<!-- <plugin> -->
-			<!-- <groupId>com.mycila.maven-license-plugin</groupId> -->
-			<!-- <artifactId>maven-license-plugin</artifactId> -->
-			<!-- <version>1.9.0</version> -->
-			<!-- <configuration> -->
-			<!-- Template location -->
-			<!-- <header>src/main/resources/fileHeader.txt</header> -->
-			<!-- <properties> -->
-			<!-- Values to be substituted in template -->
-			<!-- <h_inceptionYear>${inceptionYear}</h_inceptionYear> -->
-			<!-- <h_currentYear>${currentYear}</h_currentYear> -->
-			<!-- <h_copyrightOwner>${copyrightOwner}</h_copyrightOwner> -->
-			<!-- </properties> -->
-			<!-- <strictCheck>true</strictCheck> -->
-			<!-- <excludes> -->
-			<!-- <exclude>**/*.html</exclude> -->
-			<!-- <exclude>**/*.xml</exclude> -->
-			<!-- <exclude>**/*.txt</exclude> -->
-			<!-- <exclude>**/*.ec</exclude> -->
-			<!-- <exclude>**/*.log</exclude> -->
-			<!-- <exclude>**/*.css</exclude> -->
-			<!-- <exclude>**/*.js</exclude> -->
-			<!-- <exclude>**/*.jsp</exclude> -->
-			<!-- <exclude>**/*.md</exclude> -->
-			<!-- <exclude>**/*.properties</exclude> -->
-			<!-- <exclude>**/*.gitignore</exclude> -->
-			<!-- <exclude>src/test/**</exclude> -->
-			<!-- <exclude>src/main/resources/**</exclude> -->
-			<!-- Added by Thales -->
-			<!-- <exclude>src/main/java/com/thalesgroup/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/xacmlv3/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/cond/xacmlv3/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/ctx/xacmlv3/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/CacheManager.java</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/ObligationExpressions.java</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</exclude> -->
-			<!-- </excludes> -->
-			<!-- </configuration> -->
-			<!-- </plugin> -->
-			<plugin>
-				<!-- Thales's license Headers -->
-				<groupId>com.mycila.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.9.0</version>
-				<configuration>
-					<!-- Template location -->
-					<header>src/main/resources/fileHeader.apache2.txt</header>
-					<properties>
-						<!-- Values to be substituted in template -->
-						<h_inceptionYear>${project.inceptionYear}</h_inceptionYear>
-						<h_currentYear>${currentYear}</h_currentYear>
-						<h_copyrightOwner>${copyrightOwner}</h_copyrightOwner>
-					</properties>
-					<strictCheck>true</strictCheck>
-					<excludes>
-						<exclude>**/*.html</exclude>
-						<exclude>**/*.xml</exclude>
-						<exclude>**/*.txt</exclude>
-						<exclude>**/*.ec</exclude>
-						<exclude>**/*.log</exclude>
-						<exclude>**/*.css</exclude>
-						<exclude>**/*.js</exclude>
-						<exclude>**/*.jsp</exclude>
-						<exclude>**/*.md</exclude>
-						<exclude>**/*.properties</exclude>
-						<exclude>**/*.gitignore</exclude>
-						<exclude>src/test/**</exclude>
-						<exclude>src/main/resources/**</exclude>
-					</excludes>
-					<includes>
-						<include>src/main/java/com/thalesgroup/**</include>
-						<include>src/main/java/com/sun/xacml/xacmlv3/**</include>
-						<include>src/main/java/com/sun/cond/xacmlv3/**</include>
-						<include>src/main/java/com/sun/ctx/xacmlv3/**</include>
-						<include>src/main/java/com/sun/xacml/CacheManager.java</include>
-						<include>src/main/java/com/sun/xacml/ObligationExpressions.java</include>
-						<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</include>
-						<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</include>
-						<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
-						<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
-						<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
-					</includes>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
@@ -345,6 +296,10 @@
 							<groupId>com.thalesgroup.ktd.scis</groupId>
 							<artifactId>oasis-xacml-model</artifactId>
 						</episode>
+						<episode>
+							<groupId>com.thalesgroup.authzforce</groupId>
+							<artifactId>authzforce-core-model</artifactId>
+						</episode>
 					</episodes>
 					<plugins>
 						<plugin>
@@ -360,6 +315,10 @@
 						<plugin>
 							<groupId>com.thalesgroup.ktd.scis</groupId>
 							<artifactId>oasis-xacml-model</artifactId>
+						</plugin>
+						<plugin>
+							<groupId>com.thalesgroup.authzforce</groupId>
+							<artifactId>authzforce-core-model</artifactId>
 						</plugin>
 					</plugins>
 					<catalog>src/main/resources/catalog.xml</catalog>
@@ -385,7 +344,8 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on 
+					the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>

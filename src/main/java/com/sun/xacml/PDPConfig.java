@@ -33,6 +33,9 @@
  */
 package com.sun.xacml;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.ResourceFinder;
@@ -52,16 +55,15 @@ public class PDPConfig
 {
 
     //
-    private AttributeFinder attributeFinder;
+    private final AttributeFinder attributeFinder;
 
     //
-    private PolicyFinder policyFinder;
+    private final PolicyFinder policyFinder;
 
     //
-    private ResourceFinder resourceFinder;
+    private final ResourceFinder resourceFinder;
     
-    //
-    private CacheManager cacheManager;
+    private final Cache cache;
 
     /**
      * Constructor that creates a <code>PDPConfig</code> from components.
@@ -91,7 +93,8 @@ public class PDPConfig
         } else {
             this.resourceFinder = new ResourceFinder();
         }
-        cacheManager = new CacheManager();
+        
+        cache = null;
     }
     
     /**
@@ -103,15 +106,14 @@ public class PDPConfig
      *                     should use, or null if it shouldn't use any
      * @param resourceFinder the <code>ResourceFinder</code> that the PDP
      *                       should use, or null if it shouldn't use any
-     * @param cacheManager the <code>CacheManager</code> that the PDP
+     * @param cache the <code>Cache</code> that the PDP
      *                       should use, or null if it shouldn't use any
      *                                           
-     *	@author: romain.ferrari@thalesgroup.com
      */
     public PDPConfig(AttributeFinder attributeFinder,
                      PolicyFinder policyFinder,
                      ResourceFinder resourceFinder,
-                     CacheManager cacheManager) {
+                     Cache cache) {
         if (attributeFinder != null) {
             this.attributeFinder = attributeFinder;
         } else {
@@ -127,10 +129,12 @@ public class PDPConfig
         } else {
             this.resourceFinder = new ResourceFinder();
         }
-        if (cacheManager != null) {
-            this.cacheManager = cacheManager;
+        
+        if(cache == null) {
+        	this.cache = null;
         } else {
-            this.cacheManager = new CacheManager();
+        	CacheManager.getInstance().addCache(cache);
+        	this.cache = CacheManager.getInstance().getCache(cache.getName());
         }
     }
 
@@ -164,8 +168,12 @@ public class PDPConfig
         return resourceFinder;
     }
 
-	public CacheManager getCacheManager() {
-		return cacheManager;
+	/**
+	 * Get PDP cache
+	 * @return cache
+	 */
+	public Cache getCache() {
+		return cache;
 	}
 
 }

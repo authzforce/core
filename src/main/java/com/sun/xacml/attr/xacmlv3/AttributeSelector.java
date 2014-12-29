@@ -58,14 +58,12 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Supports the standard selector functionality in XACML, which uses XPath expressions to resolve
  * values from the Request or elsewhere. All selector queries are done by
  * <code>AttributeFinderModule</code>s so that it's easy to plugin different XPath implementations.
- * 
- * @author Romain Ferrari
  */
 public class AttributeSelector extends AttributeSelectorType implements Evaluatable
 {
@@ -118,7 +116,6 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	/**
 	 * 
 	 * @param attrSelectorElement
-	 * @param xpathVersion
 	 */
 	public AttributeSelector(AttributeSelectorType attrSelectorElement, PolicyMetaData metaData)
 	{
@@ -161,7 +158,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 		final JAXBElement<AttributeSelectorType> attrSelector;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			attrSelector = u.unmarshal(root, AttributeSelectorType.class);
 			return attrSelector.getValue();
 		} catch (Exception e)
@@ -312,6 +309,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	 * 
 	 * @return an empty <code>List</code>
 	 */
+	@Override
 	public List getChildren()
 	{
 		return Collections.EMPTY_LIST;
@@ -342,6 +340,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	 * @return a result containing a bag either empty because no values were found or containing at
 	 *         least one value, or status associated with an Indeterminate result
 	 */
+	@Override
 	public EvaluationResult evaluate(EvaluationCtx context)
 	{
 		// query the context
@@ -361,25 +360,22 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 					// this is an error
 					LOGGER.info("AttributeSelector failed to resolve a value for a required attribute: {} ", path);
 
-					ArrayList code = new ArrayList();
-					code.add(Status.STATUS_MISSING_ATTRIBUTE);
+					final List<String> codes = new ArrayList<>();
+					codes.add(Status.STATUS_MISSING_ATTRIBUTE);
 					String message = "couldn't resolve XPath expression " + path + " for type " + type.toString();
-					return new EvaluationResult(new Status(code, message));
-				} else
-				{
-					// return the empty bag
-					return result;
+					return new EvaluationResult(new Status(codes, message));
 				}
-			} else
-			{
-				// return the values
+				
+				// return the empty bag
 				return result;
 			}
-		} else
-		{
-			// return the error
+			
+			// return the values
 			return result;
 		}
+		
+		// return the error
+		return result;
 	}
 
 	/**

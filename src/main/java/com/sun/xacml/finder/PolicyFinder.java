@@ -82,13 +82,13 @@ public class PolicyFinder
 	 *  If not, we would fail or would not be able to check resoved PolicyReference when loading the modules.
 	 *  Besides, using Set type makes no sense since PolicyFinderModule class does not implement equals().
 	 */
-	private List<PolicyFinderModule> allModules;
+	private List<PolicyFinderModule<?>> allModules;
 
 	// all the request modules
-	private List<PolicyFinderModule> requestModules;
+	private List<PolicyFinderModule<?>> requestModules;
 
 	// all the reference modules
-	private List<PolicyFinderModule> referenceModules;
+	private List<PolicyFinderModule<?>> referenceModules;
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(PolicyFinder.class);
@@ -137,7 +137,7 @@ public class PolicyFinder
 	 * 
 	 * @return a <code>List</code> of <code>PolicyFinderModule</code>s in order of declaration/registration
 	 */
-	public List<PolicyFinderModule> getModules()
+	public ArrayList<PolicyFinderModule<?>> getModules()
 	{
 		return new ArrayList<>(allModules);
 	}
@@ -146,16 +146,16 @@ public class PolicyFinder
 	 * Sets the ordered <code>List</code> of <code>PolicyFinderModule</code>s used by this class to
 	 * find policies.
 	 * 
-	 * @param modules
+	 * @param policyFinderModuleList
 	 *            a <code>List</code> of <code>PolicyFinderModule</code>s
 	 */
-	public void setModules(List<PolicyFinderModule> modules)
+	public void setModules(List<PolicyFinderModule<?>> policyFinderModuleList)
 	{
-		allModules = new ArrayList<>(modules);
+		allModules = new ArrayList<>(policyFinderModuleList);
 		requestModules = new ArrayList<>();
 		referenceModules = new ArrayList<>();
 
-		for (PolicyFinderModule module: modules)
+		for (PolicyFinderModule<?> module: policyFinderModuleList)
 		{
 			if (module.isRequestSupported())
 				requestModules.add(module);
@@ -172,7 +172,7 @@ public class PolicyFinder
 	{
 		LOGGER.debug("Initializing PolicyFinder");
 		
-		for (PolicyFinderModule module: allModules)
+		for (PolicyFinderModule<?> module: allModules)
 		{
 			module.init(this);
 		}
@@ -193,7 +193,7 @@ public class PolicyFinder
 		PolicyFinderResult result = null;
 		
 		// look through all of the modules
-		for (PolicyFinderModule module: requestModules)
+		for (PolicyFinderModule<?> module: requestModules)
 		{
 			PolicyFinderResult newResult = module.findPolicy(context);
 
@@ -273,7 +273,7 @@ public class PolicyFinder
 			throw new IllegalArgumentException("Unknown reference type");
 
 		// look through all of the modules
-		for (PolicyFinderModule module: referenceModules)
+		for (PolicyFinderModule<?> module: referenceModules)
 		{
 			PolicyFinderResult newResult = module.findPolicy(idReference, type, constraints, parentMetaData);
 

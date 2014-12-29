@@ -40,7 +40,6 @@ import java.util.List;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
-import com.sun.xacml.AbstractPolicy;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.MatchResult;
@@ -48,124 +47,127 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 
-
 /**
  * Specific version of <code>CombinerElement</code> used for policy combining.
- *
+ * 
  * @since 2.0
  * @author Seth Proctor
  */
 public class PolicyCombinerElement extends CombinerElement
 {
 
-    /**
-     * Constructor that only takes an <code>AbstractPolicy</code. No parameters
-     * are associated with this <code>AbstractPolicy</code> when combining.
-     *
-     * @param policy an <code>AbstractPolicy</code> to use in combining
-     */
-//    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy) {
-//        super(policy);
-//    }
-//    
-//    public PolicyCombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policy, List args) {
-//        super(policy, args);
-//    }
-    
-    public PolicyCombinerElement(PolicySet policy, List args) {
-        super(policy, args);
-    }
-    
-    /**
-     * Constructor that only takes an <code>AbstractPolicy</code. No parameters
-     * are associated with this <code>AbstractPolicy</code> when combining.
-     *
-     * @param policy an <code>AbstractPolicy</code> to use in combining
-     */
-    public PolicyCombinerElement(IPolicy policy) {
-        super(policy);
-    }
-    
-    /**
-     * Constructor that takes both the <code>AbstractPolicy</code> to combine
-     * and its associated combiner parameters.
-     *
-     * @param policy an <code>AbstractPolicy</code> to use in combining
-     * @param parameters a (possibly empty) non-null <code>List</code> of
-     *                   <code>CombinerParameter<code>s provided for general
-     *                   use (for all pre-2.0 policies this must be empty)
-     */
-    public PolicyCombinerElement(IPolicy policy, List parameters) {
-        super(policy, parameters);
-    }
+	public PolicyCombinerElement(PolicySet policy, List args)
+	{
+		super(policy, args);
+	}
 
 	/**
-     * Returns the <code>AbstractPolicy</code> in this element.
-     *
-     * @return the element's <code>AbstractPolicy</code>
-     */
-    public Policy getPolicy() {
-        return (Policy)getElement();
-    }
+	 * Constructor that only takes an <code>AbstractPolicy</code. No parameters are associated with
+	 * this <code>AbstractPolicy</code> when combining.
+	 * 
+	 * @param policy
+	 *            an <code>AbstractPolicy</code> to use in combining
+	 */
+	public PolicyCombinerElement(IPolicy policy)
+	{
+		super(policy);
+	}
 
-    /**
-     * Encodes this element's <code>AbstractPolicy</code> and parameters into
-     * their XML representation and writes this encoding to the given
-     * <code>OutputStream</code> with indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     * @param indenter an object that creates indentation strings
-     */
-    public void encode(OutputStream output, Indenter indenter) {
-    }
+	/**
+	 * Constructor that takes both the <code>AbstractPolicy</code> to combine and its associated
+	 * combiner parameters.
+	 * 
+	 * @param policy
+	 *            an <code>AbstractPolicy</code> to use in combining
+	 * @param parameters
+	 *            a (possibly empty) non-null <code>List</code> of
+	 *            <code>CombinerParameter<code>s provided for general
+	 *                   use (for all pre-2.0 policies this must be empty)
+	 */
+	public PolicyCombinerElement(IPolicy policy, List parameters)
+	{
+		super(policy, parameters);
+	}
 
-    /**
-     * Private helper that encodes the parameters based on the type
-     */
-    private void encodeParamaters(OutputStream output, Indenter indenter,
-                                  String prefix, String id) {
-    }
+	/**
+	 * Returns the <code>AbstractPolicy</code> in this element.
+	 * 
+	 * @return the element's <code>AbstractPolicy</code>
+	 */
+	public Policy getPolicy()
+	{
+		return (Policy) getElement();
+	}
+
+	/**
+	 * Encodes this element's <code>AbstractPolicy</code> and parameters into their XML
+	 * representation and writes this encoding to the given <code>OutputStream</code> with
+	 * indentation.
+	 * 
+	 * @param output
+	 *            a stream into which the XML-encoded data is written
+	 * @param indenter
+	 *            an object that creates indentation strings
+	 */
+	@Override
+	public void encode(OutputStream output, Indenter indenter)
+	{
+	}
+
+	/**
+	 * Private helper that encodes the parameters based on the type
+	 */
+	private void encodeParamaters(OutputStream output, Indenter indenter, String prefix, String id)
+	{
+	}
 
 	@Override
-	public List getChildren() {
+	public List getChildren()
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String getDescription() {
+	public String getDescription()
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public URI getId() {
+	public URI getId()
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Target getTarget() {
+	public Target getTarget()
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MatchResult match(EvaluationCtx context) {
+	public MatchResult match(EvaluationCtx context)
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Result evaluate(EvaluationCtx context) {
+	public Result evaluate(EvaluationCtx context)
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void encode(OutputStream output) {
+	public void encode(OutputStream output)
+	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

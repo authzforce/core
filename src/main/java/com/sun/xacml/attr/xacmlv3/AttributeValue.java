@@ -62,7 +62,7 @@ import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * The base type for all datatypes used in a policy or request/response, this abstract class
@@ -72,7 +72,6 @@ import com.thalesgroup.authzforce.BindingUtility;
  * <code>equals(Object)</code> and <code>hashCode</code> methods from <code>Object</code>, which are
  * used for equality checking.
  * 
- * @author Romain Ferrari
  */
 public class AttributeValue extends AttributeValueType implements Evaluatable
 {
@@ -127,7 +126,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 		final JAXBElement<AttributeValueType> attrValue;
 		try
 		{
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
+			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			attrValue = u.unmarshal(root, AttributeValueType.class);
 			return new AttributeValue(URI.create(attrValue.getValue().getDataType()), attrValue.getValue().getContent());
 		} catch (Exception e)
@@ -262,7 +261,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 		StringWriter out = new StringWriter();
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{

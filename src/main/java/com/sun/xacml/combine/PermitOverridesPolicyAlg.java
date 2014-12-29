@@ -111,13 +111,6 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 		Status firstIndeterminateStatus = null;
 		Iterator it = policyElements.iterator();
 
-		/**
-		 * BEGINING Romain Guignard
-		 */
-		// AuditLogs audit = AuditLogs.getInstance();
-		/**
-		 * END
-		 */
 		// List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
 		while (it.hasNext())
 		{
@@ -148,32 +141,13 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 				{
 					// now we evaluate the policy
 					result = policy.evaluate(context);
-					/**
-					 * BEGINING Romain Guignard
-					 */
-					// LOGGER.debug("Found a policy that match the request");
-					// LOGGER.debug("PolicyId: " + policy.getId());
-					// LOGGER.debug("Policy_Version: " + policy.getVersion());
-					// MatchPolicies matchpolicies = new MatchPolicies();
-					// matchpolicies.setPolicyId(policy.getId().toString());
-					// matchpolicies.setPolicyVersion(policy.getVersion());
-					// policiesList.add(matchpolicies);
-					/**
-					 * END
-					 */
+
 					int effect = result.getDecision().ordinal();
 
 					// this is a little different from DenyOverrides...
 
 					if (effect == Result.DECISION_PERMIT)
 					{
-						/**
-						 * BEGINING Romain Guignard
-						 */
-						// audit.setMatchPolicies(policiesList);
-						/**
-						 * END
-						 */
 						return result;
 					}
 					if (effect == Result.DECISION_DENY)
@@ -189,13 +163,6 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 							firstIndeterminateStatus = result.getStatus();
 					}
 				}
-				/**
-				 * BEGINING Romain Guignard
-				 */
-				// audit.setMatchPolicies(policiesList);
-				/**
-				 * END
-				 */
 			}
 		}
 

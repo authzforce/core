@@ -32,10 +32,6 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.Apply;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 
-/**
- * @author Cyrille MARTINS (Thales)
- * 
- */
 @RunWith(Parameterized.class)
 public class SetFunctionsTest extends GeneralFunctionTest {
 
@@ -667,7 +663,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 														(ExpressionType) RFC822NameAttribute
 																.getInstance("Smith@sun.com"),
 														(ExpressionType) RFC822NameAttribute
-																.getInstance("cyrille.martins@thalesgroup.com")))),
+																.getInstance("john.doe@example.com")))),
 								new EvaluationResult(
 										new BagAttribute(
 												RFC822NameAttribute.identifierURI,

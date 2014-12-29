@@ -62,7 +62,7 @@ import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.ExpressionTools;
 import com.sun.xacml.ctx.Result;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents the ObligationType XML type in XACML. This also stores all the AttriubteAssignmentType
@@ -374,7 +374,7 @@ public class Obligation extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Obli
 		PrintStream out = new PrintStream(output);
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{

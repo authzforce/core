@@ -66,7 +66,8 @@ import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinder;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.appsec.util.Utils;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 
 /**
@@ -835,40 +836,51 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	}
 
 	/**
-	 * Helper function for the resource, action and environment methods to get an attribute.
+	 * Helper function for the resource, action and environment methods to get an attribute. The
+	 * input map is updated with the new attribute corresponding to input (id,type,issuer) if it was
+	 * not already in the map
 	 */
 	private EvaluationResult getGenericAttributes(URI type, URI id, URI issuer, Map<String, Set<Attribute>> map, URI category, int designatorType)
 	{
 		/**
 		 * Requirement #1: When the attribute finder is called via callHelper(), the result must be
 		 * saved in the evaluation context to guarantee the same result/value next time it is used
-		 * in the same context. At least 3 reasons: 1. Performance optimization: calling attribute
-		 * finder costs more than getting it from the context attribute map. 2. ACCOUNTING/AUDIT: if
-		 * you call the attribute finder more than once for the same attribute, you may have value
-		 * changes from a call to another. If you log attribute values for accounting/audit reasons,
-		 * which value do you log? This is critical to have the correct information in order to
-		 * understand/investigate a posteriori why a given access was permitted/denied. 3. Policy
-		 * decision consistency: this is pretty close to the previous reason, expressed in more
-		 * generic terms. If the value of a given attribute changed from one attribute finding to
-		 * another when it is used/required more than once in the same decision request context, the
-		 * PDP ends up evaluating different parts of the <PolicySet> based on different values of
-		 * the same attribute, again, for the same decision request. And the longer the evaluation
-		 * takes time to process, the more changes can occur, and the more inconsistent the
-		 * evaluation will be.
+		 * in the same context. At least 3 reasons:
+		 * 
+		 * 1. Performance optimization: calling attribute finder costs more than getting it from the
+		 * context attribute map.
+		 * 
+		 * 2. ACCOUNTING/AUDIT: if you call the attribute finder more than once for the same
+		 * attribute, you may have value changes from a call to another. If you log attribute values
+		 * for accounting/audit reasons, which value do you log? This is critical to have the
+		 * correct information in order to understand/investigate a posteriori why a given access
+		 * was permitted/denied.
+		 * 
+		 * 3. Policy decision consistency: this is pretty close to the previous reason, expressed in
+		 * more generic terms. If the value of a given attribute changed from one attribute finding
+		 * to another when it is used/required more than once in the same decision request context,
+		 * the PDP ends up evaluating different parts of the <PolicySet> based on different values
+		 * of the same attribute, again, for the same decision request. And the longer the
+		 * evaluation takes time to process, the more changes can occur, and the more inconsistent
+		 * the evaluation will be.
 		 */
 		// try to find the id
 		final String idStr = id.toString();
 		final String issuerStr = (issuer == null) ? null : issuer.toString();
 		final String typeStr = type.toString();
 		/*
-		 * Check if some attributes already (found) in current evaluation context for attribute 'id'
-		 * arg
+		 * Check if some attributes already (found) in current evaluation context (map) for
+		 * attribute 'id' arg
 		 */
-		final Set<Attribute> attrSet = map.get(idStr);
+		final Set<Attribute> oldAttrSet = map.get(idStr);
 		final List<AttributeValue> attributeValues;
-		// Map to be updated with new attributes resulting from call to AttributeFinder
+		/*
+		 * newAttrSet will contain the existing attribute values if any in the current map (eval
+		 * context), or the new attributes resulting from callHelper() (call to AttributeFinder) if
+		 * no attribute found for input (id,type,issuer) in the map yet
+		 */
 		final Set<Attribute> newAttrSet;
-		if (attrSet == null)
+		if (oldAttrSet == null)
 		{
 			// the request didn't have an attribute with that id, so no attribute values yet
 			attributeValues = new ArrayList<>();
@@ -883,16 +895,13 @@ public class BasicEvaluationCtx implements EvaluationCtx
 			 */
 			try
 			{
-				/*
-				 * FIXME: We need to use the getContent() method to retrieve attributeValues
-				 */
-				attributeValues = getAttributeValues(attrSet, issuerStr, typeStr);
+				attributeValues = getAttributeValues(oldAttrSet, issuerStr, typeStr);
 			} catch (ParsingException e)
 			{
 				throw new RuntimeException(e);
 			}
 
-			newAttrSet = attrSet;
+			newAttrSet = oldAttrSet;
 		}
 
 		// see if we found any acceptable attributes
@@ -902,30 +911,21 @@ public class BasicEvaluationCtx implements EvaluationCtx
 			return new EvaluationResult(new BagAttribute(type, attributeValues));
 		}
 
-		/*
-		 * FIXME: this does not work as expected (Requirement #1) if AttributeFinder already called
-		 * to find attribute with same (category,issuer,id,type) but result was actually an empty
-		 * bag or an error. So we need to find a better way to indicate the attribute has already
-		 * been searched for even if bad result. To solve this, we need to change the way we store
-		 * attribute map in the request context.
-		 */
-		// No acceptable attribute found matching type/issuer... so ask the finder
+		// No acceptable attribute found matching type/issuer... so ask the finder via callHelper()
 		LOGGER.debug("Attribute id='{}' not in request context... querying AttributeFinder", id);
-		/*
-		 * Code Updated [romain.guignard[at]thalesgroup.com] Allow to store value retrieved by an
-		 * attributeFinder for a specific evaluationContext see also
-		 * http://jira.theresis.thales:8180/browse/APPSEC-167
+		/**
+		 * <code>newAttrSet</code> is linked to the eval context map. So this context is updated by
+		 * storing the new value from callHelper() (call to AttributeFInder) in <code>newAttrSet</code>.
 		 */
 		final EvaluationResult result = callHelper(type, id, issuer, category, designatorType);
 		final AttributeValueType resultAttrVal = result.getAttributeValue();
 		if (resultAttrVal instanceof BagAttribute)
 		{
-			BagAttribute bagAttribute = (BagAttribute) resultAttrVal;
-			Iterator iter = bagAttribute.getValues().iterator();
-			while (iter.hasNext())
+			final BagAttribute bagAttribute = (BagAttribute) resultAttrVal;
+			for (final AttributeValue attributeValue : bagAttribute.getValues())
 			{
-				AttributeValueType attributeValue = (AttributeValueType) iter.next();
-				Attribute attribute = new Attribute();
+				// FIXME: do something better than creating one attribute per resulting value
+				final Attribute attribute = new Attribute();
 				attribute.setAttributeId(idStr);
 				attribute.setIssuer(issuerStr);
 				attribute.getAttributeValues().add(attributeValue);
@@ -974,8 +974,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	{
 		if (finder != null)
 		{
-			return finder.findAttribute(contextPath, namespaceNode, type, this, // XXX
-					xpathVersion);
+			return finder.findAttribute(contextPath, namespaceNode, type, this, xpathVersion);
 		}
 
 		LOGGER.warn("Context tried to invoke AttributeFinder but was " + "not configured with one");
@@ -986,12 +985,12 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	@Override
 	public Node getRequestRoot()
 	{
-		final DocumentBuilder docBuilder = BindingUtility.getDocumentBuilder(true);
+		final DocumentBuilder docBuilder = Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.get();
 		try
 		{
 			if (requestRoot == null)
 			{
-				Marshaller m = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+				Marshaller m = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 				Document doc = docBuilder.newDocument();
 				m.marshal(request, doc);
 				requestRoot = doc.getDocumentElement();

@@ -40,6 +40,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.xacml.cond.Function;
 import com.sun.xacml.cond.NOfFunction;
 
 
@@ -58,7 +59,7 @@ public class NOfFunctionCluster implements FunctionCluster
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(NOfFunctionCluster.class);
 	
-    public Set<NOfFunction> getSupportedFunctions() {
+    public Set<Function> getSupportedFunctions() {
         Set set = new HashSet();
         Iterator it = NOfFunction.getSupportedIdentifiers().iterator();
 

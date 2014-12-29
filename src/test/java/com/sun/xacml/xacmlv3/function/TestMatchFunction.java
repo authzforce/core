@@ -31,11 +31,6 @@ import com.sun.xacml.attr.X500NameAttribute;
 import com.sun.xacml.cond.MatchFunction;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
-/**
- * 
- * @author romain.ferrari[AT]thalesgroup.com
- *
- */
 public class TestMatchFunction {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestMatchFunction.class);
@@ -307,9 +302,9 @@ public class TestMatchFunction {
 		LOGGER.info("Testing function: " + NAME_STRING_REGEXP_MATCH);
 		MatchFunction testMatchFunction = new MatchFunction(NAME_STRING_REGEXP_MATCH); 
 				
-		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@thalesgroup.com");
-		StringAttribute stringGood = new StringAttribute("romainguignard@thalesgroup.com");
-		StringAttribute stringWrong = new StringAttribute("romain.guignard@thalesgroup.com");
+		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@acme.com");
+		StringAttribute stringGood = new StringAttribute("john.doe@acme.com");
+		StringAttribute stringWrong = new StringAttribute("john.doe@acme.com");
 
 		List<StringAttribute> goodInputs = new ArrayList<StringAttribute>();
 		goodInputs.add(stringArg0);
@@ -332,8 +327,8 @@ public class TestMatchFunction {
 		MatchFunction testMatchFunction = new MatchFunction(NAME_ANYURI_REGEXP_MATCH); 
 				
 		StringAttribute stringArg0 = new StringAttribute("^http://.+");
-		AnyURIAttribute stringGood = new AnyURIAttribute(URI.create("http://www.thalesgroup.com"));
-		AnyURIAttribute stringWrong = new AnyURIAttribute(URI.create("https://www.thalesgroup.com"));
+		AnyURIAttribute stringGood = new AnyURIAttribute(URI.create("http://www.acme.com"));
+		AnyURIAttribute stringWrong = new AnyURIAttribute(URI.create("https://www.acme.com"));
 
 		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
@@ -515,9 +510,9 @@ public class TestMatchFunction {
 		LOGGER.info("Testing function: " + NAME_RFC822NAME_REGEXP_MATCH);
 		MatchFunction testMatchFunction = new MatchFunction(NAME_RFC822NAME_REGEXP_MATCH);
 			
-		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@thalesgroup.com");
-		RFC822NameAttribute rfc822Arg1Good = new RFC822NameAttribute("romainguignard@thalesgroup.com");
-		RFC822NameAttribute rfc822Arg1Wrong = new RFC822NameAttribute("romain.guignard@thalesgroup.com");
+		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@acme.com");
+		RFC822NameAttribute rfc822Arg1Good = new RFC822NameAttribute("john.doe@acme.com");
+		RFC822NameAttribute rfc822Arg1Wrong = new RFC822NameAttribute("john.doe@acme.com");
 		
 		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);

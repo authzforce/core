@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -52,15 +52,13 @@ import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionTypeException;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents the SubjectMatch, ResourceMatch, ActionMatch, or EnvironmentMatch (in XACML 2.0 and
  * later) XML types in XACML, depending on the value of the type field. This is the part of the
  * Target that actually evaluates whether the specified attribute values in the Target match the
  * corresponding attribute values in the request context.
- * 
- * @author Romain Ferrari
  */
 public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 {
@@ -295,7 +293,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 			try
 			{
 				URI funcId = new URI(funcName);
-				final Marshaller marshaller = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+				final Marshaller marshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 				final DOMResult domResult = new DOMResult();
 				marshaller.marshal(match, domResult);
 				final Node node = domResult.getNode();
@@ -515,7 +513,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		PrintStream out = new PrintStream(output);
 		try
 		{
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e)
 		{

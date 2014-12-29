@@ -39,18 +39,17 @@ package com.sun.xacml.combine;
 import java.net.URI;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
+import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 
-/**
- * @author Romain Ferrari
- * 
- */
 public class DenyUnlessPermitPolicyAlg extends PolicyCombiningAlgorithm {
 
 	/**
@@ -74,7 +73,6 @@ public class DenyUnlessPermitPolicyAlg extends PolicyCombiningAlgorithm {
 	 */
 	public DenyUnlessPermitPolicyAlg(URI identifier) {
 		super(identifier);
-		// TODO Auto-generated constructor stub
 	}
 
 	/*
@@ -86,21 +84,32 @@ public class DenyUnlessPermitPolicyAlg extends PolicyCombiningAlgorithm {
 	 */
 	@Override
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-			List policyElements) {
-		Result result = null;
-		for (Policy policy : (List<Policy>) policyElements) {
+			List<IPolicy> policyElements) {
+		final Obligations combinedObligations = new Obligations();
+		final AssociatedAdvice combinedAssociatedAdvice = new AssociatedAdvice();
+		
+		for (IPolicy policy : policyElements) {
 			// make sure that the policy matches the context
-			MatchResult match = policy.match(context);
+			final MatchResult match = policy.match(context);
 			if (match.getResult() == MatchResult.MATCH) {
-				result = policy.evaluate(context);
-				int value = result.getDecision().ordinal();
-				if (value == Result.DECISION_PERMIT) {
+				final Result result = policy.evaluate(context);
+				if (result.getDecision() == DecisionType.PERMIT) {
 					return result;
 				} 
+				
+				final Obligations resultObligations = result.getObligations();
+				if(resultObligations != null) {
+					combinedObligations.getObligations().addAll(resultObligations.getObligations());
+				}
+				
+				final AssociatedAdvice resultAssociatedAdvice = result.getAssociatedAdvice();
+				if(resultAssociatedAdvice != null) {
+					combinedAssociatedAdvice.getAdvices().addAll(resultAssociatedAdvice.getAdvices());
+				}
 			}
 		}
-		return new Result(DecisionType.DENY, context
-				.getResourceId().encode(), result.getObligations());
+		
+		return new Result(DecisionType.DENY, null, context.getResourceId().encode(), combinedObligations, combinedAssociatedAdvice, null);
 	}
 
 }

@@ -30,65 +30,48 @@
  *
  *  You acknowledge that this software is not designed or intended for use in
  *  the design, construction, operation or maintenance of any nuclear facility.
+ *  
  */
+/*
+ * TODO: delete this method because specific to policy and rule combining algorithms in terms of parameters (Rule for rule-combining algorithms and Policy for policy combining ones)
+ * So it does not make sense to have a common class (otherwise "combine" method signature is unclear because List type parameter not specified and then we have to do awkward cast to Rule or IPolicy and increase possibiliy of error in algorithm implementations)
+ */
+
 package com.sun.xacml.combine;
-
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.ctx.Result;
 
 import java.net.URI;
 
-import java.util.List;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
-
-
 /**
- * The base type for all combining algorithms. It provides one method that
- * must be implemented.
- *
+ * The base type for all combining algorithms. It provides one method that must be implemented.
+ * 
  * @since 1.0
  * @author Seth Proctor
  */
 public abstract class CombiningAlgorithm
 {
 
-    // the identifier for the algorithm
-    private URI identifier;
+	// the identifier for the algorithm
+	private URI identifier;
 
-    /**
-     * Constructor that takes the algorithm's identifier.
-     *
-     * @param identifier the algorithm's identifier
-     */
-    public CombiningAlgorithm(URI identifier) {
-        this.identifier = identifier;
-    }
+	/**
+	 * Constructor that takes the algorithm's identifier.
+	 * 
+	 * @param identifier
+	 *            the algorithm's identifier
+	 */
+	public CombiningAlgorithm(URI identifier)
+	{
+		this.identifier = identifier;
+	}
 
-    /**
-     * Combines the results of the inputs based on the context to produce
-     * some unified result. This is the one function of a combining algorithm.
-     *
-     * @param context the representation of the request
-     * @param parameters a (possibly empty) non-null <code>List</code> of
-     *                   <code>CombinerParameter<code>s provided for general
-     *                   use (for all pre-2.0 policies this must be empty)
-     * @param inputs a <code>List</code> of <code>CombinerElements</code>s to
-     *               evaluate and combine
-     *
-     * @return a single unified result based on the combining logic
-     */
-    public abstract Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                                   List inputs);
-    
-    /**
-     * Returns the identifier for this algorithm.
-     *
-     * @return the algorithm's identifier
-     */
-    public URI getIdentifier() {
-        return identifier;
-    }
+	/**
+	 * Returns the identifier for this algorithm.
+	 * 
+	 * @return the algorithm's identifier
+	 */
+	public URI getIdentifier()
+	{
+		return identifier;
+	}
 
 }

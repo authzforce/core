@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services - ThereSIS - All rights reserved.
+ * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.sun.xacml.Indenter;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
  * Represents the TargetType XML type in XACML. This also stores several other
@@ -209,7 +209,7 @@ public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target {
 	public void encode(OutputStream output, Indenter indenter) {
 		PrintStream out = new PrintStream(output);
 		try {
-			Marshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT
+			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT
 					.createMarshaller();
 			u.marshal(this, out);
 		} catch (Exception e) {

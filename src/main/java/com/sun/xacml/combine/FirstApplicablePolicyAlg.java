@@ -34,7 +34,6 @@
 package com.sun.xacml.combine;
 
 import java.net.URI;
-import java.util.Iterator;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
@@ -43,78 +42,80 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.xacmlv3.Policy;
-
+import com.sun.xacml.xacmlv3.IPolicy;
 
 /**
- * This is the standard First Applicable policy combining algorithm. It looks
- * through the set of policies, finds the first one that applies, and returns
- * that evaluation result.
- *
+ * This is the standard First Applicable policy combining algorithm. It looks through the set of
+ * policies, finds the first one that applies, and returns that evaluation result.
+ * 
  * @since 1.0
  * @author Seth Proctor
  */
 public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
 {
-    
-    /**
-     * The standard URN used to identify this algorithm
-     */
-    public static final String algId =
-        "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:" +
-        "first-applicable";
 
-    // a URI form of the identifier
-    private static final URI identifierURI = URI.create(algId);
+	/**
+	 * The standard URN used to identify this algorithm
+	 */
+	public static final String algId = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:" + "first-applicable";
 
-    /**
-     * Standard constructor.
-     */
-    public FirstApplicablePolicyAlg() {
-        super(identifierURI);
-    }
+	// a URI form of the identifier
+	private static final URI identifierURI = URI.create(algId);
 
-    /**
-     * Applies the combining rule to the set of policies based on the
-     * evaluation context.
-     *
-     * @param context the context from the request
-     * @param parameters a (possibly empty) non-null <code>List</code> of
-     *                   <code>CombinerParameter<code>s
-     * @param policyElements the policies to combine
-     *
-     * @return the result of running the combining algorithm
-     */
-    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                          List policyElements) {
-        Iterator it = policyElements.iterator();
-        
-        while (it.hasNext()) {
-            Policy policy = ((Policy)(it.next()));
+	/**
+	 * Standard constructor.
+	 */
+	public FirstApplicablePolicyAlg()
+	{
+		super(identifierURI);
+	}
 
-            // make sure that the policy matches the context
-            MatchResult match = policy.match(context);
+	/**
+	 * Applies the combining rule to the set of policies or policy sets [1] based on the evaluation
+	 * context.
+	 * 
+	 * [1] XACMLs section C.8 mentions only "Policy" as type of combined element. But section 2.3
+	 * strongly suggests it can combine PolicySets as well. Moreover, there is no logical reason why
+	 * it could not combine PolicySets as well.
+	 * 
+	 * @param context
+	 *            the context from the request
+	 * @param parameters
+	 *            a (possibly empty) non-null <code>List</code> of <code>CombinerParameter<code>s
+	 * @param policyElements
+	 *            the policies to combine
+	 * 
+	 * @return the result of running the combining algorithm
+	 */
+	@Override
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List<IPolicy> policyElements)
+	{
+		for (final IPolicy policy: policyElements)
+		{
+			// make sure that the policy matches the context
+			final MatchResult match = policy.match(context);
 
-            if (match.getResult() == MatchResult.INDETERMINATE)
-                return new Result(DecisionType.INDETERMINATE,
-                                  match.getStatus(),
-                                  context.getResourceId().encode());
+			if (match.getResult() == MatchResult.INDETERMINATE) {
+				// FIXME: implement extended Indeterminate decisions
+				return new Result(DecisionType.INDETERMINATE, match.getStatus(), context.getResourceId().encode());
+			}
 
-            if (match.getResult() == MatchResult.MATCH) {
-                // evaluate the policy
-                Result result = policy.evaluate(context);
-                int effect = result.getDecision().ordinal();
-                
-                // in the case of PERMIT, DENY, or INDETERMINATE, we always
-                // just return that result, so only on a rule that doesn't
-                // apply do we keep going...
-                if (effect != Result.DECISION_NOT_APPLICABLE)
-                    return result;
-            }
-        }
+			if (match.getResult() == MatchResult.MATCH)
+			{
+				// evaluate the policy
+				final Result result = policy.evaluate(context);
+				final int effect = result.getDecision().ordinal();
 
-        // if we got here, then none of the rules applied
-        return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
-    }
+				// in the case of PERMIT, DENY, or INDETERMINATE, we always
+				// just return that result, so only on a rule that doesn't
+				// apply do we keep going...
+				if (effect != Result.DECISION_NOT_APPLICABLE)
+					return result;
+			}
+		}
+
+		// if we got here, then none of the rules applied
+		return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
+	}
 
 }
