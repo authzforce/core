@@ -4326,7 +4326,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 								EvaluationResult.getInstance(false) });
 	}
 
-	public SetFunctionsTest(String functionName, List<ExpressionType> inputs,
+	public SetFunctionsTest(String functionName, List<Evaluatable> inputs,
 			EvaluationResult expectedResult) throws Exception {
 		super(functionName, inputs, expectedResult);
 	}

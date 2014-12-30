@@ -126,7 +126,7 @@ public class TestMatchFunction {
 	public static void setUp() {
 		LOGGER.info("Begining testing for MatchFunctions");
 		
-		Set<String> testFunctions = new HashSet<>();
+		Set<String> testFunctions = new HashSet<String>();
 		testFunctions.add(NAME_REGEXP_STRING_MATCH);
 		testFunctions.add(NAME_X500NAME_MATCH);
 		testFunctions.add(NAME_RFC822NAME_MATCH);
@@ -152,8 +152,8 @@ public class TestMatchFunction {
 	public final void testRegexpStringMatch() {
 		LOGGER.info("Testing function: " + NAME_REGEXP_STRING_MATCH);
 		MatchFunction testMatchFunction = new MatchFunction(NAME_REGEXP_STRING_MATCH);
-		List<StringAttribute> goodInputs = new ArrayList<>(Arrays.asList(StringAttribute.getInstance("string$"), StringAttribute.getInstance("This is my test string")));
-		List<StringAttribute> wrongInputs = new ArrayList<>(Arrays.asList(StringAttribute.getInstance("hello$"), StringAttribute.getInstance("This is my test string")));
+		List<StringAttribute> goodInputs = new ArrayList<StringAttribute>(Arrays.asList(StringAttribute.getInstance("string$"), StringAttribute.getInstance("This is my test string")));
+		List<StringAttribute> wrongInputs = new ArrayList<StringAttribute>(Arrays.asList(StringAttribute.getInstance("hello$"), StringAttribute.getInstance("This is my test string")));
 				
 		Assert.assertTrue(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(goodInputs, globalContext).getAttributeValue()).encode()));
 		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testMatchFunction.evaluate(wrongInputs, globalContext).getAttributeValue()).encode()));
@@ -176,11 +176,11 @@ public class TestMatchFunction {
 		LOGGER.info("Testing function: " + NAME_X500NAME_MATCH);
 		MatchFunction testMatchFunction = new MatchFunction(NAME_X500NAME_MATCH);
 		
-		List<X500NameAttribute> goodInputs = new ArrayList<>();
+		List<X500NameAttribute> goodInputs = new ArrayList<X500NameAttribute>();
 		goodInputs.add(x500NameAttributeArg0Good);
 		goodInputs.add(x500NameAttributeArg1);
 
-		List<X500NameAttribute> wrongInputs = new ArrayList<>();
+		List<X500NameAttribute> wrongInputs = new ArrayList<X500NameAttribute>();
 		wrongInputs.add(x500NameAttributeArg0Wrong);
 		wrongInputs.add(x500NameAttributeArg1);
 		
@@ -210,23 +210,23 @@ public class TestMatchFunction {
 		RFC822NameAttribute rfc822Arg1Wrong2 = new RFC822NameAttribute("anderson@sun.com");
 		RFC822NameAttribute rfc822Arg1Wrong3 = new RFC822NameAttribute("Anderson@east.sun.com");
 
-		List<Object> goodInputs1 = new ArrayList<>();
+		List<Object> goodInputs1 = new ArrayList<Object>();
 		goodInputs1.add(stringArg0);
 		goodInputs1.add(rfc822Arg1Good1);
 		
-		List<Object> goodInputs2 = new ArrayList<>();
+		List<Object> goodInputs2 = new ArrayList<Object>();
 		goodInputs2.add(stringArg0);
 		goodInputs2.add(rfc822Arg1Good2);
 		
-		List<Object> wrongInputs1 = new ArrayList<>();
+		List<Object> wrongInputs1 = new ArrayList<Object>();
 		wrongInputs1.add(stringArg0);
 		wrongInputs1.add(rfc822Arg1Wrong1);
 		
-		List<Object> wrongInputs2 = new ArrayList<>();
+		List<Object> wrongInputs2 = new ArrayList<Object>();
 		wrongInputs2.add(stringArg0);
 		wrongInputs2.add(rfc822Arg1Wrong2);
 		
-		List<Object> wrongInputs3 = new ArrayList<>();
+		List<Object> wrongInputs3 = new ArrayList<Object>();
 		wrongInputs3.add(stringArg0);
 		wrongInputs3.add(rfc822Arg1Wrong3);
 		
@@ -248,15 +248,15 @@ public class TestMatchFunction {
 		rfc822Arg1Good2 = new RFC822NameAttribute("Baxter@SUN.COM");
 		rfc822Arg1Wrong1 = new RFC822NameAttribute("Anderson@east.sun.com");
 
-		goodInputs1 = new ArrayList<>();
+		goodInputs1 = new ArrayList<Object>();
 		goodInputs1.add(stringArg0);
 		goodInputs1.add(rfc822Arg1Good1);
 		
-		goodInputs2 = new ArrayList<>();
+		goodInputs2 = new ArrayList<Object>();
 		goodInputs2.add(stringArg0);
 		goodInputs2.add(rfc822Arg1Good2);
 		
-		wrongInputs1 = new ArrayList<>();
+		wrongInputs1 = new ArrayList<Object>();
 		wrongInputs1.add(stringArg0);
 		wrongInputs1.add(rfc822Arg1Wrong1);
 		
@@ -277,15 +277,15 @@ public class TestMatchFunction {
 		rfc822Arg1Good2 = new RFC822NameAttribute("anne.anderson@ISRG.EAST.SUN.COM");
 		rfc822Arg1Wrong1 = new RFC822NameAttribute("Anderson@sun.com");
 
-		goodInputs1 = new ArrayList<>();
+		goodInputs1 = new ArrayList<Object>();
 		goodInputs1.add(stringArg0);
 		goodInputs1.add(rfc822Arg1Good1);
 		
-		goodInputs2 = new ArrayList<>();
+		goodInputs2 = new ArrayList<Object>();
 		goodInputs2.add(stringArg0);
 		goodInputs2.add(rfc822Arg1Good2);
 		
-		wrongInputs1 = new ArrayList<>();
+		wrongInputs1 = new ArrayList<Object>();
 		wrongInputs1.add(stringArg0);
 		wrongInputs1.add(rfc822Arg1Wrong1);
 		
@@ -303,14 +303,14 @@ public class TestMatchFunction {
 		MatchFunction testMatchFunction = new MatchFunction(NAME_STRING_REGEXP_MATCH); 
 				
 		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@acme.com");
-		StringAttribute stringGood = new StringAttribute("johndoe@acme.com");
+		StringAttribute stringGood = new StringAttribute("john.doe@acme.com");
 		StringAttribute stringWrong = new StringAttribute("john.doe@acme.com");
 
-		List<StringAttribute> goodInputs = new ArrayList<>();
+		List<StringAttribute> goodInputs = new ArrayList<StringAttribute>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(stringGood);
 		
-		List<StringAttribute> wrongInputs = new ArrayList<>();
+		List<StringAttribute> wrongInputs = new ArrayList<StringAttribute>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(stringWrong);
 		
@@ -330,11 +330,11 @@ public class TestMatchFunction {
 		AnyURIAttribute stringGood = new AnyURIAttribute(URI.create("http://www.acme.com"));
 		AnyURIAttribute stringWrong = new AnyURIAttribute(URI.create("https://www.acme.com"));
 
-		List<Object> goodInputs = new ArrayList<>();
+		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(stringGood);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<Object> wrongInputs = new ArrayList<Object>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(stringWrong);
 		
@@ -381,11 +381,11 @@ public class TestMatchFunction {
 			e.printStackTrace();
 		}
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(ipv4AddressGood);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<Object> wrongInputs = new ArrayList<Object>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(ipv4AddressWrong);
 		
@@ -407,11 +407,11 @@ public class TestMatchFunction {
 		StringAttribute goodStringArg1 = new StringAttribute("testing");
 		StringAttribute wrongStringArg1 = new StringAttribute("tasting");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(goodStringArg1);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<Object> wrongInputs = new ArrayList<Object>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(wrongStringArg1);
 		
@@ -434,11 +434,11 @@ public class TestMatchFunction {
 		StringAttribute goodStringArg1 = new StringAttribute("testing");
 		StringAttribute wrongStringArg1 = new StringAttribute("testang");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(goodStringArg1);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<Object> wrongInputs = new ArrayList<Object>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(wrongStringArg1);
 
@@ -458,11 +458,11 @@ public class TestMatchFunction {
 		StringAttribute goodStringArg1 = new StringAttribute("testing");
 		StringAttribute wrongStringArg1 = new StringAttribute("tasting");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(goodStringArg1);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<Object> wrongInputs = new ArrayList<Object>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(wrongStringArg1);
 
@@ -490,11 +490,11 @@ public class TestMatchFunction {
 		X500Principal x500PrincipalArg0Wrong = new X500Principal("ou=test,dc=example,dc=fr");
 		X500NameAttribute x500NameAttributeArg0Wrong = new X500NameAttribute(x500PrincipalArg0Wrong);	
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(x500NameAttributeArg0Good);
 
-		List<Object> wrongInputs = new ArrayList<>();
+		List<Object> wrongInputs = new ArrayList<Object>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(x500NameAttributeArg0Wrong);
 		
@@ -511,14 +511,14 @@ public class TestMatchFunction {
 		MatchFunction testMatchFunction = new MatchFunction(NAME_RFC822NAME_REGEXP_MATCH);
 			
 		StringAttribute stringArg0 = new StringAttribute("^[0-9a-zA-Z]+@acme.com");
-		RFC822NameAttribute rfc822Arg1Good = new RFC822NameAttribute("johndoe@acme.com");
+		RFC822NameAttribute rfc822Arg1Good = new RFC822NameAttribute("john.doe@acme.com");
 		RFC822NameAttribute rfc822Arg1Wrong = new RFC822NameAttribute("john.doe@acme.com");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<Object> goodInputs = new ArrayList<Object>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(rfc822Arg1Good);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<Object> wrongInputs = new ArrayList<Object>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(rfc822Arg1Wrong);
 		

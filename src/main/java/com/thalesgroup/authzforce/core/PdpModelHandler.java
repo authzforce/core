@@ -42,8 +42,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -87,16 +85,6 @@ public class PdpModelHandler
 			throw new RuntimeException("Invalid XPath to XSD import schemaLocation values: " + XSD_IMPORT_SCHEMA_LOCATIONS_XPATH, e);
 		}
 	}
-	
-	/**
-	 * XACML 3.0 XML schema namespace
-	 */
-	private static final String XACML_3_0_XMLNS = "oasis.names.tc.xacml._3_0.core.schema.wd_17";
-	
-	/**
-	 * XACML JAXB object factory
-	 */
-	public static final ObjectFactory XACML_OBJECT_FACTORY = new ObjectFactory();
 
 	/**
 	 * JAXB context for (un)marshalling from/to JAXB objects derived from XACML 3.0 schema
@@ -106,7 +94,7 @@ public class PdpModelHandler
 	{
 		try
 		{
-			XACML_3_0_JAXB_CONTEXT = JAXBContext.newInstance(XACML_3_0_XMLNS, PdpModelHandler.class.getClassLoader());
+			XACML_3_0_JAXB_CONTEXT = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17", PdpModelHandler.class.getClassLoader());
 		} catch (JAXBException e)
 		{
 			throw new RuntimeException("Error instantiating JAXB context for (un)marshalling from/to XACML 3.0 objects", e);

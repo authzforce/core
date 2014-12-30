@@ -154,28 +154,6 @@ class MapFunction extends Function
         return new MapFunction(returnType);
     }
     
-	public static Function getInstance(List<ExpressionType> inputs) throws ParsingException
-	{
-		if(inputs == null || inputs.isEmpty()) {
-			throw new IllegalArgumentException("Null or empty list of arguments");
-		}
-		
-		// first input is expected to be a function
-		final ExpressionType funcInput = inputs.get(0);
-		if(!(funcInput instanceof Function)) {
-			throw new IllegalArgumentException("First arg is not a Function");
-		}
-		
-		final Function func = (Function) funcInput;
-		final URI returnType = func.getReturnType();
-
-        if (returnType == null) {
-            throw new ParsingException("couldn't find the return type");
-        }
-
-        return new MapFunction(returnType);
-	}
-    
     /**
      * Returns the full identifier of this function, as known by the factories.
      *
@@ -276,7 +254,7 @@ class MapFunction extends Function
                 return result;
             }
             
-            outputs.add(result.getAttributeValue());
+            outputs.add((AttributeValue) result.getAttributeValue());
         }
 
         return new EvaluationResult(new BagAttribute(returnType, outputs));

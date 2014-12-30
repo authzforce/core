@@ -1798,7 +1798,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.<AttributeValue> emptyList())) });
 	}
 
-	public BagFunctionsTest(String functionName, List<ExpressionType> inputs,
+	public BagFunctionsTest(String functionName, List<Evaluatable> inputs,
 			EvaluationResult expectedResult) throws Exception {
 		super(functionName, inputs, expectedResult);
 	}

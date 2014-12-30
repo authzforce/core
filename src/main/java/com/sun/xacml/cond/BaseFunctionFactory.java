@@ -37,11 +37,8 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +100,7 @@ public class BaseFunctionFactory extends FunctionFactory
      * @param superset the superset factory or null
      */
     public BaseFunctionFactory(FunctionFactory superset) {
-        functionMap = new HashMap<>();
+        functionMap = new HashMap<String, Object>();
 
         this.superset = superset;
     }
@@ -169,8 +166,7 @@ public class BaseFunctionFactory extends FunctionFactory
      *                                  (when this is a Target or Condition
      *                                  factory)
      */
-    @Override
-	public void addFunction(Function function)
+    public void addFunction(Function function)
         throws IllegalArgumentException
     {
         String id = function.getIdentifier().toString();
@@ -201,8 +197,7 @@ public class BaseFunctionFactory extends FunctionFactory
      * @throws IllegalArgumentException if the function's identifier is already
      *                                  used
      */
-    @Override
-	public void addAbstractFunction(FunctionProxy proxy,
+    public void addAbstractFunction(FunctionProxy proxy,
                                     URI identity)
         throws IllegalArgumentException
     {
@@ -227,9 +222,8 @@ public class BaseFunctionFactory extends FunctionFactory
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
-    @Override
-	public Set<String> getSupportedFunctions() {
-        Set<String> set = new HashSet<>(functionMap.keySet());
+    public Set<String> getSupportedFunctions() {
+        Set<String> set = new HashSet<String>(functionMap.keySet());
 
         if (superset != null) {
             set.addAll(superset.getSupportedFunctions());
@@ -248,8 +242,7 @@ public class BaseFunctionFactory extends FunctionFactory
      *                               abstract function, and should therefore
      *                               be created through createAbstractFunction
      */
-    @Override
-	public Function createFunction(URI identity)
+    public Function createFunction(URI identity)
         throws UnknownIdentifierException, FunctionTypeException
     {
         return createFunction(identity.toString());
@@ -265,8 +258,7 @@ public class BaseFunctionFactory extends FunctionFactory
      *                               abstract function, and should therefore
      *                               be created through createAbstractFunction
      */
-    @Override
-	public Function createFunction(String identity)
+    public Function createFunction(String identity)
         throws UnknownIdentifierException, FunctionTypeException
     {
         Object entry = functionMap.get(identity);
@@ -275,16 +267,17 @@ public class BaseFunctionFactory extends FunctionFactory
             if (entry instanceof Function) {
             	((Function) entry).setFunctionId(((Function) entry).getIdentifier().toASCIIString());
                 return (Function)entry;
+            } else {
+                // this is actually a proxy, which means the other create
+                // method should have been called
+                throw new FunctionTypeException("function is abstract");
             }
-			// this is actually a proxy, which means the other create
-			// method should have been called
-			throw new FunctionTypeException("function is abstract");
+        } else {
+            // we couldn't find a match
+            throw new UnknownIdentifierException("functions of type " +
+                                                 identity + " are not "+
+                                                 "supported by this factory");
         }
-        
-		// we couldn't find a match
-		throw new UnknownIdentifierException("functions of type " +
-		                                     identity + " are not "+
-		                                     "supported by this factory");
     }
 
     /**
@@ -300,8 +293,7 @@ public class BaseFunctionFactory extends FunctionFactory
      * @throws ParsingException if the function can't be created with the
      *                          given inputs
      */
-    @Override
-	public Function createAbstractFunction(URI identity, Node root)
+    public Function createAbstractFunction(URI identity, Node root)
         throws UnknownIdentifierException, ParsingException,
                FunctionTypeException
     {
@@ -323,8 +315,7 @@ public class BaseFunctionFactory extends FunctionFactory
      * @throws ParsingException if the function can't be created with the
      *                          given inputs
      */
-    @Override
-	public Function createAbstractFunction(URI identity, Node root,
+    public Function createAbstractFunction(URI identity, Node root,
                                            String xpathVersion)
         throws UnknownIdentifierException, ParsingException,
                FunctionTypeException
@@ -345,8 +336,7 @@ public class BaseFunctionFactory extends FunctionFactory
      * @throws ParsingException if the function can't be created with the
      *                          given inputs
      */
-    @Override
-	public Function createAbstractFunction(String identity, Node root)
+    public Function createAbstractFunction(String identity, Node root)
         throws UnknownIdentifierException, ParsingException,
                FunctionTypeException
     {
@@ -368,8 +358,7 @@ public class BaseFunctionFactory extends FunctionFactory
      * @throws ParsingException if the function can't be created with the
      *                          given inputs
      */
-    @Override
-	public Function createAbstractFunction(String identity, Node root,
+    public Function createAbstractFunction(String identity, Node root,
                                            String xpathVersion)
         throws UnknownIdentifierException, ParsingException,
                FunctionTypeException
@@ -385,44 +374,18 @@ public class BaseFunctionFactory extends FunctionFactory
                     throw new ParsingException("couldn't create abstract" +
                                                " function " + identity, e);
                 }
+            } else {
+                // this is actually a concrete function, which means that
+                // the other create method should have been called
+                throw new FunctionTypeException("function is concrete");
             }
-			// this is actually a concrete function, which means that
-			// the other create method should have been called
-			throw new FunctionTypeException("function is concrete");
+        } else {
+            // we couldn't find a match
+            throw new UnknownIdentifierException("abstract functions of " +
+                                                 "type " + identity +
+                                                 " are not supported by " +
+                                                 "this factory");
         }
-        
-		// we couldn't find a match
-		throw new UnknownIdentifierException("abstract functions of " +
-		                                     "type " + identity +
-		                                     " are not supported by " +
-		                                     "this factory");
     }
-
-	@Override
-	public Function createAbstractFunction(String identity, List<ExpressionType> inputs) throws ParsingException, FunctionTypeException, UnknownIdentifierException
-	{
-Object entry = functionMap.get(identity);
-        
-        if (entry != null) {
-            if (entry instanceof FunctionProxy) {
-                try {
-                    return ((FunctionProxy)entry).getInstance(inputs,
-                                                              null);
-                } catch (Exception e) {
-                    throw new ParsingException("couldn't create abstract" +
-                                               " function " + identity, e);
-                }
-            }
-			// this is actually a concrete function, which means that
-			// the other create method should have been called
-			throw new FunctionTypeException("function is concrete");
-        }
-        
-		// we couldn't find a match
-		throw new UnknownIdentifierException("abstract functions of " +
-		                                     "type " + identity +
-		                                     " are not supported by " +
-		                                     "this factory");
-	}
 
 }

@@ -7,8 +7,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -55,7 +53,7 @@ public class StringConversionFunctionsTest extends GeneralFunctionTest {
 	}
 
 	public StringConversionFunctionsTest(String functionName,
-			List<ExpressionType> inputs, EvaluationResult expectedResult)
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
 			throws Exception {
 		super(functionName, inputs, expectedResult);
 	}

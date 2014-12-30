@@ -62,6 +62,7 @@ import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderResult;
+import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 
 /**
@@ -208,6 +209,7 @@ public class PDP
 	 *            the request to evaluate
 	 * @return a response paired to the request
 	 */
+	@Audit(type = Audit.Type.DISPLAY)
 	public List<ResponseCtx> evaluateList(Request request)
 	{
 
@@ -370,6 +372,7 @@ public class PDP
 	 * 
 	 * @deprecated Use evaluateList instead
 	 */
+	@Audit(type = Audit.Type.DISPLAY)
 	public ResponseCtx evaluate(Request request) {
 		return evaluatePrivate(request);
 	}

@@ -394,7 +394,7 @@ public class HigherOrderFunctionsTest extends GeneralFunctionTest {
 	}
 
 	public HigherOrderFunctionsTest(String functionName,
-			List<ExpressionType> inputs, EvaluationResult expectedResult)
+			List<Evaluatable> inputs, EvaluationResult expectedResult)
 			throws Exception {
 		super(functionName, inputs, expectedResult);
 	}
