@@ -33,6 +33,10 @@
  */
 package com.sun.xacml.cond;
 
+import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
 import org.w3c.dom.Node;
 
 
@@ -53,10 +57,17 @@ public class MapFunctionProxy implements FunctionProxy
 
     }
 
-    public Function getInstance(Node root, String xpathVersion)
+    @Override
+	public Function getInstance(Node root, String xpathVersion)
         throws Exception
     {
         return MapFunction.getInstance(root);
     }
+
+	@Override
+	public Function getInstance(List<ExpressionType> inputs, String xpathVersion) throws Exception
+	{
+		return MapFunction.getInstance(inputs);
+	}
 
 }

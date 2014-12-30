@@ -334,12 +334,8 @@ public class TestUtils
 			File configFile = new File(properties.getProperty("configFile"));
 			
 			testConfigurationStore = new ConfigurationStore(configFile, null, null);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParsingException e) {
-			e.printStackTrace();
+		} catch (ParsingException | IOException e) {
+			throw new RuntimeException(e);
 		}
 		
 

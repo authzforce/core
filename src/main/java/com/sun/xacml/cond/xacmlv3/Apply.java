@@ -43,9 +43,11 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -543,7 +545,11 @@ public class Apply extends ApplyType implements Evaluatable
     	PrintStream out = new PrintStream(output);
 		try {
 			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
-			u.marshal(this, out);
+			/*
+			 *  ApplyType does not have XmlRoot annotation so we need to wrap it in JAXBElement in order to marshall it
+			 */
+	        final JAXBElement<ApplyType> root = PdpModelHandler.XACML_OBJECT_FACTORY.createApply(this);
+			u.marshal(root, out);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Apply",e);
 		}  
