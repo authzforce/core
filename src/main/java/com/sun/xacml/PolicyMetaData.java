@@ -108,7 +108,7 @@ public class PolicyMetaData
      * XPath 1.0 identifier
      */
     public static final String XPATH_1_0_IDENTIFIER =
-        "http://www.w3.org/TR/1999/Rec-xpath-19991116";
+        "http://www.w3.org/TR/1999/REC-xpath-19991116";
 
     /**
      * Version identifier for an unspecified version of XPath
