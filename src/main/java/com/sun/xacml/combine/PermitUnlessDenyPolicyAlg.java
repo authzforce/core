@@ -109,7 +109,8 @@ public class PermitUnlessDenyPolicyAlg extends PolicyCombiningAlgorithm {
 			}
 		}
 		
-		return new Result(DecisionType.PERMIT, null, context.getResourceId().encode(), combinedObligations, combinedAssociatedAdvice, null);
+		return new Result(DecisionType.PERMIT, null, context.getResourceId().encode(), combinedObligations.getObligations().isEmpty() ? null
+				: combinedObligations, combinedAssociatedAdvice.getAdvices().isEmpty()? null: combinedAssociatedAdvice, null);
 	}
 
 }

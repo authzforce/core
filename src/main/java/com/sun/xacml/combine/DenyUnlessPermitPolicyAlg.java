@@ -50,66 +50,78 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 
-public class DenyUnlessPermitPolicyAlg extends PolicyCombiningAlgorithm {
+public class DenyUnlessPermitPolicyAlg extends PolicyCombiningAlgorithm
+{
 
 	/**
 	 * The standard URN used to identify this algorithm
 	 */
-	public static final String algId = "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:"
-			+ "deny-unless-permit";
+	public static final String algId = "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:" + "deny-unless-permit";
 
 	// a URI form of the identifier
 	private static final URI identifierURI = URI.create(algId);
-	
+
 	/**
 	 * Standard constructor
 	 */
-	public DenyUnlessPermitPolicyAlg() {
+	public DenyUnlessPermitPolicyAlg()
+	{
 		super(identifierURI);
 	}
 
 	/**
 	 * @param identifier
 	 */
-	public DenyUnlessPermitPolicyAlg(URI identifier) {
+	public DenyUnlessPermitPolicyAlg(URI identifier)
+	{
 		super(identifier);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.sun.xacml.combine.PolicyCombiningAlgorithm#combine(com.sun.xacml.
-	 * EvaluationCtx, java.util.List, java.util.List)
+	 * @see com.sun.xacml.combine.PolicyCombiningAlgorithm#combine(com.sun.xacml. EvaluationCtx,
+	 * java.util.List, java.util.List)
 	 */
 	@Override
-	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-			List<IPolicy> policyElements) {
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List<IPolicy> policyElements)
+	{
 		final Obligations combinedObligations = new Obligations();
 		final AssociatedAdvice combinedAssociatedAdvice = new AssociatedAdvice();
-		
-		for (IPolicy policy : policyElements) {
+
+		for (IPolicy policy : policyElements)
+		{
 			// make sure that the policy matches the context
 			final MatchResult match = policy.match(context);
-			if (match.getResult() == MatchResult.MATCH) {
+			if (match.getResult() == MatchResult.MATCH)
+			{
 				final Result result = policy.evaluate(context);
-				if (result.getDecision() == DecisionType.PERMIT) {
+				if (result.getDecision() == DecisionType.PERMIT)
+				{
 					return result;
-				} 
-				
+				}
+
 				final Obligations resultObligations = result.getObligations();
-				if(resultObligations != null) {
+				if (resultObligations != null)
+				{
 					combinedObligations.getObligations().addAll(resultObligations.getObligations());
 				}
-				
+
 				final AssociatedAdvice resultAssociatedAdvice = result.getAssociatedAdvice();
-				if(resultAssociatedAdvice != null) {
+				if (resultAssociatedAdvice != null)
+				{
 					combinedAssociatedAdvice.getAdvices().addAll(resultAssociatedAdvice.getAdvices());
 				}
 			}
 		}
-		
-		return new Result(DecisionType.DENY, null, context.getResourceId().encode(), combinedObligations, combinedAssociatedAdvice, null);
+
+		/*
+		 * Obligations/AssociatedAdvice arguments must be null if no obligation/advice combined, to
+		 * avoid creating empty <Obligations>/<AssociatedAdvice> element (no valid by XACML schema)
+		 * when marshalling with JAXB
+		 */
+		return new Result(DecisionType.DENY, null, context.getResourceId().encode(), combinedObligations.getObligations().isEmpty() ? null
+				: combinedObligations, combinedAssociatedAdvice.getAdvices().isEmpty() ? null : combinedAssociatedAdvice, null);
 	}
 
 }

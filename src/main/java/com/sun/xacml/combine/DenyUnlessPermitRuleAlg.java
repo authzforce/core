@@ -83,7 +83,8 @@ public class DenyUnlessPermitRuleAlg extends RuleCombiningAlgorithm {
 			}
 		}
 		
-		return new Result(DecisionType.DENY, null, context.getResourceId().encode(), combinedObligations, combinedAssociatedAdvice, null);
+		return new Result(DecisionType.DENY, null, context.getResourceId().encode(), combinedObligations.getObligations().isEmpty() ? null
+				: combinedObligations, combinedAssociatedAdvice.getAdvices().isEmpty()? null: combinedAssociatedAdvice, null);
 	}
 	
 

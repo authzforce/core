@@ -39,12 +39,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
@@ -54,9 +50,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.Indenter;
@@ -97,7 +90,9 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 */
 	public static final int DECISION_NOT_APPLICABLE = 3;
 
-	// string versions of the 4 Decision types used for encoding
+	/**
+	 * String versions of the 4 Decision types used for encoding
+	 */
 	public static final String[] DECISIONS = { "Permit", "Deny", "Indeterminate", "NotApplicable" };
 
 	/**
@@ -349,154 +344,6 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 		{
 			this.attributes = attributes;
 		}
-	}
-
-	/**
-	 * Creates a new instance of a <code>Result</code> based on the given DOM root node. A
-	 * <code>ParsingException</code> is thrown if the DOM root doesn't represent a valid
-	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Result.
-	 * 
-	 * @param root
-	 *            the DOM root of a oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
-	 * 
-	 * @return a new <code>Result</code>
-	 * 
-	 * @throws ParsingException
-	 *             if the node is invalid
-	 */
-	public static Result getInstance(Node root) throws ParsingException
-	{
-		DecisionType decision = null;
-		oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = null;
-		String resource = null;
-		Obligations obligations = null;
-		AssociatedAdvice advices = null;
-		List<Attributes> attributes = null;
-
-		NamedNodeMap attrs = root.getAttributes();
-		Node resourceAttr = attrs.getNamedItem("ResourceId");
-		if (resourceAttr != null)
-		{
-			resource = resourceAttr.getNodeValue();
-		}
-
-		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++)
-		{
-			Node node = nodes.item(i);
-			String name = node.getNodeName();
-
-			if (name.equals("Decision"))
-			{
-				String type = node.getFirstChild().getNodeValue();
-				for (int j = 0; j < DECISIONS.length; j++)
-				{
-					if (DECISIONS[j].equals(type))
-					{
-						// FIXME: check value
-						DecisionType.valueOf(type);
-						break;
-					}
-				}
-				
-			} else if (name.equals("Status"))
-			{
-				status = Status.getInstance(node);
-			} else if (name.equals("Obligations"))
-			{
-				obligations = parseObligations(node);
-			} else if (name.equals("AssociatedAdvice"))
-			{
-				advices = parseAdvices(root);
-			} else if (name.equals("Attributes"))
-			{
-				attributes = parseAttributes(node);
-			}
-		}
-
-		return new Result(decision, status, resource, obligations, advices, attributes);
-	}
-
-	/**
-	 * Helper method that handles the obligations
-	 */
-	private static Obligations parseObligations(Node root) throws ParsingException
-	{
-		Obligations obligations = new Obligations();
-
-		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++)
-		{
-			Node node = nodes.item(i);
-			if (node.getNodeName().equals("Obligation"))
-				obligations.getObligations().add(Obligation.getInstance(node));
-		}
-
-		if (obligations.getObligations().size() == 0)
-			throw new ParsingException("Obligations must not be empty");
-
-		return obligations;
-	}
-
-	/**
-	 * Helper method that handles the Advices
-	 */
-	private static AssociatedAdvice parseAdvices(Node root)
-	{
-		AssociatedAdvice advices = new AssociatedAdvice();
-
-		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++)
-		{
-			Node node = nodes.item(i);
-			if (node.getNodeName().equals("Advice"))
-			{
-				try
-				{
-					Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-					JAXBElement<Advice> advice = u.unmarshal(node, Advice.class);
-					advices.getAdvices().add(advice.getValue());
-				} catch (JAXBException e)
-				{
-					LOGGER.error("Error unmarshalling Advice", e);
-				}
-			}
-		}
-
-		return advices;
-	}
-
-	/**
-	 * Helper method that handles the Attributes
-	 */
-	private static List<Attributes> parseAttributes(Node root) throws ParsingException
-	{
-		List<Attributes> attributes = new ArrayList<>();
-
-		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++)
-		{
-			Node node = nodes.item(i);
-			if (node.getNodeName().equals("Attribute"))
-			{
-				try
-				{
-					Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-					JAXBElement<Attributes> attrs = u.unmarshal(root, Attributes.class);
-					attributes.add(attrs.getValue());
-				} catch (JAXBException e)
-				{
-					LOGGER.error("Error unmarshalling Attributes", e);
-				}
-			}
-		}
-
-		if (attributes.size() == 0)
-		{
-			throw new ParsingException("Advice must not be empty");
-		}
-
-		return attributes;
 	}
 
 	/**

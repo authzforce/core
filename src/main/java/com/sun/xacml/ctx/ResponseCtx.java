@@ -69,7 +69,7 @@ public class ResponseCtx
      * @param result the single result in the response
      */
     public ResponseCtx(Result result) {
-        results = new HashSet();
+        results = new HashSet<>();
         results.add(result);
     }
     
@@ -82,58 +82,6 @@ public class ResponseCtx
      */
     public ResponseCtx(Set results) {
         this.results = Collections.unmodifiableSet(new HashSet(results));
-    }
-
-    /**
-     * Creates a new instance of <code>ResponseCtx</code> based on the given
-     * DOM root node. A <code>ParsingException</code> is thrown if the DOM
-     * root doesn't represent a valid ResponseType.
-     *
-     * @param root the DOM root of a ResponseType
-     *
-     * @return a new <code>ResponseCtx</code>
-     *
-     * @throws ParsingException if the node is invalid
-     */
-    public static ResponseCtx getInstance(Node root) throws ParsingException {
-        Set results = new HashSet();
-        
-        NodeList nodes = root.getChildNodes();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            if (node.getNodeName().equals("Result")) {
-                results.add(Result.getInstance(node));
-            }
-        }
-
-        if (results.size() == 0)
-            throw new ParsingException("must have at least one Result");
-
-        return new ResponseCtx(results);
-    }
-
-    /**
-     * Creates a new <code>ResponseCtx</code> by parsing XML from an
-     * input stream. Note that this is a convenience method, and it will
-     * not do schema validation by default. You should be parsing the data
-     * yourself, and then providing the root node to the other
-     * <code>getInstance</code> method. If you use this convenience
-     * method, you probably want to turn on validation by setting the
-     * context schema file (see the programmer guide for more information
-     * on this).
-     * 
-     * FIXME: This method is not thread-safe! Remove if not used anymore.
-     *
-     * @param input a stream providing the XML data
-     *
-     * @return a new <code>ResponseCtx</code>
-     *
-     * @throws ParserException if there is an error parsing the input
-     */
-    public static ResponseCtx getInstance(InputStream input)
-        throws ParsingException
-    {
-        return getInstance(InputParser.parseInput(input, "Response"));
     }
 
     /**
