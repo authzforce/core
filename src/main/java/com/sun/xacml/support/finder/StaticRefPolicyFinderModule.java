@@ -87,19 +87,19 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 	 * make reference to another one which has to be previously defined. Not null only if the finder
 	 * module is initialized from locations of XACML <PolicySet>s.
 	 */
-	private List<URL> policyLocationList = null;
+	private final List<URL> policyLocationList;
 
 	/*
 	 * List of <PolicySet>s. Not null only if the finder module is initialized directly from XACML
 	 * <PolicySet>s (JAXB).
 	 */
-	private List<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> policySetList = null;
+	private final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> policySetList;
 
 	// the map of policies
-	private PolicyCollection policies;
+	private final PolicyCollection policies;
 
 	// the optional schema
-	private Schema schema = null;
+	private final Schema schema;
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(StaticRefPolicyFinderModule.class);
@@ -113,6 +113,9 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 	public StaticRefPolicyFinderModule(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> policySets)
 	{
 		this.policySetList = policySets;
+		this.policies = new PolicyCollection();
+		this.policyLocationList = null;
+		this.schema = null;
 	}
 
 	/**
@@ -131,6 +134,7 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 		this.policyLocationList = policyLocations;
 		this.policies = new PolicyCollection();
 		this.schema = xacmlSchema;
+		this.policySetList = null;
 	}
 
 	/**
