@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.2-SNAPSHOT</version>
+		<version>3.0.2</version>
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<version>FIWARE4.1-SNAPSHOT</version>
+	<version>FIWARE4.1</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
@@ -216,15 +216,11 @@
 				<executions>
 					<execution>
 						<id>attach-sources</id>
-						<phase>verify</phase>
 						<goals>
 							<goal>jar-no-fork</goal>
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<attach>false</attach>
-				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>
