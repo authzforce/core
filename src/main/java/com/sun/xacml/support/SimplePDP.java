@@ -45,7 +45,6 @@ import javax.xml.transform.stream.StreamSource;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
-import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.Indenter;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
@@ -61,164 +60,137 @@ import com.sun.xacml.support.finder.StaticRefPolicyFinderModule;
 import com.sun.xacml.support.finder.URLPolicyFinderModule;
 import com.thalesgroup.authzforce.core.PdpModelHandler;
 
-
 /**
- * This is a simple, command-line driven XACML PDP. It acts both as an example
- * of how to write a full-featured PDP and as a sample program that lets you
- * evaluate requests against policies. See the comments for the main() method
- * for correct usage.
+ * This is a simple, command-line driven XACML PDP. It acts both as an example of how to write a
+ * full-featured PDP and as a sample program that lets you evaluate requests against policies. See
+ * the comments for the main() method for correct usage.
  * <p>
- * As of the 2.0 release, this has been moved into the new support tree of the
- * codebase. It has also been updated to use several of the new finder
- * modules provided in the support tree codebase, so that static and dynamic
- * references are supported, policies can be loaded from URLs, top-level
+ * As of the 2.0 release, this has been moved into the new support tree of the codebase. It has also
+ * been updated to use several of the new finder modules provided in the support tree codebase, so
+ * that static and dynamic references are supported, policies can be loaded from URLs, top-level
  * policies are wrapped in a policy set when more than one applies, etc.
  * <p>
- * If you don't use a configuration file, then the default modules can all
- * optionally support schema validation. To turn this on, provide the filename
- * of the schema file in the property "com.sun.xacml.PolicySchema". You can
- * also turn this on if you use a configuration file and it includes the
- * modules provided in the support package.
- *
+ * If you don't use a configuration file, then the default modules can all optionally support schema
+ * validation. To turn this on, provide the filename of the schema file in the property
+ * "com.sun.xacml.PolicySchema". You can also turn this on if you use a configuration file and it
+ * includes the modules provided in the support package.
+ * 
  * @since 1.1
  * @author Seth Proctor
  */
 public class SimplePDP
 {
 
-    // this is the actual PDP object we'll use for evaluation
-    private PDP pdp = null;
+	// this is the actual PDP object we'll use for evaluation
+	private PDP pdp = null;
 
-    /**
-     * Default constructor. This creates a <code>SimplePDP</code> with a
-     * <code>PDP</code> based on the configuration defined by the runtime
-     * property com.sun.xcaml.PDPConfigFile.
-     * @throws Exception 
-     */
-    public SimplePDP() throws Exception {
-        // load the configuration
-        ConfigurationStore store = new ConfigurationStore();
+	/**
+	 * Constructor that takes an array of filenames and URLs, each of which points to an XACML
+	 * policy, and sets up a <code>PDP</code> with access to these policies only. These policies may
+	 * be accessed based on context matching or by reference (based on their policy identifiers).
+	 * The <code>PDP</code> is also setup to support dynamic URL references.
+	 * 
+	 * @param policies
+	 *            an arry of filenames and URLs that specify policies
+	 */
+	public SimplePDP(String[] policies) throws Exception
+	{
+		// Create the two static modules with the given policies so that
+		// we have context-based and reference-based access to all the
+		// policies provided on the command-line
+		List policyList = Arrays.asList(policies);
+		StaticPolicyFinderModule staticModule = new StaticPolicyFinderModule(PermitOverridesPolicyAlg.algId, policyList);
+		StaticRefPolicyFinderModule staticRefModule = new StaticRefPolicyFinderModule(policyList);
 
-        // use the default factories from the configuration
-        store.useDefaultFactories();
+		// also create a module that lets us get at URL-based policies
+		URLPolicyFinderModule urlModule = new URLPolicyFinderModule();
 
-        // get the PDP configuration's and setup the PDP
-        pdp = new PDP(store.getDefaultPDPConfig());
-    }
+		// next, setup the PolicyFinder that this PDP will use
+		PolicyFinder policyFinder = new PolicyFinder();
+		List policyModules = new ArrayList();
+		policyModules.add(staticModule);
+		policyModules.add(staticRefModule);
+		policyModules.add(urlModule);
+		policyFinder.setModules(policyModules);
 
-    /**
-     * Constructor that takes an array of filenames and URLs, each of which
-     * points to an XACML policy, and sets up a <code>PDP</code> with access
-     * to these policies only. These policies may be accessed based on
-     * context matching or by reference (based on their policy identifiers).
-     * The <code>PDP</code> is also setup to support dynamic URL references.
-     *
-     * @param policies an arry of filenames and URLs that specify policies
-     */
-    public SimplePDP(String [] policies) throws Exception {
-        // Create the two static modules with the given policies so that
-        // we have context-based and reference-based access to all the
-        // policies provided on the command-line
-        List policyList = Arrays.asList(policies);
-        StaticPolicyFinderModule staticModule =
-            new StaticPolicyFinderModule(PermitOverridesPolicyAlg.algId,
-                                         policyList);
-        StaticRefPolicyFinderModule staticRefModule =
-            new StaticRefPolicyFinderModule(policyList);
+		// now setup attribute finder modules for the current date/time and
+		// AttributeSelectors (selectors are optional, but this project does
+		// support a basic implementation)
+		CurrentEnvModule envAttributeModule = new CurrentEnvModule();
+		SelectorModule selectorAttributeModule = new SelectorModule();
 
-        // also create a module that lets us get at URL-based policies
-        URLPolicyFinderModule urlModule = new URLPolicyFinderModule();
+		// Setup the AttributeFinder just like we setup the PolicyFinder. Note
+		// that unlike with the policy finder, the order matters here. See the
+		// the javadocs for more details.
+		AttributeFinder attributeFinder = new AttributeFinder();
+		List attributeModules = new ArrayList();
+		attributeModules.add(envAttributeModule);
+		attributeModules.add(selectorAttributeModule);
+		attributeFinder.setModules(attributeModules);
 
-        // next, setup the PolicyFinder that this PDP will use
-        PolicyFinder policyFinder = new PolicyFinder();
-        List policyModules = new ArrayList();
-        policyModules.add(staticModule);
-        policyModules.add(staticRefModule);
-        policyModules.add(urlModule);
-        policyFinder.setModules(policyModules);
+		// finally, initialize our pdp
+		pdp = new PDP(new PDPConfig(attributeFinder, policyFinder, null));
+	}
 
-        // now setup attribute finder modules for the current date/time and
-        // AttributeSelectors (selectors are optional, but this project does
-        // support a basic implementation)
-        CurrentEnvModule envAttributeModule = new CurrentEnvModule();
-        SelectorModule selectorAttributeModule = new SelectorModule();
+	/**
+	 * Evaluates the given request and returns the Response that the PDP will hand back to the PEP.
+	 * 
+	 * @param requestFile
+	 *            the name of a file that contains a Request
+	 * 
+	 * @return the result of the evaluation
+	 * 
+	 * @throws IOException
+	 *             if there is a problem accessing the file
+	 * @throws ParsingException
+	 *             if the Request is invalid
+	 * @throws JAXBException
+	 */
+	public ResponseCtx evaluate(String requestFilename) throws IOException, ParsingException, JAXBException
+	{
+		// setup the request based on the file
+		Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
+		File requestFile = new File(requestFilename);
+		Request request = u.unmarshal(new StreamSource(requestFile), Request.class).getValue();
 
-        // Setup the AttributeFinder just like we setup the PolicyFinder. Note
-        // that unlike with the policy finder, the order matters here. See the
-        // the javadocs for more details.
-        AttributeFinder attributeFinder = new AttributeFinder();
-        List attributeModules = new ArrayList();
-        attributeModules.add(envAttributeModule);
-        attributeModules.add(selectorAttributeModule);
-        attributeFinder.setModules(attributeModules);
+		// evaluate the request
+		return pdp.evaluate(request);
+	}
 
-        // finally, initialize our pdp
-        pdp = new PDP(new PDPConfig(attributeFinder, policyFinder, null));
-    }
+	/**
+	 * Main-line driver for this sample code. This method lets you invoke the PDP directly from the
+	 * command-line.
+	 * 
+	 * @param args
+	 *            the input arguments to the class. They are either the flag "-config" followed by a
+	 *            request file, or a request file followed by one or more policy files. In the case
+	 *            that the configuration flag is used, the configuration file must be specified in
+	 *            the standard java property, com.sun.xacml.PDPConfigFile.
+	 */
+	public static void main(String[] args) throws Exception
+	{
+		if (args.length < 2)
+		{
+			System.out.println("Usage: <request> <policy> [policies]");
+			System.exit(1);
+		}
 
-    /**
-     * Evaluates the given request and returns the Response that the PDP
-     * will hand back to the PEP.
-     *
-     * @param requestFile the name of a file that contains a Request
-     *
-     * @return the result of the evaluation
-     *
-     * @throws IOException if there is a problem accessing the file
-     * @throws ParsingException if the Request is invalid
-     * @throws JAXBException 
-     */
-    public ResponseCtx evaluate(String requestFilename)
-        throws IOException, ParsingException, JAXBException
-    {
-        // setup the request based on the file
-        Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-        File requestFile = new File(requestFilename);
-        Request request = u.unmarshal(new StreamSource(requestFile), Request.class).getValue();
+		SimplePDP simplePDP = null;
+		String requestFile = null;
 
-        // evaluate the request
-        return pdp.evaluate(request);
-    }
+		requestFile = args[0];
+		String[] policyFiles = new String[args.length - 1];
 
-    /**
-     * Main-line driver for this sample code. This method lets you invoke
-     * the PDP directly from the command-line.
-     *
-     * @param args the input arguments to the class. They are either the
-     *             flag "-config" followed by a request file, or a request
-     *             file followed by one or more policy files. In the case
-     *             that the configuration flag is used, the configuration
-     *             file must be specified in the standard java property,
-     *             com.sun.xacml.PDPConfigFile.
-     */
-    public static void main(String [] args) throws Exception {
-        if (args.length < 2) {
-            System.out.println("Usage: -config <request>");
-            System.out.println("       <request> <policy> [policies]");
-            System.exit(1);
-        }
-        
-        SimplePDP simplePDP = null;
-        String requestFile = null;
-        
-        if (args[0].equals("-config")) {
-            requestFile = args[1];
-            simplePDP = new SimplePDP();
-        } else {
-            requestFile = args[0];
-            String [] policyFiles = new String[args.length - 1];
-            
-            for (int i = 1; i < args.length; i++)
-                policyFiles[i-1] = args[i];
+		for (int i = 1; i < args.length; i++)
+			policyFiles[i - 1] = args[i];
 
-            simplePDP = new SimplePDP(policyFiles);
-        }
+		simplePDP = new SimplePDP(policyFiles);
 
-        // evaluate the request
-        ResponseCtx response = simplePDP.evaluate(requestFile);
+		// evaluate the request
+		ResponseCtx response = simplePDP.evaluate(requestFile);
 
-        // for this sample program, we'll just print out the response
-        response.encode(System.out, new Indenter());
-    }
+		// for this sample program, we'll just print out the response
+		response.encode(System.out, new Indenter());
+	}
 
 }
