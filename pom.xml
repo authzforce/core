@@ -6,14 +6,13 @@
 		<artifactId>authzforce-parent</artifactId>
 		<version>3.0.3-SNAPSHOT</version>
 	</parent>
-	<groupId>com.thalesgroup.authzforce</groupId>
 	<artifactId>authzforce-core</artifactId>
 	<version>3.5.5-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
 	</organization>
-	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
+	<description>XACML-compliant Authorization PDP Engine Core</description>
 	<inceptionYear>2011</inceptionYear>
 	<scm>
 		<connection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</connection>
@@ -95,15 +94,9 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
-		<!-- Uncoment dependency below to use log4j as SLFJ implementation for test logs -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -193,18 +186,18 @@
 							<goal>format</goal>
 						</goals>
 						<configuration>
-					<properties>
-						<!-- Values to be substituted in template -->
-						<inceptionYear>${project.inceptionYear}</inceptionYear>
-						<currentYear>${currentYear}</currentYear>
-						<copyrightOwner>${project.organization.name}</copyrightOwner>
-					</properties>
-					<header>license/thales.txt</header>
-					<strictCheck>true</strictCheck>
-					<includes>
-						<include>src/com/thalesgroup/authzforce/audit/**</include>
-					</includes>
-				</configuration>
+							<properties>
+								<!-- Values to be substituted in template -->
+								<inceptionYear>${project.inceptionYear}</inceptionYear>
+								<currentYear>${currentYear}</currentYear>
+								<copyrightOwner>${project.organization.name}</copyrightOwner>
+							</properties>
+							<header>license/thales.txt</header>
+							<strictCheck>true</strictCheck>
+							<includes>
+								<include>src/com/thalesgroup/authzforce/audit/**</include>
+							</includes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -212,6 +205,10 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
 				<version>1.5</version>
+				<!-- WARNING: to fix Eclipse error "Plugin execution not covered by lifecycle configuration", install 
+					Eclipse plugin "Maven integration for AJDT" from update site: http://dist.springsource.org/release/AJDT/configurator/ 
+					DO NOT FIX IT by using eclipse "fake" lifecycle-mapping plugin in pluginManagement section, because Jenkins 
+					will not be able to resolve it as it is not an actual plugin available on public repositories. -->
 				<dependencies>
 					<dependency>
 						<groupId>org.aspectj</groupId>
@@ -311,6 +308,9 @@
 						<args>-Xequals</args>
 						<args>-XhashCode</args>
 					</args>
+					<!-- Episodes: Only episodes for schemas referenced (imported/included) by schema(s) in schemaDirectory 
+						can be listed here. If not possible, just create an empty schema in schemaDirectory which imports all 
+						the episode elements but does nothing with them. -->
 					<episodes>
 						<episode>
 							<groupId>com.thalesgroup.ktd.scis</groupId>
@@ -343,6 +343,7 @@
 					</plugins>
 					<catalog>src/main/resources/catalog.xml</catalog>
 					<catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
+					<schemaDirectory>src/main/resources</schemaDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -357,69 +358,7 @@
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<attach>false</attach>
-				</configuration>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on 
-					the Maven build itself. -->
-				<!--
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>aspectj-maven-plugin</artifactId>
-										<versionRange>[1.5,)</versionRange>
-										<goals>
-											<goal>test-compile</goal>
-											<goal>compile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-				-->
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>aspectj-maven-plugin</artifactId>
-										<versionRange>[1.5,)</versionRange>
-										<goals>
-											<goal>compile</goal>
-											<goal>test-compile</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>
