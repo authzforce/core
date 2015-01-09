@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services SAS.
+ * Copyright (C) 2011-2015 Thales Services SAS.
  *
  * This file is part of AuthZForce.
  *

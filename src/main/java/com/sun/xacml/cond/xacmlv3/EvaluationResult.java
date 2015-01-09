@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services SAS - All rights reserved.
+ * Copyright (C) 2011-2015 Thales Services SAS - All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
