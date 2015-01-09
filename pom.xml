@@ -4,17 +4,23 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.2-SNAPSHOT</version>
+		<version>3.0.3-SNAPSHOT</version>
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.5.4-SNAPSHOT</version>
+	<version>3.5.5-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
 	</organization>
 	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
 	<inceptionYear>2011</inceptionYear>
+	<scm>
+		<connection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</connection>
+		<developerConnection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</url>
+	</scm>
 	<properties>
 		<!-- JDK versions for AspectJ -->
 		<jdk.source>1.7</jdk.source>
@@ -57,11 +63,6 @@
 			<groupId>net.sf.ehcache</groupId>
 			<artifactId>ehcache</artifactId>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.yaml</groupId> -->
-		<!-- <artifactId>snakeyaml</artifactId> -->
-		<!-- <version>1.11</version> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-core</artifactId>
@@ -81,13 +82,6 @@
 		<!-- /Authzforce dependencies -->
 
 		<!-- Test dependencies -->
-		<!-- FIXME: Dependency no longer used. Remove it? -->
-		<!-- <dependency> -->
-		<!-- <groupId>org.jvnet.jaxb2_commons</groupId> -->
-		<!-- <artifactId>testing</artifactId> -->
-		<!-- <version>0.4.1.5</version> -->
-		<!-- <scope>test</scope> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>commons-jxpath</groupId>
 			<artifactId>commons-jxpath</artifactId>
@@ -184,6 +178,33 @@
 						<goals>
 							<goal>format</goal>
 						</goals>
+					</execution>
+					<execution>
+						<id>check-license</id>
+						<goals>
+							<!-- attached to verify phase -->
+							<goal>check</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>add-license-headers</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>format</goal>
+						</goals>
+						<configuration>
+					<properties>
+						<!-- Values to be substituted in template -->
+						<inceptionYear>${project.inceptionYear}</inceptionYear>
+						<currentYear>${currentYear}</currentYear>
+						<copyrightOwner>${project.organization.name}</copyrightOwner>
+					</properties>
+					<header>license/thales.txt</header>
+					<strictCheck>true</strictCheck>
+					<includes>
+						<include>src/com/thalesgroup/authzforce/audit/**</include>
+					</includes>
+				</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -345,6 +366,7 @@
 			<plugins>
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on 
 					the Maven build itself. -->
+				<!--
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -370,6 +392,7 @@
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+				-->
 			</plugins>
 		</pluginManagement>
 	</build>
