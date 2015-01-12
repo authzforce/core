@@ -33,16 +33,18 @@
  */
 package com.sun.xacml.cond;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import org.w3c.dom.Node;
+
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
-
-import java.net.URI;
-
-import java.util.HashMap;
-import java.util.Set;
-
-import org.w3c.dom.Node;
 
 
 /**
@@ -533,5 +535,7 @@ public abstract class FunctionFactory
                                                     String xpathVersion)
         throws UnknownIdentifierException, ParsingException,
                FunctionTypeException;
+
+	public abstract Function createAbstractFunction(String functionName, List<ExpressionType> inputs) throws ParsingException, FunctionTypeException, UnknownIdentifierException;
 
 }

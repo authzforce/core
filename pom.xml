@@ -15,6 +15,7 @@
 	<description>XACML-compliant Authorization PDP Engine Core</description>
 	<inceptionYear>2011</inceptionYear>
 	<scm>
+		<!-- Used by Jenkins - Maven prepare-release -->
 		<connection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</connection>
 		<developerConnection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</developerConnection>
 		<tag>HEAD</tag>
@@ -28,16 +29,16 @@
 		<debug>false</debug>
 	</properties>
 	<dependencies>
+		<dependency>
+			<!-- Used only to do Strings.join() in StandardFactory's init debug messages -->
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+		</dependency>
 		<!-- Dependencies of audit feature only -->
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
 			<version>${aspectj.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.mojo</groupId>
-			<artifactId>aspectj-maven-plugin</artifactId>
-			<version>1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
@@ -46,13 +47,8 @@
 		</dependency>
 		<!-- END dependencies of audit feature -->
 		<dependency>
-			<groupId>com.thalesgroup.appsec</groupId>
-			<artifactId>thales-appsec-common-utils</artifactId>
-			<version>0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ws</groupId>
@@ -72,6 +68,16 @@
 			<groupId>xml-resolver</groupId>
 			<artifactId>xml-resolver</artifactId>
 			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
+			<!-- Used for DOM parsing / XPath evaluation -->
+			<groupId>com.thalesgroup.appsec</groupId>
+			<artifactId>thales-appsec-common-utils</artifactId>
+			<version>0.1</version>
 		</dependency>
 		<!-- Authzforce dependencies -->
 		<dependency>
@@ -94,10 +100,6 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

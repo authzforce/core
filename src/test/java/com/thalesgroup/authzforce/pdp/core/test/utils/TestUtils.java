@@ -2,7 +2,6 @@ package com.thalesgroup.authzforce.pdp.core.test.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
@@ -13,6 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
@@ -30,7 +30,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.BasicEvaluationCtx;
-import com.sun.xacml.ConfigurationStore;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
@@ -41,6 +40,7 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.finder.PolicyFinder;
 import com.sun.xacml.finder.PolicyFinderModule;
 import com.sun.xacml.support.finder.StaticPolicyFinderModule;
+import com.thalesgroup.authzforce.core.PdpConfigurationManager;
 import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 public class TestUtils
@@ -327,19 +327,30 @@ public class TestUtils
 	 */
 	public static PDP getPDPNewInstance(String rootDir, String versionDir, Set<String> policyfilenames) {
 		Properties properties = new Properties();		
-		ConfigurationStore testConfigurationStore = null;
+//		ConfigurationStore testConfigurationStore = null;
 		try {
 			properties.load(new FileInputStream(new File("src/test/resources", "authzforce.test.properties")));
-			PropertyConfigurator.configure(properties.getProperty("logProperties"));
-			File configFile = new File(properties.getProperty("configFile"));
 			
-			testConfigurationStore = new ConfigurationStore(configFile, null, null);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParsingException e) {
-			e.printStackTrace();
+//			File configFile = new File(properties.getProperty("configFile"));
+			
+//			testConfigurationStore = new ConfigurationStore(configFile, null, null);
+		} catch (/*ParsingException |*/ IOException e) {
+			throw new RuntimeException(e);
+		}
+		
+		//PropertyConfigurator.configure(properties.getProperty("logProperties"));
+		final String confLocation = properties.getProperty("configFile");
+		final PdpConfigurationManager testConfMgr;
+		try
+		{
+			
+			testConfMgr = new PdpConfigurationManager(confLocation);
+		} catch (IOException e)
+		{
+			throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
+		} catch (JAXBException e)
+		{
+			throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
 		}
 		
 
@@ -370,13 +381,8 @@ public class TestUtils
 
 		PDP authzforce = PDP.getInstance();
 		PDPConfig pdpConfig = authzforce.getPDPConfig();
-		try {
-			pdpConfig = new PDPConfig(testConfigurationStore.getDefaultPDPConfig().getAttributeFinder(), policyFinder,
-					testConfigurationStore.getDefaultPDPConfig().getResourceFinder(), null);
-		} catch (UnknownIdentifierException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+		pdpConfig = new PDPConfig(testConfMgr.getDefaultPDPConfig().getAttributeFinder(), policyFinder,
+				testConfMgr.getDefaultPDPConfig().getResourceFinder(), null);		
 
 		return new PDP(pdpConfig);
 	}

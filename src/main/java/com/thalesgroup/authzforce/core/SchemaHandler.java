@@ -83,7 +83,7 @@ public class SchemaHandler
 		return schema;
 	}
 
-	public static Schema createSchema(List<String> locations, String catalogLocation)
+	public static Schema createSchema(List<String> locations, final String catalogLocation)
 	{
 
 		final SchemaFactory factory = SchemaFactory.newInstance(Constants.URI_2001_SCHEMA_XSD);
@@ -175,7 +175,9 @@ public class SchemaHandler
 										}
 									} catch (Exception ex)
 									{
-										// ignore
+										final String errMsg = String.format("Unable to resolve schema-required entity with XML catalog ('%s'): type=%s, namespaceURI=%s, publicId=%s, systemId=%, baseURI=%s", catalogLocation, type, namespaceURI, publicId, systemId, baseURI);
+										LOGGER.error(errMsg, ex);
+										throw new RuntimeException(errMsg, ex);
 									}
 									return null;
 								}

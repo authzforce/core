@@ -65,6 +65,11 @@ public class PdpModelHandler
 	 */
 	public final static String CORE_XSD_LOCATION = "classpath:pdp.xsd";
 	
+	/**
+	 * Default location of XML catalog to resolve imported XML schemas in {@value PdpModelHandler#CORE_XSD_LOCATION} 
+	 */
+	public final static String DEFAULT_CATALOG_LOCATION = "classpath:catalog.xml";
+	
 	private final static String[] XACML_3_0_SCHEMA_LOCATIONS = {"classpath:xml.xsd", "classpath:xacml-core-v3-schema-wd-17.xsd"};
 
 	/**
@@ -85,6 +90,11 @@ public class PdpModelHandler
 			throw new RuntimeException("Invalid XPath to XSD import schemaLocation values: " + XSD_IMPORT_SCHEMA_LOCATIONS_XPATH, e);
 		}
 	}
+	
+	/**
+	 * XACML 3.0 XML schema namespace
+	 */
+	private static final String XACML_3_0_XMLNS = "oasis.names.tc.xacml._3_0.core.schema.wd_17";
 
 	/**
 	 * JAXB context for (un)marshalling from/to JAXB objects derived from XACML 3.0 schema
@@ -94,7 +104,7 @@ public class PdpModelHandler
 	{
 		try
 		{
-			XACML_3_0_JAXB_CONTEXT = JAXBContext.newInstance("oasis.names.tc.xacml._3_0.core.schema.wd_17", PdpModelHandler.class.getClassLoader());
+			XACML_3_0_JAXB_CONTEXT = JAXBContext.newInstance(XACML_3_0_XMLNS, PdpModelHandler.class.getClassLoader());
 		} catch (JAXBException e)
 		{
 			throw new RuntimeException("Error instantiating JAXB context for (un)marshalling from/to XACML 3.0 objects", e);
@@ -283,7 +293,16 @@ public class PdpModelHandler
 		}
 
 		// Load schema for validating XML configurations
-		confSchema = SchemaHandler.createSchema(schemaLocations, catalogLocation);
+		final String schemaHandlerCatalogLocation;
+		if(catalogLocation == null) {
+			LOGGER.info("No XML catalog location specified for PDP schema handler, using default: {}", DEFAULT_CATALOG_LOCATION);
+			schemaHandlerCatalogLocation = DEFAULT_CATALOG_LOCATION;
+		} else {
+			LOGGER.info("XML catalog location specified for PDP schema handler: {}", catalogLocation);
+			schemaHandlerCatalogLocation = catalogLocation;
+		}
+		
+		confSchema = SchemaHandler.createSchema(schemaLocations, schemaHandlerCatalogLocation);
 	}
 
 	/**

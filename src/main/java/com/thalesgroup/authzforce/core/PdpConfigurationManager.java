@@ -100,8 +100,25 @@ public class PdpConfigurationManager
 	private final FunctionFactoryProxy defaultFunctionFactoryProxy;
 
 	/**
-	 * Load PDP configuration handler. Parameters here are locations to XSD files. Locations can be
-	 * any resource string supported by Spring ResourceLoader. More info:
+	 * Load PDP configuration handler.
+	 * 
+	 * @param confLocation
+	 *            PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
+	 * 
+	 * @throws IOException
+	 *             I/O error reading from confLocation
+	 * @throws JAXBException
+	 *             Error unmarshalling to Pdps instance from confLocation
+	 * 
+	 */
+	public PdpConfigurationManager(String confLocation) throws IOException, JAXBException
+	{
+		this(confLocation, null, null);
+	}
+
+	/**
+	 * Load PDP configuration handler. Locations here can be any resource string supported by Spring
+	 * ResourceLoader. More info:
 	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
 	 * 
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...

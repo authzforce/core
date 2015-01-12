@@ -276,7 +276,7 @@ public class MatchFunction extends FunctionBase {
 	 * @return a <code>Set</code> of <code>String</code>s
 	 */
 	public static Set getSupportedIdentifiers() {
-		Set<String> set = new HashSet<String>();
+		Set<String> set = new HashSet<>();
 
 		set.add(NAME_REGEXP_STRING_MATCH);
 		set.add(NAME_X500NAME_MATCH);

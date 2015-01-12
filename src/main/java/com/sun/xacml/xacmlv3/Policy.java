@@ -91,7 +91,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	 *             Unknown rule combining algorithm ID
 	 */
 	public Policy(String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer issuer, DefaultsType policyDefault, Target target,
-			List policyElements, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations,
+			List<Rule> policyElements, oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations,
 			oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices, String policyId, String version, String ruleCombiningAlgId,
 			BigInteger maxDelegationDepth, PolicyMetaData metadata) throws UnknownIdentifierException
 	{
@@ -152,7 +152,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	public static Policy getInstance(Node root) throws UnknownIdentifierException
 	{
 		String ruleCombiningAlgId = null;
-		List policyElements = new ArrayList();
+		final List<Rule> policyElements = new ArrayList<>();
 		oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices = null;
 		oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations = null;
 		oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer issuer = null;
