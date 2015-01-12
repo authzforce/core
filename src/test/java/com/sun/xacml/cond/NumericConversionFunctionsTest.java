@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -42,7 +44,7 @@ public class NumericConversionFunctionsTest extends GeneralFunctionTest {
 	}
 
 	public NumericConversionFunctionsTest(String functionName,
-			List<Evaluatable> inputs, EvaluationResult expectedResult)
+			List<ExpressionType> inputs, EvaluationResult expectedResult)
 			throws Exception {
 		super(functionName, inputs, expectedResult);
 	}
