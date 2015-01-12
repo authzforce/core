@@ -39,11 +39,8 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
@@ -127,6 +124,7 @@ public class VariableReference extends VariableReferenceType implements Evaluata
      * @param metaData the meta-data associated with the containing policy
      * @param manager the <code>VariableManager</code> used to connect this
      *                reference to its definition
+     * @return variable reference
      *
      * @throws ParsingException if the VariableReferenceType is invalid
      */
@@ -150,7 +148,8 @@ public class VariableReference extends VariableReferenceType implements Evaluata
      *
      * @return the reference's identifier
      */
-    public String getVariableId() {
+    @Override
+	public String getVariableId() {
         return variableId;
     }
 
@@ -183,7 +182,8 @@ public class VariableReference extends VariableReferenceType implements Evaluata
      *
      * @return the result of evaluation
      */
-    public EvaluationResult evaluate(EvaluationCtx context) {
+    @Override
+	public EvaluationResult evaluate(EvaluationCtx context) {
         Expression xpr = (Expression)getReferencedDefinition().getExpression().getValue();
 
         // Note that it's technically possible for this expression to
@@ -192,7 +192,7 @@ public class VariableReference extends VariableReferenceType implements Evaluata
         // it makes no sense, however, it's unlcear exactly what the
         // error should be, so raising the ClassCastException here seems
         // as good an approach as any for now...
-        return ((Expression)xpr).evaluate(context);
+        return xpr.evaluate(context);
     }
 
     /**
@@ -209,10 +209,10 @@ public class VariableReference extends VariableReferenceType implements Evaluata
         // been parsed yet
         if (definition != null) {
             return ((Expression)definition.getExpression().getValue()).getType();
-        } else {
-            if (manager != null)
-                return manager.getVariableType(variableId);
         }
+        
+		if (manager != null)
+		    return manager.getVariableType(variableId);
 
         throw new ProcessingException("couldn't resolve the type");
     }
@@ -228,10 +228,10 @@ public class VariableReference extends VariableReferenceType implements Evaluata
         // see comment in getType()
         if (definition != null) {
             return ((Expression)getReferencedDefinition().getExpression().getValue()).returnsBag();
-        } else {
-            if (manager != null)
-                return manager.returnsBag(variableId);
         }
+        
+		if (manager != null)
+		    return manager.returnsBag(variableId);
 
         throw new ProcessingException("couldn't resolve the return type");
     }
@@ -246,7 +246,8 @@ public class VariableReference extends VariableReferenceType implements Evaluata
      *
      * @throws ProcessingException if the return type couldn't be resolved
      */
-    public boolean evaluatesToBag() {
+    @Override
+	public boolean evaluatesToBag() {
         return returnsBag();
     }
 
@@ -259,7 +260,8 @@ public class VariableReference extends VariableReferenceType implements Evaluata
      *
      * @return an empty <code>List</code>
      */
-    public List getChildren() {
+    @Override
+	public List getChildren() {
         return Collections.EMPTY_LIST;
     }
 

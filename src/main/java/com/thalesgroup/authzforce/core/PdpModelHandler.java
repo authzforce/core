@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2014 Thales Services SAS.
+ * Copyright (C) 2011-2015 Thales Services SAS.
  *
  * This file is part of AuthZForce.
  *
@@ -66,6 +66,11 @@ public class PdpModelHandler
 	 * Location of PDP configuration schema
 	 */
 	public final static String CORE_XSD_LOCATION = "classpath:pdp.xsd";
+	
+	/**
+	 * Default location of XML catalog to resolve imported XML schemas in {@value PdpModelHandler#CORE_XSD_LOCATION} 
+	 */
+	public final static String DEFAULT_CATALOG_LOCATION = "classpath:catalog.xml";
 	
 	private final static String[] XACML_3_0_SCHEMA_LOCATIONS = {"classpath:xml.xsd", "classpath:xacml-core-v3-schema-wd-17.xsd"};
 
@@ -295,7 +300,16 @@ public class PdpModelHandler
 		}
 
 		// Load schema for validating XML configurations
-		confSchema = SchemaHandler.createSchema(schemaLocations, catalogLocation);
+		final String schemaHandlerCatalogLocation;
+		if(catalogLocation == null) {
+			LOGGER.info("No XML catalog location specified for PDP schema handler, using default: {}", DEFAULT_CATALOG_LOCATION);
+			schemaHandlerCatalogLocation = DEFAULT_CATALOG_LOCATION;
+		} else {
+			LOGGER.info("XML catalog location specified for PDP schema handler: {}", catalogLocation);
+			schemaHandlerCatalogLocation = catalogLocation;
+		}
+		
+		confSchema = SchemaHandler.createSchema(schemaLocations, schemaHandlerCatalogLocation);
 	}
 
 	/**

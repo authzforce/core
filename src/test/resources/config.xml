@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns="http://theresis.thalesgroup.com/shared/schema/config/pdp"
+<pdps xmlns="http://thalesgroup.com/authzforce/pdp/model/2014/12"
 	defaultAttributeFactory="attr" defaultCombiningAlgFactory="comb" defaultFunctionFactory="func"
-	defaultPDP="AuthZForce-REST" xmlns:config="http://theresis.thalesgroup.com/shared/schema/config/pdp"
+	defaultPDP="TestPDP"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<pdp name="AuthZForce-REST">
-		<attributeFinderModule class="com.sun.xacml.finder.impl.SelectorModule" />
-		<attributeFinderModule class="com.sun.xacml.finder.impl.CurrentEnvModule" />
-<!-- 		<resourceFinderModule class="com.sun.xacml.finder.impl.MultipleResourceFinder" /> -->
+	<pdp name="TestPDP">
+		<attributeFinder xsi:type="CurrentDateTimeFinder" />
+		<attributeFinder xsi:type="AttributeSelectorXPathFinder" />
 	</pdp>
 	<attributeFactory name="attr" useStandardDatatypes="true" />
 	<combiningAlgFactory name="comb" useStandardAlgorithms="true" />
-	<functionFactory name="func" useStandardFunctions="true">
-		<!-- <condition> <function class="TimeInRangeFunction"/> </condition> -->
-	</functionFactory>
-</config>
+	<functionFactory name="func" useStandardFunctions="true" />
+</pdps>

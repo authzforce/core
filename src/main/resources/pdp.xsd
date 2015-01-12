@@ -3,7 +3,7 @@
 	targetNamespace="http://thalesgroup.com/authzforce/pdp/model/2014/12"
 	xmlns:tns="http://thalesgroup.com/authzforce/pdp/model/2014/12"
 	elementFormDefault="qualified" xmlns:authz-ext="http://thalesgroup.com/authz/model/ext/3.0">
-	<import namespace="http://thalesgroup.com/authz/model/ext/3.0"></import>
+	<import namespace="http://thalesgroup.com/authz/model/ext/3.0" />
 	<annotation>
 		<documentation xml:lang="en">
 			Data model of AuthZForce PDP configuration

@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.2</version>
+		<version>3.0.3-SNAPSHOT</version>
 	</parent>
 	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<version>FIWARE4.1</version>
+	<version>FIWARE4.2-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
@@ -17,8 +17,13 @@
 	<inceptionYear>2011</inceptionYear>
 	<dependencies>
 		<dependency>
+		<!-- Used only to do Strings.join() in StandardFactory's init debug messages -->
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ws</groupId>
