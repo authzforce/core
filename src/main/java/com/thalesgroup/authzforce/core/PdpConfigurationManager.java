@@ -434,6 +434,7 @@ public class PdpConfigurationManager
 			cache = new net.sf.ehcache.Cache(cacheName, maxEltsInMem, evictionPolicy, overflowToDisk, diskStorePath, eternal, TTLsec, TTIsec,
 					isDiskPersistent, diskExpiryThreadIntervalSec, null, null, maxEltsOnDisk);
 		}
+		
 		return new PDPConfig(attrFinder, policyFinder, resFinder, cache);
 	}
 

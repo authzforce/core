@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.3-SNAPSHOT</version>
+		<version>3.0.3</version>
 	</parent>
 	<artifactId>authzforce-core</artifactId>
 	<version>3.5.5-SNAPSHOT</version>
@@ -16,10 +16,10 @@
 	<inceptionYear>2011</inceptionYear>
 	<scm>
 		<!-- Used by Jenkins - Maven prepare-release -->
-		<connection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</connection>
-		<developerConnection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</developerConnection>
+		<connection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core.git</connection>
+		<developerConnection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://matrice.dev.theresis.org/authzforce/authzforce-core-authzforce.git</url>
+		<url>https://matrice.dev.theresis.org/authzforce/authzforce-core.git</url>
 	</scm>
 	<properties>
 		<!-- JDK versions for AspectJ -->
