@@ -157,7 +157,7 @@ During an evaluation, the PDP may require other attributes that are not provided
 The possible configuration elements defined for this configuration type are:
 
 Name | description |
-:---:| :--------- :|
+---------|:------:|
 url |  Address of the Database server|
 username | Database username|
 password | Database password |
@@ -196,7 +196,7 @@ timeToIdleSeconds|time to idle for the stored elements, integer, (Optional) |
 The possible configuration elements defined for this configuration type are:
 
 Name | description |
-:---:| :--------- :|
+---------|:------:|
 url|Address of the LDAP directory|
 username|Username to access the directory|
 password|Password to access the directory|
@@ -267,9 +267,10 @@ TODO
 
 
 3. Set the Headers' request with:
-	Content-type : application/xml
+	> Content-type : application/xml
 
-4. Send it using a POST request to your PDP's interface (e.g. http://@IP:8080/AuthZForce-REST-[VERSION]/service).
+4. Send it using a POST request to your PDP's interface 
+    > http://@IP:8080/AuthZForce-REST-[VERSION]/pdp/service).
 The response should look like this:
 
 ```xml
