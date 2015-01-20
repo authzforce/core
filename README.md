@@ -10,18 +10,25 @@ Version | Date | Comment           |
 # Summary
 * Version
 *  [Prerequisites](#prerequisites)
- *  [Sun Java JDK](##Sun_Java_JDK)
- *  Tomcat Installation
-*  Installing the Authorization Server
- *  Installation
- *  Installation Checking
-*  Authorization Server Configuration
- * Policy Finder Configuration
- * Attribute Finder Configuration File
-    * Database Attribute Finder
-    * LDAP Attribute Finder
-* Calling the PDP
- * Test the PDP from a REST client
+ *  [Sun Java JDK](#sun-java-jdk)
+ *  [Tomcat Installation](#tomcat-installation)
+*  [Installing the Authorization Server](#installing-the-authorisation-server)
+ *  [Unitary Tests](#unitary-tests)
+ *  [Conformance Tests](#conformance-tests)
+ *  [Installation](#installation)
+ *  [Installation Checking](#installation-checking)
+*  [Authorization Server Configuration](#authorization-server-configuration)
+ * [Policy Finder Configuration](#policy-finder-configuration)
+ * [Attribute Finder Configuration File](#attribute-finder-configuration-file)
+    * [JDBC](#jdbc)
+    * [LDAP](#ldap)
+	* [Fortress](#fortress)
+	* [JWT](#jwt)
+	* [String Map](#string-map)
+	* [JSON Path](#json-path)
+	* [RestFul](#restful)	
+* [Calling the PDP](#calling-the-pdp)
+ * [Test the PDP from a REST client](#test-the-pdp-from-a-rest-client)
 
 # Prerequisites
 ## Sun Java JDK
@@ -29,6 +36,10 @@ The authorization server run on Java, so it is prerequisite to have java running
 ## Tomcat Installation 
 To run the Policy decision Point, you also need a Tomcat Server to deploy the AuthZForce-REST-[VERSION].war (Tomcat 6/0 was our testing version but tomcat 7 can be used too).
 # Installing the Authorization Server
+## Unitary Tests
+TODO
+## Conformance Tests
+TODO
 ## Installation
 * /etc/AuthZForce/conf	Configuration files
 *	log4j.properties: PDP log4j configuration file
@@ -121,7 +132,7 @@ Once you have created your own policy, you will need to change this path to poin
 
 ## Attribute Finder Configuration File
 During an evaluation, the PDP may require other attributes that are not provided as part of the XACML request. To get those the PDP will ask the attribute finder(s) (configured below) to provide missing information. In this version, we provided two generic attribute finders that allow you to retrieve information from a LDAP directory and from a database.
-### Database Attribute Finder
+### JDBC
 ```xml
 <attributeFinderModule class="com.sun.xacml.finder.impl.AttributeDBFinder">
 	<map>
@@ -144,24 +155,25 @@ During an evaluation, the PDP may require other attributes that are not provided
 ````
 
 The possible configuration elements defined for this configuration type are:
-*	<url>:  Address of the Database server
-*	<username >:  Database username
-*	<password>: Database password
-*	<dbName>: Database name
-*	<driver >: Driver used to access the Database
-*	<attributeSupportedId>: Attribute that is supported by this attribute finder for retrieval. 
-*	<sqlRequest>:  Request used to fetch the attribute
-$filter  is the variable part used to make a filter in the SQL query mapped to the AttributeValue in the XACML request defined with the substituteValue option.
-$alias is used to map easily the request’s result with the attributeSupportedId in order to have a more logical output
-*	<substituteValue>:  Value extracted from the XACML request (Mandatory in the XACML request)
-*	<Cache> : cache configuration for this attribute finder, (Optional, false by default)
- *	<activate> : cache activation, true or false
- *	<maxElementInMemory>: max element that are stored in the cache memory, integer
- *	<overflowToDisk>: if cache can write on the disk if the memory is full, true or false
- *	<eternal> : do we store eternally the elements, true or false
- *	<timeToLiveSeconds>: time to live of the stored elements, integer, (Optional)
- *	<timeToIdleSeconds>: time to idle for the stored elements, integer, (Optional) 
-### LDAP Attribute Finder
+
+Name | description |
+:---:| :--------- :|
+url |  Address of the Database server|
+username | Database username|
+password | Database password |
+dbName | Database name|
+driver | Driver used to access the Database|
+attributeSupportedId | Attribute that is supported by this attribute finder for retrieval. |
+sqlRequest | Request used to fetch the attribute. $filter  is the variable part used to make a filter in the SQL query mapped to the AttributeValue in the XACML request defined with the substituteValue option. $alias is used to map easily the request’s result with the attributeSupportedId in order to have a more logical output |
+substituteValue|Value extracted from the XACML request (Mandatory in the XACML request)|
+Cache|cache configuration for this attribute finder, (Optional, false by default)|
+activate|cache activation, true or false|
+maxElementInMemory|max element that are stored in the cache memory, integer|
+overflowToDisk|if cache can write on the disk if the memory is full, true or false|
+eternal|do we store eternally the elements, true or false|
+timeToLiveSeconds|time to live of the stored elements, integer, (Optional)|
+timeToIdleSeconds|time to idle for the stored elements, integer, (Optional) |
+### LDAP
 ```xml
 <attributeFinderModule class="com.sun.xacml.finder.impl.LdapAttributeFinder">
        	<map>
@@ -183,26 +195,43 @@ $alias is used to map easily the request’s result with the attributeSupportedI
 ````
 The possible configuration elements defined for this configuration type are:
 
-*	<url>:  Address of the LDAP directory
-*	<username >:  Username to access the directory
-*	<password>: Password to access the directory
-*	<baseDN >: Specifies the DN of the node where the search would start. (For performance reasons, this DN should be as specific as possible.) The default value is the root of the directory tree. 
-*	< ldapAttribute>: The name of the entry's attribute that we are going to get the value from. 
-*	< attributeSupportedId>:  Attribute that is supported by this attribute finder for retrieval. 
-*	<substituteValue>:  Value extracted from the XACML request (Mandatory in the XACML request)
-*	<Cache> : cache configuration for this attribute finder, (Optional, false by default)
- *	<activate> : cache activation, true or false
- *	<maxElementInMemory>: max element that are stored in the cache memory, integer
- *	<overflowToDisk>: if cache can write on the disk if the memory is full, true or false
- *	<eternal> : do we store eternally the elements, true or false
- *	<timeToLiveSeconds>: time to live of the stored elements, integer, (Optional)
- *	<timeToIdleSeconds>: time to idle for the stored elements, integer, (Optional) 
+Name | description |
+:---:| :--------- :|
+url|Address of the LDAP directory|
+username|Username to access the directory|
+password|Password to access the directory|
+baseDN|Specifies the DN of the node where the search would start. (For performance reasons, this DN should be as specific as possible.) The default value is the root of the directory tree. |
+ldapAttribute|The name of the entry's attribute that we are going to get the value from. |
+attributeSupportedId|Attribute that is supported by this attribute finder for retrieval. |
+substituteValue|Value extracted from the XACML request (Mandatory in the XACML request)|
+Cache|cache configuration for this attribute finder, (Optional, false by default)|
+activate|cache activation, true or false|
+maxElementInMemory|max element that are stored in the cache memory, integer|
+overflowToDisk|if cache can write on the disk if the memory is full, true or false|
+eternal|do we store eternally the elements, true or false|
+timeToLiveSeconds|time to live of the stored elements, integer, (Optional)|
+timeToIdleSeconds|time to idle for the stored elements, integer, (Optional) |
+
+### Fortress
+TODO
+
+### JWT
+TODO
+
+### String Map
+TODO
+
+### JSON Path
+TODO
+
+### RESTFul
+TODO
 
 # Calling the PDP
 ## Test the PDP from a REST client
 
 1. To test the REST API with AuthZForce you need to get an REST Client like this one for Firefox
-https://addons.mozilla.org/en-US/firefox/addon/restclient/
+> [Rest Client](https://addons.mozilla.org/en-US/firefox/addon/restclient/)
 
 2. Prepare an XACML request fitting your Policy and paste it into your body's request, for us it looks like this:
 ```xml
