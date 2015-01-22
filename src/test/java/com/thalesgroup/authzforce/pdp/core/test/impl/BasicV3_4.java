@@ -50,7 +50,7 @@ public class BasicV3_4 {
 	/**
 	 * The map of results
 	 */
-	private static Map<String, String> results = new TreeMap<String, String>();
+	private static Map<String, String> results = new TreeMap<>();
 	
 	int numTest;
 	
