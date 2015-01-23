@@ -147,7 +147,9 @@
 								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
 								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
 								<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
-								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
+								<include>src/main/java/com/thalesgroup/authzforce/**</include>
+								<!-- Include test files also -->
+								<include>src/test/java/**</include>
 							</includes>
 						</configuration>
 						<goals>
