@@ -7,11 +7,16 @@ AuthZForce CORE version @version- Release Notes
 -------------------
 
 -------------------
+-- Version 3.5.5-SNAPSHOT
+-------------------
+License changed to GPLV3
+
+-------------------
 -- Version 3.5.2-SNAPSHOT
 -------------------
 Bug fixed when there were more than one AnyOf and AllOf. 
 Only the Match element was evaluated with the "match(context)" function
-Unitary tests were added to complete and prevent that for happening again
+Unitary tests were added to complete and prevent that from happening again
 
 -------------------
 -- Version 3.4.2
