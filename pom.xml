@@ -109,7 +109,7 @@
 				<artifactId>license-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>add-apache-license</id>
+						<id>add-gplv3-license</id>
 						<phase>process-sources</phase>
 						<configuration>
 							<!-- Template location -->
