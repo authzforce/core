@@ -347,9 +347,8 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 		// it makes no sense, however, it's unlcear exactly what the
 		// error should be, so raising the ClassCastException here seems
 		// as good an approach as any for now...
-		Apply myExpr = (Apply) expression.getValue();
-
-		return (myExpr).evaluate(context);
+		Evaluatable expr = (Evaluatable) expression.getValue();
+		return expr.evaluate(context);
 	}
 
 	/**
