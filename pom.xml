@@ -6,7 +6,7 @@
 		<version>3.0.3</version>
 	</parent>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.5.6-SNAPSHOT</version>
+	<version>3.5.5</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
