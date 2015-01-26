@@ -19,7 +19,9 @@
 		<connection>scm:git:https://gitlab.dev.theresis.org/authzforce/core.git</connection>
 		<developerConnection>scm:git:https://gitlab.dev.theresis.org/authzforce/core.git</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://gitlab.dev.theresis.org/authzforce/core.git</url>
+		
+		<!--  Publicly browsable repository URL. For example, via Gitlab web UI. -->
+		<url>https://gitlab.dev.theresis.org/authzforce/core</url>
 	</scm>
 	<properties>
 		<!-- JDK versions for AspectJ -->
@@ -109,16 +111,17 @@
 				<artifactId>license-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>add-apache-license</id>
+						<id>add-gplv3-license</id>
 						<phase>process-sources</phase>
 						<configuration>
 							<!-- Template location -->
-							<header>license/fileHeader.apache2.txt</header>
+							<header>license/thales-gpl.txt</header>
 							<properties>
 								<!-- Values to be substituted in template -->
 								<inceptionYear>${project.inceptionYear}</inceptionYear>
 								<currentYear>${currentYear}</currentYear>
 								<copyrightOwner>${project.organization.name}</copyrightOwner>
+								<projectName>AuthZForce</projectName>
 							</properties>
 							<strictCheck>true</strictCheck>
 							<excludes>
@@ -146,6 +149,9 @@
 								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
 								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
 								<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
+								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
+								<!-- Include test files also -->
+								<include>src/test/java/**</include>
 							</includes>
 						</configuration>
 						<goals>
