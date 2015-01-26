@@ -16,10 +16,10 @@
 	<inceptionYear>2011</inceptionYear>
 	<scm>
 		<!-- Used by Jenkins - Maven prepare-release -->
-		<connection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core.git</connection>
-		<developerConnection>scm:git:https://matrice.dev.theresis.org/authzforce/authzforce-core</developerConnection>
+		<connection>scm:git:https://gitlab.dev.theresis.org/authzforce/core.git</connection>
+		<developerConnection>scm:git:https://gitlab.dev.theresis.org/authzforce/core.git</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://matrice.dev.theresis.org/authzforce/authzforce-core.git</url>
+		<url>https://gitlab.dev.theresis.org/authzforce/core.git</url>
 	</scm>
 	<properties>
 		<!-- JDK versions for AspectJ -->

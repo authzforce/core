@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,6 +80,9 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
  * provided in the Request, then obviously they will remain constant). The default behavior is for
  * these environment values to be cached, so that (for example) the current time remains constant
  * over the course of an evaluation.
+ * 
+ * Uses {@link Utils#THREAD_LOCAL_NS_AWARE_DOC_BUILDER}. Call
+ * {@code Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.remove()} after you are done (in finally block).
  * 
  * @since 1.2
  * @author Seth Proctor
@@ -521,13 +523,13 @@ public class BasicEvaluationCtx implements EvaluationCtx
 		attrValue.getContent().add(resourceId.encode());
 	}
 
-	public void setResourceId(List<AttributeValue> resourceId)
-	{
-		for (AttributeValue avts : resourceId)
-		{
-			this.setResourceId(avts);
-		}
-	}
+	// public void setResourceId(List<AttributeValue> resourceId)
+	// {
+	// for (AttributeValue avts : resourceId)
+	// {
+	// this.setResourceId(avts);
+	// }
+	// }
 
 	/**
 	 * Returns the value for the current time. The current time, current date, and current dateTime
@@ -915,7 +917,8 @@ public class BasicEvaluationCtx implements EvaluationCtx
 		LOGGER.debug("Attribute id='{}' not in request context... querying AttributeFinder", id);
 		/**
 		 * <code>newAttrSet</code> is linked to the eval context map. So this context is updated by
-		 * storing the new value from callHelper() (call to AttributeFInder) in <code>newAttrSet</code>.
+		 * storing the new value from callHelper() (call to AttributeFInder) in
+		 * <code>newAttrSet</code>.
 		 */
 		final EvaluationResult result = callHelper(type, id, issuer, category, designatorType);
 		final AttributeValueType resultAttrVal = result.getAttributeValue();

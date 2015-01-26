@@ -75,26 +75,26 @@ public class StatusDetail
      * @throws IllegalArgumentException if there is a problem encoding the
      *                                  <code>Attribute</code>s
      */
-    public StatusDetail(List attributes) throws IllegalArgumentException {
-        detailText = "<StatusDetail>\n";
-        Iterator it = attributes.iterator();
-
-        while (it.hasNext()) {
-            Attribute attr = (Attribute)(it.next());
-            detailText += attr.encode() + "\n";
-        }
-
-        detailText += "</StatusDetail>";
-
-        try {
-            detailRoot = textToNode(detailText);
-        } catch (ParsingException pe) {
-            // really, this should never happen, since we just made sure that
-            // we're working with valid text, but it's possible that encoding
-            // the attribute could have caused problems...
-            throw new IllegalArgumentException("invalid Attribute data");
-        }
-    }
+//    public StatusDetail(List attributes) throws IllegalArgumentException {
+//        detailText = "<StatusDetail>\n";
+//        Iterator it = attributes.iterator();
+//
+//        while (it.hasNext()) {
+//            Attribute attr = (Attribute)(it.next());
+//            detailText += attr.encode() + "\n";
+//        }
+//
+//        detailText += "</StatusDetail>";
+//
+//        try {
+//            detailRoot = textToNode(detailText);
+//        } catch (ParsingException pe) {
+//            // really, this should never happen, since we just made sure that
+//            // we're working with valid text, but it's possible that encoding
+//            // the attribute could have caused problems...
+//            throw new IllegalArgumentException("invalid Attribute data");
+//        }
+//    }
 
     /**
      * Constructor that takes the text-encoded form of the XML to use as
@@ -107,10 +107,10 @@ public class StatusDetail
      *
      * @throws ParsingException if the encoded text is invalid XML
      */
-    public StatusDetail(String encoded) throws ParsingException {
-        detailText = "<StatusDetail>\n" + encoded + "\n</StatusDetail>";
-        detailRoot = textToNode(detailText);
-    }
+//    public StatusDetail(String encoded) throws ParsingException {
+//        detailText = "<StatusDetail>\n" + encoded + "\n</StatusDetail>";
+//        detailRoot = textToNode(detailText);
+//    }
     
     /**
      * Private constructor that just sets the root node. This interface
@@ -123,19 +123,19 @@ public class StatusDetail
     /**
      * Private helper routine that converts text into a node
      */
-    private static Node textToNode(String encoded) throws ParsingException {
-    	final DocumentBuilder db = Utils.THREAD_LOCAL_NS_UNAWARE_DOC_BUILDER.get();
-        try {
-            String text = "<?xml version=\"1.0\"?>\n";
-            byte [] bytes = (text + encoded).getBytes();
-            Document doc = db.parse(new ByteArrayInputStream(bytes));
-            return doc.getDocumentElement();
-        } catch (Exception e) {
-            throw new ParsingException("invalid XML for status detail");
-        } finally {
-        	db.reset();
-        }
-    }
+//    private static Node textToNode(String encoded) throws ParsingException {
+//    	final DocumentBuilder db = Utils.THREAD_LOCAL_NS_UNAWARE_DOC_BUILDER.get();
+//        try {
+//            String text = "<?xml version=\"1.0\"?>\n";
+//            byte [] bytes = (text + encoded).getBytes();
+//            Document doc = db.parse(new ByteArrayInputStream(bytes));
+//            return doc.getDocumentElement();
+//        } catch (Exception e) {
+//            throw new ParsingException("invalid XML for status detail");
+//        } finally {
+//        	db.reset();
+//        }
+//    }
     
     /**
      * Creates an instance of a <code>StatusDetail</code> object based on

@@ -89,7 +89,6 @@ import com.thalesgroup.authzforce.pdp.model._2014._12.XacmlFeatureIdToImplementa
 public class PdpConfigurationManager
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpConfigurationManager.class);
-	private final static DefaultResourceLoader RESOURCE_LOADER = new DefaultResourceLoader();
 	private final Map<String, PDPConfig> pdpMap = new HashMap<>();
 	private final Map<String, com.sun.xacml.attr.AttributeFactory> attrFactoryMap = new HashMap<>();
 	private final Map<String, com.sun.xacml.combine.CombiningAlgFactory> combAlgFactoryMap = new HashMap<>();
@@ -184,7 +183,7 @@ public class PdpConfigurationManager
 	 */
 	public PdpConfigurationManager(String confLocation, PdpModelHandler modelhandler) throws IOException, JAXBException
 	{
-		final Resource confResource = RESOURCE_LOADER.getResource(confLocation);
+		final Resource confResource = ResourceUtils.getResource(confLocation);
 		if (confResource == null || !confResource.exists())
 		{
 			throw new IllegalArgumentException("No resource available at this location: " + confLocation);

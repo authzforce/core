@@ -59,30 +59,53 @@ public class SchemaHandler
 {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(SchemaHandler.class);
-	private static final DefaultResourceLoader RESOURCE_LOADER = new DefaultResourceLoader();
 
 	private Schema schema;
 	private String catalogLocation;
 
+	
+	/**
+	 * Default empty constructor, needed for instanciation by Spring framework
+	 */
 	public SchemaHandler()
 	{
 	}
 
+	/**
+	 * Sets (Spring-supported) locations to XML schema files
+	 * 
+	 * @param locations
+	 */
 	public void setSchemaLocations(List<String> locations)
 	{
 		schema = createSchema(locations, catalogLocation);
 	}
 
-	public void setCatalogLocation(String name)
+	/**
+	 * Sets (Spring-supported) locations to XML catalog files
+	 * 
+	 * @param location
+	 */
+	public void setCatalogLocation(String location)
 	{
-		this.catalogLocation = name;
+		this.catalogLocation = location;
 	}
 
+	/**
+	 * @return
+	 */
 	public Schema getSchema()
 	{
 		return schema;
 	}
 
+	/**
+	 * Creates schema from locations to XML schema files and catalog file
+	 * 
+	 * @param locations
+	 * @param catalogLocation
+	 * @return XML validation schema
+	 */
 	public static Schema createSchema(List<String> locations, final String catalogLocation)
 	{
 
@@ -111,7 +134,7 @@ public class SchemaHandler
 				// if (loc.lastIndexOf(".") == -1 || loc.lastIndexOf('*') != -1) {
 				// schemaURLs = ClasspathScanner.findResources(loc, "xsd");
 				// } else {
-				final URL url = getResourceURL(loc);
+				final URL url = ResourceUtils.getResourceURL(loc);
 				if (url != null)
 				{
 					schemaURLs.add(url);
@@ -141,7 +164,7 @@ public class SchemaHandler
 				{
 					// catalogLocation = catalogLocation == null
 					// ? SchemaHandler.DEFAULT_CATALOG_LOCATION : catalogLocation;
-					final URL catalogURL = getResourceURL(catalogLocation);
+					final URL catalogURL = ResourceUtils.getResourceURL(catalogLocation);
 					if (catalogURL != null)
 					{
 						try
@@ -167,7 +190,7 @@ public class SchemaHandler
 										}
 										if (resolvedLocation != null)
 										{
-											final InputStream resourceStream = getResourceStream(resolvedLocation);
+											final InputStream resourceStream = ResourceUtils.getResourceStream(resolvedLocation);
 											if (resourceStream != null)
 											{
 												return new LSInputImpl(publicId, systemId, resourceStream);
@@ -198,35 +221,5 @@ public class SchemaHandler
 		}
 		return s;
 
-	}
-
-	public static URL getResourceURL(String loc) throws IOException
-	{
-		final Resource resource = RESOURCE_LOADER.getResource(loc);
-		if (resource == null || !resource.exists())
-		{
-			LOGGER.warn("No resource '" + loc + "' is available");
-			return null;
-		}
-
-		final URL url = resource.getURL();
-		if (url == null)
-		{
-			LOGGER.warn("Resource " + loc + " could not be resolved to a URL");
-		}
-
-		return url;
-	}
-
-	//
-	// public static URL getClasspathResourceURL(String path, Class<?> callingClass)
-	// {
-	// return ClassLoaderUtils.getResource(path, callingClass);
-	// }
-	//
-	public static InputStream getResourceStream(String loc) throws Exception
-	{
-		final URL url = getResourceURL(loc);
-		return url == null ? null : url.openStream();
 	}
 }

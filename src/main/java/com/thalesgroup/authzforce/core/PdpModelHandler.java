@@ -64,13 +64,14 @@ public class PdpModelHandler
 	 * Location of PDP configuration schema
 	 */
 	public final static String CORE_XSD_LOCATION = "classpath:pdp.xsd";
-	
+
 	/**
-	 * Default location of XML catalog to resolve imported XML schemas in {@value PdpModelHandler#CORE_XSD_LOCATION} 
+	 * Default location of XML catalog to resolve imported XML schemas in
+	 * {@value PdpModelHandler#CORE_XSD_LOCATION}
 	 */
 	public final static String DEFAULT_CATALOG_LOCATION = "classpath:catalog.xml";
-	
-	private final static String[] XACML_3_0_SCHEMA_LOCATIONS = {"classpath:xml.xsd", "classpath:xacml-core-v3-schema-wd-17.xsd"};
+
+	private final static String[] XACML_3_0_SCHEMA_LOCATIONS = { "classpath:xml.xsd", "classpath:xacml-core-v3-schema-wd-17.xsd" };
 
 	/**
 	 * XPath to schema locations in XML schema imports
@@ -90,7 +91,7 @@ public class PdpModelHandler
 			throw new RuntimeException("Invalid XPath to XSD import schemaLocation values: " + XSD_IMPORT_SCHEMA_LOCATIONS_XPATH, e);
 		}
 	}
-	
+
 	/**
 	 * XACML 3.0 XML schema namespace
 	 */
@@ -110,11 +111,11 @@ public class PdpModelHandler
 			throw new RuntimeException("Error instantiating JAXB context for (un)marshalling from/to XACML 3.0 objects", e);
 		}
 	}
-	
+
 	/**
 	 * XACML 3.0 schema
 	 */
-	public static final Schema XACML_3_0_SCHEMA = SchemaHandler.createSchema(Arrays.asList(XACML_3_0_SCHEMA_LOCATIONS),null);
+	public static final Schema XACML_3_0_SCHEMA = SchemaHandler.createSchema(Arrays.asList(XACML_3_0_SCHEMA_LOCATIONS), null);
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpModelHandler.class);
 
@@ -122,11 +123,12 @@ public class PdpModelHandler
 	 * Supported JAXB types for root elements of XML configuration documents (e.g. files)
 	 */
 	private final static Class<?>[] SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPES = { Pdps.class };
-	
+
 	/**
-	 * JAXB types of default extensions already provided by authzforce-core and defined in PDP core XSD.
+	 * JAXB types of default extensions already provided by authzforce-core and defined in PDP core
+	 * XSD.
 	 */
-	private final static Class<?>[] DEFAULT_EXTENSION_JAXB_TYPES = { CurrentDateTimeFinder.class, AttributeSelectorXPathFinder.class};
+	private final static Class<?>[] DEFAULT_EXTENSION_JAXB_TYPES = { CurrentDateTimeFinder.class, AttributeSelectorXPathFinder.class };
 
 	private Schema confSchema;
 	private final Class<?>[] extJaxbBoundClasses;
@@ -201,7 +203,7 @@ public class PdpModelHandler
 			schemaLocations = Arrays.asList(extensionXsdLocation, CORE_XSD_LOCATION);
 			final Document extXsDoc;
 			final DocumentBuilder threadLocalDocBuilder = Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.get();
-			try (final InputStream extXsdIn = SchemaHandler.getResourceStream(extensionXsdLocation))
+			try (final InputStream extXsdIn = ResourceUtils.getResourceStream(extensionXsdLocation))
 			{
 				if (extXsdIn == null)
 				{
@@ -224,6 +226,12 @@ public class PdpModelHandler
 			} finally
 			{
 				threadLocalDocBuilder.reset();
+				/*
+				 * Clear the thread-local variable to prevent memory leaks, e.g. after webapp
+				 * redeployment in Java Server, where server threads are recycled (not bound to the
+				 * webapp lifecycle)
+				 */
+				Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.remove();
 			}
 
 			// load all user-defined imported extension schemas
@@ -294,14 +302,16 @@ public class PdpModelHandler
 
 		// Load schema for validating XML configurations
 		final String schemaHandlerCatalogLocation;
-		if(catalogLocation == null) {
+		if (catalogLocation == null)
+		{
 			LOGGER.info("No XML catalog location specified for PDP schema handler, using default: {}", DEFAULT_CATALOG_LOCATION);
 			schemaHandlerCatalogLocation = DEFAULT_CATALOG_LOCATION;
-		} else {
+		} else
+		{
 			LOGGER.info("XML catalog location specified for PDP schema handler: {}", catalogLocation);
 			schemaHandlerCatalogLocation = catalogLocation;
 		}
-		
+
 		confSchema = SchemaHandler.createSchema(schemaLocations, schemaHandlerCatalogLocation);
 	}
 

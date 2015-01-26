@@ -97,7 +97,6 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 */
 	protected AbstractPolicySet()
 	{
-
 	}
 
 	/**

@@ -34,7 +34,7 @@
 package com.sun.xacml.support.finder;
 
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -63,14 +63,15 @@ import com.sun.xacml.xacmlv3.IPolicy;
 import com.sun.xacml.xacmlv3.Policy;
 import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
 import com.thalesgroup.authzforce.core.PdpModelHandler;
+import com.thalesgroup.authzforce.core.ResourceUtils;
 
 /**
  * This is a simple implementation of <code>PolicyFinderModule</code> that supports retrieval based
  * on context, and is designed for use with a run-time configuration. Its constructor accepts a
- * <code>List</code> of <code>String</code>s that represent URLs or files, and these are resolved to
- * policies when the module is initialized. Beyond this, there is no modifying or re-loading the
- * policies represented by this class. This class will optionally wrap multiple applicable policies
- * into a dynamic PolicySet.
+ * <code>List</code> of <code>String</code>s that represent Spring-like URLs or files, and these are
+ * resolved to policies when the module is initialized. Beyond this, there is no modifying or
+ * re-loading the policies represented by this class. This class will optionally wrap multiple
+ * applicable policies into a dynamic PolicySet.
  * <p>
  * Note that this class is designed to complement <code>StaticRefPolicyFinderModule</code>. It would
  * be easy to support both kinds of policy retrieval in a single class, but the functionality is
@@ -275,24 +276,13 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 		}
 	}
 
-	/**
-	 * Always returns <code>true</code> since this module does support finding policies based on
-	 * context.
-	 * 
-	 * @return true
-	 */
+	@Override
 	public boolean isRequestSupported()
 	{
 		return true;
 	}
 
-	/**
-	 * Initialize this module. Typically this is called by <code>PolicyFinder</code> when a PDP is
-	 * created. This method is where the policies are actually loaded.
-	 * 
-	 * @param finder
-	 *            the <code>PolicyFinder</code> using this module
-	 */
+	@Override
 	public void init(PolicyFinder finder)
 	{
 		// now that we have the PolicyFinder, we can load the policies
@@ -305,19 +295,25 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 			try
 			{
 				unmarshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-			}
-				catch (JAXBException e1)
-				{
-					throw new IllegalArgumentException("Failed to create JAXB marshaller for unmarshalling Policy XML document", e1);
-				}
-			
-				unmarshaller.setSchema(schema);
-			try {
-				// first try to load it as a URL
-				final URL url = new URL(policyLocation);
-				jaxbObj = unmarshaller.unmarshal(url);
-			} catch (MalformedURLException murle)
+			} catch (JAXBException e1)
 			{
+				throw new IllegalArgumentException("Failed to create JAXB marshaller for unmarshalling Policy XML document", e1);
+			}
+
+			unmarshaller.setSchema(schema);
+			try
+			{
+				// first try to load it as a Spring resource
+
+				final URL url = ResourceUtils.getResourceURL(policyLocation);
+				if(url == null) {
+					throw new IOException("Invalid Spring-supported URL: " + policyLocation);
+				}
+				
+				jaxbObj = unmarshaller.unmarshal(url);
+			} catch (IOException ioe)
+			{
+				LOGGER.info("Failed to load policy location {} as Spring resource. Loading as file relative to PDP configuration directory");
 				// assume that this is a filename, and try again
 				final File file = new File(policyLocation);
 				final File policyFile;
@@ -328,7 +324,7 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 				{
 					policyFile = file;
 				}
-				
+
 				try
 				{
 					jaxbObj = unmarshaller.unmarshal(policyFile);
@@ -348,10 +344,10 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 				try
 				{
 					policyInstance = Policy.getInstance(policyElement);
-				} catch (ParsingException|UnknownIdentifierException e)
+				} catch (ParsingException | UnknownIdentifierException e)
 				{
 					throw new IllegalArgumentException("Error parsing Policy: " + policyElement.getPolicyId(), e);
-				} 
+				}
 			} else if (jaxbObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
 			{
 				final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySetElement = (oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbObj;
@@ -378,90 +374,28 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 		}
 	}
 
-	/**
-	 * TODO: Handle policySet
-	 * 
-	 * Finds a policy based on a request's context. If more than one policy matches, then this
-	 * either returns an error or a new policy wrapping the multiple policies (depending on which
-	 * constructor was used to construct this instance).
-	 * 
-	 * @param context
-	 *            the representation of the request data
-	 * 
-	 * @return the result of trying to find an applicable policy
-	 */
-	// public PolicyFinderResult findPolicy(EvaluationCtx context) {
-	// try {
-	// Policy policy = (Policy)policies.getPolicy(context);
-	//
-	// if (policy == null) {
-	// return new PolicyFinderResult();
-	// } else {
-	// return new PolicyFinderResult(policy);
-	// }
-	// } catch (TopLevelPolicyException tlpe) {
-	// return new PolicyFinderResult(tlpe.getStatus());
-	// }
-	// }
+	@Override
 	public PolicyFinderResult findPolicy(EvaluationCtx context)
 	{
-//		try
-//		{
-//			final IPolicy policy = this.policies.getPolicy(context);
-//			if (policy instanceof PolicySet)
-//			{
-//				PolicySet policySet = (PolicySet) policy;
-//				// Retrieving combining algorithm
-//				PolicyCombiningAlgorithm myCombiningAlg = (PolicyCombiningAlgorithm) policySet.getCombiningAlg();
-//				PolicyCollection myPolcollection = new PolicyCollection(myCombiningAlg, URI.create(policySet.getPolicySetId()));
-//				for (Object elt : policySet.getPolicySetsAndPoliciesAndPolicySetIdReferences())
-//				{
-//					if (elt instanceof PolicyCombinerElement)
-//					{
-//						myPolcollection.addPolicy((Policy) ((PolicyCombinerElement) elt).getElement());
-//					}
-//				}
-//				
-//				Object policy = myPolcollection.getPolicy(context);
-//				// The finder found more than one applicable policy so it build
-//				// a new PolicySet
-//				if (policy instanceof PolicySet)
-//				{
-//					return new PolicyFinderResult((PolicySet) policy, myCombiningAlg);
-//				}
-//				// The finder found only one applicable policy
-//				else if (policy instanceof Policy)
-//				{
-//					return new PolicyFinderResult((Policy) policy);
-//				}
-//			} else if (myPolicies instanceof Policy)
-//			{
-//				Policy policies = (Policy) myPolicies;
-//				return new PolicyFinderResult((Policy) policies);
-//			}
-//			// None of the policies/policySets matched
-//			return new PolicyFinderResult();
-//		} catch (TopLevelPolicyException tlpe)
-//		{
-//			return new PolicyFinderResult(tlpe.getStatus());
-//		}
-
-		try {
-            final IPolicy policy = policies.getPolicy(context);
-            if (policy == null)
-                return new PolicyFinderResult();
-            else
-                return new PolicyFinderResult(policy);
-        } catch (TopLevelPolicyException tlpe) {
-            return new PolicyFinderResult(tlpe.getStatus());
-        }
+		try
+		{
+			final IPolicy policy = policies.getPolicy(context);
+			if (policy == null) {
+				return new PolicyFinderResult();
+			}
+			
+			return new PolicyFinderResult(policy);
+		} catch (TopLevelPolicyException tlpe)
+		{
+			return new PolicyFinderResult(tlpe.getStatus());
+		}
 	}
 
 	@Override
 	public void init(AbstractPolicyFinder conf)
 	{
 		throw new UnsupportedOperationException("Initialization method not supported. Use the constructors instead.");
-		
+
 	}
 
 }
