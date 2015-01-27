@@ -109,6 +109,13 @@ public class AuditAspect {
 		case ATTRIBUTE:
 			audit = new AuditLog();
 			AttributesResolved attrResolved = new AttributesResolved();
+			// FIXME: jump subject-id research due to infinite call loop (issue #16)
+			if(jp.getArgs()[1] != null && jp.getArgs()[1] instanceof URI) {
+				URI attributeId = (URI) jp.getArgs()[1];
+				if(attributeId.equals(URI.create(XACMLAttributeId.XACML_SUBJECT_SUBJECT_ID.value()))) {
+					break;
+				}
+			}
 			for (Object arg : jp.getArgs()) {
 				if (arg instanceof BasicEvaluationCtx) {
 					audit.setDate(this.formatDate(((BasicEvaluationCtx) arg)
