@@ -151,6 +151,8 @@
 								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
 								<!-- Include test files also -->
 								<include>src/test/java/**</include>
+								<!-- Include aspectj files also -->
+								<include>src/main/aspect/**</include>
 							</includes>
 						</configuration>
 						<goals>
