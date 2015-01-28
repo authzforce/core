@@ -34,7 +34,6 @@
 package com.sun.xacml.ctx;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Collections;
@@ -42,11 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.sun.xacml.Indenter;
-import com.sun.xacml.ParsingException;
 
 
 /**
@@ -80,7 +75,7 @@ public class ResponseCtx
      *
      * @param results a <code>Set</code> of <code>Result</code> objects
      */
-    public ResponseCtx(Set results) {
+    public ResponseCtx(Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results) {
         this.results = Collections.unmodifiableSet(new HashSet(results));
     }
 
