@@ -29,6 +29,9 @@
 	<logger name="org.apache.commons.digester" additivity="false" level="INFO">
 		<appender-ref ref="stdout" />
 	</logger>
+	<logger name="com.thalesgroup.authzforce.audit.aspect" additivity="false" level="INFO">
+		<appender-ref ref="stdout" />
+	</logger>
 	<root level="INFO">
 		<appender-ref ref="stdout" />
 	</root>
