@@ -237,4 +237,22 @@ public class CurrentEnvModule extends AttributeFinderModule<AbstractAttributeFin
 	{
 		throw new UnsupportedOperationException("Initialization method not supported. Use the default constructor instead.");
 	}
+
+	@Override
+	public boolean isSelectorSupported() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Set getSupportedIds() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void invalidateCache() {
+		// TODO Auto-generated method stub
+		
+	}
 }
