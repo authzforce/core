@@ -42,7 +42,6 @@ import com.sun.xacml.cond.StringConversionFunctionsTest;
 import com.sun.xacml.cond.StringFunctionsTest;
 import com.sun.xacml.xacmlv3.TestApply;
 import com.sun.xacml.xacmlv3.TestMatchAlg;
-import com.sun.xacml.xacmlv3.function.TestDateMathFunction;
 import com.sun.xacml.xacmlv3.function.TestMatchFunction;
 import com.sun.xacml.xacmlv3.function.TestStringFunction;
 

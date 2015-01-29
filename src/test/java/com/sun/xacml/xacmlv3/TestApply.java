@@ -29,7 +29,6 @@ import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
 
 import org.junit.Assert;
@@ -39,8 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.cond.Function;
-import com.sun.xacml.cond.FunctionBase;
 import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionFactoryProxy;
 import com.sun.xacml.cond.FunctionTypeException;
