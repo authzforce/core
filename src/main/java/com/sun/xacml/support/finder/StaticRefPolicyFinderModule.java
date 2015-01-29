@@ -280,4 +280,16 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 		
 	}
 
+	@Override
+	public boolean isRequestSupported() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void invalidateCache() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

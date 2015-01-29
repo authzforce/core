@@ -398,4 +398,16 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 
 	}
 
+	@Override
+	public boolean isIdReferenceSupported() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void invalidateCache() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

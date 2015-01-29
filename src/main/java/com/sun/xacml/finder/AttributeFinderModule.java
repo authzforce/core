@@ -79,9 +79,7 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      *
      * @return true if retrieval based on designator data is supported
      */
-    public boolean isDesignatorSupported() {
-        return false;
-    }
+    public abstract boolean isDesignatorSupported();
 
     /**
      * Returns true if this module supports retrieving attributes based on the
@@ -90,9 +88,7 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      *
      * @return true if retrieval based on selector data is supported
      */
-    public boolean isSelectorSupported() {
-        return false;
-    }
+    public abstract boolean isSelectorSupported();
 
     /**
      * Returns a <code>Set</code> of <code>Integer</code>s that represent
@@ -105,9 +101,7 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      *
      * @return a <code>Set</code> of <code>Integer</code>s, or null
      */
-    public Set<Integer> getSupportedDesignatorTypes() {
-        return null;
-    }
+    public abstract Set<Integer> getSupportedDesignatorTypes();
 
     /**
      * Returns a <code>Set</code> of <code>URI</code>s that represent the
@@ -117,9 +111,7 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      *
      * @return a <code>Set</code> of <code>URI</code>s, or null
      */
-    public Set getSupportedIds() {
-        return null;
-    }
+    public abstract Set getSupportedIds();
 
     /**
      * This is an experimental method that asks the module to invalidate any
@@ -127,8 +119,8 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      * processing code, but it may be used by management software that wants
      * to have some control over these modules. Since a module is free to
      * decide how or if it caches values, and whether it is capable of
-     * updating values once in a cacheManager, a module is free to intrepret this
-     * message in any way it sees fit (including igoring the message). It
+     * updating values once in a cacheManager, a module is free to interpret this
+     * message in any way it sees fit (including ignoring the message). It
      * is preferable, however, for a module to make every effort to clear
      * any dynamically cached values it contains.
      * <p>
@@ -139,9 +131,7 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      * 
      * @since 1.2
      */
-    public void invalidateCache() {
-
-    }
+    public abstract void invalidateCache();
     
     /**
      * Tries to find attribute values based on the given designator data.
@@ -200,12 +190,4 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
         return new EvaluationResult(BagAttribute.
                                     createEmptyBag(attributeType));
     }
-
-//	public abstract String getAttributeSupportedId();
-//
-//	public abstract String getSubstituteValue();
-//
-//	public abstract StringAttribute getResourceVal();
-//
-//	public abstract Set getSet();
 }

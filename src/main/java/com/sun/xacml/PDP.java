@@ -34,7 +34,6 @@
 package com.sun.xacml;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -212,7 +211,7 @@ public class PDP
 	 * @return a response paired to the request
 	 */
 	@Audit(type = Audit.Type.DISPLAY)
-	public List<ResponseCtx> evaluateList(Request request)
+	public ResponseCtx evaluate(Request request)
 	{
 
 		List<Attributes> subjects = new ArrayList<>();
@@ -221,7 +220,7 @@ public class PDP
 		List<Attributes> environments = new ArrayList<>();
 		List<Attributes> customs = new ArrayList<>();
 		List<Request> requests = new ArrayList<>();
-		List<ResponseCtx> responses = new ArrayList<>();
+		Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results = new HashSet<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result>();
 
 		if (request.getMultiRequests() != null)
 		{
@@ -234,7 +233,7 @@ public class PDP
 			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 			status.setStatusCode(code);
 			status.setStatusMessage("Multi Request not implemented yet");
-			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
 		} else if (request.isCombinedDecision())
 		{
 			// TODO: Implement combinedDecision
@@ -246,7 +245,7 @@ public class PDP
 			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 			status.setStatusCode(code);
 			status.setStatusMessage("Combined decision not implemented yet");
-			return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
 		} else
 		{
 			for (Attributes myAttrs : request.getAttributes())
@@ -294,7 +293,7 @@ public class PDP
 				oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
 				status.setStatusCode(code);
 				status.setStatusMessage("Resource or Subject or Action attributes needs to be filled");
-				return Arrays.asList(new ResponseCtx(new Result(DecisionType.INDETERMINATE, status)));
+				return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
 			}
 			if (subjects.isEmpty())
 			{
@@ -344,16 +343,10 @@ public class PDP
 			{
 				for (Request requestList : requests)
 				{
-					requestList.getAttributes().addAll(environments);
-					// }
-					// for (Request requestList : requests)
-					// {
+					requestList.getAttributes().addAll(environments); 
 					requestList.getAttributes().addAll(customs);
-					// }
-					// for (Request Request : requests)
-					// {
 					ResponseCtx response = this.evaluatePrivate(requestList);
-					responses.add(response);
+					results.addAll(response.getResults());
 				}
 			} finally
 			{
@@ -361,7 +354,7 @@ public class PDP
 			}
 		}
 
-		return responses;
+		return new ResponseCtx(results);
 	}
 
 	/**
@@ -377,20 +370,18 @@ public class PDP
 	 *            the request to evaluate
 	 * 
 	 * @return a response paired to the request
-	 * 
-	 * @deprecated Use evaluateList instead
 	 */
-	@Audit(type = Audit.Type.DISPLAY)
-	public ResponseCtx evaluate(Request request)
-	{
-		try
-		{
-			return evaluatePrivate(request);
-		} finally
-		{
-			Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.remove();
-		}
-	}
+//	@Audit(type = Audit.Type.DISPLAY)
+//	public ResponseCtx evaluate(Request request)
+//	{
+//		try
+//		{
+//			return evaluatePrivate(request);
+//		} finally
+//		{
+//			Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.remove();
+//		}
+//	}
 
 	/**
 	 * Uses {@code Utils#THREAD_LOCAL_NS_AWARE_DOC_BUILDER } Uses
@@ -475,6 +466,8 @@ public class PDP
 	 *            representation of the request and the context used for evaluation
 	 * 
 	 * @return a response based on the contents of the context
+	 * 
+	 * @deprecated Use ResponseCtx(Request request)
 	 */
 	public ResponseCtx evaluate(EvaluationCtx context)
 	{
@@ -507,7 +500,7 @@ public class PDP
 			}
 
 			// setup a set to keep track of the results
-			Set<Result> results = new HashSet<>();
+			Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results = new HashSet<>();
 
 			// at this point, we need to go through all the resources we
 			// successfully found and start collecting results

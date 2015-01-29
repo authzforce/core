@@ -319,4 +319,10 @@ public class BasicPolicyFinderModule extends PolicyFinderModule<AbstractPolicyFi
 		throw new UnsupportedOperationException("Initialization method not supported. Use the constructors instead.");
 	}
 
+	@Override
+	public void invalidateCache() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

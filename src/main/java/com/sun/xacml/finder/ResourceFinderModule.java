@@ -71,9 +71,7 @@ public abstract class ResourceFinderModule<T extends AbstractResourceFinder> imp
      *
      * @return true if the module supports the Children scope
      */
-    public boolean isChildSupported() {
-        return false;
-    }
+    public abstract boolean isChildSupported();
 
     /**
      * Returns true if this module supports finding resources with the
@@ -81,9 +79,7 @@ public abstract class ResourceFinderModule<T extends AbstractResourceFinder> imp
      *
      * @return true if the module supports the Descendants scope
      */
-    public boolean isDescendantSupported() {
-        return false;
-    }
+    public abstract boolean isDescendantSupported();
 
     /**
      * This is an experimental method that asks the module to invalidate any
@@ -91,8 +87,8 @@ public abstract class ResourceFinderModule<T extends AbstractResourceFinder> imp
      * processing code, but it may be used by management software that wants
      * to have some control over these modules. Since a module is free to
      * decide how or if it caches values, and whether it is capable of
-     * updating values once in a cacheManager, a module is free to intrepret this
-     * message in any way it sees fit (including igoring the message). It
+     * updating values once in a cacheManager, a module is free to interpret this
+     * message in any way it sees fit (including ignoring the message). It
      * is preferable, however, for a module to make every effort to clear
      * any dynamically cached values it contains.
      * <p>
@@ -103,9 +99,7 @@ public abstract class ResourceFinderModule<T extends AbstractResourceFinder> imp
      * 
      * @since 1.2
      */
-    public void invalidateCache() {
-
-    }
+    public abstract void invalidateCache();
 
     /**
      * Tries to find the child Resource Ids associated with the parent. If

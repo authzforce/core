@@ -62,8 +62,7 @@ public abstract class PolicyFinderModule<T extends AbstractPolicyFinder> impleme
 	 * 
 	 * @return this module's identifier
 	 */
-	public String getIdentifier()
-	{
+	public String getIdentifier() {
 		return getClass().getName();
 	}
 
@@ -73,10 +72,7 @@ public abstract class PolicyFinderModule<T extends AbstractPolicyFinder> impleme
 	 * 
 	 * @return true if request retrieval is supported
 	 */
-	public boolean isRequestSupported()
-	{
-		return false;
-	}
+	public abstract boolean isRequestSupported();	
 
 	/**
 	 * Returns true if the module supports finding policies based on an id reference (in a
@@ -84,10 +80,7 @@ public abstract class PolicyFinderModule<T extends AbstractPolicyFinder> impleme
 	 * 
 	 * @return true if idReference retrieval is supported
 	 */
-	public boolean isIdReferenceSupported()
-	{
-		return false;
-	}
+	public abstract boolean isIdReferenceSupported();	
 
 	/**
 	 * Initializes this module for use by the given finder. Typically this is called when a
@@ -111,8 +104,8 @@ public abstract class PolicyFinderModule<T extends AbstractPolicyFinder> impleme
 	 * may contain. This is not used by any of the core processing code, but it may be used by
 	 * management software that wants to have some control over these modules. Since a module is
 	 * free to decide how or if it caches values, and whether it is capable of updating values once
-	 * in a cacheManager, a module is free to intrepret this message in any way it sees fit
-	 * (including igoring the message). It is preferable, however, for a module to make every effort
+	 * in a cacheManager, a module is free to interpret this message in any way it sees fit
+	 * (including ignoring the message). It is preferable, however, for a module to make every effort
 	 * to clear any dynamically cached values it contains.
 	 * <p>
 	 * This method has been introduced to see what people think of this functionality, and how they
@@ -121,10 +114,7 @@ public abstract class PolicyFinderModule<T extends AbstractPolicyFinder> impleme
 	 * 
 	 * @since 1.2
 	 */
-	public void invalidateCache()
-	{
-
-	}
+	public abstract void invalidateCache();
 
 	/**
 	 * Tries to find one and only one matching policy given the request represented by the context

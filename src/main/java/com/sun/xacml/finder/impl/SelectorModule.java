@@ -37,6 +37,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -266,28 +267,27 @@ public class SelectorModule extends AttributeFinderModule<AbstractAttributeFinde
 		throw new UnsupportedOperationException("Initialization method not supported. Use the default constructor instead.");
 	}
 
-//	@Override
-//	public String getAttributeSupportedId() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public String getSubstituteValue() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public StringAttribute getResourceVal() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	@Override
-//	public Set getSet() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
+	@Override
+	public boolean isDesignatorSupported() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
+	@Override
+	public Set<Integer> getSupportedDesignatorTypes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set getSupportedIds() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void invalidateCache() {
+		// TODO Auto-generated method stub
+		
+	}
 }
