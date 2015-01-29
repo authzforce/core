@@ -510,7 +510,7 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	{
 		// if there is no finder, then we return NotApplicable
 		if (finder == null)
-			return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
+			return new Result(DecisionType.NOT_APPLICABLE);
 
 		PolicyFinderResult pfr;
 		try
@@ -523,11 +523,11 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 
 		// if we found nothing, then we return NotApplicable
 		if (pfr.notApplicable())
-			return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
+			return new Result(DecisionType.NOT_APPLICABLE);
 
 		// if there was an error, we return that status data
 		if (pfr.indeterminate())
-			return new Result(DecisionType.INDETERMINATE, pfr.getStatus(), context.getResourceId().encode());
+			return new Result(DecisionType.INDETERMINATE, pfr.getStatus());
 
 		// we must have found a policy
 		return pfr.getPolicy().evaluate(context);

@@ -40,6 +40,8 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AnyURIAttribute;
 import com.sun.xacml.attr.BooleanAttribute;
@@ -306,7 +308,8 @@ public class MatchFunction extends FunctionBase {
 	 * @return an <code>EvaluationResult</code> representing the function's
 	 *         result
 	 */
-	public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+	@Override
+	public EvaluationResult evaluate(List<? extends ExpressionType> inputs, EvaluationCtx context) {
 
 		// Evaluate the arguments
 		AttributeValue[] argValues = new AttributeValue[inputs.size()];

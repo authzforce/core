@@ -97,7 +97,6 @@ public class FirstApplicableRuleAlg extends RuleCombiningAlgorithm
 		}
         
         // if we got here, then none of the rules applied
-        return new Result(DecisionType.NOT_APPLICABLE,
-                          context.getResourceId().encode());
+        return new Result(DecisionType.NOT_APPLICABLE);
     }
 }

@@ -115,7 +115,7 @@ public class PermitUnlessDenyRuleAlg extends RuleCombiningAlgorithm {
 			}
 		}
 		
-		return new Result(DecisionType.PERMIT, null, context.getResourceId().encode(), combinedObligations.getObligations().isEmpty() ? null
+		return new Result(DecisionType.PERMIT, null, combinedObligations.getObligations().isEmpty() ? null
 				: combinedObligations, combinedAssociatedAdvice.getAdvices().isEmpty()? null: combinedAssociatedAdvice, null);
 	}
 

@@ -194,35 +194,6 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 	}
 
 	/**
-	 * Constructs a <code>Condition</code> as used in XACML 1.x.
-	 * 
-	 * @param expressionType
-	 *            the <code>Function</code> to use in evaluating the elements in the Condition
-	 * @param xprs
-	 *            the contents of the Condition which will be the parameters to the function, each
-	 *            of which is an <code>Expression</code>
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the input expressions don't match the signature of the function or if the
-	 *             function is invalid for use in a Condition
-	 */
-	public Condition(Function expressionType, List<ExpressionType> expressions) throws IllegalArgumentException
-	{
-		xacmlVersion = PolicyMetaData.XACML_VERSION_1_0;
-
-		// check that the function is valid for a Condition
-		checkExpression(expressionType);
-		ExpressionType myExpr = new Apply(expressionType, expressions);
-		// turn the parameters into an Apply for simplicity
-		// expression.setValue(Collections.unmodifiableList(expressions));
-		// this.expression = Collections.unmodifiableList();
-
-		// keep track of the function and the children
-		// this.function = expressionType;
-		// children = ((Apply) expression).getChildren();
-	}
-
-	/**
 	 * Constructs a <code>Condition</code> as used in XACML 2.0.
 	 * 
 	 * @param apply

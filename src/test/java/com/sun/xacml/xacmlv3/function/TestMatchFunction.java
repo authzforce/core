@@ -46,6 +46,7 @@ import com.sun.xacml.attr.PortRange;
 import com.sun.xacml.attr.RFC822NameAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.X500NameAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.MatchFunction;
 import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
 
@@ -228,23 +229,23 @@ public class TestMatchFunction {
 		RFC822NameAttribute rfc822Arg1Wrong2 = new RFC822NameAttribute("anderson@sun.com");
 		RFC822NameAttribute rfc822Arg1Wrong3 = new RFC822NameAttribute("Anderson@east.sun.com");
 
-		List<Object> goodInputs1 = new ArrayList<>();
+		List<AttributeValue> goodInputs1 = new ArrayList<>();
 		goodInputs1.add(stringArg0);
 		goodInputs1.add(rfc822Arg1Good1);
 		
-		List<Object> goodInputs2 = new ArrayList<>();
+		List<AttributeValue> goodInputs2 = new ArrayList<>();
 		goodInputs2.add(stringArg0);
 		goodInputs2.add(rfc822Arg1Good2);
 		
-		List<Object> wrongInputs1 = new ArrayList<>();
+		List<AttributeValue> wrongInputs1 = new ArrayList<>();
 		wrongInputs1.add(stringArg0);
 		wrongInputs1.add(rfc822Arg1Wrong1);
 		
-		List<Object> wrongInputs2 = new ArrayList<>();
+		List<AttributeValue> wrongInputs2 = new ArrayList<>();
 		wrongInputs2.add(stringArg0);
 		wrongInputs2.add(rfc822Arg1Wrong2);
 		
-		List<Object> wrongInputs3 = new ArrayList<>();
+		List<AttributeValue> wrongInputs3 = new ArrayList<>();
 		wrongInputs3.add(stringArg0);
 		wrongInputs3.add(rfc822Arg1Wrong3);
 		
@@ -348,11 +349,11 @@ public class TestMatchFunction {
 		AnyURIAttribute stringGood = new AnyURIAttribute(URI.create("http://www.acme.com"));
 		AnyURIAttribute stringWrong = new AnyURIAttribute(URI.create("https://www.acme.com"));
 
-		List<Object> goodInputs = new ArrayList<>();
+		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(stringGood);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<AttributeValue> wrongInputs = new ArrayList<>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(stringWrong);
 		
@@ -399,11 +400,11 @@ public class TestMatchFunction {
 			e.printStackTrace();
 		}
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(ipv4AddressGood);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<AttributeValue> wrongInputs = new ArrayList<>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(ipv4AddressWrong);
 		
@@ -425,11 +426,11 @@ public class TestMatchFunction {
 		StringAttribute goodStringArg1 = new StringAttribute("testing");
 		StringAttribute wrongStringArg1 = new StringAttribute("tasting");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(goodStringArg1);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<AttributeValue> wrongInputs = new ArrayList<>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(wrongStringArg1);
 		
@@ -452,11 +453,11 @@ public class TestMatchFunction {
 		StringAttribute goodStringArg1 = new StringAttribute("testing");
 		StringAttribute wrongStringArg1 = new StringAttribute("testang");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(goodStringArg1);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<AttributeValue> wrongInputs = new ArrayList<>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(wrongStringArg1);
 
@@ -476,11 +477,11 @@ public class TestMatchFunction {
 		StringAttribute goodStringArg1 = new StringAttribute("testing");
 		StringAttribute wrongStringArg1 = new StringAttribute("tasting");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(goodStringArg1);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<AttributeValue> wrongInputs = new ArrayList<>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(wrongStringArg1);
 
@@ -508,11 +509,11 @@ public class TestMatchFunction {
 		X500Principal x500PrincipalArg0Wrong = new X500Principal("ou=test,dc=example,dc=fr");
 		X500NameAttribute x500NameAttributeArg0Wrong = new X500NameAttribute(x500PrincipalArg0Wrong);	
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(x500NameAttributeArg0Good);
 
-		List<Object> wrongInputs = new ArrayList<>();
+		List<AttributeValue> wrongInputs = new ArrayList<>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(x500NameAttributeArg0Wrong);
 		
@@ -532,11 +533,11 @@ public class TestMatchFunction {
 		RFC822NameAttribute rfc822Arg1Good = new RFC822NameAttribute("johndoe@acme.com");
 		RFC822NameAttribute rfc822Arg1Wrong = new RFC822NameAttribute("john.doe@acme.com");
 		
-		List<Object> goodInputs = new ArrayList<>();
+		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);
 		goodInputs.add(rfc822Arg1Good);
 		
-		List<Object> wrongInputs = new ArrayList<>();
+		List<AttributeValue> wrongInputs = new ArrayList<>();
 		wrongInputs.add(stringArg0);
 		wrongInputs.add(rfc822Arg1Wrong);
 		

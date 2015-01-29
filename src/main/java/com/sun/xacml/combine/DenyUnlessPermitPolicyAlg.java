@@ -48,7 +48,6 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.IPolicy;
-import com.sun.xacml.xacmlv3.Policy;
 
 public class DenyUnlessPermitPolicyAlg extends PolicyCombiningAlgorithm
 {
@@ -120,7 +119,7 @@ public class DenyUnlessPermitPolicyAlg extends PolicyCombiningAlgorithm
 		 * avoid creating empty <Obligations>/<AssociatedAdvice> element (no valid by XACML schema)
 		 * when marshalling with JAXB
 		 */
-		return new Result(DecisionType.DENY, null, context.getResourceId().encode(), combinedObligations.getObligations().isEmpty() ? null
+		return new Result(DecisionType.DENY, null, combinedObligations.getObligations().isEmpty() ? null
 				: combinedObligations, combinedAssociatedAdvice.getAdvices().isEmpty() ? null : combinedAssociatedAdvice, null);
 	}
 

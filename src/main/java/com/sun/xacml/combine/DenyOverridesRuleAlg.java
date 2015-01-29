@@ -34,7 +34,6 @@
 package com.sun.xacml.combine;
 
 import java.net.URI;
-import java.util.Iterator;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
@@ -95,18 +94,15 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                          List ruleElements) {
+    @Override
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
+                          List<Rule> ruleElements) {
         boolean atLeastOneError = false;
         boolean potentialDeny = false;
         boolean atLeastOnePermit = false;
-        boolean atLeastOneNotApplicable = false;
         Result firstIndeterminateResult = null;
-        Iterator it = ruleElements.iterator();
 
-        while (it.hasNext()) {
-//            Rule rule = ((RuleCombinerElement)(it.next())).getRule();
-            Rule rule = ((Rule)(it.next()));
+       for(final Rule rule: ruleElements) {
             Result result = rule.evaluate(context);
             int value = result.getDecision().ordinal();
             
@@ -150,7 +146,7 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
         // some Rule said PERMIT, so since nothing could have denied,
         // we return PERMIT
         if (atLeastOnePermit) {
-            return new Result(DecisionType.PERMIT, context.getResourceId().encode());
+            return new Result(DecisionType.PERMIT);
         }
         
         // we didn't find anything that said PERMIT, but if we had a
@@ -160,8 +156,7 @@ public class DenyOverridesRuleAlg extends RuleCombiningAlgorithm
         
         // if we hit this point, then none of the rules actually applied
         // to us, so we return NOT_APPLICABLE
-        return new Result(DecisionType.NOT_APPLICABLE,
-                          context.getResourceId().encode());
+        return new Result(DecisionType.NOT_APPLICABLE);
     }
 
 }

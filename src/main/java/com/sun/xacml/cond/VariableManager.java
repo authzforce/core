@@ -64,7 +64,7 @@ import com.sun.xacml.cond.xacmlv3.ExpressionTools;
  * @since 2.0
  * @author Seth Proctor
  */
-public class VariableManager extends ExpressionType
+public class VariableManager
 {
 
 	// the map from identifiers to internal data

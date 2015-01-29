@@ -339,7 +339,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	 * 
 	 * @return a <code>List</code> with no elements
 	 */
-	public List getChildren()
+	public static List getChildren()
 	{
 		return Collections.EMPTY_LIST;
 	}
@@ -407,13 +407,13 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 				// if the target didn't match, then this Rule doesn't apply
 				if (result == MatchResult.NO_MATCH)
 				{
-					returnResult = new Result(DecisionType.NOT_APPLICABLE, null, context.getResourceId().encode(), null, includeInResult);
+					returnResult = new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
 					return returnResult;
 				}
 				// if the target was indeterminate, we can't go on
 				if (result == MatchResult.INDETERMINATE)
 				{
-					returnResult = new Result(DecisionType.INDETERMINATE, match.getStatus(), context.getResourceId().encode(), null, includeInResult);
+					returnResult = new Result(DecisionType.INDETERMINATE, match.getStatus(), null, includeInResult);
 					return returnResult;
 				}
 			}
@@ -422,7 +422,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 			if (condition == null)
 			{
 				LOGGER.info("Rule doesn't contain condition, so result is '{}' for rule '{}'", this.effect.value(), this.ruleId);
-				returnResult = new Result(DecisionType.fromValue(this.effect.value()), null, context.getResourceId().encode(), null, includeInResult);
+				returnResult = new Result(DecisionType.fromValue(this.effect.value()), null, null, includeInResult);
 			} else
 			{
 				// ...otherwise we evaluate the condition
@@ -431,7 +431,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 				if (result.indeterminate())
 				{
 					// if it was INDETERMINATE, then that's what we return
-					returnResult = new Result(DecisionType.INDETERMINATE, result.getStatus(), context.getResourceId().encode(), null, includeInResult);
+					returnResult = new Result(DecisionType.INDETERMINATE, result.getStatus(), null, includeInResult);
 					return returnResult;
 				}
 
@@ -440,11 +440,11 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 
 				if (bool.getValue())
 				{
-					returnResult = new Result(DecisionType.valueOf(effect.name()), null, context.getResourceId().encode(), null, includeInResult);
+					returnResult = new Result(DecisionType.valueOf(effect.name()), null, null, includeInResult);
 
 				} else
 				{
-					returnResult = new Result(DecisionType.NOT_APPLICABLE, null, context.getResourceId().encode(), null, includeInResult);
+					returnResult = new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
 					return returnResult;
 				}
 			}

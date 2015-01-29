@@ -103,78 +103,68 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 	 * 
 	 * @return the result of running the combining algorithm
 	 */
-	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List policyElements)
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List<IPolicy> policyElements)
 	{
 		boolean atLeastOneError = false;
 		boolean atLeastOneDeny = false;
 		Obligations denyObligations = new Obligations();
 		Status firstIndeterminateStatus = null;
-		Iterator it = policyElements.iterator();
 
 		// List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
-		while (it.hasNext())
+		for (final IPolicy policyElement : policyElements)
 		{
-			Object policyElement = (it.next());
 			MatchResult match = null;
 			Result result = null;
 			// make sure that the policy matches the context
-			if (!(policyElement instanceof IPolicy))
+			match = policyElement.match(context);
+			LOGGER.debug("{} - {}", policyElement, match);
+			if (match == null)
 			{
 				atLeastOneError = true;
-				LOGGER.error("Unexpected combined element during evaluation: " + policyElement.getClass());
-			} else
+			} else if (match.getResult() == MatchResult.INDETERMINATE)
 			{
-				final IPolicy policy = (IPolicy) policyElement;
-				match = policy.match(context);
-				LOGGER.debug("{} - {}", policy, match);
-				if (match == null)
+				atLeastOneError = true;
+
+				// keep track of the first error, regardless of cause
+				if (firstIndeterminateStatus == null)
+					firstIndeterminateStatus = match.getStatus();
+			} else if (match.getResult() == MatchResult.MATCH)
+			{
+				// now we evaluate the policy
+				result = policyElement.evaluate(context);
+
+				int effect = result.getDecision().ordinal();
+
+				// this is a little different from DenyOverrides...
+
+				if (effect == Result.DECISION_PERMIT)
 				{
-					atLeastOneError = true;
-				} else if (match.getResult() == MatchResult.INDETERMINATE)
+					return result;
+				}
+				if (effect == Result.DECISION_DENY)
+				{
+					atLeastOneDeny = true;
+					denyObligations = result.getObligations();
+				} else if (effect == Result.DECISION_INDETERMINATE)
 				{
 					atLeastOneError = true;
 
 					// keep track of the first error, regardless of cause
 					if (firstIndeterminateStatus == null)
-						firstIndeterminateStatus = match.getStatus();
-				} else if (match.getResult() == MatchResult.MATCH)
-				{
-					// now we evaluate the policy
-					result = policy.evaluate(context);
-
-					int effect = result.getDecision().ordinal();
-
-					// this is a little different from DenyOverrides...
-
-					if (effect == Result.DECISION_PERMIT)
-					{
-						return result;
-					}
-					if (effect == Result.DECISION_DENY)
-					{
-						atLeastOneDeny = true;
-						denyObligations = result.getObligations();
-					} else if (effect == Result.DECISION_INDETERMINATE)
-					{
-						atLeastOneError = true;
-
-						// keep track of the first error, regardless of cause
-						if (firstIndeterminateStatus == null)
-							firstIndeterminateStatus = result.getStatus();
-					}
+						firstIndeterminateStatus = result.getStatus();
 				}
 			}
 		}
 
 		// if we got a DENY, return it
 		if (atLeastOneDeny)
-			return new Result(DecisionType.DENY, context.getResourceId().encode(), denyObligations);
+			return new Result(DecisionType.DENY, denyObligations);
 
 		// if we got an INDETERMINATE, return it
 		if (atLeastOneError)
-			return new Result(DecisionType.INDETERMINATE, firstIndeterminateStatus, context.getResourceId().encode());
+			return new Result(DecisionType.INDETERMINATE, firstIndeterminateStatus);
 
 		// if we got here, then nothing applied to us
-		return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
+		return new Result(DecisionType.NOT_APPLICABLE);
 	}
 }

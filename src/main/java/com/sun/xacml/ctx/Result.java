@@ -100,9 +100,6 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Result.class);
 
-	// the resource identifier or null if there is none
-	private String resource = null;
-
 	/**
 	 * Constructs a <code>Result</code> object with default status data (OK).
 	 * 
@@ -133,7 +130,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 */
 	public Result(DecisionType decision, Obligations obligations) throws IllegalArgumentException
 	{
-		this(decision, null, null, obligations);
+		this(decision, null, obligations, null, null);
 	}
 
 	/**
@@ -173,47 +170,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, Obligations obligations)
 			throws IllegalArgumentException
 	{
-		this(decision, status, null, obligations);
-	}
-
-	/**
-	 * Constructs a <code>Result</code> object with a resource identifier, but default status data
-	 * (OK). The resource being named must match the resource (or a descendent of the resource in
-	 * the case of a hierarchical resource) from the associated request.
-	 * 
-	 * @param decision
-	 *            the decision effect to include in this result. This must be one of the four fields
-	 *            in this class.
-	 * @param resource
-	 *            a <code>String</code> naming the resource
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if decision is not valid
-	 */
-	public Result(DecisionType decision, String resource) throws IllegalArgumentException
-	{
-		this(decision, null, resource, null);
-	}
-
-	/**
-	 * Constructs a <code>Result</code> object with a resource identifier, and obligations, but
-	 * default status data (OK). The resource being named must match the resource (or a descendent
-	 * of the resource in the case of a hierarchical resource) from the associated request.
-	 * 
-	 * @param decision
-	 *            the decision effect to include in this result. This must be one of the four fields
-	 *            in this class.
-	 * @param resource
-	 *            a <code>String</code> naming the resource
-	 * @param obligations
-	 *            the obligations the PEP must handle
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if decision is not valid
-	 */
-	public Result(DecisionType decision, String resource, Obligations obligations) throws IllegalArgumentException
-	{
-		this(decision, null, resource, obligations);
+		this(decision, status, obligations, null, null);
 	}
 
 	/**
@@ -224,60 +181,16 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 *            in this class.
 	 * @param status
 	 *            the <code>Status</code> to include in this result
-	 * @param resource
-	 *            a <code>String</code> naming the resource
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if decision is not valid
-	 */
-	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource) throws IllegalArgumentException
-	{
-		this(decision, status, resource, null);
-	}
-
-	/**
-	 * Constructs a <code>Result</code> object with status data and a resource identifier.
-	 * 
-	 * @param decision
-	 *            the decision effect to include in this result. This must be one of the four fields
-	 *            in this class.
-	 * @param status
-	 *            the <code>Status</code> to include in this result
-	 * @param resource
-	 *            a <code>String</code> naming the resource
 	 * @param obligations list of obligations to be fulfilled by the PEP
 	 * @param attributes A list of attributes that were part of the request. The choice of which attributes are included here is made with the IncludeInResult attribute of the <Attribute> elements of the request. See XACML 3.0 spec section 5.46.
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource, Obligations obligations,
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, Obligations obligations,
 			List<Attributes> attributes) throws IllegalArgumentException
 	{
-		this(decision, status, resource, obligations, null, attributes);
-	}
-
-	/**
-	 * Constructs a <code>Result</code> object with status data, a resource identifier, and
-	 * obligations.
-	 * 
-	 * @param decision
-	 *            the decision effect to include in this result. This must be one of the four fields
-	 *            in this class.
-	 * @param status
-	 *            the <code>Status</code> to include in this result
-	 * @param resource
-	 *            a <code>String</code> naming the resource
-	 * @param obligations
-	 *            the obligations the PEP must handle
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if decision is not valid
-	 */
-	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource, Obligations obligations)
-			throws IllegalArgumentException
-	{
-		this(decision, status, resource, obligations, null, null);
+		this(decision, status, obligations, null, attributes);
 	}
 
 	/**
@@ -289,8 +202,6 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 *            in this class.
 	 * @param status
 	 *            the <code>Status</code> to include in this result
-	 * @param resource
-	 *            a <code>String</code> naming the resource
 	 * @param obligations
 	 *            the obligations the PEP must handle
 	 * @param advices
@@ -300,7 +211,7 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 * @throws IllegalArgumentException
 	 *             if decision is not valid
 	 */
-	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, String resource, Obligations obligations,
+	public Result(DecisionType decision, oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status, Obligations obligations,
 			AssociatedAdvice advices, List<Attributes> attributes) throws IllegalArgumentException
 	{
 		// check that decision is valid
@@ -309,7 +220,6 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 			throw new IllegalArgumentException("invalid decision value");
 
 		this.decision = decision;
-		this.resource = resource;
 
 		if (status == null)
 		{
@@ -344,36 +254,6 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 		{
 			this.attributes = attributes;
 		}
-	}
-
-	/**
-	 * Returns the resource to which this Result applies, or null if none is specified.
-	 * 
-	 * @return a resource identifier or null
-	 */
-	public String getResource()
-	{
-		return resource;
-	}
-
-	/**
-	 * Sets the resource identifier if it has not already been set before. The core code does not
-	 * set the resource identifier, so this is useful if you want to write wrapper code that needs
-	 * this information.
-	 * 
-	 * @param resource
-	 *            the resource identifier
-	 * 
-	 * @return true if the resource identifier was set, false if it already had a value
-	 */
-	public boolean setResource(String resource)
-	{
-		if (this.resource != null)
-			return false;
-
-		this.resource = resource;
-
-		return true;
 	}
 
 	/**

@@ -97,7 +97,7 @@ public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
 
 			if (match.getResult() == MatchResult.INDETERMINATE) {
 				// FIXME: implement extended Indeterminate decisions
-				return new Result(DecisionType.INDETERMINATE, match.getStatus(), context.getResourceId().encode());
+				return new Result(DecisionType.INDETERMINATE, match.getStatus());
 			}
 
 			if (match.getResult() == MatchResult.MATCH)
@@ -115,7 +115,7 @@ public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
 		}
 
 		// if we got here, then none of the rules applied
-		return new Result(DecisionType.NOT_APPLICABLE, context.getResourceId().encode());
+		return new Result(DecisionType.NOT_APPLICABLE);
 	}
 
 }

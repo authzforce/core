@@ -42,6 +42,8 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -98,6 +100,11 @@ public class PdpModelHandler
 	private static final String XACML_3_0_XMLNS = "oasis.names.tc.xacml._3_0.core.schema.wd_17";
 
 	/**
+	 * XACML 3.0 schema
+	 */
+	public static final Schema XACML_3_0_SCHEMA = SchemaHandler.createSchema(Arrays.asList(XACML_3_0_SCHEMA_LOCATIONS), null);
+
+	/**
 	 * JAXB context for (un)marshalling from/to JAXB objects derived from XACML 3.0 schema
 	 */
 	public static final JAXBContext XACML_3_0_JAXB_CONTEXT;
@@ -111,12 +118,12 @@ public class PdpModelHandler
 			throw new RuntimeException("Error instantiating JAXB context for (un)marshalling from/to XACML 3.0 objects", e);
 		}
 	}
-
+	
 	/**
-	 * XACML 3.0 schema
+	 * XACML 3.0 JAXB ObjectFactory
 	 */
-	public static final Schema XACML_3_0_SCHEMA = SchemaHandler.createSchema(Arrays.asList(XACML_3_0_SCHEMA_LOCATIONS), null);
-
+	public static final ObjectFactory XACML_3_0_OBJECT_FACTORY = new ObjectFactory();
+	
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpModelHandler.class);
 
 	/**

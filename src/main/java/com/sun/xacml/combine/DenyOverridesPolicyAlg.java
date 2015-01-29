@@ -111,8 +111,7 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 			MatchResult match = policy.match(context);
 
 			if (match.getResult() == MatchResult.INDETERMINATE) {
-				return new Result(DecisionType.DENY, context.getResourceId()
-						.encode());
+				return new Result(DecisionType.DENY);
 			}
 
 			if (match.getResult() == MatchResult.MATCH) {
@@ -124,8 +123,7 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 				// return DENY if any Policy returns DENY or INDETERMINATE
 				if ((effect == Result.DECISION_DENY)
 						|| (effect == Result.DECISION_INDETERMINATE))
-					return new Result(DecisionType.DENY, context
-							.getResourceId().encode(), result.getObligations());
+					return new Result(DecisionType.DENY, result.getObligations());
 
 				// remember if at least one Policy said PERMIT
 				if (effect == Result.DECISION_PERMIT) {
@@ -137,12 +135,10 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 
 		// if we got a PERMIT, return it, otherwise it's NOT_APPLICABLE
 		if (atLeastOnePermit) {
-			return new Result(DecisionType.PERMIT, context.getResourceId()
-					.encode(), permitObligations);
+			return new Result(DecisionType.PERMIT, permitObligations);
 		}
 		
-		return new Result(DecisionType.NOT_APPLICABLE, context
-					.getResourceId().encode());
+		return new Result(DecisionType.NOT_APPLICABLE);
 	}
 
 }

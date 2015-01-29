@@ -35,17 +35,16 @@ package com.sun.xacml.combine;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.xacmlv3.Policy;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
+import com.sun.xacml.xacmlv3.IPolicy;
 
 
 /**
@@ -87,53 +86,48 @@ public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
      *
      * @return the result of running the combining algorithm
      */
-    public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                          List policyElements) {
+    @Override
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
+                          List<IPolicy> policyElements) {
         boolean atLeastOne = false;
-        Policy selectedPolicy = null;
-        Iterator it = policyElements.iterator();
+        IPolicy applicablePolicy = null;
 
-        while (it.hasNext()) {
-//            Policy policy = ((Policy)(it.next())).getPolicy();
-        	Policy policy = ((Policy)(it.next()));
-
+        for (final IPolicy policy: policyElements) {
             // see if the policy matches the context
             MatchResult match = policy.match(context);
             int result = match.getResult();
 
             // if there is an error in trying to match any of the targets,
             // we always return INDETERMINATE immediately
-            if (result == MatchResult.INDETERMINATE)
+            if (result == MatchResult.INDETERMINATE) {
                 return new Result(DecisionType.INDETERMINATE,
-                                  match.getStatus(),
-                                  context.getResourceId().encode());
+                                  match.getStatus());
+            }
             
             if (result == MatchResult.MATCH) {
                 // if this isn't the first match, then this is an error
                 if (atLeastOne) {
-                    List code = new ArrayList();
+                    List<String> code = new ArrayList<>();
                     code.add(Status.STATUS_PROCESSING_ERROR);
                     String message = "Too many applicable policies";
                     return new Result(DecisionType.INDETERMINATE,
-                                      new Status(code, message),
-                                      context.getResourceId().encode());
+                                      new Status(code, message));
                 }
 
                 // if this was the first applicable policy in the set, then
                 // remember it for later
                 atLeastOne = true;
-                selectedPolicy = policy;
+                applicablePolicy = policy;
             }
         }
 
-        // if we got through the loop and found exactly one match, then
-        // we return the evaluation result of that policy
-        if (atLeastOne) {
-            return selectedPolicy.evaluate(context);
+        // if we got through the loop, it means we found at most one match, then
+        // we return the evaluation result of that policy if there is a match
+        if (applicablePolicy != null) {
+            return applicablePolicy.evaluate(context);
         }
 
         // if we didn't find a matching policy, then we don't apply
-        return new Result(DecisionType.NOT_APPLICABLE,
-                          context.getResourceId().encode());
+        return new Result(DecisionType.NOT_APPLICABLE);
     }
 }

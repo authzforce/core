@@ -503,7 +503,7 @@ public class PDP
 				codes.add(Status.STATUS_PROCESSING_ERROR);
 				String msg = "Couldn't find any resources to work on.";
 
-				return new ResponseCtx(new Result(DecisionType.INDETERMINATE, new Status(codes, msg), context.getResourceId().encode()));
+				return new ResponseCtx(new Result(DecisionType.INDETERMINATE, new Status(codes, msg)));
 			}
 
 			// setup a set to keep track of the results
@@ -520,7 +520,6 @@ public class PDP
 
 				// do the evaluation, and set the resource in the result
 				Result result = evaluateContext(context);
-				result.setResource(resource.encode());
 
 				// add the result
 				results.add(result);
@@ -537,7 +536,7 @@ public class PDP
 				Status status = (Status) (failureMap.get(resource));
 
 				// add a new result
-				results.add(new Result(DecisionType.INDETERMINATE, status, resource.encode()));
+				results.add(new Result(DecisionType.INDETERMINATE, status));
 			}
 
 			// return the set of results
@@ -564,15 +563,15 @@ public class PDP
 			AttributeValue resourceId = context.getResourceId();
 			if (resourceId != null)
 			{
-				return new Result(DecisionType.NOT_APPLICABLE, null, context.getResourceId().encode(), null, null, context.getIncludeInResults());
+				return new Result(DecisionType.NOT_APPLICABLE, null, null, null, context.getIncludeInResults());
 			}
-			return new Result(DecisionType.NOT_APPLICABLE, null, null, null, null, context.getIncludeInResults());
+			return new Result(DecisionType.NOT_APPLICABLE, null, null, null, context.getIncludeInResults());
 		}
 
 		// see if there were any errors in trying to get a policy
 		if (finderResult.indeterminate())
 		{
-			return new Result(DecisionType.INDETERMINATE, finderResult.getStatus(), context.getResourceId().encode(), null, null,
+			return new Result(DecisionType.INDETERMINATE, finderResult.getStatus(), null, null,
 					context.getIncludeInResults());
 		}
 

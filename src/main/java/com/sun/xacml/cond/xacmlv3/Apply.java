@@ -38,14 +38,18 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,16 +95,42 @@ public class Apply extends ApplyType implements Evaluatable
 {
 
     // the function used to evaluate the contents of the apply
-    private Function function;
+    private final Function function;
 
-    // the paramaters to the function...ie, the contents of the apply
-//    private List<ExpressionType> xprs;
+    // the parameters to the function...ie, the contents of the apply in sunxacml types (AttributeDesignator, Apply, Function)
+    private final List<ExpressionType> applyParams = new ArrayList<>();
     
     /**
 	 * Logger used for all classes
 	 */
 	private static final Logger LOGGER = LoggerFactory
 			.getLogger(Apply.class);
+	
+	public Apply(ApplyType xacmlApply, FunctionFactory funcFactory, VariableManager varManager)  throws ParsingException {
+		// Set the JAXB members first
+		this.description = xacmlApply.getDescription();
+		this.functionId = xacmlApply.getFunctionId();
+		this.expressions = xacmlApply.getExpressions();
+		
+		// Convert JAXB elements to internal (evaluable) types
+		final URI funcId;
+    	try {
+			funcId = new URI(xacmlApply.getFunctionId());
+			function = funcFactory.createFunction(funcId);
+		} catch (URISyntaxException use) {
+			throw new ParsingException("Error parsing Apply", use);
+		} catch (UnknownIdentifierException uie) {
+			throw new ParsingException("Unknown FunctionId", uie);
+		} catch (FunctionTypeException fte) {
+			// try to create an abstract function
+			throw new ParsingException("Unsupported function: " + xacmlApply.getFunctionId(), fte);
+		}
+		
+    	for(final JAXBElement<? extends ExpressionType> exprElt: xacmlApply.getExpressions()) {
+    		final ExpressionType exprHandler = ExpressionTools.getInstance(exprElt.getValue(), funcFactory, varManager);
+    		this.applyParams.add(exprHandler);
+    	}  	
+	}
 
     /**
      * Constructs an <code>Apply</code> instance.
@@ -110,59 +140,49 @@ public class Apply extends ApplyType implements Evaluatable
      * @param xprs the contents of the apply which will be the parameters
      *              to the function, each of which is an
      *              <code>Expression</code>
+     * @param description Description
      *
      * @throws IllegalArgumentException if the input expressions don't
      *                                  match the signature of the function
      */
-    public Apply(Function function, List<ExpressionType> xprs) throws IllegalArgumentException
+    public Apply(Function function, List<ExpressionType> xprs, String description) throws IllegalArgumentException
     {
         // check that the given inputs work for the function
 //        ((Expression)function).checkInputs(xprs);
 
         // if everything checks out, then store the inputs
+
+    	// set the JAXB and internal member attributes
+    	this.description = description;
     	this.functionId = function.getFunctionId();
-        this.expressions = Collections.unmodifiableList(new ArrayList(xprs));
+    	for(final ExpressionType expr: xprs) {
+    		final JAXBElement<? extends ExpressionType> jaxbElt;
+    		if (expr instanceof ApplyType) {
+    			jaxbElt = PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createApply((ApplyType) expr);
+    		} else if (expr instanceof AttributeDesignatorType) {
+    			jaxbElt = PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator((AttributeDesignatorType) expr);
+    		} else if (expr instanceof AttributeSelectorType) {
+    			jaxbElt = PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createAttributeSelector((AttributeSelectorType) expr);
+    		} else if (expr instanceof AttributeValueType) {
+    			jaxbElt = PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createAttributeValue((AttributeValueType) expr);
+    		} else if (expr instanceof FunctionType) {
+    			jaxbElt = PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createFunction((FunctionType) expr);
+    		} else if (expr instanceof VariableReferenceType) {
+    			jaxbElt = PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createVariableReference((VariableReferenceType) expr);
+    		} else {
+    			throw new UnsupportedOperationException("Unsupported type of ExpressionType in <Apply>: " + expr.getClass());
+    		}
+    		
+    		this.getExpressions().add(jaxbElt);
+    	}
+        
     	this.function = function;
-    	
-//        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
+    	this.applyParams.addAll(xprs);
     }
-
-    /**
-     * Constructs an <code>Apply</code> instance.
-     * 
-     * @deprecated As of 2.0 <code>Apply</code> is no longer used for
-     *             Conditions, so the <code>isCondition</code> parameter
-     *             is no longer needed. You should now use the 2 parameter
-     *             constructor. This constructor will be removed in a
-     *             future release.
-     *
-     * @param function the <code>Function</code> to use in evaluating the
-     *                 elements in the apply
-     * @param xprs the contents of the apply which will be the parameters
-     *              to the function, each of which is an
-     *              <code>Expression</code>
-     * @param isCondition as of 2.0, this must always be false
-     *
-     * @throws IllegalArgumentException if the input expressions don't
-     *                                  match the signature of the function or
-     *                                  if <code>isCondition</code> is true
-     */
-    public Apply(Function function, List xprs, boolean isCondition) throws IllegalArgumentException
+    
+    public Apply(Function function, List<ExpressionType> xprs) throws IllegalArgumentException
     {
-        // make sure that no is using this constructor to create a Condition
-        if (isCondition) {
-            throw new IllegalArgumentException("As of version 2.0 an Apply" +
-                                               " may not represent a" +
-                                               " Condition");
-        }
-
-        // check that the given inputs work for the function
-        function.checkInputs(xprs);
-
-        // if everything checks out, then store the inputs
-        this.function = function;
-//        this.xprs = Collections.unmodifiableList(new ArrayList(xprs));
-        this.expressions = Collections.unmodifiableList(new ArrayList(xprs));
+    	this(function, xprs, null);
     }
 
     /**
@@ -203,38 +223,6 @@ public class Apply extends ApplyType implements Evaluatable
     }
 
     /**
-     * Returns an instance of an <code>Apply</code> based on the given DOM
-     * root node. This will actually return a special kind of
-     * <code>Apply</code>, namely an XML ConditionType, which is the root
-     * of the condition logic in a RuleType. A ConditionType is the same
-     * as an ApplyType except that it must use a FunctionId that returns
-     * a boolean value.
-     * 
-     * @deprecated As of 2.0 you should avoid using this method, since it
-     *             does not provide a <code>Condition</code> instance and
-     *             does not handle XACML 2.0 policies correctly. If you need
-     *             a similar method you can use the new version that
-     *             accepts a <code>VariableManager</code>. This will return
-     *             an <code>Apply</code> instance for XACML 1.x policies.
-     *
-     * @param root the DOM root of a ConditionType XML type
-     * @param xpathVersion the XPath version to use in any selectors or XPath
-     *                     functions, or null if this is unspecified (ie, not
-     *                     supplied in the defaults section of the policy)
-     *
-     * @throws ParsingException if this is not a valid ConditionType
-     */
-    public static Apply getConditionInstance(Node root, String xpathVersion)
-        throws ParsingException
-    {
-        return getInstance(root, FunctionFactory.getConditionInstance(),
-                           new PolicyMetaData(
-                                   PolicyMetaData.XACML_1_0_IDENTIFIER,
-                                   xpathVersion),
-                           null);
-    }
-
-    /**
      * Returns an instance of <code>Apply</code> based on the given DOM root.
      * 
      * @param root the DOM root of an ApplyType XML type
@@ -253,32 +241,6 @@ public class Apply extends ApplyType implements Evaluatable
     }
 
     /**
-     * Returns an instance of <code>Apply</code> based on the given DOM root.
-     * 
-     * @deprecated As of 2.0 you should avoid using this method, since it
-     *             does not handle XACML 2.0 policies correctly. If you need
-     *             a similar method you can use the new version that
-     *             accepts a <code>VariableManager</code>. This will return
-     *             an <code>Apply</code> instance for XACML 1.x policies.
-     *
-     * @param root the DOM root of an ApplyType XML type
-     * @param xpathVersion the XPath version to use in any selectors or XPath
-     *                     functions, or null if this is unspecified (ie, not
-     *                     supplied in the defaults section of the policy)
-     *
-     * @throws ParsingException if this is not a valid ApplyType
-     */
-    public static Apply getInstance(Node root, String xpathVersion)
-        throws ParsingException
-    {
-        return getInstance(root, FunctionFactory.getGeneralInstance(),
-                           new PolicyMetaData(
-                                   PolicyMetaData.XACML_1_0_IDENTIFIER,
-                                   xpathVersion),
-                           null);
-    }
-
-    /**
      * This is a helper method that is called by the two getInstance
      * methods. It takes a factory so we know that we're getting the right
      * kind of function.
@@ -290,8 +252,8 @@ public class Apply extends ApplyType implements Evaluatable
     {
     	Function function = null;
 //    	ExpressionType xpr = null;
-		AttributeValue attrValue = null;
-		List xprs = new ArrayList();
+//		AttributeValue attrValue = null;
+		List<ExpressionType> xprs = new ArrayList<>();
 //        Function function = ExpressionTools.getFunction(root, metaData, factory);        
 //        List xprs = new ArrayList();
 //
@@ -325,6 +287,8 @@ public class Apply extends ApplyType implements Evaluatable
 				throw new ParsingException("invalid abstract function", e);
 			}
 		}
+		
+		String description = null;
 
 		// next, get the function, the designator or selector being used, and the attribute
 		// value paired with it
@@ -333,7 +297,9 @@ public class Apply extends ApplyType implements Evaluatable
 			Node node = nodes.item(i);
 			String name = node.getNodeName();
 			ExpressionType xpr = null;
-			if (name.equals("Apply")) {
+			if(name.equals("Description")) {
+				description = node.getNodeValue();
+			} else if (name.equals("Apply")) {
 				xpr = Apply.getInstance(node, metaData, manager);
 			} else if (name.equals("AttributeDesignator")) {
 				xpr = AttributeDesignator.getInstance(node);
@@ -371,7 +337,7 @@ public class Apply extends ApplyType implements Evaluatable
     	
     	
 
-        return new Apply(function, xprs);
+        return new Apply(function, xprs, description);
     }
     
     /**
@@ -383,27 +349,7 @@ public class Apply extends ApplyType implements Evaluatable
      * @throws ParsingException
      */
     public static Apply getInstance(ApplyType applyElt, FunctionFactory funcFactory, VariableManager varManager) throws ParsingException {
-    	final Function function;
-    	final URI funcId;
-    	try {
-			funcId = new URI(applyElt.getFunctionId());
-			function = funcFactory.createFunction(funcId);
-		} catch (URISyntaxException use) {
-			throw new ParsingException("Error parsing Apply", use);
-		} catch (UnknownIdentifierException uie) {
-			throw new ParsingException("Unknown FunctionId", uie);
-		} catch (FunctionTypeException fte) {
-			// try to create an abstract function
-			throw new ParsingException("Unsupported function: " + applyElt.getFunctionId(), fte);
-		}
-    	
-    	final List<ExpressionType> exprHandlers = new ArrayList<>();
-    	for(final JAXBElement<? extends ExpressionType> exprElt: applyElt.getExpressions()) {
-    		final ExpressionType exprHandler = ExpressionTools.getInstance(exprElt.getValue(), funcFactory, varManager);
-    		exprHandlers.add(exprHandler);
-    	}  	
-    	
-    	return new Apply(function, exprHandlers);
+    	return new Apply(applyElt, funcFactory, varManager);
     }
     
     /**
@@ -455,19 +401,6 @@ public class Apply extends ApplyType implements Evaluatable
     }
 
     /**
-     * Returns whether or not this ApplyType is actually a ConditionType. As
-     * of 2.0 this always returns false;
-     *
-     * @deprecated As of 2.0 this method should not be used, since an
-     *             <code>Apply</code> is never a Condition.
-     *
-     * @return false
-     */
-    public boolean isCondition() {
-        return false;
-    }
-
-    /**
      * Evaluates the apply object using the given function. This will in
      * turn call evaluate on all the given parameters, some of which may be
      * other <code>Apply</code> objects.
@@ -478,7 +411,7 @@ public class Apply extends ApplyType implements Evaluatable
      */
     @Override
     public EvaluationResult evaluate(EvaluationCtx context) {
-        return function.evaluate(expressions, context);
+        return function.evaluate(applyParams, context);
     }
 
     /**
@@ -489,7 +422,7 @@ public class Apply extends ApplyType implements Evaluatable
      *
      * @return the type returned by <code>evaluate</code>
      */
-    public URI getType() {
+    public static URI getType() {
 //        return function.getType();
     	return null;
     }
@@ -500,7 +433,7 @@ public class Apply extends ApplyType implements Evaluatable
      *
      * @return true if evaluation will return a bag of values, false otherwise
      */    
-    public boolean returnsBag() {
+    public static boolean returnsBag() {
 //        return function.returnsBag();
     	return false;
     }
@@ -542,8 +475,10 @@ public class Apply extends ApplyType implements Evaluatable
     public void encode(OutputStream output, Indenter indenter) {
     	PrintStream out = new PrintStream(output);
 		try {
-			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
-			u.marshal(this, out);
+	    	Marshaller marshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			marshaller.setSchema(PdpModelHandler.XACML_3_0_SCHEMA);
+			marshaller.marshal(PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createApply(this),out);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Apply",e);
 		}  

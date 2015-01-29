@@ -139,11 +139,11 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 			throw new ParsingException("A Match element need to contained at list one AttributeDesignator " + "or one AttributeSelector");
 		}
 		
-		if (exprType instanceof AttributeDesignatorType)
+		if (exprType instanceof AttributeDesignator)
 		{
 			this.attributeDesignator = (AttributeDesignator) exprType;
 			this.eval = (Evaluatable) exprType;
-		} else if (exprType instanceof AttributeSelectorType)
+		} else if (exprType instanceof AttributeSelector)
 		{
 			this.attributeSelector = (AttributeSelector) exprType;
 			this.eval = (Evaluatable) exprType;
@@ -205,7 +205,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		Function function;
 		// Evaluatable eval = null;
 		ExpressionType eval = null;
-		AttributeValueType attrValue = null;
+		AttributeValue attrValue = null;
 
 		// get the function type, making sure that it's really a correct
 		// Target function
@@ -256,7 +256,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		}
 
 		// finally, check that the inputs are valid for this function
-		List inputs = new ArrayList();
+		List<ExpressionType> inputs = new ArrayList<>();
 		inputs.add(attrValue);
 		inputs.add(eval);
 		function.checkInputsNoBag(inputs);
@@ -404,8 +404,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 			boolean atLeastOneError = false;
 			Status firstIndeterminateStatus = null;
 
-			ArrayList inputs = new ArrayList();
-
+			List<ExpressionType> inputs = new ArrayList<>();
 			inputs.add(this.attributeValue);
 			inputs.add(bag);
 			// do the evaluation
@@ -470,7 +469,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 	/**
 	 * Private helper that evaluates an individual match.
 	 */
-	private MatchResult evaluateMatch(List inputs, EvaluationCtx context)
+	private MatchResult evaluateMatch(List<ExpressionType> inputs, EvaluationCtx context)
 	{
 		// first off, evaluate the function
 		EvaluationResult result = function.evaluate(inputs, context);
