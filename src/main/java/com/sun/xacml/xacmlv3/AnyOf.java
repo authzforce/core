@@ -23,11 +23,8 @@ package com.sun.xacml.xacmlv3;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -36,57 +33,25 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.TargetMatchGroup;
 import com.sun.xacml.TargetSection;
 import com.sun.xacml.ctx.Status;
 
 public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 
 	/**
-	 * Logger used for all classes
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(AnyOf.class);
-	
-	// private static final Logger LOGGER = LoggerFactory
-	// .getLogger(AnyOf.class);
-
-	// the list of match groups
-	private List matchGroups;
-
-	// the match type contained in this group
-	/**
-	 * FIXME: this variable is never used
-	 */
-	private int matchType;
-
-	// the version of XACML used by the containing Target
-	/**
-	 * FIXME: this variable is never used
-	 */
-	private int xacmlVersion;
-
-	public AnyOf() {
-		this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>();
-		this.matchGroups = Collections.unmodifiableList(new ArrayList());
-		this.matchType = -1;
-		this.xacmlVersion = PolicyMetaData.XACML_VERSION_3_0;
-	}
-
-	/**
 	 * Constructor that creates a new <code>AnyOfSelection</code> based on the
 	 * given elements.
 	 * 
-	 * @param allOfSelections
-	 *            a <code>List</code> of <code>AllOfSelection</code> elements
+	 * @param allOfType
+	 *            a <code>List</code> of <code>AllOf</code> elements
 	 */
-	public AnyOf(List<AllOf> allOfType, int xacmlVersion) {
-		if (allOfType == null) {
-			this.allOves = new ArrayList<>();
-		} else {
-			this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>(
-					allOfType);
+	public AnyOf(List<AllOf> allOfType) {
+		if (allOfType == null || allOfType.isEmpty()) {
+			throw new IllegalArgumentException("<AnyOf> empty. Must contain at least one <AllOf>");
 		}
-		this.xacmlVersion = xacmlVersion;
+		
+		this.allOves = new ArrayList<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf>(
+				allOfType);
 	}
 
 	/**
@@ -109,12 +74,7 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 			allOfList.add(AllOf.getInstance(allOfElement, metadata));
 		}
 
-		if (allOfList.isEmpty()) {
-			throw new ParsingException(
-					"AnyOf element must contain at least one AllOf element");
-		}
-
-		return new AnyOf(allOfList, PolicyMetaData.XACML_VERSION_3_0);
+		return new AnyOf(allOfList);
 	}
 
 	/**
@@ -132,7 +92,7 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	 */
 	public static AnyOf getInstance(Node root, PolicyMetaData metaData)
 			throws ParsingException {
-		List<AllOf> allOf = new ArrayList<AllOf>();
+		List<AllOf> allOf = new ArrayList<>();
 		NodeList children = root.getChildNodes();
 
 		for (int i = 0; i < children.getLength(); i++) {
@@ -146,7 +106,7 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 			throw new ParsingException("AnyOf must contain at least one AllOf");
 		}
 
-		return new AnyOf(allOf, PolicyMetaData.XACML_VERSION_3_0);
+		return new AnyOf(allOf);
 	}
 
 	public static List<TargetSection> getTargetSection(Node children,
@@ -176,68 +136,72 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf {
 	 * @return the result of trying to match the {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf} and the request
 	 */
 	public MatchResult match(EvaluationCtx context) {
-		MatchResult result = null;
-		MatchResult resultInd = null;
-		boolean indeterminate = false;
-		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : this.getAllOves()) {
-			AllOf allOf = (AllOf) jaxbAllOf;
-			result = allOf.match(context);
-			if(result.getResult() == MatchResult.MATCH) {
-				return result;
-			} else if(result.getResult() == MatchResult.INDETERMINATE) {
-				indeterminate = true;
-				result = new MatchResult(MatchResult.INDETERMINATE, result.getStatus());
+		/*
+		 * By construction, there must be at least one AllOf
+		 * Let's check it to be sure
+		 */
+		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> allOfList = this.getAllOves();
+		if(allOfList == null || allOfList.isEmpty()) {
+			/*
+			 * TODO: provide a way to identify the <AnyOf>
+			 */
+			final Status status = new Status(Collections.singletonList(Status.STATUS_PROCESSING_ERROR), "Invalid (Policy(Set)|Rule)#?<Target> / AnyOf#?: 0 <AllOf>. Must contain at least one <AllOf>"); 
+			return new MatchResult(MatchResult.INDETERMINATE, status );
+		}
+		
+		MatchResult firstIndeterminate = null;
+		MatchResult lastNoMatch = null;
+		int childIndex = 0;		
+		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : allOfList)
+		{
+			final AllOf allOf = (AllOf) jaxbAllOf;
+			final MatchResult matchResult = allOf.match(context);
+			if (matchResult == null)
+			{
+				// Invalid value for AllOf
+				/*
+				 * TODO: provide a way to identify the <AnyOf>
+				 */
+				final Status status = new Status(Collections.singletonList(Status.STATUS_PROCESSING_ERROR), "Error processing (Policy(Set)/Rule)#?<Target> / AnyOf#? / AllOf#" + childIndex); 
+				return new MatchResult(MatchResult.INDETERMINATE, status );
 			}
-		}
-		// If we got here then none matched
-		if(indeterminate) {
-			result = resultInd;
-		}
-
-		return result;
-	}
-
-	public MatchResult oldMatch(EvaluationCtx context) {
-		// if we apply to anything, then we always match
-		if (matchGroups.isEmpty()) {
-			return new MatchResult(MatchResult.MATCH);
-		}
-
-		// there are specific matching elements, so prepare to iterate
-		// through the list
-		Iterator it = matchGroups.iterator();
-		Status firstIndeterminateStatus = null;
-
-		// in order for this section to match, one of the groups must match
-		while (it.hasNext()) {
-			// get the next group and try matching it
-			TargetMatchGroup group = (TargetMatchGroup) (it.next());
-			MatchResult result = group.match(context);
-
-			// we only need one match, so if this matched, then we're done
-			if (result.getResult() == MatchResult.MATCH) {
-				return result;
+			
+			// matchResult != null at this point
+			final int matchResultId = matchResult.getResult();
+			/*
+			 * Check MATCH value first
+			 * 
+			 * FIXME: MatchResult should be an enum type to make this kind of check simpler
+			 * with switch statements
+			 */
+			if (matchResultId == MatchResult.MATCH)
+			{
+				// At least one MATCH, so return MATCH which is what this matchResult is already
+				return matchResult;
 			}
 
-			// if we didn't match then it was either a NO_MATCH or
-			// INDETERMINATE...in the second case, we need to remember
-			// it happened, 'cause if we don't get a MATCH, then we'll
-			// be returning INDETERMINATE
-			if (result.getResult() == MatchResult.INDETERMINATE) {
-				if (firstIndeterminateStatus == null) {
-					firstIndeterminateStatus = result.getStatus();
-				}
+			if (matchResultId == MatchResult.INDETERMINATE)
+			{
+				firstIndeterminate = matchResult;
+			} else
+			{
+				// it is a NO_MATCH (only other possible case)
+				lastNoMatch = matchResult;
 			}
+			
+			childIndex += 1;
 		}
 
-		// if we got here, then none of the sub-matches passed, so
-		// we have to see if we got any INDETERMINATE cases
-		if (firstIndeterminateStatus == null) {
-			return new MatchResult(MatchResult.NO_MATCH);
-		} else {
-			return new MatchResult(MatchResult.INDETERMINATE,
-					firstIndeterminateStatus);
+		// No MATCH occurred
+		// firstIndeterminate == null iff no Indeterminate occurred
+		if (firstIndeterminate == null)
+		{
+			// No MATCH/Indeterminate, i.e. all NO_MATCH, return NO_MATCH
+			return lastNoMatch;
 		}
+
+		// No MATCH but at least one Indeterminate (firstIndeterminate != null)
+		return firstIndeterminate;
 	}
 
 }

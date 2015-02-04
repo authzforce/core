@@ -36,12 +36,21 @@ package com.sun.xacml.ctx;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.Marshaller;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.xacml.Indenter;
+import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 
 /**
@@ -53,9 +62,10 @@ import com.sun.xacml.Indenter;
  */
 public class ResponseCtx
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ResponseCtx.class);
 
     // The set of Result objects returned by the PDP
-    private Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results = null;
+    private final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results;
 
     /**
      * Constructor that creates a new <code>ResponseCtx</code> with only a
@@ -64,8 +74,7 @@ public class ResponseCtx
      * @param result the single result in the response
      */
     public ResponseCtx(Result result) {
-        results = new HashSet<>();
-        results.add(result);
+        results = Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result>singletonList(result);
     }
     
     /**
@@ -75,8 +84,8 @@ public class ResponseCtx
      *
      * @param results a <code>Set</code> of <code>Result</code> objects
      */
-    public ResponseCtx(Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results) {
-        this.results = Collections.unmodifiableSet(new HashSet(results));
+    public ResponseCtx(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results) {
+        this.results = results;
     }
 
     /**
@@ -84,7 +93,7 @@ public class ResponseCtx
      * 
      * @return a <code>Set</code> of results
      */
-    public Set<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> getResults() {
+    public List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> getResults() {
         return results;
     }
 
@@ -108,31 +117,21 @@ public class ResponseCtx
      * @param indenter an object that creates indentation strings
      */
     public void encode(OutputStream output, Indenter indenter) {
+    	final Response resp = new Response();
+    	for(final oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result: results) {
+        	resp.getResults().add(result);
+    	}
 
-        // Make a PrintStream for a nicer printing interface
-        PrintStream out = new PrintStream(output);
-
-        // Prepare the indentation string
-        String indent = indenter.makeString();
-
-        // Now write the XML...
-
-        out.println(indent + "<Response>");
-
-        // Go through all results
-        Iterator it = results.iterator();
-        indenter.in();
-
-        while (it.hasNext()) {
-            Result result = (Result)(it.next());
-            result.encode(out, indenter);
-        }
-
-        indenter.out();
-
-        // Finish the XML for a response
-        out.println(indent + "</Response>");
-
+    	PrintStream out = new PrintStream(output);
+		try
+		{
+			Marshaller marshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+			marshaller.marshal(resp, out);
+		} catch (Exception e)
+		{
+			LOGGER.error("Error marshalling Response", e);
+		}
     }
     
     /** 

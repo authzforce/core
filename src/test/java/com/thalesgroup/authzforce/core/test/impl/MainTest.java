@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.pdp.core.test.impl;
+package com.thalesgroup.authzforce.core.test.impl;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -64,7 +64,7 @@ import com.sun.xacml.xacmlv3.function.TestStringFunction;
 		TestMatchFunction.class, TestStringFunction.class,
 		/* TestDateMathFunction.class, */ ConformanceV3.class, BasicV3_1.class,
 		BasicV3_2.class, BasicV3_3.class, BasicV3_4.class, BasicV3_5.class,
-		BasicFunctionV3.class/*, BasicMultipleRequestV3.class */ })
+		BasicFunctionV3.class, NonRegression.class /*, BasicMultipleRequestV3.class */ })
 public class MainTest {
 	/**
 	 * the logger we'll use for all messages

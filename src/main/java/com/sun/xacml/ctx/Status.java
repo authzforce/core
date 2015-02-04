@@ -57,6 +57,9 @@ import com.sun.xacml.ParsingException;
  */
 public class Status extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Status
 {
+	/*
+	 * TODO: make enum constants out of these
+	 */
 
     /**
      * Standard identifier for the OK status

@@ -48,7 +48,7 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.X500NameAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.MatchFunction;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 public class TestMatchFunction {
 	

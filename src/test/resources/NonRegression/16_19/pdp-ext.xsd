@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://thalesgroup.com/authzforce/model/3.0"
+	xmlns:tns="http://thalesgroup.com/authzforce/model/3.0" elementFormDefault="qualified"
+	attributeFormDefault="unqualified">
+	<xs:annotation>
+		<xs:documentation xml:lang="en">
+			Thales Authorization Service extensions to Data Model
+			for RESTful Authorization API. To be customized for your own instance of the Authzforce webapp,
+			with the extensions that you want to enable such as PDP attribute finders, policy finders, etc.
+			The value
+			of 'schemaLocation' attribute without the '.xsd' extension must
+			match the name of a valid fully
+			qualified Java class available on the classpath.
+			This schema is used to import schemas of all extensions that may be configured via the API.
+		</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test" schemaLocation="com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder.xsd" />
+</xs:schema>

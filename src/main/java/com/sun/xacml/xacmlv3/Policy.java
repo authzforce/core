@@ -355,6 +355,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		}
 		// evaluate
 		result = this.ruleCombiningAlg.combine(context, combParams, rules);
+		
 		try
 		{
 			if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())

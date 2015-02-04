@@ -37,7 +37,7 @@ import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 /**
  * An abstract class to easily test a function evaluation, according to a given function name, a

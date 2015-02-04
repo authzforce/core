@@ -29,4 +29,26 @@
       <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">bar2</AttributeValue>
     </Attribute>
   </Attributes>
+   <MultiRequests>
+        <RequestReference>
+            <AttributesReference ReferenceId="subjectBob"/>
+            <AttributesReference ReferenceId="resource1"/>
+            <AttributesReference ReferenceId="action1"/>
+        </RequestReference>
+        <RequestReference>
+            <AttributesReference ReferenceId="subjectAlice"/>
+            <AttributesReference ReferenceId="resource2"/>
+            <AttributesReference ReferenceId="action2"/>
+        </RequestReference>
+        <RequestReference>
+            <AttributesReference ReferenceId="subjectBob"/>
+            <AttributesReference ReferenceId="resource1"/>
+            <AttributesReference ReferenceId="action2"/>
+        </RequestReference>
+        <RequestReference>
+            <AttributesReference ReferenceId="subjectBob"/>
+            <AttributesReference ReferenceId="resource2"/>
+            <AttributesReference ReferenceId="action1"/>
+        </RequestReference>
+   </MultiRequests>         
 </Request>

@@ -55,6 +55,8 @@ import com.thalesgroup.appsec.util.Utils;
 import com.thalesgroup.authzforce.pdp.model._2014._12.AttributeSelectorXPathFinder;
 import com.thalesgroup.authzforce.pdp.model._2014._12.CurrentDateTimeFinder;
 import com.thalesgroup.authzforce.pdp.model._2014._12.Pdps;
+import com.thalesgroup.authzforce.pdp.model._2014._12.StaticPolicyFinder;
+import com.thalesgroup.authzforce.pdp.model._2014._12.StaticRefPolicyFinder;
 
 /**
  * PDP Engine XML configuration handler
@@ -135,7 +137,7 @@ public class PdpModelHandler
 	 * JAXB types of default extensions already provided by authzforce-core and defined in PDP core
 	 * XSD.
 	 */
-	private final static Class<?>[] DEFAULT_EXTENSION_JAXB_TYPES = { CurrentDateTimeFinder.class, AttributeSelectorXPathFinder.class };
+	private final static Class<?>[] DEFAULT_EXTENSION_JAXB_TYPES = { StaticPolicyFinder.class, StaticRefPolicyFinder.class, CurrentDateTimeFinder.class, AttributeSelectorXPathFinder.class };
 
 	private Schema confSchema;
 	private final Class<?>[] extJaxbBoundClasses;

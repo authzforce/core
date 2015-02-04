@@ -476,8 +476,7 @@ public class Apply extends ApplyType implements Evaluatable
     	PrintStream out = new PrintStream(output);
 		try {
 	    	Marshaller marshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			marshaller.setSchema(PdpModelHandler.XACML_3_0_SCHEMA);
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 			marshaller.marshal(PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createApply(this),out);
 		} catch (Exception e) {
 			LOGGER.error("Error marshalling Apply",e);

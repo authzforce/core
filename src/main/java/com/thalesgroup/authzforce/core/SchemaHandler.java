@@ -39,8 +39,6 @@ import org.apache.cxf.common.xmlschema.LSInputImpl;
 import org.apache.ws.commons.schema.constants.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
@@ -92,7 +90,8 @@ public class SchemaHandler
 	}
 
 	/**
-	 * @return
+	 * Get schema used by this handler
+	 * @return XML schema
 	 */
 	public Schema getSchema()
 	{

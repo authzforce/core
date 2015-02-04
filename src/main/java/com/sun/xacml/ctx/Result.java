@@ -95,9 +95,6 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 	 */
 	public static final String[] DECISIONS = { "Permit", "Deny", "Indeterminate", "NotApplicable" };
 
-	/**
-	 * Logger used for all classes
-	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Result.class);
 
 	/**

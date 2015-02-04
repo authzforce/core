@@ -48,6 +48,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 
 import org.slf4j.Logger;
@@ -297,7 +298,6 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		 */
 		adviceExpressions = null;
 		_children = root.getChildNodes();
-//		List myPolicies = new ArrayList<>();
 
 		for (int i = 0; i < _children.getLength(); i++)
 		{
@@ -421,7 +421,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		{
 			return URI.create(policySetId);
 		}
-		
+
 		return null;
 	}
 
@@ -519,7 +519,8 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 	 * 
 	 * @return the result of evaluation
 	 * 
-	 * FIXME: the match logic should be done by evaluate, doing two different function calls (match + evaluate) every time is useless
+	 *         FIXME: the match logic should be done by evaluate, doing two different function calls
+	 *         (match + evaluate) every time is useless
 	 */
 	@Override
 	public Result evaluate(EvaluationCtx context)
@@ -545,79 +546,71 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		// evaluate
 		result = this.combiningAlg.combine(context, combParams, policies);
 
-		try
+		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
 		{
-			if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
+			// now, see if we should add any obligations to the set
+			DecisionType decision = result.getDecision();
+
+			if ((decision == DecisionType.INDETERMINATE) || (decision == DecisionType.NOT_APPLICABLE))
 			{
-				// now, see if we should add any obligations to the set
-				int effect = result.getDecision().ordinal();
-
-				if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal()))
-				{
-					// we didn't permit/deny, so we never return obligations
-					return result;
-				}
-
-				for (ObligationExpression myObligation : obligationExpressions.getObligationExpressions())
-				{
-					if (myObligation.getFulfillOn().ordinal() == effect)
-					{
-						result.addObligation(myObligation, context);
-					}
-				}
-			}
-			/* If we have advice, it's definitely a 3.0 policy */
-			if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
-			{
-				int effect = result.getDecision().ordinal();
-
-				if ((effect == DecisionType.INDETERMINATE.ordinal()) || (effect == DecisionType.NOT_APPLICABLE.ordinal()))
-				{
-					// we didn't permit/deny, so we never return advices
-					return result;
-				}
-
-				final AssociatedAdvice returnAssociatedAdvice = result.getAssociatedAdvice();
-				final AssociatedAdvice newAssociatedAdvice;
-				if (returnAssociatedAdvice == null)
-				{
-					newAssociatedAdvice = new AssociatedAdvice();
-					result.setAssociatedAdvice(newAssociatedAdvice);
-				} else
-				{
-					newAssociatedAdvice = returnAssociatedAdvice;
-				}
-
-				for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions())
-				{
-					if (adviceExpr.getAppliesTo().ordinal() == effect)
-					{
-						Advice advice = new Advice();
-						advice.setAdviceId(adviceExpr.getAdviceId());
-						for (AttributeAssignmentExpression attrExpr : adviceExpr.getAttributeAssignmentExpressions())
-						{
-							AttributeAssignment myAttrAssType = new AttributeAssignment();
-							myAttrAssType.setAttributeId(attrExpr.getAttributeId());
-							myAttrAssType.setCategory(attrExpr.getCategory());
-							myAttrAssType.getContent().add(attrExpr.getExpression());
-							myAttrAssType.setIssuer(attrExpr.getIssuer());
-							advice.getAttributeAssignments().add(myAttrAssType);
-						}
-
-						newAssociatedAdvice.getAdvices().add(advice);
-					}
-				}
-			}
-			if (context.getIncludeInResults().size() > 0)
-			{
-				result.getAttributes().addAll(context.getIncludeInResults());
+				// we didn't permit/deny, so we never return obligations
+				return result;
 			}
 
-			return result;
-		} finally
-		{
-			LOGGER.debug("{} returned: {}", this, result);
+			for (ObligationExpression myObligation : obligationExpressions.getObligationExpressions())
+			{
+				final DecisionType obligEffect = myObligation.getFulfillOn() == EffectType.PERMIT? DecisionType.PERMIT: DecisionType.DENY;
+				if (obligEffect == decision)
+				{
+					result.addObligation(myObligation, context);
+				}
+			}
 		}
+		/* If we have advice, it's definitely a 3.0 policy */
+		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
+		{
+			DecisionType decision = result.getDecision();
+
+			if ((decision == DecisionType.INDETERMINATE) || (decision == DecisionType.NOT_APPLICABLE))
+			{
+				// we didn't permit/deny, so we never return advices
+				return result;
+			}
+
+			final AssociatedAdvice returnAssociatedAdvice = result.getAssociatedAdvice();
+			final AssociatedAdvice newAssociatedAdvice;
+			if (returnAssociatedAdvice == null)
+			{
+				newAssociatedAdvice = new AssociatedAdvice();
+				result.setAssociatedAdvice(newAssociatedAdvice);
+			} else
+			{
+				newAssociatedAdvice = returnAssociatedAdvice;
+			}
+
+			for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions())
+			{
+				final DecisionType adviceAppliesTo = adviceExpr.getAppliesTo() == EffectType.PERMIT? DecisionType.PERMIT: DecisionType.DENY;
+				if (adviceAppliesTo == decision)
+				{
+					Advice advice = new Advice();
+					advice.setAdviceId(adviceExpr.getAdviceId());
+					for (AttributeAssignmentExpression attrExpr : adviceExpr.getAttributeAssignmentExpressions())
+					{
+						AttributeAssignment myAttrAssType = new AttributeAssignment();
+						myAttrAssType.setAttributeId(attrExpr.getAttributeId());
+						myAttrAssType.setCategory(attrExpr.getCategory());
+						myAttrAssType.getContent().add(attrExpr.getExpression());
+						myAttrAssType.setIssuer(attrExpr.getIssuer());
+						advice.getAttributeAssignments().add(myAttrAssType);
+					}
+
+					newAssociatedAdvice.getAdvices().add(advice);
+				}
+			}
+		}
+
+		return result;
 	}
 
 	@Override

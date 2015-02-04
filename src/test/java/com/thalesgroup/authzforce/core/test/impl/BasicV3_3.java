@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.pdp.core.test.impl;
+package com.thalesgroup.authzforce.core.test.impl;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ctx.ResponseCtx;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 /**
  * This XACML 3.0 basic policy test. This would test a basic policy, basic

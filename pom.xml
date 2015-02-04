@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
@@ -14,12 +15,12 @@
 	<description>XACML-compliant Authorization PDP Engine Core</description>
 	<inceptionYear>2011</inceptionYear>
 	<scm>
-		<!-- Used by Jenkins - Maven prepare-release -->
+		<!-- Used by Jenkins - Maven release plugin -->
 		<connection>scm:git:https://gitlab.dev.theresis.org/authzforce/core.git</connection>
 		<developerConnection>scm:git:https://gitlab.dev.theresis.org/authzforce/core.git</developerConnection>
 		<tag>HEAD</tag>
-		
-		<!--  Publicly browsable repository URL. For example, via Gitlab web UI. -->
+
+		<!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
 		<url>https://gitlab.dev.theresis.org/authzforce/core</url>
 	</scm>
 	<properties>
@@ -211,6 +212,63 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<configuration>
+					<!-- debug=true will generate JAXBDebug class. More info: https://github.com/highsource/maven-jaxb2-plugin/wiki/Miscellaneous -->
+					<debug>false</debug>
+					<verbose>true</verbose>
+					<extension>true</extension>
+					<strict>false</strict>
+					<!-- Episodes: Only episodes for schemas referenced (imported/included) by schema(s) in schemaDirectory 
+						can be listed here. If not possible, just create an empty schema in schemaDirectory which imports all 
+						the episode elements but does nothing with them. -->
+					<!-- <episodes> -->
+					<!-- </episodes> -->
+					<plugins>
+						<plugin>
+							<groupId>com.thalesgroup.ktd.scis</groupId>
+							<artifactId>oasis-xacml-model</artifactId>
+						</plugin>
+						<plugin>
+							<groupId>com.thalesgroup.authzforce</groupId>
+							<artifactId>authzforce-core-model</artifactId>
+						</plugin>
+					</plugins>
+					<useDependenciesAsEpisodes>true</useDependenciesAsEpisodes>
+					<bindingDirectory>src/main/resources</bindingDirectory>
+					<catalog>src/main/resources/catalog.xml</catalog>
+					<catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
+					<removeOldOutput>true</removeOldOutput>
+				</configuration>
+				<executions>
+					<execution>
+						<id>jaxb-generate-compile-sources</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaDirectory>src/main/resources</schemaDirectory>
+							<generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
+							<addCompileSourceRoot>true</addCompileSourceRoot>
+							<addTestCompileSourceRoot>false</addTestCompileSourceRoot>
+						</configuration>
+					</execution>
+					<execution>
+						<id>jaxb-generate-test-sources</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaDirectory>src/test/resources</schemaDirectory>
+							<generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+							<addCompileSourceRoot>false</addCompileSourceRoot>
+							<addTestCompileSourceRoot>true</addTestCompileSourceRoot>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
 				<version>1.5</version>
@@ -297,63 +355,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<debug>true</debug>
-					<verbose>true</verbose>
-					<extension>true</extension>
-					<args>
-						<arg>-Xannotate</arg>
-						<args>-Xequals</args>
-						<args>-XhashCode</args>
-					</args>
-					<!-- Episodes: Only episodes for schemas referenced (imported/included) by schema(s) in schemaDirectory 
-						can be listed here. If not possible, just create an empty schema in schemaDirectory which imports all 
-						the episode elements but does nothing with them. -->
-					<episodes>
-						<episode>
-							<groupId>com.thalesgroup.ktd.scis</groupId>
-							<artifactId>oasis-xacml-model</artifactId>
-						</episode>
-						<episode>
-							<groupId>com.thalesgroup.authzforce</groupId>
-							<artifactId>authzforce-core-model</artifactId>
-						</episode>
-					</episodes>
-					<plugins>
-						<plugin>
-							<groupId>org.jvnet.jaxb2_commons</groupId>
-							<artifactId>jaxb2-basics-annotate</artifactId>
-							<version>0.6.4</version>
-						</plugin>
-						<plugin>
-							<groupId>org.jvnet.jaxb2_commons</groupId>
-							<artifactId>jaxb2-basics</artifactId>
-							<version>0.6.4</version>
-						</plugin>
-						<plugin>
-							<groupId>com.thalesgroup.ktd.scis</groupId>
-							<artifactId>oasis-xacml-model</artifactId>
-						</plugin>
-						<plugin>
-							<groupId>com.thalesgroup.authzforce</groupId>
-							<artifactId>authzforce-core-model</artifactId>
-						</plugin>
-					</plugins>
-					<catalog>src/main/resources/catalog.xml</catalog>
-					<catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
-					<schemaDirectory>src/main/resources</schemaDirectory>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -44,7 +44,7 @@ import com.sun.xacml.attr.DayTimeDurationAttribute;
 import com.sun.xacml.attr.YearMonthDurationAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.DateMathFunction;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 public class TestDateMathFunction {
 

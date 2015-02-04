@@ -62,7 +62,7 @@ public final class AuditLogs {
 	protected static ConcurrentHashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog> audits;
 
 	private AuditLogs() {
-		audits = new ConcurrentHashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog>();
+		audits = new ConcurrentHashMap<>();
 	}
 
 	public synchronized static AuditLogs getInstance() {
@@ -90,7 +90,7 @@ public final class AuditLogs {
 	public synchronized static void addAudit(
 			com.thalesgroup.authzforce.audit.schema.pdp.AuditLog audit) {
 		if (audits == null) {
-			audits = new ConcurrentHashMap<String, com.thalesgroup.authzforce.audit.schema.pdp.AuditLog>();
+			audits = new ConcurrentHashMap<>();
 		}
 		try {
 			MessageDigest digest = MessageDigest.getInstance(HASH_ALG);

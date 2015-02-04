@@ -16,13 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.pdp.core.test.impl;
+package com.thalesgroup.authzforce.core.test.impl;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,21 +32,16 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ctx.ResponseCtx;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 /**
- * This XACML 3.0 basic policy test. This would test a basic policy, basic
- * policy with obligations and basic policy with advices.
+ * This would test multiple decision profile that is introduced with XACML 3.0.
  */
-@RunWith(value = Parameterized.class)
-public class BasicV3_1 {
+public class BasicMultipleRequestV3 {
 
 	/**
 	 * directory name that states the test type
@@ -64,74 +57,68 @@ public class BasicV3_1 {
 	 * the logger we'll use for all messages
 	 */
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(BasicV3_1.class);
+			.getLogger(BasicMultipleRequestV3.class);
+
 	/**
 	 * The map of results
 	 */
-	private static Map<String, String> results = new TreeMap<String, String>();
-	
-	int numTest;
-	
-	public BasicV3_1(int numTest) {
-		this.numTest = numTest;
-	}
+	private static Map<String, String> results = new TreeMap<>();
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-		LOGGER.info("Launching Basic tests v1");
+		LOGGER.info("Launching multi requests tests");
 	}
 
 	@AfterClass
 	public static void tearDown() throws Exception {
 		showResults();
 	}
-	
-	@Parameters
-	public static Collection<Object[]> data() {
-		Object[][] data = new Object[][] { { 1 }, { 2 }, { 3 }, { 4 }, { 5 }, { 6 }, { 7 } };
-		   return Arrays.asList(data);
-	}
 
 	@Test
 	public void testBasicTest0001() throws Exception {
 
 		String reqResNo;
-		Set<String> policies = new HashSet<String>();
-		policies.add("TestPolicy_0001.xml");
-		LOGGER.debug("Basic Test V3 v1 "+numTest+" is started");
+		Set<String> policies = new HashSet<>();
+		policies.add("TestPolicy_0014.xml");
+		// PDP pdp = getPDPNewInstance(policies);
+		LOGGER.info("Basic Test 0014 is started");
 		ResponseCtx response = null;
 		Response expectedResponse = null;
 		Request request = null;
 
-			if (numTest < 10) {
-				reqResNo = "0" + numTest;
+		// FIXME: fix test 2, i.e. with MultiRequests (only test1, i.e. without MultiRequests succeeds so far)
+		for (int i = 1; i < 3; i++) {
+			if (i < 10) {
+				reqResNo = "0" + i;
 			} else {
-				reqResNo = Integer.toString(numTest);
+				reqResNo = Integer.toString(i);
 			}
 
 			request = TestUtils.createRequest(ROOT_DIRECTORY,
-					VERSION_DIRECTORY, "request_0001_" + reqResNo + ".xml");
+					VERSION_DIRECTORY, "request_0014_" + reqResNo + ".xml");
 			if (request != null) {
 				LOGGER.debug("Request that is sent to the PDP :  "
 						+ TestUtils.printRequest(request));
 				response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policies).evaluate(request);
 				if (response != null) {
-					LOGGER.debug("Response that is received from the PDP :  "
+					LOGGER.info("Response that is received from the PDP :  "
 							+ response.getEncoded());
 					expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY,
-							VERSION_DIRECTORY, "response_0001_" + reqResNo
+							VERSION_DIRECTORY, "response_0014_" + reqResNo
 									+ ".xml");
+					LOGGER.info("Response expected:  "
+							+ TestUtils.printResponse(expectedResponse));
 					if (expectedResponse != null) {
 						boolean assertion = TestUtils.match(response,
 								expectedResponse);
 						if (assertion) {
 							LOGGER.debug("Assertion SUCCESS for: IIIA"
-									+ "response_0001_" + reqResNo);
-							results.put("response_0001_" + reqResNo, "SUCCESS");
+									+ "response_0014_" + reqResNo);
+							results.put("response_0014_" + reqResNo, "SUCCESS");
 						} else {
-							LOGGER.error("Assertion FAILED for: TestPolicy_0001.xml and response_0001_"
+							LOGGER.error("Assertion FAILED for: TestPolicy_0014.xml and response_0014_"
 									+ reqResNo);
-							results.put("response_0001_" + reqResNo, "FAILED");
+							results.put("response_0014_" + reqResNo, "FAILED");
 						}
 						assertTrue(assertion);
 					} else {
@@ -143,13 +130,13 @@ public class BasicV3_1 {
 			} else {
 				assertTrue("Request read from file is Null", false);
 			}
-
-			LOGGER.debug("Basic Test V3 v1 "+numTest+" is finished");
+			LOGGER.info("Basic Test 0014 is finished");
+		}
 	}
 
 	private static void showResults() throws Exception {
 		for (String key : results.keySet()) {
-			LOGGER.debug(key + ":" + results.get(key));
+			LOGGER.info(key + ":" + results.get(key));
 		}
 	}
 }

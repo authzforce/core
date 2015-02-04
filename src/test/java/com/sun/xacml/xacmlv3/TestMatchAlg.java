@@ -40,8 +40,8 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-import com.thalesgroup.authzforce.pdp.core.test.impl.MainTest;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
+import com.thalesgroup.authzforce.core.test.impl.MainTest;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 public class TestMatchAlg {
 	

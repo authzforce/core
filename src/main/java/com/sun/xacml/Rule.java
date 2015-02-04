@@ -91,7 +91,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	// private TargetType target = null;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Rule.class);
-	
+
 	private final URI uri;
 
 	/**
@@ -392,135 +392,143 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 		// Do the list of Attribute who needs to be included in result
 		List<Attributes> includeInResult = context.getIncludeInResults();
 		MatchResult match = null;
-		Result returnResult = null;
-		try
+		final Result returnResult;
+		// If the Target is null then it's supposed to inherit from the
+		// parent policy, so we skip the matching step assuming we wouldn't
+		// be here unless the parent matched
+		if (target == null)
 		{
-			// If the Target is null then it's supposed to inherit from the
-			// parent policy, so we skip the matching step assuming we wouldn't
-			// be here unless the parent matched
-			if (target != null)
+			returnResult = evaluateCondition(context, includeInResult);
+		} else
+		{
+			match = ((Target) target).match(context);
+			LOGGER.debug("{}<Target> = {}", this, match);
+			if (match == null)
 			{
-				match = ((Target) target).match(context);
-				LOGGER.debug("{} - {}", this, match);
-				int result = match.getResult();
+				// Invalid match value
+				final Status status = new Status(Collections.singletonList(Status.STATUS_PROCESSING_ERROR), "Error processing Rule#" + this.getId()
+						+ "<Target>");
+				return new Result(DecisionType.INDETERMINATE, status, null, includeInResult);
 
-				// if the target didn't match, then this Rule doesn't apply
-				if (result == MatchResult.NO_MATCH)
-				{
-					returnResult = new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
-					return returnResult;
-				}
-				// if the target was indeterminate, we can't go on
-				if (result == MatchResult.INDETERMINATE)
-				{
-					returnResult = new Result(DecisionType.INDETERMINATE, match.getStatus(), null, includeInResult);
-					return returnResult;
-				}
 			}
 
-			// if there's no condition, then we just return the effect...
-			if (condition == null)
+			// match != null at this point
+			int result = match.getResult();
+
+			// if the target didn't match, then this Rule doesn't apply
+			if (result == MatchResult.NO_MATCH)
 			{
-				LOGGER.info("Rule doesn't contain condition, so result is '{}' for rule '{}'", this.effect.value(), this.ruleId);
-				returnResult = new Result(DecisionType.fromValue(this.effect.value()), null, null, includeInResult);
+				return new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
+			}
+			// if the target was indeterminate, we can't go on
+			if (result == MatchResult.INDETERMINATE)
+			{
+				return new Result(DecisionType.INDETERMINATE, match.getStatus(), null, includeInResult);
+
+			}
+
+			returnResult = evaluateCondition(context, includeInResult);
+		}
+
+		// Adding Obligations and Advice to the result
+		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
+		{
+			// now, see if we should add any obligations to the set
+			final DecisionType returnEffect = returnResult.getDecision();
+
+			if ((returnEffect == DecisionType.INDETERMINATE) || (returnEffect == DecisionType.NOT_APPLICABLE))
+			{
+				// we didn't permit/deny, so we never return
+				// obligations
+				return returnResult;
+			}
+
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression myObligation : obligationExpressions.getObligationExpressions())
+			{
+				// FIXME: we should stick with enum constants
+				if (myObligation.getFulfillOn().ordinal() == returnEffect.ordinal())
+				{
+					returnResult.addObligation(myObligation, context);
+				}
+			}
+		}
+		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
+		{
+			final DecisionType returnEffect = returnResult.getDecision();
+
+			if ((returnEffect == DecisionType.INDETERMINATE) || (returnEffect == DecisionType.NOT_APPLICABLE))
+			{
+				// we didn't permit/deny, so we never return advices
+				return returnResult;
+			}
+
+			final AssociatedAdvice returnAssociatedAdvice = returnResult.getAssociatedAdvice();
+			final AssociatedAdvice newAssociatedAdvice;
+			if (returnAssociatedAdvice == null)
+			{
+				newAssociatedAdvice = new AssociatedAdvice();
+				returnResult.setAssociatedAdvice(newAssociatedAdvice);
 			} else
 			{
-				// ...otherwise we evaluate the condition
-				EvaluationResult result = ((Condition) condition).evaluate(context);
-
-				if (result.indeterminate())
-				{
-					// if it was INDETERMINATE, then that's what we return
-					returnResult = new Result(DecisionType.INDETERMINATE, result.getStatus(), null, includeInResult);
-					return returnResult;
-				}
-
-				// otherwise we return the effect on tue, and NA on false
-				BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
-
-				if (bool.getValue())
-				{
-					returnResult = new Result(DecisionType.valueOf(effect.name()), null, null, includeInResult);
-
-				} else
-				{
-					returnResult = new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
-					return returnResult;
-				}
+				newAssociatedAdvice = returnAssociatedAdvice;
 			}
 
-			// Adding Obligations and Advice to the result
-			if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
+			for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions())
 			{
-				// now, see if we should add any obligations to the set
-				int returnEffect = returnResult.getDecision().ordinal();
-
-				if ((returnEffect == DecisionType.INDETERMINATE.ordinal()) || (returnEffect == DecisionType.NOT_APPLICABLE.ordinal()))
+				// FIXME: we should stick with enum constants
+				if (adviceExpr.getAppliesTo().ordinal() == returnEffect.ordinal())
 				{
-					// we didn't permit/deny, so we never return
-					// obligations
-					return returnResult;
-				}
-
-				for (oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression myObligation : obligationExpressions.getObligationExpressions())
-				{
-					if (myObligation.getFulfillOn().ordinal() == returnEffect)
+					Advice advice = new Advice();
+					advice.setAdviceId(adviceExpr.getAdviceId());
+					for (AttributeAssignmentExpression attrExpr : adviceExpr.getAttributeAssignmentExpressions())
 					{
-						returnResult.addObligation(myObligation, context);
-					}
-				}
-			}
-			if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
-			{
-				int returnEffect = returnResult.getDecision().ordinal();
-
-				if ((returnEffect == DecisionType.INDETERMINATE.ordinal()) || (returnEffect == DecisionType.NOT_APPLICABLE.ordinal()))
-				{
-					// we didn't permit/deny, so we never return advices
-					return returnResult;
-				}
-
-				final AssociatedAdvice returnAssociatedAdvice = returnResult.getAssociatedAdvice();
-				final AssociatedAdvice newAssociatedAdvice;
-				if (returnAssociatedAdvice == null)
-				{
-					newAssociatedAdvice = new AssociatedAdvice();
-					returnResult.setAssociatedAdvice(newAssociatedAdvice);
-				} else
-				{
-					newAssociatedAdvice = returnAssociatedAdvice;
-				}
-
-				for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions())
-				{
-					if (adviceExpr.getAppliesTo().ordinal() == returnEffect)
-					{
-						Advice advice = new Advice();
-						advice.setAdviceId(adviceExpr.getAdviceId());
-						for (AttributeAssignmentExpression attrExpr : adviceExpr.getAttributeAssignmentExpressions())
+						AttributeAssignment myAttrAssType = new AttributeAssignment();
+						myAttrAssType.setAttributeId(attrExpr.getAttributeId());
+						myAttrAssType.setCategory(attrExpr.getCategory());
+						myAttrAssType.setIssuer(attrExpr.getIssuer());
+						if ((attrExpr.getExpression().getDeclaredType() == AttributeValueType.class))
 						{
-							AttributeAssignment myAttrAssType = new AttributeAssignment();
-							myAttrAssType.setAttributeId(attrExpr.getAttributeId());
-							myAttrAssType.setCategory(attrExpr.getCategory());
-							myAttrAssType.setIssuer(attrExpr.getIssuer());
-							if ((attrExpr.getExpression().getDeclaredType() == AttributeValueType.class))
-							{
-								myAttrAssType.setDataType(((AttributeValueType) attrExpr.getExpression().getValue()).getDataType());
-								myAttrAssType.getContent().addAll(((AttributeValueType) attrExpr.getExpression().getValue()).getContent());
-							}
-							advice.getAttributeAssignments().add(myAttrAssType);
+							myAttrAssType.setDataType(((AttributeValueType) attrExpr.getExpression().getValue()).getDataType());
+							myAttrAssType.getContent().addAll(((AttributeValueType) attrExpr.getExpression().getValue()).getContent());
 						}
-
-						newAssociatedAdvice.getAdvices().add(advice);
+						advice.getAttributeAssignments().add(myAttrAssType);
 					}
+
+					newAssociatedAdvice.getAdvices().add(advice);
 				}
 			}
-
-			return returnResult;
-		} finally
-		{
-			LOGGER.debug("{} returned: {}", this, returnResult);
 		}
+
+		return returnResult;
+	}
+
+	private Result evaluateCondition(EvaluationCtx context, List<Attributes> includeInResult)
+	{
+		// if there's no condition, then we just return the effect...
+		if (condition == null)
+		{
+			LOGGER.info("Rule doesn't contain condition, so result is '{}' for rule '{}'", this.effect.value(), this.ruleId);
+			return new Result(DecisionType.fromValue(this.effect.value()), null, null, includeInResult);
+		}
+
+		// ...otherwise we evaluate the condition
+		EvaluationResult result = ((Condition) condition).evaluate(context);
+
+		if (result.indeterminate())
+		{
+			// if it was INDETERMINATE, then that's what we return
+			return new Result(DecisionType.INDETERMINATE, result.getStatus(), null, includeInResult);
+		}
+
+		// otherwise we return the effect on tue, and NA on false
+		BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
+
+		if (!bool.getValue())
+		{
+			return new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
+		}
+
+		return new Result(DecisionType.valueOf(effect.name()), null, null, includeInResult);
 	}
 
 	/**
@@ -560,7 +568,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	@Override
 	public String toString()
 	{
-		return this.getClass().getSimpleName() + " id: \"" + this.ruleId + "\"";
+		return this.getClass().getSimpleName()+"#"+this.ruleId;
 	}
 
 	@Override

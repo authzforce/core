@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.pdp.core.test.impl;
+package com.thalesgroup.authzforce.core.test.impl;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -41,14 +41,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ctx.ResponseCtx;
-import com.thalesgroup.authzforce.pdp.core.test.utils.TestUtils;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 /**
  * This XACML 3.0 basic policy test. This would test a basic policy, basic
  * policy with obligations and basic policy with advices.
  */
 @RunWith(value = Parameterized.class)
-public class BasicV3_2 {
+public class BasicV3_5 {
 
 	/**
 	 * directory name that states the test type
@@ -64,21 +64,21 @@ public class BasicV3_2 {
 	 * the logger we'll use for all messages
 	 */
 	private static final Logger LOGGER = LoggerFactory
-			.getLogger(BasicV3_2.class);
+			.getLogger(BasicV3_5.class);
 	/**
 	 * The map of results
 	 */
 	private static Map<String, String> results = new TreeMap<String, String>();
 
-	int numTest;
+	private int numTest;
 
-	public BasicV3_2(int numTest) {
+	public BasicV3_5(int numTest) {
 		this.numTest = numTest;
 	}
 
 	@BeforeClass
 	public static void setUp() throws Exception {
-		LOGGER.info("Launching Basic tests v2");
+		LOGGER.info("Launching Basic tests");
 	}
 
 	@AfterClass
@@ -93,12 +93,12 @@ public class BasicV3_2 {
 	}
 
 	@Test
-	public void testBasicTest0002() throws Exception {
+	public void testBasicTest0005() throws Exception {
 
 		String reqResNo;
 		Set<String> policies = new HashSet<String>();
-		policies.add("TestPolicy_0002.xml");
-		LOGGER.debug("Basic Test V3 v2 "+numTest+" is started");
+		policies.add("TestPolicy_0005.xml");
+		LOGGER.debug("Basic Test V3 v5 "+numTest+" is started");
 		ResponseCtx response = null;
 		Response expectedResponse = null;
 		Request request = null;
@@ -110,7 +110,7 @@ public class BasicV3_2 {
 		}
 
 		request = TestUtils.createRequest(ROOT_DIRECTORY, VERSION_DIRECTORY,
-				"request_0002_" + reqResNo + ".xml");
+				"request_0005_" + reqResNo + ".xml");
 		if (request != null) {
 			LOGGER.debug("Request that is sent to the PDP :  "
 					+ TestUtils.printRequest(request));
@@ -120,18 +120,18 @@ public class BasicV3_2 {
 						+ response.getEncoded());
 				expectedResponse = TestUtils
 						.createResponse(ROOT_DIRECTORY, VERSION_DIRECTORY,
-								"response_0002_" + reqResNo + ".xml");
+								"response_0005_" + reqResNo + ".xml");
 				if (expectedResponse != null) {
 					boolean assertion = TestUtils.match(response,
 							expectedResponse);
 					if (assertion) {
-						LOGGER.debug("Assertion SUCCESS for: TestPolicy_0002.xml and response_0002_"
-								+ reqResNo);
-						results.put("response_0002_" + reqResNo, "SUCCESS");
+						LOGGER.debug("Assertion SUCCESS for: IIIA"
+								+ "response_0005_" + reqResNo);
+						results.put("response_0005_" + reqResNo, "SUCCESS");
 					} else {
-						LOGGER.error("Assertion FAILED for: TestPolicy_0002 and response_0002_"
+						LOGGER.error("Assertion FAILED for: TestPolicy_0005 and response_0005_"
 								+ reqResNo);
-						results.put("response_0002_" + reqResNo, "FAILED");
+						results.put("response_0005_" + reqResNo, "FAILED");
 					}
 					assertTrue(assertion);
 				} else {
@@ -144,7 +144,7 @@ public class BasicV3_2 {
 			assertTrue("Request read from file is Null", false);
 		}
 
-		LOGGER.debug("Basic Test V3 v2 "+numTest+" is finished");
+		LOGGER.debug("Basic Test 0005 is finished");
 	}
 
 	private static void showResults() throws Exception {

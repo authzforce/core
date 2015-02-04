@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.pdp.core.test.utils;
+package com.thalesgroup.authzforce.core.test.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +41,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -63,6 +62,12 @@ import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 public class TestUtils
 {
+	/**
+	 * Global test configuration filename
+	 */
+	public static final String GLOBAL_TEST_CONF_FILENAME = "src/test/resources/authzforce.test.properties";
+
+	private static final File GLOBAL_TEST_CONF_FILE = new File(GLOBAL_TEST_CONF_FILENAME);
 
 	/**
 	 * the logger we'll use for all messages
@@ -85,12 +90,12 @@ public class TestUtils
 
 		Document doc = null;
 		/**
-		 * Get absolute path/URL to request file in a portable way, using current class loader. As per javadoc, the name of
-		 * the resource passed to ClassLoader.getResource() is a '/'-separated path name that
-		 * identifies the resource. So let's build it. Note: do not use File.separator as path
-		 * separator, as it will be turned into backslash "\\" on Windows, and will be
-		 * URL-encoded (%5c) by the getResource() method (not considered path separator by this
-		 * method), and file will not be found as a result.
+		 * Get absolute path/URL to request file in a portable way, using current class loader. As
+		 * per javadoc, the name of the resource passed to ClassLoader.getResource() is a
+		 * '/'-separated path name that identifies the resource. So let's build it. Note: do not use
+		 * File.separator as path separator, as it will be turned into backslash "\\" on Windows,
+		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
+		 * by this method), and file will not be found as a result.
 		 */
 		String requestFileResourceName = rootDirectory + "/" + versionDirectory + "/" + TestConstants.REQUEST_DIRECTORY.value() + "/"
 				+ requestFilename;
@@ -125,12 +130,12 @@ public class TestUtils
 	{
 		Document doc = null;
 		/**
-		 * Get absolute path/URL to request file in a portable way, using current class loader. As per javadoc, the name of
-		 * the resource passed to ClassLoader.getResource() is a '/'-separated path name that
-		 * identifies the resource. So let's build it. Note: do not use File.separator as path
-		 * separator, as it will be turned into backslash "\\" on Windows, and will be
-		 * URL-encoded (%5c) by the getResource() method (not considered path separator by this
-		 * method), and file will not be found as a result.
+		 * Get absolute path/URL to request file in a portable way, using current class loader. As
+		 * per javadoc, the name of the resource passed to ClassLoader.getResource() is a
+		 * '/'-separated path name that identifies the resource. So let's build it. Note: do not use
+		 * File.separator as path separator, as it will be turned into backslash "\\" on Windows,
+		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
+		 * by this method), and file will not be found as a result.
 		 */
 		String responseFileResourceName = rootDirectory + "/" + versionDirectory + "/" + TestConstants.RESPONSE_DIRECTORY.value() + "/"
 				+ responseFilename;
@@ -203,8 +208,9 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
-			u.marshal(response, writer);
+			Marshaller marshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+			marshaller.marshal(response, writer);
 		} catch (Exception e)
 		{
 			LOGGER.error("Error marshalling Response", e);
@@ -270,7 +276,6 @@ public class TestUtils
 	private static boolean matchResult(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> currentResult,
 			List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResult)
 	{
-		boolean resultCompare = false;
 		// Compare the number of results
 		LOGGER.debug("Begining result number comparison");
 		if (currentResult.size() != expectedResult.size())
@@ -278,31 +283,29 @@ public class TestUtils
 			LOGGER.error("Number of result differ from expected");
 			LOGGER.error("Current: " + currentResult.size());
 			LOGGER.error("Expected: " + expectedResult.size());
-			resultCompare = false;
-		} else
-		{
-			resultCompare = true;
-		}
-		if (resultCompare)
-		{
-			LOGGER.debug("Result number comparaison OK");
-			int i = 0;
-			LOGGER.debug("Begining result decision comparaison");
-			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : currentResult)
-			{
-				// Compare the decision
-				resultCompare = result.getDecision().equals(expectedResult.get(i).getDecision());
-				if (!resultCompare)
-				{
-					LOGGER.error("Result " + i + " differ from expected.");
-					LOGGER.error("Current: " + result.getDecision().value());
-					LOGGER.error("Expected: " + expectedResult.get(i).getDecision().value());
-				}
-			}
-			LOGGER.debug("Result decision comparaison OK");
+			return false;
 		}
 
-		return resultCompare;
+		LOGGER.debug("Result number comparison OK");
+		int i = 0;
+		LOGGER.debug("Begining result decision comparaison");
+		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : currentResult)
+		{
+			// Compare the decision
+			final boolean decisionMatch = result.getDecision() == expectedResult.get(i).getDecision();
+			if (!decisionMatch)
+			{
+				LOGGER.error("Result " + i + " differ from expected.");
+				LOGGER.error("Current decision: " + result.getDecision());
+				LOGGER.error("Expected decision: " + expectedResult.get(i).getDecision());
+				return false;
+			}
+
+			i++;
+		}
+		
+		LOGGER.debug("Result decision comparaison OK");
+		return true;
 	}
 
 	private static boolean matchObligations(Obligations obligationsType, Obligations obligationsType2)
@@ -335,86 +338,99 @@ public class TestUtils
 	}
 
 	/**
-	 * Returns a new PDP instance with new XACML policies
-	 * @param rootDir test root directory name
-	 * @param versionDir XACML version directory name
+	 * Returns a new PDP instance with new XACML policies and based on configuration in file
+	 * {@literal #GLOBAL_TEST_CONF_FILENAME}
+	 * 
+	 * @param rootDir
+	 *            test root directory name
+	 * @param versionDir
+	 *            XACML version directory name
 	 * 
 	 * @param policyfilenames
 	 *            Set of XACML policy file names
 	 * @return a PDP instance
 	 */
-	public static PDP getPDPNewInstance(String rootDir, String versionDir, Set<String> policyfilenames) {
-		Properties properties = new Properties();		
-//		ConfigurationStore testConfigurationStore = null;
-		try {
-			properties.load(new FileInputStream(new File("src/test/resources", "authzforce.test.properties")));
-			
-//			File configFile = new File(properties.getProperty("configFile"));
-			
-//			testConfigurationStore = new ConfigurationStore(configFile, null, null);
-		} catch (/*ParsingException |*/ IOException e) {
+	public static PDP getPDPNewInstance(String rootDir, String versionDir, Set<String> policyfilenames)
+	{
+		return getPDPNewInstance(rootDir + "/" + versionDir + "/" + TestConstants.POLICY_DIRECTORY.value() + "/", policyfilenames);
+	}
+
+	/**
+	 * Creates PDP from policies and global configuration in file
+	 * {@literal #GLOBAL_TEST_CONF_FILENAME}
+	 * 
+	 * @param pathPrefix
+	 *            prefix to append before policy filename to have the actual policy file path in the
+	 *            classpath
+	 * @param policyfilenames
+	 *            list of XACML policy filenames relative to pathPrefix. If pathPrefix is null,
+	 *            filename is considered at the root of the classpath
+	 * @return PDP instance
+	 */
+	public static PDP getPDPNewInstance(String pathPrefix, Set<String> policyfilenames)
+	{
+
+		Properties properties = new Properties();
+		try
+		{
+			properties.load(new FileInputStream(GLOBAL_TEST_CONF_FILE));
+		} catch (IOException e)
+		{
 			throw new RuntimeException(e);
 		}
-		
-		//PropertyConfigurator.configure(properties.getProperty("logProperties"));
+
 		final String confLocation = properties.getProperty("configFile");
 		final PdpConfigurationManager testConfMgr;
 		try
 		{
-			
 			testConfMgr = new PdpConfigurationManager(confLocation);
-		} catch (IOException e)
-		{
-			throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
-		} catch (JAXBException e)
+		} catch (IOException | JAXBException e)
 		{
 			throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
 		}
-		
 
 		PolicyFinder policyFinder = new PolicyFinder();
 		List<String> policyLocations = new ArrayList<>();
 
-		for (String policyfilename : policyfilenames) {
+		for (String policyfilename : policyfilenames)
+		{
 			/**
-			 * Get absolute path/URL to policy file in a portable way, using current class loader. As per javadoc, the name of
-			 * the resource passed to ClassLoader.getResource() is a '/'-separated path name that
-			 * identifies the resource. So let's build it. Note: do not use File.separator as path
-			 * separator, as it will be turned into backslash "\\" on Windows, and will be
-			 * URL-encoded (%5c) by the getResource() method (not considered path separator by this
-			 * method), and file will not be found as a result.
+			 * Get absolute path/URL to policy file in a portable way, using current class loader.
+			 * As per javadoc, the name of the resource passed to ClassLoader.getResource() is a
+			 * '/'-separated path name that identifies the resource. So let's build it. Note: do not
+			 * use File.separator as path separator, as it will be turned into backslash "\\" on
+			 * Windows, and will be URL-encoded (%5c) by the getResource() method (not considered
+			 * path separator by this method), and file will not be found as a result.
 			 */
-			String policyFileResourceName = rootDir + "/" + versionDir + "/" + TestConstants.POLICY_DIRECTORY.value() + "/"
-					+ policyfilename;
+			String policyFileResourceName = pathPrefix + policyfilename;
 			URL policyFileURL = Thread.currentThread().getContextClassLoader().getResource(policyFileResourceName);
-			// Use getPath() to remove the file: prefix, because used later as input to FileInputStream(...) in FilePolicyModule
-			policyLocations.add(policyFileURL.getPath());
+			// Use getPath() to remove the file: prefix, because used later as input to
+			// FileInputStream(...) in FilePolicyModule
+			policyLocations.add(policyFileURL.toString());
 		}
 
-		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(
-				policyLocations);
+		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(policyLocations);
 		List<PolicyFinderModule<?>> policyModules = new ArrayList<>();
 		policyModules.add(testPolicyFinderModule);
 		policyFinder.setModules(policyModules);
 
-		PDP authzforce = PDP.getInstance();
-		PDPConfig pdpConfig = authzforce.getPDPConfig();
-		pdpConfig = new PDPConfig(testConfMgr.getDefaultPDPConfig().getAttributeFinder(), policyFinder,
-				testConfMgr.getDefaultPDPConfig().getResourceFinder(), null);		
+		PDPConfig pdpConfig = new PDPConfig(testConfMgr.getDefaultPDPConfig().getAttributeFinder(), policyFinder, testConfMgr.getDefaultPDPConfig()
+				.getResourceFinder(), null);
 
 		return new PDP(pdpConfig);
 	}
-	
-	public static EvaluationCtx createContext(Request request) {
+
+	public static EvaluationCtx createContext(Request request)
+	{
 		BasicEvaluationCtx evaluationCtx = null;
-		try {
+		try
+		{
 			evaluationCtx = new BasicEvaluationCtx(request);
-		} catch (NumberFormatException | ParsingException
-				| UnknownIdentifierException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (NumberFormatException | ParsingException | UnknownIdentifierException e)
+		{
+			throw new RuntimeException("Failed to create evaluation context", e);
 		}
-		
+
 		return evaluationCtx;
 	}
 }

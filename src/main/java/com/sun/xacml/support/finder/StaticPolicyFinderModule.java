@@ -209,7 +209,8 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 	 */
 	public StaticPolicyFinderModule(String combiningAlg, List<String> policyList) throws URISyntaxException, UnknownIdentifierException
 	{
-		PolicyCombiningAlgorithm alg = (PolicyCombiningAlgorithm) (CombiningAlgFactory.getInstance().createAlgorithm(new URI(combiningAlg)));
+		PolicyCombiningAlgorithm alg = combiningAlg == null ? null : (PolicyCombiningAlgorithm) (CombiningAlgFactory.getInstance()
+				.createAlgorithm(new URI(combiningAlg)));
 
 		this.policyList = policyList;
 		this.policies = new PolicyCollection(alg, policyId);
@@ -306,14 +307,16 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 				// first try to load it as a Spring resource
 
 				final URL url = ResourceUtils.getResourceURL(policyLocation);
-				if(url == null) {
+				if (url == null)
+				{
 					throw new IOException("Invalid Spring-supported URL: " + policyLocation);
 				}
-				
+
 				jaxbObj = unmarshaller.unmarshal(url);
 			} catch (IOException ioe)
 			{
-				LOGGER.info("Failed to load policy location {} as Spring resource. Loading as file relative to PDP configuration directory");
+				LOGGER.info("Failed to load policy location {} as Spring resource. Loading as file relative to PDP configuration directory",
+						policyLocation);
 				// assume that this is a filename, and try again
 				final File file = new File(policyLocation);
 				final File policyFile;
@@ -380,10 +383,11 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 		try
 		{
 			final IPolicy policy = policies.getPolicy(context);
-			if (policy == null) {
+			if (policy == null)
+			{
 				return new PolicyFinderResult();
 			}
-			
+
 			return new PolicyFinderResult(policy);
 		} catch (TopLevelPolicyException tlpe)
 		{
@@ -399,15 +403,17 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 	}
 
 	@Override
-	public boolean isIdReferenceSupported() {
+	public boolean isIdReferenceSupported()
+	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void invalidateCache() {
+	public void invalidateCache()
+	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

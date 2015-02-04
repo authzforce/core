@@ -35,6 +35,7 @@ package com.sun.xacml.support.finder;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -104,7 +105,7 @@ public class PolicyCollection
 	 */
 	static
 	{
-		target = new Target(new AnyOf());
+		target = new Target(Collections.<AnyOf>emptyList());
 		// new Target(new TargetSection(null, TargetMatch.SUBJECT,
 		// PolicyMetaData.XACML_VERSION_2_0),
 		// new TargetSection(null, TargetMatch.RESOURCE,
