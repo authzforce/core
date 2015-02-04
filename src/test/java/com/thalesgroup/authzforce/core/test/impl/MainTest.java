@@ -40,46 +40,45 @@ import com.sun.xacml.cond.SetFunctionsTest;
 import com.sun.xacml.cond.SpecialMatchFunctionsTest;
 import com.sun.xacml.cond.StringConversionFunctionsTest;
 import com.sun.xacml.cond.StringFunctionsTest;
+import com.sun.xacml.xacmlv3.TestApply;
 import com.sun.xacml.xacmlv3.TestMatchAlg;
-import com.sun.xacml.xacmlv3.function.TestDateMathFunction;
+
 import com.sun.xacml.xacmlv3.function.TestMatchFunction;
 import com.sun.xacml.xacmlv3.function.TestStringFunction;
 
 /**
  * 
- *         class to use for the testSuite MatchTest.class, ConformanceV3.class,
- *         BasicV3_1.class, BasicV3_2.class, BasicV3_3.class, BasicV3_4.class,
- *         BasicV3_5.class, BasicFunctionV3.class
+ * class to use for the testSuite MatchTest.class, ConformanceV3.class, BasicV3_1.class,
+ * BasicV3_2.class, BasicV3_3.class, BasicV3_4.class, BasicV3_5.class, BasicFunctionV3.class
  */
 @RunWith(Suite.class)
-@SuiteClasses(value = { EqualityFunctionsTest.class,
-		ArithmeticFunctionsTest.class, StringConversionFunctionsTest.class,
-		NumericConversionFunctionsTest.class, LogicalFunctionsTest.class,
-		NumericComparisonFunctionsTest.class,
-		DateTimeArithmeticFunctionsTest.class,
-		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class,
-		BagFunctionsTest.class, SetFunctionsTest.class,
-		HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class,
-		SpecialMatchFunctionsTest.class, TestMatchAlg.class,
+@SuiteClasses(value = { EqualityFunctionsTest.class, ArithmeticFunctionsTest.class, StringConversionFunctionsTest.class,
+		NumericConversionFunctionsTest.class, LogicalFunctionsTest.class, NumericComparisonFunctionsTest.class,
+		DateTimeArithmeticFunctionsTest.class, NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class,
+		SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, TestMatchAlg.class,
 		TestMatchFunction.class, TestStringFunction.class,
-		/* TestDateMathFunction.class, */ ConformanceV3.class, BasicV3_1.class,
-		BasicV3_2.class, BasicV3_3.class, BasicV3_4.class, BasicV3_5.class,
-		BasicFunctionV3.class, NonRegression.class /*, BasicMultipleRequestV3.class */ })
-public class MainTest {
+		/* TestDateMathFunction.class, */ConformanceV3.class, BasicV3_1.class, BasicV3_2.class, BasicV3_3.class, BasicV3_4.class, BasicV3_5.class,
+		BasicFunctionV3.class, TestApply.class, NonRegression.class /*
+																	 * ,
+																	 * BasicMultipleRequestV3.class
+																	 */})
+public class MainTest
+{
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(MainTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MainTest.class);
 
 	@BeforeClass
-	public static void setUpClass() {
+	public static void setUpClass()
+	{
 		LOGGER.info("Beginning Tests");
 
 	}
 
 	@AfterClass
-	public static void tearDownClass() {
+	public static void tearDownClass()
+	{
 		LOGGER.info("Finishing Tests");
 	}
 }
