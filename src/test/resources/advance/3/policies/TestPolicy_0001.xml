@@ -2,7 +2,7 @@
         xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicyId="TestPolicy0001"
         RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
         Version="1.0">
-    <Description>Test policy 0001. There is two collection under balana resource; i.e private and public.
+    <Description>Test policy 0001. There is two collection under 'mydocs' resource; i.e private and public.
     private collection is only accessed by internal users and only admin can do write and delete action
     on this collection. public collection is accessed by any registered user</Description>
     <Target>
@@ -24,7 +24,7 @@
             <AnyOf>
                 <AllOf>
                     <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-regexp-match">
-                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">balana/public</AttributeValue>
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">mydocs/public</AttributeValue>
                         <AttributeDesignator MustBePresent="false"
                                              Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
                                              AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
@@ -62,7 +62,7 @@
             <AnyOf>
                 <AllOf>
                     <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-regexp-match">
-                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">balana/public</AttributeValue>
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">mydocs/public</AttributeValue>
                         <AttributeDesignator MustBePresent="false"
                                              Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
                                              AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
@@ -120,7 +120,7 @@
             <AnyOf>
                 <AllOf>
                     <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-regexp-match">
-                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">balana/private</AttributeValue>
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">mydocs/private</AttributeValue>
                         <AttributeDesignator MustBePresent="false"
                                              Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
                                              AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
@@ -154,7 +154,7 @@
             <AnyOf>
                 <AllOf>
                     <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-regexp-match">
-                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">balana/private</AttributeValue>
+                        <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">mydocs/private</AttributeValue>
                         <AttributeDesignator MustBePresent="false"
                                              Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
                                              AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
