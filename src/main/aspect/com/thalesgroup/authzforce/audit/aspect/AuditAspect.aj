@@ -59,15 +59,16 @@ public class AuditAspect
 	 */
 	private final String doAuditLogCallCtxKey = this.toString();
 
-	@Pointcut("execution (@com.thalesgroup.authzforce.audit.annotations * *.*(..))")
+/*	@Pointcut("execution (@com.thalesgroup.authzforce.audit.annotations * *.*(..))")
 	public void searchAnnotation()
 	{
 
 	}
-
-	@AfterReturning(value = "@annotation(annotation)", returning = "result")
-	public void doAuditLog(Audit annotation, JoinPoint jp, Object result)
-	{
+*/
+	@AfterReturning(
+			pointcut = "execution(* com.sun.xacml.xacmlv3.Policy.evaluate(..))", 
+			returning = "result") 
+	public void doAuditPolicy(JoinPoint jp, Object result) {
 		if (LOGGER.isDebugEnabled())
 		{
 			LOGGER.debug("ASPECTJ: entering doAuditLog() for joinpoint kind='{}', target='{}',  signature='{}'",
@@ -97,90 +98,191 @@ public class AuditAspect
 			evalCtx.put(doAuditLogCallCtxKey, null);
 		}
 		
-		try
+		final Policy policy = (Policy) jp.getTarget();
+		final Result evalResult = (Result) result;
+		LOGGER.debug("{} -> {}", policy, evalResult);	
+		AuditLog audit = new AuditLog();
+		AuditedPolicy auditedPolicy = new AuditedPolicy();
+		auditedPolicy.setId(policy.getPolicyId());
+		auditedPolicy.setRuleCombiningAlgorithm(policy.getRuleCombiningAlgId());
+		auditedPolicy.setResult(AuditedResult.fromValue(evalResult.getDecision().value()));
+		if (evalCtx != null)
 		{
-			switch (annotation.type())
+			audit.setDate(this.formatDate(evalCtx.getCurrentDateTime()));
+			audit.setRequest(evalCtx.getRequest());
+			audit = this.setAttributes(audit, evalCtx);
+		}
+
+		audit.getMatchedPolicies().add(auditedPolicy);
+		synchronized (audit)
+		{
+			AuditLogs.getInstance().addAudit(audit);
+		}
+		
+		/*
+		 * We are done with calling this method, so remove the key indicating that we are in a
+		 * doAuditLog() call
+		 */
+		if(evalCtx != null) {
+			evalCtx.remove(doAuditLogCallCtxKey);
+		}
+	}
+	
+	@AfterReturning(
+			pointcut = "execution(* com.sun.xacml.Rule.evaluate(..))",
+			returning = "result") 
+	public void doAuditRule(JoinPoint jp, Object result) {
+		if (LOGGER.isDebugEnabled())
+		{
+			LOGGER.debug("ASPECTJ: entering doAuditLog() for joinpoint kind='{}', target='{}',  signature='{}'",
+					new Object[] { jp.getKind(), jp.getTarget(), jp.getSignature() });
+		}
+
+		BasicEvaluationCtx evalCtx = null;
+		for (Object arg : jp.getArgs())
+		{
+			if (arg instanceof BasicEvaluationCtx)
 			{
-				case RULE: {
-					final Rule rule = (Rule) jp.getTarget();
-					final Result evalResult = (Result) result;
-					LOGGER.debug("{} -> {}", rule, evalResult);			
-					AuditLog audit = new AuditLog();
-					AuditedRule auditedRule = new AuditedRule();
-					auditedRule.setId(rule.getRuleId());
-					auditedRule.setResult(AuditedResult.fromValue(evalResult.getDecision().value()));
-					if (evalCtx != null)
-					{
-						audit.setDate(this.formatDate(evalCtx.getCurrentDateTime()));
-						audit.setRequest(evalCtx.getRequest());
-						audit = this.setAttributes(audit, evalCtx);
-					}
-
-					audit.getRules().add(auditedRule);
-
-					synchronized (audit)
-					{
-						AuditLogs.getInstance().addAudit(audit);
-					}
-					break;
+				evalCtx = (BasicEvaluationCtx) arg;
+				if (evalCtx.containsKey(doAuditLogCallCtxKey))
+				{
+					/*
+					 * So we are in a doAuditLog() call from another doAuditLog() call already, i.e.
+					 * we are in a process of calling this method recursively, so we don't do it
+					 * again; there we stop here
+					 */
+					LOGGER.debug("ASPECTJ: this doAuditLog() call is already triggered by another doAuditLog() call -> return (skip this time)");
+					return;
 				}
-				
-				case POLICY: {
-					final Policy policy = (Policy) jp.getTarget();
-					final Result evalResult = (Result) result;
-					LOGGER.debug("{} -> {}", policy, evalResult);	
-					AuditLog audit = new AuditLog();
-					AuditedPolicy auditedPolicy = new AuditedPolicy();
-					auditedPolicy.setId(policy.getPolicyId());
-					auditedPolicy.setRuleCombiningAlgorithm(policy.getRuleCombiningAlgId());
-					auditedPolicy.setResult(AuditedResult.fromValue(evalResult.getDecision().value()));
-					if (evalCtx != null)
-					{
-						audit.setDate(this.formatDate(evalCtx.getCurrentDateTime()));
-						audit.setRequest(evalCtx.getRequest());
-						audit = this.setAttributes(audit, evalCtx);
-					}
-
-					audit.getMatchedPolicies().add(auditedPolicy);
-					synchronized (audit)
-					{
-						AuditLogs.getInstance().addAudit(audit);
-					}
-					break;
-				}
-				
-				// FIXME: case POLICYSET ?
-				
-				case ATTRIBUTE: {
-					AuditLog audit = new AuditLog();
-					AttributesResolved attrResolved = new AttributesResolved();
-					if (evalCtx != null)
-					{
-						audit.setDate(this.formatDate(evalCtx.getCurrentDateTime()));
-						audit.setRequest(evalCtx.getRequest());
-						audit = this.setAttributes(audit, evalCtx);
-					}
-
-					attrResolved.setAttributeValue(((EvaluationResult) result).getAttributeValue());
-					break;
-				}
-				
-				// Used to display and clean the audit log pool
-				case DISPLAY:
-					LOGGER.info(AuditLogs.getInstance().toString());
-					break;
-				default:
-					LOGGER.error("Type unknown: " + annotation.type());
 			}
-		} finally
+		}
+
+		if(evalCtx != null) {
+			evalCtx.put(doAuditLogCallCtxKey, null);
+		}
+		
+		final Rule rule = (Rule) jp.getTarget();
+		final Result evalResult = (Result) result;
+		LOGGER.debug("{} -> {}", rule, evalResult);			
+		AuditLog audit = new AuditLog();
+		AuditedRule auditedRule = new AuditedRule();
+		auditedRule.setId(rule.getRuleId());
+		auditedRule.setResult(AuditedResult.fromValue(evalResult.getDecision().value()));
+		if (evalCtx != null)
 		{
-			/*
-			 * We are done with calling this method, so remove the key indicating that we are in a
-			 * doAuditLog() call
-			 */
-			if(evalCtx != null) {
-				evalCtx.remove(doAuditLogCallCtxKey);
+			audit.setDate(this.formatDate(evalCtx.getCurrentDateTime()));
+			audit.setRequest(evalCtx.getRequest());
+			audit = this.setAttributes(audit, evalCtx);
+		}
+
+		audit.getRules().add(auditedRule);
+
+		synchronized (audit)
+		{
+			AuditLogs.getInstance().addAudit(audit);
+		}
+		
+		/*
+		 * We are done with calling this method, so remove the key indicating that we are in a
+		 * doAuditLog() call
+		 */
+		if(evalCtx != null) {
+			evalCtx.remove(doAuditLogCallCtxKey);
+		}
+	}
+	
+	@AfterReturning(
+			pointcut = "execution(* com.sun.xacml.finder.AttributeFinderModule.findAttribute(..))",
+			returning = "result")
+	public void doAuditAttribute(JoinPoint jp, Object result) {
+		if (LOGGER.isDebugEnabled())
+		{
+			LOGGER.debug("ASPECTJ: entering doAuditLog() for joinpoint kind='{}', target='{}',  signature='{}'",
+					new Object[] { jp.getKind(), jp.getTarget(), jp.getSignature() });
+		}
+
+		BasicEvaluationCtx evalCtx = null;
+		for (Object arg : jp.getArgs())
+		{
+			if (arg instanceof BasicEvaluationCtx)
+			{
+				evalCtx = (BasicEvaluationCtx) arg;
+				if (evalCtx.containsKey(doAuditLogCallCtxKey))
+				{
+					/*
+					 * So we are in a doAuditLog() call from another doAuditLog() call already, i.e.
+					 * we are in a process of calling this method recursively, so we don't do it
+					 * again; there we stop here
+					 */
+					LOGGER.debug("ASPECTJ: this doAuditLog() call is already triggered by another doAuditLog() call -> return (skip this time)");
+					return;
+				}
 			}
+		}
+
+		if(evalCtx != null) {
+			evalCtx.put(doAuditLogCallCtxKey, null);
+		}
+		
+		AuditLog audit = new AuditLog();
+		AttributesResolved attrResolved = new AttributesResolved();
+		if (evalCtx != null)
+		{
+			audit.setDate(this.formatDate(evalCtx.getCurrentDateTime()));
+			audit.setRequest(evalCtx.getRequest());
+			audit = this.setAttributes(audit, evalCtx);
+		}
+
+		attrResolved.setAttributeValue(((EvaluationResult) result).getAttributeValue());
+		
+		/*
+		 * We are done with calling this method, so remove the key indicating that we are in a
+		 * doAuditLog() call
+		 */
+		if(evalCtx != null) {
+			evalCtx.remove(doAuditLogCallCtxKey);
+		}
+	}
+	
+	@AfterReturning(
+			pointcut = "execution(* com.sun.xacml.PDP.evaluate(..))",
+			returning = "result")
+	public void displayAuditLog(JoinPoint jp, Object result) {
+		if (LOGGER.isDebugEnabled())
+		{
+			LOGGER.debug("ASPECTJ: entering doAuditLog() for joinpoint kind='{}', target='{}',  signature='{}'",
+					new Object[] { jp.getKind(), jp.getTarget(), jp.getSignature() });
+		}
+		BasicEvaluationCtx evalCtx = null;
+		for (Object arg : jp.getArgs())
+		{
+			if (arg instanceof BasicEvaluationCtx)
+			{
+				evalCtx = (BasicEvaluationCtx) arg;
+				if (evalCtx.containsKey(doAuditLogCallCtxKey))
+				{
+					/*
+					 * So we are in a doAuditLog() call from another doAuditLog() call already, i.e.
+					 * we are in a process of calling this method recursively, so we don't do it
+					 * again; there we stop here
+					 */
+					LOGGER.debug("ASPECTJ: this doAuditLog() call is already triggered by another doAuditLog() call -> return (skip this time)");
+					return;
+				}
+			}
+		}
+
+		if(evalCtx != null) {
+			evalCtx.put(doAuditLogCallCtxKey, null);
+		}
+		LOGGER.info(AuditLogs.getInstance().toString());
+		
+		/*
+		 * We are done with calling this method, so remove the key indicating that we are in a
+		 * doAuditLog() call
+		 */
+		if(evalCtx != null) {
+			evalCtx.remove(doAuditLogCallCtxKey);
 		}
 	}
 

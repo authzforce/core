@@ -154,7 +154,7 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      * @return the result of attribute retrieval, which will be a bag of
      *         attributes or an error
      */
-    @Audit(type = Audit.Type.ATTRIBUTE)
+    //@Audit(type = Audit.Type.ATTRIBUTE)
     public EvaluationResult findAttribute(URI attributeType, URI attributeId,
                                           URI issuer, URI subjectCategory,
                                           EvaluationCtx context,

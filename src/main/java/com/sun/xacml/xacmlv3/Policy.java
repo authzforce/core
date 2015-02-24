@@ -334,7 +334,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		return ((Target) target).match(context);
 	}
 
-	@Audit(type = Audit.Type.POLICY)
+	//@Audit(type = Audit.Type.POLICY)
 	@Override
 	public Result evaluate(EvaluationCtx context)
 	{

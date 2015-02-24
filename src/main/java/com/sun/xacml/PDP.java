@@ -208,7 +208,7 @@ public class PDP
 	 *            the request to evaluate
 	 * @return a response paired to the request
 	 */
-	@Audit(type = Audit.Type.DISPLAY)
+	//@Audit(type = Audit.Type.DISPLAY)
 	public ResponseCtx evaluate(Request request)
 	{
 		/*
