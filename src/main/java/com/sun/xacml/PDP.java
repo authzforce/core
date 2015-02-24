@@ -60,7 +60,6 @@ import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderResult;
 import com.thalesgroup.appsec.util.Utils;
-import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 
 /**
@@ -208,7 +207,6 @@ public class PDP
 	 *            the request to evaluate
 	 * @return a response paired to the request
 	 */
-	//@Audit(type = Audit.Type.DISPLAY)
 	public ResponseCtx evaluate(Request request)
 	{
 		/*
@@ -366,32 +364,6 @@ public class PDP
 
 		return new ResponseCtx(results);
 	}
-
-	/**
-	 * Attempts to evaluate the request against the policies known to this PDP. This is really the
-	 * core method of the entire XACML specification, and for most people will provide what you
-	 * want. If you need any special handling, you should look at the version of this method that
-	 * takes an <code>EvaluationCtx</code>.
-	 * <p>
-	 * Note that if the request is somehow invalid (it was missing a required attribute, it was
-	 * using an unsupported scope, etc), then the result will be a decision of INDETERMINATE.
-	 * 
-	 * @param request
-	 *            the request to evaluate
-	 * 
-	 * @return a response paired to the request
-	 */
-	// @Audit(type = Audit.Type.DISPLAY)
-	// public ResponseCtx evaluate(Request request)
-	// {
-	// try
-	// {
-	// return evaluatePrivate(request);
-	// } finally
-	// {
-	// Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.remove();
-	// }
-	// }
 
 	/**
 	 * Uses {@code Utils#THREAD_LOCAL_NS_AWARE_DOC_BUILDER } Uses

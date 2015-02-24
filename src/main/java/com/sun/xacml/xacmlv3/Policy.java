@@ -61,7 +61,6 @@ import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.RuleCombiningAlgorithm;
 import com.sun.xacml.cond.VariableManager;
 import com.sun.xacml.ctx.Result;
-import com.thalesgroup.authzforce.audit.annotations.Audit;
 
 public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy implements IPolicy
 {
@@ -334,7 +333,6 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		return ((Target) target).match(context);
 	}
 
-	//@Audit(type = Audit.Type.POLICY)
 	@Override
 	public Result evaluate(EvaluationCtx context)
 	{

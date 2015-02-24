@@ -27,7 +27,6 @@
 		<!-- JDK versions for AspectJ -->
 		<jdk.source>1.7</jdk.source>
 		<jdk.target>1.7</jdk.target>
-		<aspectj.version>1.7.4</aspectj.version>
 		<debug>false</debug>
 	</properties>
 	<dependencies>
@@ -36,18 +35,6 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 		</dependency>
-		<!-- Dependencies of audit feature only -->
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjrt</artifactId>
-			<version>${aspectj.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.9.13</version>
-		</dependency>
-		<!-- END dependencies of audit feature -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
@@ -267,39 +254,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.5</version>
-				<!-- WARNING: to fix Eclipse error "Plugin execution not covered by lifecycle configuration", install 
-					Eclipse plugin "Maven integration for AJDT" from update site: http://dist.springsource.org/release/AJDT/configurator/ 
-					DO NOT FIX IT by using eclipse "fake" lifecycle-mapping plugin in pluginManagement section, because Jenkins 
-					will not be able to resolve it as it is not an actual plugin available on public repositories. -->
-				<dependencies>
-					<dependency>
-						<groupId>org.aspectj</groupId>
-						<artifactId>aspectjtools</artifactId>
-						<version>${aspectj.version}</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>test-compile</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<verbose>${debug}</verbose>
-					<showWeaveInfo>${debug}</showWeaveInfo>
-					<outxml>${debug}</outxml>
-					<complianceLevel>${jdk.source}</complianceLevel>
-					<source>${jdk.source}</source>
-					<target>${jdk.target}</target>
-				</configuration>
-			</plugin>
+			</plugin>			
 			<!-- Maven compiler configuration -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>

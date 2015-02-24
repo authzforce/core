@@ -42,7 +42,6 @@ import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.thalesgroup.authz.model.ext._3.AbstractAttributeFinder;
-import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.core.IPdpExtension;
 
 
@@ -154,7 +153,6 @@ public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> i
      * @return the result of attribute retrieval, which will be a bag of
      *         attributes or an error
      */
-    //@Audit(type = Audit.Type.ATTRIBUTE)
     public EvaluationResult findAttribute(URI attributeType, URI attributeId,
                                           URI issuer, URI subjectCategory,
                                           EvaluationCtx context,

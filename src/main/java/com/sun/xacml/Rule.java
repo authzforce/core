@@ -68,7 +68,6 @@ import com.sun.xacml.ctx.Status;
 import com.sun.xacml.xacmlv3.AdviceExpressions;
 import com.sun.xacml.xacmlv3.IDecidable;
 import com.sun.xacml.xacmlv3.Target;
-import com.thalesgroup.authzforce.audit.annotations.Audit;
 import com.thalesgroup.authzforce.core.PdpModelHandler;
 
 /**
@@ -386,7 +385,6 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	 * @return the result of the evaluation
 	 */
 	@Override
-	//@Audit(type = Audit.Type.RULE)
 	public Result evaluate(EvaluationCtx context)
 	{
 		// Do the list of Attribute who needs to be included in result
