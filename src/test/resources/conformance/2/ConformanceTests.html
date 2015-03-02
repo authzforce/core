@@ -1,0 +1,1495 @@
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <title>XACML Version 2.0 Conformance Tests (draft)</title>
+  </head>
+
+  <body>
+    <h1>XACML Version 2.0 Conformance Tests (draft)</h1>
+
+<listing>Version: 0.5, Oct 13, 2005
+Author:  <a href="mailto:argyn@cox.net">Argyn Kuketayev</a>
+Contributors: Anne Anderson, Satoshi Hada, John Merrells, Jin Peng, Seth Proctor, Argyn Kuketayev
+</listing>
+
+This document describes and provides links to a suite of tests
+intended to aid implementers in conforming to the <a href="http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf">
+ eXtensible Access Control Markup Language (XACML) Version 2.0 OASIS Standard</a>.
+
+    <h2>Contents</h2>
+
+    <ol type="I">
+    <li><a href="#Description%20of%20tests"> Description of Tests
+        </a>
+        <ol type="A">
+        <li><a href="#Test%20Case%20Groupings">Test Case Groupings</a>
+        </li><li><a href="#How%20to%20Use%20the%20Tests">How to Use the Tests</a>
+        </li><li><a href="#Preparing%20Tests%20for%20Execution">Preparing
+              Tests for Execution</a>
+        </li><li><a href="#Contributions%20of%20New%20Tests">Contributions
+              of New Tests</a>
+        </li><li><a href="#Bugs%20in%20the%20Tests">Bugs in the Tests</a>
+        </li></ol>
+    </li><li><a href="#Mandatory-to-Implement%20Functionality%20Tests">
+        Mandatory-to-Implement Functionality Tests </a>
+        <ol type="A">
+        <li><a href="#Attribute%20References"> Attribute References </a>
+        </li><li><a href="#Target%20Matching"> Target Matching </a>
+        </li><li><a href="#Function%20Evaluation"> Function Evaluation </a>
+        </li><li><a href="#Combining%20Algorithms"> Combining Algorithms </a>
+        </li><li><a href="#Schema%20components"> Schema components </a>
+            </li><li><a href="#XACML%202.0%20new%20features"> XACML 2.0 new features </a>
+        </li></ol>
+    </li><li><a href="#Optional,%20but%20Normative%20Functionality%20Tests">
+          Optional, but Normative Functionality Tests </a>
+        <ol type="A">
+        <li><a href="#Obligations"> Obligations </a>
+        </li><li><a href="#DefaultsType"> DefaultsType </a>
+        </li><li><a href="#Hierarchical%20Resources"> Hierarchical Resources </a>
+        </li><li><a href="#%3CResourceContent%3E%20Element"> &lt;ResourceContent&gt; Element </a>
+        </li><li><a href="#Multiple%20Decisions"> Multiple Decisions </a>
+        </li><li><a href="#Attribute%20Selectors"> Attribute Selectors </a>
+        </li><li><a href="#Non-mandatory%20Functions"> Non-mandatory Functions </a>
+        </li></ol>
+    </li></ol>
+<hr>
+
+<ol type="I">
+<h2><li><a name="Description of tests"> Description of Tests </a></li></h2>
+
+These tests are provided as an aid in achieving conformance to
+the <a href="http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf"><i>
+eXtensible Access Control Markup Language (XACML) Version 2.0
+OASIS Standard</i></a>.  The tests may aid in determining whether
+an implementation is correctly interpreting the intent of the
+XACML Version 2.0 specification, and may provide a basic level of
+interoperability testing.<p>
+
+These tests are <b>non-normative</b> and do not constitute a full
+test of conformance to the XACML Version 2.0 Standard.  A full
+description of the requirements for conformance is included in
+<i>Section 10. Conformance</i> of the <a href="http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf">
+XACML Version 2.0 specification</a>.  There is no OASIS- or XACML
+TC- sponsored <i>branding</i> or certification program for
+XACML.</p><p>
+
+<!--
+Except for those tests marked <a
+href="#EXPERIMENTAL">EXPERIMENTAL</a>, all the tests in this
+suite have undergone successful execution and review by multiple
+XACML implementers and others, and thus represent some level of
+consensus as to the intent of the XACML Version 1.0 Standard.<p>
+-->
+</p><h2>IMPORTANT NOTE</h2>
+The tests in this suite were converted to comply with XACML 2.0 from
+<a href="http://www.oasis-open.org/committees/download.php/6076/ConformanceTests.zip">
+the conformance test suite for XACML 1.0 and 1.1</a>. Conversion was done by using pattern
+matching/replacement scripts. All tests passed schema validation sucessfully against normative
+schemas for
+<a href="http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-context-schema-os.xsd">Context</a> and
+<a href="http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-policy-schema-os.xsd">Policy</a> of XACML 2.0.
+<p>
+</p><h3>History of changes since XACML 2.0</h3>
+
+Version 0.1<br>
+<ul>
+<li>empty Target element is allowed in XACML 2.0
+</li><li>AnySubject and other Any* elements in the Target are not allowed in XACML 2.0
+</li><li>Environment element is required in Target for Request in XACML 2.0
+</li><li>FunctionId is not allowed in Condition element in XACML 2.0
+</li><li>IssueInstant attribute is not allowed in Attribute in XACML 2.0
+</li><li>IIIASpecial.txt is removed, because AttributeAssignment element has AttributeValue in XACML 2.0.
+</li><li>IIIGSpecial.txt is removed, because in XACML 2.0 it's defined that &lt;xacml-context:Request&gt;
+is the context node for xpath expressions.
+</li></ul>
+
+    Version 0.2<br>
+    <ul>
+    <li>Remove DataType attribute from AttributeValue elements in *Request.xml files.
+        Data types should be specified in the parent Attribute element.
+    </li><li>Replace regexp-string-match in *Policy.xml files with string-regexp-match.
+        In XACML 2.0 this function's urn was changed to make it more consistent with names of
+    similar functions. Thanks to Ryan Eberhard for reporting this discrepancy in the
+    test suite.
+</li></ul>
+
+Version 0.3<br>
+<ul>
+<li>Fix typos in policy combining algorithm urns. These typos were a result of
+    a bug in the scripts, which were used to convert XACML 1.0 conformance tests
+    to XACML 2.0. Thanks to Ryan Eberhard for reporting this bug in the
+test suite.
+</li></ul>
+
+Version 0.4<br>
+<ul>
+    <li>IIC086-IIC091: change some attribute types to string.
+    </li><li>IIA004, IIA005 - these files contained intentional errors, which were accidentally "fixed"
+    when converting to xacml 2.0. Errors are reintroduced.
+    </li><li>IID029, IID030, IIE001, IIE002 - these files were not converted properly to
+    to xacml 2.0: Condition had FunctionId attribute. This bug was first reported by Frederic Deleon.
+</li></ul>
+
+Version 0.4<br>
+<ul>
+    <li>IIF001: new test for Variable feature.
+</li></ul>
+
+<ol type="A">
+
+<h3><li><a name="Test Case Groupings">Test Case Groupings</a></li></h3>
+
+Tests are divided into those that exercise
+<i>Mandatory-to-Implement</i> functionality and those that
+exercise <i>Optional, but normative</i> functionality.  All
+implementations that claim conformance to the <i>eXtensible Access
+Control Markup Language (XACML) Version 2.0 OASIS Standard</i>
+<b>MUST</b> support all Mandatory-to-Implement functionality as
+described in the <a href="http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf">
+XACML Version 2.0 specification</a>.
+Conforming implementations <b>MAY</b> additionally support
+various Optional functionality areas.<p>
+
+Tests are divided into groups based on the primary area of
+functionality or schema being exercised.</p><p>
+
+Each test case consists of three XML documents (or sets of documents):</p><p>
+
+  </p><ol type="1">
+  <li>An XACML Request
+  </li><li>An XACML Policy or set of Policy documents
+  </li><li>An XACML Response
+  </li></ol>
+<p>
+
+Each XML document is named according to the section of this
+      document in which it occurs.  For example, the XML
+      documents for the test in Part II (Mandatory to
+      implement), Section B (Target Matching), Test Case 8 (Case:
+      match: multiple actions) are named:</p><p>
+</p><ul>
+<li>IIB008Request.xml
+</li><li>IIB008Policy.xml
+</li><li>IIB008Response.xml
+</li></ul>
+
+<h3><li><a name="How to Use the Tests">How to Use the Tests</a></li></h3>
+
+An implementation of an XACML Policy Decision Point (PDP) should
+be able to:<p>
+
+  </p><ol type="1">
+  <li>Accept the given Request, or input <a href="#consistent%20with"><i>consistent with</i></a> the
+        given Request, as input.
+  </li><li>Accept the given Policy or Policies (these files may
+      contain one or more XACML Policies or PolicySets) as input.
+  </li><li>Produce the given Response, or output <a href="#consistent%20with">
+      <i>consistent with</i></a> the given Response, as output.
+  </li></ol>
+<p>
+<a name="consistent with">Explanation of <i>consistent with</i></a>:</p><p>
+
+</p><blockquote>
+The request and response used in executing these tests need not
+be instances of the XACML Context Schema.  The request and
+response should, however, contain exactly the same information as
+the given Request and Response file, and should exercise the XACML
+policy evaluation functionality that the test is intended to
+exercise.  It should be possible, at least conceptually, to
+mechanically convert the request and response used in the
+implementation to the given XACML Request and Response
+instances.<p>
+</p></blockquote>
+
+<h3><li><a name="Preparing Tests for Execution">Preparing Tests for Execution</a></li></h3>
+
+In general, for each test,<p>
+
+</p><ol>
+
+<li>Either,
+    <ol type="a">
+    <li>store the <code>*Policy.xml</code> file for the given
+test in the repository you use for policies, such that the
+specified <code>*Policy.xml</code> is the only policy that will
+be retrieved by the PDP, or
+    </li><li> configure the PDP with the
+<code>*Policy.xml</code> file as its initial policy.
+    </li></ol><p>
+
+</p></li><li>Send the <code>*Request.xml</code> file (or its semantic
+equivalent in your system) to the Context Handler component of
+the XACML PDP via your access control decision request
+API.<p>
+
+</p></li><li>Compare the result returned from the PDP with the specified
+<code>*Response.xml</code> file (or its semantic equivalent in
+your system).<p>
+
+</p></li><li>The test passes if your system's result is semantically
+equivalent to the specified <code>*Response.xml</code> file.<p>
+
+</p></li></ol>
+
+Some of the tests have <i>special instructions</i> associated
+with them.  They modify the instructions given above for the
+given test.<p>
+
+</p><h3><li><a name="Contributions of New Tests">Contributions of New
+        Tests</a></li></h3>
+
+Any XACML implementer may contribute additional conformance
+tests by submitting them to the <a href="mailto:xacml-comment@lists.oasis-open.org">
+xacml-comment@lists.oasis-open.org </a> mailing list.  Such
+contributions will be incorporated into the test suite on the next
+update.<p>
+
+While this suite of tests is non-normative, we hope the suite
+will represent a general consensus as to the intent of the XACML
+Version 2.0 Standard.  For this reason, contributed tests are
+marked <font color="red">**EXPERIMENTAL**</font>
+until the tests have undergone successful review and use, defined
+as follows:</p><p>
+
+</p><ol>
+<li> a reasonable review period has elapsed since submission, and
+</li><li> several implementers have reported successful execution of
+     these tests to
+     <a href="mailto:xacml-comment@lists.oasis-open.org">
+     xacml-comment@lists.oasis-open.org,</a> and
+</li><li> no objections to the test have been reported to the
+     xacml-comment mailing list.
+</li></ol><p>
+
+Once the tests have undergone successful review and use, then the
+<font color="red">**EXPERIMENTAL**</font> status will be
+removed.</p><p>
+
+If an objection is reported on the xacml-comment mailing list to
+an <font color="red">**EXPERIMENTAL**</font> test during the review
+period, then the test will be removed from the test suite on the
+next update unless the XACML TC upholds the objection.  It is up
+to the test submitter to request review by the TC, and it is up
+to the TC to decide whether or not to review a test.</p><p>
+
+If an objection is reported to a test that is no longer <font color="red">**EXPERIMENTAL**</font>, the objection is treated
+as a bug.  See <a href="#Bugs%20in%20the%20Tests"> Bugs in the
+Tests </a> for a
+description of how bugs are handled.</p><p>
+
+</p><h3><li><a name="Bugs in the Tests">Bugs in the Tests</a></li></h3>
+
+Following are the known bugs:<p>
+
+</p><ol>
+<li>The &lt;Description&gt; in many *Policy.xml files is incorrect:
+    instead of "read or write Bart Simpson's medical record", the
+    description should say "perform any action on any
+    resource".
+</li></ol><p>
+
+If you believe any test does not correctly interpret the intent
+of the <a href="http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf">
+ eXtensible Access Control Markup Language (XACML) Version 2.0 OASIS Standard</a>, or if you find any
+additional errors in these tests, please submit a report to the
+<a href="mailto:xacml-comment@lists.oasis-open.org">
+xacml-comment@lists.oasis-open.org</a> mailing list.  Absent any
+objections to a bug report, minor bugs
+may be fixed at the test editor's discretion in the next test
+suite update.</p><p>
+
+Major or controversial bugs reported against non-<a href="#Contributions%20of%20New%20Tests"><font color="red">**EXPERIMENTAL**</font></a>
+tests will be reviewed by the XACML TC.  If the TC agrees that
+the test does not conform to the intent of the XACML Version 2.0
+Standard, then the test will be modified or removed as
+appropriate on the next test suite update.</p><p>
+
+Major or controversial bugs reported against tests marked <a href="#Contributions%20of%20New%20Tests"><font color="red">**EXPERIMENTAL**</font></a> will be treated as an
+<i>objection</i> to the test.  See
+<a href="#Contributions%20of%20New%20Tests"> Contributions of New Tests
+</a> for the handling of such objections.</p><p>
+
+Periodically, an updated copy of the entire Conformance Test
+Suite, containing all corrections to date, will be posted to the
+XACML TC Web Site.
+<!--
+Anyone may request to have updates to the
+full Conformance Test Suite directly e-mailed to them at the same
+time that the update is submitted to the XACML TC web site
+maintainer: e-mail a request to <a
+href="mailto:Anne.Anderson@Sun.COM"> Anne.Anderson@Sun.COM </a>.
+Please be aware that this is a large e-mail :-).
+-->
+</p><p>
+
+</p></ol>
+
+<hr>
+
+<h2><li><a name="Mandatory-to-Implement Functionality Tests">
+        Mandatory-to-Implement Functionality Tests </a></li></h2>
+
+This section contains tests of all mandatory-to-implement
+functionality.  All implementations that conform to the XACML
+Version 2.0 Standard should pass all these tests except as
+explained in any associated <i>Special Instructions
+(<code>&lt;test ID&gt;Special.txt</code>)</i> file.<p>
+
+</p><ol type="A">
+<h3><li><a name="Attribute References"> Attribute References </a></li></h3>
+
+These tests exercise referencing of attribute values in the
+    Request by a policy.<p>
+
+</p><ol>
+      <li>Case: Simple type attribute element present in Request
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA001Response.xml">Response</a></i>
+      </li><li>Case: Simple type attribute element not present in
+          original decision Request, but retrievable from
+          Attribute repository
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA002Response.xml">Response</a>,
+            <a href="https://www.oasis-open.org/committees/download.php/14877/IIA002Special.txt">Special Instructions</a></i>
+      </li><li>Case: Simple type attribute element not present in
+          Request and not retrievable by Attribute Authority
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA003Response.xml">Response</a></i>
+      </li><li>Case: <i>INVALID</i> syntax for Attribute Designator
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA004Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA004Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA004Response.xml">Response</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA004Special.txt">Special Instructions</a></i>
+      </li><li>Case: <i>INVALID</i> syntax for Request attribute
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA005Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA005Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA005Response.xml">Response</a></i>
+    </li><li>Case: TRUE: "MustBePresent" XML attribute in Target Designator
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA006Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA006Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA006Response.xml">Response</a></i>
+    </li><li>Case: FALSE: "MustBePresent" XML attribute in Target Designator
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA007Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA007Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA007Response.xml">Response</a></i>
+    </li><li>Case: TRUE: "MustBePresent" XML attribute in Condition Designator
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA008Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA008Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA008Response.xml">Response</a></i>
+    </li><li>Case: FALSE: "MustBePresent" XML attribute in Condition Designator
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA009Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA009Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA009Response.xml">Response</a></i>
+    </li><li>Case: Permit: Multiple attributes match except for DataType
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA010Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA010Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA010Response.xml">Response</a></i>
+    </li><li>Case: Indeterminate: Multiple attributes match except for DataType
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA011Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA011Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA011Response.xml">Response</a></i>
+    </li><li>Case: Permit: Multiple subjects with same subject-category:
+        different attribute in each
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA012Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA012Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA012Response.xml">Response</a></i>
+    </li><li>Case: Indeterminate: Multiple subjects with same
+        subject-category: same attributes in each
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA013Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA013Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA013Response.xml">Response</a></i>
+    </li><li>Case: Permit: SubjectAttributeDesignator with
+        SubjectCategory XML attribute
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA014Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA014Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA014Response.xml">Response</a></i>
+    </li><li>Case: Permit: SubjectAttributeDesignator without
+        SubjectCategory XML attribute
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA015Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA015Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA015Response.xml">Response</a></i>
+    </li><li>Case: explicit environment:current-time attribute. Updates: Rule description is modified
+    to match the condition. Aug 11, 2005 - Argyn Kuketayev.
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA016Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA016Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA016Response.xml">Response</a></i>
+    </li><li>Case: implicit environment:current-time attribute
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA017Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA017Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA017Response.xml">Response</a></i>
+    </li><li>Case: explicit environment:current-date attribute
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA018Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA018Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA018Response.xml">Response</a></i>
+    </li><li>Case: implicit environment:current-date attribute
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA019Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA019Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA019Response.xml">Response</a></i>
+    </li><li>Case: explicit environment:current-dateTime attribute
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA020Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA020Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA020Response.xml">Response</a></i>
+    </li><li>Case: implicit environment:current-dateTime attribute
+     <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIA021Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA021Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIA021Response.xml">Response</a></i>
+</li></ol>
+
+<h3><li><a name="Target Matching"> Target Matching </a></li></h3>
+
+These tests exercise various forms of Target matching.<p>
+
+</p><ol>
+<li>Case: match: anySubject, anyResource, anyAction
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB001Response.xml">Response</a></i>
+<p>
+</p></li><li>Case: match: anySubject, anyResource, specified Action value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB002Response.xml">Response</a></i>
+</li><li>Case: no match: anySubject, anyResource, specified Action value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB003Response.xml">Response</a></i>
+</li><li>Case: match: anySubject, anyResource, two specified Action attributes
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB004Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB004Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB004Response.xml">Response</a></i>
+</li><li>Case: no match: anySubject, anyResource, two specified Action attributes
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB005Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB005Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB005Response.xml">Response</a></i>
+</li><li>Case: match: impliedAction
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB006Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB006Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB006Response.xml">Response</a></i>
+</li><li>Case: no match: impliedAction
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB007Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB007Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB007Response.xml">Response</a></i>
+</li><li>Case: match: multiple actions
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB008Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB008Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB008Response.xml">Response</a></i>
+</li><li>Case: no match: multiple actions
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB009Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB009Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB009Response.xml">Response</a></i>
+<p>
+</p></li><li>Case: match: Subject with specific SubjectCategory
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB010Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB010Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB010Response.xml">Response</a></i>
+</li><li>Case: no match: Subject with specific SubjectCategory
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB011Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB011Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB011Response.xml">Response</a></i>
+</li><li>Case: match: Subject with specific SubjectId value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB012Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB012Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB012Response.xml">Response</a></i>
+</li><li>Case: no match: Subject with specific SubjectID value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB013Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB013Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB013Response.xml">Response</a></i>
+</li><li>Case: match: Subject with non-string SubjectId DataType and value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB014Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB014Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB014Response.xml">Response</a></i>
+</li><li>Case: no match: Subject with non-string SubjectId DataType and value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB015Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB015Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB015Response.xml">Response</a></i>
+</li><li>Case: match: Subject with specific KeyInfo value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB016Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB016Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB016Response.xml">Response</a></i>
+</li><li>Case: no match: Subject with specific KeyInfo value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB017Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB017Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB017Response.xml">Response</a></i>
+</li><li>Case: match: Subject AttributeId
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB018Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB018Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB018Response.xml">Response</a></i>
+</li><li>Case: no match: Subject AttributeId
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB019Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB019Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB019Response.xml">Response</a></i>
+</li><li>Case: match: Subject AttributeId and Issuer
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB020Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB020Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB020Response.xml">Response</a></i>
+</li><li>Case: no match: Subject AttributeId and Issuer
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB021Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB021Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB021Response.xml">Response</a></i>
+</li><li>Case: match: Subject AttributeId and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB022Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB022Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB022Response.xml">Response</a></i>
+</li><li>Case: no match: Subject AttributeId and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB023Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB023Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB023Response.xml">Response</a></i>
+</li><li>Case: match: Subject AttributeId, Issuer, and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB024Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB024Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB024Response.xml">Response</a></i>
+</li><li>Case: no match: Subject AttributeId, Issuer, and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB025Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB025Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB025Response.xml">Response</a></i>
+</li><li>Case: match: Subject identifier value and attribute value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB026Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB026Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB026Response.xml">Response</a></i>
+</li><li>Case: no match: Subject identifier value and attribute value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB027Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB027Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB027Response.xml">Response</a></i>
+</li><li>Case: match: multiple Subjects
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB028Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB028Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB028Response.xml">Response</a></i>
+</li><li>Case: no match: multiple Subjects
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB029Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB029Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB029Response.xml">Response</a></i>
+<p>
+</p></li><li>Case: match: ResourceId
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB030Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB030Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB030Response.xml">Response</a></i>
+</li><li>Case: no match: ResourceId
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB031Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB031Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB031Response.xml">Response</a></i>
+</li><li>Case: match: ResourceId with specific DataType
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB032Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB032Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB032Response.xml">Response</a></i>
+</li><li>Case: no match: ResourceId with specific DataType
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB033Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB033Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB033Response.xml">Response</a></i>
+</li><li>Case: match: Resource AttributeId
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB034Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB034Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB034Response.xml">Response</a></i>
+</li><li>Case: no match: Resource AttributeId
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB035Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB035Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB035Response.xml">Response</a></i>
+</li><li>Case: match: Resource AttributeId and Issuer
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB036Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB036Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB036Response.xml">Response</a></i>
+</li><li>Case: no match: Resource AttributeId and Issuer
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB037Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB037Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB037Response.xml">Response</a></i>
+</li><li>Case: match: Resource AttributeId and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB038Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB038Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB038Response.xml">Response</a></i>
+</li><li>Case: no match: Resource AttributeId and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB039Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB039Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB039Response.xml">Response</a></i>
+</li><li>Case: match: Resource AttributeId, Issuer, and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB040Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB040Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB040Response.xml">Response</a></i>
+</li><li>Case: no match: Resource AttributeId, Issuer, and IssueInstant
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB041Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB041Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB041Response.xml">Response</a></i>
+</li><li>Case: match: Resource identifier value and attribute value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB042Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB042Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB042Response.xml">Response</a></i>
+</li><li>Case: no match: Resource identifier value and attribute value
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB043Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB043Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB043Response.xml">Response</a></i>
+</li><li>Case: match: multiple resources
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB044Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB044Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB044Response.xml">Response</a></i>
+</li><li>Case: no match: multiple resources
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB045Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB045Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB045Response.xml">Response</a></i>
+<p>
+</p></li><li>Case: match: specified Subject and Resource
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB046Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB046Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB046Response.xml">Response</a></i>
+</li><li>Case: no match: specified Subject and Resource
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB047Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB047Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB047Response.xml">Response</a></i>
+</li><li>Case: match: specified Subject, Action
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB048Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB048Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB048Response.xml">Response</a></i>
+</li><li>Case: no match: specified Subject, Action
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB049Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB049Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB049Response.xml">Response</a></i>
+</li><li>Case: match: specified Resource, Action
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB050Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB050Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB050Response.xml">Response</a></i>
+</li><li>Case: no match: specified Resource, Action
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB051Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB051Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB051Response.xml">Response</a></i>
+</li><li>Case: match: specified Subject, Resource, Action
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB052Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB052Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB052Response.xml">Response</a></i>
+</li><li>Case: no match: specified Subject, Resource, Action
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIB053Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB053Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIB053Response.xml">Response</a></i>
+</li></ol>
+
+<h3><li><a name="Function Evaluation"> Function Evaluation </a></li></h3>
+
+These tests exercise each of the mandatory-to-implement functions.<p>
+
+</p><ol>
+<b>GENERAL APPLY TESTS</b>
+<li>Case: Apply with Apply argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC001Response.xml">Response</a></i>
+</li><li>Case: Apply with AttributeValue argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC002Response.xml">Response</a></i>
+</li><li>Case: Apply with single-element bag where function expects primitive type
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC003Request.xml">Request</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IIC003Policy.xml">Policy</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IIC003Response.xml">Response</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IIC003Special.txt">Special Instructions</a></i>
+</li><li>Case: Apply with SubjectAttributeDesignator argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC004Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC004Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC004Response.xml">Response</a></i>
+</li><li>Case: Apply with ResourceAttributeDesignator argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC005Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC005Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC005Response.xml">Response</a></i>
+</li><li>Case: Apply with ActionAttributeDesignator argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC006Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC006Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC006Response.xml">Response</a></i>
+</li><li>Case: Apply with EnvironmentAttributeDesignator argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC007Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC007Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC007Response.xml">Response</a></i>
+</li><li>Case: Apply with empty bag argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC008Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC008Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC008Response.xml">Response</a></i>
+</li><li>Case: Apply with multiple-element bag argument
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC009Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC009Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC009Response.xml">Response</a></i>
+</li><li>Case: true: Condition Evaluation
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC010Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC010Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC010Response.xml">Response</a></i>
+</li><li>Case: false: Condition Evaluation
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC011Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC011Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC011Response.xml">Response</a></i>
+</li><li>Case: ERROR: Condition Evaluation - non-boolean datatype
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC012Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC012Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC012Response.xml">Response</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IIC012Special.txt">Special Instructions</a></i>
+<p>
+<b>ARITHMETIC FUNCTIONS</b>
+</p></li><li>Case: function:integer-add
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC013Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC013Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC013Response.xml">Response</a></i>
+</li><li>Case: ERROR: function:integer-add - non-integer datatype
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC014Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC014Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC014Response.xml">Response</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IIC014Special.txt">Special Instructions</a></i>
+</li><li>Case: function:double-add
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC015Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC015Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC015Response.xml">Response</a></i>
+</li><li>Case: function:integer-subtract
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC016Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC016Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC016Response.xml">Response</a></i>
+</li><li>Case: function:double-subtract
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC017Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC017Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC017Response.xml">Response</a></i>
+</li><li>Case: function:integer-multiply
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC018Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC018Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC018Response.xml">Response</a></i>
+</li><li>Case: function:double-multiply
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC019Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC019Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC019Response.xml">Response</a></i>
+</li><li>Case: function:integer-divide
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC020Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC020Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC020Response.xml">Response</a></i>
+</li><li>Case: function:double-divide
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC021Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC021Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC021Response.xml">Response</a></i>
+</li><li>Case: function:integer-mod
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC022Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC022Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC022Response.xml">Response</a></i>
+</li><li>Case: function:double-mod: IIC023*.xml: TEST DELETED
+</li><li>Case: function:round
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC024Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC024Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC024Response.xml">Response</a></i>
+</li><li>Case: function:floor
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC025Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC025Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC025Response.xml">Response</a></i>
+</li><li>Case: function:integer-abs
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC026Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC026Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC026Response.xml">Response</a></i>
+</li><li>Case: function:double-abs
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC027Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC027Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC027Response.xml">Response</a></i>
+<p>
+<b>ARITHMETIC CONVERSION FUNCTIONS</b>
+</p></li><li>Case: function:double-to-integer
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC028Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC028Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC028Response.xml">Response</a></i>
+</li><li>Case: function:integer-to-double
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC029Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC029Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC029Response.xml">Response</a></i>
+<p>
+<b>EQUALITY FUNCTIONS</b>
+</p></li><li>Case: true: function:integer-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC030Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC030Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC030Response.xml">Response</a></i>
+</li><li>Case: false: function:integer-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC031Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC031Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC031Response.xml">Response</a></i>
+</li><li>Case: true: function:double-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC032Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC032Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC032Response.xml">Response</a></i>
+</li><li>Case: false: function:double-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC033Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC033Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC033Response.xml">Response</a></i>
+</li><li>Case: true: function:boolean-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC034Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC034Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC034Response.xml">Response</a></i>
+</li><li>Case: false: function:boolean-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC035Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC035Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC035Response.xml">Response</a></i>
+</li><li>Case: true: function:string-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC036Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC036Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC036Response.xml">Response</a></i>
+</li><li>Case: false: function:string-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC037Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC037Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC037Response.xml">Response</a></i>
+</li><li>Case: true: function:rfc822Name-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC038Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC038Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC038Response.xml">Response</a></i>
+</li><li>Case: false: function:rfc822Name-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC039Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC039Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC039Response.xml">Response</a></i>
+</li><li>Case: true: function:x500Name-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC040Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC040Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC040Response.xml">Response</a></i>
+</li><li>Case: false: function:x500Name-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC041Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC041Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC041Response.xml">Response</a></i>
+</li><li>Case: true: function:date-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC042Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC042Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC042Response.xml">Response</a></i>
+</li><li>Case: false: function:date-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC043Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC043Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC043Response.xml">Response</a></i>
+</li><li>Case: true: function:time-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC044Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC044Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC044Response.xml">Response</a></i>
+</li><li>Case: false: function:time-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC045Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC045Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC045Response.xml">Response</a></i>
+</li><li>Case: true: function:dateTime-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC046Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC046Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC046Response.xml">Response</a></i>
+</li><li>Case: false: function:dateTime-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC047Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC047Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC047Response.xml">Response</a></i>
+</li><li>Case: true: function:hexBinary-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC048Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC048Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC048Response.xml">Response</a></i>
+</li><li>Case: false: function:hexBinary-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC049Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC049Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC049Response.xml">Response</a></i>
+</li><li>Case: true: function:base64Binary-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC050Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC050Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC050Response.xml">Response</a></i>
+</li><li>Case: false: function:base64Binary-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC051Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC051Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC051Response.xml">Response</a></i>
+</li><li>Case: true: function:anyURI-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC052Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC052Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC052Response.xml">Response</a></i>
+</li><li>Case: false: function:anyURI-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC053Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC053Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC053Response.xml">Response</a></i>
+</li><li>Case: true: function:QName-equal: IIC054*.xml: TEST DELETED
+</li><li>Case: false: function:QName-equal: IIC055*.xml: TEST DELETED
+<p>
+<b>See also <a href="#DURATION-EQUALS%20TESTS">DURATION-EQUALS TESTS</a> below.</b>
+</p><p>
+<b>String-regexp-match FUNCTION</b>
+</p></li><li>Case: true: function:string-regexp-match
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC056Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC056Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC056Response.xml">Response</a></i>
+</li><li>Case: false: function:string-regexp-match
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC057Request.xml">
+            Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC057Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC057Response.xml">Response</a></i>
+<p>
+<b>COMPARISON FUNCTIONS: GREATER THAN, GREATER THAN OR EQUAL</b>
+</p></li><li>Case: true: function:integer-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC058Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC058Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC058Response.xml">Response</a></i>
+</li><li>Case: false: function:integer-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC059Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC059Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC059Response.xml">Response</a></i>
+</li><li>Case: true: function:double-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC060Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC060Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC060Response.xml">Response</a></i>
+</li><li>Case: false: function:double-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC061Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC061Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC061Response.xml">Response</a></i>
+</li><li>Case: true: function:string-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC062Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC062Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC062Response.xml">Response</a></i>
+</li><li>Case: false: function:string-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC063Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC063Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC063Response.xml">Response</a></i>
+</li><li>Case: true: function:date-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC064Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC064Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC064Response.xml">Response</a></i>
+</li><li>Case: false: function:date-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC065Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC065Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC065Response.xml">Response</a></i>
+</li><li>Case: true: function:time-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC066Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC066Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC066Response.xml">Response</a></i>
+</li><li>Case: false: function:time-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC067Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC067Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC067Response.xml">Response</a></i>
+</li><li>Case: true: function:dateTime-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC068Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC068Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC068Response.xml">Response</a></i>
+</li><li>Case: false: function:dateTime-greater-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC069Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC069Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC069Response.xml">Response</a></i>
+</li><li>Case: true: function:integer-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC070Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC070Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC070Response.xml">Response</a></i>
+</li><li>Case: false: function:integer-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC071Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC071Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC071Response.xml">Response</a></i>
+</li><li>Case: true: function:double-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC072Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC072Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC072Response.xml">Response</a></i>
+</li><li>Case: false: function:double-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC073Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC073Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC073Response.xml">Response</a></i>
+</li><li>Case: true: function:string-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC074Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC074Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC074Response.xml">Response</a></i>
+</li><li>Case: false: function:string-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC075Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC075Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC075Response.xml">Response</a></i>
+</li><li>Case: true: function:date-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC076Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC076Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC076Response.xml">Response</a></i>
+</li><li>Case: false: function:date-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC077Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC077Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC077Response.xml">Response</a></i>
+</li><li>Case: true: function:time-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC078Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC078Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC078Response.xml">Response</a></i>
+</li><li>Case: false: function:time-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC079Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC079Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC079Response.xml">Response</a></i>
+</li><li>Case: true: function:dateTime-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC080Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC080Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC080Response.xml">Response</a></i>
+</li><li>Case: false: function:dateTime-greater-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC081Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC081Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC081Response.xml">Response</a></i>
+<p>
+<b>rfc822Name and x500Name MATCHING FUNCTIONS</b>
+</p></li><li>Case: true: function:rfc822Name-match
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC082Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC082Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC082Response.xml">Response</a></i>
+</li><li>Case: false: function:rfc822Name-match
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC083Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC083Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC083Response.xml">Response</a></i>
+</li><li>Case: true: function:x500Name-match
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC084Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC084Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC084Response.xml">Response</a></i>
+</li><li>Case: false: function:x500Name-match
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC085Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC085Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC085Response.xml">Response</a></i>
+<p>
+<b>LOGICAL FUNCTIONS</b>
+</p></li><li>Case: true: function:and
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC086Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC086Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC086Response.xml">Response</a></i>
+</li><li>Case: false: function:and
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC087Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC087Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC087Response.xml">Response</a></i>
+</li><li>Case: true: function:ordered-and: IIC088*.xml: TEST DELETED
+</li><li>Case: false: function:ordered-and: IIC089*.xml: TEST DELETED
+</li><li>Case: true: function:or
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC090Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC090Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC090Response.xml">Response</a></i>
+</li><li>Case: false: function:or
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC091Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC091Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC091Response.xml">Response</a></i>
+</li><li>Case: true: function:ordered-or: IIC092*.xml: TEST DELETED
+</li><li>Case: false: function:ordered-or: IIC093*.xml: TEST DELETED
+</li><li>Case: true: function:n-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC094Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC094Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC094Response.xml">Response</a></i>
+</li><li>Case: false: function:n-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC095Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC095Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC095Response.xml">Response</a></i>
+</li><li>Case: true: function:not
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC096Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC096Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC096Response.xml">Response</a></i>
+</li><li>Case: false: function:not
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC097Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC097Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC097Response.xml">Response</a></i>
+</li><li>Case: true: function:present: IIC098*.xml: TEST DELETED
+</li><li>Case: false: function:present: IIC099*.xml: TEST DELETED
+<p>
+<b>STRING NORMALIZATION FUNCTIONS</b>
+</p></li><li>Case: function:string-normalize-space
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC100Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC100Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC100Response.xml">Response</a></i>
+</li><li>Case: function:string-normalize-to-lower-case
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC101Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC101Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC101Response.xml">Response</a></i>
+<p>
+<b>DURATION FUNCTIONS</b>
+</p></li><li>Case: function:dateTime-add-dayTimeDuration
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC102Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC102Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC102Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-add-yearMonthDuration
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC103Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC103Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC103Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-subtract-dayTimeDuration
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC104Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC104Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC104Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-subtract-yearMonthDuration
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC105Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC105Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC105Response.xml">Response</a></i>
+</li><li>Case: function:date-add-yearMonthDuration
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC106Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC106Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC106Response.xml">Response</a></i>
+</li><li>Case: function:date-subtract-yearMonthDuration
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC107Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC107Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC107Response.xml">Response</a></i>
+<p>
+<b>See also <a href="#DURATION-EQUALS%20TESTS">DURATION-EQUALS TESTS</a> below.</b>
+</p><p>
+<b>COMPARISON FUNCTIONS: LESS THAN, LESS THAN OR EQUAL</b>
+</p></li><li>Case: function:string-less-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC108Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC108Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC108Response.xml">Response</a></i>
+</li><li>Case: function:string-less-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC109Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC109Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC109Response.xml">Response</a></i>
+</li><li>Case: function:integer-less-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC110Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC110Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC110Response.xml">Response</a></i>
+</li><li>Case: function:double-less-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC111Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC111Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC111Response.xml">Response</a></i>
+</li><li>Case: function:integer-less-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC112Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC112Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC112Response.xml">Response</a></i>
+</li><li>Case: function:double-less-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC113Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC113Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC113Response.xml">Response</a></i>
+</li><li>Case: function:time-less-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC114Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC114Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC114Response.xml">Response</a></i>
+</li><li>Case: function:time-less-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC115Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC115Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC115Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-less-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC116Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC116Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC116Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-less-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC117Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC117Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC117Response.xml">Response</a></i>
+</li><li>Case: function:date-less-than
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC118Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC118Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC118Response.xml">Response</a></i>
+</li><li>Case: function:date-less-than-or-equal
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC119Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC119Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC119Response.xml">Response</a></i>
+<p>
+<b>BAG FUNCTIONS</b>
+</p></li><li>Case: function:string-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC120Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC120Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC120Response.xml">Response</a></i>
+</li><li>Case: function:string-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC121Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC121Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC121Response.xml">Response</a></i>
+</li><li>Case: function:boolean-one-and-only
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC122Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC122Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC122Response.xml">Response</a></i>
+</li><li>Case: function:boolean-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC123Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC123Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC123Response.xml">Response</a></i>
+</li><li>Case: function:boolean-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC124Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC124Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC124Response.xml">Response</a></i>
+</li><li>Case: function:boolean-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC125Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC125Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC125Response.xml">Response</a></i>
+</li><li>Case: function:integer-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC126Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC126Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC126Response.xml">Response</a></i>
+</li><li>Case: function:integer-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC127Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC127Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC127Response.xml">Response</a></i>
+</li><li>Case: function:integer-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC128Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC128Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC128Response.xml">Response</a></i>
+</li><li>Case: function:double-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC129Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC129Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC129Response.xml">Response</a></i>
+</li><li>Case: function:double-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC130Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC130Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC130Response.xml">Response</a></i>
+</li><li>Case: function:double-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC131Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC131Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC131Response.xml">Response</a></i>
+</li><li>Case: function:date-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC132Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC132Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC132Response.xml">Response</a></i>
+</li><li>Case: function:date-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC133Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC133Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC133Response.xml">Response</a></i>
+</li><li>Case: function:date-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC134Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC134Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC134Response.xml">Response</a></i>
+</li><li>Case: function:time-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC135Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC135Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC135Response.xml">Response</a></i>
+</li><li>Case: function:time-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC136Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC136Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC136Response.xml">Response</a></i>
+</li><li>Case: function:time-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC137Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC137Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC137Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC138Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC138Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC138Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC139Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC139Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC139Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC140Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC140Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC140Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC141Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC141Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC141Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC142Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC142Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC142Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC143Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC143Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC143Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC144Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC144Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC144Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC145Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC145Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC145Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC146Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC146Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC146Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC147Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC147Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC147Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC148Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC148Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC148Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC149Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC149Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC149Response.xml">Response</a></i>
+</li><li>Case: function:dayTimeDuration-one-and-only
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC150Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC150Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC150Response.xml">Response</a></i>
+</li><li>Case: function:dayTimeDuration-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC151Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC151Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC151Response.xml">Response</a></i>
+</li><li>Case: function:dayTimeDuration-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC152Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC152Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC152Response.xml">Response</a></i>
+</li><li>Case: function:dayTimeDuration-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC153Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC153Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC153Response.xml">Response</a></i>
+</li><li>Case: function:yearMonthDuration-one-and-only
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC154Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC154Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC154Response.xml">Response</a></i>
+</li><li>Case: function:yearMonthDuration-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC155Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC155Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC155Response.xml">Response</a></i>
+</li><li>Case: function:yearMonthDuration-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC156Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC156Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC156Response.xml">Response</a></i>
+</li><li>Case: function:yearMonthDuration-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC157Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC157Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC157Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC158Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC158Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC158Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC159Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC159Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC159Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC160Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC160Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC160Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-bag-size
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC161Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC161Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC161Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-is-in
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC162Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC162Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC162Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-bag
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC163Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC163Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC163Response.xml">Response</a></i>
+<p>
+<b>HIGHER-ORDER BAG FUNCTIONS</b>
+</p></li><li>Case: function:any-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC164Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC164Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC164Response.xml">Response</a></i>
+</li><li>Case: function:all-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC165Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC165Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC165Response.xml">Response</a></i>
+</li><li>Case: function:any-of-any
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC166Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC166Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC166Response.xml">Response</a></i>
+</li><li>Case: function:all-of-any
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC167Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC167Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC167Response.xml">Response</a></i>
+</li><li>Case: function:any-of-all
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC168Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC168Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC168Response.xml">Response</a></i>
+</li><li>Case: function:all-of-all
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC169Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC169Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC169Response.xml">Response</a></i>
+</li><li>Case: function:map
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC170Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC170Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC170Response.xml">Response</a></i>
+<p>
+<b>SET FUNCTIONS</b>
+</p></li><li>Case: function:string-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC171Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC171Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC171Response.xml">Response</a></i>
+</li><li>Case: function:string-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC172Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC172Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC172Response.xml">Response</a></i>
+</li><li>Case: function:string-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC173Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC173Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC173Response.xml">Response</a></i>
+</li><li>Case: function:string-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC174Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC174Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC174Response.xml">Response</a></i>
+</li><li>Case: function:string-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC175Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC175Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC175Response.xml">Response</a></i>
+</li><li>Case: function:boolean-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC176Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC176Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC176Response.xml">Response</a></i>
+</li><li>Case: function:boolean-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC177Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC177Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC177Response.xml">Response</a></i>
+</li><li>Case: function:boolean-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC178Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC178Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC178Response.xml">Response</a></i>
+</li><li>Case: function:boolean-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC179Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC179Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC179Response.xml">Response</a></i>
+</li><li>Case: function:boolean-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC180Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC180Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC180Response.xml">Response</a></i>
+</li><li>Case: function:integer-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC181Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC181Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC181Response.xml">Response</a></i>
+</li><li>Case: function:integer-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC182Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC182Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC182Response.xml">Response</a></i>
+</li><li>Case: function:integer-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC183Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC183Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC183Response.xml">Response</a></i>
+</li><li>Case: function:integer-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC184Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC184Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC184Response.xml">Response</a></i>
+</li><li>Case: function:integer-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC185Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC185Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC185Response.xml">Response</a></i>
+</li><li>Case: function:double-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC186Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC186Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC186Response.xml">Response</a></i>
+</li><li>Case: function:double-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC187Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC187Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC187Response.xml">Response</a></i>
+</li><li>Case: function:double-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC188Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC188Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC188Response.xml">Response</a></i>
+</li><li>Case: function:double-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC189Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC189Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC189Response.xml">Response</a></i>
+</li><li>Case: function:double-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC190Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC190Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC190Response.xml">Response</a></i>
+</li><li>Case: function:date-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC191Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC191Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC191Response.xml">Response</a></i>
+</li><li>Case: function:date-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC192Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC192Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC192Response.xml">Response</a></i>
+</li><li>Case: function:date-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC193Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC193Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC193Response.xml">Response</a></i>
+</li><li>Case: function:date-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC194Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC194Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC194Response.xml">Response</a></i>
+</li><li>Case: function:date-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC195Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC195Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC195Response.xml">Response</a></i>
+</li><li>Case: function:time-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC196Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC196Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC196Response.xml">Response</a></i>
+</li><li>Case: function:time-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC197Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC197Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC197Response.xml">Response</a></i>
+</li><li>Case: function:time-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC198Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC198Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC198Response.xml">Response</a></i>
+</li><li>Case: function:time-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC199Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC199Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC199Response.xml">Response</a></i>
+</li><li>Case: function:time-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC200Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC200Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC200Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC201Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC201Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC201Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC202Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC202Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC202Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC203Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC203Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC203Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC204Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC204Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC204Response.xml">Response</a></i>
+</li><li>Case: function:dateTime-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC205Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC205Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC205Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC206Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC206Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC206Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC207Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC207Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC207Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC208Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC208Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC208Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC209Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC209Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC209Response.xml">Response</a></i>
+</li><li>Case: function:anyURI-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC210Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC210Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC210Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC211Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC211Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC211Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC212Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC212Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC212Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC213Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC213Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC213Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC214Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC214Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC214Response.xml">Response</a></i>
+</li><li>Case: function:x500Name-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC215Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC215Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC215Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC216Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC216Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC216Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC217Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC217Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC217Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC218Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC218Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC218Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC219Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC219Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC219Response.xml">Response</a></i>
+</li><li>Case: function:rfc822Name-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC220Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC220Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC220Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC221Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC221Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC221Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC222Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC222Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC222Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC223Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC223Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC223Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC224Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC224Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC224Response.xml">Response</a></i>
+</li><li>Case: function:hexBinary-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC225Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC225Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC225Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-intersection
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC226Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC226Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC226Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-at-least-one-member-of
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC227Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC227Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC227Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-union
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC228Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC228Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC228Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-subset
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC229Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC229Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC229Response.xml">Response</a></i>
+</li><li>Case: function:base64Binary-set-equals
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC230Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC230Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC230Response.xml">Response</a></i>
+
+<p>
+<b><a name="DURATION-EQUALS TESTS">DURATION-EQUALS TESTS</a></b>
+</p><p>
+</p></li><li>Case: function:dayTimeDuration-equals<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Anne Anderson &lt;Anne.Anderson@Sun.COM&gt;.  Added to this
+    test suite 27 February 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC231Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC231Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC231Response.xml">Response</a></i>
+</li><li>Case: function:yearMonthDuration-equals<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Anne Anderson &lt;Anne.Anderson@Sun.COM&gt;.  Added to this
+    test suite 27 February 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIC232Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC232Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIC232Response.xml">Response</a></i>
+</li></ol>
+
+<h3><li><a name="Combining Algorithms"> Combining Algorithms </a></li></h3>
+
+These tests exercise each of the mandatory Combining
+            Algorithms.<p>
+
+</p><ol>
+<li>Case: Permit: RuleCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID001Response.xml">Response</a></i>
+</li><li>Case: Deny: RuleCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID002Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: RuleCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID003Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: RuleCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID004Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID004Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID004Response.xml">Response</a></i>
+</li><li>Case: Permit: PolicyCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID005Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID005Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID005Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID006Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID006Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID006Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID007Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID007Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID007Response.xml">Response</a></i>
+</li><li>Case: Another Deny (can't return Indeterminate): PolicyCombiningAlgorithm DenyOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID008Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID008Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID008Response.xml">Response</a></i>
+</li><li>Case: Permit: RuleCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID009Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID009Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID009Response.xml">Response</a></i>
+</li><li>Case: Deny: RuleCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID010Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID010Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID010Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: RuleCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID011Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID011Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID011Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: RuleCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID012Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID012Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID012Response.xml">Response</a></i>
+</li><li>Case: Permit: PolicyCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID013Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID013Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID013Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID014Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID014Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID014Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID015Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID015Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID015Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: PolicyCombiningAlgorithm PermitOverrides
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID016Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID016Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID016Response.xml">Response</a></i>
+</li><li>Case: Permit: RuleCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID017Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID017Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID017Response.xml">Response</a></i>
+</li><li>Case: Deny: RuleCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID018Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID018Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID018Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: RuleCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID019Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID019Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID019Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: RuleCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID020Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID020Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID020Response.xml">Response</a></i>
+</li><li>Case: Permit: PolicyCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID021Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID021Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID021Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID022Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID022Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID022Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID023Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID023Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID023Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: PolicyCombiningAlgorithm FirstApplicable
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID024Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID024Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID024Response.xml">Response</a></i>
+</li><li>Case: Permit: PolicyCombiningAlgorithm OnlyOneApplicablePolicy
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID025Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID025Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID025Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm OnlyOneApplicablePolicy
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID026Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID026Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID026Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm OnlyOneApplicablePolicy
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID027Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID027Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID027Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: PolicyCombiningAlgorithm OnlyOneApplicablePolicy
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID028Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID028Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IID028Response.xml">Response</a></i>
+</li><li>Case: Permit: Multiple initial policies, but only one applies
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID029Request.xml">Request</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID029Policy1.xml">Policy1</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID029Policy2.xml">Policy2</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID029Response.xml">Response</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID029Special.txt">Special Instructions</a></i>
+</li><li>Case: Indeterminate: Multiple initial policies, more than one
+        applies
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IID030Request.xml">Request</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID030Policy1.xml">Policy1</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID030Policy2.xml">Policy2</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID030Response.xml">Response</a>,
+       <a href="https://www.oasis-open.org/committees/download.php/14877/IID030Special.txt">Special Instructions</a></i>
+</li></ol>
+
+<h3><li><a name="Schema components"> Schema components </a></li></h3>
+
+This section lists test cases for certain elements of the
+schema not exercised by test cases above.<p>
+
+</p><ol>
+<li>Case: policy element PolicySetIdReference
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIE001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE001PolicyId1.xml">PolicyId1</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE001PolicySetId1.xml">PolicySetId1</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE001Response.xml">Response</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE001Special.txt">Special Instructions</a></i>
+</li><li>Case: policy element PolicyIdReference
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIE002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE002PolicyId1.xml">PolicyId1</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE002PolicySetId1.xml">PolicySetId1</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE002Response.xml">Response</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE002Special.txt">Special Instructions</a></i>
+</li><li>Case: PolicyIdReference to invalid, but non-evaluated, Policy<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Anne Anderson &lt;Anne.Anderson@Sun.COM&gt;.  Added to this
+    test suite 27 February 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIE003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE003PolicyId1.xml">PolicyId1</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE003PolicyId2.xml">PolicyId2</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE003Response.xml">Response</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIE003Special.txt">Special Instructions</a></i>
+</li></ol>
+
+<h3><li><a name="XACML 2.0 new features"> XACML 2.0 new features </a></li></h3>
+
+This section lists test cases for certain new features introduced
+in XACML 2.0 specification.<p>
+
+</p><ol>
+<li>Case: policy element PolicySetIdReference
+    <font color="red">**EXPERIMENTAL**</font><br>
+    Contributed by Argyn Kuketayev.  Added to this
+    test suite 13 October 2005.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIF001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIF001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIF001Response.xml">Response</a>,<a <="" ol="">
+
+</a></i></li></ol><i><a <="" ol="">
+
+<hr>
+
+
+
+
+
+</a><h2><a <="" ol=""></a><li><a <="" ol=""></a><a name="Optional, but Normative Functionality Tests">
+          Optional, but Normative Functionality Tests </a></li></h2>
+
+These tests exercise areas of functionality that are not
+mandatory-to-implement, but that are normative when implemented.
+Submissions of tests for this section are invited.<p>
+
+</p><ol type="A">
+<h3><li><a name="Obligations"> Obligations </a></li></h3>
+
+<p>
+These tests exercise obligations (<a href="https://www.oasis-open.org/committees/download.php/14877/IIIASpecial.txt">Special Instructions</a>).
+</p>
+
+<ol>
+<p>
+For rule combining algorithms:
+</p>
+
+<li>Case: Permit: RuleCombiningAlgorithm DenyOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA001Response.xml">Response</a></i>
+</li><li>Case: Deny: RuleCombiningAlgorithm DenyOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA002Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: RuleCombiningAlgorithm DenyOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA003Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: RuleCombiningAlgorithm DenyOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA004Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA004Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA004Response.xml">Response</a></i>
+
+</li><li>Case: Permit: RuleCombiningAlgorithm PermitOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA005Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA005Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA005Response.xml">Response</a></i>
+</li><li>Case: Deny: RuleCombiningAlgorithm PermitOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA006Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA006Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA006Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: RuleCombiningAlgorithm PermitOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA007Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA007Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA007Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: RuleCombiningAlgorithm PermitOverrides<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA008Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA008Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA008Response.xml">Response</a></i>
+
+</li><li>Case: Permit: RuleCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA009Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA009Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA009Response.xml">Response</a></i>
+</li><li>Case: Deny: RuleCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA010Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA010Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA010Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: RuleCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA011Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA011Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA011Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: RuleCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA012Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA012Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA012Response.xml">Response</a></i>
+
+<p>
+For policy combining algorithms:
+</p>
+
+</li><li>Case: Permit: PolicyCombiningAlgorithm DenyOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA013Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA013Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA013Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm DenyOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA014Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA014Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA014Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm DenyOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA015Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA015Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA015Response.xml">Response</a></i>
+</li><li>Case: AnotherDeny (can't return Indeterminate): PolicyCombiningAlgorithm DenyOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA016Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA016Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA016Response.xml">Response</a></i>
+
+</li><li>Case: Permit: PolicyCombiningAlgorithm PermitOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA017Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA017Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA017Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm PermitOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA018Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA018Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA018Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm PermitOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA019Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA019Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA019Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: PolicyCombiningAlgorithm PermitOverrides <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA020Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA020Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA020Response.xml">Response</a></i>
+
+</li><li>Case: Permit: PolicyCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA021Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA021Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA021Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA022Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA022Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA022Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA023Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA023Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA023Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: PolicyCombiningAlgorithm FirstApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA024Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA024Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA024Response.xml">Response</a></i>
+
+</li><li>Case: Permit: PolicyCombiningAlgorithm OnlyOneApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA025Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA025Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA025Response.xml">Response</a></i>
+</li><li>Case: Deny: PolicyCombiningAlgorithm OnlyOneApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA026Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA026Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA026Response.xml">Response</a></i>
+</li><li>Case: NotApplicable: PolicyCombiningAlgorithm OnlyOneApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA027Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA027Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA027Response.xml">Response</a></i>
+</li><li>Case: Indeterminate: PolicyCombiningAlgorithm OnlyOneApplicable<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 11 March 2003, updated 25 March 2004 (fixed a bug reported by Seth Proctor).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIA028Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA028Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIA028Response.xml">Response</a></i>
+
+</li></ol>
+
+<h3><li><a name="DefaultsType"> DefaultsType </a></li></h3>
+
+<ol>
+<li>Case: PolicySetDefaults XPathVersion
+</li><li>Case: PolicyDefaults XPathVersion
+</li><li>Case: PolicyDefaults XPathVersion differs from parent
+      PolicySetDefaults XPathVersion
+</li></ol>
+
+<h3><li><a name="Hierarchical Resources"> Hierarchical Resources </a></li></h3>
+
+<p>
+These tests exercise policy evaluation for hierarchical resources (<a href="https://www.oasis-open.org/committees/download.php/14877/IIICSpecial.txt">Special Instructions</a>).
+</p>
+
+<ol>
+<li>Case: Scope="Immediate"<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 26 February 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIC001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIC001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIC001Response.xml">Response</a></i>
+</li><li>Case: Scope="Children"<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 26 February 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIC002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIC002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIC002Response.xml">Response</a></i>
+</li><li>Case: Scope="Descendants"<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 26 February 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIC003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIC003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIC003Response.xml">Response</a></i>
+</li></ol>
+
+<h3><li><a name="&lt;ResourceContent&gt; Element">
+          &lt;ResourceContent&gt; Element </a></li></h3>
+
+<ol>
+</ol>
+
+<h3><li><a name="Multiple Decisions"> Multiple Decisions </a></li></h3>
+
+<ol>
+</ol>
+
+<h3><li><a name="Attribute Selectors"> Attribute Selectors </a></li></h3>
+
+<p>
+These tests exercise attribute selectors (<a href="https://www.oasis-open.org/committees/download.php/14877/IIIFSpecial.txt">Special Instructions</a>).
+</p>
+
+<ol>
+    <li>Case: PRESENT: "MustBePresent" attribute in Target Attribute Selector<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 11 March 2003<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIF001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF001Response.xml">Response</a></i>
+    </li><li>Case: MISSING: "MustBePresent" attribute in Target Attribute Selector<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 11 March 2003.<br>
+    Fix/modification for IIIF002Request.xml contributed by John Merrells
+    &lt;merrells@jiffysoftware.com&gt;.  Added to this test suite
+    11 March 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIF002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF002Response.xml">Response</a></i>
+    </li><li>Case: PRESENT: "MustBePresent" attribute in Condition Attribute Selector<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 11 March 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIF003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF003Response.xml">Response</a></i>
+    </li><li>Case: MISSING: "MustBePresent" attribute in Condition Attribute Selector<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 11 March 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIF004Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF004Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF004Response.xml">Response</a></i>
+    </li><li>Case: Syntax error in XPath expression <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 11 March 2003, updated 2 March 2004 (fixed a bug reported by Jin Peng).<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIF005Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF005Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF005Response.xml">Response</a></i>
+    </li><li>Case: Attribute Selector in PolicySet Target <br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 11 March 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIF006Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF006Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF006Response.xml">Response</a></i>
+    </li><li>Case: Relative XPath expressions in Attribute Selector<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 21 March 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIF007Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF007Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIF007Response.xml">Response</a></i>
+</li></ol>
+
+<h3><li><a name="Non-mandatory Functions">Non-mandatory Functions </a></li></h3>
+
+<p>
+These tests exercise each of the non-mandatory functions</p>
+<ol>
+<li>Case: xpath-node-count<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 19 August 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIG001Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG001Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG001Response.xml">Response</a></i>
+
+</li><li>Case: true: xpath-node-equal<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 19 August 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIG002Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG002Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG002Response.xml">Response</a></i>
+
+</li><li>Case: false: xpath-node-equal<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 19 August 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIG003Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG003Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG003Response.xml">Response</a></i>
+
+</li><li>Case: true: xpath-node-match<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 19 August 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIG004Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG004Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG004Response.xml">Response</a></i>
+
+</li><li>Case: false: xpath-node-match<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 4 March 2003, updated 19 August 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIG005Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG005Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG005Response.xml">Response</a></i>
+
+    </li><li>Case: <a href="https://www.oasis-open.org/committees/download.php/14877/IIIG006Special.txt">Relative XPath expressions</a> in XPath-based functions<br>
+    <a href="#Contributions%20of%20New%20Tests">
+    <font color="red">**EXPERIMENTAL**</font></a><br>
+    Contributed by Satoshi Hada &lt;SATOSHIH@jp.ibm.com&gt;.  Added to this
+    test suite 21 March 2003, updated 19 August 2003.<br>
+    <i><a href="https://www.oasis-open.org/committees/download.php/14877/IIIG006Request.xml">Request</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG006Policy.xml">Policy</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG006Response.xml">Response</a>,<a href="https://www.oasis-open.org/committees/download.php/14877/IIIG006Special.txt">Special Instructions</a></i>
+</li></ol>
+
+
+
+<hr>
+
+
+
+</ol></i></ol></ol></body></html>

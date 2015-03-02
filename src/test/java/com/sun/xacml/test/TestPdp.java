@@ -133,9 +133,6 @@ public class TestPdp {
 		request.getAttributes().add(actCategory);
 		
 		
-		/**
-		 * FIXME: why not use Request#hashCode()? It is generated from XSD with JAXB annotations.
-		 */
 		hashCode1 = pdp.getHashCode(request);
 		hashCode2 = pdp.getHashCode(request);
 		
