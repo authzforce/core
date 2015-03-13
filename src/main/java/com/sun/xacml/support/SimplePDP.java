@@ -98,9 +98,8 @@ public class SimplePDP
 		// Create the two static modules with the given policies so that
 		// we have context-based and reference-based access to all the
 		// policies provided on the command-line
-		List policyList = Arrays.asList(policies);
-		StaticPolicyFinderModule staticModule = new StaticPolicyFinderModule(PermitOverridesPolicyAlg.algId, policyList);
-		StaticRefPolicyFinderModule staticRefModule = new StaticRefPolicyFinderModule(policyList);
+		StaticPolicyFinderModule staticModule = new StaticPolicyFinderModule(PermitOverridesPolicyAlg.algId, policies);
+		StaticRefPolicyFinderModule staticRefModule = new StaticRefPolicyFinderModule(policies);
 
 		// also create a module that lets us get at URL-based policies
 		URLPolicyFinderModule urlModule = new URLPolicyFinderModule();

@@ -145,6 +145,18 @@ public class PdpModelHandler
 	// files at the root of the classpath)
 	// private final List<String> extSchemaLocations = new ArrayList<>();
 	private final JAXBContext confJaxbCtx;
+	
+	/**
+	 * Creates XACML 3.0 XML Unmarshaller with XACML 3.0 schema validation
+	 * @return unmarshaller
+	 * @throws JAXBException
+	 */
+	public static Unmarshaller createXacml3Unmarshaller() throws JAXBException
+	{
+		final Unmarshaller unmarshaller = XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
+		unmarshaller.setSchema(XACML_3_0_SCHEMA);
+		return unmarshaller;
+	}
 
 	/**
 	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can

@@ -390,8 +390,8 @@ public class TestUtils
 		}
 
 		PolicyFinder policyFinder = new PolicyFinder();
-		List<String> policyLocations = new ArrayList<>();
-
+		String[] policyLocations = new String[policyfilenames.size()];
+		int i = 0;
 		for (String policyfilename : policyfilenames)
 		{
 			/**
@@ -406,7 +406,8 @@ public class TestUtils
 			URL policyFileURL = Thread.currentThread().getContextClassLoader().getResource(policyFileResourceName);
 			// Use getPath() to remove the file: prefix, because used later as input to
 			// FileInputStream(...) in FilePolicyModule
-			policyLocations.add(policyFileURL.toString());
+			policyLocations[i] = policyFileURL.toString();
+			i += 1;
 		}
 
 		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(policyLocations);

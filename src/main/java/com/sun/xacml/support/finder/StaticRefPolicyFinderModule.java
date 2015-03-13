@@ -33,13 +33,12 @@
  */
 package com.sun.xacml.support.finder;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.List;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.validation.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,19 +86,16 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 	 * make reference to another one which has to be previously defined. Not null only if the finder
 	 * module is initialized from locations of XACML <PolicySet>s.
 	 */
-	private final List<URL> policyLocationList;
+	private final String[] policyLocations;
 
 	/*
 	 * List of <PolicySet>s. Not null only if the finder module is initialized directly from XACML
 	 * <PolicySet>s (JAXB).
 	 */
-	private final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> policySetList;
+	private final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet[] policySets;
 
 	// the map of policies
 	private final PolicyCollection policies;
-
-	// the optional schema
-	private final Schema schema;
 
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(StaticRefPolicyFinderModule.class);
@@ -110,12 +106,11 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 	 * @param policySets
 	 *            a <code>List</code> of XACML <PolicySet>s
 	 */
-	public StaticRefPolicyFinderModule(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> policySets)
+	public StaticRefPolicyFinderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet[] policySets)
 	{
-		this.policySetList = policySets;
+		this.policySets = policySets;
 		this.policies = new PolicyCollection();
-		this.policyLocationList = null;
-		this.schema = null;
+		this.policyLocations = null;
 	}
 
 	/**
@@ -125,16 +120,12 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 	 * @param policyLocations
 	 *            a <code>List</code> of <code>URL</code>s that represent URLs or files pointing to
 	 *            XACML policies
-	 * @param xacmlSchema
-	 *            the schema file to validate policies against, or null if schema validation is not
-	 *            desired
 	 */
-	public StaticRefPolicyFinderModule(List<URL> policyLocations, Schema xacmlSchema)
+	public StaticRefPolicyFinderModule(String[] policyLocations)
 	{
-		this.policyLocationList = policyLocations;
+		this.policyLocations = policyLocations;
 		this.policies = new PolicyCollection();
-		this.schema = xacmlSchema;
-		this.policySetList = null;
+		this.policySets = null;
 	}
 
 	/**
@@ -197,9 +188,9 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 		/*
 		 * Try loading from JAXB <PolicySet>s first.
 		 */
-		if (policySetList != null)
+		if (policySets != null)
 		{
-			for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySet : policySetList)
+			for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySet : policySets)
 			{
 				final IPolicy policyInstance = getPolicyInstanceFromJaxb(policySet, finder);
 				if (!policies.addPolicy(policyInstance))
@@ -212,22 +203,30 @@ public class StaticRefPolicyFinderModule extends PolicyFinderModule<AbstractPoli
 		}
 
 		// Else load from list of policy locations
-		for (final URL policyLocation : policyLocationList)
+		for (final String policyLocation : policyLocations)
 		{
+			final URL policyURL;
+			try
+			{
+				policyURL = new URL(policyLocation);
+			} catch (MalformedURLException e)
+			{
+				throw new IllegalArgumentException("Invalid policy URL: " + policyLocation, e);
+			}	
+			
 			Object jaxbObj;
 			final Unmarshaller unmarshaller;
 			try
 			{
-				unmarshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
+				unmarshaller = PdpModelHandler.createXacml3Unmarshaller();
 			} catch (JAXBException e1)
 			{
 				throw new IllegalArgumentException("Failed to create JAXB marshaller for unmarshalling Policy XML document", e1);
 			}
 
-			unmarshaller.setSchema(schema);
 			try
 			{
-				jaxbObj = unmarshaller.unmarshal(policyLocation);
+				jaxbObj = unmarshaller.unmarshal(policyURL);
 			} catch (JAXBException e)
 			{
 				throw new IllegalArgumentException("Failed to unmarshall Policy XML document from policy location: " + policyLocation, e);

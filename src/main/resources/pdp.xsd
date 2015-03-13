@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema"
-	targetNamespace="http://thalesgroup.com/authzforce/pdp/model/2014/12"
-	xmlns:tns="http://thalesgroup.com/authzforce/pdp/model/2014/12"
-	elementFormDefault="qualified" xmlns:authz-ext="http://thalesgroup.com/authz/model/ext/3.0">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://thalesgroup.com/authzforce/pdp/model/2014/12"
+	xmlns:tns="http://thalesgroup.com/authzforce/pdp/model/2014/12" elementFormDefault="qualified"
+	xmlns:authz-ext="http://thalesgroup.com/authz/model/ext/3.0">
+	
+	<!-- XACML XSD import only necessary to fix bug in maven jaxb2 plugin used for generating Java class 
+		from this schema -->
+	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
+	
 	<import namespace="http://thalesgroup.com/authz/model/ext/3.0" />
 	<annotation>
 		<documentation xml:lang="en">
@@ -12,28 +16,26 @@
 	<element name="pdps">
 		<complexType>
 			<sequence>
-				<element minOccurs="1" maxOccurs="unbounded" name="pdp"
-					type="tns:PDP">
+				<element minOccurs="1" maxOccurs="unbounded" name="pdp" type="tns:PDP">
 				</element>
-				<element name="attributeFactory" type="tns:AttributeFactory"
-					maxOccurs="unbounded" minOccurs="1">
+				<element name="attributeFactory" type="tns:AttributeFactory" maxOccurs="unbounded"
+					minOccurs="1">
 					<key name="datatypeKey">
 						<selector xpath="tns:datatype" />
 						<field xpath="@id" />
 					</key>
 				</element>
-				<element name="combiningAlgFactory" type="tns:CombiningAlgFactory"
-					minOccurs="1" maxOccurs="unbounded">
+				<element name="combiningAlgFactory" type="tns:CombiningAlgFactory" minOccurs="1"
+					maxOccurs="unbounded">
 					<key name="algorithmKey">
 						<selector xpath="tns:algorithm" />
 						<field xpath="@class" />
 					</key>
 				</element>
-				<element name="functionFactory" type="tns:FunctionFactory"
-					maxOccurs="unbounded" minOccurs="1">
+				<element name="functionFactory" type="tns:FunctionFactory" maxOccurs="unbounded"
+					minOccurs="1">
 					<key name="functionKey">
-						<selector
-							xpath="tns:target/tns:function|tns:condition/tns:function|tns:general/tns:function" />
+						<selector xpath="tns:target/tns:function|tns:condition/tns:function|tns:general/tns:function" />
 						<field xpath="@class" />
 					</key>
 					<key name="functionClusterKey">
@@ -88,25 +90,24 @@
 	</element>
 	<complexType name="PDP">
 		<sequence>
-			<element name="policyFinder" type="authz-ext:AbstractPolicyFinder"
-				minOccurs="0" maxOccurs="unbounded">
+			<element name="policyFinder" type="authz-ext:AbstractPolicyFinder" minOccurs="0"
+				maxOccurs="unbounded">
 			</element>
-			<element name="resourceFinder" type="authz-ext:AbstractResourceFinder"
-				maxOccurs="unbounded" minOccurs="0">
+			<element name="resourceFinder" type="authz-ext:AbstractResourceFinder" maxOccurs="unbounded"
+				minOccurs="0">
 			</element>
-			<element name="attributeFinder" type="authz-ext:AbstractAttributeFinder"
-				maxOccurs="unbounded" minOccurs="0">
+			<element name="attributeFinder" type="authz-ext:AbstractAttributeFinder" maxOccurs="unbounded"
+				minOccurs="0">
 			</element>
-			<element name="cache" type="authz-ext:Cache" maxOccurs="1"
-				minOccurs="0"></element>
+			<element name="cache" type="authz-ext:Cache" maxOccurs="1" minOccurs="0"></element>
 		</sequence>
 		<attribute name="name" type="NCName" use="required"></attribute>
 	</complexType>
 
 	<complexType name="AttributeFactory">
 		<sequence>
-			<element name="datatype" type="tns:XacmlFeatureIdToImplementation"
-				minOccurs="0" maxOccurs="unbounded">
+			<element name="datatype" type="tns:XacmlFeatureIdToImplementation" minOccurs="0"
+				maxOccurs="unbounded">
 			</element>
 		</sequence>
 		<attribute name="name" type="NCName" use="required"></attribute>
@@ -115,8 +116,7 @@
 
 	<complexType name="XacmlFeatureIdToImplementation">
 		<attribute name="id" type="anyURI" use="required"></attribute>
-		<attribute name="class" type="tns:JavaFullyQualifiedClassName"
-			use="required"></attribute>
+		<attribute name="class" type="tns:JavaFullyQualifiedClassName" use="required"></attribute>
 	</complexType>
 
 	<simpleType name="JavaFullyQualifiedClassName">
@@ -129,9 +129,9 @@
 	<complexType name="CombiningAlgFactory">
 		<sequence>
 			<element name="algorithm" maxOccurs="unbounded" minOccurs="0">
-                <complexType>
-                	<attribute name="class" type="tns:JavaFullyQualifiedClassName" use="required"></attribute>
-                </complexType>
+				<complexType>
+					<attribute name="class" type="tns:JavaFullyQualifiedClassName" use="required"></attribute>
+				</complexType>
 			</element>
 		</sequence>
 		<attribute name="name" type="NCName" use="required"></attribute>
@@ -141,13 +141,10 @@
 
 	<complexType name="FunctionFactory">
 		<sequence>
-			<element name="target" type="tns:Functions" maxOccurs="1"
-				minOccurs="0">
+			<element name="target" type="tns:Functions" maxOccurs="1" minOccurs="0">
 			</element>
-			<element name="condition" type="tns:Functions" maxOccurs="1"
-				minOccurs="0"></element>
-			<element name="general" type="tns:Functions" maxOccurs="1"
-				minOccurs="0"></element>
+			<element name="condition" type="tns:Functions" maxOccurs="1" minOccurs="0"></element>
+			<element name="general" type="tns:Functions" maxOccurs="1" minOccurs="0"></element>
 		</sequence>
 		<attribute name="name" type="NCName" use="required"></attribute>
 		<attribute name="useStandardFunctions" type="boolean" use="required">
@@ -157,16 +154,17 @@
 	<complexType name="Functions">
 		<sequence>
 			<element name="function" maxOccurs="unbounded" minOccurs="0">
-                <complexType>
-                	<attribute name="class" type="tns:JavaFullyQualifiedClassName" use="required"></attribute>
-                </complexType>
+				<complexType>
+					<attribute name="class" type="tns:JavaFullyQualifiedClassName" use="required"></attribute>
+				</complexType>
 			</element>
 			<element name="functionCluster" maxOccurs="unbounded" minOccurs="0">
 				<complexType>
 					<attribute name="class" type="tns:JavaFullyQualifiedClassName" use="required"></attribute>
-				</complexType></element>
-			<element name="abstractFunction" type="tns:XacmlFeatureIdToImplementation"
-				maxOccurs="unbounded" minOccurs="0">
+				</complexType>
+			</element>
+			<element name="abstractFunction" type="tns:XacmlFeatureIdToImplementation" maxOccurs="unbounded"
+				minOccurs="0">
 			</element>
 		</sequence>
 	</complexType>
@@ -175,15 +173,20 @@
 		<annotation>
 			<documentation>
 				<p>This attribute finder supports the current date, time, and
-					dateTime values. The XACML specification states that these three
-					values must always be available to a PDP. They may be included in
+					dateTime values. The XACML
+					specification states that these three
+					values must always be available to a PDP. They may be
+					included in
 					the request, but if they're not, a PDP must be able to recognize
-					the attribute and generate a correct value.
+					the attribute and
+					generate a correct value.
 				</p>
 				<p>
 					The XACML specification doesn't require that values be cached (i.e.
-					remain consistent within an evaluation), but does allow it. Any
-					caching, as well as details of which time to use (time at the PEP,
+					remain consistent within an
+					evaluation), but does allow it. Any
+					caching, as well as details of which time to use (time at
+					the PEP,
 					PDP, etc.) is taken care of by the
 					<code>EvaluationCtx</code>
 					which is used to supply the current values.
@@ -209,21 +212,25 @@
 			<documentation>
 				<p>
 					This attribute finder implements the basic behavior of the
-					AttributeSelectorType, looking for attribute values in the physical
+					AttributeSelectorType, looking for
+					attribute values in the physical
 					request document using the given XPath expression. This is
 					implemented as a separate attribute finder (instead of being
 					implemented directly in
 					<code>AttributeSelector</code>
 					so that programmers can remove this functionality if they want
-					(it's optional in the spec), so they can replace this code with
+					(it's optional in the spec), so
+					they can replace this code with
 					more efficient, specific
-					code as needed, and so they can easily swap
+					code as needed, and so they can easily
+					swap
 					in different XPath
 					libraries.
 				</p>
 				<p>
 					Note that if no matches are found, this module will return an empty
-					bag (unless some error occurred). The
+					bag (unless some error
+					occurred). The
 					<code>AttributeSelector</code>
 					is still deciding what to return to the policy based on the
 					MustBePresent attribute.
@@ -231,10 +238,12 @@
 				<p>
 					This module uses the Xalan XPath implementation, and supports
 					only
-					version 1.0 of XPath. It is a fully functional, correct
+					version 1.0 of XPath. It is
+					a fully functional, correct
 					implementation of XACML's AttributeSelector functionality, but is
 					not designed for environments that make significant use of XPath
-					queries. Developers for any such environment should consider
+					queries. Developers for any
+					such environment should consider
 					implementing their own module.
 				</p>
 			</documentation>
@@ -251,34 +260,41 @@
 		<complexContent>
 			<extension base="authz-ext:AbstractPolicyFinder">
 				<sequence>
-					<element name="policyLocation" type="anyURI" maxOccurs="unbounded"
-						minOccurs="1">
+					<element name="policyLocation" type="anyURI" maxOccurs="unbounded" minOccurs="1">
 						<annotation>
 							<documentation>
 								Location of a XML file that is expected to contain a Policy or
-								PolicySet. The finder first tries to resolve the location as a URL;
-								then if it fails, as an absolute file path on the filesystem; then
+								PolicySet. The
+								finder first tries to resolve the location as a URL;
+								then if it fails, as an absolute file
+								path on the filesystem; then
 								last as a relative file path on the filesystem if this PDP
 								configuration (where this PolicyFinder is configured) is loaded from
-								a file on the filesystem, in which case paths are considered
-								relative to the parent directory of the PDP configuration file
+								a file on the
+								filesystem, in which case paths are considered
+								relative to the parent directory of the PDP
+								configuration file
 							</documentation>
 						</annotation>
 					</element>
 				</sequence>
 				<attribute name="combiningAlgId" type="anyURI">
 					<annotation>
-						<documentation>policy combining algorithm ID to identify the algorithm used to combine all the policies loaded from the policyLocations when more than one applies to the request context</documentation>
-					</annotation></attribute>
+						<documentation>policy combining algorithm ID to identify the algorithm used to combine all the
+							policies loaded from the policyLocations when more than one applies to the request context
+						</documentation>
+					</annotation>
+				</attribute>
 			</extension>
 		</complexContent>
 	</complexType>
 
 	<complexType name="StaticRefPolicyFinder">
-        <annotation>
-        	<documentation>Same as StaticPolicyFinder except the loaded Policy(Set) are to be used in Policy(Set)IdReferences.</documentation>
-        </annotation>
-        <complexContent>
+		<annotation>
+			<documentation>Same as StaticPolicyFinder except the loaded Policy(Set) are to be used in
+				Policy(Set)IdReferences.</documentation>
+		</annotation>
+		<complexContent>
 			<extension base="tns:StaticPolicyFinder"></extension>
 		</complexContent>
 	</complexType>

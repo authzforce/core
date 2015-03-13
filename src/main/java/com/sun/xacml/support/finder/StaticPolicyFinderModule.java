@@ -38,17 +38,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.ParsingException;
@@ -92,13 +87,10 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 {
 
 	// the list of policy URLs/filenames passed to the constructor
-	private List<String> policyList;
+	private String[] policyLocations;
 
 	// the map of policies
 	private PolicyCollection policies;
-
-	// the optional schema
-	private final Schema schema;
 
 	// the policy identifier for any policy sets we dynamically create
 	private static final String POLICY_ID = "urn:com:sun:xacml:support:finder:dynamic-policy-set";
@@ -132,60 +124,10 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 	 *            a <code>List</code> of <code>String</code>s that represent URLs or files pointing
 	 *            to XACML policies
 	 */
-	public StaticPolicyFinderModule(List<String> policyList)
+	public StaticPolicyFinderModule(String[] policyList)
 	{
-		this.policyList = policyList;
+		this.policyLocations = policyList;
 		this.policies = new PolicyCollection();
-
-		final String schemaFilename = System.getProperty(PolicyReader.POLICY_SCHEMA_PROPERTY);
-		if (schemaFilename == null)
-		{
-			schema = null;
-		} else
-		{
-			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			try
-			{
-				schema = schemaFactory.newSchema(new File(schemaFilename));
-			} catch (SAXException e)
-			{
-				throw new IllegalArgumentException("Unable to load policy validation schema from file defined by system property '"
-						+ PolicyReader.POLICY_SCHEMA_PROPERTY + "': '" + schemaFilename + "'", e);
-			}
-		}
-	}
-
-	/**
-	 * Creates a <code>StaticPolicyFinderModule</code> that provides access to the given collection
-	 * of policies and returns an error when more than one policy matches a given context. Any
-	 * policy that cannot be loaded will be noted in the log, but will not cause an error.
-	 * 
-	 * @param policyList
-	 *            a <code>List</code> of <code>String</code>s that represent URLs or files pointing
-	 *            to XACML policies
-	 * @param schemaFilename
-	 *            the schema file to validate policies against, or null if schema validation is not
-	 *            desired
-	 */
-	public StaticPolicyFinderModule(List<String> policyList, String schemaFilename)
-	{
-		this.policyList = policyList;
-		this.policies = new PolicyCollection();
-
-		if (schemaFilename == null)
-		{
-			schema = null;
-		} else
-		{
-			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			try
-			{
-				schema = schemaFactory.newSchema(new File(schemaFilename));
-			} catch (SAXException e)
-			{
-				throw new IllegalArgumentException("Unable to load policy validation schema from file: '" + schemaFilename + "'", e);
-			}
-		}
 	}
 
 	/**
@@ -207,74 +149,13 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 	 * @throws UnknownIdentifierException
 	 *             if the combining algorithm identifier isn't known
 	 */
-	public StaticPolicyFinderModule(String combiningAlg, List<String> policyList) throws URISyntaxException, UnknownIdentifierException
+	public StaticPolicyFinderModule(String combiningAlg, String[] policyList) throws URISyntaxException, UnknownIdentifierException
 	{
 		PolicyCombiningAlgorithm alg = combiningAlg == null ? null : (PolicyCombiningAlgorithm) (CombiningAlgFactory.getInstance()
 				.createAlgorithm(new URI(combiningAlg)));
 
-		this.policyList = policyList;
+		this.policyLocations = policyList;
 		this.policies = new PolicyCollection(alg, policyId);
-
-		final String schemaFilename = System.getProperty(PolicyReader.POLICY_SCHEMA_PROPERTY);
-		if (schemaFilename == null)
-		{
-			schema = null;
-		} else
-		{
-			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			try
-			{
-				schema = schemaFactory.newSchema(new File(schemaFilename));
-			} catch (SAXException e)
-			{
-				throw new IllegalArgumentException("Unable to load policy validation schema from file defined by system property '"
-						+ PolicyReader.POLICY_SCHEMA_PROPERTY + "': '" + schemaFilename + "'", e);
-			}
-		}
-	}
-
-	/**
-	 * Creates a <code>StaticPolicyFinderModule</code> that provides access to the given collection
-	 * of policies. The given combining algorithm is used to create new PolicySets when more than
-	 * one policy applies. Any policy that cannot be loaded will be noted in the log, but will not
-	 * cause an error.
-	 * 
-	 * @param combiningAlg
-	 *            the algorithm to use in a new PolicySet when more than one policy applies
-	 * @param policyList
-	 *            a <code>List</code> of <code>String</code>s that represent URLs or files pointing
-	 *            to XACML policies
-	 * @param schemaFilename
-	 *            the schema file to validate policies against, or null if schema validation is not
-	 *            desired
-	 * 
-	 * @throws URISyntaxException
-	 *             if the combining algorithm is not a well-formed URI
-	 * @throws UnknownIdentifierException
-	 *             if the combining algorithm identifier isn't known
-	 */
-	public StaticPolicyFinderModule(String combiningAlg, List<String> policyList, String schemaFilename) throws URISyntaxException,
-			UnknownIdentifierException
-	{
-		PolicyCombiningAlgorithm alg = (PolicyCombiningAlgorithm) (CombiningAlgFactory.getInstance().createAlgorithm(new URI(combiningAlg)));
-
-		this.policyList = policyList;
-		this.policies = new PolicyCollection(alg, policyId);
-
-		if (schemaFilename == null)
-		{
-			schema = null;
-		} else
-		{
-			final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			try
-			{
-				schema = schemaFactory.newSchema(new File(schemaFilename));
-			} catch (SAXException e)
-			{
-				throw new IllegalArgumentException("Unable to load policy validation schema from file: '" + schemaFilename + "'", e);
-			}
-		}
 	}
 
 	@Override
@@ -289,23 +170,20 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 		// now that we have the PolicyFinder, we can load the policies
 		// PolicyReader reader = new PolicyReader(finder, LOGGER, schemaFile);
 		final File baseDir = finder.getBaseDirectory();
-		for (final String policyLocation : policyList)
+		for (final String policyLocation : policyLocations)
 		{
 			Object jaxbObj;
 			final Unmarshaller unmarshaller;
 			try
 			{
-				unmarshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
+				unmarshaller = PdpModelHandler.createXacml3Unmarshaller();
 			} catch (JAXBException e1)
 			{
 				throw new IllegalArgumentException("Failed to create JAXB marshaller for unmarshalling Policy XML document", e1);
 			}
-
-			unmarshaller.setSchema(schema);
 			try
 			{
 				// first try to load it as a Spring resource
-
 				final URL url = ResourceUtils.getResourceURL(policyLocation);
 				if (url == null)
 				{
@@ -315,16 +193,18 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 				jaxbObj = unmarshaller.unmarshal(url);
 			} catch (IOException ioe)
 			{
-				LOGGER.info("Failed to load policy location {} as Spring resource. Loading as file relative to PDP configuration directory",
-						policyLocation);
+				LOGGER.info("Cannot load policy from location '{}' as Spring resource -> loading as simple file path...", policyLocation);
 				// assume that this is a filename, and try again
 				final File file = new File(policyLocation);
 				final File policyFile;
 				if (!file.isAbsolute() && baseDir != null)
 				{
+					LOGGER.info("Policy location '{}' is not absolute file path -> loading as relative to PDP configuration directory: '{}'",
+							policyLocation, baseDir);
 					policyFile = new File(baseDir, policyLocation);
 				} else
 				{
+					LOGGER.info("Loading policy location '{}' as absolute file path", policyLocation, baseDir);
 					policyFile = file;
 				}
 

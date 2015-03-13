@@ -120,10 +120,10 @@ public class Apply extends ApplyType implements Evaluatable
 		} catch (URISyntaxException use) {
 			throw new ParsingException("Error parsing Apply", use);
 		} catch (UnknownIdentifierException uie) {
-			throw new ParsingException("Unknown FunctionId", uie);
+			throw new ParsingException("Unknown Apply FunctionId: " + xacmlApply.getFunctionId(), uie);
 		} catch (FunctionTypeException fte) {
 			// try to create an abstract function
-			throw new ParsingException("Unsupported function: " + xacmlApply.getFunctionId(), fte);
+			throw new ParsingException("Unsupported Apply function type (FunctionId=" + xacmlApply.getFunctionId()+")", fte);
 		}
 		
     	for(final JAXBElement<? extends ExpressionType> exprElt: xacmlApply.getExpressions()) {

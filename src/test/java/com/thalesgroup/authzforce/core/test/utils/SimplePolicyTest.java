@@ -39,28 +39,28 @@ import com.sun.xacml.support.finder.StaticPolicyFinderModule;
 
 public class SimplePolicyTest
 {
-	public static void main(String[] args) throws JAXBException {
+	public static void main(String[] args) throws JAXBException
+	{
 		PolicyFinder policyFinder = new PolicyFinder();
-		List<String> policyLocations = new ArrayList<>();
-			String policyFileResourceName = "src/test/resources/policy.xml";
-			//URL policyFileURL = Thread.currentThread().getContextClassLoader().getResource(policyFileResourceName);
-			// Use getPath() to remove the file: prefix, because used later as input to FileInputStream(...) in FilePolicyModule
-			policyLocations.add(policyFileResourceName /*policyFileURL.getPath()*/);
-
-		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(
-				policyLocations);
+		String policyFileResourceName = "src/test/resources/policy.xml";
+		// URL policyFileURL =
+		// Thread.currentThread().getContextClassLoader().getResource(policyFileResourceName);
+		// Use getPath() to remove the file: prefix, because used later as input to
+		// FileInputStream(...) in FilePolicyModule
+		String[] policyLocations = { policyFileResourceName /* policyFileURL.getPath() */};
+		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(policyLocations);
 		List<PolicyFinderModule<?>> policyModules = new ArrayList<>();
 		policyModules.add(testPolicyFinderModule);
 		policyFinder.setModules(policyModules);
-		PDPConfig pdpConfig =  new PDPConfig(null, policyFinder, null);
-			
+		PDPConfig pdpConfig = new PDPConfig(null, policyFinder, null);
+
 		PDP pdp = new PDP(pdpConfig);
-		
+
 		// request
 		JAXBContext ctx = JAXBContext.newInstance(PolicySet.class);
 		Unmarshaller unmarshaller = ctx.createUnmarshaller();
 		Request request = (Request) unmarshaller.unmarshal(new File("src/test/resources/request.xml"));
-		
+
 		ResponseCtx resp = pdp.evaluate(request);
 		System.out.println(resp.getResults().iterator().next().getDecision());
 	}

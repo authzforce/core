@@ -37,7 +37,7 @@ import org.springframework.core.io.Resource;
 public class ResourceUtils
 {
 	private static final DefaultResourceLoader RESOURCE_LOADER = new DefaultResourceLoader();
-	private static final Logger LOGGER = LoggerFactory.getLogger(SchemaHandler.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ResourceUtils.class);
 
 	/**
 	 * Get resource URL from Spring-supported resource location
@@ -51,14 +51,14 @@ public class ResourceUtils
 		final Resource resource = RESOURCE_LOADER.getResource(loc);
 		if (resource == null || !resource.exists())
 		{
-			LOGGER.warn("No resource '" + loc + "' is available");
+			LOGGER.info("Resource '" + loc + "' null or does not exist");
 			return null;
 		}
 
 		final URL url = resource.getURL();
 		if (url == null)
 		{
-			LOGGER.warn("Resource " + loc + " could not be resolved to a URL");
+			LOGGER.info("Resource " + loc + " could not be resolved to a URL");
 		}
 
 		return url;

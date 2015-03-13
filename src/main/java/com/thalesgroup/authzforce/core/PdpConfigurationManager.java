@@ -334,10 +334,11 @@ public class PdpConfigurationManager
 			if (policyFinderConf instanceof StaticPolicyFinder)
 			{
 				final StaticPolicyFinder staticPolicyFinderConf = (StaticPolicyFinder) policyFinderConf;
+				final List<String> policyLocations = staticPolicyFinderConf.getPolicyLocations();
 				try
 				{
 					policyFinderModule = new StaticPolicyFinderModule(staticPolicyFinderConf.getCombiningAlgId(),
-							staticPolicyFinderConf.getPolicyLocations());
+							policyLocations.toArray(new String[policyLocations.size()]));
 				} catch (URISyntaxException | UnknownIdentifierException e)
 				{
 					throw new IllegalArgumentException("Invalid StaticPolicyFinder configuration", e);
@@ -345,18 +346,8 @@ public class PdpConfigurationManager
 			} else if (policyFinderConf instanceof StaticRefPolicyFinder)
 			{
 				final StaticRefPolicyFinder staticRefPolicyFinderConf = (StaticRefPolicyFinder) policyFinderConf;
-				final List<URL> policyURLs = new ArrayList<>();
-				for (final String policyLocation : staticRefPolicyFinderConf.getPolicyLocations())
-				{
-					try
-					{
-						policyURLs.add(new URL(policyLocation));
-					} catch (MalformedURLException e)
-					{
-						throw new IllegalArgumentException("Invalid StaticRefPolicyFinder configuration: policyLocation is not a valid URL", e);
-					}
-				}
-				policyFinderModule = new StaticRefPolicyFinderModule(policyURLs, PdpModelHandler.XACML_3_0_SCHEMA);
+				final List<String> policyLocations = staticRefPolicyFinderConf.getPolicyLocations();
+				policyFinderModule = new StaticRefPolicyFinderModule(policyLocations.toArray(new String[policyLocations.size()]));
 			} else
 			{
 				policyFinderModule = PdpExtensionFactory.getInstance(policyFinderConf);
