@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+	<!-- For Maven JAXB plugin -->
+	<system systemId="http://www.w3.org/2001/xml.xsd" uri="maven:com.thalesgroup.ktd.scis:xml-ns-model:jar!/xml.xsd" />
+	<public publicId="http://thalesgroup.com/authz/model/ext/3.0"
+		uri="maven:com.thalesgroup.authzforce:authzforce-core-model:jar!/authz-ext-base.xsd" />
+	<public publicId="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+		uri="maven:com.thalesgroup.ktd.scis:oasis-xacml-model:jar!/xacml-core-v3-schema-wd-17.xsd" />
+</catalog>
