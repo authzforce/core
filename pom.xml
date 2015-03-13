@@ -12,7 +12,7 @@
 	<organization>
 		<name>Thales Services SAS</name>
 	</organization>
-	<description>XACML-compliant Authorization PDP Engine Core</description>
+	<description>XACML-compliant Authorization PDP Core Engine</description>
 	<inceptionYear>2011</inceptionYear>
 	<scm>
 		<!-- Used by Jenkins - Maven release plugin -->
