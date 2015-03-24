@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
@@ -186,21 +187,6 @@
 					<extension>true</extension>
 					<useDependenciesAsEpisodes>true</useDependenciesAsEpisodes>
 					<strict>false</strict>
-					<!-- Episodes: Only episodes for schemas referenced (imported/included) by schema(s) in schemaDirectory 
-						can be listed here. If not possible, just create an empty schema in schemaDirectory which imports all 
-						the episode elements but does nothing with them. -->
-					<!-- <episodes> -->
-					<!-- </episodes> -->
-<!-- 					<plugins> -->
-<!-- 						<plugin> -->
-<!-- 							<groupId>com.thalesgroup.ktd.scis</groupId> -->
-<!-- 							<artifactId>oasis-xacml-model</artifactId> -->
-<!-- 						</plugin> -->
-<!-- 						<plugin> -->
-<!-- 							<groupId>com.thalesgroup.authzforce</groupId> -->
-<!-- 							<artifactId>authzforce-core-model</artifactId> -->
-<!-- 						</plugin> -->
-<!-- 					</plugins> -->
 					<catalog>src/main/jaxb/catalog.xml</catalog>
 					<removeOldOutput>true</removeOldOutput>
 					<bindingDirectory>src/main/jaxb</bindingDirectory>
