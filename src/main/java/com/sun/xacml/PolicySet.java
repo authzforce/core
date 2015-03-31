@@ -364,7 +364,7 @@ public class PolicySet extends AbstractPolicySet implements IPolicy
 			throws UnknownIdentifierException, ParsingException
 	{
 		return new PolicySet(URI.create(policySetElement.getPolicySetId()), policySetElement.getVersion(),
-				(PolicyCombiningAlgorithm) COMBINING_ALG_FACTORY.createAlgorithm(URI.create(policySetElement.getPolicyCombiningAlgId())),
+				COMBINING_ALG_FACTORY.createAlgorithm(URI.create(policySetElement.getPolicyCombiningAlgId()), PolicyCombiningAlgorithm.class),
 				policySetElement.getDescription(), policySetElement.getTarget(), policySetElement.getPolicySetsAndPoliciesAndPolicySetIdReferences(),
 				policySetElement.getPolicySetDefaults() == null ? null : policySetElement.getPolicySetDefaults().getXPathVersion(),
 				policySetElement.getObligationExpressions(), policySetElement.getAdviceExpressions(), finder);

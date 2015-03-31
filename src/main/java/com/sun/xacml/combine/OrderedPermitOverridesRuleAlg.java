@@ -52,8 +52,7 @@ public class OrderedPermitOverridesRuleAlg extends PermitOverridesRuleAlg
      * The standard URN used to identify this algorithm
      */
     public static final String algId =
-        "urn:oasis:names:tc:xacml:1.1:rule-combining-algorithm:" +
-        "ordered-permit-overrides";
+        "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides";
 
     // a URI form of the identifier
     private static final URI identifierURI = URI.create(algId);

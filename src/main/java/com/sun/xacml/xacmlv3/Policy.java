@@ -139,7 +139,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		this.ruleCombiningAlgId = ruleCombiningAlgId;
 		this.maxDelegationDepth = maxDelegationDepth;
 		CombiningAlgFactory factory = CombiningAlgFactory.getInstance();
-		this.ruleCombiningAlg = factory.createAlgorithm(URI.create(this.ruleCombiningAlgId));
+		this.ruleCombiningAlg = factory.createAlgorithm(URI.create(this.ruleCombiningAlgId), RuleCombiningAlgorithm.class);
 
 	}
 

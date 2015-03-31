@@ -262,7 +262,7 @@ public abstract class AbstractPolicySet extends oasis.names.tc.xacml._3_0.core.s
 		{
 			URI algId = new URI(attrs.getNamedItem(combiningName).getNodeValue());
 			CombiningAlgFactory factory = CombiningAlgFactory.getInstance();
-			combiningAlg = factory.createAlgorithm(algId);
+			combiningAlg = factory.createAlgorithm(algId, PolicyCombiningAlgorithm.class);
 			this.policyCombiningAlgId = attrs.getNamedItem(combiningName).getNodeValue();
 		} catch (Exception e)
 		{

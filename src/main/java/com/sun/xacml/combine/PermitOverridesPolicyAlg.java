@@ -37,6 +37,7 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
@@ -67,7 +68,7 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 	/**
 	 * The standard URN used to identify this algorithm
 	 */
-	public static final String algId = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:" + "permit-overrides";
+	public static final String algId = "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides";
 
 	// a URI form of the identifier
 	private static final URI identifierURI = URI.create(algId);
@@ -103,68 +104,83 @@ public class PermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 	 * 
 	 * @return the result of running the combining algorithm
 	 */
+	@Override
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List<IPolicy> policyElements)
 	{
-		boolean atLeastOneError = false;
 		boolean atLeastOneDeny = false;
-		Obligations denyObligations = new Obligations();
-		Status firstIndeterminateStatus = null;
-
-		// List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
-		for (final IPolicy policyElement : policyElements)
+		
+		/*
+		 * Replaces atLeastOneError from XACML spec.
+		 * atLeastOneError == true <=> firstIndeterminateResult != null
+		 */
+		Result firstIndeterminateResult = null;
+		
+		final Obligations combinedObligations = new Obligations();
+		final AssociatedAdvice combinedAssociatedAdvice = new AssociatedAdvice();
+		for (final IPolicy policy : policyElements)
 		{
-			MatchResult match = null;
-			Result result = null;
 			// make sure that the policy matches the context
-			match = policyElement.match(context);
-			LOGGER.debug("{} - {}", policyElement, match);
-			if (match == null)
+			final MatchResult match = policy.match(context);
+			final int matchResultCode = match.getResult();
+			if (matchResultCode == MatchResult.INDETERMINATE)
 			{
-				atLeastOneError = true;
-			} else if (match.getResult() == MatchResult.INDETERMINATE)
+				/*
+				 * FIXME: implement extended Indeterminate decisions.
+				 */
+				firstIndeterminateResult = new Result(DecisionType.INDETERMINATE, match.getStatus());
+			} else if (matchResultCode == MatchResult.MATCH)
 			{
-				atLeastOneError = true;
-
-				// keep track of the first error, regardless of cause
-				if (firstIndeterminateStatus == null)
-					firstIndeterminateStatus = match.getStatus();
-			} else if (match.getResult() == MatchResult.MATCH)
-			{
-				// now we evaluate the policy
-				result = policyElement.evaluate(context);
-
-				int effect = result.getDecision().ordinal();
-
-				// this is a little different from DenyOverrides...
-
-				if (effect == Result.DECISION_PERMIT)
+				// evaluate the policy
+				final Result result = policy.evaluate(context);
+				switch (result.getDecision())
 				{
-					return result;
-				}
-				if (effect == Result.DECISION_DENY)
-				{
-					atLeastOneDeny = true;
-					denyObligations = result.getObligations();
-				} else if (effect == Result.DECISION_INDETERMINATE)
-				{
-					atLeastOneError = true;
+					case PERMIT:
+						return result;
+					case DENY:
+						atLeastOneDeny = true;
+						final Obligations resultObligations = result.getObligations();
+						if (resultObligations != null)
+						{
+							combinedObligations.getObligations().addAll(resultObligations.getObligations());
+						}
 
-					// keep track of the first error, regardless of cause
-					if (firstIndeterminateStatus == null)
-						firstIndeterminateStatus = result.getStatus();
+						final AssociatedAdvice resultAssociatedAdvice = result.getAssociatedAdvice();
+						if (resultAssociatedAdvice != null)
+						{
+							combinedAssociatedAdvice.getAdvices().addAll(resultAssociatedAdvice.getAdvices());
+						}
+						break;
+					case INDETERMINATE:
+						/*
+						 * FIXME: implement extended Indeterminate decisions (result differs if
+						 * Indeterminate{P} or Indeterminate{D})
+						 */
+						firstIndeterminateResult = result;
+						break;
+					default:
 				}
 			}
 		}
 
-		// if we got a DENY, return it
+		/*
+		 * FIXME: implement extended Indeterminate decisions as the algorithm distinguishes them.
+		 */
+		if (firstIndeterminateResult != null)
+		{
+			return firstIndeterminateResult;
+		}
+
 		if (atLeastOneDeny)
-			return new Result(DecisionType.DENY, denyObligations);
+		{
+			/*
+			 * Obligations/AssociatedAdvice arguments must be null if no obligation/advice combined,
+			 * to avoid creating empty <Obligations>/<AssociatedAdvice> element (no valid by XACML
+			 * schema) when marshalling with JAXB
+			 */
+			return new Result(DecisionType.DENY, null, combinedObligations.getObligations().isEmpty() ? null : combinedObligations,
+					combinedAssociatedAdvice.getAdvices().isEmpty() ? null : combinedAssociatedAdvice, null);
+		}
 
-		// if we got an INDETERMINATE, return it
-		if (atLeastOneError)
-			return new Result(DecisionType.INDETERMINATE, firstIndeterminateStatus);
-
-		// if we got here, then nothing applied to us
 		return new Result(DecisionType.NOT_APPLICABLE);
 	}
 }

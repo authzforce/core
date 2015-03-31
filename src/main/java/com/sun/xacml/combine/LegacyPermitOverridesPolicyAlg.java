@@ -38,6 +38,11 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
@@ -45,19 +50,23 @@ import com.sun.xacml.ctx.Result;
 import com.sun.xacml.xacmlv3.IPolicy;
 
 /**
- * This is the standard First Applicable policy combining algorithm. It looks through the set of
- * policies, finds the first one that applies, and returns that evaluation result.
+ * This is the standard Permit Overrides policy combining algorithm. It allows a single evaluation
+ * of Permit to take precedence over any number of deny, not applicable or indeterminate results.
+ * Note that since this implementation does an ordered evaluation, this class also supports the
+ * Ordered Permit Overrides algorithm.
  * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
+public class LegacyPermitOverridesPolicyAlg extends PolicyCombiningAlgorithm
 {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(LegacyPermitOverridesPolicyAlg.class);
 
 	/**
 	 * The standard URN used to identify this algorithm
 	 */
-	public static final String algId = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable";
+	public static final String algId = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides";
 
 	// a URI form of the identifier
 	private static final URI identifierURI = URI.create(algId);
@@ -65,18 +74,24 @@ public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
 	/**
 	 * Standard constructor.
 	 */
-	public FirstApplicablePolicyAlg()
+	public LegacyPermitOverridesPolicyAlg()
 	{
 		super(identifierURI);
 	}
 
 	/**
-	 * Applies the combining rule to the set of policies or policy sets [1] based on the evaluation
-	 * context.
+	 * Protected constructor used by the ordered version of this algorithm.
 	 * 
-	 * [1] XACMLs section C.8 mentions only "Policy" as type of combined element. But section 2.3
-	 * strongly suggests it can combine PolicySets as well. Moreover, there is no logical reason why
-	 * it could not combine PolicySets as well.
+	 * @param identifier
+	 *            the algorithm's identifier
+	 */
+	protected LegacyPermitOverridesPolicyAlg(URI identifier)
+	{
+		super(identifier);
+	}
+
+	/**
+	 * Applies the combining rule to the set of policies based on the evaluation context.
 	 * 
 	 * @param context
 	 *            the context from the request
@@ -90,33 +105,66 @@ public class FirstApplicablePolicyAlg extends PolicyCombiningAlgorithm
 	@Override
 	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List<IPolicy> policyElements)
 	{
-		for (final IPolicy policy: policyElements)
-		{
-			// make sure that the policy matches the context
-			final MatchResult match = policy.match(context);
-			final int matchResultCode = match.getResult();
-			if (matchResultCode == MatchResult.INDETERMINATE) {
-				// FIXME: implement extended Indeterminate decisions
-				return new Result(DecisionType.INDETERMINATE, match.getStatus());
-			} 
-			
-			if (matchResultCode == MatchResult.MATCH)
-			{
-				// evaluate the policy
-				final Result result = policy.evaluate(context);
-				final DecisionType decision = result.getDecision();
+		boolean atLeastOneError = false;
+		boolean atLeastOneDeny = false;
+		Obligations denyObligations = new Obligations();
+		Status firstIndeterminateStatus = null;
 
-				// in the case of PERMIT, DENY, or INDETERMINATE, we always
-				// just return that result, so only on a rule that doesn't
-				// apply do we keep going...
-				if (decision != DecisionType.NOT_APPLICABLE) {
+		// List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>();
+		for (final IPolicy policyElement : policyElements)
+		{
+			MatchResult match = null;
+			Result result = null;
+			// make sure that the policy matches the context
+			match = policyElement.match(context);
+			LOGGER.debug("{} - {}", policyElement, match);
+			if (match == null)
+			{
+				atLeastOneError = true;
+			} else if (match.getResult() == MatchResult.INDETERMINATE)
+			{
+				atLeastOneError = true;
+
+				// keep track of the first error, regardless of cause
+				if (firstIndeterminateStatus == null)
+					firstIndeterminateStatus = match.getStatus();
+			} else if (match.getResult() == MatchResult.MATCH)
+			{
+				// now we evaluate the policy
+				result = policyElement.evaluate(context);
+
+				int effect = result.getDecision().ordinal();
+
+				// this is a little different from DenyOverrides...
+
+				if (effect == Result.DECISION_PERMIT)
+				{
 					return result;
+				}
+				if (effect == Result.DECISION_DENY)
+				{
+					atLeastOneDeny = true;
+					denyObligations = result.getObligations();
+				} else if (effect == Result.DECISION_INDETERMINATE)
+				{
+					atLeastOneError = true;
+
+					// keep track of the first error, regardless of cause
+					if (firstIndeterminateStatus == null)
+						firstIndeterminateStatus = result.getStatus();
 				}
 			}
 		}
 
-		// if we got here, then none of the rules applied
+		// if we got a DENY, return it
+		if (atLeastOneDeny)
+			return new Result(DecisionType.DENY, denyObligations);
+
+		// if we got an INDETERMINATE, return it
+		if (atLeastOneError)
+			return new Result(DecisionType.INDETERMINATE, firstIndeterminateStatus);
+
+		// if we got here, then nothing applied to us
 		return new Result(DecisionType.NOT_APPLICABLE);
 	}
-
 }

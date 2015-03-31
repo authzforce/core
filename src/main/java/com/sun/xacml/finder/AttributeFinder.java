@@ -173,7 +173,7 @@ public class AttributeFinder
 				{
 					if (LOGGER.isInfoEnabled())
 					{
-						LOGGER.info("Error while trying to resolve values: {}", result.getStatus().getMessage());
+						LOGGER.info("Error while trying to resolve values: {}", result.getStatus().getStatusMessage());
 					}
 					return result;
 				}
@@ -234,7 +234,7 @@ public class AttributeFinder
 			{
 				if (LOGGER.isInfoEnabled())
 				{
-					LOGGER.info("Error while trying to resolve values: {}", result.getStatus().getMessage());
+					LOGGER.info("Error while trying to resolve values: {}", result.getStatus().getStatusMessage());
 				}
 				return result;
 			}

@@ -221,11 +221,9 @@ public class Result extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Result
 		if (status == null)
 		{
 			this.status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
-			StatusCode code = new StatusCode();
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail details = new oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail();
+			final StatusCode code = new StatusCode();
 			code.setValue("urn:oasis:names:tc:xacml:1.0:status:ok");
 			this.status.setStatusCode(code);
-			this.status.setStatusDetail(details);
 		} else
 		{
 			this.status = status;

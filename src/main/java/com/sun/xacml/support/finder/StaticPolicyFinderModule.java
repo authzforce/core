@@ -151,8 +151,8 @@ public class StaticPolicyFinderModule extends PolicyFinderModule<AbstractPolicyF
 	 */
 	public StaticPolicyFinderModule(String combiningAlg, String[] policyList) throws URISyntaxException, UnknownIdentifierException
 	{
-		PolicyCombiningAlgorithm alg = combiningAlg == null ? null : (PolicyCombiningAlgorithm) (CombiningAlgFactory.getInstance()
-				.createAlgorithm(new URI(combiningAlg)));
+		PolicyCombiningAlgorithm alg = combiningAlg == null ? null : (CombiningAlgFactory.getInstance()
+				.createAlgorithm(new URI(combiningAlg), PolicyCombiningAlgorithm.class));
 
 		this.policyLocations = policyList;
 		this.policies = new PolicyCollection(alg, policyId);

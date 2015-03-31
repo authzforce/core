@@ -45,14 +45,15 @@ import java.net.URI;
  * @since 1.1
  * @author seth proctor
  */
-public class OrderedDenyOverridesPolicyAlg extends DenyOverridesPolicyAlg
+public class LegacyOrderedDenyOverridesPolicyAlg extends LegacyDenyOverridesPolicyAlg
 {
 
     /**
      * The standard URN used to identify this algorithm
      */
     public static final String algId =
-        "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides";
+        "urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:" +
+        "ordered-deny-overrides";
 
     // a URI form of the identifier
     private static final URI identifierURI = URI.create(algId);
@@ -60,7 +61,7 @@ public class OrderedDenyOverridesPolicyAlg extends DenyOverridesPolicyAlg
     /**
      * Standard constructor.
      */
-    public OrderedDenyOverridesPolicyAlg() {
+    public LegacyOrderedDenyOverridesPolicyAlg() {
         super(identifierURI);
     }
 

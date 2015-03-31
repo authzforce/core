@@ -114,7 +114,7 @@ public class TestStringFunction {
 		Assert.assertFalse(Boolean.parseBoolean(((BooleanAttribute)testNameBooleanFromString.evaluate(inputFalse, globalContext).getAttributeValue()).encode()));
 		
 		EvaluationResult errorResult = testNameBooleanFromString.evaluate(inputError, globalContext);
-		Assert.assertEquals(Status.STATUS_SYNTAX_ERROR, errorResult.getStatus().getCode().get(0));
+		Assert.assertEquals(Status.STATUS_SYNTAX_ERROR, errorResult.getStatus().getStatusCode().getValue());
 		
 		LOGGER.info("Function: " + NAME_BOOLEAN_FROM_STRING + ": OK");
 	}

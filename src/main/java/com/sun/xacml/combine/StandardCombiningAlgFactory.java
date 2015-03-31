@@ -70,10 +70,10 @@ public class StandardCombiningAlgFactory extends BaseCombiningAlgFactory
     private static StandardCombiningAlgFactory factoryInstance = null;
 
     // the algorithms supported by this factory
-    private static Set supportedAlgorithms = null;
+    private static Set<CombiningAlgorithm> supportedAlgorithms = new HashSet<>();
 
     // identifiers for the supported algorithms
-    private static Set supportedAlgIds;
+    private static Set<String> supportedAlgIds = new HashSet<>();
 
     // the LOGGER we'll use for all messages
     private static final Logger LOGGER =
@@ -92,24 +92,41 @@ public class StandardCombiningAlgFactory extends BaseCombiningAlgFactory
      */
     private static void initAlgorithms() {
         LOGGER.info("Initializing standard combining algorithms");
-
-        supportedAlgorithms = new HashSet();
-        supportedAlgIds = new HashSet();
+        
+        supportedAlgorithms.add(new LegacyDenyOverridesRuleAlg());
+        supportedAlgIds.add(LegacyDenyOverridesRuleAlg.algId);
+        supportedAlgorithms.add(new LegacyDenyOverridesPolicyAlg());
+        supportedAlgIds.add(LegacyDenyOverridesPolicyAlg.algId);
         
         supportedAlgorithms.add(new DenyOverridesRuleAlg());
         supportedAlgIds.add(DenyOverridesRuleAlg.algId);
         supportedAlgorithms.add(new DenyOverridesPolicyAlg());
         supportedAlgIds.add(DenyOverridesPolicyAlg.algId);
 
+        supportedAlgorithms.add(new LegacyOrderedDenyOverridesRuleAlg());
+        supportedAlgIds.add(LegacyOrderedDenyOverridesRuleAlg.algId);
+        supportedAlgorithms.add(new LegacyOrderedDenyOverridesPolicyAlg());
+        supportedAlgIds.add(LegacyOrderedDenyOverridesPolicyAlg.algId);
+        
         supportedAlgorithms.add(new OrderedDenyOverridesRuleAlg());
         supportedAlgIds.add(OrderedDenyOverridesRuleAlg.algId);
         supportedAlgorithms.add(new OrderedDenyOverridesPolicyAlg());
         supportedAlgIds.add(OrderedDenyOverridesPolicyAlg.algId);
         
+        supportedAlgorithms.add(new LegacyPermitOverridesRuleAlg());
+        supportedAlgIds.add(LegacyPermitOverridesRuleAlg.algId);
+        supportedAlgorithms.add(new LegacyPermitOverridesPolicyAlg());
+        supportedAlgIds.add(LegacyPermitOverridesPolicyAlg.algId);
+        
         supportedAlgorithms.add(new PermitOverridesRuleAlg());
         supportedAlgIds.add(PermitOverridesRuleAlg.algId);
         supportedAlgorithms.add(new PermitOverridesPolicyAlg());
         supportedAlgIds.add(PermitOverridesPolicyAlg.algId);
+        
+        supportedAlgorithms.add(new LegacyOrderedPermitOverridesRuleAlg());
+        supportedAlgIds.add(LegacyOrderedPermitOverridesRuleAlg.algId);
+        supportedAlgorithms.add(new LegacyOrderedPermitOverridesPolicyAlg());
+        supportedAlgIds.add(LegacyOrderedPermitOverridesPolicyAlg.algId);
         
         supportedAlgorithms.add(new OrderedPermitOverridesRuleAlg());
         supportedAlgIds.add(OrderedPermitOverridesRuleAlg.algId);
@@ -192,7 +209,7 @@ public class StandardCombiningAlgFactory extends BaseCombiningAlgFactory
      *
      * @throws UnknownIdentifierException if the version string is unknown
      */
-    public static Set getStandardAlgorithms(String xacmlVersion)
+    public static Set<String> getStandardAlgorithms(String xacmlVersion)
         throws UnknownIdentifierException
     {
         if ((xacmlVersion.equals(PolicyMetaData.XACML_1_0_IDENTIFIER)) ||
@@ -211,7 +228,8 @@ public class StandardCombiningAlgFactory extends BaseCombiningAlgFactory
      *
      * @throws UnsupportedOperationException always
      */
-    public void addAlgorithm(CombiningAlgorithm alg) {
+    @Override
+	public void addAlgorithm(CombiningAlgorithm alg) {
         throw new UnsupportedOperationException("a standard factory cannot " +
                                                 "support new algorithms");
     }

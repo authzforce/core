@@ -483,14 +483,14 @@ public class PolicyReference extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 			pfr = finder.findPolicy(reference, policyType, constraints, parentMetaData);
 		} catch (UnknownIdentifierException e)
 		{
-			throw new ProcessingException("Invalid policy #"+reference+"/"+constraints);
+			throw new ProcessingException("Invalid policy #"+reference+"["+constraints +"]");
 		}
 
 		if (pfr.notApplicable()) {
-			throw new ProcessingException("couldn't resolve the policy#"+reference+"/"+constraints);
+			throw new ProcessingException("couldn't resolve the policy #"+reference+"["+constraints+"]");
 		}
 		if (pfr.indeterminate()) {
-			throw new ProcessingException("error resolving the policy#"+reference+"/"+constraints);
+			throw new ProcessingException("error resolving the policy #"+reference+"["+constraints+"]");
 		}
 		return pfr.getPolicy();
 	}

@@ -36,7 +36,6 @@ package com.sun.xacml;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,14 +79,6 @@ import com.thalesgroup.authzforce.core.PdpModelHandler;
  */
 public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule implements IDecidable
 {
-
-	// the attributes associated with this Rule
-	// private URI idAttr;
-	// private EffectType effectAttr;
-
-	// the elements in the rule, each of which is optional
-	// private String description = null;
-	// private TargetType target = null;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Rule.class);
 
@@ -341,32 +332,6 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	public static List getChildren()
 	{
 		return Collections.EMPTY_LIST;
-	}
-
-	/**
-	 * Given the input context sees whether or not the request matches this <code>Rule</code>'s
-	 * <code>Target</code>. Note that unlike the matching done by the <code>evaluate</code> method,
-	 * if the <code>Target</code> is missing than this will return Indeterminate. This lets you
-	 * write your own custom matching routines for rules but lets evaluation proceed normally.
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return the result of trying to match this rule and the request
-	 */
-	@Override
-	public MatchResult match(EvaluationCtx context)
-	{
-		if (target == null)
-		{
-			List<String> code = new ArrayList<>();
-			code.add(Status.STATUS_PROCESSING_ERROR);
-			Status status = new Status(code, "no target available for " + "matching a rule");
-
-			return new MatchResult(MatchResult.INDETERMINATE, status);
-		}
-
-		return ((Target) target).match(context);
 	}
 
 	/**

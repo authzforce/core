@@ -1,14 +1,11 @@
 package com.sun.xacml.combine;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 
 import com.sun.xacml.EvaluationCtx;

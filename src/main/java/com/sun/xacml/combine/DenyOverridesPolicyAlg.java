@@ -34,35 +34,35 @@
 package com.sun.xacml.combine;
 
 import java.net.URI;
-import java.util.Iterator;
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.ctx.Result;
-import com.sun.xacml.xacmlv3.Policy;
+import com.sun.xacml.xacmlv3.IPolicy;
 
 /**
- * This is the standard Deny Overrides policy combining algorithm. It allows a
- * single evaluation of Deny to take precedence over any number of permit, not
- * applicable or indeterminate results. Note that since this implementation does
- * an ordered evaluation, this class also supports the Ordered Deny Overrides
- * algorithm.
+ * This is the standard Deny Overrides policy combining algorithm. It allows a single evaluation of
+ * Deny to take precedence over any number of permit, not applicable or indeterminate results. Note
+ * that since this implementation does an ordered evaluation, this class also supports the Ordered
+ * Deny Overrides algorithm.
  * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
+public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm
+{
 
 	/**
 	 * The standard URN used to identify this algorithm
 	 */
-	public static final String algId = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:"
-			+ "deny-overrides";
+	public static final String algId = "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides";
 
 	// a URI form of the identifier
 	private static final URI identifierURI = URI.create(algId);
@@ -70,7 +70,8 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 	/**
 	 * Standard constructor.
 	 */
-	public DenyOverridesPolicyAlg() {
+	public DenyOverridesPolicyAlg()
+	{
 		super(identifierURI);
 	}
 
@@ -80,64 +81,101 @@ public class DenyOverridesPolicyAlg extends PolicyCombiningAlgorithm {
 	 * @param identifier
 	 *            the algorithm's identifier
 	 */
-	protected DenyOverridesPolicyAlg(URI identifier) {
+	protected DenyOverridesPolicyAlg(URI identifier)
+	{
 		super(identifier);
 	}
 
 	/**
-	 * Applies the combining rule to the set of policies based on the evaluation
-	 * context.
+	 * Applies the combining rule to the set of policies based on the evaluation context.
 	 * 
 	 * @param context
 	 *            the context from the request
 	 * @param parameters
-	 *            a (possibly empty) non-null <code>List</code> of
-	 *            <code>CombinerParameter<code>s
+	 *            a (possibly empty) non-null <code>List</code> of <code>CombinerParameter<code>s
 	 * @param policyElements
 	 *            the policies to combine
 	 * 
 	 * @return the result of running the combining algorithm
 	 */
-	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-			List policyElements) {
+	@Override
+	public Result combine(EvaluationCtx context, CombinerParametersType parameters, List<IPolicy> policyElements)
+	{
 		boolean atLeastOnePermit = false;
-		Obligations permitObligations = new Obligations();
-		Iterator it = policyElements.iterator();
-
-		while (it.hasNext()) {
-			Policy policy = ((Policy) (it.next()));
-
+		
+		/*
+		 * Replaces atLeastOneError from XACML spec.
+		 * atLeastOneError == true <=> firstIndeterminateResult != null
+		 */
+		Result firstIndeterminateResult = null;
+		
+		final Obligations combinedObligations = new Obligations();
+		final AssociatedAdvice combinedAssociatedAdvice = new AssociatedAdvice();
+		for (final IPolicy policy : policyElements)
+		{
 			// make sure that the policy matches the context
-			MatchResult match = policy.match(context);
-
-			if (match.getResult() == MatchResult.INDETERMINATE) {
-				return new Result(DecisionType.DENY);
-			}
-
-			if (match.getResult() == MatchResult.MATCH) {
+			final MatchResult match = policy.match(context);
+			final int matchResultCode = match.getResult();
+			if (matchResultCode == MatchResult.INDETERMINATE)
+			{
+				/*
+				 * FIXME: implement extended Indeterminate decisions.
+				 */
+				firstIndeterminateResult = new Result(DecisionType.INDETERMINATE, match.getStatus());
+			} else if (matchResultCode == MatchResult.MATCH)
+			{
 				// evaluate the policy
-				Result result = policy.evaluate(context);
-				int effect = result.getDecision().ordinal();
+				final Result result = policy.evaluate(context);
+				switch (result.getDecision())
+				{
+					case DENY:
+						return result;
+					case PERMIT:
+						atLeastOnePermit = true;
+						final Obligations resultObligations = result.getObligations();
+						if (resultObligations != null)
+						{
+							combinedObligations.getObligations().addAll(resultObligations.getObligations());
+						}
 
-				// unlike in the RuleCombining version of this alg, we always
-				// return DENY if any Policy returns DENY or INDETERMINATE
-				if ((effect == Result.DECISION_DENY)
-						|| (effect == Result.DECISION_INDETERMINATE))
-					return new Result(DecisionType.DENY, result.getObligations());
-
-				// remember if at least one Policy said PERMIT
-				if (effect == Result.DECISION_PERMIT) {
-					atLeastOnePermit = true;
-					permitObligations = result.getObligations();
+						final AssociatedAdvice resultAssociatedAdvice = result.getAssociatedAdvice();
+						if (resultAssociatedAdvice != null)
+						{
+							combinedAssociatedAdvice.getAdvices().addAll(resultAssociatedAdvice.getAdvices());
+						}
+						break;
+					case INDETERMINATE:
+						/*
+						 * FIXME: implement extended Indeterminate decisions (result differs if
+						 * Indeterminate{P} or Indeterminate{D})
+						 */
+						firstIndeterminateResult = result;
+						break;
+					default:
 				}
 			}
 		}
 
-		// if we got a PERMIT, return it, otherwise it's NOT_APPLICABLE
-		if (atLeastOnePermit) {
-			return new Result(DecisionType.PERMIT, permitObligations);
+		/*
+		 * FIXME: implement extended Indeterminate decisions as the algorithm distinguishes them.
+		 */
+		if (firstIndeterminateResult != null)
+		{
+			return firstIndeterminateResult;
 		}
-		
+
+		// if we got a PERMIT, return it, otherwise it's NOT_APPLICABLE
+		if (atLeastOnePermit)
+		{
+			/*
+			 * Obligations/AssociatedAdvice arguments must be null if no obligation/advice combined,
+			 * to avoid creating empty <Obligations>/<AssociatedAdvice> element (no valid by XACML
+			 * schema) when marshalling with JAXB
+			 */
+			return new Result(DecisionType.PERMIT, null, combinedObligations.getObligations().isEmpty() ? null : combinedObligations,
+					combinedAssociatedAdvice.getAdvices().isEmpty() ? null : combinedAssociatedAdvice, null);
+		}
+
 		return new Result(DecisionType.NOT_APPLICABLE);
 	}
 

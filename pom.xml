@@ -4,10 +4,10 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.6</version>
+		<version>3.0.7</version>
 	</parent>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.5.8-SNAPSHOT</version>
+	<version>3.5.8</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
@@ -23,12 +23,6 @@
 		<!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
 		<url>${scm.baseUrl}/core</url>
 	</scm>
-	<properties>
-		<!-- JDK versions for AspectJ -->
-		<jdk.source>1.7</jdk.source>
-		<jdk.target>1.7</jdk.target>
-		<debug>false</debug>
-	</properties>
 	<dependencies>
 		<dependency>
 			<!-- Used only to do Strings.join() in StandardFactory's init debug messages -->
@@ -221,41 +215,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Maven compiler configuration -->
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<verbose>${debug}</verbose>
-							<showWeaveInfo>${debug}</showWeaveInfo>
-							<outxml>${debug}</outxml>
-							<source>${jdk.source}</source>
-							<target>${jdk.target}</target>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-compile</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<configuration>
-							<source>${jdk.source}</source>
-							<target>${jdk.target}</target>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<source>${jdk.source}</source>
-					<target>${jdk.target}</target>
-				</configuration>
-			</plugin>
 			<!-- Test configuration -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -268,6 +227,11 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
+							<systemPropertyVariables>
+								<!-- Use random address instead of the host MAC address to generate UUIDs as this test may be 
+									run on host disconnected from the network. -->
+								<com.thalesgroup.theresis.useRandomAddressBasedUUID>true</com.thalesgroup.theresis.useRandomAddressBasedUUID>
+							</systemPropertyVariables>
 							<failIfNoTests>false</failIfNoTests>
 							<skipTests>false</skipTests>
 							<includes>

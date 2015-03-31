@@ -102,7 +102,7 @@ public abstract class GeneralFunctionTest
 			// Compare status codes
 			Status expectedStatus = expectedResult.getStatus();
 			Status actualStatus = actualResult.getStatus();
-			Assert.assertTrue("Status codes", actualStatus.getCode().containsAll(expectedStatus.getCode()));
+			Assert.assertEquals("Status codes", actualStatus.getStatusCode().getValue(), expectedStatus.getStatusCode().getValue());
 		} else
 		{
 			Assert.assertNull("Status", actualResult.getStatus());

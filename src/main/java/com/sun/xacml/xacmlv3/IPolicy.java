@@ -29,6 +29,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.MatchResult;
 import com.sun.xacml.PolicyMetaData;
+import com.sun.xacml.Rule;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.ctx.Result;
@@ -58,20 +59,38 @@ public interface IPolicy extends IDecidable
 	 * @return version identifier
 	 */
 	String getVersion();
-	
+
 	/**
 	 * Get metadata
 	 * 
 	 * @return metadata
 	 */
 	PolicyMetaData getMetaData();
-	
+
 	List getChildren();
-	
+
 	List getChildElements();
-	
+
 	/**
 	 * @return combining algorithm (policy combining for PolicySets, rule combining for Policies)
 	 */
 	CombiningAlgorithm getCombiningAlg();
+
+	/**
+	 * Given the input context sees whether or not the request matches this policy element. This
+	 * must be called by combining algorithms before they evaluate a policy. This is also used in
+	 * the initial policy finding operation to determine which top-level policies might apply to the
+	 * request.
+	 * You must call this method first before {@link #evaluate(EvaluationCtx)} to match the Target.
+	 * 
+	 * 
+	 * FIXME: match method should not be visible at this level but should be part of the evaluate
+	 * method implementation and you should not have to call it separately from {@link #evaluate(EvaluationCtx)}.
+	 * 
+	 * @param context
+	 *            the representation of the request
+	 * 
+	 * @return the result of trying to match the policy and the request
+	 */
+	MatchResult match(EvaluationCtx context);
 }

@@ -203,7 +203,7 @@ public class PolicyFinder
 				if (LOGGER.isInfoEnabled())
 				{
 					LOGGER.info("An error occured while trying to find a single applicable policy for a request: {}", newResult.getStatus()
-							.getMessage());
+							.getStatusMessage());
 				}
 
 				return newResult;
@@ -282,7 +282,7 @@ public class PolicyFinder
 			{
 				if (LOGGER.isInfoEnabled())
 				{
-					LOGGER.info("An error occured while trying to find the referenced policy '{}': {}", idReference, newResult.getStatus().getMessage());
+					LOGGER.info("An error occured while trying to find the referenced policy '{}': {}", idReference, newResult.getStatus().getStatusMessage());
 				}
 
 				return newResult;

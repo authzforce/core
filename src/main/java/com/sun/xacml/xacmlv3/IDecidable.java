@@ -40,23 +40,6 @@ import com.sun.xacml.ctx.Result;
 public interface IDecidable
 {
 	/**
-	 * Given the input context sees whether or not the request matches this policy element. This
-	 * must be called by combining algorithms before they evaluate a policy. This is also used in
-	 * the initial policy finding operation to determine which top-level policies might apply to the
-	 * request.
-	 * 
-	 * FIXME: match method should not be visible at this level but should be part of the evaluate
-	 * method implementation. No need to make 2 function calls for this as match is already part of
-	 * the evaluation (see {@link Rule#evaluate(EvaluationCtx)}).
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return the result of trying to match the policy and the request
-	 */
-	MatchResult match(EvaluationCtx context);
-
-	/**
 	 * Tries to evaluate the policy by calling the combining algorithm on the given policies or
 	 * rules. The <code>match</code> method must always be called first, and must always return
 	 * MATCH, before this method is called.

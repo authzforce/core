@@ -210,7 +210,7 @@ public class NonRegression
 				{
 					final boolean matched = TestUtils.match(response, expectedResponse);
 					final String resultMsg = matched ? "SUCCESS" : "FAILED";
-					LOGGER.error("Assertion {} for test: {}", new Object[] { resultMsg, testResourceLocationPrefix });
+					LOGGER.info("Assertion {} for test: {}", new Object[] { resultMsg, testResourceLocationPrefix });
 					results.put(testResourceLocationPrefix, resultMsg);
 					assertTrue(matched);
 				} else

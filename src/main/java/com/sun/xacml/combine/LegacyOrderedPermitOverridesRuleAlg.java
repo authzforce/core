@@ -37,22 +37,23 @@ import java.net.URI;
 
 
 /**
- * This is the standard Ordered Deny Overrides policy combining algorithm. It
- * allows a single evaluation of Deny to take precedence over any number
- * of permit, not applicable or indeterminate results. Note that this uses
- * the regular Deny Overrides implementation since it is also orderd.
+ * This is the standard Ordered Permit Overrides rule combining algorithm. It
+ * allows a single evaluation of Permit to take precedence over any number
+ * of deny, not applicable or indeterminate results. Note that this uses
+ * the regular Permit Overrides implementation since it is also orderd.
  *
  * @since 1.1
  * @author seth proctor
  */
-public class OrderedDenyOverridesPolicyAlg extends DenyOverridesPolicyAlg
+public class LegacyOrderedPermitOverridesRuleAlg extends LegacyPermitOverridesRuleAlg
 {
 
     /**
      * The standard URN used to identify this algorithm
      */
     public static final String algId =
-        "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides";
+        "urn:oasis:names:tc:xacml:1.1:rule-combining-algorithm:" +
+        "ordered-permit-overrides";
 
     // a URI form of the identifier
     private static final URI identifierURI = URI.create(algId);
@@ -60,7 +61,7 @@ public class OrderedDenyOverridesPolicyAlg extends DenyOverridesPolicyAlg
     /**
      * Standard constructor.
      */
-    public OrderedDenyOverridesPolicyAlg() {
+    public LegacyOrderedPermitOverridesRuleAlg() {
         super(identifierURI);
     }
 
