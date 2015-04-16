@@ -57,312 +57,351 @@ import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.Expression;
 
-
 /**
  * Represents the higher order bag function map.
- *
+ * 
  * @since 1.0
  * @author Seth Proctor
  */
 class MapFunction extends Function
 {
 
-    /**
-     * The name of this function
-     */
-    public static final String NAME_MAP = FunctionBase.FUNCTION_NS_3 + "map";
+	/**
+	 * The name of this function
+	 */
+	public static final String NAME_MAP = FunctionBase.FUNCTION_NS_3 + "map";
 
-    // the return type for this instance
-    private URI returnType;
+	/*
+	 * the return type for this instance <p> WARNING: java.net.URI cannot be used here for XACML
+	 * datatype, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI
+	 * [1], not in java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI </p>
+	 */
+	private String returnType;
 
-    // the stuff used to make sure that we have a valid identifier or a
-    // known error, just like in the attribute classes
-    private static URI identifier = URI.create(NAME_MAP);
+	/**
+	 * Creates a new instance of a <code>MapFunction</code>.
+	 * 
+	 * @param returnType
+	 *            the type returned by this function
+	 */
+	public MapFunction(String returnType)
+	{
+		this.returnType = returnType;
+	}
 
-    /**
-     * Creates a new instance of a <code>MapFunction</code>.
-     *
-     * @param returnType the type returned by this function
-     */
-    public MapFunction(URI returnType) {
-        this.returnType = returnType;
-    }
+	/**
+	 * Returns a <code>Set</code> containing all the function identifiers supported by this class.
+	 * 
+	 * @return a <code>Set</code> of <code>String</code>s
+	 */
+	public static Set<String> getSupportedIdentifiers()
+	{
+		Set<String> set = new HashSet<>();
 
-    /**
-     * Returns a <code>Set</code> containing all the function identifiers
-     * supported by this class.
-     *
-     * @return a <code>Set</code> of <code>String</code>s
-     */
-    public static Set<String> getSupportedIdentifiers() {
-        Set<String> set = new HashSet<>();
+		set.add(NAME_MAP);
 
-        set.add(NAME_MAP);
+		return set;
+	}
 
-        return set;
-    }
+	/**
+	 * Creates a new instance of the map function using the data found in the DOM node provided.
+	 * This is called by a proxy when the factory is asked to create one of these functions.
+	 * 
+	 * @param root
+	 *            the DOM node of the apply tag containing this function
+	 * 
+	 * @return a <code>MapFunction</code> instance
+	 * 
+	 * @throws ParsingException
+	 *             if the DOM data was incorrect
+	 */
+	public static MapFunction getInstance(Node root) throws ParsingException
+	{
+		String returnType = null;
 
-    /**
-     * Creates a new instance of the map function using the data found in
-     * the DOM node provided. This is called by a proxy when the factory
-     * is asked to create one of these functions.
-     *
-     * @param root the DOM node of the apply tag containing this function
-     *
-     * @return a <code>MapFunction</code> instance
-     *
-     * @throws ParsingException if the DOM data was incorrect
-     */
-    public static MapFunction getInstance(Node root) throws ParsingException {
-        URI returnType = null;
+		NodeList nodes = root.getChildNodes();
+		for (int i = 0; i < nodes.getLength(); i++)
+		{
+			Node node = nodes.item(i);
 
-        NodeList nodes = root.getChildNodes();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
+			if (node.getNodeName().equalsIgnoreCase("function"))
+			{
+				String funcName = node.getAttributes().getNamedItem("FunctionId").getNodeValue();
+				FunctionFactory factory = FunctionFactory.getGeneralInstance();
+				try
+				{
+					Function function = factory.createFunction(funcName);
+					returnType = function.getReturnType();
+					break;
+				} catch (FunctionTypeException fte)
+				{
+					// try to get this as an abstract function
+					try
+					{
+						Function function = factory.createAbstractFunction(funcName, root);
+						returnType = function.getReturnType();
+						break;
+					} catch (Exception e)
+					{
+						// any exception here is an error
+						throw new ParsingException("invalid abstract map", e);
+					}
+				} catch (Exception e)
+				{
+					// any exception that's not function type is an error
+					throw new ParsingException("couldn't parse map body", e);
+				}
+			}
+		}
 
-            if (node.getNodeName().equalsIgnoreCase("function")) {
-                String funcName = node.getAttributes().
-                    getNamedItem("FunctionId").getNodeValue();
-                FunctionFactory factory = FunctionFactory.getGeneralInstance();
-                try {
-                    Function function = factory.createFunction(funcName);
-                    returnType = function.getReturnType();
-                    break;
-                } catch (FunctionTypeException fte) {
-                    // try to get this as an abstract function
-                    try {
-                        Function function = factory.
-                            createAbstractFunction(funcName, root);
-                        returnType = function.getReturnType();
-                        break;
-                    } catch (Exception e) {
-                        // any exception here is an error
-                        throw new ParsingException("invalid abstract map", e);
-                    }
-                } catch (Exception e) {
-                    // any exception that's not function type is an error
-                    throw new ParsingException("couldn't parse map body", e);
-                }
-            }
-        }
+		// see if we found the return type
+		if (returnType == null)
+		{
+			throw new ParsingException("couldn't find the return type");
+		}
 
-        // see if we found the return type
-        if (returnType == null) {
-            throw new ParsingException("couldn't find the return type");
-        }
+		return new MapFunction(returnType);
+	}
 
-        return new MapFunction(returnType);
-    }
-    
 	public static Function getInstance(List<ExpressionType> inputs) throws ParsingException
 	{
-		if(inputs == null || inputs.isEmpty()) {
+		if (inputs == null || inputs.isEmpty())
+		{
 			throw new IllegalArgumentException("Null or empty list of arguments");
 		}
-		
+
 		// first input is expected to be a function
 		final ExpressionType funcInput = inputs.get(0);
-		if(!(funcInput instanceof Function)) {
+		if (!(funcInput instanceof Function))
+		{
 			throw new IllegalArgumentException("First arg is not a Function");
 		}
-		
+
 		final Function func = (Function) funcInput;
-		final URI returnType = func.getReturnType();
+		final String returnType = func.getReturnType();
 
-        if (returnType == null) {
-            throw new ParsingException("couldn't find the return type");
-        }
+		if (returnType == null)
+		{
+			throw new ParsingException("couldn't find the return type");
+		}
 
-        return new MapFunction(returnType);
+		return new MapFunction(returnType);
 	}
-    
-    /**
-     * Returns the full identifier of this function, as known by the factories.
-     *
-     * @return the function's identifier
-     */
-    @Override
-	public URI getIdentifier() {
-        return identifier;
-    }
 
-    /**
-     * Returns the same value as <code>getReturnType</code>. This is here
-     * to support the <code>Expression</code> interface.
-     *
-     * @return the return type
-     */
-    public URI getType() {
-        return getReturnType();
-    }
+	/**
+	 * Returns the full identifier of this function, as known by the factories.
+	 * 
+	 * @return the function's identifier
+	 */
+	@Override
+	public String getIdentifier()
+	{
+		return NAME_MAP;
+	}
 
-    /**
-     * Returns the attribute type returned by this function.
-     *
-     * @return the return type
-     */
-    @Override
-	public URI getReturnType() {
-        return returnType;
-    }
+	/**
+	 * Returns the same value as <code>getReturnType</code>. This is here to support the
+	 * <code>Expression</code> interface.
+	 * 
+	 * @return the return type
+	 */
+	public String getType()
+	{
+		return getReturnType();
+	}
 
-    /**
-     * Returns <code>true</code>, since the map function always returns a bag
-     *
-     * @return true
-     */
-    @Override
-	public boolean returnsBag() {
-        return true;
-    }
+	/**
+	 * Returns the attribute type returned by this function.
+	 * 
+	 * @return the return type
+	 */
+	@Override
+	public String getReturnType()
+	{
+		return returnType;
+	}
 
-    /**
-     * Helper function to create a processing error message.
-     */
-//    private static EvaluationResult makeProcessingError(String message) {
-//        ArrayList code = new ArrayList();
-//        code.add(Status.STATUS_PROCESSING_ERROR);
-//        return new EvaluationResult(new Status(code, message));
-//    }
+	/**
+	 * Returns <code>true</code>, since the map function always returns a bag
+	 * 
+	 * @return true
+	 */
+	@Override
+	public boolean returnsBag()
+	{
+		return true;
+	}
 
-    /**
-     * Evaluates the function given the input data. Map expects a
-     * <code>Function</code> followed by a <code>BagAttribute</code>.
-     *
-     * @param inputs the input agrument list
-     * @param context the representation of the request
-     *
-     * @return the result of evaluation
-     */
-    @Override
-	public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+	/**
+	 * Helper function to create a processing error message.
+	 */
+	// private static EvaluationResult makeProcessingError(String message) {
+	// ArrayList code = new ArrayList();
+	// code.add(Status.STATUS_PROCESSING_ERROR);
+	// return new EvaluationResult(new Status(code, message));
+	// }
 
-        // get the inputs, which we expect to be correct
-        Iterator<?> iterator = inputs.iterator();
-        Function function = null;
+	/**
+	 * Evaluates the function given the input data. Map expects a <code>Function</code> followed by
+	 * a <code>BagAttribute</code>.
+	 * 
+	 * @param inputs
+	 *            the input agrument list
+	 * @param context
+	 *            the representation of the request
+	 * 
+	 * @return the result of evaluation
+	 */
+	@Override
+	public EvaluationResult evaluate(List<? extends ExpressionType> inputs, EvaluationCtx context)
+	{
 
-        ExpressionType xpr = (ExpressionType)(iterator.next());
-        if (xpr instanceof Function) {
-            function = (Function)xpr;
-        } else {
-            function = (Function)(((VariableReference)xpr).getReferencedDefinition().getExpression()).getValue();
-        }
+		// get the inputs, which we expect to be correct
+		Iterator<?> iterator = inputs.iterator();
+		Function function = null;
 
-        Evaluatable eval = (Evaluatable)(iterator.next());
-        EvaluationResult result = eval.evaluate(context);
-                
-        // in a higher-order case, if anything is INDETERMINATE, then
-        // we stop right away
-        if (result.indeterminate()) {
-            return result;
-        }
-        
-        BagAttribute bag = (BagAttribute)(result.getAttributeValue());
-        
-        // param: function, bag
-        // return: bag
-        // for each value in the bag evaluate the given function with
-        // the value and put the function result in a new bag that
-        // is ultimately returned
+		ExpressionType xpr = (ExpressionType) (iterator.next());
+		if (xpr instanceof Function)
+		{
+			function = (Function) xpr;
+		} else
+		{
+			function = (Function) (((VariableReference) xpr).getReferencedDefinition().getExpression()).getValue();
+		}
 
-        List<AttributeValue> outputs = new ArrayList<>();
+		Evaluatable eval = (Evaluatable) (iterator.next());
+		EvaluationResult result = eval.evaluate(context);
 
-       for(AttributeValue value: bag.getValues()) {
-            List params = new ArrayList();
-            params.add(value);
-            result = function.evaluate(params, context);
+		// in a higher-order case, if anything is INDETERMINATE, then
+		// we stop right away
+		if (result.indeterminate())
+		{
+			return result;
+		}
 
-            if (result.indeterminate()) {
-                return result;
-            }
-            
-            outputs.add(result.getAttributeValue());
-        }
+		BagAttribute bag = (BagAttribute) (result.getAttributeValue());
 
-        return new EvaluationResult(new BagAttribute(returnType, outputs));
-    }
+		// param: function, bag
+		// return: bag
+		// for each value in the bag evaluate the given function with
+		// the value and put the function result in a new bag that
+		// is ultimately returned
 
-    /**
-     * Checks that the input list is valid for evaluation.
-     *
-     * @param inputs a <code>List</code> of inputs
-     *
-     * @throws IllegalArgumentException if the inputs cannot be evaluated
-     */
-    @Override
-	public void checkInputs(List inputs) throws IllegalArgumentException {
-        Object [] list = inputs.toArray();
+		List<AttributeValue> outputs = new ArrayList<>();
 
-        // check that we've got the right number of arguments
-        if (list.length != 2) {
-            throw new IllegalArgumentException("map requires two inputs");
-        }
+		for (AttributeValue value : bag.getValues())
+		{
+			List<AttributeValue> params = new ArrayList<>();
+			params.add(value);
+			result = function.evaluate(params, context);
 
-        // now check that we've got the right types for map
-        Function function = null;
+			if (result.indeterminate())
+			{
+				return result;
+			}
 
-        if (list[0] instanceof Function) {
-            function = (Function)(list[0]);
-        } else if (list[0] instanceof VariableReference) {
-            ExpressionType xpr = ((VariableReference)(list[0])).getReferencedDefinition().getExpression().getValue();
-            if (xpr instanceof Function) {
-                function = (Function)xpr;
-            }
-        }
+			outputs.add(result.getAttributeValue());
+		}
 
-        if (function == null) {
-            throw new IllegalArgumentException("first argument to map must " +
-                                               "be a Function");
-        }
-        
-        Evaluatable eval = (Evaluatable)(list[1]);
-//        if (! eval.returnsBag()) {
-        if (! eval.evaluatesToBag()) {
-            throw new IllegalArgumentException("second argument to map must " +
-                                               "be a bag");
-        }
+		return new EvaluationResult(new BagAttribute(returnType, outputs));
+	}
 
-        // finally, check that the type in the bag is right for the function
-        List input = new ArrayList();
-        input.add(list[1]);
-        function.checkInputsNoBag(input);
-    }
+	/**
+	 * Checks that the input list is valid for evaluation.
+	 * 
+	 * @param inputs
+	 *            a <code>List</code> of inputs
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if the inputs cannot be evaluated
+	 */
+	@Override
+	public void checkInputs(List<ExpressionType> inputs) throws IllegalArgumentException
+	{
+		final Iterator<ExpressionType> listIterator = inputs.iterator();
 
-    /**
-     * Always throws <code>IllegalArgumentException</code> since map needs
-     * to work on a bag
-     *
-     * @param inputs a <code>List</code> of inputs
-     *
-     * @throws IllegalArgumentException always
-     */
-    public void checkInputsNoBag(List inputs) throws IllegalArgumentException {
-        throw new IllegalArgumentException("map requires a bag");
-    }
+		// check that we've got the right number of arguments
+		if (inputs.size() != 2)
+		{
+			throw new IllegalArgumentException("map requires two inputs");
+		}
 
-    /**
-     * Encodes this <code>MapFunction</code> into its XML representation and
-     * writes this encoding to the given <code>OutputStream</code> with no
-     * indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     */
-    public void encode(OutputStream output) {
-        encode(output, new Indenter(0));
-    }
+		// now check that we've got the right types for map
+		Function function = null;
+		ExpressionType input0 = listIterator.next();
+		if (input0 instanceof Function)
+		{
+			function = (Function) (input0);
+		} else if (input0 instanceof VariableReference)
+		{
+			ExpressionType xpr = ((VariableReference) (input0)).getReferencedDefinition().getExpression().getValue();
+			if (xpr instanceof Function)
+			{
+				function = (Function) xpr;
+			}
+		}
 
-    /**
-     * Encodes this <code>MapFunction</code> into its XML representation and
-     * writes this encoding to the given <code>OutputStream</code> with
-     * indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     * @param indenter an object that creates indentation strings
-     */
-    public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        out.println(indenter.makeString() + "<Function FunctionId=\"" +
-                    NAME_MAP + "\"/>");
-    }
+		if (function == null)
+		{
+			throw new IllegalArgumentException("first argument to map must " + "be a Function");
+		}
+
+		ExpressionType input1 = listIterator.next();
+		Evaluatable eval = (Evaluatable) (input1);
+		// if (! eval.returnsBag()) {
+		if (!eval.evaluatesToBag())
+		{
+			throw new IllegalArgumentException("second argument to map must " + "be a bag");
+		}
+
+		// finally, check that the type in the bag is right for the function
+		List input = new ArrayList();
+		input.add(input1);
+		function.checkInputsNoBag(input);
+	}
+
+	/**
+	 * Always throws <code>IllegalArgumentException</code> since map needs to work on a bag
+	 * 
+	 * @param inputs
+	 *            a <code>List</code> of inputs
+	 * 
+	 * @throws IllegalArgumentException
+	 *             always
+	 */
+	@Override
+	public void checkInputsNoBag(List<ExpressionType> inputs) throws IllegalArgumentException
+	{
+		throw new IllegalArgumentException("map requires a bag");
+	}
+
+	/**
+	 * Encodes this <code>MapFunction</code> into its XML representation and writes this encoding to
+	 * the given <code>OutputStream</code> with no indentation.
+	 * 
+	 * @param output
+	 *            a stream into which the XML-encoded data is written
+	 */
+	@Override
+	public void encode(OutputStream output)
+	{
+		encode(output, new Indenter(0));
+	}
+
+	/**
+	 * Encodes this <code>MapFunction</code> into its XML representation and writes this encoding to
+	 * the given <code>OutputStream</code> with indentation.
+	 * 
+	 * @param output
+	 *            a stream into which the XML-encoded data is written
+	 * @param indenter
+	 *            an object that creates indentation strings
+	 */
+	@Override
+	public void encode(OutputStream output, Indenter indenter)
+	{
+		PrintStream out = new PrintStream(output);
+		out.println(indenter.makeString() + "<Function FunctionId=\"" + NAME_MAP + "\"/>");
+	}
 
 }

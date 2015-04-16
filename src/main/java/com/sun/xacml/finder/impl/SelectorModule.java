@@ -33,9 +33,9 @@
  */
 package com.sun.xacml.finder.impl;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,11 +51,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.BagAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinderModule;
@@ -89,7 +87,7 @@ public class SelectorModule extends AttributeFinderModule<AbstractAttributeFinde
 {
     private static final Logger LOGGER =
         LoggerFactory.getLogger(SelectorModule.class);
-    Map<String, XPathExpression> xpathExpressionMap = new HashMap<String, XPathExpression>();
+    Map<String, XPathExpression> xpathExpressionMap = new HashMap<>();
 
     /**
      * Returns true since this module supports retrieving attributes based on
@@ -105,8 +103,8 @@ public class SelectorModule extends AttributeFinderModule<AbstractAttributeFinde
     /**
      * Private helper to create a new processing error status result
      */
-    private EvaluationResult createProcessingError(String msg) {
-        ArrayList code = new ArrayList();
+    private static EvaluationResult createProcessingError(String msg) {
+        List<String> code = new ArrayList<>();
         code.add(Status.STATUS_PROCESSING_ERROR);
         return new EvaluationResult(new Status(code, msg));
     }
@@ -129,7 +127,7 @@ public class SelectorModule extends AttributeFinderModule<AbstractAttributeFinde
      */
     @Override
 	public EvaluationResult findAttribute(String path, Node namespaceNode,
-                                          URI type, EvaluationCtx context,
+                                          String type, EvaluationCtx context,
                                           String xpathVersion) {
         // we only support 1.0
         if (! xpathVersion.equals(PolicyMetaData.XPATH_1_0_IDENTIFIER))
@@ -227,38 +225,16 @@ public class SelectorModule extends AttributeFinderModule<AbstractAttributeFinde
             return new EvaluationResult(BagAttribute.createEmptyBag(type));
         }
 
-        // there was at least one match, so try to generate the values
-        try {
-            ArrayList list = new ArrayList();
-            AttributeFactory attrFactory = AttributeFactory.getInstance();
-            
-            for (int i = 0; i < matches.getLength(); i++) {
-                String text = null;
-                Node node = matches.item(i);
-                short nodeType = node.getNodeType();
-
-                // see if this is straight text, or a node with data under
-                // it and then get the values accordingly
-                if ((nodeType == Node.CDATA_SECTION_NODE) ||
-                    (nodeType == Node.COMMENT_NODE) ||
-                    (nodeType == Node.TEXT_NODE) ||
-                    (nodeType == Node.ATTRIBUTE_NODE)) {
-                    // there is no child to this node
-                    text = node.getNodeValue();
-                } else {
-                    // the data is in a child node
-                    text = node.getFirstChild().getNodeValue();
-                }
-
-                list.add(attrFactory.createValue(type, text));
-            }
-            
-            return new EvaluationResult(new BagAttribute(type, list));
-        } catch (ParsingException pe) {
-            return createProcessingError(pe.getMessage());
-        } catch (UnknownIdentifierException uie) {
-            return createProcessingError("unknown attribute type: " + type);
-        }
+        List<AttributeValue> list = new ArrayList<>();
+		
+		for (int i = 0; i < matches.getLength(); i++) {
+		    Node node = matches.item(i);
+		    final PolicyMetaData metaData = new PolicyMetaData(PolicyMetaData.XACML_3_0_IDENTIFIER, null);
+		    final AttributeValue attrVal = AttributeValue.getInstance(node, metaData);
+		    list.add(attrVal);
+		}
+		
+		return new EvaluationResult(new BagAttribute(type, list));
     }
 
 	@Override

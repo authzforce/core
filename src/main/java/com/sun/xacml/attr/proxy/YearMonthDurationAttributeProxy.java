@@ -33,11 +33,11 @@
  */
 package com.sun.xacml.attr.proxy;
 
-import com.sun.xacml.attr.AttributeProxy;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.attr.YearMonthDurationAttribute;
-
 import org.w3c.dom.Node;
+
+import com.sun.xacml.attr.YearMonthDurationAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.thalesgroup.authzforce.core.AbstractPrimitiveAttributeProxy;
 
 
 /**
@@ -47,14 +47,16 @@ import org.w3c.dom.Node;
  * @since 1.2
  * @author Seth Proctor
  */
-public class YearMonthDurationAttributeProxy implements AttributeProxy
+public class YearMonthDurationAttributeProxy extends AbstractPrimitiveAttributeProxy
 {
 
-    public AttributeValue getInstance(Node root) throws Exception {
+    @Override
+	public AttributeValue getInstance(Node root) throws Exception {
         return YearMonthDurationAttribute.getInstance(root);
     }
 
-    public AttributeValue getInstance(String value) throws Exception {
+    @Override
+	public AttributeValue getInstance(String value) throws Exception {
         return YearMonthDurationAttribute.getInstance(value);
     }
 

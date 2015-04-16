@@ -33,8 +33,6 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
-
 import org.w3c.dom.Node;
 
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
@@ -57,11 +55,6 @@ public class DoubleAttribute extends AttributeValue
      */
     public static final String identifier =
         "http://www.w3.org/2001/XMLSchema#double";
- 
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * The actual double value that this object represents.
@@ -75,7 +68,7 @@ public class DoubleAttribute extends AttributeValue
      * @param value the <code>double</code> value to be represented
      */
     public DoubleAttribute(double value) {
-        super(identifierURI);
+        super(identifier);
         this.value = value;
         this.content.add(value);
     }
@@ -99,19 +92,22 @@ public class DoubleAttribute extends AttributeValue
      * Returns a new <code>DoubleAttribute</code> that represents
      * the xsi:double value indicated by the string provided.
      *
-     * @param value a string representing the desired value
+     * @param doubleVal a string representing the desired value
      * @return a new <code>DoubleAttribute</code> representing the
      *         desired value (null if there is a parsing error)
      * @throws NumberFormatException if the value is not a double
      */
-    public static DoubleAttribute getInstance(String value) {
+    public static DoubleAttribute getInstance(String doubleVal) {
         // Convert "INF" to "Infinity"
-        if (value.endsWith("INF")) {
-            int infIndex = value.lastIndexOf("INF");
-            value = value.substring(0, infIndex) + "Infinity";
+    	final String val;
+        if (doubleVal.endsWith("INF")) {
+            int infIndex = doubleVal.lastIndexOf("INF");
+            val = doubleVal.substring(0, infIndex) + "Infinity";
+        } else {
+        	val = doubleVal;
         }
 
-        return new DoubleAttribute(Double.parseDouble(value));
+        return new DoubleAttribute(Double.parseDouble(val));
     }
 
     /**
@@ -131,7 +127,8 @@ public class DoubleAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         if (! (o instanceof DoubleAttribute))
             return false;
 
@@ -144,14 +141,13 @@ public class DoubleAttribute extends AttributeValue
             if (Double.isNaN(other.value)) {
                 // they're both NaNs, so they're equal
                 return true;
-            } else {
-                // they're not both NaNs, so they're not equal
-                return false;
             }
-        } else {
-            // not NaNs, so we can do a normal comparison
-            return (value == other.value);
+            
+			// they're not both NaNs, so they're not equal
+			return false;
         }
+		// not NaNs, so we can do a normal comparison
+		return (value == other.value);
     }
 
     /**
@@ -161,7 +157,8 @@ public class DoubleAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         long v = Double.doubleToLongBits(value);
         return (int)(v ^ (v >>> 32));
     }
@@ -169,7 +166,8 @@ public class DoubleAttribute extends AttributeValue
     /**
      *
      */
-    public String encode() {
+    @Override
+	public String encode() {
         return String.valueOf(value);
     }
     

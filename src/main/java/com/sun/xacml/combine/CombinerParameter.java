@@ -46,122 +46,126 @@ import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
-
 /**
- * Represents a single named parameter to a combining algorithm. Parameters
- * are only used by XACML 2.0 and later policies.
- *
+ * Represents a single named parameter to a combining algorithm. Parameters are only used by XACML
+ * 2.0 and later policies.
+ * 
  * @since 2.0
  * @author Seth Proctor
  */
 public class CombinerParameter extends CombinerParametersType
 {
 
-    // the name of this parameter
-    private String name;
+	// the name of this parameter
+	private String name;
 
-    // the value of this parameter
-    private AttributeValue value;
+	// the value of this parameter
+	private AttributeValue value;
 
-    /**
-     * Creates a new CombinerParameter.
-     *
-     * @param name the parameter's name
-     * @param value the parameter's value
-     */
-    public CombinerParameter(String name, AttributeValue value) {
-        this.name = name;
-        this.value = value;
-    }
-
-    /**
-     * Creates a new CombinerParameter handler.
-     * 
-     * @param param CombinerParameter as defined by OASIS XACML model
-     * @throws ParsingException
-     */
-    public CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param) throws ParsingException
+	/**
+	 * Creates a new CombinerParameter.
+	 * 
+	 * @param name
+	 *            the parameter's name
+	 * @param value
+	 *            the parameter's value
+	 */
+	public CombinerParameter(String name, AttributeValue value)
 	{
-    	// get the attribute value, the only child of this element
-        AttributeFactory attrFactory = AttributeFactory.getInstance();
-        AttributeValue value = null;
-
-        try {
-            value = attrFactory.createValue(param.getAttributeValue());
-        } catch (UnknownIdentifierException uie) {
-            throw new ParsingException("Unknown AttributeId", uie);
-        }
-        
-        this.name = param.getParameterName();
-        this.value = value;
+		this.name = name;
+		this.value = value;
 	}
 
 	/**
-     * Returns a new instance of the <code>CombinerParameter</code> class
-     * based on a DOM node. The node must be the root of an XML
-     * CombinerParameterType.
-     *
-     * @param root the DOM root of a CombinerParameterType XML type
-     *
-     * @throws ParsingException if the CombinerParameterType is invalid
-     */
-    public static CombinerParameter getInstance(Node root)
-        throws ParsingException
-    {
-        // get the name, which is a required attribute
-        String name = root.getAttributes().getNamedItem("ParameterName").
-            getNodeValue();
+	 * Creates a new CombinerParameter handler.
+	 * 
+	 * @param param
+	 *            CombinerParameter as defined by OASIS XACML model
+	 * @throws ParsingException
+	 */
+	public CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param) throws ParsingException
+	{
+		// get the attribute value, the only child of this element
+		AttributeFactory attrFactory = AttributeFactory.getInstance();
+		try
+		{
+			this.value = attrFactory.createValue(param.getAttributeValue());
+		} catch (UnknownIdentifierException uie)
+		{
+			throw new ParsingException("Unknown AttributeId", uie);
+		}
 
-        // get the attribute value, the only child of this element
-        AttributeFactory attrFactory = AttributeFactory.getInstance();
-        AttributeValue value = null;
+		this.name = param.getParameterName();
+	}
 
-        try {
-            value = attrFactory.createValue(root.getFirstChild());
-        } catch (UnknownIdentifierException uie) {
-            throw new ParsingException("Unknown AttributeId", uie);
-        }
-        
-        return new CombinerParameter(name, value);
-    }
+	/**
+	 * Returns a new instance of the <code>CombinerParameter</code> class based on a DOM node. The
+	 * node must be the root of an XML CombinerParameterType.
+	 * 
+	 * @param root
+	 *            the DOM root of a CombinerParameterType XML type
+	 * @return CombinerParameter instance
+	 * 
+	 * @throws ParsingException
+	 *             if the CombinerParameterType is invalid
+	 */
+	public static CombinerParameter getInstance(Node root) throws ParsingException
+	{
+		// get the name, which is a required attribute
+		String name = root.getAttributes().getNamedItem("ParameterName").getNodeValue();
 
-    /**
-     * Returns the name of this parameter.
-     *
-     * @return the name of this parameter
-     */
-    public String getName() {
-        return name;
-    }
+		// get the attribute value, the only child of this element
+		AttributeFactory attrFactory = AttributeFactory.getInstance();
+		AttributeValue value = null;
 
-    /**
-     * Returns the value provided by this parameter.
-     *
-     * @return the value provided by this parameter
-     */
-    public AttributeValue getValue() {
-        return value;
-    }
+		try
+		{
+			value = attrFactory.createValue(root.getFirstChild());
+		} catch (UnknownIdentifierException uie)
+		{
+			throw new ParsingException("Unknown AttributeId", uie);
+		}
 
-    /**
-     * Encodes this parameter into its  XML representation and writes this
-     * encoding to the given <code>OutputStream</code> with indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     * @param indenter an object that creates indentation strings
-     */
-    public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        String indent = indenter.makeString();
+		return new CombinerParameter(name, value);
+	}
 
-        out.println(indent + "<CombinerParameter ParameterName=\"" +
-                    getName() + "\">");
-        indenter.in();
+	/**
+	 * Returns the name of this parameter.
+	 * 
+	 * @return the name of this parameter
+	 */
+	public String getName()
+	{
+		return name;
+	}
 
-        getValue().encode(output, indenter);
+	/**
+	 * Returns the value provided by this parameter.
+	 * 
+	 * @return the value provided by this parameter
+	 */
+	public AttributeValue getValue()
+	{
+		return value;
+	}
 
-        out.println(indent + "</CombinerParameter>");
-        indenter.out();
-    }
+	/**
+	 * Encodes this parameter into its XML representation and writes this encoding to the given
+	 * <code>OutputStream</code> with indentation.
+	 * 
+	 * @param output
+	 *            a stream into which the XML-encoded data is written
+	 * @param indenter
+	 *            an object that creates indentation strings
+	 */
+	public void encode(OutputStream output, Indenter indenter)
+	{
+		PrintStream out = new PrintStream(output);
+		String indent = indenter.makeString();
+
+		out.println(indent + "<CombinerParameter ParameterName=\"" + getName() + "\">" +
+		getValue().encode() + "</CombinerParameter>");
+		indenter.out();
+	}
 
 }

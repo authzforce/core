@@ -33,11 +33,11 @@
  */
 package com.sun.xacml.attr.proxy;
 
-import com.sun.xacml.attr.AttributeProxy;
+import org.w3c.dom.Node;
+
 import com.sun.xacml.attr.HexBinaryAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
-
-import org.w3c.dom.Node;
+import com.thalesgroup.authzforce.core.AbstractPrimitiveAttributeProxy;
 
 
 /**
@@ -47,14 +47,16 @@ import org.w3c.dom.Node;
  * @since 1.2
  * @author Seth Proctor
  */
-public class HexBinaryAttributeProxy implements AttributeProxy
+public class HexBinaryAttributeProxy extends AbstractPrimitiveAttributeProxy
 {
 
-    public AttributeValue getInstance(Node root) throws Exception {
+    @Override
+	public AttributeValue getInstance(Node root) throws Exception {
         return HexBinaryAttribute.getInstance(root);
     }
 
-    public AttributeValue getInstance(String value) throws Exception {
+    @Override
+	public AttributeValue getInstance(String value) throws Exception {
         return HexBinaryAttribute.getInstance(value);
     }
 

@@ -33,11 +33,8 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 import org.w3c.dom.Node;
 
@@ -62,14 +59,6 @@ public class TimeAttribute extends AttributeValue
      */
     public static final String identifier =
         "http://www.w3.org/2001/XMLSchema#time";
- 
-    /**
-     * URI version of name for this type
-     * <p>
-     * This object is used for synchronization whenever we need
-     * protection across this whole class.
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * Time zone value that indicates that the time zone was not
@@ -136,7 +125,7 @@ public class TimeAttribute extends AttributeValue
      *             with the nanoseconds parameter.
      */
     public TimeAttribute(Date time) {
-        super(identifierURI);
+        super(identifier);
 
         int currOffset = DateTimeAttribute.getDefaultTZOffset(time);
         init(time, 0, currOffset, currOffset);
@@ -163,7 +152,7 @@ public class TimeAttribute extends AttributeValue
      */
     public TimeAttribute(Date time, int nanoseconds, int timeZone,
                          int defaultedTimeZone) {
-        super(identifierURI);
+        super(identifier);
 
         // if the timezone is unspecified, it's illegal for the defaulted
         // timezone to also be unspecified
@@ -184,32 +173,32 @@ public class TimeAttribute extends AttributeValue
      *             not, such a date will be forced. If this object
      *             has non-zero milliseconds, they are combined
      *             with the nanoseconds parameter.
-     * @param nanoseconds the number of nanoseconds beyond the
+     * @param nanosec the number of nanoseconds beyond the
      *                    Date specified in the date parameter
-     * @param timeZone the time zone specified for this object
+     * @param tz the time zone specified for this object
      *                 (or TZ_UNSPECIFIED if unspecified). The
      *                 offset to GMT, in minutes.
-     * @param defaultedTimeZone the time zone actually used for this
+     * @param defaultedtz the time zone actually used for this
      *                          object (if it was originally unspecified,
      *                          the default time zone used).
      *                          The offset to GMT, in minutes.
      */
-    private void init(Date date, int nanoseconds, int timeZone,
-                      int defaultedTimeZone) {
+    private void init(Date date, int nanosec, int tz,
+                      int defaultedtz) {
 
         // get a temporary copy of the date
         Date tmpDate = (Date)(date.clone());
 
         // Combine the nanoseconds so they are between 0 and 999,999,999
         this.nanoseconds =
-            DateTimeAttribute.combineNanos(tmpDate, nanoseconds);
+            DateTimeAttribute.combineNanos(tmpDate, nanosec);
 
         // now that the date has been (potentially) updated, store the time
         this.timeGMT = tmpDate.getTime();
 
         // keep track of the timezone values
-        this.timeZone = timeZone;
-        this.defaultedTimeZone = defaultedTimeZone;
+        this.timeZone = tz;
+        this.defaultedTimeZone = defaultedtz;
 
         // Check that the date is normalized to 1/1/70
         if ((timeGMT >= DateAttribute.MILLIS_PER_DAY) || (timeGMT < 0)) {
@@ -230,6 +219,9 @@ public class TimeAttribute extends AttributeValue
      * @param root the <code>Node</code> that contains the desired value
      * @return a new <code>TimeAttribute</code> representing the
      *         appropriate value (null if there is a parsing error)
+     * @throws ParsingException 
+     * @throws NumberFormatException 
+     * @throws ParseException 
      */
     public static TimeAttribute getInstance(Node root)
         throws ParsingException, NumberFormatException, ParseException
@@ -245,6 +237,8 @@ public class TimeAttribute extends AttributeValue
      * @return a new <code>TimeAttribute</code> representing the
      *         desired value (null if there is a parsing error)
      * @throws ParsingException if any problems occurred while parsing
+     * @throws NumberFormatException 
+     * @throws ParseException 
      */
     public static TimeAttribute getInstance(String value)
         throws ParsingException, NumberFormatException, ParseException
@@ -252,9 +246,9 @@ public class TimeAttribute extends AttributeValue
         // Prepend date string for Jan 1 1970 and use the
         // DateTimeAttribute parsing code.
 
-        value = "1970-01-01T" + value;
+        String prefixedValue = "1970-01-01T" + value;
 
-        DateTimeAttribute dateTime = DateTimeAttribute.getInstance(value);
+        DateTimeAttribute dateTime = DateTimeAttribute.getInstance(prefixedValue);
 
         // if there was no explicit TZ provided, then we want to make sure
         // the that the defaulting is done correctly, especially since 1/1/70
@@ -263,7 +257,6 @@ public class TimeAttribute extends AttributeValue
         Date dateValue = dateTime.getValue();
         int defaultedTimeZone = dateTime.getDefaultedTimeZone();
         if (dateTime.getTimeZone() == TZ_UNSPECIFIED) {
-            TimeZone localTZ = TimeZone.getDefault();
             int newDefTimeZone =
                 DateTimeAttribute.getDefaultTZOffset(new Date());
             dateValue = new Date(dateValue.getTime() -
@@ -341,9 +334,11 @@ public class TimeAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
-        if (! (o instanceof TimeAttribute))
+    @Override
+	public boolean equals(Object o) {
+        if (! (o instanceof TimeAttribute)) {
             return false;
+        }
 
         TimeAttribute other = (TimeAttribute)o;
 
@@ -358,7 +353,8 @@ public class TimeAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         // the standard Date hashcode is used here...
         int hashCode = (int)(timeGMT ^ (timeGMT >>> 32));
 
@@ -375,7 +371,8 @@ public class TimeAttribute extends AttributeValue
      *
      * @return the String representation
      */
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("TimeAttribute: [\n");
         
@@ -408,9 +405,11 @@ public class TimeAttribute extends AttributeValue
      *
      * @return a <code>String</code> form of the value
      */
-    public String encode() {
-        if (encodedValue != null)
+    @Override
+	public String encode() {
+        if (encodedValue != null) {
             return encodedValue;
+        }
 
         // "hh:mm:ss.sssssssss+hh:mm".length() = 27
         StringBuffer buf = new StringBuffer(27);

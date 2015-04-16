@@ -35,8 +35,6 @@ package com.sun.xacml.cond;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -238,18 +236,13 @@ public abstract class FunctionBase extends Function
 	 *             if the identifier isn't a valid URI
 	 */
 	@Override
-	public URI getIdentifier()
+	public String getIdentifier()
 	{
 		// this is to get around the exception handling problems, but may
 		// change if this code changes to include exceptions from the
 		// constructors
-		try
-		{
-			return new URI(functionName);
-		} catch (URISyntaxException use)
-		{
-			throw new IllegalArgumentException("invalid URI");
-		}
+			return functionName;
+
 	}
 
 	/**
@@ -279,7 +272,7 @@ public abstract class FunctionBase extends Function
 	 * 
 	 * @return the return type
 	 */
-	public URI getType()
+	public String getType()
 	{
 		return getReturnType();
 	}
@@ -290,15 +283,9 @@ public abstract class FunctionBase extends Function
 	 * @return a <code>URI</code> indicating the attribute type returned by this function
 	 */
 	@Override
-	public URI getReturnType()
+	public String getReturnType()
 	{
-		try
-		{
-			return new URI(returnType);
-		} catch (Exception e)
-		{
-			return null;
-		}
+		return returnType;
 	}
 
 	/**
@@ -406,8 +393,9 @@ public abstract class FunctionBase extends Function
 			// first, check the length of the inputs, if appropriate
 			if (numParams != -1)
 			{
-				if (inputs.size() != numParams)
+				if (inputs.size() != numParams) {
 					throw new IllegalArgumentException("wrong number of args to " + functionName + ". Required: " + numParams);
+				}
 			} else
 			{
 				if (inputs.size() < minParams)
@@ -467,24 +455,24 @@ public abstract class FunctionBase extends Function
 					AttributeDesignator evalTmp = (AttributeDesignator) eval;
 					if ((!evalTmp.getType().toString().equals(paramTypes[i])) || (evalTmp.returnsBag() != paramsAreBags[i]))
 					{
-						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName,
-								evalTmp.getDataType(), evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
+						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName, evalTmp.getDataType(),
+								evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
 					}
 				} else if (eval instanceof AttributeSelector)
 				{
 					AttributeSelector evalTmp = (AttributeSelector) eval;
 					if ((!evalTmp.getType().toString().equals(paramTypes[i])) || (evalTmp.returnsBag() != paramsAreBags[i]))
 					{
-						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName,
-								evalTmp.getDataType(), evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
+						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName, evalTmp.getDataType(),
+								evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
 					}
 				} else if (eval instanceof AttributeValue)
 				{
 					AttributeValue evalTmp = (AttributeValue) eval;
-					if ((!evalTmp.getType().toString().equals(paramTypes[i])) || (evalTmp.returnsBag() != paramsAreBags[i]))
+					if ((!evalTmp.getDataType().equals(paramTypes[i])) || (evalTmp.returnsBag() != paramsAreBags[i]))
 					{
-						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName,
-								evalTmp.getDataType(), evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
+						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName, evalTmp.getDataType(),
+								evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
 					}
 				}
 
@@ -557,7 +545,7 @@ public abstract class FunctionBase extends Function
 								evalTmp.getDataType(), evalTmp.returnsBag(), paramType, paramIsBag));
 					}
 				}
-				
+
 				argIndex += 1;
 			}
 		} else
@@ -572,32 +560,36 @@ public abstract class FunctionBase extends Function
 			/*
 			 * FIXME: Need to be rethink. Too much duplication and introspection
 			 */
-			for (final ExpressionType eval : inputs) {
+			for (final ExpressionType eval : inputs)
+			{
 				if (eval instanceof AttributeDesignatorType)
 				{
 					AttributeDesignator evalTmp = (AttributeDesignator) eval;
-					if ((!evalTmp.getDataType().toString().equals(paramTypes[i])) || (paramsAreBags[i])) {
-						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName,
-								evalTmp.getDataType(), evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
+					if ((!evalTmp.getDataType().toString().equals(paramTypes[i])) || (paramsAreBags[i]))
+					{
+						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName, evalTmp.getDataType(),
+								evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
 					}
 
 				} else if (eval instanceof AttributeSelectorType)
 				{
 					AttributeSelector evalTmp = (AttributeSelector) eval;
-					if ((!evalTmp.getDataType().toString().equals(paramTypes[i])) || (paramsAreBags[i])) {
-						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName,
-								evalTmp.getDataType(), evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
+					if ((!evalTmp.getDataType().toString().equals(paramTypes[i])) || (paramsAreBags[i]))
+					{
+						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName, evalTmp.getDataType(),
+								evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
 					}
 
 				} else if (eval instanceof AttributeValueType)
 				{
 					AttributeValue evalTmp = (AttributeValue) eval;
-					if ((!evalTmp.getDataType().toString().equals(paramTypes[i])) || (paramsAreBags[i])) {
-						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName,
-								evalTmp.getDataType(), evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
+					if ((!evalTmp.getDataType().toString().equals(paramTypes[i])) || (paramsAreBags[i]))
+					{
+						throw new IllegalArgumentException(String.format(INVALID_ARGUMENT_MESSAGE_FORMAT, i, functionName, evalTmp.getDataType(),
+								evalTmp.returnsBag(), paramTypes[i], paramsAreBags[i]));
 					}
 				}
-				
+
 				i++;
 			}
 		}

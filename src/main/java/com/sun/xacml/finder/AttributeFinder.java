@@ -140,6 +140,11 @@ public class AttributeFinder
 	 * 
 	 * @param attributeType
 	 *            the datatype of the attributes to find
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
 	 * @param attributeId
 	 *            the identifier of the attributes to find
 	 * @param issuer
@@ -155,7 +160,7 @@ public class AttributeFinder
 	 * 
 	 * @return the result of attribute retrieval, which will be a bag of attributes or an error
 	 */
-	public EvaluationResult findAttribute(URI attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context,
+	public EvaluationResult findAttribute(String attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context,
 			int designatorType)
 	{
 		// go through each module in order
@@ -184,7 +189,7 @@ public class AttributeFinder
 				/**
                  * FIXME: explain why the module cache needs to be invalidated here. Is there a reason?
                  */
-				module.invalidateCache();
+//				module.invalidateCache();
 
 				// if the result wasn't empty, then return the result
 				BagAttribute bag = (BagAttribute) (result.getAttributeValue());
@@ -214,6 +219,11 @@ public class AttributeFinder
 	 *            context root
 	 * @param attributeType
 	 *            the datatype of the attributes to find
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
 	 * @param context
 	 *            the representation of the request data
 	 * @param xpathVersion
@@ -221,7 +231,7 @@ public class AttributeFinder
 	 * 
 	 * @return the result of attribute retrieval, which will be a bag of attributes or an error
 	 */
-	public EvaluationResult findAttribute(String contextPath, Node namespaceNode, URI attributeType, EvaluationCtx context, String xpathVersion)
+	public EvaluationResult findAttribute(String contextPath, Node namespaceNode, String attributeType, EvaluationCtx context, String xpathVersion)
 	{
 		// go through each module in order
 		for (AttributeFinderModule<?> module: selectorModules)

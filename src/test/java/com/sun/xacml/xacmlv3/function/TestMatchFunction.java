@@ -346,8 +346,8 @@ public class TestMatchFunction {
 		MatchFunction testMatchFunction = new MatchFunction(NAME_ANYURI_REGEXP_MATCH); 
 				
 		StringAttribute stringArg0 = new StringAttribute("^http://.+");
-		AnyURIAttribute stringGood = new AnyURIAttribute(URI.create("http://www.acme.com"));
-		AnyURIAttribute stringWrong = new AnyURIAttribute(URI.create("https://www.acme.com"));
+		AnyURIAttribute stringGood = new AnyURIAttribute("http://www.acme.com");
+		AnyURIAttribute stringWrong = new AnyURIAttribute("https://www.acme.com");
 
 		List<AttributeValue> goodInputs = new ArrayList<>();
 		goodInputs.add(stringArg0);

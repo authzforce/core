@@ -33,6 +33,8 @@
  */
 package com.sun.xacml.attr;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
 import org.w3c.dom.Node;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
@@ -73,6 +75,6 @@ public interface AttributeProxy
      * @throws Exception if the data couldn't be used (the exception is
      *                   typically wrapping some other exception)
      */
-    public AttributeValue getInstance(String value) throws Exception;
+    public AttributeValue getInstance(AttributeValueType value) throws Exception;
 
 }

@@ -33,8 +33,6 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
-
 import org.w3c.dom.Node;
 
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
@@ -52,11 +50,6 @@ public class RFC822NameAttribute extends AttributeValue {
 	 */
 	public static final String identifier = "urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name";
 
-	/**
-	 * URI version of name for this type
-	 */
-	public static final URI identifierURI = URI.create(identifier);
-
 	// the actual value being stored
 	private String value;
 
@@ -68,7 +61,7 @@ public class RFC822NameAttribute extends AttributeValue {
 	 *            the email address to be represented
 	 */
 	public RFC822NameAttribute(String value) {
-		super(identifierURI);
+		super(identifier);
 
 		// check that the string is an address, ie, that it has one and only
 		// one '@' character in it
@@ -130,9 +123,11 @@ public class RFC822NameAttribute extends AttributeValue {
 	 * 
 	 * @return true if this object and the input represent the same value
 	 */
+	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof RFC822NameAttribute))
+		if (!(o instanceof RFC822NameAttribute)) {
 			return false;
+		}
 
 		RFC822NameAttribute other = (RFC822NameAttribute) o;
 
@@ -146,6 +141,7 @@ public class RFC822NameAttribute extends AttributeValue {
 	 * 
 	 * @return the object's hashcode value
 	 */
+	@Override
 	public int hashCode() {
 		return value.hashCode();
 	}
@@ -153,6 +149,7 @@ public class RFC822NameAttribute extends AttributeValue {
 	/**
      *
      */
+	@Override
 	public String encode() {
 		return value;
 	}

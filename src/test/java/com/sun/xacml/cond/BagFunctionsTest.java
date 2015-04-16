@@ -1457,7 +1457,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 										.getInstance("Another test")),
 								new EvaluationResult(
 										new BagAttribute(
-												StringAttribute.identifierURI,
+												StringAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) StringAttribute
 																.getInstance("A test"),
@@ -1467,7 +1467,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_STRING_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										StringAttribute.identifierURI,
+										StringAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1479,7 +1479,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 										BooleanAttribute.getInstance(false)),
 								new EvaluationResult(
 										new BagAttribute(
-												BooleanAttribute.identifierURI,
+												BooleanAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) BooleanAttribute
 																.getInstance(true),
@@ -1489,7 +1489,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_BOOLEAN_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										BooleanAttribute.identifierURI,
+										BooleanAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1501,7 +1501,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 										IntegerAttribute.getInstance("3")),
 								new EvaluationResult(
 										new BagAttribute(
-												IntegerAttribute.identifierURI,
+												IntegerAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) IntegerAttribute
 																.getInstance("1"),
@@ -1511,7 +1511,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_INTEGER_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										IntegerAttribute.identifierURI,
+										IntegerAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1523,7 +1523,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 										DoubleAttribute.getInstance("-4.21")),
 								new EvaluationResult(
 										new BagAttribute(
-												DoubleAttribute.identifierURI,
+												DoubleAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DoubleAttribute
 																.getInstance("3.14"),
@@ -1533,7 +1533,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_DOUBLE_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										DoubleAttribute.identifierURI,
+										DoubleAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1545,7 +1545,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 										TimeAttribute.getInstance("17:18:19")),
 								new EvaluationResult(
 										new BagAttribute(
-												TimeAttribute.identifierURI,
+												TimeAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) TimeAttribute
 																.getInstance("09:30:15"),
@@ -1555,7 +1555,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_TIME_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										TimeAttribute.identifierURI,
+										TimeAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1567,7 +1567,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 										DateAttribute.getInstance("2003-10-25")),
 								new EvaluationResult(
 										new BagAttribute(
-												DateAttribute.identifierURI,
+												DateAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DateAttribute
 																.getInstance("2002-09-24"),
@@ -1577,7 +1577,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_DATE_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										DateAttribute.identifierURI,
+										DateAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1591,7 +1591,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("2003-10-25T17:18:19")),
 								new EvaluationResult(
 										new BagAttribute(
-												DateTimeAttribute.identifierURI,
+												DateTimeAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DateTimeAttribute
 																.getInstance("2002-09-24T09:30:15"),
@@ -1601,7 +1601,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_DATETIME_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										DateTimeAttribute.identifierURI,
+										DateTimeAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1615,7 +1615,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("https://www.thalesgroup.com")),
 								new EvaluationResult(
 										new BagAttribute(
-												AnyURIAttribute.identifierURI,
+												AnyURIAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) AnyURIAttribute
 																.getInstance("http://www.example.com"),
@@ -1625,7 +1625,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_ANYURI_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										AnyURIAttribute.identifierURI,
+										AnyURIAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1637,7 +1637,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 										HexBinaryAttribute.getInstance("0FB8")),
 								new EvaluationResult(
 										new BagAttribute(
-												HexBinaryAttribute.identifierURI,
+												HexBinaryAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) HexBinaryAttribute
 																.getInstance("0FB7"),
@@ -1647,7 +1647,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_HEXBINARY_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										HexBinaryAttribute.identifierURI,
+										HexBinaryAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1660,7 +1660,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("T3RoZXI=")),
 								new EvaluationResult(
 										new BagAttribute(
-												Base64BinaryAttribute.identifierURI,
+												Base64BinaryAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) Base64BinaryAttribute
 																.getInstance("RXhhbXBsZQ=="),
@@ -1670,7 +1670,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_BASE64BINARY_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										Base64BinaryAttribute.identifierURI,
+										Base64BinaryAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1683,7 +1683,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("-P1DT3H")),
 								new EvaluationResult(
 										new BagAttribute(
-												DayTimeDurationAttribute.identifierURI,
+												DayTimeDurationAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DayTimeDurationAttribute
 																.getInstance("P1DT2H"),
@@ -1693,7 +1693,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_DAYTIMEDURATION_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										DayTimeDurationAttribute.identifierURI,
+										DayTimeDurationAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1706,7 +1706,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("-P1Y3M")),
 								new EvaluationResult(
 										new BagAttribute(
-												YearMonthDurationAttribute.identifierURI,
+												YearMonthDurationAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) YearMonthDurationAttribute
 																.getInstance("P1Y2M"),
@@ -1717,7 +1717,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(
 										new BagAttribute(
-												YearMonthDurationAttribute.identifierURI,
+												YearMonthDurationAttribute.identifier,
 												Collections
 														.<AttributeValue> emptyList())) },
 
@@ -1731,7 +1731,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("cn=John Smith, o=Other Corp, c=US")),
 								new EvaluationResult(
 										new BagAttribute(
-												X500NameAttribute.identifierURI,
+												X500NameAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) X500NameAttribute
 																.getInstance("cn=John Smith, o=Medico Corp, c=US"),
@@ -1741,7 +1741,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_X500NAME_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										X500NameAttribute.identifierURI,
+										X500NameAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1754,7 +1754,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("Smith@sun.com")),
 								new EvaluationResult(
 										new BagAttribute(
-												RFC822NameAttribute.identifierURI,
+												RFC822NameAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) RFC822NameAttribute
 																.getInstance("Anderson@sun.com"),
@@ -1764,7 +1764,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_RFC822NAME_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										RFC822NameAttribute.identifierURI,
+										RFC822NameAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1778,7 +1778,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("[1fff:0:a88:85a5::ac1f]")),
 								new EvaluationResult(
 										new BagAttribute(
-												IPAddressAttribute.identifierURI,
+												IPAddressAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) IPAddressAttribute
 																.getInstance("192.168.1.10"),
@@ -1788,7 +1788,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_IPADDRESS_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										IPAddressAttribute.identifierURI,
+										IPAddressAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) },
 
@@ -1801,7 +1801,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 												.getInstance("thalesgroup.com")),
 								new EvaluationResult(
 										new BagAttribute(
-												DNSNameAttribute.identifierURI,
+												DNSNameAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DNSNameAttribute
 																.getInstance("example.com"),
@@ -1811,7 +1811,7 @@ public class BagFunctionsTest extends GeneralFunctionTest {
 								NAME_DNSNAME_BAG,
 								Collections.<Evaluatable> emptyList(),
 								new EvaluationResult(new BagAttribute(
-										DNSNameAttribute.identifierURI,
+										DNSNameAttribute.identifier,
 										Collections
 												.<AttributeValue> emptyList())) });
 	}

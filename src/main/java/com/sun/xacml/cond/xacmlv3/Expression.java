@@ -77,7 +77,7 @@ public abstract class Expression extends ExpressionType implements Evaluatable {
 	public abstract EvaluationResult evaluate(EvaluationCtx context);
 	public abstract EvaluationResult evaluate(List xprs, EvaluationCtx context);
 	public abstract void checkInputs(List xprs);
-	public abstract URI getType();
+	public abstract String getType();
 	public abstract boolean returnsBag();
 	
 }

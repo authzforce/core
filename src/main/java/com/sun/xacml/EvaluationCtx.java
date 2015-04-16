@@ -286,6 +286,11 @@ public interface EvaluationCtx {
 	 *            mappings come from the context root
 	 * @param type
 	 *            the type of the attribute value(s) to find
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
 	 * @param xpathVersion
 	 *            the version of XPath to use
 	 * 
@@ -294,7 +299,7 @@ public interface EvaluationCtx {
 	 *         an Indeterminate result
 	 */
 	public EvaluationResult getAttribute(String contextPath,
-			Node namespaceNode, URI type, String xpathVersion);
+			Node namespaceNode, String type, String xpathVersion);
 
 	/**
 	 * Return the attribute representing the version of the standard used in

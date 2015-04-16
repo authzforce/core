@@ -277,7 +277,7 @@ public class BaseFunctionFactory extends FunctionFactory
 		{
 			if (entry instanceof Function)
 			{
-				((Function) entry).setFunctionId(((Function) entry).getIdentifier().toASCIIString());
+				((Function) entry).setFunctionId(((Function) entry).getIdentifier());
 				return (Function) entry;
 			}
 			// this is actually a proxy, which means the other create

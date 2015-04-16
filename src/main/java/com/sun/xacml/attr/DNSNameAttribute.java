@@ -33,12 +33,9 @@
  */
 package com.sun.xacml.attr;
 
-import com.sun.xacml.ParsingException;
-
-import java.net.URI;
-
 import org.w3c.dom.Node;
 
+import com.sun.xacml.ParsingException;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
@@ -56,11 +53,6 @@ public class DNSNameAttribute extends AttributeValue
      */
     public static final String identifier =
         "urn:oasis:names:tc:xacml:2.0:data-type:dnsName";
-
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     // the required hostname
     private String hostname;
@@ -95,17 +87,18 @@ public class DNSNameAttribute extends AttributeValue
     public DNSNameAttribute(String hostname, PortRange range)
         throws ParsingException
     {
-        super(identifierURI);
+        super(identifier);
 
         // verify that the hostname is valid before we store it
-        // FIXME: What the heck does the System.out do here?
-        if (! isValidHostName(hostname))
-            System.out.println("FIXME: throw error about bad hostname");
-
+        if (! isValidHostName(hostname)) {
+            throw new IllegalArgumentException("Bad hostname: " + hostname);
+        }
+        
         // see if it started with a '*' character
-        if (hostname.charAt(0) == '*')
+        if (hostname.charAt(0) == '*') {
             this.isSubdomain = true;
-
+        }
+        
         this.hostname = hostname;
         this.range = range;
         
@@ -115,7 +108,7 @@ public class DNSNameAttribute extends AttributeValue
     /**
      * Private helper that tests whether the given string is valid.
      */
-    private boolean isValidHostName(String hostname) {
+    private static boolean isValidHostName(String hostname) {
         /*
           hostname      =  *( domainlabel "." ) toplabel [ "." ]
           domainlabel   =  alphanum | alphanum *( alphanum | "-" ) alphanum
@@ -165,14 +158,14 @@ public class DNSNameAttribute extends AttributeValue
         if (portSep == -1) {
             // there is no port range, so just use the name
             return new DNSNameAttribute(value);
-        } else {
-            // split the name and the port range
-            String hostname = value.substring(0, portSep);
-            PortRange range =
-                PortRange.getInstance(value.substring(portSep + 1,
-                                                      value.length()));
-            return new DNSNameAttribute(hostname, range);
         }
+        
+		// split the name and the port range
+		String hostname = value.substring(0, portSep);
+		PortRange range =
+		    PortRange.getInstance(value.substring(portSep + 1,
+		                                          value.length()));
+		return new DNSNameAttribute(hostname, range);
     }
 
     /**
@@ -212,7 +205,8 @@ public class DNSNameAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         if (! (o instanceof DNSNameAttribute))
             return false;
 
@@ -233,7 +227,8 @@ public class DNSNameAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
 
         // FIXME: what should the hashcode be?
 
@@ -245,17 +240,20 @@ public class DNSNameAttribute extends AttributeValue
      *
      * @return the String representation
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return "DNSNameAttribute: \"" + encode() + "\"";
     }
 
     /**
      *
      */
-    public String encode() {
-        if (range.isUnbound())
+    @Override
+	public String encode() {
+        if (range.isUnbound()) {
             return hostname;
-
+        }
+        
         return hostname + ":" + range.encode();
     }
 

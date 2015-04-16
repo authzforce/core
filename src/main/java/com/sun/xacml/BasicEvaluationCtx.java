@@ -910,7 +910,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 		if (!attributeValues.isEmpty())
 		{
 			// yes we found
-			return new EvaluationResult(new BagAttribute(type, attributeValues));
+			return new EvaluationResult(new BagAttribute(typeStr, attributeValues));
 		}
 
 		// No acceptable attribute found matching type/issuer... so ask the finder via callHelper()
@@ -920,7 +920,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 		 * storing the new value from callHelper() (call to AttributeFInder) in
 		 * <code>newAttrSet</code>.
 		 */
-		final EvaluationResult result = callHelper(type, id, issuer, category, designatorType);
+		final EvaluationResult result = callHelper(typeStr, id, issuer, category, designatorType);
 		final AttributeValueType resultAttrVal = result.getAttributeValue();
 		if (resultAttrVal instanceof BagAttribute)
 		{
@@ -944,7 +944,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	/**
 	 * Private helper that calls the finder if it's non-null, or else returns an empty bag
 	 */
-	private EvaluationResult callHelper(URI type, URI id, URI issuer, URI category, int adType)
+	private EvaluationResult callHelper(String type, URI id, URI issuer, URI category, int adType)
 	{
 		if (finder != null)
 		{
@@ -973,7 +973,7 @@ public class BasicEvaluationCtx implements EvaluationCtx
 	 *         least one value, or status associated with an Indeterminate result
 	 */
 	@Override
-	public EvaluationResult getAttribute(String contextPath, Node namespaceNode, URI type, String xpathVersion)
+	public EvaluationResult getAttribute(String contextPath, Node namespaceNode, String type, String xpathVersion)
 	{
 		if (finder != null)
 		{

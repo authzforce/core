@@ -33,11 +33,10 @@
  */
 package com.sun.xacml.cond;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AnyURIAttribute;
@@ -45,7 +44,6 @@ import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.cond.xacmlv3.Expression;
-import com.sun.xacml.ctx.Status;
 
 
 /**
@@ -78,13 +76,14 @@ public class URLStringCatFunction extends FunctionBase
      *
      * @throws IllegalArgumentException if the inputs won't work
      */
-    public void checkInputs(List inputs) throws IllegalArgumentException {
+    @Override
+	public void checkInputs(List<ExpressionType> inputs) throws IllegalArgumentException {
         // scan the list to make sure nothing returns a bag
-        Iterator it = inputs.iterator();
-        while (it.hasNext()) {
-            if (((Expression)(it.next())).returnsBag())
+        for (ExpressionType input: inputs) {
+            if (((Expression) input).returnsBag()) {
                 throw new IllegalArgumentException(NAME_URI_STRING_CONCATENATE
                                                    + " doesn't accept bags");
+            }
         }
 
         // nothing is a bag, so check using the no-bag method
@@ -98,14 +97,15 @@ public class URLStringCatFunction extends FunctionBase
      *
      * @throws IllegalArgumentException if the inputs won't work
      */
-    public void checkInputsNoBag(List inputs) throws IllegalArgumentException {
+    @Override
+	public void checkInputsNoBag(List<ExpressionType> inputs) throws IllegalArgumentException {
         // make sure it's long enough
         if (inputs.size() < 2)
             throw new IllegalArgumentException("not enough args to " +
                                                NAME_URI_STRING_CONCATENATE);
 
         // check that the parameters are of the correct types...
-        Iterator it = inputs.iterator();
+        Iterator<ExpressionType> it = inputs.iterator();
         
         // ...the first argument must be a URI...
         if (! ((Expression)(it.next())).getType().toString().
@@ -131,7 +131,8 @@ public class URLStringCatFunction extends FunctionBase
      *
      * @return the result of evaluation
      */
-    public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+    @Override
+	public EvaluationResult evaluate(List<? extends ExpressionType> inputs, EvaluationCtx context) {
         // Evaluate the arguments
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
         EvaluationResult result = evalArgs(inputs, context, argValues);
@@ -142,20 +143,11 @@ public class URLStringCatFunction extends FunctionBase
         String str = ((AnyURIAttribute)(argValues[0])).getValue().toString();
         
         // the remaining arguments are strings
-        for (int i = 1; i < argValues.length; i++)
+        for (int i = 1; i < argValues.length; i++) {
             str += ((StringAttribute)(argValues[i])).getValue();
-
-        // finally, try to convert the string back to a URI
-        try {
-            return new EvaluationResult(new AnyURIAttribute(new URI(str)));
-        } catch (URISyntaxException use) {
-            List code = new ArrayList();
-            code.add(Status.STATUS_PROCESSING_ERROR);
-            String message = NAME_URI_STRING_CONCATENATE + " didn't produce"
-                + " a valid URI: " + str;
-
-            return new EvaluationResult(new Status(code, message));
         }
+        
+        return new EvaluationResult(new AnyURIAttribute(str));
     }
 
 }

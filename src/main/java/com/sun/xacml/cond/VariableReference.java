@@ -35,7 +35,6 @@ package com.sun.xacml.cond;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -202,7 +201,7 @@ public class VariableReference extends VariableReferenceType implements Evaluata
      *
      * @throws ProcessingException if the type couldn't be resolved
      */
-    public URI getType() {
+    public String getType() {
         // if we have a concrete definition, then ask it for the type,
         // otherwise query the manager using the getVariableType method,
         // since this handles type-checking for definitions that haven't
@@ -211,8 +210,9 @@ public class VariableReference extends VariableReferenceType implements Evaluata
             return ((Expression)definition.getExpression().getValue()).getType();
         }
         
-		if (manager != null)
+		if (manager != null) {
 		    return manager.getVariableType(variableId);
+		}
 
         throw new ProcessingException("couldn't resolve the type");
     }

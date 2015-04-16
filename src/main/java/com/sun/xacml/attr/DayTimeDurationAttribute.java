@@ -33,18 +33,14 @@
  */
 package com.sun.xacml.attr;
 
-import com.sun.xacml.ParsingException;
-
 import java.math.BigInteger;
-
-import java.net.URI;
-
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.util.regex.Matcher;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.ParsingException;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
@@ -62,11 +58,6 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	 */
 	public static final String identifier = "http://www.w3.org/TR/2002/WD-xquery-operators-20020816#"
 			+ "dayTimeDuration";
-
-	/**
-	 * URI version of name for this type
-	 */
-	public static final URI identifierURI = URI.create(identifier);
 
 	/**
 	 * Regular expression for dayTimeDuration (a la java.util.regex)
@@ -180,7 +171,7 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	public DayTimeDurationAttribute(boolean negative, long days, long hours,
 			long minutes, long seconds, int nanoseconds)
 			throws IllegalArgumentException {
-		super(identifierURI);
+		super(identifier);
 
 		this.negative = negative;
 		this.days = days;
@@ -239,6 +230,8 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	 *            the <code>Node</code> that contains the desired value
 	 * @return a new <code>DayTimeDurationAttribute</code> representing the
 	 *         appropriate value (null if there is a parsing error)
+	 * @throws ParsingException 
+	 * @throws NumberFormatException 
 	 */
 	public static DayTimeDurationAttribute getInstance(Node root)
 			throws ParsingException, NumberFormatException {
@@ -280,6 +273,8 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	 *            a string representing the desired value
 	 * @return a new <code>DayTimeDurationAttribute</code> representing the
 	 *         desired value (null if there is a parsing error)
+	 * @throws ParsingException 
+	 * @throws NumberFormatException 
 	 */
 	public static DayTimeDurationAttribute getInstance(String value)
 			throws ParsingException, NumberFormatException {
@@ -440,6 +435,7 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	 * 
 	 * @return true if this object and the input represent the same value
 	 */
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof DayTimeDurationAttribute))
 			return false;
@@ -457,6 +453,7 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	 * 
 	 * @return the object's hashcode value
 	 */
+	@Override
 	public int hashCode() {
 		// The totalMillis, nanoseconds, and negative fields are all considered
 		// by the equals method, so it's best if the hashCode is derived
@@ -473,6 +470,7 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	 * 
 	 * @return the String representation
 	 */
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 
@@ -496,6 +494,7 @@ public class DayTimeDurationAttribute extends AttributeValue {
 	 * 
 	 * @return a <code>String</code> form of the value
 	 */
+	@Override
 	public String encode() {
 		if (encodedValue != null)
 			return encodedValue;

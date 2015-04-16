@@ -72,12 +72,8 @@ public class X500NameAttribute extends AttributeValue {
 	 *            the X500 Name to be represented
 	 */
 	public X500NameAttribute(X500Principal value) {
-		super(identifierURI);		
+		super(identifier);		
 		this.value = value;
-		
-		// FIXME: avoid to use this encode method and replace all legacy
-		// attributes with XACML 3.0 scheme attributes
-		this.getContent().add(value);
 	}
 
 	/**
@@ -121,9 +117,9 @@ public class X500NameAttribute extends AttributeValue {
 	public X500Principal getValue() {
 		if (this.getContent().size() > 0) {
 			return ((X500Principal)this.getContent().get(0));
-		} else {
-			return null;
 		}
+		
+		return null;
 	}
 
 	/**
@@ -143,9 +139,11 @@ public class X500NameAttribute extends AttributeValue {
 	 * 
 	 * @return true if this object and the input represent the same value
 	 */
+	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof X500NameAttribute))
+		if (!(o instanceof X500NameAttribute)) {
 			return false;
+		}
 
 		X500NameAttribute other = (X500NameAttribute) o;
 
@@ -159,10 +157,12 @@ public class X500NameAttribute extends AttributeValue {
 	 * 
 	 * @return the object's hashcode value
 	 */
+	@Override
 	public int hashCode() {
 		return value.hashCode();
 	}
 
+	@Override
 	public String encode() {		
 		return value.getName();
 	}

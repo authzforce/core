@@ -33,14 +33,11 @@
  */
 package com.sun.xacml.attr;
 
-import com.sun.xacml.ParsingException;
-
-import java.net.URI;
-
 import java.util.Arrays;
 
 import org.w3c.dom.Node;
 
+import com.sun.xacml.ParsingException;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 /**
@@ -58,11 +55,6 @@ public class HexBinaryAttribute extends AttributeValue
      */
     public static final String identifier =
         "http://www.w3.org/2001/XMLSchema#hexBinary";
- 
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * The actual binary value that this object represents.
@@ -82,11 +74,11 @@ public class HexBinaryAttribute extends AttributeValue
      * @param value the <code>byte []</code> value to be represented
      */
     public HexBinaryAttribute(byte [] value) {
-        super(identifierURI);
+        super(identifier);
 
         // This will throw a NullPointerException if value == null.
         // That's what we want in that case.
-        this.value = (byte []) value.clone();
+        this.value = value.clone();
         
         this.getContent().add(this.encode());
     }
@@ -133,7 +125,7 @@ public class HexBinaryAttribute extends AttributeValue
      * @return the <code>byte []</code> value
      */
     public byte [] getValue() {
-        return (byte []) value.clone();
+        return value.clone();
     }
 
     /**
@@ -143,12 +135,13 @@ public class HexBinaryAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
-        int code = (int)(value[0]);
+    @Override
+	public int hashCode() {
+        int code = value[0];
 
         for (int i = 1; i < value.length; i++) {
             code *= 31;
-            code += (int)(value[i]);
+            code += value[i];
         }
 
         return code;
@@ -162,7 +155,8 @@ public class HexBinaryAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         if (! (o instanceof HexBinaryAttribute))
             return false;
 
@@ -261,9 +255,10 @@ public class HexBinaryAttribute extends AttributeValue
      *
      * @return the String representation
      */
-    public String toString() {
-        if (strValue == null)
-            strValue = binToHex(value);
+    @Override
+	public String toString() {
+        if (strValue == null) {
+            strValue = binToHex(value);}
 
         return "HexBinaryAttribute: [\n" + strValue + "]\n";
     }
@@ -271,10 +266,12 @@ public class HexBinaryAttribute extends AttributeValue
     /**
      *
      */
-    public String encode() {
-        if (strValue == null)
+    @Override
+	public String encode() {
+        if (strValue == null) {
             strValue = binToHex(value);
-
+        }
+        
         return strValue;
     }
 

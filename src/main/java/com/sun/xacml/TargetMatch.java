@@ -59,16 +59,16 @@ import com.sun.xacml.cond.xacmlv3.Expression;
 import com.sun.xacml.ctx.Status;
 
 /**
- * Represents the SubjectMatch, ResourceMatch, ActionMatch, or EnvironmentMatch
- * (in XACML 2.0 and later) XML types in XACML, depending on the value of the
- * type field. This is the part of the Target that actually evaluates whether
- * the specified attribute values in the Target match the corresponding
- * attribute values in the request context.
+ * Represents the SubjectMatch, ResourceMatch, ActionMatch, or EnvironmentMatch (in XACML 2.0 and
+ * later) XML types in XACML, depending on the value of the type field. This is the part of the
+ * Target that actually evaluates whether the specified attribute values in the Target match the
+ * corresponding attribute values in the request context.
  * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class TargetMatch {
+public class TargetMatch
+{
 
 	/**
 	 * An integer value indicating that this class represents a SubjectMatch
@@ -86,30 +86,24 @@ public class TargetMatch {
 	public static final int ACTION = 2;
 
 	/**
-	 * An integer value indicating that this class represents an
-	 * EnvironmentMatch
+	 * An integer value indicating that this class represents an EnvironmentMatch
 	 */
 	public static final int ENVIRONMENT = 3;
-	
+
 	/**
-	 * XACML 3.0
-	 * An integer value indicating that this class represents an
-	 * AttributeDesignator
+	 * XACML 3.0 An integer value indicating that this class represents an AttributeDesignator
 	 */
 	public static final int ATTRIBUTE_DESIGNATOR = 4;
-	
+
 	/**
-	 * XACML 3.0
-	 * An integer value indicating that this class represents an
-	 * Match
+	 * XACML 3.0 An integer value indicating that this class represents an Match
 	 */
 	public static final int MATCH = 5;
 
 	/**
 	 * Mapping from the 4 match types to their string representations
 	 */
-	public static final String[] NAMES = { "Subject", "Resource", "Action",
-			"Environment" , "AttributeDesignator", "Match" };
+	public static final String[] NAMES = { "Subject", "Resource", "Action", "Environment", "AttributeDesignator", "Match" };
 
 	// the type of this target match
 	private int type;
@@ -127,26 +121,24 @@ public class TargetMatch {
 	 * Constructor that creates a <code>TargetMatch</code> from components.
 	 * 
 	 * @param type
-	 *            an integer indicating whether this class represents a
-	 *            SubjectMatch, ResourceMatch, or ActionMatch
+	 *            an integer indicating whether this class represents a SubjectMatch, ResourceMatch,
+	 *            or ActionMatch
 	 * @param function
 	 *            the <code>Function</code> that represents the MatchId
 	 * @param eval
-	 *            the <code>AttributeDesignator</code> or
-	 *            <code>AttributeSelector</code> to be used to select attributes
-	 *            from the request context
+	 *            the <code>AttributeDesignator</code> or <code>AttributeSelector</code> to be used
+	 *            to select attributes from the request context
 	 * @param attrValue
 	 *            the <code>AttributeValue</code> to compare against
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the input type isn't a valid value
 	 */
-	public TargetMatch(int type, Function function, ExpressionType eval,
-			AttributeValue attrValue) throws IllegalArgumentException {
+	public TargetMatch(int type, Function function, ExpressionType eval, AttributeValue attrValue) throws IllegalArgumentException
+	{
 
 		// check if input type is a valid value
-		if ((type != SUBJECT) && (type != RESOURCE) && (type != ACTION)
-				&& (type != ENVIRONMENT))
+		if ((type != SUBJECT) && (type != RESOURCE) && (type != ACTION) && (type != ENVIRONMENT))
 			throw new IllegalArgumentException("Unknown TargetMatch type");
 
 		this.type = type;
@@ -156,24 +148,21 @@ public class TargetMatch {
 	}
 
 	/**
-	 * Creates a <code>TargetMatch</code> by parsing a node, using the input
-	 * prefix to determine whether this is a SubjectMatch, ResourceMatch, or
-	 * ActionMatch.
+	 * Creates a <code>TargetMatch</code> by parsing a node, using the input prefix to determine
+	 * whether this is a SubjectMatch, ResourceMatch, or ActionMatch.
 	 * 
-	 * @deprecated As of 2.0 you should avoid using this method and should
-	 *             instead use the version that takes a
-	 *             <code>PolicyMetaData</code> instance. This method will only
-	 *             work for XACML 1.x policies.
+	 * @deprecated As of 2.0 you should avoid using this method and should instead use the version
+	 *             that takes a <code>PolicyMetaData</code> instance. This method will only work for
+	 *             XACML 1.x policies.
 	 * 
 	 * @param root
 	 *            the node to parse for the <code>TargetMatch</code>
 	 * @param prefix
-	 *            a String indicating what type of <code>TargetMatch</code> to
-	 *            instantiate (Subject, Resource, or Action)
+	 *            a String indicating what type of <code>TargetMatch</code> to instantiate (Subject,
+	 *            Resource, or Action)
 	 * @param xpathVersion
-	 *            the XPath version to use in any selectors, or null if this is
-	 *            unspecified (ie, not supplied in the defaults section of the
-	 *            policy)
+	 *            the XPath version to use in any selectors, or null if this is unspecified (ie, not
+	 *            supplied in the defaults section of the policy)
 	 * 
 	 * @return a new <code>TargetMatch</code> constructed by parsing
 	 * 
@@ -182,32 +171,31 @@ public class TargetMatch {
 	 * @throws IllegalArgumentException
 	 *             if the input prefix isn't a valid value
 	 */
-	public static TargetMatch getInstance(Node root, String prefix,
-			String xpathVersion) throws ParsingException,
-			IllegalArgumentException {
+	public static TargetMatch getInstance(Node root, String prefix, String xpathVersion) throws ParsingException, IllegalArgumentException
+	{
 		int i = 0;
-		while ((i < NAMES.length) && (!NAMES[i].equals(prefix))) {
+		while ((i < NAMES.length) && (!NAMES[i].equals(prefix)))
+		{
 			i++;
 		}
 
-		if (i == NAMES.length) {
+		if (i == NAMES.length)
+		{
 			throw new IllegalArgumentException("Unknown TargetMatch type");
 		}
 
-		return getInstance(root, i, new PolicyMetaData(
-				PolicyMetaData.XACML_1_0_IDENTIFIER, xpathVersion));
+		return getInstance(root, i, new PolicyMetaData(PolicyMetaData.XACML_1_0_IDENTIFIER, xpathVersion));
 	}
 
 	/**
-	 * Creates a <code>TargetMatch</code> by parsing a node, using the input
-	 * prefix to determine whether this is a SubjectMatch, ResourceMatch, or
-	 * ActionMatch.
+	 * Creates a <code>TargetMatch</code> by parsing a node, using the input prefix to determine
+	 * whether this is a SubjectMatch, ResourceMatch, or ActionMatch.
 	 * 
 	 * @param root
 	 *            the node to parse for the <code>TargetMatch</code>
 	 * @param matchType
-	 *            the type of <code>TargetMatch</code> as specified by the
-	 *            SUBJECT, RESOURCE, ACTION, or ENVIRONMENT fields
+	 *            the type of <code>TargetMatch</code> as specified by the SUBJECT, RESOURCE,
+	 *            ACTION, or ENVIRONMENT fields
 	 * @param metaData
 	 *            the policy's meta-data
 	 * 
@@ -216,8 +204,8 @@ public class TargetMatch {
 	 * @throws ParsingException
 	 *             if there was an error during parsing
 	 */
-	public static TargetMatch getInstance(Node root, int matchType,
-			PolicyMetaData metaData) throws ParsingException {
+	public static TargetMatch getInstance(Node root, int matchType, PolicyMetaData metaData) throws ParsingException
+	{
 		Function function;
 		ExpressionType eval = null;
 		AttributeValue attrValue = null;
@@ -226,22 +214,27 @@ public class TargetMatch {
 
 		// get the function type, making sure that it's really a correct
 		// Target function
-		String funcName = root.getAttributes().getNamedItem("MatchId")
-				.getNodeValue();
+		String funcName = root.getAttributes().getNamedItem("MatchId").getNodeValue();
 		FunctionFactory factory = FunctionFactory.getTargetInstance();
-		try {
+		try
+		{
 			URI funcId = new URI(funcName);
 			function = factory.createFunction(funcId);
-		} catch (URISyntaxException use) {
+		} catch (URISyntaxException use)
+		{
 			throw new ParsingException("Error parsing TargetMatch", use);
-		} catch (UnknownIdentifierException uie) {
+		} catch (UnknownIdentifierException uie)
+		{
 			throw new ParsingException("Unknown MatchId", uie);
-		} catch (FunctionTypeException fte) {
+		} catch (FunctionTypeException fte)
+		{
 			// try to create an abstract function
-			try {
+			try
+			{
 				URI funcId = new URI(funcName);
 				function = factory.createAbstractFunction(funcId, root);
-			} catch (Exception e) {
+			} catch (Exception e)
+			{
 				// any exception here is an error
 				throw new ParsingException("invalid abstract function", e);
 			}
@@ -250,29 +243,34 @@ public class TargetMatch {
 		// next, get the designator or selector being used, and the attribute
 		// value paired with it
 		NodeList nodes = root.getChildNodes();
-		for (int i = 0; i < nodes.getLength(); i++) {
+		for (int i = 0; i < nodes.getLength(); i++)
+		{
 			Node node = nodes.item(i);
 			String name = node.getNodeName();
 
-			if (name.equals(NAMES[matchType] + "AttributeDesignator")) {
-				eval = AttributeDesignator.getInstance(node, String.valueOf(matchType),
-						metaData);
-			} else if (name.equals("AttributeDesignator")) {
-				eval = AttributeDesignator.getInstance(node, String.valueOf(matchType),
-						metaData);
-			} else if (name.equals("AttributeSelector")) {
+			if (name.equals(NAMES[matchType] + "AttributeDesignator"))
+			{
+				eval = AttributeDesignator.getInstance(node, String.valueOf(matchType), metaData);
+			} else if (name.equals("AttributeDesignator"))
+			{
+				eval = AttributeDesignator.getInstance(node, String.valueOf(matchType), metaData);
+			} else if (name.equals("AttributeSelector"))
+			{
 				eval = AttributeSelector.getInstance(node, metaData);
-			} else if (name.equals("AttributeValue")) {
-				try {
+			} else if (name.equals("AttributeValue"))
+			{
+				try
+				{
 					attrValue = attrFactory.createValue(node);
-				} catch (UnknownIdentifierException uie) {
+				} catch (UnknownIdentifierException uie)
+				{
 					throw new ParsingException("Unknown Attribute Type", uie);
 				}
 			}
 		}
 
 		// finally, check that the inputs are valid for this function
-		List inputs = new ArrayList();
+		List<ExpressionType> inputs = new ArrayList<>();
 		inputs.add(attrValue);
 		inputs.add(eval);
 		function.checkInputsNoBag(inputs);
@@ -281,13 +279,13 @@ public class TargetMatch {
 	}
 
 	/**
-	 * Returns the type of this <code>TargetMatch</code>, either
-	 * <code>SUBJECT</code>, <code>RESOURCE</code>, <code>ACTION</code>, or
-	 * <code>ENVIRONMENT</code>.
+	 * Returns the type of this <code>TargetMatch</code>, either <code>SUBJECT</code>,
+	 * <code>RESOURCE</code>, <code>ACTION</code>, or <code>ENVIRONMENT</code>.
 	 * 
 	 * @return the type
 	 */
-	public int getType() {
+	public int getType()
+	{
 		return type;
 	}
 
@@ -296,7 +294,8 @@ public class TargetMatch {
 	 * 
 	 * @return the match function
 	 */
-	public Function getMatchFunction() {
+	public Function getMatchFunction()
+	{
 		return function;
 	}
 
@@ -305,51 +304,56 @@ public class TargetMatch {
 	 * 
 	 * @return the <code>AttributeValue</code> for the match
 	 */
-	public AttributeValue getMatchValue() {
+	public AttributeValue getMatchValue()
+	{
 		return attrValue;
 	}
 
 	/**
-	 * Returns the <code>AttributeDesignator</code> or
-	 * <code>AttributeSelector</code> used by the matching function.
+	 * Returns the <code>AttributeDesignator</code> or <code>AttributeSelector</code> used by the
+	 * matching function.
 	 * 
 	 * @return the designator or selector for the match
 	 */
-	public ExpressionType getMatchEvaluatable() {
+	public ExpressionType getMatchEvaluatable()
+	{
 		return eval;
 	}
 
 	/**
-	 * Determines whether this <code>TargetMatch</code> matches the input
-	 * request (whether it is applicable)
+	 * Determines whether this <code>TargetMatch</code> matches the input request (whether it is
+	 * applicable)
 	 * 
 	 * @param context
 	 *            the representation of the request
 	 * 
 	 * @return the result of trying to match the TargetMatch and the request
 	 */
-	public MatchResult match(EvaluationCtx context) {
+	public MatchResult match(EvaluationCtx context)
+	{
 		// start by evaluating the AD/AS
-		EvaluationResult result = ((Expression)eval).evaluate(context);
+		EvaluationResult result = ((Expression) eval).evaluate(context);
 
-		if (result.indeterminate()) {
+		if (result.indeterminate())
+		{
 			// in this case, we don't ask the function for anything, and we
 			// simply return INDETERMINATE
-			return new MatchResult(MatchResult.INDETERMINATE,
-					result.getStatus());
+			return new MatchResult(MatchResult.INDETERMINATE, result.getStatus());
 		}
 
 		// an AD/AS will always return a bag
 		BagAttribute resultBag = (BagAttribute) (result.getAttributeValue());
 
-		if (!resultBag.isEmpty()) {
+		if (!resultBag.isEmpty())
+		{
 			// we got back a set of attributes, so we need to iterate through
 			// them, seeing if at least one matches
 			boolean atLeastOneError = false;
 			Status firstIndeterminateStatus = null;
 
-			for (AttributeValue resultValue: resultBag.getValues()) {
-				ArrayList inputs = new ArrayList();
+			for (AttributeValue resultValue : resultBag.getValues())
+			{
+				List<AttributeValue> inputs = new ArrayList<>();
 
 				inputs.add(attrValue);
 				inputs.add(resultValue);
@@ -362,7 +366,8 @@ public class TargetMatch {
 					return match;
 
 				// if it was INDETERMINATE, we want to remember for later
-				if (match.getResult() == MatchResult.INDETERMINATE) {
+				if (match.getResult() == MatchResult.INDETERMINATE)
+				{
 					atLeastOneError = true;
 
 					// there are no rules about exactly what status data
@@ -375,15 +380,15 @@ public class TargetMatch {
 
 			// if we got here, then nothing matched, so we'll either return
 			// INDETERMINATE or NO_MATCH
-			if (atLeastOneError) {
-				return new MatchResult(MatchResult.INDETERMINATE,
-						firstIndeterminateStatus);
+			if (atLeastOneError)
+			{
+				return new MatchResult(MatchResult.INDETERMINATE, firstIndeterminateStatus);
 			}
-			
+
 			return new MatchResult(MatchResult.NO_MATCH);
 
 		}
-		
+
 		// this is just an optimization, since the loop above will
 		// actually handle this case, but this is just a little
 		// quicker way to handle an empty bag
@@ -393,41 +398,41 @@ public class TargetMatch {
 	/**
 	 * Private helper that evaluates an individual match.
 	 */
-	private MatchResult evaluateMatch(List inputs, EvaluationCtx context) {
+	private MatchResult evaluateMatch(List<? extends ExpressionType> inputs, EvaluationCtx context)
+	{
 		// first off, evaluate the function
 		EvaluationResult result = function.evaluate(inputs, context);
 
 		// if it was indeterminate, then that's what we return immediately
 		if (result.indeterminate())
-			return new MatchResult(MatchResult.INDETERMINATE,
-					result.getStatus());
+			return new MatchResult(MatchResult.INDETERMINATE, result.getStatus());
 
 		// otherwise, we figure out if it was a match
 		BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
 
-		if (bool.getValue()) {
+		if (bool.getValue())
+		{
 			return new MatchResult(MatchResult.MATCH);
 		}
-		
+
 		return new MatchResult(MatchResult.NO_MATCH);
 	}
 
 	/**
-	 * Encodes this <code>TargetMatch</code> into its XML representation and
-	 * writes this encoding to the given <code>OutputStream</code> with no
-	 * indentation.
+	 * Encodes this <code>TargetMatch</code> into its XML representation and writes this encoding to
+	 * the given <code>OutputStream</code> with no indentation.
 	 * 
 	 * @param output
 	 *            a stream into which the XML-encoded data is written
 	 */
-	public void encode(OutputStream output) {
+	public void encode(OutputStream output)
+	{
 		encode(output, new Indenter(0));
 	}
 
 	/**
-	 * Encodes this <code>TargetMatch</code> into its XML representation and
-	 * writes this encoding to the given <code>OutputStream</code> with
-	 * indentation.
+	 * Encodes this <code>TargetMatch</code> into its XML representation and writes this encoding to
+	 * the given <code>OutputStream</code> with indentation.
 	 * 
 	 * @param output
 	 *            a stream into which the XML-encoded data is written
@@ -440,14 +445,11 @@ public class TargetMatch {
 		String tagName = NAMES[type] + "Match";
 
 		out.println(indent + "<" + tagName + " MatchId=\""
-				+ function.getIdentifier().toString() + "\">");
-		indenter.in();
-
-		attrValue.encode(output, indenter);
+				+ function.getIdentifier().toString() + "\">"+
+		attrValue.encode());
 		((Expression)eval).encode(output, indenter);
 
 		indenter.out();
 		out.println(indent + "</" + tagName + ">");
 	}
-
 }

@@ -7,7 +7,7 @@
 		<version>3.0.7</version>
 	</parent>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.5.8</version>
+	<version>3.5.9-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
@@ -55,6 +55,12 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<!-- For validating XML entities (e.g. anyURI type) -->
+		<dependency>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>2.6.0</version>
 		</dependency>
 		<dependency>
 			<!-- Used for DOM parsing / XPath evaluation -->

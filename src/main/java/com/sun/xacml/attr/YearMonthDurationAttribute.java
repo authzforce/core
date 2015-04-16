@@ -65,11 +65,6 @@ public class YearMonthDurationAttribute extends AttributeValue
     public static final String identifier =
         "http://www.w3.org/TR/2002/WD-xquery-operators-20020816#" +
         "yearMonthDuration";
- 
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * Regular expression for yearMonthDuration (a la java.util.regex)
@@ -145,7 +140,7 @@ public class YearMonthDurationAttribute extends AttributeValue
     public YearMonthDurationAttribute(boolean negative, long years,
                                       long months)
         throws IllegalArgumentException {
-        super(identifierURI);
+        super(identifier);
         this.negative = negative;
         this.years = years;
         this.months = months;
@@ -319,9 +314,11 @@ public class YearMonthDurationAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
-        if (! (o instanceof YearMonthDurationAttribute))
+    @Override
+	public boolean equals(Object o) {
+        if (! (o instanceof YearMonthDurationAttribute)) {
             return false;
+        }
 
         YearMonthDurationAttribute other = (YearMonthDurationAttribute)o;
 
@@ -335,7 +332,8 @@ public class YearMonthDurationAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         return (int) totalMonths ^ (int) (totalMonths >> 32);
     }
 
@@ -344,7 +342,8 @@ public class YearMonthDurationAttribute extends AttributeValue
      *
      * @return the String representation
      */
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("YearMonthDurationAttribute: [\n");
         sb.append("  Negative: " + negative);
@@ -363,15 +362,18 @@ public class YearMonthDurationAttribute extends AttributeValue
      *
      * @return a <code>String</code> form of the value
      */
-    public String encode() {
-        if (encodedValue != null)
+    @Override
+	public String encode() {
+        if (encodedValue != null) {
             return encodedValue;
+        }
 
         // Length is variable
         StringBuffer buf = new StringBuffer(10);
 
-        if (negative)
+        if (negative) {
             buf.append('-');
+        }
         buf.append('P');
         if ((years != 0) || (months == 0)) {
             buf.append(Long.toString(years));

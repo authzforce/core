@@ -34,7 +34,6 @@
 package com.sun.xacml.attr;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,7 +59,7 @@ public class BagAttribute extends AttributeValue {
 
 	// The Collection of AttributeValues that this object encapsulates
 	private Collection<AttributeValue> bag;
-
+	
 	/**
 	 * Creates a new <code>BagAttribute</code> that represents the
 	 * <code>Collection</code> of <code>AttributeValue</code>s supplied. If the
@@ -68,10 +67,15 @@ public class BagAttribute extends AttributeValue {
 	 * 
 	 * @param type
 	 *            the data type of all the attributes in the set
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
 	 * @param bag
 	 *            a <code>Collection</code> of <code>AttributeValue</code>s
 	 */
-	public BagAttribute(URI type, Collection<AttributeValue> bag) {
+	public BagAttribute(String type, Collection<AttributeValue> bag) {
 		super(type);
 
 		if (type == null) {
@@ -127,7 +131,7 @@ public class BagAttribute extends AttributeValue {
 	 * 
 	 * @return a new empty bag
 	 */
-	public static BagAttribute createEmptyBag(URI type) {
+	public static BagAttribute createEmptyBag(String type) {
 		return new BagAttribute(type, null);
 	}
 
@@ -179,17 +183,6 @@ public class BagAttribute extends AttributeValue {
 	 */
 	public boolean containsAll(BagAttribute bagParam) {
 		return this.bag.containsAll(bagParam.bag);
-	}
-
-	@Override
-	public String encode() {
-		final StringBuilder encoded = new StringBuilder();
-		for (final Object valObj : bag) {
-			final AttributeValue val = (AttributeValue) valObj;
-			encoded.append(val.encodeWithTags(true));
-		}
-
-		return encoded.toString();
 	}
 
 	/**

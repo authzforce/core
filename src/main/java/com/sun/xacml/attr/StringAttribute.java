@@ -33,9 +33,8 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
-
 import org.w3c.dom.Node;
+
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 
@@ -65,11 +64,6 @@ public class StringAttribute extends AttributeValue
      */
     public static final String identifier =
         "http://www.w3.org/2001/XMLSchema#string";
- 
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * The actual String value that this object represents.
@@ -83,7 +77,7 @@ public class StringAttribute extends AttributeValue
      * @param value the <code>String</code> value to be represented
      */
     public StringAttribute(String value) {
-        super(identifierURI);
+        super(identifier);
         this.content.add(value);
 
         // TODO: document why a null pointer is allowed here and not for other
@@ -155,9 +149,11 @@ public class StringAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
-        if (! (o instanceof StringAttribute))
+    @Override
+	public boolean equals(Object o) {
+        if (! (o instanceof StringAttribute)) {
             return false;
+        }
 
         StringAttribute other = (StringAttribute)o;
 
@@ -171,7 +167,8 @@ public class StringAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         return value.hashCode();
     }
 
@@ -180,14 +177,16 @@ public class StringAttribute extends AttributeValue
      *
      * @return the String representation
      */
-    public String toString() {
+    @Override
+	public String toString() {
         return "StringAttribute: \"" + value + "\"";
     }
 
     /**
      *
      */
-    public String encode() {
+    @Override
+	public String encode() {
         return value;
     }
 

@@ -34,7 +34,6 @@
 package com.sun.xacml.cond;
 
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
@@ -90,18 +89,24 @@ public abstract class Function extends FunctionType
      * In the case of the standard XACML functions, this will be one of the
      * URIs defined in the standard namespace. This function must always
      * return the complete namespace and identifier of this function.
+     * <p> WARNING: java.net.URI cannot be used here for XACML
+	 * datatype, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI
+	 * [1], not in java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI </p>
      *
      * @return the function's identifier
      */
-    public abstract URI getIdentifier();
+    public abstract String getIdentifier();
 
     /**
      * Provides the type of <code>AttributeValue</code> that this function
      * returns from <code>evaluate</code> in a successful evaluation.
+     * <p> WARNING: java.net.URI cannot be used here for XACML
+	 * datatype, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI
+	 * [1], not in java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI </p>
      *
      * @return the type returned by this function
      */
-    public abstract URI getReturnType();
+    public abstract String getReturnType();
 
     /**
      * Tells whether this function will return a bag of values or just a

@@ -33,10 +33,9 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-
 import org.w3c.dom.Node;
+
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
 
 
 /**
@@ -55,11 +54,6 @@ public class IntegerAttribute extends AttributeValue
      */
     public static final String identifier =
         "http://www.w3.org/2001/XMLSchema#integer";
- 
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * The actual long value that this object represents.
@@ -73,7 +67,7 @@ public class IntegerAttribute extends AttributeValue
      * @param value the <code>long</code> value to be represented
      */
     public IntegerAttribute(long value) {
-        super(identifierURI);
+        super(identifier);
         this.value = value;
         this.content.add(value);
     }
@@ -107,9 +101,14 @@ public class IntegerAttribute extends AttributeValue
     {
         // Leading '+' is allowed per XML schema and not
         // by Long.parseLong. Strip it, if present.
-        if ((value.length() >= 1) && (value.charAt(0) == '+'))
-            value = value.substring(1);
-        return new IntegerAttribute(Long.parseLong(value));
+        final String longVal;
+    	if ((value.length() >= 1) && (value.charAt(0) == '+')) {
+    		longVal = value.substring(1);
+        } else {
+        	longVal = value;
+        }
+        
+        return new IntegerAttribute(Long.parseLong(longVal));
     }
 
     /**
@@ -129,9 +128,11 @@ public class IntegerAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
-        if (! (o instanceof IntegerAttribute))
+    @Override
+	public boolean equals(Object o) {
+        if (! (o instanceof IntegerAttribute)) {
             return false;
+        }
 
         IntegerAttribute other = (IntegerAttribute)o;
 
@@ -145,14 +146,16 @@ public class IntegerAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         return (int)value;
     }
 
     /**
      *
      */
-    public String encode() {
+    @Override
+	public String encode() {
         return String.valueOf(value);
     }
 

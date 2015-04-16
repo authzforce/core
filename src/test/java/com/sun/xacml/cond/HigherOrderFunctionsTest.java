@@ -403,7 +403,7 @@ public class HigherOrderFunctionsTest extends GeneralFunctionTest {
 																.getInstance("World!")))),
 								new EvaluationResult(
 										new BagAttribute(
-												StringAttribute.identifierURI,
+												StringAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) StringAttribute
 																.getInstance("hello"),

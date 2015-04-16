@@ -33,13 +33,10 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -68,14 +65,6 @@ public class DateAttribute extends AttributeValue
      */
     public static final String identifier =
         "http://www.w3.org/2001/XMLSchema#date";
- 
-    /**
-     * URI version of name for this type
-     * <p>
-     * This object is used for synchronization whenever we need
-     * protection across this whole class.
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * Parser for dates with no time zones
@@ -216,7 +205,7 @@ public class DateAttribute extends AttributeValue
      *             will be forced to midnight)
      */
     public DateAttribute(Date date) {
-        super(identifierURI);
+        super(identifier);
 
         // Get the current time and GMT offset
         int currOffset = DateTimeAttribute.getDefaultTZOffset(date);
@@ -254,8 +243,7 @@ public class DateAttribute extends AttributeValue
      *                          The offset to GMT, in minutes.
      */
     public DateAttribute(Date date, int timeZone, int defaultedTimeZone) {
-        super(identifierURI);
-
+        super(identifier);
         init(date, timeZone, defaultedTimeZone);
     }
 
@@ -265,19 +253,19 @@ public class DateAttribute extends AttributeValue
      * @param date a <code>Date</code> object representing the
      *             instant at which the specified date began (midnight)
      *             in the specified time zone.
-     * @param timeZone the time zone specified for this object
+     * @param timezone the time zone specified for this object
      *                 (or TZ_UNSPECIFIED if unspecified). The
      *                 offset to GMT, in minutes.
-     * @param defaultedTimeZone the time zone actually used for this
+     * @param defaultedtimezone the time zone actually used for this
      *                          object (if it was originally unspecified,
      *                          the default time zone used).
      *                          The offset to GMT, in minutes.
      */
-    private void init(Date date, int timeZone, int defaultedTimeZone) {
+    private void init(Date date, int timezone, int defaultedtimezone) {
 
         this.value = (Date) date.clone();
-        this.timeZone = timeZone;
-        this.defaultedTimeZone = defaultedTimeZone;
+        this.timeZone = timezone;
+        this.defaultedTimeZone = defaultedtimezone;
         
         this.getContent().add(this.encode());
     }
@@ -289,6 +277,7 @@ public class DateAttribute extends AttributeValue
      * @param root the <code>Node</code> that contains the desired value
      * @return a new <code>DateAttribute</code> representing the
      *         appropriate value (null if there is a parsing error)
+     * @throws ParseException 
      */
     public static DateAttribute getInstance(Node root)
         throws ParseException
@@ -300,26 +289,28 @@ public class DateAttribute extends AttributeValue
      * Returns a new <code>DateAttribute</code> that represents
      * the xs:date value indicated by the string provided.
      *
-     * @param value a string representing the desired value
+     * @param dateval a string representing the desired value
      * @return a new <code>DateAttribute</code> representing the
      *         desired value (null if there is a parsing error)
+     * @throws ParseException 
      */
-    public static DateAttribute getInstance(String value)
+    public static DateAttribute getInstance(String dateval)
         throws ParseException
     {
-        Date dateValue = null;
+        final Date dateValue;
         int timeZone;
         int defaultedTimeZone;
 
-        if (simpleParser == null)
+        if (simpleParser == null) {
             initParsers();
-
+        }
+        
         // If string ends with Z, it's in GMT. Chop off the Z and
         // add +0000 to make the time zone explicit, then parse it
         // with the timezone parser.
-        if (value.endsWith("Z")) {
-            value = value.substring(0, value.length()-1) + "+0000";
-            dateValue = strictParse(zoneParser, value);
+        if (dateval.endsWith("Z")) {
+        	final String choppedDateval = dateval.substring(0, dateval.length()-1) + "+0000";
+            dateValue = strictParse(zoneParser, choppedDateval);
             timeZone = 0;
             defaultedTimeZone = 0;
         } else {
@@ -328,24 +319,24 @@ public class DateAttribute extends AttributeValue
             // make sure what's left is a valid simple date. If so,
             // reformat the time zone by stripping out the colon
             // and parse the whole thing with the timezone parser.
-            int len = value.length();
+            int len = dateval.length();
             
-            if ((len > 6) && (value.charAt(len-3) == ':')) {
+            if ((len > 6) && (dateval.charAt(len-3) == ':')) {
                 Date gmtValue = strictParse(zoneParser,
-                                            value.substring(0,len-6) +
+                		dateval.substring(0,len-6) +
                                             "+0000");
-                value = value.substring(0, len-3) +
-                    value.substring(len-2, len);
-                dateValue = strictParse(zoneParser, value);
+                final String choppedDateval = dateval.substring(0, len-3) +
+                		dateval.substring(len-2, len);
+                dateValue = strictParse(zoneParser, choppedDateval);
                 timeZone =
                     (int) (gmtValue.getTime() - dateValue.getTime());
                 timeZone = timeZone / 60000;
                 defaultedTimeZone = timeZone;
             } else {
                 // No funny business. This must be a simple date.
-                dateValue = strictParse(simpleParser, value);
+                dateValue = strictParse(simpleParser, dateval);
                 timeZone = TZ_UNSPECIFIED;
-                Date gmtValue = strictParse(zoneParser, value + "+0000");
+                Date gmtValue = strictParse(zoneParser, dateval + "+0000");
                 defaultedTimeZone =
                     (int) (gmtValue.getTime() - dateValue.getTime());
                 defaultedTimeZone = defaultedTimeZone / 60000;
@@ -389,7 +380,7 @@ public class DateAttribute extends AttributeValue
 
         // Synchronize on identifierURI while initializing parsers
         // so we don't end up using a half-way initialized parser
-        synchronized (identifierURI) {
+        synchronized (identifier) {
             // This simple parser has no time zone
             simpleParser = new SimpleDateFormat("yyyy-MM-dd");
             simpleParser.setLenient(false);
@@ -448,7 +439,8 @@ public class DateAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         if (! (o instanceof DateAttribute))
             return false;
 
@@ -463,7 +455,8 @@ public class DateAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         // Only the value field is considered by the equals method, so only
         // that field should be considered by this method.
         return value.hashCode();
@@ -474,7 +467,8 @@ public class DateAttribute extends AttributeValue
      *
      * @return the String representation
      */
-    public String toString() {
+    @Override
+	public String toString() {
         StringBuffer sb = new StringBuffer();
 
         sb.append("DateAttribute: [\n");
@@ -494,7 +488,8 @@ public class DateAttribute extends AttributeValue
      *
      * @return a <code>String</code> form of the value
      */
-    public String encode() {
+    @Override
+	public String encode() {
         if (encodedValue != null)
             return encodedValue;
 

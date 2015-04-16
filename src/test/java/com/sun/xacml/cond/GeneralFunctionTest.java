@@ -29,7 +29,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
 import com.sun.xacml.EvaluationCtx;
@@ -82,16 +81,16 @@ public abstract class GeneralFunctionTest
 	{
 		// Execution
 		Function function = null;
-		try
-		{
+//		try
+//		{
 			function = getFunction();
-		} catch (Exception e)
-		{
-			// Remove to test XACML coverage
-			Assume.assumeNoException(e);
-		}
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		EvaluationResult actualResult = function.evaluate((List) inputs, CTX);
+//		} catch (Exception e)
+//		{
+//			// Remove to test XACML coverage
+//			Assume.assumeNoException(e);
+//		}
+
+		EvaluationResult actualResult = function.evaluate(inputs, CTX);
 
 		// Assertions
 		Assert.assertEquals("Indeterminate", expectedResult.indeterminate(), actualResult.indeterminate());

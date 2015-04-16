@@ -33,13 +33,12 @@
  */
 package com.sun.xacml.attr.proxy;
 
-import com.sun.xacml.ParsingException;
-
-import com.sun.xacml.attr.AttributeProxy;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.attr.DNSNameAttribute;
-
 import org.w3c.dom.Node;
+
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.attr.DNSNameAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.thalesgroup.authzforce.core.AbstractPrimitiveAttributeProxy;
 
 
 /**
@@ -49,14 +48,16 @@ import org.w3c.dom.Node;
  * @since 2.0
  * @author Seth Proctor
  */
-public class DNSNameAttributeProxy implements AttributeProxy
+public class DNSNameAttributeProxy extends AbstractPrimitiveAttributeProxy
 {
 
-    public AttributeValue getInstance(Node root) throws ParsingException {
+    @Override
+	public AttributeValue getInstance(Node root) throws ParsingException {
         return DNSNameAttribute.getInstance(root);
     }
 
-    public AttributeValue getInstance(String value) throws ParsingException {
+    @Override
+	public AttributeValue getInstance(String value) throws ParsingException {
         return DNSNameAttribute.getInstance(value);
     }
 

@@ -77,7 +77,12 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 
 	// required meta-data attributes
 	// private URI id;
-	private URI type;
+	/*
+	 * <p> WARNING: java.net.URI cannot be used here for XACML datatype, because not equivalent to
+	 * XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI. [1]
+	 * http://www.w3.org/TR/xmlschema-2/#anyURI </p>
+	 */
+	private String type;
 	private URI category;
 
 	// optional meta-data attributes
@@ -92,11 +97,6 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * their responses in case of multiple requests. optional one defined only in XACML3
 	 */
 	// private boolean includeInResult;
-
-	/*
-	 * FIXME: This is never used 
-	 */
-	private int xacmlVersion;
 
 	/**
 	 * Logger used for all classes
@@ -122,7 +122,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 */
 	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant, AttributeValueType value, boolean includeInResult, int version)
 	{
-		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value), includeInResult, version);
+		this(id, value.getDataType(), issuer, issueInstant, Arrays.asList(value), includeInResult, version);
 	}
 
 	/**
@@ -144,10 +144,9 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param version
 	 *            XACML version
 	 */
-	public Attribute(URI id, String issuer, URI category, DateTimeAttribute issueInstant, AttributeValue value, boolean includeInResult,
-			int version)
+	public Attribute(URI id, String issuer, URI category, DateTimeAttribute issueInstant, AttributeValue value, boolean includeInResult, int version)
 	{
-		this(id, URI.create(value.getDataType()), category, issuer, issueInstant, Arrays.asList(value), includeInResult, version);
+		this(id, value.getDataType(), category, issuer, issueInstant, Arrays.asList(value), includeInResult, version);
 	}
 
 	/**
@@ -168,7 +167,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	public Attribute(URI id, String issuer, DateTimeAttribute issueInstant, AttributeValueType value, int version)
 	{
 
-		this(id, URI.create(value.getDataType()), issuer, issueInstant, Arrays.asList(value), false, version);
+		this(id, value.getDataType(), issuer, issueInstant, Arrays.asList(value), false, version);
 	}
 
 	/**
@@ -178,6 +177,11 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 *            the id of the attribute
 	 * @param type
 	 *            the type of the attribute
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
 	 * @param issuer
 	 *            the attribute's issuer or null if there is none
 	 * @param issueInstant
@@ -189,7 +193,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param xacmlVersion
 	 *            xacml version
 	 */
-	public Attribute(URI id, URI type, String issuer, DateTimeAttribute issueInstant, List<AttributeValueType> attributeValues,
+	public Attribute(URI id, String type, String issuer, DateTimeAttribute issueInstant, List<AttributeValueType> attributeValues,
 			boolean includeInResult, int xacmlVersion)
 	{
 		this.attributeId = id.toASCIIString();
@@ -198,7 +202,6 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 		this.issuer = issuer;
 		this.issueInstant = issueInstant;
 		this.includeInResult = includeInResult;
-		this.xacmlVersion = xacmlVersion;
 		this.category = null;
 	}
 
@@ -209,7 +212,12 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 *            the id of the attribute
 	 * @param type
 	 *            the type of the attribute
-	 * @param category 
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
+	 * @param category
 	 * @param issuer
 	 *            the attribute's issuer or null if there is none
 	 * @param issueInstant
@@ -221,7 +229,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param xacmlVersion
 	 *            xacml version
 	 */
-	public Attribute(URI id, URI type, URI category, String issuer, DateTimeAttribute issueInstant, List<AttributeValue> attributeValues,
+	public Attribute(URI id, String type, URI category, String issuer, DateTimeAttribute issueInstant, List<AttributeValue> attributeValues,
 			boolean includeInResult, int xacmlVersion)
 	{
 		this.attributeId = id.toASCIIString();
@@ -231,7 +239,6 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 		this.issueInstant = issueInstant;
 		this.attributeValues = new ArrayList<AttributeValueType>(attributeValues);
 		this.includeInResult = includeInResult;
-		this.xacmlVersion = xacmlVersion;
 	}
 
 	/**
@@ -250,7 +257,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	public static Attribute getInstance(Node root, int version) throws ParsingException
 	{
 		URI id = null;
-		URI type = null;
+		String type = null;
 		URI category = null;
 		String issuer = null;
 		DateTimeAttribute issueInstant = null;
@@ -281,7 +288,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 		 */
 		try
 		{
-			type = new URI(attrs.getNamedItem("DataType").getNodeValue());
+			type = attrs.getNamedItem("DataType").getNodeValue();
 		} catch (Exception e)
 		{
 			throw new ParsingException("Error parsing required attribute " + "DataType in AttributeType", e);
@@ -333,7 +340,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 					NamedNodeMap dataTypeAttribute = node.getAttributes();
 					try
 					{
-						type = new URI(dataTypeAttribute.getNamedItem("DataType").getNodeValue());
+						type = dataTypeAttribute.getNamedItem("DataType").getNodeValue();
 						category = new URI(dataTypeAttribute.getNamedItem("Category").getNodeValue());
 					} catch (Exception e)
 					{
@@ -367,24 +374,29 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * @param xacmlVersion
 	 *            XACML version
 	 * @return attribute handler
-	 * @throws ParsingException if one of the attribute value cannot be parsed according to specified value datatype
-	 * @throws UnknownIdentifierException if one of the attribute value datatype is unknown/not supported
+	 * @throws ParsingException
+	 *             if one of the attribute value cannot be parsed according to specified value
+	 *             datatype
+	 * @throws UnknownIdentifierException
+	 *             if one of the attribute value datatype is unknown/not supported
 	 */
-	public static Attribute getInstance(oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute attrElt, int xacmlVersion) throws ParsingException, UnknownIdentifierException
+	public static Attribute getInstance(oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute attrElt, int xacmlVersion) throws ParsingException,
+			UnknownIdentifierException
 	{
 		final URI id = URI.create(attrElt.getAttributeId());
 		/*
 		 * Attribute element has no datatype attribute in XACML v3. Defined by each child
-		 * AttributeValue. So type arg is null.
-		 * Category is defined in parent Attributes element not at the Attribute level in XACML v3. So category arg is null.
+		 * AttributeValue. So type arg is null. Category is defined in parent Attributes element not
+		 * at the Attribute level in XACML v3. So category arg is null.
 		 */
 		final AttributeFactory attrValueFactory = AttributeFactory.getInstance();
 		final List<AttributeValue> values = new ArrayList<>();
-		for(final AttributeValueType attrValElt: attrElt.getAttributeValues()) {
+		for (final AttributeValueType attrValElt : attrElt.getAttributeValues())
+		{
 			final AttributeValue attrVal = attrValueFactory.createValue(attrValElt);
 			values.add(attrVal);
 		}
-		
+
 		return new Attribute(id, null, null, attrElt.getIssuer(), null, values, attrElt.isIncludeInResult(), xacmlVersion);
 	}
 
@@ -418,7 +430,7 @@ public class Attribute extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Attri
 	 * 
 	 * @return the attribute's data type
 	 */
-	public URI getType()
+	public String getType()
 	{
 		return type;
 	}

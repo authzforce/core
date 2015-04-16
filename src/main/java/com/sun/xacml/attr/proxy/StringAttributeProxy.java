@@ -33,11 +33,11 @@
  */
 package com.sun.xacml.attr.proxy;
 
-import com.sun.xacml.attr.AttributeProxy;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.attr.StringAttribute;
-
 import org.w3c.dom.Node;
+
+import com.sun.xacml.attr.StringAttribute;
+import com.sun.xacml.attr.xacmlv3.AttributeValue;
+import com.thalesgroup.authzforce.core.AbstractPrimitiveAttributeProxy;
 
 
 /**
@@ -47,14 +47,16 @@ import org.w3c.dom.Node;
  * @since 1.2
  * @author Seth Proctor
  */
-public class StringAttributeProxy implements AttributeProxy
+public class StringAttributeProxy extends AbstractPrimitiveAttributeProxy
 {
 
-    public AttributeValue getInstance(Node root) {
+    @Override
+	public AttributeValue getInstance(Node root) {
         return StringAttribute.getInstance(root);
     }
 
-    public AttributeValue getInstance(String value) {
+    @Override
+	public AttributeValue getInstance(String value) {
         return StringAttribute.getInstance(value);
     }
 

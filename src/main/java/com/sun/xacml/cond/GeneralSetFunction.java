@@ -40,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.BagAttribute;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
@@ -192,7 +194,7 @@ public class GeneralSetFunction extends SetFunction
      *         function's result
      */
     @Override
-	public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+	public EvaluationResult evaluate(List<? extends ExpressionType> inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
         AttributeValue [] argValues = new AttributeValue[inputs.size()];
@@ -224,7 +226,7 @@ public class GeneralSetFunction extends SetFunction
                 }
             }
 
-            result = new BagAttribute(bags[0].getType(), set);
+            result = new BagAttribute(bags[0].getDataType(), set);
 
             break;
 
@@ -245,7 +247,7 @@ public class GeneralSetFunction extends SetFunction
                 set.add(val);
             }
 
-            result = new BagAttribute(bags[0].getType(), set);
+            result = new BagAttribute(bags[0].getDataType(), set);
 
             break;
         }

@@ -36,12 +36,11 @@ package com.sun.xacml.cond;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AnyURIAttribute;
@@ -178,7 +177,7 @@ public class EqualFunction extends FunctionBase
     public static final String NAME_STRING_EQUAL_IGNORE_CASE = FUNCTION_NS_3 + "string-equal-ignore-case";
 
     // private mapping of standard functions to their argument types
-    private static HashMap typeMap;
+    private static Map<String, String> typeMap;
     
     /**
 	 * Logger used for all classes
@@ -191,7 +190,7 @@ public class EqualFunction extends FunctionBase
      * associated datatypes
      */
     static {
-        typeMap = new HashMap();
+        typeMap = new HashMap<>();
 
         typeMap.put(NAME_STRING_EQUAL, StringAttribute.identifier);
         typeMap.put(NAME_BOOLEAN_EQUAL, BooleanAttribute.identifier);
@@ -268,11 +267,12 @@ public class EqualFunction extends FunctionBase
      * type-equal function.
      */
     private static String getArgumentType(String functionName) {
-        String datatype = (String)(typeMap.get(functionName));
+        String datatype = typeMap.get(functionName);
 
-        if (datatype == null)
+        if (datatype == null) {
             throw new IllegalArgumentException("not a standard function: " +
                                                functionName);
+        }
         
         return datatype;
     }
@@ -283,8 +283,7 @@ public class EqualFunction extends FunctionBase
      *
      * @return a <code>Set</code> of <code>String</code>s
      */
-    @SuppressWarnings("unchecked")
-	public static Set getSupportedIdentifiers() {
+	public static Set<String> getSupportedIdentifiers() {
         return Collections.unmodifiableSet(typeMap.keySet());
    }
 
@@ -298,7 +297,8 @@ public class EqualFunction extends FunctionBase
      * @return an <code>EvaluationResult</code> representing the
      *         function's result
      */
-    public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
+    @Override
+	public EvaluationResult evaluate(List<? extends ExpressionType> inputs, EvaluationCtx context) {
 
         // Evaluate the arguments
         AttributeValueType [] argValues = new AttributeValueType[inputs.size()];

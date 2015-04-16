@@ -33,8 +33,8 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
@@ -61,7 +61,7 @@ public abstract class AttributeFactory extends AttributeValueType {
 	private static AttributeFactoryProxy defaultFactoryProxy;
 
 	// the map of registered factories
-	private static HashMap registeredFactories;
+	private static Map<String, AttributeFactoryProxy> registeredFactories = new HashMap<>();
 
 	/**
 	 * static intialiazer that sets up the default factory proxy and registers
@@ -69,17 +69,17 @@ public abstract class AttributeFactory extends AttributeValueType {
 	 */
 	static {
 		AttributeFactoryProxy proxy = new AttributeFactoryProxy() {
+			@Override
 			public AttributeFactory getFactory() {
 				return StandardAttributeFactory.getFactory();
 			}
 		};
 
-		registeredFactories = new HashMap();
 		registeredFactories.put(PolicyMetaData.XACML_1_0_IDENTIFIER, proxy);
 		registeredFactories.put(PolicyMetaData.XACML_2_0_IDENTIFIER, proxy);
 
 		defaultFactoryProxy = proxy;
-	};
+	}
 
 	/**
 	 * Default constructor. Used only by subclasses.
@@ -116,13 +116,14 @@ public abstract class AttributeFactory extends AttributeValueType {
 	 */
 	public static final AttributeFactory getInstance(String identifier)
 			throws UnknownIdentifierException {
-		AttributeFactoryProxy proxy = (AttributeFactoryProxy) (registeredFactories
-				.get(identifier));
+		AttributeFactoryProxy proxy = registeredFactories
+				.get(identifier);
 
-		if (proxy == null)
+		if (proxy == null) {
 			throw new UnknownIdentifierException("Uknown AttributeFactory "
 					+ "identifier: " + identifier);
-
+		}
+		
 		return proxy.getFactory();
 	}
 
@@ -156,10 +157,12 @@ public abstract class AttributeFactory extends AttributeValueType {
 	public static final void registerFactory(String identifier,
 			AttributeFactoryProxy proxy) throws IllegalArgumentException {
 		synchronized (registeredFactories) {
-			if (registeredFactories.containsKey(identifier))
+			if (registeredFactories.containsKey(identifier)) {
 				throw new IllegalArgumentException("Identifier is already "
 						+ "registered as " + "AttributeFactory: " + identifier);
 
+			}
+			
 			registeredFactories.put(identifier, proxy);
 		}
 	}
@@ -181,37 +184,11 @@ public abstract class AttributeFactory extends AttributeValueType {
 	public abstract void addDatatype(String id, AttributeProxy proxy);
 
 	/**
-	 * Adds a proxy to the default factory, which in turn will allow new
-	 * attribute types to be created using the factory. Typically the proxy is
-	 * provided as an anonymous class that simply calls the getInstance methods
-	 * (or something similar) of some <code>AttributeValue</code> class.
-	 * 
-	 * @deprecated As of version 1.2, replaced by
-	 *             {@link #addDatatype(String,AttributeProxy)}. The new factory
-	 *             system requires you to get a factory instance and then call
-	 *             the non-static methods on that factory. The static versions
-	 *             of these methods have been left in for now, but are slower
-	 *             and will be removed in a future version. Note that this
-	 *             operates only on the default factory.
-	 * 
-	 * @param id
-	 *            the name of the attribute type
-	 * @param proxy
-	 *            the proxy used to create new attributes of the given type
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the given id is already in use
-	 */
-	public static void addAttributeProxy(String id, AttributeProxy proxy) {
-		getInstance().addDatatype(id, proxy);
-	}
-
-	/**
 	 * Returns the datatype identifiers supported by this factory.
 	 * 
 	 * @return a <code>Set</code> of <code>String</code>s
 	 */
-	public abstract Set getSupportedDatatypes();
+	public abstract Set<String> getSupportedDatatypes();
 
 	/**
 	 * Creates a value based on the given DOM root node. The type of the
@@ -244,89 +221,15 @@ public abstract class AttributeFactory extends AttributeValueType {
 	public abstract AttributeValue createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value) throws UnknownIdentifierException, ParsingException;
 
 	/**
-	 * Creates a value based on the given DOM root node. The type of the
-	 * attribute is assumed to be present in the node as an XAML attribute named
-	 * <code>DataType</code>, as is the case with the AttributeValueType in the
-	 * policy schema. The value is assumed to be the first child of this node.
-	 * This uses the default factory.
-	 * 
-	 * @deprecated As of version 1.2, replaced by {@link #createValue(Node)}.
-	 *             The new factory system requires you to get a factory instance
-	 *             and then call the non-static methods on that factory. The
-	 *             static versions of these methods have been left in for now,
-	 *             but are slower and will be removed in a future version.
-	 * 
-	 * @param root
-	 *            the DOM root of an attribute value
-	 * 
-	 * @return a new <code>AttributeValue</code>
-	 * 
-	 * @throws UnknownIdentifierException
-	 *             if the type in the node isn't known to the factory
-	 * @throws ParsingException
-	 *             if the node is invalid or can't be parsed by the appropriate
-	 *             proxy
-	 */
-	public static AttributeValue createAttribute(Node root)
-			throws UnknownIdentifierException, ParsingException {
-		return getInstance().createValue(root);
-	}
-
-	/**
-	 * Creates a value based on the given DOM root node and data type.
-	 * 
-	 * @param root
-	 *            the DOM root of an attribute value
-	 * @param dataType
-	 *            the type of the attribute
-	 * 
-	 * @return a new <code>AttributeValue</code>
-	 * 
-	 * @throws UnknownIdentifierException
-	 *             if the data type isn't known to the factory
-	 * @throws ParsingException
-	 *             if the node is invalid or can't be parsed by the appropriate
-	 *             proxy
-	 */
-	public abstract AttributeValue createValue(Node root, URI dataType)
-			throws UnknownIdentifierException, ParsingException;
-
-	/**
-	 * Creates a value based on the given DOM root node and data type. This uses
-	 * the default factory.
-	 * 
-	 * @deprecated As of version 1.2, replaced by {@link #createValue(Node,URI)}
-	 *             . The new factory system requires you to get a factory
-	 *             instance and then call the non-static methods on that
-	 *             factory. The static versions of these methods have been left
-	 *             in for now, but are slower and will be removed in a future
-	 *             version.
-	 * 
-	 * @param root
-	 *            the DOM root of an attribute value
-	 * @param dataType
-	 *            the type of the attribute
-	 * 
-	 * @return a new <code>AttributeValue</code>
-	 * 
-	 * @throws UnknownIdentifierException
-	 *             if the data type isn't known to the factory
-	 * @throws ParsingException
-	 *             if the node is invalid or can't be parsed by the appropriate
-	 *             proxy
-	 */
-	public static AttributeValue createAttribute(Node root, URI dataType)
-			throws UnknownIdentifierException, ParsingException {
-		return getInstance().createValue(root, dataType);
-	}
-
-	/**
 	 * Creates a value based on the given DOM root node and data type.
 	 * 
 	 * @param root
 	 *            the DOM root of an attribute value
 	 * @param type
 	 *            the type of the attribute
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not equivalent to XML schema anyURI type.
+	 *  Spaces are allowed in XSD anyURI [1], not in java.net.URI.
+	 *  [1] http://www.w3.org/TR/xmlschema-2/#anyURI
 	 * 
 	 * @return a new <code>AttributeValue</code>
 	 * 
@@ -338,88 +241,4 @@ public abstract class AttributeFactory extends AttributeValueType {
 	 */
 	public abstract AttributeValue createValue(Node root, String type)
 			throws UnknownIdentifierException, ParsingException;
-
-	/**
-	 * Creates a value based on the given DOM root node and data type. This uses
-	 * the default factory.
-	 * 
-	 * @deprecated As of version 1.2, replaced by
-	 *             {@link #createValue(Node,String)}. The new factory system
-	 *             requires you to get a factory instance and then call the
-	 *             non-static methods on that factory. The static versions of
-	 *             these methods have been left in for now, but are slower and
-	 *             will be removed in a future version.
-	 * 
-	 * @param root
-	 *            the DOM root of an attribute value
-	 * @param type
-	 *            the type of the attribute
-	 * 
-	 * @return a new <code>AttributeValue</code>
-	 * 
-	 * @throws UnknownIdentifierException
-	 *             if the type isn't known to the factory
-	 * @throws ParsingException
-	 *             if the node is invalid or can't be parsed by the appropriate
-	 *             proxy
-	 */
-	public static AttributeValue createAttribute(Node root, String type)
-			throws UnknownIdentifierException, ParsingException {
-		return getInstance().createValue(root, type);
-	}
-
-	/**
-	 * Creates a value based on the given data type and text-encoded value. Used
-	 * primarily by code that does an XPath query to get an attribute value, and
-	 * then needs to turn the resulting value into an Attribute class.
-	 * 
-	 * @param dataType
-	 *            the type of the attribute
-	 * @param value
-	 *            the text-encoded representation of an attribute's value
-	 * 
-	 * @return a new <code>AttributeValue</code>
-	 * 
-	 * @throws UnknownIdentifierException
-	 *             if the data type isn't known to the factory
-	 * @throws ParsingException
-	 *             if the text is invalid or can't be parsed by the appropriate
-	 *             proxy
-	 */
-	public abstract AttributeValue createValue(URI dataType, String value)
-			throws UnknownIdentifierException, ParsingException;
-
-	public abstract AttributeValue createValue(String dataType, String value)
-			throws UnknownIdentifierException, ParsingException;
-
-	/**
-	 * Creates a value based on the given data type and text-encoded value. Used
-	 * primarily by code that does an XPath query to get an attribute value, and
-	 * then needs to turn the resulting value into an Attribute class. This uses
-	 * the default factory.
-	 * 
-	 * @deprecated As of version 1.2, replaced by
-	 *             {@link #createValue(URI,String)}. The new factory system
-	 *             requires you to get a factory instance and then call the
-	 *             non-static methods on that factory. The static versions of
-	 *             these methods have been left in for now, but are slower and
-	 *             will be removed in a future version.
-	 * 
-	 * @param dataType
-	 *            the type of the attribute
-	 * @param value
-	 *            the text-encoded representation of an attribute's value
-	 * 
-	 * @return a new <code>AttributeValue</code>
-	 * 
-	 * @throws UnknownIdentifierException
-	 *             if the data type isn't known to the factory
-	 * @throws ParsingException
-	 *             if the text is invalid or can't be parsed by the appropriate
-	 *             proxy
-	 */
-	public static AttributeValue createAttribute(URI dataType, String value)
-			throws UnknownIdentifierException, ParsingException {
-		return getInstance().createValue(dataType, value);
-	}
 }

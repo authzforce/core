@@ -40,7 +40,6 @@ package com.sun.xacml.cond;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.URI;
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
@@ -56,25 +55,28 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
  */
 public abstract class AbstractFunction extends Function {
 
-    URI identifier;
-    URI returnType;
+    String identifier;
+    String returnType;
     boolean returnsBag;
 
-    public AbstractFunction(URI identifier, URI returnType, boolean returnsBag) {
+    public AbstractFunction(String identifier, String returnType, boolean returnsBag) {
         this.identifier = identifier;
         this.returnType = returnType;
         this.returnsBag = returnsBag;
     }
 
-    public URI getIdentifier() {
+    @Override
+	public String getIdentifier() {
         return identifier;
     }
 
-    public URI getReturnType() {
+    @Override
+	public String getReturnType() {
         return returnType;
     }
 
-    public boolean returnsBag() {
+    @Override
+	public boolean returnsBag() {
         return returnsBag;
     }
 
@@ -85,7 +87,8 @@ public abstract class AbstractFunction extends Function {
      *
      * @param output a stream into which the XML-encoded data is written
      */
-    public void encode(OutputStream output) {
+    @Override
+	public void encode(OutputStream output) {
         encode(output, new Indenter(0));
     }
 
@@ -97,13 +100,14 @@ public abstract class AbstractFunction extends Function {
      * @param output a stream into which the XML-encoded data is written
      * @param indenter an object that creates indentation strings
      */
-    public void encode(OutputStream output, Indenter indenter) {
+    @Override
+	public void encode(OutputStream output, Indenter indenter) {
         PrintStream out = new PrintStream(output);
         out.println(indenter.makeString() + "<Function FunctionId=\"" +
                     getIdentifier().toString() + "\"/>");
     }
 
-    public URI getType() {
+    public String getType() {
         return getReturnType();
     }
 

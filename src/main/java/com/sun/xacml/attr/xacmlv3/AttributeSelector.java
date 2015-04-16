@@ -69,7 +69,12 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 {
 
 	// the data type returned by this selector
-	private URI type;
+	/*
+	 * <p> WARNING: java.net.URI cannot be used here for XACML datatype, because not equivalent to
+	 * XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI. [1]
+	 * http://www.w3.org/TR/xmlschema-2/#anyURI </p>
+	 */
+	private String type;
 
 	// the xpath version we've been told to use
 	private String xpathVersion;
@@ -97,10 +102,10 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	{
 		this(type, contextPath, null, mustBePresent, xpathVersion);
 	}
-	
+
 	public AttributeSelector(String type, String contextPath, Node policyRoot, boolean mustBePresent, String xpathVersion)
 	{
-		this.type = URI.create(type); 
+		this.type = type;
 		this.path = contextPath;
 		this.mustBePresent = mustBePresent;
 		this.xpathVersion = xpathVersion;
@@ -108,23 +113,24 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 
 		this.dataType = type;
 		/*
-		 * FIXME: why assign Xpath value to contextSelectorId? 
+		 * FIXME: why assign Xpath value to contextSelectorId?
 		 */
 		this.contextSelectorId = contextPath;
 	}
-	
+
 	/**
 	 * 
 	 * @param attrSelectorElement
+	 * @param metaData
 	 */
 	public AttributeSelector(AttributeSelectorType attrSelectorElement, PolicyMetaData metaData)
 	{
-		this.type = URI.create(attrSelectorElement.getDataType());
+		this.type = attrSelectorElement.getDataType();
 		this.path = attrSelectorElement.getPath();
 		this.mustBePresent = attrSelectorElement.isMustBePresent();
 		this.dataType = attrSelectorElement.getDataType();
 		this.contextSelectorId = attrSelectorElement.getContextSelectorId();
-		
+
 		this.xpathVersion = metaData.getXPathIdentifier();
 	}
 
@@ -256,7 +262,7 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	 * 
 	 * @return the data type of the values found by this selector
 	 */
-	public URI getType()
+	public String getType()
 	{
 		return type;
 	}
@@ -365,15 +371,15 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 					String message = "couldn't resolve XPath expression " + path + " for type " + type.toString();
 					return new EvaluationResult(new Status(codes, message));
 				}
-				
+
 				// return the empty bag
 				return result;
 			}
-			
+
 			// return the values
 			return result;
 		}
-		
+
 		// return the error
 		return result;
 	}

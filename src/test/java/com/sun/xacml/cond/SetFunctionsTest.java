@@ -161,7 +161,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 												(ExpressionType) StringAttribute
 														.getInstance("String4")))),
 						new EvaluationResult(new BagAttribute(
-								StringAttribute.identifierURI, Arrays.asList(
+								StringAttribute.identifier, Arrays.asList(
 										(AttributeValue) StringAttribute
 												.getInstance("String2"),
 										(AttributeValue) StringAttribute
@@ -195,7 +195,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance(false)))),
 								new EvaluationResult(
 										new BagAttribute(
-												BooleanAttribute.identifierURI,
+												BooleanAttribute.identifier,
 												Arrays.asList((AttributeValue) BooleanAttribute
 														.getInstance(false)))) },
 
@@ -233,7 +233,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("4")))),
 								new EvaluationResult(
 										new BagAttribute(
-												IntegerAttribute.identifierURI,
+												IntegerAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) IntegerAttribute
 																.getInstance("2"),
@@ -274,7 +274,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("4.")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DoubleAttribute.identifierURI,
+												DoubleAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DoubleAttribute
 																.getInstance("2."),
@@ -315,7 +315,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("03:56:12")))),
 								new EvaluationResult(
 										new BagAttribute(
-												TimeAttribute.identifierURI,
+												TimeAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) TimeAttribute
 																.getInstance("09:30:15"),
@@ -356,7 +356,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("1970-01-01")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DateAttribute.identifierURI,
+												DateAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DateAttribute
 																.getInstance("2002-09-24"),
@@ -397,7 +397,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("1970-01-01T03:56:12")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DateTimeAttribute.identifierURI,
+												DateTimeAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DateTimeAttribute
 																.getInstance("2002-09-24T09:30:15"),
@@ -438,7 +438,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("https://www.thalesgroup.com")))),
 								new EvaluationResult(
 										new BagAttribute(
-												AnyURIAttribute.identifierURI,
+												AnyURIAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) AnyURIAttribute
 																.getInstance("http://www.example.com/images/logo.gif"),
@@ -479,7 +479,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("0FB9")))),
 								new EvaluationResult(
 										new BagAttribute(
-												HexBinaryAttribute.identifierURI,
+												HexBinaryAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) HexBinaryAttribute
 																.getInstance("0FB7"),
@@ -520,7 +520,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("VGVzdA==")))),
 								new EvaluationResult(
 										new BagAttribute(
-												Base64BinaryAttribute.identifierURI,
+												Base64BinaryAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) Base64BinaryAttribute
 																.getInstance("RXhhbXBsZQ=="),
@@ -561,7 +561,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("-PT1M30.5S")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DayTimeDurationAttribute.identifierURI,
+												DayTimeDurationAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DayTimeDurationAttribute
 																.getInstance("P1DT2H"),
@@ -602,7 +602,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("-P60Y")))),
 								new EvaluationResult(
 										new BagAttribute(
-												YearMonthDurationAttribute.identifierURI,
+												YearMonthDurationAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) YearMonthDurationAttribute
 																.getInstance("P1Y2M"),
@@ -643,7 +643,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("cn=Mark Anderson, o=Thales, c=FR")))),
 								new EvaluationResult(
 										new BagAttribute(
-												X500NameAttribute.identifierURI,
+												X500NameAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) X500NameAttribute
 																.getInstance("cn=John Smith, o=Medico Corp, c=US"),
@@ -684,7 +684,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("john.doe@example.com")))),
 								new EvaluationResult(
 										new BagAttribute(
-												RFC822NameAttribute.identifierURI,
+												RFC822NameAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) RFC822NameAttribute
 																.getInstance("Anderson@sun.com"),
@@ -1419,7 +1419,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("String3")))),
 								new EvaluationResult(
 										new BagAttribute(
-												StringAttribute.identifierURI,
+												StringAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) StringAttribute
 																.getInstance("String1"),
@@ -1456,7 +1456,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance(false)))),
 								new EvaluationResult(
 										new BagAttribute(
-												BooleanAttribute.identifierURI,
+												BooleanAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) BooleanAttribute
 																.getInstance(true),
@@ -1491,7 +1491,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("3")))),
 								new EvaluationResult(
 										new BagAttribute(
-												IntegerAttribute.identifierURI,
+												IntegerAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) IntegerAttribute
 																.getInstance("1"),
@@ -1528,7 +1528,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("3.14")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DoubleAttribute.identifierURI,
+												DoubleAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DoubleAttribute
 																.getInstance("1.23"),
@@ -1565,7 +1565,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("17:18:19")))),
 								new EvaluationResult(
 										new BagAttribute(
-												TimeAttribute.identifierURI,
+												TimeAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) TimeAttribute
 																.getInstance("08:15:56"),
@@ -1602,7 +1602,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("2003-10-25")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DateAttribute.identifierURI,
+												DateAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DateAttribute
 																.getInstance("2012-01-01"),
@@ -1639,7 +1639,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("2003-10-25T17:18:19")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DateTimeAttribute.identifierURI,
+												DateTimeAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DateTimeAttribute
 																.getInstance("2012-01-01T08:15:56"),
@@ -1676,7 +1676,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("http://www.example.com/videos/sample.avi")))),
 								new EvaluationResult(
 										new BagAttribute(
-												AnyURIAttribute.identifierURI,
+												AnyURIAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) AnyURIAttribute
 																.getInstance("http://www.example.com"),
@@ -1713,7 +1713,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("0FB8")))),
 								new EvaluationResult(
 										new BagAttribute(
-												HexBinaryAttribute.identifierURI,
+												HexBinaryAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) HexBinaryAttribute
 																.getInstance("0FB6"),
@@ -1750,7 +1750,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("T3RoZXI=")))),
 								new EvaluationResult(
 										new BagAttribute(
-												Base64BinaryAttribute.identifierURI,
+												Base64BinaryAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) Base64BinaryAttribute
 																.getInstance("UGFyaXNTRw=="),
@@ -1787,7 +1787,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("P0D")))),
 								new EvaluationResult(
 										new BagAttribute(
-												DayTimeDurationAttribute.identifierURI,
+												DayTimeDurationAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) DayTimeDurationAttribute
 																.getInstance("PT20M"),
@@ -1824,7 +1824,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("P0Y")))),
 								new EvaluationResult(
 										new BagAttribute(
-												YearMonthDurationAttribute.identifierURI,
+												YearMonthDurationAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) YearMonthDurationAttribute
 																.getInstance("P20M"),
@@ -1861,7 +1861,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("cn=John Smith, o=Other Corp, c=US")))),
 								new EvaluationResult(
 										new BagAttribute(
-												X500NameAttribute.identifierURI,
+												X500NameAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) X500NameAttribute
 																.getInstance("cn=John Smith, o=Thales, c=FR"),
@@ -1898,7 +1898,7 @@ public class SetFunctionsTest extends GeneralFunctionTest {
 																.getInstance("Smith@sun.com")))),
 								new EvaluationResult(
 										new BagAttribute(
-												RFC822NameAttribute.identifierURI,
+												RFC822NameAttribute.identifier,
 												Arrays.asList(
 														(AttributeValue) RFC822NameAttribute
 																.getInstance("toto@example.com"),

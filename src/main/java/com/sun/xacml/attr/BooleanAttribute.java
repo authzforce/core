@@ -33,8 +33,6 @@
  */
 package com.sun.xacml.attr;
 
-import java.net.URI;
-
 import org.w3c.dom.Node;
 
 import com.sun.xacml.ParsingException;
@@ -58,11 +56,6 @@ public class BooleanAttribute extends AttributeValue
      */
     public static final String identifier =
         "http://www.w3.org/2001/XMLSchema#boolean";
-
-    /**
-     * URI version of name for this type
-     */
-    public static final URI identifierURI = URI.create(identifier);
 
     /**
      * Single instance of BooleanAttribute that represents true.
@@ -92,7 +85,7 @@ public class BooleanAttribute extends AttributeValue
      * thus avoiding excess object creation.
      */
     private BooleanAttribute(boolean value) {
-        super(identifierURI);
+        super(identifier);
         this.value = value;
         this.content.add(value);
     }
@@ -104,6 +97,7 @@ public class BooleanAttribute extends AttributeValue
      * @param root the <code>Node</code> that contains the desired value
      * @return a <code>BooleanAttribute</code> representing the
      *         appropriate value (null if there is a parsing error)
+     * @throws ParsingException 
      */
     public static BooleanAttribute getInstance(Node root)
         throws ParsingException
@@ -118,6 +112,7 @@ public class BooleanAttribute extends AttributeValue
      * @param value a string representing the desired value
      * @return a <code>BooleanAttribute</code> representing the
      *         appropriate value (null if there is a parsing error)
+     * @throws ParsingException 
      */
     public static BooleanAttribute getInstance(String value)
         throws ParsingException
@@ -140,10 +135,11 @@ public class BooleanAttribute extends AttributeValue
      */
     public static BooleanAttribute getInstance(boolean value) {
 
-        if (value)
+        if (value) {
             return trueInstance;
-        else
-            return falseInstance;
+        }
+        
+		return falseInstance;
     }
 
     /**
@@ -187,7 +183,8 @@ public class BooleanAttribute extends AttributeValue
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         if (! (o instanceof BooleanAttribute))
             return false;
 
@@ -203,7 +200,8 @@ public class BooleanAttribute extends AttributeValue
      *
      * @return the object's hashcode value
      */
-    public int hashCode() {
+    @Override
+	public int hashCode() {
         // these numbers come from the javadoc for java.lang.Boolean...no,
         // really, they do. I can't imagine what they were thinking...
         return (value ? 1231 : 1237);
@@ -212,7 +210,8 @@ public class BooleanAttribute extends AttributeValue
     /**
      *
      */
-    public String encode() {
+    @Override
+	public String encode() {
         return (value ? "true" : "false");
     }
 

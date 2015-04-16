@@ -45,6 +45,7 @@ public class TestAttributeFinderModule extends AttributeFinderModule<TestAttribu
 {
 
 	private final Set<Integer> supportedDesignatorTypes = new HashSet<>();
+	private Set<String> supportedIds = new HashSet<>();
 
 	@Override
 	public void init(TestAttributeFinder conf)
@@ -75,6 +76,8 @@ public class TestAttributeFinderModule extends AttributeFinderModule<TestAttribu
 			}
 			
 			supportedDesignatorTypes.add(attrCatId);
+			
+			supportedIds.add(attrDes.getAttributeId());
 		}
 
 	}
@@ -98,7 +101,7 @@ public class TestAttributeFinderModule extends AttributeFinderModule<TestAttribu
 	}
 
 	@Override
-	public Set getSupportedIds()
+	public Set<String> getSupportedIds()
 	{
 		return null;
 	}
@@ -109,7 +112,7 @@ public class TestAttributeFinderModule extends AttributeFinderModule<TestAttribu
 	}
 
 	@Override
-	public EvaluationResult findAttribute(URI attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context,
+	public EvaluationResult findAttribute(String attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context,
 			int designatorType)
 	{
 		return new EvaluationResult(BagAttribute.createEmptyBag(attributeType));

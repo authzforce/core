@@ -33,11 +33,9 @@
  */
 package com.sun.xacml.attr.xacmlv3;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.net.URI;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.UnknownIdentifierException;
@@ -76,9 +73,6 @@ import com.thalesgroup.authzforce.core.PdpModelHandler;
 public class AttributeValue extends AttributeValueType implements Evaluatable
 {
 
-	// the type of this attribute
-	private URI type;
-
 	/**
 	 * Logger used for all classes
 	 */
@@ -98,17 +92,11 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 	public static AttributeValue getInstance(AttributeValueType attrValue) throws UnknownIdentifierException, ParsingException
 	{
 
-		AttributeFactory attrFactory = AttributeFactory.getInstance();
+		final AttributeFactory attrFactory = AttributeFactory.getInstance();
 
-		AttributeValue returnData = null;
-		/*
-		 * FIXME: what if attrValue.getContent() is empty list (no content): <AttributeValue
-		 * ....DataType="..." />
-		 */
 		try
-		{			
-			Serializable attrValueContent = attrValue.getContent().get(0);
-			returnData = attrFactory.createValue(URI.create(attrValue.getDataType()), String.valueOf(attrValueContent));
+		{
+			return attrFactory.createValue(attrValue);
 			// FIXME: comment on why SecurityException/IllegalArgumentException may occur
 		} catch (SecurityException e)
 		{
@@ -117,8 +105,6 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 		{
 			throw new ParsingException(e);
 		}
-
-		return returnData;
 	}
 
 	public static AttributeValue getInstance(Node root, PolicyMetaData metadata)
@@ -128,7 +114,7 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 		{
 			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
 			attrValue = u.unmarshal(root, AttributeValueType.class);
-			return new AttributeValue(URI.create(attrValue.getValue().getDataType()), attrValue.getValue().getContent());
+			return new AttributeValue(attrValue.getValue().getDataType(), attrValue.getValue().getContent());
 		} catch (Exception e)
 		{
 			LOGGER.error("Error unmarshalling AttributeValue", e);
@@ -142,30 +128,22 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 	 * 
 	 * @param type
 	 *            the attribute's type
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
 	 */
-	protected AttributeValue(URI type, List<Serializable> content)
+	protected AttributeValue(String type, List<Serializable> content)
 	{
 		this.content = content;
-		this.dataType = type.toASCIIString();
-		this.type = type;
+		this.dataType = type;
 	}
 
-	protected AttributeValue(URI type)
+	protected AttributeValue(String type)
 	{
 		this.content = new ArrayList<>();
-		this.dataType = type.toASCIIString();
-		this.type = type;
-	}
-
-	/**
-	 * Returns the type of this attribute value. By default this always returns the type passed to
-	 * the constructor.
-	 * 
-	 * @return the attribute's type
-	 */
-	public URI getType()
-	{
-		return type;
+		this.dataType = type;
 	}
 
 	/**
@@ -238,13 +216,13 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 		final AttributeValue attrVal;
 		try
 		{
-			attrVal = AttributeValue.getInstance(this);		
-		} catch (UnknownIdentifierException|ParsingException e)
+			attrVal = AttributeValue.getInstance(this);
+		} catch (UnknownIdentifierException | ParsingException e)
 		{
 			Status status = new Status(Arrays.asList(Status.STATUS_PROCESSING_ERROR), e.getLocalizedMessage());
 			return new EvaluationResult(status);
-		} 
-		
+		}
+
 		return new EvaluationResult(attrVal);
 	}
 
@@ -258,16 +236,8 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 	 */
 	public String encode()
 	{
-		StringWriter out = new StringWriter();
-		try
-		{
-			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
-			u.marshal(this, out);
-		} catch (Exception e)
-		{
-			LOGGER.error("Error marshalling AttributeValue to String", e);
-		}
-
+		final StringWriter out = new StringWriter();
+		encode(out);
 		return out.toString();
 	}
 
@@ -286,47 +256,17 @@ public class AttributeValue extends AttributeValueType implements Evaluatable
 	 * @param output
 	 *            a stream into which the XML-encoded data is written
 	 */
-	public void encode(OutputStream output)
+	public void encode(Writer output)
 	{
-		encode(output, new Indenter(0));
-	}
-
-	/**
-	 * Encodes this <code>AttributeValue</code> into its XML representation and writes this encoding
-	 * to the given <code>OutputStream</code> with indentation. This will always produce the version
-	 * used in a policy rather than that used in a request, so this is equivalent to calling
-	 * <code>encodeWithTags(true)</code> and then stuffing that into a stream.
-	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
-	 * @param indenter
-	 *            an object that creates indentation strings
-	 */
-	public void encode(OutputStream output, Indenter indenter)
-	{
-		PrintStream out = new PrintStream(output);
-		out.println(indenter.makeString() + encodeWithTags(true));
-	}
-
-	/**
-	 * Encodes the value and includes the AttributeValue XML tags so that the resulting string can
-	 * be included in a valid XACML policy or Request/Response. The <code>boolean</code> parameter
-	 * lets you include the DataType attribute, which is required in a policy but not allowed in a
-	 * Request or Response.
-	 * 
-	 * @param includeType
-	 *            include the DataType XML attribute if <code>true</code>, exclude if
-	 *            <code>false</code>
-	 * 
-	 * @return a <code>String</code> encoding including the XML tags
-	 */
-	public String encodeWithTags(boolean includeType)
-	{
-		// FIXME: Properly XML-encode the value
-		if (includeType)
-			return "<AttributeValue DataType=\"" + type.toString() + "\">" + encode() + "</AttributeValue>";
-		else
-			return "<AttributeValue>" + encode() + "</AttributeValue>";
+		try
+		{
+			final Marshaller m = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
+			m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+			m.marshal(PdpModelHandler.XACML_3_0_OBJECT_FACTORY.createAttributeValue(this), output);
+		} catch (Exception e)
+		{
+			LOGGER.error("Error marshalling AttributeValue to String", e);
+		}
 	}
 
 	public static List<AttributeValue> convertFromJAXB(List<AttributeValueType> avts) throws ParsingException, UnknownIdentifierException

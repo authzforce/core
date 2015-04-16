@@ -33,12 +33,9 @@
  */
 package com.sun.xacml.cond;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -108,8 +105,11 @@ public class VariableManager
 
 	/**
 	 * Add VariableDefinition to be managed
-	 * @param var VariableDefinition
-	 * @throws IllegalArgumentException if VariableId already used 
+	 * 
+	 * @param var
+	 *            VariableDefinition
+	 * @throws IllegalArgumentException
+	 *             if VariableId already used
 	 */
 	public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition var)
 	{
@@ -117,7 +117,8 @@ public class VariableManager
 		final VariableDefinition varDef = new VariableDefinition(varId, var.getExpression().getValue());
 		final VariableState varState = new VariableState(varDef, null, null, false, false);
 		final VariableState state = idMap.put(varId, varState);
-		if(state != null) {
+		if (state != null)
+		{
 			throw new IllegalArgumentException("Duplicate VariableDefinion VariableId: " + varId);
 		}
 	}
@@ -236,11 +237,16 @@ public class VariableManager
 	 *            the identifier for the definition
 	 * 
 	 * @return the datatype that the identified definition's expression evaluates to
+	 *         <p>
+	 *         WARNING: java.net.URI cannot be used here for XACML datatype, because not equivalent
+	 *         to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
+	 *         [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *         </p>
 	 * 
 	 * @throws ProcessingException
 	 *             if the identifier is not supported or if the result cannot be resolved
 	 */
-	public URI getVariableType(String variableId)
+	public String getVariableType(String variableId)
 	{
 		VariableState state = idMap.get(variableId);
 
@@ -250,17 +256,21 @@ public class VariableManager
 
 		// if we've previously figured out the type, then return that
 		if (state.type != null)
+		{
 			return state.type;
+		}
 
 		// we haven't figured out the type already, so see if we have or
 		// can resolve the definition
 		VariableDefinition definition = state.definition;
-		if (definition == null)
+		if (definition == null) {
 			definition = getDefinition(variableId);
+		}
 
 		// if we could get the definition, then ask it for the type
-		if (definition != null)
+		if (definition != null) {
 			return ((Expression) definition.getExpression().getValue()).getType();
+		}
 
 		// we exhausted all our ways to get the right answer
 		throw new ProcessingException("we couldn't establish the type: " + variableId);
@@ -318,7 +328,7 @@ public class VariableManager
 		public Node rootNode;
 
 		// the datatype returned when evaluating the definition
-		public URI type;
+		public String type;
 
 		// whether the definition's root evaluates to a Bag
 		public boolean returnsBag;
@@ -335,7 +345,7 @@ public class VariableManager
 			this.handled = false;
 		}
 
-		public VariableState(VariableDefinition definition, Node rootNode, URI type, boolean returnsBag, boolean handled)
+		public VariableState(VariableDefinition definition, Node rootNode, String type, boolean returnsBag, boolean handled)
 		{
 			this.definition = definition;
 			this.rootNode = rootNode;
