@@ -21,19 +21,23 @@
  */
 package com.thalesgroup.authzforce.core.test.utils;
 
-import java.net.URI;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.AttributeFinderModule;
+import com.thalesgroup.authzforce.core.attr.AttributeGUID;
+import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder;
-import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
 
 /**
  * 
@@ -41,81 +45,73 @@ import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
  * set of attribute finders, but always return an empty bag as attribute value.
  * 
  */
-public class TestAttributeFinderModule extends AttributeFinderModule<TestAttributeFinder>
+public class TestAttributeFinderModule extends AttributeFinderModule
 {
-
-	private final Set<Integer> supportedDesignatorTypes = new HashSet<>();
-	private Set<String> supportedIds = new HashSet<>();
-
-	@Override
-	public void init(TestAttributeFinder conf)
+	public static class Factory extends AttributeFinderModule.Factory<TestAttributeFinder>
 	{
-		for(final AttributeDesignatorType attrDes: conf.getProvidedAttributes()) {
-			final int attrCatId;
-			final XACMLCategory category = XACMLCategory.fromValue(attrDes.getCategory());
-			switch (category)
+
+		@Override
+		public Class<TestAttributeFinder> getJaxbClass()
+		{
+			return TestAttributeFinder.class;
+		}
+
+		@Override
+		public DependencyAwareFactory<TestAttributeFinder> parseDependencies(final TestAttributeFinder conf)
+		{
+			return new DependencyAwareFactory<TestAttributeFinder>(conf)
 			{
-				case XACML_1_0_SUBJECT_CATEGORY_ACCESS_SUBJECT:
-				case XACML_1_0_SUBJECT_CATEGORY_CODEBASE:
-				case XACML_1_0_SUBJECT_CATEGORY_INTERMEDIARY_SUBJECT:
-				case XACML_1_0_SUBJECT_CATEGORY_RECIPIENT_SUBJECT:
-				case XACML_1_0_SUBJECT_CATEGORY_REQUESTING_MACHINE:
-					attrCatId = AttributeDesignator.SUBJECT_TARGET;
-					break;
-				case XACML_3_0_RESOURCE_CATEGORY_RESOURCE:
-					attrCatId = AttributeDesignator.RESOURCE_TARGET;
-					break;
-				case XACML_3_0_ACTION_CATEGORY_ACTION:
-					attrCatId = AttributeDesignator.ACTION_TARGET;
-					break;
-				case XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT:
-					attrCatId = AttributeDesignator.ENVIRONMENT_TARGET;
-					break;
-				default:
-					throw new IllegalArgumentException("Unknown attribute category: " + category);
-			}
-			
-			supportedDesignatorTypes.add(attrCatId);
-			
-			supportedIds.add(attrDes.getAttributeId());
+
+				@Override
+				public Set<AttributeDesignatorType> getDependencies()
+				{
+					// no dependency
+					return null;
+				}
+
+				@Override
+				public AttributeFinderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeFinder depAttrFinder)
+				{
+					return new TestAttributeFinderModule(conf);
+				}
+			};
 		}
 
 	}
 
-	@Override
-	public boolean isDesignatorSupported()
+	private final Set<AttributeDesignatorType> supportedDesignatorTypes;
+	private final Set<AttributeGUID> supportedAttrIds = new HashSet<>();
+
+	private TestAttributeFinderModule(TestAttributeFinder conf)
 	{
-		return true;
+		super(conf.getId(), null, null);
+		supportedDesignatorTypes = new HashSet<>(conf.getProvidedAttributes());
+		for (final AttributeDesignatorType attrDes : supportedDesignatorTypes)
+		{
+			supportedAttrIds.add(new AttributeGUID(attrDes));
+		}
 	}
 
 	@Override
-	public boolean isSelectorSupported()
+	public void close() throws IOException
 	{
-		return false;
 	}
 
 	@Override
-	public Set<Integer> getSupportedDesignatorTypes()
+	public Set<AttributeDesignatorType> getProvidedAttributes()
 	{
 		return supportedDesignatorTypes;
 	}
 
 	@Override
-	public Set<String> getSupportedIds()
+	public <V extends AttributeValue> List<V> findAttribute(DatatypeDef attributeType, AttributeGUID attributeGUID, EvaluationContext context, Class<V> datatypeClass) throws IndeterminateEvaluationException
 	{
+		if (supportedAttrIds.contains(attributeGUID))
+		{
+			return Collections.EMPTY_LIST;
+		}
+
 		return null;
-	}
-
-	@Override
-	public void invalidateCache()
-	{
-	}
-
-	@Override
-	public EvaluationResult findAttribute(String attributeType, URI attributeId, URI issuer, URI subjectCategory, EvaluationCtx context,
-			int designatorType)
-	{
-		return new EvaluationResult(BagAttribute.createEmptyBag(attributeType));
 	}
 
 }

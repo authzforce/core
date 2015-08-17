@@ -1,0 +1,126 @@
+package com.thalesgroup.authzforce.core;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.bind.JAXBContext;
+
+import net.sf.saxon.s9api.Processor;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+
+import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
+import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
+/**
+ * Default Request filter for Individual Decision Requests only (no support of Multiple Decision
+ * Profile in particular)
+ * 
+ */
+public final class DefaultRequestFilter extends RequestFilter
+{
+	/**
+	 * RefPolicyFinderModuleFactory for creating instances of DefaultRequestFilter
+	 * 
+	 */
+	public static final RequestFilter.Factory FACTORY = new RequestFilter.Factory()
+	{
+		private static final String ID = "urn:thalesgroup:xacml:request-filter:default";
+
+		@Override
+		public String getId()
+		{
+			return ID;
+		}
+
+		@Override
+		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean requireContentForXPath, JAXBContext attributesContentJaxbCtx, Processor xmlProcessor)
+		{
+			return new DefaultRequestFilter(datatypeFactoryRegistry, requireContentForXPath, attributesContentJaxbCtx, xmlProcessor);
+		}
+	};
+
+	/**
+	 * Creates instance
+	 * 
+	 * @param datatypeFactoryRegistry
+	 *            registry of attribute datatype factories for parsing XACML Request AttributeValues
+	 *            into Java types compatible with/optimized for the policy evaluation engine
+	 * @param requireContentForXPath
+	 *            true iff XPath evaluation against Attributes/Content element is required (e.g.
+	 *            AttributeSelector, XPath-based funtion...). A preprocessor may skip Content
+	 *            parsing for XPath evaluation, if and only if this is false. (Be aware that a
+	 *            preprocessor may support the MultipleDecision Profile or Hierarchical Profile and
+	 *            therefore require Content parsing for other purposes defined by these profiles.)
+	 * @param attributesContentJaxbCtx
+	 *            JAXBContext that was used to unmarshall Attributes/Content elements in the
+	 *            Request. This context is used to create a new instance of marshaller to pass it as
+	 *            JAXBSource to xmlProcesor to convert to XDM data model for XPATH evaluation. May
+	 *            be null if requireContentForXPath is false.
+	 * 
+	 * @param xmlProcessor
+	 *            XML processor for parsing Attributes/Content prior to XPATH evaluation (e.g.
+	 *            AttributeSelectors). May be null if requireContentForXPath is false.
+	 */
+	public DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean requireContentForXPath, JAXBContext attributesContentJaxbCtx, Processor xmlProcessor)
+	{
+		super(datatypeFactoryRegistry, requireContentForXPath, attributesContentJaxbCtx, xmlProcessor);
+	}
+
+	@Override
+	public final List<IndividualDecisionRequest> filter(Request jaxbRequest) throws IndeterminateEvaluationException
+	{
+		// RequestDefaults element not supported (optional XACML feature)
+		if (jaxbRequest.getRequestDefaults() != null)
+		{
+			/*
+			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error
+			 * code for unsupported element
+			 */
+			throw UNSUPPORTED_REQUEST_DEFAULTS_EXCEPTION;
+		}
+
+		// MultiRequests element not supported (optional XACML feature)
+		if (jaxbRequest.getMultiRequests() != null)
+		{
+			/*
+			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error
+			 * code for unsupported element
+			 */
+			throw UNSUPPORTED_MULTI_REQUESTS_EXCEPTION;
+		}
+
+		/*
+		 * No support for Multiple Decision Profile -> no support for repeated categories as
+		 * specified in Multiple Decision Profile. So we keep track of attribute categories to check
+		 * duplicates.
+		 */
+		final Set<String> attrCategoryNames = new HashSet<>();
+		final XACMLAttributesParser xacmlAttrsParser = getXACMLAttributesParserInstance();
+		final IndividualDecisionRequest individualDecisionRequest = new IndividualDecisionRequest(jaxbRequest.isReturnPolicyIdList());
+		for (final Attributes jaxbAttributes : jaxbRequest.getAttributes())
+		{
+			final String categoryName = jaxbAttributes.getCategory();
+			if (!attrCategoryNames.add(categoryName))
+			{
+				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName + "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", Status.STATUS_SYNTAX_ERROR);
+			}
+
+			final CategorySpecificAttributes categorySpecificAttributes = xacmlAttrsParser.parse(jaxbAttributes);
+			if (categorySpecificAttributes == null)
+			{
+				// skip this empty Attributes
+				continue;
+			}
+
+			individualDecisionRequest.put(categoryName, categorySpecificAttributes);
+		}
+
+		return Collections.singletonList(individualDecisionRequest);
+	}
+
+}

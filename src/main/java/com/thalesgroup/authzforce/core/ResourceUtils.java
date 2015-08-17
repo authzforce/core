@@ -43,7 +43,7 @@ public class ResourceUtils
 	 * Get resource URL from Spring-supported resource location
 	 * 
 	 * @param loc
-	 * @return resource URL
+	 * @return resource URL, null if no resouce exists at this URL
 	 * @throws IOException
 	 */
 	public static URL getResourceURL(String loc) throws IOException

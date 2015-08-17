@@ -36,7 +36,7 @@ package com.sun.xacml;
 
 /**
  * Runtime exception that's thrown if any unexpected error occurs. This could
- * appear, for example, if you try to match a referernced policy that can't
+ * appear, for example, if you try to match a referenced policy that can't
  * be resolved.
  *
  * @since 1.0

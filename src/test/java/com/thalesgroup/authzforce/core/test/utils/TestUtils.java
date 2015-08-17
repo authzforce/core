@@ -18,56 +18,61 @@
  */
 package com.thalesgroup.authzforce.core.test.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
-import com.sun.xacml.BasicEvaluationCtx;
-import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.PDP;
-import com.sun.xacml.PDPConfig;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.ctx.ResponseCtx;
-import com.sun.xacml.ctx.Result;
-import com.sun.xacml.finder.PolicyFinder;
-import com.sun.xacml.finder.PolicyFinderModule;
-import com.sun.xacml.support.finder.StaticPolicyFinderModule;
-import com.thalesgroup.authzforce.core.PdpConfigurationManager;
-import com.thalesgroup.authzforce.core.PdpModelHandler;
+import com.thalesgroup.authzforce.core.DefaultRequestFilter;
+import com.thalesgroup.authzforce.core.IndividualDecisionRequest;
+import com.thalesgroup.authzforce.core.PdpConfigurationParser;
+import com.thalesgroup.authzforce.core.RequestFilter;
+import com.thalesgroup.authzforce.core.XACMLBindingUtils;
+import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
+import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
+import com.thalesgroup.authzforce.core.attr.StandardDatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.ExpressionFactoryImpl;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
+import com.thalesgroup.authzforce.core.func.StandardFunctionRegistry;
+import com.thalesgroup.authzforce.pdp.model._2015._06.BaseStaticPolicyFinder;
+import com.thalesgroup.authzforce.pdp.model._2015._06.Pdp;
 
 public class TestUtils
 {
 	/**
-	 * Global test configuration filename
+	 * XACML standard Expression factory/parser
 	 */
-	public static final String GLOBAL_TEST_CONF_FILENAME = "src/test/resources/authzforce.test.properties";
+	public static final ExpressionFactory STD_EXPRESSION_FACTORY;
+	static
+	{
+		final CloseableAttributeFinder ctxOnlyAttrFinder = new CloseableAttributeFinderImpl(null);
+		STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.INSTANCE, StandardFunctionRegistry.INSTANCE, ctxOnlyAttrFinder, 0, false, null);
+	}
 
-	private static final File GLOBAL_TEST_CONF_FILE = new File(GLOBAL_TEST_CONF_FILENAME);
+	/**
+	 * Default (basic) request filter, supporting only XACML core mandatory features of Individual
+	 * Decision requests (no support for AttributeSelectors)
+	 */
+	private static final RequestFilter BASIC_REQUEST_FILTER = new DefaultRequestFilter(StandardDatatypeFactoryRegistry.INSTANCE, false, null, null);
+
+	public static final String POLICY_DIRECTORY = "policies";
+	public static final String REQUEST_DIRECTORY = "requests";
+	public static final String RESPONSE_DIRECTORY = "responses";
 
 	/**
 	 * the logger we'll use for all messages
@@ -75,7 +80,8 @@ public class TestUtils
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestUtils.class);
 
 	/**
-	 * This creates the XACML request from a file
+	 * This creates the XACML request from file on classpath: {@code rootDirectory}/
+	 * {@code versionDirectory}/{@value #REQUEST_DIRECTORY}/{@code requestFilename}
 	 * 
 	 * @param rootDirectory
 	 *            root directory of the request files
@@ -84,11 +90,11 @@ public class TestUtils
 	 * @param requestFilename
 	 *            request file name
 	 * @return String or null if any error
+	 * @throws JAXBException
+	 *             error reading XACML 3.0 Request from the file
 	 */
-	public static Request createRequest(String rootDirectory, String versionDirectory, String requestFilename)
+	public static Request createRequest(String rootDirectory, String versionDirectory, String requestFilename) throws JAXBException
 	{
-
-		Document doc = null;
 		/**
 		 * Get absolute path/URL to request file in a portable way, using current class loader. As
 		 * per javadoc, the name of the resource passed to ClassLoader.getResource() is a
@@ -97,95 +103,48 @@ public class TestUtils
 		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
 		 * by this method), and file will not be found as a result.
 		 */
-		String requestFileResourceName = rootDirectory + "/" + versionDirectory + "/" + TestConstants.REQUEST_DIRECTORY.value() + "/"
-				+ requestFilename;
+		String requestFileResourceName = rootDirectory + "/" + versionDirectory + "/" + REQUEST_DIRECTORY + "/" + requestFilename;
 		URL requestFileURL = Thread.currentThread().getContextClassLoader().getResource(requestFileResourceName);
-		try
-		{
-			LOGGER.debug("Request file to read: {}", requestFileURL);
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setIgnoringComments(true);
-			factory.setNamespaceAware(true);
-			DocumentBuilder db = factory.newDocumentBuilder();
-			doc = db.parse(requestFileURL.toString());
-		} catch (Exception e)
-		{
-			LOGGER.error("Error while reading expected request from file ", e);
-		}
-		return marshallRequestType(doc);
+		LOGGER.debug("Request file to read: {}", requestFileURL);
+		Unmarshaller u = XACMLBindingUtils.createXacml3Unmarshaller();
+		JAXBElement<Request> jaxbElt = (JAXBElement<Request>) u.unmarshal(requestFileURL);
+		return jaxbElt.getValue();
 	}
 
 	/**
-	 * This creates the expected XACML response from a file
+	 * This creates the XACML request from file on classpath:
+	 * <p>
+	 * {@code rootDirectory}/{@code versionDirectory}/{@value #RESPONSE_DIRECTORY}/
+	 * {@code responseFilename}
+	 * </p>
+	 * 
 	 * 
 	 * @param rootDirectory
-	 *            root directory of the response files
+	 *            root directory of the request files
 	 * @param versionDirectory
-	 *            version directory of the response files
+	 *            version directory of the request files
 	 * @param responseFilename
-	 *            response file name
-	 * @return ResponseCtx or null if any error
+	 *            request file name
+	 * @return String or null if any error
+	 * @throws JAXBException
+	 *             error reading XACML 3.0 Request from the file
 	 */
-	public static Response createResponse(String rootDirectory, String versionDirectory, String responseFilename)
+	public static Response createResponse(String rootDirectory, String versionDirectory, String responseFilename) throws JAXBException
 	{
-		Document doc = null;
 		/**
-		 * Get absolute path/URL to request file in a portable way, using current class loader. As
+		 * Get absolute path/URL to response file in a portable way, using current class loader. As
 		 * per javadoc, the name of the resource passed to ClassLoader.getResource() is a
 		 * '/'-separated path name that identifies the resource. So let's build it. Note: do not use
 		 * File.separator as path separator, as it will be turned into backslash "\\" on Windows,
 		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
 		 * by this method), and file will not be found as a result.
 		 */
-		String responseFileResourceName = rootDirectory + "/" + versionDirectory + "/" + TestConstants.RESPONSE_DIRECTORY.value() + "/"
-				+ responseFilename;
+		String responseFileResourceName = rootDirectory + "/" + versionDirectory + "/" + RESPONSE_DIRECTORY + "/" + responseFilename;
 		URL responseFileURL = Thread.currentThread().getContextClassLoader().getResource(responseFileResourceName);
-		try
-		{
-			LOGGER.debug("Response file to read: {}", responseFileURL);
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setIgnoringComments(true);
-			factory.setNamespaceAware(true);
-			factory.setValidating(false);
-			DocumentBuilder db = factory.newDocumentBuilder();
-			doc = db.parse(responseFileURL.toString());
-		} catch (Exception e)
-		{
-			LOGGER.error("Error while reading expected response from file ", e);
-		}
-
-		return marshallResponseType(doc);
-	}
-
-	private static Request marshallRequestType(Node root)
-	{
-		Request request = null;
-		try
-		{
-			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-			JAXBElement<Request> jaxbElt = u.unmarshal(root, Request.class);
-			request = jaxbElt.getValue();
-		} catch (Exception e)
-		{
-			LOGGER.error("Error unmarshalling Request", e);
-		}
-
-		return request;
-	}
-
-	private static Response marshallResponseType(Node root)
-	{
-		Response allOf = null;
-		try
-		{
-			Unmarshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-			allOf = (Response) u.unmarshal(root);
-		} catch (Exception e)
-		{
-			LOGGER.error("Error unmarshalling Response", e);
-		}
-
-		return allOf;
+		LOGGER.debug("Request file to read: {}", responseFileURL);
+		Unmarshaller u = XACMLBindingUtils.createXacml3Unmarshaller();
+		JAXBElement<Response> jaxbElt = (JAXBElement<Response>) u.unmarshal(responseFileURL);
+		return jaxbElt.getValue();
 	}
 
 	public static String printRequest(Request request)
@@ -193,7 +152,7 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller u = XACMLBindingUtils.createXacml3Marshaller();
 			u.marshal(request, writer);
 		} catch (Exception e)
 		{
@@ -208,7 +167,7 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller marshaller = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
+			Marshaller marshaller = XACMLBindingUtils.createXacml3Marshaller();
 			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 			marshaller.marshal(response, writer);
 		} catch (Exception e)
@@ -219,219 +178,111 @@ public class TestUtils
 		return writer.toString();
 	}
 
-	public static boolean match(ResponseCtx response, Response expectedResponse)
+	public static boolean match(Response testedResponse, Response expectedResponse)
 	{
-
-		boolean finalResult = false;
-
-		Response xacmlResponse = new Response();
-		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> myIt = response.getResults().iterator();
-
-		while (myIt.hasNext())
+		if (testedResponse.getResults().size() != expectedResponse.getResults().size())
 		{
-			Result result = (Result) myIt.next();
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Result resultType = result;
-			xacmlResponse.getResults().add(resultType);
-		}
-
-		finalResult = matchResult(xacmlResponse.getResults(), expectedResponse.getResults());
-		if (finalResult)
-		{
-			int i = 0;
-			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse.getResults())
-			{
-				finalResult = matchObligations(result.getObligations(), expectedResponse.getResults().get(i).getObligations());
-			}
-		} else
-		{
-			// Obligation comparison failed
-			LOGGER.error("Result comparaison failed");
-			return finalResult;
-		}
-		if (finalResult)
-		{
-			int i = 0;
-			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : xacmlResponse.getResults())
-			{
-				finalResult = matchAdvices(result.getAssociatedAdvice(), expectedResponse.getResults().get(i).getAssociatedAdvice());
-			}
-		} else
-		{
-			// Advice comparison failed
-			LOGGER.error("Obligations comparaison failed");
-			return finalResult;
-		}
-
-		if (!finalResult)
-		{
-			// Advice comparison failed
-			LOGGER.error("Advice comparaison failed");
-			return finalResult;
-		}
-
-		// Everything gone right
-		return finalResult;
-	}
-
-	private static boolean matchResult(List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> currentResult,
-			List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResult)
-	{
-		// Compare the number of results
-		LOGGER.debug("Begining result number comparison");
-		if (currentResult.size() != expectedResult.size())
-		{
-			LOGGER.error("Number of result differ from expected");
-			LOGGER.error("Current: " + currentResult.size());
-			LOGGER.error("Expected: " + expectedResult.size());
+			LOGGER.debug("Number of results in tested response  (={}) differs from expected (={})", testedResponse.getResults().size(), expectedResponse.getResults().size());
 			return false;
 		}
 
-		LOGGER.debug("Result number comparison OK");
+		/*
+		 * We iterate over all results, because for each results, we don't compare everything. In
+		 * particular, we choose to ignore the Status. Indeed, a PDP implementation might return a
+		 * perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would
+		 * not expect.
+		 */
+		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResultsIterator = expectedResponse.getResults().iterator();
+		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> testedResultsIterator = testedResponse.getResults().iterator();
 		int i = 0;
-		LOGGER.debug("Begining result decision comparaison");
-		for (oasis.names.tc.xacml._3_0.core.schema.wd_17.Result result : currentResult)
+		while (expectedResultsIterator.hasNext())
 		{
-			// Compare the decision
-			final boolean decisionMatch = result.getDecision() == expectedResult.get(i).getDecision();
-			if (!decisionMatch)
+			Result expectedResult = expectedResultsIterator.next();
+			Result testedResult = testedResultsIterator.next();
+			// We ignore the status, so set it to null in both expected and tested response to avoid
+			// Status comparison
+			expectedResult.setStatus(null);
+			testedResult.setStatus(null);
+			if (!testedResult.equals(expectedResult))
 			{
-				LOGGER.error("Result " + i + " differ from expected.");
-				LOGGER.error("Current decision: " + result.getDecision());
-				LOGGER.error("Expected decision: " + expectedResult.get(i).getDecision());
+				LOGGER.debug("Result #" + i + " in tested response ( {} ) does not match (Status ignored) the expected one ( {} )", testedResult, expectedResult);
 				return false;
 			}
 
 			i++;
 		}
-		
-		LOGGER.debug("Result decision comparaison OK");
+
 		return true;
 	}
 
-	private static boolean matchObligations(Obligations obligationsType, Obligations obligationsType2)
-	{
-		boolean returnData = true;
-
-		if (obligationsType != null && obligationsType2 != null)
-		{
-			if (!obligationsType.equals(obligationsType2))
-			{
-				returnData = false;
-			}
-		}
-
-		return returnData;
-	}
-
-	private static boolean matchAdvices(AssociatedAdvice associatedAdvice, AssociatedAdvice associatedAdvice2)
-	{
-		boolean returnData = true;
-		if (associatedAdvice != null && associatedAdvice2 != null)
-		{
-			if (!associatedAdvice.equals(associatedAdvice2))
-			{
-				returnData = false;
-			}
-		}
-
-		return returnData;
-	}
-
 	/**
-	 * Returns a new PDP instance with new XACML policies and based on configuration in file
-	 * {@literal #GLOBAL_TEST_CONF_FILENAME}
+	 * Returns a new PDP instance with a new root XACML policy loaded from {@code rootDir}/
+	 * {@code versionDir}/{@value #POLICY_DIRECTORY}/{@code policyFilename} and supporting only
+	 * mandatory XACML core features (standard attribute datatypes and functions...)
 	 * 
 	 * @param rootDir
 	 *            test root directory name
 	 * @param versionDir
 	 *            XACML version directory name
 	 * 
-	 * @param policyfilenames
-	 *            Set of XACML policy file names
+	 * @param policyFilename
+	 *            PDP's root policy filename
 	 * @return a PDP instance
 	 */
-	public static PDP getPDPNewInstance(String rootDir, String versionDir, Set<String> policyfilenames)
+	public static PDP getPDPNewInstance(String rootDir, String versionDir, String policyFilename)
 	{
-		return getPDPNewInstance(rootDir + "/" + versionDir + "/" + TestConstants.POLICY_DIRECTORY.value() + "/", policyfilenames);
+		return getPDPNewInstance(rootDir + "/" + versionDir + "/" + POLICY_DIRECTORY + "/", policyFilename);
 	}
 
 	/**
-	 * Creates PDP from policies and global configuration in file
-	 * {@literal #GLOBAL_TEST_CONF_FILENAME}
+	 * Creates PDP from policies and global configuration located at classpath:{@code pathPrefix} +
+	 * {@code policyfilename}
 	 * 
 	 * @param pathPrefix
 	 *            prefix to append before policy filename to have the actual policy file path in the
 	 *            classpath
-	 * @param policyfilenames
-	 *            list of XACML policy filenames relative to pathPrefix. If pathPrefix is null,
-	 *            filename is considered at the root of the classpath
+	 * @param policyfilename
+	 *            XACML policy filename relative to pathPrefix. If pathPrefix is null, filename is
+	 *            considered at the root of the classpath
 	 * @return PDP instance
 	 */
-	public static PDP getPDPNewInstance(String pathPrefix, Set<String> policyfilenames)
+	public static PDP getPDPNewInstance(String pathPrefix, String policyfilename)
 	{
+		/**
+		 * Get absolute path/URL to policy file in a portable way, using current class loader. As
+		 * per javadoc, the name of the resource passed to ClassLoader.getResource() is a
+		 * '/'-separated path name that identifies the resource. So let's build it. Note: do not use
+		 * File.separator as path separator, as it will be turned into backslash "\\" on Windows,
+		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
+		 * by this method), and file will not be found as a result.
+		 */
+		String policyFileResourceName = pathPrefix + policyfilename;
+		URL policyFileURL = Thread.currentThread().getContextClassLoader().getResource(policyFileResourceName);
+		BaseStaticPolicyFinder jaxbRootPolicyFinder = new BaseStaticPolicyFinder();
+		jaxbRootPolicyFinder.setId("root");
+		jaxbRootPolicyFinder.setPolicyLocation(policyFileURL.toString());
 
-		Properties properties = new Properties();
+		Pdp jaxbPDP = new Pdp();
+		jaxbPDP.setRootPolicyFinder(jaxbRootPolicyFinder);
+		final PDP pdp;
 		try
 		{
-			properties.load(new FileInputStream(GLOBAL_TEST_CONF_FILE));
-		} catch (IOException e)
+			pdp = PdpConfigurationParser.getPDP(jaxbPDP);
+		} catch (IllegalArgumentException e)
 		{
-			throw new RuntimeException(e);
+			throw new RuntimeException("Error parsing policy from location: " + policyFileURL, e);
 		}
 
-		final String confLocation = properties.getProperty("configFile");
-		final PdpConfigurationManager testConfMgr;
-		try
-		{
-			testConfMgr = new PdpConfigurationManager(confLocation);
-		} catch (IOException | JAXBException e)
-		{
-			throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
-		}
-
-		PolicyFinder policyFinder = new PolicyFinder();
-		String[] policyLocations = new String[policyfilenames.size()];
-		int i = 0;
-		for (String policyfilename : policyfilenames)
-		{
-			/**
-			 * Get absolute path/URL to policy file in a portable way, using current class loader.
-			 * As per javadoc, the name of the resource passed to ClassLoader.getResource() is a
-			 * '/'-separated path name that identifies the resource. So let's build it. Note: do not
-			 * use File.separator as path separator, as it will be turned into backslash "\\" on
-			 * Windows, and will be URL-encoded (%5c) by the getResource() method (not considered
-			 * path separator by this method), and file will not be found as a result.
-			 */
-			String policyFileResourceName = pathPrefix + policyfilename;
-			URL policyFileURL = Thread.currentThread().getContextClassLoader().getResource(policyFileResourceName);
-			// Use getPath() to remove the file: prefix, because used later as input to
-			// FileInputStream(...) in FilePolicyModule
-			policyLocations[i] = policyFileURL.toString();
-			i += 1;
-		}
-
-		StaticPolicyFinderModule testPolicyFinderModule = new StaticPolicyFinderModule(policyLocations);
-		List<PolicyFinderModule<?>> policyModules = new ArrayList<>();
-		policyModules.add(testPolicyFinderModule);
-		policyFinder.setModules(policyModules);
-
-		PDPConfig pdpConfig = new PDPConfig(testConfMgr.getDefaultPDPConfig().getAttributeFinder(), policyFinder, testConfMgr.getDefaultPDPConfig()
-				.getResourceFinder(), null);
-
-		return new PDP(pdpConfig);
+		return pdp;
 	}
 
-	public static EvaluationCtx createContext(Request request)
+	public static EvaluationContext createContext(Request request) throws IndeterminateEvaluationException
 	{
-		BasicEvaluationCtx evaluationCtx = null;
-		try
-		{
-			evaluationCtx = new BasicEvaluationCtx(request);
-		} catch (NumberFormatException | ParsingException | UnknownIdentifierException e)
-		{
-			throw new RuntimeException("Failed to create evaluation context", e);
-		}
-
-		return evaluationCtx;
+		/*
+		 * The request filter used here does not support, therefore filters out AttributeSelectors,
+		 * so make sure there's no AttributeSelector in the Target/Match elements of the PolicySet.
+		 */
+		IndividualDecisionRequest individualDecisionReq = BASIC_REQUEST_FILTER.filter(request).get(0);
+		return new IndividualDecisionRequestContext(individualDecisionReq);
 	}
 }

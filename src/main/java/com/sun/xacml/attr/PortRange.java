@@ -33,6 +33,8 @@
  */
 package com.sun.xacml.attr;
 
+import java.util.Objects;
+
 
 
 /**
@@ -53,8 +55,8 @@ public class PortRange
     public static final int UNBOUND = -1;
 
     // the port bound values
-    private int lowerBound;
-    private int upperBound;
+    private final int lowerBound;
+    private final int upperBound;
     
     /**
      * Default constructor used to represent an unbound range. This is
@@ -199,7 +201,8 @@ public class PortRange
      *
      * @return true if this object and the input represent the same value
      */
-    public boolean equals(Object o) {
+    @Override
+	public boolean equals(Object o) {
         if (! (o instanceof PortRange))
             return false;
 
@@ -214,11 +217,13 @@ public class PortRange
         return true;
     }
 
-    public int hashCode() {
-    	return lowerBound * 31 + upperBound;
+    @Override
+	public int hashCode() {
+    	return Objects.hash(lowerBound, upperBound);
     }
 
     /**
+     * @return encoded port range
      *
      */
     public String encode() {

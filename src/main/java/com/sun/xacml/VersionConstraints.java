@@ -33,7 +33,7 @@
  */
 package com.sun.xacml;
 
-import java.util.StringTokenizer;
+import com.thalesgroup.authzforce.core.policy.PolicyVersionId;
 
 /**
  * Supports the three version constraints that can be included with a policy reference. This class
@@ -47,213 +47,232 @@ import java.util.StringTokenizer;
 public class VersionConstraints
 {
 
-	// internal identifiers used to specify the kind of match
-	private static final int COMPARE_EQUAL = 0;
-	private static final int COMPARE_LESS = 1;
-	private static final int COMPARE_GREATER = 2;
+	// the three constraints
+	private final PolicyVersionPattern versionPattern;
+	private final PolicyVersionPattern earliestVersionPattern;
+	private final PolicyVersionPattern latestVersionPattern;
 
-	// the three constraint strings
-	private String version;
-	private String earliest;
-	private String latest;
+	private static class PolicyVersionPattern
+	{
+		private static final int WILDCARD = -1;
+		private static final int PLUS = -2;
+
+		private final String xacmlVersionMatch;
+		private final int[] matchNumbers;
+
+		private PolicyVersionPattern(String xacmlVersionMatch)
+		{
+			assert xacmlVersionMatch != null;
+			if (xacmlVersionMatch.isEmpty() || xacmlVersionMatch.startsWith(".") || xacmlVersionMatch.endsWith("."))
+			{
+				throw new IllegalArgumentException("Invalid VersionMatch expression: '" + xacmlVersionMatch + "'");
+			}
+
+			final String[] tokens = xacmlVersionMatch.split("\\.");
+			matchNumbers = new int[tokens.length];
+			for (int i = 0; i < tokens.length; i++)
+			{
+				final String token = tokens[i];
+				switch (token)
+				{
+					case "*":
+						matchNumbers[i] = WILDCARD;
+						break;
+					case "+":
+						matchNumbers[i] = PLUS;
+						break;
+					default:
+						final int number;
+						try
+						{
+							number = Integer.parseInt(tokens[i], 10);
+						} catch (NumberFormatException e)
+						{
+							throw new IllegalArgumentException("Invalid VersionMatch expression: '" + xacmlVersionMatch + "'", e);
+						}
+
+						if (number < 0)
+						{
+							throw new IllegalArgumentException("Invalid VersionMatch expression: '" + xacmlVersionMatch + "'. Number #" + i + " (=" + number + ") is not a positive integer");
+						}
+
+						matchNumbers[i] = number;
+						break;
+				}
+			}
+
+			this.xacmlVersionMatch = xacmlVersionMatch;
+		}
+
+		@Override
+		public String toString()
+		{
+			return xacmlVersionMatch;
+		}
+
+		private boolean matches(PolicyVersionId version)
+		{
+			final int[] versionNumbers = version.getNumberSequence();
+			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
+			for (int i = 0; i < lowestLen; i++)
+			{
+				final int matchNum = matchNumbers[i];
+				switch (matchNum)
+				{
+					case PLUS:
+						// always matches everything from here
+						return true;
+					case WILDCARD:
+						// always matches any versionNumbers[i], so go on
+						break;
+					default:
+						if (matchNum != versionNumbers[i])
+						{
+							return false;
+						}
+
+						// else same number, so go on
+						break;
+				}
+			}
+
+			/*
+			 * At this point, last matchNum is either a wildcard or integer. Version matches iff
+			 * there is no extra number in either matchNumbers of versionNumbers, i.e. they have
+			 * same length
+			 */
+			return matchNumbers.length == versionNumbers.length;
+		}
+
+		public boolean isLaterOrMatches(PolicyVersionId version)
+		{
+			final int[] versionNumbers = version.getNumberSequence();
+			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
+			for (int i = 0; i < lowestLen; i++)
+			{
+				final int matchNum = matchNumbers[i];
+				switch (matchNum)
+				{
+					case PLUS:
+						// always matches everything from here
+						return true;
+					case WILDCARD:
+						/*
+						 * Always matches any versionNumbers[i], and we could always find an
+						 * acceptable version V > version argument that matches this pattern
+						 * (matchNumbers) by taking a single number greater than versionNumbers[i]
+						 * at the same index in V. So versionNumbers is earlier than the latest
+						 * acceptable.
+						 */
+						return true;
+					default:
+						final int versionNum = versionNumbers[i];
+						if (matchNum < versionNum)
+						{
+							return false;
+						}
+
+						if (matchNum > versionNum)
+						{
+							return true;
+						}
+
+						// else same number, so go on
+						break;
+				}
+			}
+
+			/*
+			 * At this point, we know matchNumbers is a sequence of numbers (no wildcard/plus
+			 * symbol). It is later than or matches versionNumbers iff same size or longer.
+			 */
+			return matchNumbers.length >= versionNumbers.length;
+		}
+
+		public boolean isEarlierOrMatches(PolicyVersionId version)
+		{
+			final int[] versionNumbers = version.getNumberSequence();
+			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
+			for (int i = 0; i < lowestLen; i++)
+			{
+				final int matchNum = matchNumbers[i];
+				final int versionNum;
+				switch (matchNum)
+				{
+					case PLUS:
+						// always matches everything from here
+						return true;
+					case WILDCARD:
+						versionNum = versionNumbers[i];
+						if (versionNum != 0)
+						{
+							/*
+							 * We can find an earlier matching version (with any number < versionNum
+							 * here).
+							 */
+							return true;
+						}
+
+						// versionNum = 0. Result depends on the next numbers.
+						break;
+					default:
+						versionNum = versionNumbers[i];
+						if (matchNum < versionNum)
+						{
+							return true;
+						}
+
+						if (matchNum > versionNum)
+						{
+							return false;
+						}
+
+						// else same number, so go on
+						break;
+				}
+			}
+
+			/*
+			 * if matchNumbers.length <= versionNumbers.length -> true
+			 */
+			return matchNumbers.length <= versionNumbers.length;
+		}
+
+	}
 
 	/**
 	 * Creates a <code>VersionConstraints</code> with the three optional constraint strings. Each of
 	 * the three strings must conform to the VersionMatchType type defined in the XACML schema. Any
 	 * of the strings may be null to specify that the given constraint is not used.
 	 * 
-	 * @param version
-	 *            a matching constraint on the version or null
-	 * @param earliest
-	 *            a lower-bound constraint on the version or null
-	 * @param latest
-	 *            an upper-bound constraint on the version or null
+	 * @param versionMatch
+	 *            matching expression for the version; or null if none
+	 * @param earliestMatch
+	 *            matching expression for the earliest acceptable version; or null if none
+	 * @param latestMatch
+	 *            matching expression for the earliest acceptable version; or null if none
 	 */
-	public VersionConstraints(String version, String earliest, String latest)
+	public VersionConstraints(String versionMatch, String earliestMatch, String latestMatch)
 	{
-		this.version = version;
-		this.earliest = earliest;
-		this.latest = latest;
+		this.versionPattern = versionMatch == null ? null : new PolicyVersionPattern(versionMatch);
+		this.earliestVersionPattern = earliestMatch == null ? null : new PolicyVersionPattern(earliestMatch);
+		this.latestVersionPattern = latestMatch == null ? null : new PolicyVersionPattern(latestMatch);
 	}
 
-	/**
-	 * Returns the matching constraint string, which will be null if there is no constraint on
-	 * matching the version.
-	 * 
-	 * @return the version constraint
-	 */
-	public String getVersionConstraint()
-	{
-		return version;
-	}
-
-	/**
-	 * Returns the lower-bound constraint string, which will be null if there is no lower-bound
-	 * constraint on the version.
-	 * 
-	 * @return the lower-bound constraint
-	 */
-	public String getEarliestConstraint()
-	{
-		return earliest;
-	}
-
-	/**
-	 * Returns the upper-bound constraint string, which will be null if there is no upper-bound
-	 * constraint on the version.
-	 * 
-	 * @return the upper-bound constraint
-	 */
-	public String getLatestConstraint()
-	{
-		return latest;
-	}
-
-	/**
-	 * Checks if the given version string meets all three constraints.
-	 * 
-	 * @param otherVersion
-	 *            the version to compare, which is formatted as a VersionType XACML type
-	 * 
-	 * @return true if the given version meets all the constraints
-	 */
-	public boolean meetsConstraint(String otherVersion)
-	{
-		return (matches(otherVersion, this.version) && isEarlier(otherVersion, latest) && isLater(otherVersion, earliest));
-	}
-
-	/**
-	 * Checks if the given version string matches the constraint string.
-	 * 
-	 * @param version
-	 *            the version string to check
-	 * @param constraint
-	 *            a constraint string to use in matching
-	 * 
-	 * @return true if the version string matches the constraint
-	 */
-	public static boolean matches(String version, String constraint)
-	{
-		return compareHelper(version, constraint, COMPARE_EQUAL);
-	}
-
-	/**
-	 * Checks if the given version string is less-than or equal-to the constraint string.
-	 * 
-	 * @param version
-	 *            the version string to check
-	 * @param constraint
-	 *            a constraint string to use in matching
-	 * 
-	 * @return true if the version string is earlier than the constraint
-	 */
-	public static boolean isEarlier(String version, String constraint)
-	{
-		return compareHelper(version, constraint, COMPARE_LESS);
-	}
-
-	/**
-	 * Checks if the given version string is greater-than or equal-to the constraint string.
-	 * 
-	 * @param version
-	 *            the version string to check
-	 * @param constraint
-	 *            a constraint string to use in matching
-	 * 
-	 * @return true if the version string is later than the constraint
-	 */
-	public static boolean isLater(String version, String constraint)
-	{
-		return compareHelper(version, constraint, COMPARE_GREATER);
-	}
-
-	/**
-	 * Private helper that handles all three comparisons.
-	 */
-	private static boolean compareHelper(String version, String constraint, int type)
-	{
-		// check that a constraint was provided...
-		if (constraint == null)
-		{
-			return true;
-		}
-
-		// ...and a version too
-		// FIXME: this originally returned false, but I think it should
-		// return true, since we always match if the contstraint is
-		// unbound (null) ... is that right?
-		if (version == null)
-		{
-			return true;
-		}
-
-		// setup tokenizers
-		StringTokenizer vtok = new StringTokenizer(version, ".");
-		StringTokenizer ctok = new StringTokenizer(constraint, ".");
-
-		while (vtok.hasMoreTokens())
-		{
-			// if there's nothing left in the constraint, then this means
-			// we didn't match, unless this is the greater-than function
-			if (!ctok.hasMoreTokens())
-			{
-				if (type == COMPARE_GREATER)
-				{
-					return true;
-				}
-
-				return false;
-			}
-
-			// get the next constraint token...
-			String c = ctok.nextToken();
-
-			// ...and if it's a + then it's done and we match
-			if (c.equals("+"))
-				return true;
-			String v = vtok.nextToken();
-
-			// if it's a * then we always match, otherwise...
-			if (!c.equals("*"))
-			{
-				// if it's a match then we just keep going, otherwise...
-				if (!v.equals(c))
-				{
-					// if we're matching on equality, then we failed
-					if (type == COMPARE_EQUAL)
-						return false;
-
-					// convert both tokens to integers...
-					int cint = Integer.valueOf(c).intValue();
-					int vint = Integer.valueOf(v).intValue();
-
-					// ...and do the right kind of comparison
-					if (type == COMPARE_LESS)
-					{
-						return vint <= cint;
-					}
-
-					return vint >= cint;
-				}
-			}
-		}
-
-		// if we got here, then we've finished the processing the version,
-		// so see if there's anything more in the constrant, which would
-		// mean we didn't match unless we're doing less-than
-		if (ctok.hasMoreTokens())
-		{
-			if (type == COMPARE_LESS)
-			{
-				return true;
-			}
-
-			return false;
-		}
-
-		// we got through everything, so the constraint is met
-		return true;
-	}
+	// /**
+	// * Checks if the given version string meets all three constraints.
+	// *
+	// * @param otherVersion
+	// * the version to compare, which is formatted as a VersionType XACML type
+	// *
+	// * @return true if the given version meets all the constraints
+	// */
+	// public boolean match(PolicyVersionId otherVersion)
+	// {
+	// return (versionPattern == null || versionPattern.matches(otherVersion)) &&
+	// (latestVersionPattern == null || latestVersionPattern.isLaterOrMatches(otherVersion)) &&
+	// (earliestVersionPattern == null || earliestVersionPattern.isEarlierOrMatches(otherVersion));
+	// }
 
 	/*
 	 * (non-Javadoc)
@@ -263,7 +282,79 @@ public class VersionConstraints
 	@Override
 	public String toString()
 	{
-		return String.format("Version=%s,EarliestVersion=%s,LatestVersion=%s", (version == null) ? "*" : version,
-				(earliest == null) ? "*" : earliest, (latest == null) ? "*" : latest);
+		return String.format("Version=%s,EarliestVersion=%s,LatestVersion=%s", (versionPattern == null) ? "*" : versionPattern, (earliestVersionPattern == null) ? "*" : earliestVersionPattern, (latestVersionPattern == null) ? "*" : latestVersionPattern);
 	}
+
+	/**
+	 * Check version against LatestVersion pattern
+	 * 
+	 * @param version
+	 *            input version to be checked
+	 * @return true iff LatestVersion matched
+	 */
+	public boolean matchLatestVersion(PolicyVersionId version)
+	{
+		return latestVersionPattern == null || latestVersionPattern.isLaterOrMatches(version);
+	}
+
+	/**
+	 * Check version against EarliestVersion pattern
+	 * 
+	 * @param version
+	 *            input version to be checked
+	 * @return true iff EarliestVersion matched
+	 */
+	public boolean matchEarliestVersion(PolicyVersionId version)
+	{
+		return earliestVersionPattern == null || earliestVersionPattern.isEarlierOrMatches(version);
+	}
+
+	/**
+	 * Check version against Version pattern
+	 * 
+	 * @param version
+	 *            input version to be checked
+	 * @return true iff Version matched
+	 */
+	public boolean matchVersion(PolicyVersionId version)
+	{
+		return versionPattern == null || versionPattern.matches(version);
+	}
+
+	/**
+	 * Get Version pattern:
+	 * 
+	 * @return Version to be matched
+	 */
+	public String getVersionPattern()
+	{
+		return this.versionPattern.toString();
+	}
+
+	/**
+	 * Get EarliestVersion pattern: matching expression for the earliest acceptable version
+	 * 
+	 * @return EarliestVersion to be matched
+	 */
+	public String getEarliestVersionPattern()
+	{
+		return this.earliestVersionPattern.toString();
+	}
+
+	/**
+	 * Get LatestVersion pattern: matching expression for the latest acceptable version
+	 * 
+	 * @return LatestVersion to be matched
+	 */
+	public String getLatestVersionPattern()
+	{
+		return this.latestVersionPattern.toString();
+	}
+
+	// public static void main(String... args)
+	// {
+	// PolicyVersionPattern vp = new PolicyVersionPattern("1.*.4.5");
+	// PolicyVersionId v = new PolicyVersionId("1.2.4.5");
+	// System.out.println(vp.isLaterOrMatches(v));
+	// }
 }

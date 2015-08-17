@@ -30,10 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.SystemPropertyUtils;
 
 import com.sun.xacml.PDP;
-import com.sun.xacml.PDPConfig;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.ctx.ResponseCtx;
 
 /**
  * JavaBean for the PDP to be used/called as JNDI resource.
@@ -57,7 +55,7 @@ public class PdpBean
 	private boolean initialized = false;
 
 	private String extSchemaLocation = null;
-	
+
 	private String catalogLocation = null;
 
 	/**
@@ -70,20 +68,24 @@ public class PdpBean
 		if (!initialized)
 		{
 			final String cause;
-			if(confLocation == null) {
+			if (confLocation == null)
+			{
 				cause = "Missing parameter: configuration file";
-			} else if(extSchemaLocation == null) {
+			} else if (extSchemaLocation == null)
+			{
 				cause = "Missing parameter: extension schema file";
-			} else if(catalogLocation == null) {
+			} else if (catalogLocation == null)
+			{
 				cause = "Missing parameter: XML catalog file";
-			} else {
+			} else
+			{
 				cause = "Check previous errors.";
 			}
-			
+
 			throw new RuntimeException("PDP not initialized: " + cause);
 		}
 
-		final ResponseCtx responseCtx = pdp.evaluate(request);
+		final Response responseCtx = pdp.evaluate(request);
 		// convert sunxacmlResp to JAXB Response type
 		final Response jaxbResponse = new Response();
 		jaxbResponse.getResults().addAll(responseCtx.getResults());
@@ -99,7 +101,7 @@ public class PdpBean
 	 *            {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to
 	 *            resolve the resource; any placeholder ${...} in the path will be replaced with the
 	 *            corresponding system property value
-	 * @throws JAXBException 
+	 * @throws JAXBException
 	 */
 	public void setConfigFile(String filePath) throws JAXBException
 	{
@@ -117,20 +119,22 @@ public class PdpBean
 	 *            {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to
 	 *            resolve the resource; any placeholder ${...} in the path will be replaced with the
 	 *            corresponding system property value
-	 * @throws JAXBException 
+	 * @throws JAXBException
 	 */
 	public void setSchemaFile(String filePath) throws JAXBException
 	{
 		extSchemaLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
 	}
-	
+
 	/**
 	 * Set XML catalog for resolving XML entities used in XML schema
+	 * 
 	 * @param filePath
 	 * @throws JAXBException
 	 */
-	public void setCatalogFile(String filePath) throws JAXBException {
+	public void setCatalogFile(String filePath) throws JAXBException
+	{
 		catalogLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
 	}
@@ -138,7 +142,7 @@ public class PdpBean
 	/**
 	 * 
 	 * @return
-	 * @throws JAXBException 
+	 * @throws JAXBException
 	 * @throws ParsingException
 	 * @throws UnknownIdentifierException
 	 */
@@ -146,31 +150,15 @@ public class PdpBean
 	{
 		if (!initialized && catalogLocation != null && extSchemaLocation != null && confLocation != null)
 		{
-			LOGGER.info("Loading PDP configuration from file {} with extension schema location '{}' and XML catalog location '{}'", new Object[] {confLocation, extSchemaLocation, catalogLocation});
-//			try
-//			{
-				final PdpConfigurationManager confMgr;
-				try
-				{
-					confMgr = new PdpConfigurationManager(confLocation, catalogLocation, extSchemaLocation);
-				} catch (IOException e)
-				{
-					throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
-				} catch (JAXBException e)
-				{
-					throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
-				}
-				
-				final PDPConfig conf = confMgr.getDefaultPDPConfig();
-				pdp = new PDP(conf);
-//			} catch (ParsingException e)
-//			{
-//				throw new IllegalArgumentException("Error parsing PDP configuration from file '" + confLocation + "'", e);
-//			} catch (UnknownIdentifierException e)
-//			{
-//				throw new IllegalArgumentException("No default PDP configuration defined in file '" + confLocation
-//						+ "' (there should be one 'pdp' element with 'name' matching the 'defaultPDP' attribute of the root 'config' element)");
-//			}
+			LOGGER.info("Loading PDP configuration from file {} with extension schema location '{}' and XML catalog location '{}'", new Object[] {
+					confLocation, extSchemaLocation, catalogLocation });
+			try
+			{
+				pdp = PdpConfigurationParser.getPDP(confLocation, catalogLocation, extSchemaLocation);
+			} catch (IOException|JAXBException e)
+			{
+				throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
+			}
 
 			initialized = true;
 		}

@@ -33,41 +33,24 @@
  */
 package com.sun.xacml;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.bind.Marshaller;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import com.sun.xacml.attr.BooleanAttribute;
 import com.sun.xacml.cond.Condition;
-import com.sun.xacml.cond.VariableManager;
-import com.sun.xacml.cond.xacmlv3.Apply;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-import com.sun.xacml.ctx.Result;
-import com.sun.xacml.ctx.Status;
-import com.sun.xacml.xacmlv3.AdviceExpressions;
-import com.sun.xacml.xacmlv3.IDecidable;
-import com.sun.xacml.xacmlv3.Target;
-import com.thalesgroup.authzforce.core.PdpModelHandler;
+import com.thalesgroup.authzforce.core.PepActions;
+import com.thalesgroup.authzforce.core.Target;
+import com.thalesgroup.authzforce.core.eval.Decidable;
+import com.thalesgroup.authzforce.core.eval.DecisionResult;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.RulePepActionExpressions;
 
 /**
  * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XACML type. This has a target for
@@ -77,261 +60,200 @@ import com.thalesgroup.authzforce.core.PdpModelHandler;
  * @since 1.0
  * @author Seth Proctor
  */
-public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule implements IDecidable
+public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule implements Decidable
 {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Rule.class);
 
-	private final URI uri;
+	private static final UnsupportedOperationException UNSUPPORTED_SET_TARGET_OPERATION_EXCEPTION = new UnsupportedOperationException("DecisionResult.setTarget() not allowed");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_CONDITION_OPERATION_EXCEPTION = new UnsupportedOperationException("DecisionResult.setCondition() not allowed");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_OBLIGATION_EXPRESSIONS_OPERATION_EXCEPTION = new UnsupportedOperationException("DecisionResult.setObligationExpressions() not allowed");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_ADVICE_EXPRESSIONS_OPERATION_EXCEPTION = new UnsupportedOperationException("DecisionResult.setAdviceExpressions() not allowed");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_EFFECT_OPERATION_EXCEPTION = new UnsupportedOperationException("DecisionResult.setEffect() not allowed");
 
-	/**
-	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
+	private final DecisionType effectAsDecision;
+	private final Target evaluatableTarget;
+	private final Condition evaluatableCondition;
+	private final RulePepActionExpressions effectMatchPepActionExps;
+	private final DecisionResult nullActionsRuleDecisionResult;
+	private final String toString;
+
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param id
-	 *            the rule's identifier
-	 * @param effect
-	 *            the effect to return if the rule applies (either Pemit or Deny) as specified in
-	 *            <code>Result</code>
-	 * @param description
-	 *            a textual description, or null
-	 * @param target
-	 *            the rule's target, or null if the target is to be inherited from the encompassing
-	 *            policy
-	 * @param condition
-	 *            the rule's condition, or null if there is none
-	 * @param obligations
-	 *            the rule's obligations, or null if there is none
-	 * @param advices
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#getTarget()
 	 */
-	public Rule(String id, EffectType effect, String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices)
+	@Override
+	public final oasis.names.tc.xacml._3_0.core.schema.wd_17.Target getTarget()
 	{
-		this.ruleId = id;
-		this.uri = URI.create(ruleId);
-		this.effect = effect;
-		this.description = description;
-		this.target = target;
-		this.condition = condition;
-		this.obligationExpressions = obligations;
-		this.adviceExpressions = advices;
+		return evaluatableTarget;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#setTarget(oasis.names.tc.xacml._3_0.core
+	 * .schema.wd_17.Target)
+	 */
+	@Override
+	public final void setTarget(oasis.names.tc.xacml._3_0.core.schema.wd_17.Target value)
+	{
+		throw UNSUPPORTED_SET_TARGET_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#getCondition()
+	 */
+	@Override
+	public final oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition getCondition()
+	{
+		return evaluatableCondition;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#setCondition(oasis.names.tc.xacml._3_0.core
+	 * .schema.wd_17.Condition)
+	 */
+	@Override
+	public final void setCondition(oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition value)
+	{
+		throw UNSUPPORTED_SET_CONDITION_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#getObligationExpressions()
+	 */
+	@Override
+	public final ObligationExpressions getObligationExpressions()
+	{
+		return effectMatchPepActionExps.getObligationExpressions();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#setObligationExpressions(oasis.names.tc.
+	 * xacml._3_0.core.schema.wd_17.ObligationExpressions)
+	 */
+	@Override
+	public final void setObligationExpressions(ObligationExpressions value)
+	{
+		throw UNSUPPORTED_SET_OBLIGATION_EXPRESSIONS_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#getAdviceExpressions()
+	 */
+	@Override
+	public final AdviceExpressions getAdviceExpressions()
+	{
+		return effectMatchPepActionExps.getAdviceExpressions();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#setAdviceExpressions(oasis.names.tc.xacml
+	 * ._3_0.core.schema.wd_17.AdviceExpressions)
+	 */
+	@Override
+	public final void setAdviceExpressions(AdviceExpressions value)
+	{
+		throw UNSUPPORTED_SET_ADVICE_EXPRESSIONS_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule#setEffect(oasis.names.tc.xacml._3_0.core
+	 * .schema.wd_17.EffectType)
+	 */
+	@Override
+	public final void setEffect(EffectType value)
+	{
+		throw UNSUPPORTED_SET_EFFECT_OPERATION_EXCEPTION;
 	}
 
 	/**
-	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
+	 * Instantiates rule from XACML RuleType
 	 * 
-	 * @param id
-	 *            the rule's identifier
-	 * @param effect
-	 *            the effect to return if the rule applies (either Pemit or Deny) as specified in
-	 *            <code>Result</code>
-	 * @param description
-	 *            a textual description, or null
-	 * @param target
-	 *            the rule's target, or null if the target is to be inherited from the encompassing
-	 *            policy
-	 * @param condition
-	 *            the rule's condition, or null if there is none
-	 * @param obligations
-	 *            the rule's obligations, or null if there is none
-	 */
-	public Rule(String id, EffectType effect, String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations)
-	{
-		this.ruleId = id;
-		this.uri = URI.create(ruleId);
-		this.effect = effect;
-		this.description = description;
-		this.target = target;
-		this.condition = condition;
-		this.obligationExpressions = obligations;
-	}
-
-	/**
-	 * Creates a new <code>Rule</code> object for XACML 1.x and 2.0.
-	 * 
-	 * @param id
-	 *            the rule's identifier
-	 * @param effect
-	 *            the effect to return if the rule applies (either Pemit or Deny) as specified in
-	 *            <code>Result</code>
-	 * @param description
-	 *            a textual description, or null
-	 * @param target
-	 *            the rule's target, or null if the target is to be inherited from the encompassing
-	 *            policy
-	 * @param condition
-	 *            the rule's condition, or null if there is none
-	 */
-	public Rule(String id, EffectType effect, String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target,
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition)
-	{
-		this.ruleId = id;
-		this.uri = URI.create(ruleId);
-		this.effect = effect;
-		this.description = description;
-		this.target = target;
-		this.condition = condition;
-	}
-
-	/**
-	 * Creates a new <code>Rule</code> object for XACML 1.x only.
-	 * 
-	 * @deprecated As of 2.0 you should use the Constructor that accepts the new
-	 *             <code>Condition</code> class.
-	 * 
-	 * @param id
-	 *            the rule's identifier
-	 * @param effect
-	 *            the effect to return if the rule applies (either Pemit or Deny) as specified in
-	 *            <code>Result</code>
-	 * @param description
-	 *            a textual description, or null
-	 * @param target
-	 *            the rule's target, or null if the target is to be inherited from the encompassing
-	 *            policy
-	 * @param condition
-	 *            the rule's condition, or null if there is none
-	 */
-	public Rule(String id, EffectType effect, String description, oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target, Apply condition)
-	{
-		this.ruleId = id;
-		this.uri = URI.create(ruleId);
-		this.effect = effect;
-		this.description = description;
-		this.target = target;
-		// this.condition = new Condition(condition.getFunction(),
-		// condition.getChildren());
-	}
-
-	/**
-	 * Returns a new instance of the <code>Rule</code> class based on a DOM node. The node must be
-	 * the root of an XML oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule.
-	 * 
-	 * @deprecated As of 2.0 you should avoid using this method and should instead use the version
-	 *             that takes a <code>PolicyMetaData</code> instance. This method will only work for
-	 *             XACML 1.x policies.
-	 * 
-	 * @param root
-	 *            the DOM root of a oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XML type
-	 * @param xpathVersion
-	 *            the XPath version to use in any selectors or XPath functions, or null if this is
-	 *            unspecified (ie, not supplied in the defaults section of the policy)
-	 * @return Rule
-	 * 
+	 * @param ruleElt
+	 * @param policyDefaults
+	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param expressionFactory
+	 *            Expression parser/factory
 	 * @throws ParsingException
-	 *             if the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule is invalid
+	 *             Error parsing Target and/or Condition
 	 */
-	public static Rule getInstance(Node root, String xpathVersion) throws ParsingException
+	public Rule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule ruleElt, DefaultsType policyDefaults, ExpressionFactory expressionFactory) throws ParsingException
+	// throws ParsingException
 	{
-		return getInstance(root, new PolicyMetaData(PolicyMetaData.XACML_1_0_IDENTIFIER, xpathVersion), null);
-	}
+		this.ruleId = ruleElt.getRuleId();
+		this.toString = this.getClass().getSimpleName() + "#" + this.ruleId;
 
-	/**
-	 * Returns a new instance of the <code>Rule</code> class based on a DOM node. The node must be
-	 * the root of an XML oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule.
-	 * 
-	 * @param root
-	 *            the DOM root of a oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XML type
-	 * @param metaData
-	 *            the meta-data associated with this Rule's policy
-	 * @param manager
-	 *            the <code>VariableManager</code> used to connect <code>VariableReference</code>s
-	 *            to their cooresponding <code>VariableDefinition<code>s
-	 * @return Rule
-	 * 
-	 * @throws ParsingException
-	 *             if the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule is invalid
-	 */
-	public static Rule getInstance(Node root, PolicyMetaData metaData, VariableManager manager) throws ParsingException
-	{
-		String id = null;
-		EffectType effect = null;
-		String description = null;
-		oasis.names.tc.xacml._3_0.core.schema.wd_17.Target target = null;
-		oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition = null;
-		oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions obligations = null;
-		oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions advices = null;
+		this.effect = ruleElt.getEffect();
+		this.effectAsDecision = effect == EffectType.DENY ? DecisionType.DENY : DecisionType.PERMIT;
 
-		// first, get the attributes
-		NamedNodeMap attrs = root.getAttributes();
+		this.description = ruleElt.getDescription();
 
-		// get the two required attrs...
-		id = attrs.getNamedItem("RuleId").getNodeValue();
-
-		String str = attrs.getNamedItem("Effect").getNodeValue();
-		if (str.equals("Permit"))
+		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Target targetElt = ruleElt.getTarget();
+		try
 		{
-			effect = EffectType.PERMIT;
-		} else if (str.equals("Deny"))
+			this.evaluatableTarget = targetElt == null ? null : new Target(targetElt, policyDefaults, expressionFactory);
+		} catch (ParsingException e)
 		{
-			effect = EffectType.DENY;
+			throw new ParsingException(this + ": Error parsing Target", e);
+		}
+
+		// this.target set to null, see getTarget() override based on evaluatableTarget
+		this.target = null;
+
+		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condElt = ruleElt.getCondition();
+		try
+		{
+			this.evaluatableCondition = condElt == null ? null : new Condition(condElt, policyDefaults, expressionFactory);
+		} catch (IllegalArgumentException | ParsingException e)
+		{
+			throw new ParsingException(this + ": Error parsing Condition", e);
+		}
+
+		// this.condition set null, see getCondition() override based on evaluatableCondition
+		this.condition = null;
+
+		try
+		{
+			this.effectMatchPepActionExps = RulePepActionExpressions.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), policyDefaults, expressionFactory, effect);
+		} catch (ParsingException e)
+		{
+			throw new ParsingException(this + ": Error parsing ObligationExpressions/AdviceExpressions", e);
+		}
+
+		// this.obligationExpressions/adviceExpressions set null, see
+		// getObligation/AdviceExpressions()
+		// override based on evaluatableTarget
+		this.obligationExpressions = null;
+		this.adviceExpressions = null;
+		if (this.effectMatchPepActionExps == null)
+		{
+
+			this.nullActionsRuleDecisionResult = new DecisionResult(this.effectAsDecision, null);
 		} else
 		{
-			throw new ParsingException("Invalid Effect: " + effect);
+			this.nullActionsRuleDecisionResult = null;
 		}
-
-		// next, get the elements
-		NodeList children = root.getChildNodes();
-		for (int i = 0; i < children.getLength(); i++)
-		{
-			Node child = children.item(i);
-			String cname = child.getNodeName();
-
-			if (cname.equals("Description"))
-			{
-				description = child.getFirstChild().getNodeValue();
-			} else if (cname.equals("Target"))
-			{
-				target = Target.getInstance(child, metaData);
-			} else if (cname.equals("Condition"))
-			{
-				condition = Condition.getInstance(child, metaData, manager);
-			} else if (cname.equals("ObligationExpressions"))
-			{
-				obligations = ObligationExpressions.getInstance(child);
-			} else if (cname.equals("AdviceExpressions"))
-			{
-				advices = AdviceExpressions.getInstance(child);
-			}
-		}
-
-		return new Rule(id, effect, description, target, condition, obligations, advices);
-	}
-
-	/**
-	 * @param ruleElt
-	 * @param manager
-	 * @param metaData
-	 * @return Rule handler
-	 * @throws ParsingException
-	 *             Error parsing Target, Condition
-	 */
-	public static Rule getInstance(oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule ruleElt, VariableManager manager, PolicyMetaData metaData)
-			throws ParsingException
-	{
-		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Target targetElt = ruleElt.getTarget();
-		final Target target = targetElt == null ? null : new Target(targetElt, metaData);
-		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condElt = ruleElt.getCondition();
-		final Condition condition = condElt == null ? null : Condition.getInstance(condElt, manager);
-		return new Rule(ruleElt.getRuleId(), ruleElt.getEffect(), ruleElt.getDescription(), target, condition, ruleElt.getObligationExpressions(),
-				ruleElt.getAdviceExpressions());
-	}
-
-	/**
-	 * Since a rule is always a leaf in a policy tree because it can have no children, this always
-	 * returns an empty <code>List</code>.
-	 * 
-	 * FIXME: This statement is misleading, since Rule can have child nodes: Condition,
-	 * ObligationExpressions, etc.
-	 * 
-	 * @return a <code>List</code> with no elements
-	 */
-	public static List getChildren()
-	{
-		return Collections.EMPTY_LIST;
 	}
 
 	/**
@@ -342,7 +264,9 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	 * Note that rules are not required to have targets. If no target is specified, then the rule
 	 * inherits its parent's target. In the event that this <code>Rule</code> has no
 	 * <code>Target</code> then the match is assumed to be true, since evaluating a policy tree to
-	 * this level required the parent's target to match.
+	 * this level required the parent's target to match. In debug level, this method logs the
+	 * evaluation result before return. Indeterminate results are logged in warn level only (which
+	 * "includes" debug level).
 	 * 
 	 * @param context
 	 *            the representation of the request we're evaluating
@@ -350,194 +274,123 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	 * @return the result of the evaluation
 	 */
 	@Override
-	public Result evaluate(EvaluationCtx context)
+	public DecisionResult evaluate(EvaluationContext context)
 	{
-		// Do the list of Attribute who needs to be included in result
-		List<Attributes> includeInResult = context.getIncludeInResults();
-		MatchResult match = null;
-		final Result returnResult;
-		// If the Target is null then it's supposed to inherit from the
-		// parent policy, so we skip the matching step assuming we wouldn't
-		// be here unless the parent matched
-		if (target == null)
+		/*
+		 * Null or empty Target matches all So we just check if target non-null matches
+		 */
+		if (evaluatableTarget == null)
 		{
-			returnResult = evaluateCondition(context, includeInResult);
+			LOGGER.debug("{}/Target (none/empty) -> Match", this);
 		} else
 		{
-			match = ((Target) target).match(context);
-			LOGGER.debug("{}<Target> = {}", this, match);
-			if (match == null)
+			try
 			{
-				// Invalid match value
-				final Status status = new Status(Collections.singletonList(Status.STATUS_PROCESSING_ERROR), "Error processing Rule#" + this.getId()
-						+ "<Target>");
-				return new Result(DecisionType.INDETERMINATE, status, null, includeInResult);
-
-			}
-
-			// match != null at this point
-			int result = match.getResult();
-
-			// if the target didn't match, then this Rule doesn't apply
-			if (result == MatchResult.NO_MATCH)
-			{
-				return new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
-			}
-			// if the target was indeterminate, we can't go on
-			if (result == MatchResult.INDETERMINATE)
-			{
-				return new Result(DecisionType.INDETERMINATE, match.getStatus(), null, includeInResult);
-
-			}
-
-			returnResult = evaluateCondition(context, includeInResult);
-		}
-
-		// Adding Obligations and Advice to the result
-		if (obligationExpressions != null && !obligationExpressions.getObligationExpressions().isEmpty())
-		{
-			// now, see if we should add any obligations to the set
-			final DecisionType returnEffect = returnResult.getDecision();
-
-			if ((returnEffect == DecisionType.INDETERMINATE) || (returnEffect == DecisionType.NOT_APPLICABLE))
-			{
-				// we didn't permit/deny, so we never return
-				// obligations
-				return returnResult;
-			}
-
-			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression myObligation : obligationExpressions.getObligationExpressions())
-			{
-				// FIXME: we should stick with enum constants
-				if (myObligation.getFulfillOn().ordinal() == returnEffect.ordinal())
+				if (!evaluatableTarget.match(context))
 				{
-					returnResult.addObligation(myObligation, context);
+					LOGGER.debug("{}/Target -> No-match", this);
+					return DecisionResult.NOT_APPLICABLE;
 				}
-			}
-		}
-		if (adviceExpressions != null && !adviceExpressions.getAdviceExpressions().isEmpty())
-		{
-			final DecisionType returnEffect = returnResult.getDecision();
 
-			if ((returnEffect == DecisionType.INDETERMINATE) || (returnEffect == DecisionType.NOT_APPLICABLE))
+				LOGGER.debug("{}/Target -> Match", this);
+			} catch (IndeterminateEvaluationException e)
 			{
-				// we didn't permit/deny, so we never return advices
-				return returnResult;
-			}
+				/*
+				 * Before we lose the exception information, log it at a higher level because it is
+				 * an evaluation error (but no critical application error, therefore lower level
+				 * than error)
+				 */
+				LOGGER.info("{}/Target -> Indeterminate", this, e);
 
-			final AssociatedAdvice returnAssociatedAdvice = returnResult.getAssociatedAdvice();
-			final AssociatedAdvice newAssociatedAdvice;
-			if (returnAssociatedAdvice == null)
-			{
-				newAssociatedAdvice = new AssociatedAdvice();
-				returnResult.setAssociatedAdvice(newAssociatedAdvice);
-			} else
-			{
-				newAssociatedAdvice = returnAssociatedAdvice;
-			}
-
-			for (AdviceExpression adviceExpr : adviceExpressions.getAdviceExpressions())
-			{
-				// FIXME: we should stick with enum constants
-				if (adviceExpr.getAppliesTo().ordinal() == returnEffect.ordinal())
-				{
-					Advice advice = new Advice();
-					advice.setAdviceId(adviceExpr.getAdviceId());
-					for (AttributeAssignmentExpression attrExpr : adviceExpr.getAttributeAssignmentExpressions())
-					{
-						AttributeAssignment myAttrAssType = new AttributeAssignment();
-						myAttrAssType.setAttributeId(attrExpr.getAttributeId());
-						myAttrAssType.setCategory(attrExpr.getCategory());
-						myAttrAssType.setIssuer(attrExpr.getIssuer());
-						if ((attrExpr.getExpression().getDeclaredType() == AttributeValueType.class))
-						{
-							myAttrAssType.setDataType(((AttributeValueType) attrExpr.getExpression().getValue()).getDataType());
-							myAttrAssType.getContent().addAll(((AttributeValueType) attrExpr.getExpression().getValue()).getContent());
-						}
-						advice.getAttributeAssignments().add(myAttrAssType);
-					}
-
-					newAssociatedAdvice.getAdvices().add(advice);
-				}
+				/*
+				 * FIXME: implement Extended Indeterminate: "Indeterminate{P}" if the Rule's Effect
+				 * is Permit, or "Indeterminate{D}" if the Rule's Effect is Deny
+				 */
+				return new DecisionResult(e.getStatus());
 			}
 		}
 
-		return returnResult;
-	}
-
-	private Result evaluateCondition(EvaluationCtx context, List<Attributes> includeInResult)
-	{
-		// if there's no condition, then we just return the effect...
+		/*
+		 * Target matches -> check condition Rule's condition considered as True if condition = null
+		 * or condition's expression evaluated to true. See section 7.9 of XACML core spec, so
+		 * result is the Rule's Effect, unless condition is not null AND it evaluates to False or
+		 * throws Indeterminate exception.
+		 */
 		if (condition == null)
 		{
-			LOGGER.info("Rule doesn't contain condition, so result is '{}' for rule '{}'", this.effect.value(), this.ruleId);
-			return new Result(DecisionType.fromValue(this.effect.value()), null, null, includeInResult);
-		}
-
-		// ...otherwise we evaluate the condition
-		EvaluationResult result = ((Condition) condition).evaluate(context);
-
-		if (result.indeterminate())
+			LOGGER.debug("{}/Condition (none/empty) -> True", this);
+		} else
 		{
-			// if it was INDETERMINATE, then that's what we return
-			return new Result(DecisionType.INDETERMINATE, result.getStatus(), null, includeInResult);
+			// ...otherwise we evaluate the condition
+			final boolean isConditionTrue;
+			try
+			{
+				isConditionTrue = evaluatableCondition.evaluate(context);
+			} catch (IndeterminateEvaluationException e)
+			{
+				// if it was INDETERMINATE, then that's what we return
+				/*
+				 * Before we lose the exception information, log it at a higher level because it is
+				 * an evaluation error (but no critical application error, therefore lower level
+				 * than Error level)
+				 */
+				LOGGER.info("{}/Condition -> Indeterminate", this, e);
+				return new DecisionResult(e.getStatus());
+			}
+
+			if (!isConditionTrue)
+			{
+				LOGGER.debug("{}/Condition -> False", this);
+				return DecisionResult.NOT_APPLICABLE;
+			}
+
+			LOGGER.debug("{}/Condition -> True", this);
 		}
 
-		// otherwise we return the effect on tue, and NA on false
-		BooleanAttribute bool = (BooleanAttribute) (result.getAttributeValue());
-
-		if (!bool.getValue())
+		/*
+		 * Target match and condition true -> return Rule's effect as decision
+		 */
+		if (effectMatchPepActionExps == null)
 		{
-			return new Result(DecisionType.NOT_APPLICABLE, null, null, includeInResult);
+			// no obligations/advice
+			return nullActionsRuleDecisionResult;
 		}
 
-		return new Result(DecisionType.valueOf(effect.name()), null, null, includeInResult);
-	}
-
-	/**
-	 * Encodes this <code>Rule</code> into its XML representation and writes this encoding to the
-	 * given <code>OutputStream</code> with no indentation.
-	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
-	 */
-	public void encode(OutputStream output)
-	{
-		encode(output, new Indenter(0));
-	}
-
-	/**
-	 * Encodes this <code>Rule</code> into its XML representation and writes this encoding to the
-	 * given <code>OutputStream</code> with indentation.
-	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
-	 * @param indenter
-	 *            an object that creates indentation strings
-	 */
-	public void encode(OutputStream output, Indenter indenter)
-	{
-		PrintStream out = new PrintStream(output);
+		/*
+		 * Evaluate obligations/advice we have already filtered out obligations/advice that do not
+		 * apply to Rule's effect, after calling PepActionExpressions.getInstance(..., effect) in
+		 * the constructor. So no need to do it again, that's why Effect not used as argument to
+		 * evaluate() here.
+		 */
+		final PepActions pepActions;
 		try
 		{
-			Marshaller u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createMarshaller();
-			u.marshal(this, out);
-		} catch (Exception e)
+			pepActions = this.effectMatchPepActionExps.evaluate(context);
+		} catch (IndeterminateEvaluationException e)
 		{
-			LOGGER.error("Error marshalling Rule", e);
+			/*
+			 * Before we lose the exception information, log it at a higher level because it is an
+			 * evaluation error (but no critical application error, therefore lower level than Error
+			 * level)
+			 */
+			LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", this, e);
+
+			/*
+			 * If any of the attribute assignment expressions in an obligation or advice expression
+			 * with a matching FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then
+			 * the whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core
+			 * spec, section 7.18).
+			 */
+			return new DecisionResult(e.getStatus());
 		}
+
+		return new DecisionResult(this.effectAsDecision, pepActions);
 	}
 
 	@Override
 	public String toString()
 	{
-		return this.getClass().getSimpleName()+"#"+this.ruleId;
-	}
-
-	@Override
-	public URI getId()
-	{
-		return uri;
+		return toString;
 	}
 
 }

@@ -33,101 +33,83 @@
  */
 package com.sun.xacml.combine;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.MatchResult;
-import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-import com.sun.xacml.xacmlv3.IPolicy;
-
+import com.thalesgroup.authzforce.core.eval.DecisionResult;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.policy.IPolicy;
 
 /**
- * This is the standard Only One Applicable Policy combining algorithm. This
- * is a special algorithm used at the root of a policy/pdp to make sure that
- * pdp only selects one policy per request.
- *
+ * This is the standard Only One Applicable Policy combining algorithm. This is a special algorithm
+ * used at the root of a policy/pdp to make sure that pdp only selects one policy per request.
+ * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class OnlyOneApplicablePolicyAlg extends PolicyCombiningAlgorithm
+public class OnlyOneApplicablePolicyAlg extends CombiningAlgorithm<IPolicy>
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(OnlyOneApplicablePolicyAlg.class);
 
-    /**
-     * The standard URN used to identify this algorithm
-     */
-    public static final String algId =
-        "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:" +
-        "only-one-applicable";
+	/**
+	 * The standard URI used to identify this algorithm
+	 */
+	public static final String ID = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable";
 
-    // a URI form of the identifier
-    private static final URI identifierURI = URI.create(algId);
+	private static final DecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new DecisionResult(new Status(Status.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
 
-    /**
-     * Standard constructor.
-     */
-    public OnlyOneApplicablePolicyAlg() {
-        super(identifierURI);
-    }
+	/**
+	 * Standard constructor.
+	 */
+	public OnlyOneApplicablePolicyAlg()
+	{
+		super(ID, IPolicy.class);
+	}
 
-    /**
-     * Applies the combining rule to the set of policies based on the
-     * evaluation context.
-     *
-     * @param context the context from the request
-     * @param parameters a (possibly empty) non-null <code>List</code> of
-     *                   <code>CombinerParameter<code>s
-     * @param policyElements the policies to combine
-     *
-     * @return the result of running the combining algorithm
-     */
-    @Override
-	public Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                          List<IPolicy> policyElements) {
-        boolean atLeastOne = false;
-        IPolicy applicablePolicy = null;
+	@Override
+	public DecisionResult combine(EvaluationContext context, List<CombinerElement<? extends IPolicy>> parameters, List<? extends IPolicy> policyElements)
+	{
+		// atLeastOne == true iff selectedPolicy != null
+		IPolicy selectedPolicy = null;
 
-        for (final IPolicy policy: policyElements) {
-            // see if the policy matches the context
-            MatchResult match = policy.match(context);
-            int result = match.getResult();
+		for (final IPolicy policy : policyElements)
+		{
+			// see if the policy applies to the context
+			final boolean isApplicable;
+			try
+			{
+				isApplicable = policy.isApplicable(context);
+			} catch (IndeterminateEvaluationException e)
+			{
+				LOGGER.info("Error checking whether {} is applicable", policy, e);
+				return new DecisionResult(e.getStatus());
+			}
 
-            // if there is an error in trying to match any of the targets,
-            // we always return INDETERMINATE immediately
-            if (result == MatchResult.INDETERMINATE) {
-                return new Result(DecisionType.INDETERMINATE,
-                                  match.getStatus());
-            }
-            
-            if (result == MatchResult.MATCH) {
-                // if this isn't the first match, then this is an error
-                if (atLeastOne) {
-                    List<String> code = new ArrayList<>();
-                    code.add(Status.STATUS_PROCESSING_ERROR);
-                    String message = "Too many applicable policies";
-                    return new Result(DecisionType.INDETERMINATE,
-                                      new Status(code, message));
-                }
+			if (isApplicable)
+			{
+				// if one selected (found applicable) already
+				if (selectedPolicy != null)
+				{
+					return TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT;
+				}
 
-                // if this was the first applicable policy in the set, then
-                // remember it for later
-                atLeastOne = true;
-                applicablePolicy = policy;
-            }
-        }
+				// if this was the first applicable policy in the set, then
+				// remember it for later
+				selectedPolicy = policy;
+			}
+		}
 
-        // if we got through the loop, it means we found at most one match, then
-        // we return the evaluation result of that policy if there is a match
-        if (applicablePolicy != null) {
-            return applicablePolicy.evaluate(context);
-        }
+		// if we got through the loop, it means we found at most one match, then
+		// we return the evaluation result of that policy if there is a match
+		if (selectedPolicy != null)
+		{
+			return selectedPolicy.evaluate(context, true);
+		}
 
-        // if we didn't find a matching policy, then we don't apply
-        return new Result(DecisionType.NOT_APPLICABLE);
-    }
+		return DecisionResult.NOT_APPLICABLE;
+	}
 }

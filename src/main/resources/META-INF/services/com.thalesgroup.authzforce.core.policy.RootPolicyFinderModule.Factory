@@ -1,0 +1,2 @@
+com.sun.xacml.support.finder.BaseStaticRootPolicyFinderModule.Factory
+com.sun.xacml.support.finder.BaseStaticRefPolicyFinderModule.Factory
