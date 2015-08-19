@@ -20,6 +20,8 @@ package com.thalesgroup.authzforce.core.attr;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
+import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+
 /**
  * Superclass of all numeric Attribute Values (integer, double...)
  * 
@@ -33,7 +35,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
  */
 public abstract class NumericAttributeValue<N extends Number, T extends NumericAttributeValue<N, T>> extends PrimitiveAttributeValue<N>
 {
-	protected NumericAttributeValue(String datatype, N val)
+	protected NumericAttributeValue(DatatypeDef datatype, N val)
 	{
 		super(datatype, val, val);
 	}
@@ -47,7 +49,7 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	 *             if <code>val</code> is not a valid string representation for this numeric
 	 *             datatype
 	 */
-	protected NumericAttributeValue(String datatype, String val) throws IllegalArgumentException
+	protected NumericAttributeValue(DatatypeDef datatype, String val) throws IllegalArgumentException
 	{
 		super(datatype, val);
 	}
@@ -55,9 +57,9 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	/**
 	 * @see PrimitiveAttributeValue#BasePrimitiveAttributeValue(AttributeValueType)
 	 */
-	protected NumericAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
+	protected NumericAttributeValue(DatatypeDef datatype, AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(datatype, jaxbAttrVal);
 	}
 
 	/**
@@ -79,8 +81,8 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	public abstract T add(T[] others, int offset);
 
 	/**
-	 * Multiply <code>this</code> by other numbers, starting to multiply others from a
-	 * specific offset (index in the array). Used by the XACML "multiply" functions.
+	 * Multiply <code>this</code> by other numbers, starting to multiply others from a specific
+	 * offset (index in the array). Used by the XACML "multiply" functions.
 	 * 
 	 * @param others
 	 *            other values to add
@@ -103,8 +105,7 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	public abstract T divide(T divisor) throws ArithmeticException;
 
 	/**
-	 * Substract a number from this. Used by XACML numeric *-subtract
-	 * functions.
+	 * Substract a number from this. Used by XACML numeric *-subtract functions.
 	 * 
 	 * @param subtractedVal
 	 *            value to be subtracted from <code>this</code>

@@ -14,7 +14,6 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * A class that implements the n-of function. From the XACML spec
@@ -33,11 +32,11 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  * result of the function can be determined, evaluation stops and that result is returned. During
  * this process, if any argument evaluates to indeterminate, an indeterminate result is returned.
  */
-public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue>
 {
 
 	/**
-	 * Standard identifier for the n-of function.
+	 * Standard TYPE_URI for the n-of function.
 	 */
 	public static final String NAME_N_OF = FUNCTION_NS_1 + "n-of";
 
@@ -67,11 +66,11 @@ public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttr
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.func.BaseFunction#getFunctionCall(java.util.List,
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected Call getFunctionCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
+	protected FirstOrderFunctionCall getFunctionCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
 	{
 		/*
 		 * Arg datatypes and number is already checked in superclass but we need to do further
@@ -92,11 +91,11 @@ public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttr
 		 * </ol>
 		 */
 
-		return new Call(checkedRemainingArgTypes)
+		return new FirstOrderFunctionCall(checkedRemainingArgTypes)
 		{
 
 			@Override
-			protected PrimitiveResult<BooleanAttributeValue> evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
 			{
 				return eval(context, checkedArgExpressions, remainingArgs);
 			}
@@ -116,7 +115,7 @@ public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttr
 	 * @return true iff all checkedArgExpressions return True and all remainingArgs are True
 	 * @throws IndeterminateEvaluationException
 	 */
-	public PrimitiveResult<BooleanAttributeValue> eval(EvaluationContext context, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, AttributeValue[] checkedRemainingArgValues) throws IndeterminateEvaluationException
+	public BooleanAttributeValue eval(EvaluationContext context, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, AttributeValue[] checkedRemainingArgValues) throws IndeterminateEvaluationException
 	{
 
 		// Evaluate the arguments one by one. As soon as we can return
@@ -150,7 +149,7 @@ public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttr
 		// If the number of trues needed is zero, return true.
 		if (nOfRequiredTrues == 0)
 		{
-			return PrimitiveResult.TRUE;
+			return BooleanAttributeValue.TRUE;
 		}
 
 		// else nOfRequiredTrues > 0
@@ -183,13 +182,13 @@ public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttr
 				nOfRequiredTrues--;
 				if (nOfRequiredTrues == 0)
 				{
-					return PrimitiveResult.TRUE;
+					return BooleanAttributeValue.TRUE;
 				}
 
 				if (nOfRequiredTrues > nOfRemainingArgs)
 				{
 					// check whether we have enough remaining args
-					return PrimitiveResult.FALSE;
+					return BooleanAttributeValue.FALSE;
 				}
 			}
 
@@ -217,13 +216,13 @@ public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttr
 					nOfRequiredTrues--;
 					if (nOfRequiredTrues == 0)
 					{
-						return PrimitiveResult.TRUE;
+						return BooleanAttributeValue.TRUE;
 					}
 
 					if (nOfRequiredTrues > nOfRemainingArgs)
 					{
 						// check whether we have enough remaining args
-						return PrimitiveResult.FALSE;
+						return BooleanAttributeValue.FALSE;
 					}
 				}
 
@@ -233,7 +232,7 @@ public class LogicalNOfFunction extends BaseFunction<PrimitiveResult<BooleanAttr
 		}
 
 		// if we got here then we didn't meet our quota
-		return PrimitiveResult.FALSE;
+		return BooleanAttributeValue.FALSE;
 	}
 
 }

@@ -14,7 +14,6 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
@@ -25,35 +24,35 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  *            type of second parameter (duration)
  * 
  */
-public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValue<T>, D extends DurationAttributeValue> extends BaseFunction<PrimitiveResult<T>>
+public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValue<T>, D extends DurationAttributeValue> extends FirstOrderFunction<T>
 {
 	/**
-	 * Standard identifier for the dateTime-add-dayTimeDuration function.
+	 * Standard TYPE_URI for the dateTime-add-dayTimeDuration function.
 	 */
 	public static final String NAME_DATETIME_ADD_DAYTIMEDURATION = FUNCTION_NS_3 + "dateTime-add-dayTimeDuration";
 
 	/**
-	 * Standard identifier for the dateTime-subtract-dayTimeDuration function.
+	 * Standard TYPE_URI for the dateTime-subtract-dayTimeDuration function.
 	 */
 	public static final String NAME_DATETIME_SUBTRACT_DAYTIMEDURATION = FUNCTION_NS_3 + "dateTime-subtract-dayTimeDuration";
 
 	/**
-	 * Standard identifier for the dateTime-add-yearMonthDuration function.
+	 * Standard TYPE_URI for the dateTime-add-yearMonthDuration function.
 	 */
 	public static final String NAME_DATETIME_ADD_YEARMONTHDURATION = FUNCTION_NS_3 + "dateTime-add-yearMonthDuration";
 
 	/**
-	 * Standard identifier for the dateTime-subtract-yearMonthDuration function.
+	 * Standard TYPE_URI for the dateTime-subtract-yearMonthDuration function.
 	 */
 	public static final String NAME_DATETIME_SUBTRACT_YEARMONTHDURATION = FUNCTION_NS_3 + "dateTime-subtract-yearMonthDuration";
 
 	/**
-	 * Standard identifier for the date-add-yearMonthDuration function.
+	 * Standard TYPE_URI for the date-add-yearMonthDuration function.
 	 */
 	public static final String NAME_DATE_ADD_YEARMONTHDURATION = FUNCTION_NS_3 + "date-add-yearMonthDuration";
 
 	/**
-	 * Standard identifier for the date-subtract-yearMonthDuration function.
+	 * Standard TYPE_URI for the date-subtract-yearMonthDuration function.
 	 */
 	public static final String NAME_DATE_SUBTRACT_YEARMONTHDURATION = FUNCTION_NS_3 + "date-subtract-yearMonthDuration";
 
@@ -62,17 +61,17 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 	 */
 	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-arithmetic",
 	//
-			new TimeAddDuration<>(NAME_DATETIME_ADD_DAYTIMEDURATION, DateTimeAttributeValue.identifier, DateTimeAttributeValue.class, DayTimeDurationAttributeValue.identifier, DayTimeDurationAttributeValue.class),
+			new TimeAddDuration<>(NAME_DATETIME_ADD_DAYTIMEDURATION, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue.class, DayTimeDurationAttributeValue.TYPE_URI, DayTimeDurationAttributeValue.class),
 			//
-			new TimeSubtractDuration<>(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, DateTimeAttributeValue.identifier, DateTimeAttributeValue.class, DayTimeDurationAttributeValue.identifier, DayTimeDurationAttributeValue.class),
+			new TimeSubtractDuration<>(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue.class, DayTimeDurationAttributeValue.TYPE_URI, DayTimeDurationAttributeValue.class),
 			//
-			new TimeAddDuration<>(NAME_DATETIME_ADD_YEARMONTHDURATION, DateTimeAttributeValue.identifier, DateTimeAttributeValue.class, YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue.class),
+			new TimeAddDuration<>(NAME_DATETIME_ADD_YEARMONTHDURATION, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue.class, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue.class),
 			//
-			new TimeSubtractDuration<>(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, DateTimeAttributeValue.identifier, DateTimeAttributeValue.class, YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue.class),
+			new TimeSubtractDuration<>(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue.class, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue.class),
 			//
-			new TimeAddDuration<>(NAME_DATE_ADD_YEARMONTHDURATION, DateAttributeValue.identifier, DateAttributeValue.class, YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue.class),
+			new TimeAddDuration<>(NAME_DATE_ADD_YEARMONTHDURATION, DateAttributeValue.TYPE_URI, DateAttributeValue.class, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue.class),
 			//
-			new TimeSubtractDuration<>(NAME_DATE_SUBTRACT_YEARMONTHDURATION, DateAttributeValue.identifier, DateAttributeValue.class, YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue.class));
+			new TimeSubtractDuration<>(NAME_DATE_SUBTRACT_YEARMONTHDURATION, DateAttributeValue.TYPE_URI, DateAttributeValue.class, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue.class));
 
 	private final String invalidArgTypesErrorMsg;
 
@@ -103,13 +102,13 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 	}
 
 	@Override
-	protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+	protected final FirstOrderFunctionCall getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
 	{
 		return new EagerPrimitiveEvalCall<AttributeValue>(AttributeValue[].class, checkedArgExpressions, checkedRemainingArgTypes)
 		{
 
 			@Override
-			protected PrimitiveResult<T> evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
+			protected T evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
 			{
 				final T arg0;
 				final D arg1;
@@ -122,7 +121,7 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + args[0].getClass().getSimpleName() + "," + args[1].getClass().getSimpleName(), Status.STATUS_PROCESSING_ERROR, e);
 				}
 
-				return new PrimitiveResult<>(eval(arg0, arg1), returnType);
+				return eval(arg0, arg1);
 			}
 
 		};

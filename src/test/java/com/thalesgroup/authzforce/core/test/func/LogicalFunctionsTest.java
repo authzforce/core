@@ -32,7 +32,6 @@ import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class LogicalFunctionsTest extends GeneralFunctionTest
@@ -48,20 +47,20 @@ public class LogicalFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:or
-				new Object[] { NAME_OR, Collections.EMPTY_LIST, PrimitiveResult.FALSE },
-				new Object[] { NAME_OR, Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), PrimitiveResult.FALSE },
-				new Object[] { NAME_OR, Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE), PrimitiveResult.TRUE },
+				new Object[] { NAME_OR, Collections.EMPTY_LIST, BooleanAttributeValue.FALSE },
+				new Object[] { NAME_OR, Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_OR, Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:and
-				new Object[] { NAME_AND, Collections.EMPTY_LIST, PrimitiveResult.TRUE },
-				new Object[] { NAME_AND, Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), PrimitiveResult.TRUE },
-				new Object[] { NAME_AND, Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE), PrimitiveResult.FALSE },
+				new Object[] { NAME_AND, Collections.EMPTY_LIST, BooleanAttributeValue.TRUE },
+				new Object[] { NAME_AND, Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_AND, Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:n-of
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("0")), PrimitiveResult.TRUE }, new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("0"), BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), PrimitiveResult.TRUE },
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("2"), BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), PrimitiveResult.FALSE },
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("2"), BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE), PrimitiveResult.TRUE },
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("2"), BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), PrimitiveResult.TRUE },
+				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("0")), BooleanAttributeValue.TRUE }, new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("0"), BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE),
+						BooleanAttributeValue.TRUE }, new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("2"), BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("2"), BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("2"), BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), BooleanAttributeValue.TRUE },
 				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("4"), BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), null },
 				/*
 				 * This is not explicit in the XACML spec, but we expect the function to return an
@@ -70,7 +69,7 @@ public class LogicalFunctionsTest extends GeneralFunctionTest
 				new Object[] { NAME_N_OF, Arrays.asList(new IntegerAttributeValue("-1"), BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:not
-				new Object[] { NAME_NOT, Arrays.asList(BooleanAttributeValue.TRUE), PrimitiveResult.FALSE }, new Object[] { NAME_NOT, Arrays.asList(BooleanAttributeValue.FALSE), PrimitiveResult.TRUE });
+				new Object[] { NAME_NOT, Arrays.asList(BooleanAttributeValue.TRUE), BooleanAttributeValue.FALSE }, new Object[] { NAME_NOT, Arrays.asList(BooleanAttributeValue.FALSE), BooleanAttributeValue.TRUE });
 	}
 
 	protected LogicalFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

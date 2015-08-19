@@ -30,13 +30,13 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class NonNumericComparisonFunctionsTest extends GeneralFunctionTest
@@ -65,111 +65,111 @@ public class NonNumericComparisonFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:string-greater-than
-				new Object[] { NAME_STRING_GREATER_THAN, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), PrimitiveResult.FALSE },
-				new Object[] { NAME_STRING_GREATER_THAN, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), PrimitiveResult.TRUE },
-				new Object[] { NAME_STRING_GREATER_THAN, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), PrimitiveResult.FALSE },
+				new Object[] { NAME_STRING_GREATER_THAN, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_STRING_GREATER_THAN, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_STRING_GREATER_THAN, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:string-greater-than-or-equal
-				new Object[] { NAME_STRING_GREATER_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), PrimitiveResult.FALSE },
-				new Object[] { NAME_STRING_GREATER_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), PrimitiveResult.TRUE },
-				new Object[] { NAME_STRING_GREATER_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), PrimitiveResult.TRUE },
+				new Object[] { NAME_STRING_GREATER_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_STRING_GREATER_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_STRING_GREATER_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:string-less-than
-				new Object[] { NAME_STRING_LESS_THAN, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), PrimitiveResult.TRUE },
-				new Object[] { NAME_STRING_LESS_THAN, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), PrimitiveResult.FALSE },
-				new Object[] { NAME_STRING_LESS_THAN, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), PrimitiveResult.FALSE },
+				new Object[] { NAME_STRING_LESS_THAN, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_STRING_LESS_THAN, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_STRING_LESS_THAN, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:string-less-than-or-equal
-				new Object[] { NAME_STRING_LESS_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), PrimitiveResult.TRUE },
-				new Object[] { NAME_STRING_LESS_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), PrimitiveResult.FALSE },
-				new Object[] { NAME_STRING_LESS_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), PrimitiveResult.TRUE },
+				new Object[] { NAME_STRING_LESS_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("First"), new StringAttributeValue("Second")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_STRING_LESS_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Third"), new StringAttributeValue("Fourth")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_STRING_LESS_THAN_OR_EQUAL, Arrays.asList(new StringAttributeValue("Fifth"), new StringAttributeValue("Fifth")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:time-greater-than
-				new Object[] { NAME_TIME_GREATER_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), PrimitiveResult.FALSE },
-				new Object[] { NAME_TIME_GREATER_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_GREATER_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), PrimitiveResult.FALSE },
+				new Object[] { NAME_TIME_GREATER_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_GREATER_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_GREATER_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:time-greater-than-or-equal
-				new Object[] { NAME_TIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), PrimitiveResult.FALSE },
-				new Object[] { NAME_TIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), PrimitiveResult.TRUE },
+				new Object[] { NAME_TIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:time-less-than
-				new Object[] { NAME_TIME_LESS_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_LESS_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), PrimitiveResult.FALSE },
-				new Object[] { NAME_TIME_LESS_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), PrimitiveResult.FALSE },
+				new Object[] { NAME_TIME_LESS_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_LESS_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_LESS_THAN, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:time-less-than-or-equal
-				new Object[] { NAME_TIME_LESS_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_LESS_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), PrimitiveResult.FALSE },
-				new Object[] { NAME_TIME_LESS_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), PrimitiveResult.TRUE },
+				new Object[] { NAME_TIME_LESS_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:44:22")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_LESS_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("08:50:48")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_LESS_THAN_OR_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:2.0:function:time-in-range
 				/*
 				 * Time interval lower bound and upper bound are the same (lower bound = upper
 				 * bound)
 				 */
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00")), PrimitiveResult.FALSE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:28:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00")), PrimitiveResult.FALSE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:28:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00")), BooleanAttributeValue.FALSE },
 				/*
 				 * Time interval lower bound and upper bound on the same day (lower bound < upper
 				 * bound)
 				 */
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:28:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), PrimitiveResult.FALSE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:45:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:47:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), PrimitiveResult.FALSE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:28:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:45:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:47:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:45:00")), BooleanAttributeValue.FALSE },
 				/*
 				 * Time interval upper bound on the day after (lower bound > upper bound upper
 				 * bound)
 				 */
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:28:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), PrimitiveResult.FALSE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("01:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), PrimitiveResult.TRUE },
-				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("02:45:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), PrimitiveResult.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:28:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("01:30:15"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_TIME_IN_RANGE, Arrays.asList(new TimeAttributeValue("02:45:00"), new TimeAttributeValue("09:30:00"), new TimeAttributeValue("02:45:00")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:dateTime-greater-than
-				new Object[] { NAME_DATETIME_GREATER_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATETIME_GREATER_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DATETIME_GREATER_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), PrimitiveResult.FALSE },
+				new Object[] { NAME_DATETIME_GREATER_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATETIME_GREATER_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DATETIME_GREATER_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:dateTime-greater-than-or-equal
-				new Object[] { NAME_DATETIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATETIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DATETIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), PrimitiveResult.TRUE },
+				new Object[] { NAME_DATETIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATETIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DATETIME_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:dateTime-less-than
-				new Object[] { NAME_DATETIME_LESS_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DATETIME_LESS_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATETIME_LESS_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), PrimitiveResult.FALSE },
+				new Object[] { NAME_DATETIME_LESS_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DATETIME_LESS_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATETIME_LESS_THAN, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:dateTime-less-than-or-equal
-				new Object[] { NAME_DATETIME_LESS_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DATETIME_LESS_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATETIME_LESS_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), PrimitiveResult.TRUE },
+				new Object[] { NAME_DATETIME_LESS_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:44:22")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DATETIME_LESS_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-23T23:50:48")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATETIME_LESS_THAN_OR_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:date-greater-than
-				new Object[] { NAME_DATE_GREATER_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATE_GREATER_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DATE_GREATER_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), PrimitiveResult.FALSE },
+				new Object[] { NAME_DATE_GREATER_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATE_GREATER_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DATE_GREATER_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:date-greater-than-or-equal
-				new Object[] { NAME_DATE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DATE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), PrimitiveResult.TRUE },
+				new Object[] { NAME_DATE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DATE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:date-less-than
-				new Object[] { NAME_DATE_LESS_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), PrimitiveResult.TRUE },//
-				new Object[] { NAME_DATE_LESS_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATE_LESS_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), PrimitiveResult.FALSE },
+				new Object[] { NAME_DATE_LESS_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), BooleanAttributeValue.TRUE },//
+				new Object[] { NAME_DATE_LESS_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATE_LESS_THAN, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:date-less-than-or-equal
-				new Object[] { NAME_DATE_LESS_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DATE_LESS_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DATE_LESS_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), PrimitiveResult.TRUE });
+				new Object[] { NAME_DATE_LESS_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-25")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DATE_LESS_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-23")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATE_LESS_THAN_OR_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), BooleanAttributeValue.TRUE });
 	}
 
 	protected NonNumericComparisonFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

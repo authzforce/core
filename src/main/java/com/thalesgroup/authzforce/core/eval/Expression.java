@@ -21,6 +21,11 @@
  */
 package com.thalesgroup.authzforce.core.eval;
 
+import javax.xml.bind.JAXBElement;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 
 /**
@@ -34,14 +39,12 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue;
  * <li>AttributeDesignator</li>
  * <li>Function</li>
  * </ul>
- * Also the evaluation results themselves may be used as expressions combined in bigger enclosing
- * expressions.
  * 
  * @param <T>
  *            type of result, i.e single-value or bag of values
  */
 
-public interface Expression<T extends ExpressionResult<? extends AttributeValue>>
+public interface Expression<T extends ExpressionResult<? extends AttributeValue, T>>
 {
 	/**
 	 * Gets the expected return type of the expression if evaluated.
@@ -73,5 +76,53 @@ public interface Expression<T extends ExpressionResult<? extends AttributeValue>
 	 * @return true iff a static/fixed/constant value
 	 */
 	boolean isStatic();
+
+	/**
+	 * Gets the instance of the Java representation of the XACML-schema-defined Expression
+	 * bound/equivalent to this expression
+	 * 
+	 * @return JAXB element equivalent
+	 */
+	JAXBElement<? extends ExpressionType> getJAXBElement();
+
+	/**
+	 * Utility class that provide functions to help evaluate Expressions
+	 * 
+	 */
+	public static class Utils
+	{
+		private static final IndeterminateEvaluationException NULL_ARG_EVAL_RESULT_INDETERMINATE_EXCEPTION = new IndeterminateEvaluationException("No value returned by arg evaluation in the current context", Status.STATUS_PROCESSING_ERROR);
+
+		/**
+		 * Evaluate single-valued (primitive) argument expression
+		 * 
+		 * @param arg
+		 *            argument expression
+		 * @param context
+		 *            context in which argument expression is evaluated
+		 * @param returnType
+		 *            type of returned attribute value
+		 * @return result of evaluation
+		 * @throws IndeterminateEvaluationException
+		 *             if no value returned from evaluation, or <code>returnType</code> is not a
+		 *             supertype of the result value datatype
+		 */
+		public static <T extends AttributeValue> T evalPrimitiveArg(Expression<?> arg, EvaluationContext context, Class<T> returnType) throws IndeterminateEvaluationException
+		{
+			final AttributeValue attrVal = arg.evaluate(context).value();
+			if (attrVal == null)
+			{
+				throw NULL_ARG_EVAL_RESULT_INDETERMINATE_EXCEPTION;
+			}
+
+			try
+			{
+				return returnType.cast(attrVal);
+			} catch (ClassCastException e)
+			{
+				throw new IndeterminateEvaluationException("Invalid arg evaluation result datatype: " + attrVal.getClass().getName() + ". Expected: " + returnType.getName(), Status.STATUS_PROCESSING_ERROR, e);
+			}
+		}
+	}
 
 }

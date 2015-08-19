@@ -20,26 +20,31 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#integer";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#integer";
+
+	/*
+	 * WARNING: these static variables must be declared before TRUE and FALSE static variables,
+	 * because the latter needs the former to get initialized, and static variables are initialized
+	 * in order of declaration.
+	 */
+	/**
+	 * Integer primitive datatype
+	 */
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
+
+	/**
+	 * Integer bag datatype
+	 */
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
+
+	private static final BigInteger MAX_INT_AS_BIGINT = BigInteger.valueOf(Integer.MAX_VALUE);
+
+	private static final BigInteger MIN_INT_AS_BIGINT = BigInteger.valueOf(Integer.MIN_VALUE);
 
 	/**
 	 * Value zero
 	 */
 	public static final IntegerAttributeValue ZERO = new IntegerAttributeValue(BigInteger.ZERO);
-
-	/**
-	 * Integer primitive datatype
-	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
-
-	/**
-	 * Integer bag datatype
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
-
-	private static final BigInteger MAX_INT_AS_BIGINT = BigInteger.valueOf(Integer.MAX_VALUE);
-
-	private static final BigInteger MIN_INT_AS_BIGINT = BigInteger.valueOf(Integer.MIN_VALUE);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -50,7 +55,7 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -68,7 +73,7 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	 */
 	public IntegerAttributeValue(BigInteger val)
 	{
-		super(identifier, val);
+		super(TYPE, val);
 	}
 
 	/**
@@ -94,15 +99,21 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	 */
 	public IntegerAttributeValue(String val) throws IllegalArgumentException
 	{
-		super(identifier, val);
+		super(TYPE, val);
 	}
 
 	/**
-	 * @see NumericAttributeValue#NumericAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see NumericAttributeValue#NumericAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public IntegerAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	@Override

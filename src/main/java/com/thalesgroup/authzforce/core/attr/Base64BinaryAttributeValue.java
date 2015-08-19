@@ -18,17 +18,17 @@ public class Base64BinaryAttributeValue extends PrimitiveAttributeValue<byte[]>
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#base64Binary";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#base64Binary";
 
 	/**
 	 * Generic type info
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
 
 	/**
 	 * Bag datatype definition of this attribute value
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -39,7 +39,7 @@ public class Base64BinaryAttributeValue extends PrimitiveAttributeValue<byte[]>
 		@Override
 		public final String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -51,11 +51,17 @@ public class Base64BinaryAttributeValue extends PrimitiveAttributeValue<byte[]>
 	};
 
 	/**
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public Base64BinaryAttributeValue(AttributeValueType jaxbAttrVal)
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	/**
@@ -68,7 +74,7 @@ public class Base64BinaryAttributeValue extends PrimitiveAttributeValue<byte[]>
 	 */
 	public Base64BinaryAttributeValue(String val) throws IllegalArgumentException
 	{
-		super(identifier, val);
+		super(TYPE, val);
 	}
 
 	@Override

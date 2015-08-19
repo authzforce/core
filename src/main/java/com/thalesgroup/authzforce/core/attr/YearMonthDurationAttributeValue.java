@@ -19,17 +19,17 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#yearMonthDuration";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#yearMonthDuration";
 
 	/**
 	 * Generic type info
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
 
 	/**
 	 * Bag datatype definition of this attribute value
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -40,7 +40,7 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -52,11 +52,17 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue
 	};
 
 	/**
-	 * @see DurationAttributeValue#DurationAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see DurationAttributeValue#DurationAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public YearMonthDurationAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	/**
@@ -80,7 +86,7 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue
 	 */
 	public YearMonthDurationAttributeValue(String value) throws IllegalArgumentException
 	{
-		super(identifier, value);
+		super(TYPE, value);
 	}
 
 	@Override

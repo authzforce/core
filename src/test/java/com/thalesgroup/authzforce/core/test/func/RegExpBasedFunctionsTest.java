@@ -33,12 +33,12 @@ import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
 import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class RegExpBasedFunctionsTest extends GeneralFunctionTest
@@ -56,32 +56,32 @@ public class RegExpBasedFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:string-regexp-match
-				new Object[] { NAME_STRING_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("John.*"), new StringAttributeValue("John Doe")), PrimitiveResult.TRUE },
-				new Object[] { NAME_STRING_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("John.*"), new StringAttributeValue("Jane Doe")), PrimitiveResult.FALSE },
+				new Object[] { NAME_STRING_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("John.*"), new StringAttributeValue("John Doe")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_STRING_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("John.*"), new StringAttributeValue("Jane Doe")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:2.0:function:anyURI-regexp-match
-				new Object[] { NAME_ANYURI_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^http://.+"), new AnyURIAttributeValue("http://www.thalesgroup.com")), PrimitiveResult.TRUE },
-				new Object[] { NAME_ANYURI_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^http://.+"), new AnyURIAttributeValue("https://www.thalesgroup.com")), PrimitiveResult.FALSE },
+				new Object[] { NAME_ANYURI_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^http://.+"), new AnyURIAttributeValue("http://www.thalesgroup.com")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_ANYURI_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^http://.+"), new AnyURIAttributeValue("https://www.thalesgroup.com")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:2.0:function:ipAddress-regexp-match
-				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), new IPAddressAttributeValue("10.10.10.190")), PrimitiveResult.TRUE },
-				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), new IPAddressAttributeValue("10.144.10.190")), PrimitiveResult.FALSE },
-				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), new IPAddressAttributeValue("10.10.10.10/255.255.255.0:80")), PrimitiveResult.TRUE },
-				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), new IPAddressAttributeValue("192.168.1.10/255.255.255.0:8080")), PrimitiveResult.FALSE },
-				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), new IPAddressAttributeValue("[1fff:0:a88:85a5::ac1f]:8001")), PrimitiveResult.TRUE },
-				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), new IPAddressAttributeValue("[1eee:0:a88:85a5::ac1f]:8001")), PrimitiveResult.FALSE },
+				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), new IPAddressAttributeValue("10.10.10.190")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), new IPAddressAttributeValue("10.144.10.190")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), new IPAddressAttributeValue("10.10.10.10/255.255.255.0:80")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), new IPAddressAttributeValue("192.168.1.10/255.255.255.0:8080")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), new IPAddressAttributeValue("[1fff:0:a88:85a5::ac1f]:8001")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), new IPAddressAttributeValue("[1eee:0:a88:85a5::ac1f]:8001")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:2.0:function:dnsName-regexp-match
-				new Object[] { NAME_DNSNAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("\\.com$"), new DNSNameAttributeValue("thalesgroup.com")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DNSNAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("\\.org$"), new DNSNameAttributeValue("thalesgroup.com")), PrimitiveResult.FALSE },
+				new Object[] { NAME_DNSNAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("\\.com$"), new DNSNameAttributeValue("thalesgroup.com")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DNSNAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("\\.org$"), new DNSNameAttributeValue("thalesgroup.com")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:2.0:function:rfc822Name-regexp-match
-				new Object[] { NAME_RFC822NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^[a-zA-Z0-9]+\\.[a-zA-Z0-9]+@.+"), new RFC822NameAttributeValue("anne.anderson@sun.com")), PrimitiveResult.TRUE },
-				new Object[] { NAME_RFC822NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^[a-zA-Z0-9]+\\.[a-zA-Z0-9]+@.+"), new RFC822NameAttributeValue("anderson@sun.com")), PrimitiveResult.FALSE },
+				new Object[] { NAME_RFC822NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^[a-zA-Z0-9]+\\.[a-zA-Z0-9]+@.+"), new RFC822NameAttributeValue("anne.anderson@sun.com")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_RFC822NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue("^[a-zA-Z0-9]+\\.[a-zA-Z0-9]+@.+"), new RFC822NameAttributeValue("anderson@sun.com")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:2.0:function:x500Name-regexp-match
-				new Object[] { NAME_X500NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue(".*dc=example,dc=com"), new X500NameAttributeValue("ou=test,dc=example,dc=com")), PrimitiveResult.TRUE },
-				new Object[] { NAME_X500NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue(".*dc=example,dc=com"), new X500NameAttributeValue("ou=test,dc=sun,dc=com")), PrimitiveResult.FALSE });
+				new Object[] { NAME_X500NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue(".*dc=example,dc=com"), new X500NameAttributeValue("ou=test,dc=example,dc=com")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_X500NAME_REGEXP_MATCH, Arrays.asList(new StringAttributeValue(".*dc=example,dc=com"), new X500NameAttributeValue("ou=test,dc=sun,dc=com")), BooleanAttributeValue.FALSE });
 	}
 
 	protected RegExpBasedFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

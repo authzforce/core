@@ -42,8 +42,9 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
-import com.thalesgroup.authzforce.core.func.BaseFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 import com.thalesgroup.authzforce.core.func.FunctionSet;
 
 /**
@@ -53,16 +54,16 @@ import com.thalesgroup.authzforce.core.func.FunctionSet;
  * @author Steve Hanna
  * @author Seth Proctor
  */
-public abstract class StringNormalizeFunction extends BaseFunction<PrimitiveResult<StringAttributeValue>>
+public abstract class StringNormalizeFunction extends FirstOrderFunction<StringAttributeValue>
 {
 
 	/**
-	 * Standard identifier for the string-normalize-space function.
+	 * Standard TYPE_URI for the string-normalize-space function.
 	 */
 	public static final String NAME_STRING_NORMALIZE_SPACE = FUNCTION_NS_1 + "string-normalize-space";
 
 	/**
-	 * Standard identifier for the string-normalize-to-lower-case function.
+	 * Standard TYPE_URI for the string-normalize-to-lower-case function.
 	 */
 	public static final String NAME_STRING_NORMALIZE_TO_LOWER_CASE = FUNCTION_NS_1 + "string-normalize-to-lower-case";
 
@@ -86,18 +87,18 @@ public abstract class StringNormalizeFunction extends BaseFunction<PrimitiveResu
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.func.BaseFunction#getFunctionCall(java.util.List,
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+	protected final FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEvalCall<StringAttributeValue>(StringAttributeValue[].class, checkedArgExpressions, checkedRemainingArgTypes)
+		return new EagerPrimitiveEval<StringAttributeValue, StringAttributeValue>(signature, StringAttributeValue[].class, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected PrimitiveResult<StringAttributeValue> evaluate(StringAttributeValue[] args) throws IndeterminateEvaluationException
+			protected StringAttributeValue evaluate(StringAttributeValue[] args) throws IndeterminateEvaluationException
 			{
-				return new PrimitiveResult<>(eval(args[0]), StringAttributeValue.TYPE);
+				return eval(args[0]);
 			}
 
 		};

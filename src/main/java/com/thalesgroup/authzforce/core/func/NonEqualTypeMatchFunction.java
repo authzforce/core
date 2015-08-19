@@ -23,7 +23,6 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
@@ -32,71 +31,71 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  *            Type of the second parameter of this function. The first one being always a String.
  * 
  */
-public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValue<String>> extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValue<String>> extends FirstOrderFunction<BooleanAttributeValue>
 {
 	/**
-	 * Standard identifier for the rfc822Name-match function (different from rfc822Name-regexp-match
+	 * Standard TYPE_URI for the rfc822Name-match function (different from rfc822Name-regexp-match
 	 * down below).
 	 */
 	public static final String NAME_RFC822NAME_MATCH = FUNCTION_NS_1 + "rfc822Name-match";
 
 	/**
-	 * Standard identifier for the string-regexp-match function.
+	 * Standard TYPE_URI for the string-regexp-match function.
 	 */
 	public static final String NAME_STRING_REGEXP_MATCH = FUNCTION_NS_1 + "string-regexp-match";
 
 	/**
-	 * Standard identifier for the anyURI-regexp-match function.
+	 * Standard TYPE_URI for the anyURI-regexp-match function.
 	 */
 	public static final String NAME_ANYURI_REGEXP_MATCH = FUNCTION_NS_2 + "anyURI-regexp-match";
 
 	/**
-	 * Standard identifier for the ipAddress-regexp-match function.
+	 * Standard TYPE_URI for the ipAddress-regexp-match function.
 	 */
 	public static final String NAME_IPADDRESS_REGEXP_MATCH = FUNCTION_NS_2 + "ipAddress-regexp-match";
 
 	/**
-	 * Standard identifier for the dnsName-regexp-match function.
+	 * Standard TYPE_URI for the dnsName-regexp-match function.
 	 */
 	public static final String NAME_DNSNAME_REGEXP_MATCH = FUNCTION_NS_2 + "dnsName-regexp-match";
 
 	/**
-	 * Standard identifier for the rfc822Name-regexp-match function.
+	 * Standard TYPE_URI for the rfc822Name-regexp-match function.
 	 */
 	public static final String NAME_RFC822NAME_REGEXP_MATCH = FUNCTION_NS_2 + "rfc822Name-regexp-match";
 
 	/**
-	 * Standard identifier for the x500Name-regexp-match function.
+	 * Standard TYPE_URI for the x500Name-regexp-match function.
 	 */
 	public static final String NAME_X500NAME_REGEXP_MATCH = FUNCTION_NS_2 + "x500Name-regexp-match";
 
 	/**
-	 * Standard identifier for the string-starts-with function.
+	 * Standard TYPE_URI for the string-starts-with function.
 	 */
 	public static final String NAME_STRING_STARTS_WITH = FUNCTION_NS_3 + "string-starts-with";
 
 	/**
-	 * Standard identifier for the string-ends-with function.
+	 * Standard TYPE_URI for the string-ends-with function.
 	 */
 	public static final String NAME_STRING_ENDS_WITH = FUNCTION_NS_3 + "string-ends-with";
 
 	/**
-	 * Standard identifier for the string-contains-with function.
+	 * Standard TYPE_URI for the string-contains-with function.
 	 */
 	public static final String NAME_STRING_CONTAINS = FUNCTION_NS_3 + "string-contains";
 
 	/**
-	 * Standard identifier for the anyURI-starts-with function.
+	 * Standard TYPE_URI for the anyURI-starts-with function.
 	 */
 	public static final String NAME_ANYURI_STARTS_WITH = FUNCTION_NS_3 + "anyURI-starts-with";
 
 	/**
-	 * Standard identifier for the anyURI-ends-with function.
+	 * Standard TYPE_URI for the anyURI-ends-with function.
 	 */
 	public static final String NAME_ANYURI_ENDS_WITH = FUNCTION_NS_3 + "anyURI-ends-with";
 
 	/**
-	 * Standard identifier for the anyURI-contains-with function.
+	 * Standard TYPE_URI for the anyURI-contains-with function.
 	 */
 	public static final String NAME_ANYURI_CONTAINS = FUNCTION_NS_3 + "anyURI-contains";
 
@@ -107,29 +106,29 @@ public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValu
 	//
 			new RFC822NameMatch(),
 			//
-			new RegexpMatch<>(NAME_STRING_REGEXP_MATCH, StringAttributeValue.identifier, StringAttributeValue.class),
+			new RegexpMatch<>(NAME_STRING_REGEXP_MATCH, StringAttributeValue.TYPE_URI, StringAttributeValue.class),
 			//
-			new RegexpMatch<>(NAME_ANYURI_REGEXP_MATCH, AnyURIAttributeValue.identifier, AnyURIAttributeValue.class),
+			new RegexpMatch<>(NAME_ANYURI_REGEXP_MATCH, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue.class),
 			//
 			new RegexpMatch<>(NAME_IPADDRESS_REGEXP_MATCH, IPAddressAttributeValue.identifier, IPAddressAttributeValue.class),
 			//
 			new RegexpMatch<>(NAME_DNSNAME_REGEXP_MATCH, DNSNameAttributeValue.identifier, DNSNameAttributeValue.class),
 			//
-			new RegexpMatch<>(NAME_RFC822NAME_REGEXP_MATCH, RFC822NameAttributeValue.identifier, RFC822NameAttributeValue.class),
+			new RegexpMatch<>(NAME_RFC822NAME_REGEXP_MATCH, RFC822NameAttributeValue.TYPE_URI, RFC822NameAttributeValue.class),
 			//
-			new RegexpMatch<>(NAME_X500NAME_REGEXP_MATCH, X500NameAttributeValue.identifier, X500NameAttributeValue.class),
+			new RegexpMatch<>(NAME_X500NAME_REGEXP_MATCH, X500NameAttributeValue.TYPE_URI, X500NameAttributeValue.class),
 			//
-			new StartsWith<>(NAME_STRING_STARTS_WITH, StringAttributeValue.identifier, StringAttributeValue.class),
+			new StartsWith<>(NAME_STRING_STARTS_WITH, StringAttributeValue.TYPE_URI, StringAttributeValue.class),
 			//
-			new EndsWith<>(NAME_STRING_ENDS_WITH, StringAttributeValue.identifier, StringAttributeValue.class),
+			new EndsWith<>(NAME_STRING_ENDS_WITH, StringAttributeValue.TYPE_URI, StringAttributeValue.class),
 			//
-			new Contains<>(NAME_STRING_CONTAINS, StringAttributeValue.identifier, StringAttributeValue.class),
+			new Contains<>(NAME_STRING_CONTAINS, StringAttributeValue.TYPE_URI, StringAttributeValue.class),
 			//
-			new StartsWith<>(NAME_ANYURI_STARTS_WITH, AnyURIAttributeValue.identifier, AnyURIAttributeValue.class),
+			new StartsWith<>(NAME_ANYURI_STARTS_WITH, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue.class),
 			//
-			new EndsWith<>(NAME_ANYURI_ENDS_WITH, AnyURIAttributeValue.identifier, AnyURIAttributeValue.class),
+			new EndsWith<>(NAME_ANYURI_ENDS_WITH, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue.class),
 			//
-			new Contains<>(NAME_ANYURI_CONTAINS, AnyURIAttributeValue.identifier, AnyURIAttributeValue.class));
+			new Contains<>(NAME_ANYURI_CONTAINS, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue.class));
 
 	protected final Class<T> secondParamClass;
 
@@ -155,13 +154,13 @@ public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValu
 	}
 
 	@Override
-	protected Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+	protected FirstOrderFunctionCall getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
 	{
 		return new EagerPrimitiveEvalCall<AttributeValue>(AttributeValue[].class, checkedArgExpressions, checkedRemainingArgTypes)
 		{
 
 			@Override
-			protected final PrimitiveResult<BooleanAttributeValue> evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
+			protected final BooleanAttributeValue evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
 			{
 				final String arg0;
 				final T arg1;
@@ -183,7 +182,7 @@ public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValu
 					throw new IndeterminateEvaluationException(invalidRegexErrorMsg, Status.STATUS_PROCESSING_ERROR, e);
 				}
 
-				return PrimitiveResult.getInstance(isMatched);
+				return BooleanAttributeValue.valueOf(isMatched);
 			}
 
 		};
@@ -215,7 +214,7 @@ public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValu
 		 */
 		public RFC822NameMatch()
 		{
-			super(NAME_RFC822NAME_MATCH, RFC822NameAttributeValue.identifier, RFC822NameAttributeValue.class);
+			super(NAME_RFC822NAME_MATCH, RFC822NameAttributeValue.TYPE_URI, RFC822NameAttributeValue.class);
 		}
 
 		@Override
@@ -269,7 +268,7 @@ public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValu
 		 * .List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 		 */
 		@Override
-		protected final Call getFunctionCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+		protected final FirstOrderFunctionCall getFunctionCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
 		{
 			// check if first arg = regex is constant value, in which case pre-compile the regex
 			final RegularExpression compiledRegex;
@@ -314,11 +313,11 @@ public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValu
 			}
 
 			// make a new FunctionCall that reuses the compiled regex
-			return new Call(checkedRemainingArgTypes)
+			return new FirstOrderFunctionCall(checkedRemainingArgTypes)
 			{
 
 				@Override
-				protected PrimitiveResult<BooleanAttributeValue> evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+				protected BooleanAttributeValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
 				{
 					final T arg1;
 					if (checkedArgExpressions.isEmpty())
@@ -341,7 +340,7 @@ public abstract class NonEqualTypeMatchFunction<T extends PrimitiveAttributeValu
 						}
 					}
 
-					return PrimitiveResult.getInstance(eval(compiledRegex, arg1));
+					return BooleanAttributeValue.valueOf(eval(compiledRegex, arg1));
 
 				}
 			};

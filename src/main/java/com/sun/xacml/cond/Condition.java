@@ -47,8 +47,6 @@ import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.JAXBBoundExpression;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * Represents the XACML ConditionType type. It contains exactly one child expression that is boolean
@@ -60,7 +58,7 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition
 {
 	// the condition's evaluatable expression
-	private final JAXBBoundExpression<?, PrimitiveResult<BooleanAttributeValue>> evaluatableExpression;
+	private final Expression<BooleanAttributeValue> evaluatableExpression;
 
 	/**
 	 * Logger used for all classes
@@ -121,7 +119,7 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}
 
-		this.evaluatableExpression = (JAXBBoundExpression<?, PrimitiveResult<BooleanAttributeValue>>) expr;
+		this.evaluatableExpression = (Expression<BooleanAttributeValue>) expr;
 
 		/*
 		 * Set JAXB expression field to null, getExpression() overridden instead to make sure
@@ -139,21 +137,11 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 	 * 
 	 * @return true if and only if condition is true, i.e. its expression evaluates to True
 	 * @throws IndeterminateEvaluationException
+	 *             if error evaluating the condition
 	 */
 	public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		final ExpressionResult<? extends BooleanAttributeValue> exprResult = evaluatableExpression.evaluate(context);
-		if (exprResult == null)
-		{
-			throw INVALID_EXP_RESULT_INDETERMINATE_EVAL_EX;
-		}
-
-		final BooleanAttributeValue boolVal = exprResult.value();
-		if (boolVal == null)
-		{
-			throw INVALID_EXP_RESULT_INDETERMINATE_EVAL_EX;
-		}
-
+		final BooleanAttributeValue boolVal = evaluatableExpression.evaluate(context);
 		return boolVal.getValue();
 	}
 

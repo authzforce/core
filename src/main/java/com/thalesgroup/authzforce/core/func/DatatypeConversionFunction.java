@@ -23,158 +23,158 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
  * A class that implements all the primitive datatype conversion functions: double-to-integer,
  * integer-to-double, *-from-string, *-to-string, etc. It takes one argument of the appropriate
  * type, converts that argument to the other type, and returns the result.
  * 
- * @param <PARAM>
+ * @param <PARAM_T>
  *            parameter/input type
- * @param <RETURN>
+ * @param <RETURN_T>
  *            return/output type
  */
-public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttributeValue<?>, RETURN extends PrimitiveAttributeValue<?>> extends BaseFunction<PrimitiveResult<RETURN>>
+public abstract class DatatypeConversionFunction<PARAM_T extends PrimitiveAttributeValue<?>, RETURN_T extends PrimitiveAttributeValue<?>> extends FirstOrderFunction<RETURN_T>
 {
 
 	/**
-	 * Standard identifier for the double-to-integer function.
+	 * Standard TYPE_URI for the double-to-integer function.
 	 */
 	public static final String NAME_DOUBLE_TO_INTEGER = FUNCTION_NS_1 + "double-to-integer";
 
 	/**
-	 * Standard identifier for the integer-to-double function.
+	 * Standard TYPE_URI for the integer-to-double function.
 	 */
 	public static final String NAME_INTEGER_TO_DOUBLE = FUNCTION_NS_1 + "integer-to-double";
 
 	/**
-	 * Standard identifier for the boolean-from-string function.
+	 * Standard TYPE_URI for the boolean-from-string function.
 	 */
 	public static final String NAME_BOOLEAN_FROM_STRING = FUNCTION_NS_3 + "boolean-from-string";
 
 	/**
-	 * Standard identifier for the string-from-boolean function.
+	 * Standard TYPE_URI for the string-from-boolean function.
 	 */
 	public static final String NAME_STRING_FROM_BOOLEAN = FUNCTION_NS_3 + "string-from-boolean";
 
 	/**
-	 * Standard identifier for the integer-from-string function.
+	 * Standard TYPE_URI for the integer-from-string function.
 	 */
 	public static final String NAME_INTEGER_FROM_STRING = FUNCTION_NS_3 + "integer-from-string";
 
 	/**
-	 * Standard identifier for the string-from-integer function.
+	 * Standard TYPE_URI for the string-from-integer function.
 	 */
 	public static final String NAME_STRING_FROM_INTEGER = FUNCTION_NS_3 + "string-from-integer";
 
 	/**
-	 * Standard identifier for the double-from-string function.
+	 * Standard TYPE_URI for the double-from-string function.
 	 */
 	public static final String NAME_DOUBLE_FROM_STRING = FUNCTION_NS_3 + "double-from-string";
 
 	/**
-	 * Standard identifier for the string-from-double function.
+	 * Standard TYPE_URI for the string-from-double function.
 	 */
 	public static final String NAME_STRING_FROM_DOUBLE = FUNCTION_NS_3 + "string-from-double";
 
 	/**
-	 * Standard identifier for the time-from-string function.
+	 * Standard TYPE_URI for the time-from-string function.
 	 */
 	public static final String NAME_TIME_FROM_STRING = FUNCTION_NS_3 + "time-from-string";
 
 	/**
-	 * Standard identifier for the string-from-time function.
+	 * Standard TYPE_URI for the string-from-time function.
 	 */
 	public static final String NAME_STRING_FROM_TIME = FUNCTION_NS_3 + "string-from-time";
 
 	/**
-	 * Standard identifier for the date-from-string function.
+	 * Standard TYPE_URI for the date-from-string function.
 	 */
 	public static final String NAME_DATE_FROM_STRING = FUNCTION_NS_3 + "date-from-string";
 
 	/**
-	 * Standard identifier for the string-from-date function.
+	 * Standard TYPE_URI for the string-from-date function.
 	 */
 	public static final String NAME_STRING_FROM_DATE = FUNCTION_NS_3 + "string-from-date";
 
 	/**
-	 * Standard identifier for the dateTime-from-string function.
+	 * Standard TYPE_URI for the dateTime-from-string function.
 	 */
 	public static final String NAME_DATETIME_FROM_STRING = FUNCTION_NS_3 + "dateTime-from-string";
 
 	/**
-	 * Standard identifier for the string-from-dateTime function.
+	 * Standard TYPE_URI for the string-from-dateTime function.
 	 */
 	public static final String NAME_STRING_FROM_DATETIME = FUNCTION_NS_3 + "string-from-dateTime";
 
 	/**
-	 * Standard identifier for the anyURI-from-string function.
+	 * Standard TYPE_URI for the anyURI-from-string function.
 	 */
 	public static final String NAME_ANYURI_FROM_STRING = FUNCTION_NS_3 + "anyURI-from-string";
 
 	/**
-	 * Standard identifier for the string-from-anyURI function.
+	 * Standard TYPE_URI for the string-from-anyURI function.
 	 */
 	public static final String NAME_STRING_FROM_ANYURI = FUNCTION_NS_3 + "string-from-anyURI";
 
 	/**
-	 * Standard identifier for the dayTimeDuration-from-string function.
+	 * Standard TYPE_URI for the dayTimeDuration-from-string function.
 	 */
 	public static final String NAME_DAYTIMEDURATION_FROM_STRING = FUNCTION_NS_3 + "dayTimeDuration-from-string";
 
 	/**
-	 * Standard identifier for the string-from-dayTimeDuration function.
+	 * Standard TYPE_URI for the string-from-dayTimeDuration function.
 	 */
 	public static final String NAME_STRING_FROM_DAYTIMEDURATION = FUNCTION_NS_3 + "string-from-dayTimeDuration";
 
 	/**
-	 * Standard identifier for the yearMonthDuration-from-string function.
+	 * Standard TYPE_URI for the yearMonthDuration-from-string function.
 	 */
 	public static final String NAME_YEARMONTHDURATION_FROM_STRING = FUNCTION_NS_3 + "yearMonthDuration-from-string";
 
 	/**
-	 * Standard identifier for the string-from-yearMonthDuration function.
+	 * Standard TYPE_URI for the string-from-yearMonthDuration function.
 	 */
 	public static final String NAME_STRING_FROM_YEARMONTHDURATION = FUNCTION_NS_3 + "string-from-yearMonthDuration";
 
 	/**
-	 * Standard identifier for the x500Name-from-string function.
+	 * Standard TYPE_URI for the x500Name-from-string function.
 	 */
 	public static final String NAME_X500NAME_FROM_STRING = FUNCTION_NS_3 + "x500Name-from-string";
 
 	/**
-	 * Standard identifier for the string-from-x500Name function.
+	 * Standard TYPE_URI for the string-from-x500Name function.
 	 */
 	public static final String NAME_STRING_FROM_X500NAME = FUNCTION_NS_3 + "string-from-x500Name";
 
 	/**
-	 * Standard identifier for the rfc822Name-from-string function.
+	 * Standard TYPE_URI for the rfc822Name-from-string function.
 	 */
 	public static final String NAME_RFC822NAME_FROM_STRING = FUNCTION_NS_3 + "rfc822Name-from-string";
 
 	/**
-	 * Standard identifier for the string-from-rfc822Name function.
+	 * Standard TYPE_URI for the string-from-rfc822Name function.
 	 */
 	public static final String NAME_STRING_FROM_RFC822NAME = FUNCTION_NS_3 + "string-from-rfc822Name";
 
 	/**
-	 * Standard identifier for the ipAddress-from-string function.
+	 * Standard TYPE_URI for the ipAddress-from-string function.
 	 */
 	public static final String NAME_IPADDRESS_FROM_STRING = FUNCTION_NS_3 + "ipAddress-from-string";
 
 	/**
-	 * Standard identifier for the string-from-ipAddress function.
+	 * Standard TYPE_URI for the string-from-ipAddress function.
 	 */
 	public static final String NAME_STRING_FROM_IPADDRESS = FUNCTION_NS_3 + "string-from-ipAddress";
 
 	/**
-	 * Standard identifier for the dnsName-from-string function.
+	 * Standard TYPE_URI for the dnsName-from-string function.
 	 */
 	public static final String NAME_DNSNAME_FROM_STRING = FUNCTION_NS_3 + "dnsName-from-string";
 
 	/**
-	 * Standard identifier for the string-from-dnsName function.
+	 * Standard TYPE_URI for the string-from-dnsName function.
 	 */
 	public static final String NAME_STRING_FROM_DNSNAME = FUNCTION_NS_3 + "string-from-dnsName";
 
@@ -239,7 +239,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 			//
 			new DnsNameToString());
 
-	protected final Class<PARAM[]> parameterArrayClass;
+	protected final Class<PARAM_T[]> parameterArrayClass;
 
 	/**
 	 * Creates a new <code>DatatypeConversionFunction</code> object.
@@ -255,24 +255,24 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	 *            parameter datatype URI
 	 * 
 	 */
-	protected DatatypeConversionFunction(String funcURI, String paramTypeURI, Class<PARAM[]> paramArrayType, String returnTypeURI)
+	protected DatatypeConversionFunction(String funcURI, String paramTypeURI, Class<PARAM_T[]> paramArrayType, String returnTypeURI)
 	{
 		super(funcURI, new DatatypeDef(returnTypeURI), false, new DatatypeDef(paramTypeURI));
 		this.parameterArrayClass = paramArrayType;
 
 	}
 
-	protected abstract RETURN convert(PARAM arg) throws IndeterminateEvaluationException;
+	protected abstract RETURN_T convert(PARAM_T arg) throws IndeterminateEvaluationException;
 
 	@Override
-	protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+	protected final FirstOrderFunctionCall<RETURN_T> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEvalCall<PARAM>(parameterArrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+		return new EagerPrimitiveEval<RETURN_T, PARAM_T>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected PrimitiveResult<RETURN> evaluate(PARAM[] args) throws IndeterminateEvaluationException
+			protected RETURN_T evaluate(PARAM_T[] args) throws IndeterminateEvaluationException
 			{
-				return new PrimitiveResult<>(convert(args[0]), returnType);
+				return convert(args[0]);
 			}
 
 		};
@@ -283,7 +283,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		protected DoubleToInteger()
 		{
-			super(NAME_DOUBLE_TO_INTEGER, DoubleAttributeValue.identifier, DoubleAttributeValue[].class, IntegerAttributeValue.identifier);
+			super(NAME_DOUBLE_TO_INTEGER, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class, IntegerAttributeValue.TYPE_URI);
 		}
 
 		@Override
@@ -299,7 +299,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		protected IntegerToDouble()
 		{
-			super(NAME_INTEGER_TO_DOUBLE, IntegerAttributeValue.identifier, IntegerAttributeValue[].class, DoubleAttributeValue.identifier);
+			super(NAME_INTEGER_TO_DOUBLE, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class, DoubleAttributeValue.TYPE_URI);
 		}
 
 		private static final IndeterminateEvaluationException INTEGER_OUT_OF_RANGE_EXCEPTION = new IndeterminateEvaluationException("Function " + NAME_INTEGER_TO_DOUBLE + ": integer argument is outside the range which can be represented by a double", Status.STATUS_PROCESSING_ERROR);
@@ -325,7 +325,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		protected FromString(String funcURI, String returnTypeURI, Class<RETURN> returnClass)
 		{
-			super(funcURI, StringAttributeValue.identifier, StringAttributeValue[].class, returnTypeURI);
+			super(funcURI, StringAttributeValue.TYPE_URI, StringAttributeValue[].class, returnTypeURI);
 			this.invalidStringArgErrMessage = "Function " + functionId + ": Invalid string arg (not a valid lexical representation of a " + returnClass.getSimpleName() + "): ";
 		}
 
@@ -351,7 +351,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		protected ToString(String funcURI, String paramTypeURI, Class<PARAM[]> paramArrayType)
 		{
-			super(funcURI, paramTypeURI, paramArrayType, StringAttributeValue.identifier);
+			super(funcURI, paramTypeURI, paramArrayType, StringAttributeValue.TYPE_URI);
 		}
 	}
 
@@ -360,7 +360,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private BooleanFromString()
 		{
-			super(NAME_BOOLEAN_FROM_STRING, BooleanAttributeValue.identifier, BooleanAttributeValue.class);
+			super(NAME_BOOLEAN_FROM_STRING, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue.class);
 		}
 
 		@Override
@@ -375,7 +375,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private BooleanToString()
 		{
-			super(NAME_STRING_FROM_BOOLEAN, BooleanAttributeValue.identifier, BooleanAttributeValue[].class);
+			super(NAME_STRING_FROM_BOOLEAN, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue[].class);
 		}
 
 		@Override
@@ -407,7 +407,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private IntegerFromString()
 		{
-			super(NAME_INTEGER_FROM_STRING, IntegerAttributeValue.identifier, IntegerAttributeValue.class);
+			super(NAME_INTEGER_FROM_STRING, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue.class);
 		}
 
 		@Override
@@ -423,7 +423,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private IntegerToString()
 		{
-			super(NAME_STRING_FROM_INTEGER, IntegerAttributeValue.identifier, IntegerAttributeValue[].class);
+			super(NAME_STRING_FROM_INTEGER, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class);
 		}
 
 	}
@@ -433,7 +433,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private DoubleFromString()
 		{
-			super(NAME_DOUBLE_FROM_STRING, DoubleAttributeValue.identifier, DoubleAttributeValue.class);
+			super(NAME_DOUBLE_FROM_STRING, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue.class);
 		}
 
 		@Override
@@ -449,7 +449,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private DoubleToString()
 		{
-			super(NAME_STRING_FROM_DOUBLE, DoubleAttributeValue.identifier, DoubleAttributeValue[].class);
+			super(NAME_STRING_FROM_DOUBLE, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class);
 		}
 
 	}
@@ -459,7 +459,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private TimeFromString()
 		{
-			super(NAME_TIME_FROM_STRING, TimeAttributeValue.identifier, TimeAttributeValue.class);
+			super(NAME_TIME_FROM_STRING, TimeAttributeValue.TYPE_URI, TimeAttributeValue.class);
 		}
 
 		@Override
@@ -475,7 +475,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private TimeToString()
 		{
-			super(NAME_STRING_FROM_TIME, TimeAttributeValue.identifier, TimeAttributeValue[].class);
+			super(NAME_STRING_FROM_TIME, TimeAttributeValue.TYPE_URI, TimeAttributeValue[].class);
 		}
 
 	}
@@ -485,7 +485,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private DateFromString()
 		{
-			super(NAME_DATE_FROM_STRING, DateAttributeValue.identifier, DateAttributeValue.class);
+			super(NAME_DATE_FROM_STRING, DateAttributeValue.TYPE_URI, DateAttributeValue.class);
 		}
 
 		@Override
@@ -501,7 +501,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private DateToString()
 		{
-			super(NAME_STRING_FROM_DATE, DateAttributeValue.identifier, DateAttributeValue[].class);
+			super(NAME_STRING_FROM_DATE, DateAttributeValue.TYPE_URI, DateAttributeValue[].class);
 		}
 
 	}
@@ -511,7 +511,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private DateTimeFromString()
 		{
-			super(NAME_DATETIME_FROM_STRING, DateTimeAttributeValue.identifier, DateTimeAttributeValue.class);
+			super(NAME_DATETIME_FROM_STRING, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue.class);
 		}
 
 		@Override
@@ -527,7 +527,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private DateTimeToString()
 		{
-			super(NAME_STRING_FROM_DATETIME, DateTimeAttributeValue.identifier, DateTimeAttributeValue[].class);
+			super(NAME_STRING_FROM_DATETIME, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue[].class);
 		}
 
 	}
@@ -537,7 +537,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private AnyUriFromString()
 		{
-			super(NAME_ANYURI_FROM_STRING, AnyURIAttributeValue.identifier, AnyURIAttributeValue.class);
+			super(NAME_ANYURI_FROM_STRING, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue.class);
 		}
 
 		@Override
@@ -553,7 +553,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private AnyUriToString()
 		{
-			super(NAME_STRING_FROM_ANYURI, AnyURIAttributeValue.identifier, AnyURIAttributeValue[].class);
+			super(NAME_STRING_FROM_ANYURI, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue[].class);
 		}
 
 	}
@@ -563,7 +563,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private DayTimeDurationFromString()
 		{
-			super(NAME_DAYTIMEDURATION_FROM_STRING, DayTimeDurationAttributeValue.identifier, DayTimeDurationAttributeValue.class);
+			super(NAME_DAYTIMEDURATION_FROM_STRING, DayTimeDurationAttributeValue.TYPE_URI, DayTimeDurationAttributeValue.class);
 		}
 
 		@Override
@@ -579,7 +579,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private DayTimeDurationToString()
 		{
-			super(NAME_STRING_FROM_DAYTIMEDURATION, DayTimeDurationAttributeValue.identifier, DayTimeDurationAttributeValue[].class);
+			super(NAME_STRING_FROM_DAYTIMEDURATION, DayTimeDurationAttributeValue.TYPE_URI, DayTimeDurationAttributeValue[].class);
 		}
 
 	}
@@ -589,7 +589,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private YearMonthDurationFromString()
 		{
-			super(NAME_YEARMONTHDURATION_FROM_STRING, YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue.class);
+			super(NAME_YEARMONTHDURATION_FROM_STRING, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue.class);
 		}
 
 		@Override
@@ -605,7 +605,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private YearMonthDurationToString()
 		{
-			super(NAME_STRING_FROM_YEARMONTHDURATION, YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue[].class);
+			super(NAME_STRING_FROM_YEARMONTHDURATION, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue[].class);
 		}
 
 	}
@@ -615,7 +615,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private X500NameFromString()
 		{
-			super(NAME_X500NAME_FROM_STRING, X500NameAttributeValue.identifier, X500NameAttributeValue.class);
+			super(NAME_X500NAME_FROM_STRING, X500NameAttributeValue.TYPE_URI, X500NameAttributeValue.class);
 		}
 
 		@Override
@@ -631,7 +631,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private X500NameToString()
 		{
-			super(NAME_STRING_FROM_X500NAME, X500NameAttributeValue.identifier, X500NameAttributeValue[].class);
+			super(NAME_STRING_FROM_X500NAME, X500NameAttributeValue.TYPE_URI, X500NameAttributeValue[].class);
 		}
 	}
 
@@ -640,7 +640,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 
 		private RFC822NameFromString()
 		{
-			super(NAME_RFC822NAME_FROM_STRING, RFC822NameAttributeValue.identifier, RFC822NameAttributeValue.class);
+			super(NAME_RFC822NAME_FROM_STRING, RFC822NameAttributeValue.TYPE_URI, RFC822NameAttributeValue.class);
 		}
 
 		@Override
@@ -656,7 +656,7 @@ public abstract class DatatypeConversionFunction<PARAM extends PrimitiveAttribut
 	{
 		private RFC822NameToString()
 		{
-			super(NAME_STRING_FROM_RFC822NAME, RFC822NameAttributeValue.identifier, RFC822NameAttributeValue[].class);
+			super(NAME_STRING_FROM_RFC822NAME, RFC822NameAttributeValue.TYPE_URI, RFC822NameAttributeValue[].class);
 		}
 	}
 

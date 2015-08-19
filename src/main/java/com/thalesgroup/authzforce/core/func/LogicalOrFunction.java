@@ -10,7 +10,6 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * A class that implements the logical functions "or" and "and".
@@ -22,10 +21,10 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  * the rest of the arguments unevaluated.
  * 
  */
-public class LogicalOrFunction extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+public class LogicalOrFunction extends FirstOrderFunction<BooleanAttributeValue>
 {
 	/**
-	 * XACML standard identifier for the "or" logical function
+	 * XACML standard TYPE_URI for the "or" logical function
 	 */
 	public static final String NAME_OR = FUNCTION_NS_1 + "or";
 
@@ -41,41 +40,6 @@ public class LogicalOrFunction extends BaseFunction<PrimitiveResult<BooleanAttri
 	private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_OR + ": Indeterminate arg #";
 	private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_OR + ": Invalid type (expected = " + BooleanAttributeValue.class.getName() + ") of arg#";
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.BaseFunction#getFunctionCall(java.util.List,
-	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
-	@Override
-	protected Call getFunctionCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
-	{
-		/**
-		 * TODO: optimize this function call by checking the following:
-		 * <ol>
-		 * <li>If any argument expression is constant BooleanAttributeValue True, return always
-		 * true.</li>
-		 * <li>Else If all argument expressions are constant BooleanAttributeValue False, return
-		 * always false.</li>
-		 * <li>
-		 * Else If any argument expression is constant BooleanAttributeValue False, remove it from
-		 * the arguments, as it has no effect on the final result. Indeed, or function is
-		 * commutative and or(false, x, y...) = or(x, y...).</li>
-		 * </ol>
-		 * The first two optimizations can be achieved by pre-evaluating the function call with
-		 * context = null and check the result if no IndeterminateEvaluationException is thrown.
-		 */
-		return new Call(checkedRemainingArgTypes)
-		{
-
-			@Override
-			protected PrimitiveResult<BooleanAttributeValue> evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
-			{
-				return eval(context, checkedArgExpressions, remainingArgs);
-			}
-		};
-	}
-
 	/**
 	 * Logical 'or' evaluation method.
 	 * 
@@ -89,7 +53,7 @@ public class LogicalOrFunction extends BaseFunction<PrimitiveResult<BooleanAttri
 	 * @return true iff all checkedArgExpressions return True and all remainingArgs are True
 	 * @throws IndeterminateEvaluationException
 	 */
-	public static PrimitiveResult<BooleanAttributeValue> eval(EvaluationContext context, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, AttributeValue[] checkedRemainingArgs) throws IndeterminateEvaluationException
+	public static BooleanAttributeValue eval(EvaluationContext context, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, AttributeValue[] checkedRemainingArgs) throws IndeterminateEvaluationException
 	{
 		int argIndex = 0;
 		for (final Expression<? extends ExpressionResult<? extends AttributeValue>> arg : checkedArgExpressions)
@@ -106,7 +70,7 @@ public class LogicalOrFunction extends BaseFunction<PrimitiveResult<BooleanAttri
 
 			if (attrVal.getValue())
 			{
-				return PrimitiveResult.TRUE;
+				return BooleanAttributeValue.TRUE;
 			}
 
 			argIndex++;
@@ -127,12 +91,48 @@ public class LogicalOrFunction extends BaseFunction<PrimitiveResult<BooleanAttri
 
 			if (attrVal.getValue())
 			{
-				return PrimitiveResult.TRUE;
+				return BooleanAttributeValue.TRUE;
 			}
 
 			argIndex++;
 		}
 
-		return PrimitiveResult.FALSE;
+		return BooleanAttributeValue.FALSE;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
+	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
+	 */
+	@Override
+	protected FirstOrderFunctionCall getFunctionCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
+	{
+		/**
+		 * TODO: optimize this function call by checking the following:
+		 * <ol>
+		 * <li>If any argument expression is constant BooleanAttributeValue True, return always
+		 * true.</li>
+		 * <li>Else If all argument expressions are constant BooleanAttributeValue False, return
+		 * always false.</li>
+		 * <li>
+		 * Else If any argument expression is constant BooleanAttributeValue False, remove it from
+		 * the arguments, as it has no effect on the final result. Indeed, or function is
+		 * commutative and or(false, x, y...) = or(x, y...).</li>
+		 * </ol>
+		 * The first two optimizations can be achieved by pre-evaluating the function call with
+		 * context = null and check the result if no IndeterminateEvaluationException is thrown.
+		 */
+		return new FirstOrderFunctionCall(checkedRemainingArgTypes)
+		{
+
+			@Override
+			protected BooleanAttributeValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+			{
+				return eval(context, checkedArgExpressions, remainingArgs);
+			}
+		};
+	}
+
 }

@@ -30,12 +30,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.eval.BagResult;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 @RunWith(Parameterized.class)
@@ -58,77 +58,77 @@ public class HigherOrderFunctionsTest extends GeneralFunctionTest
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:string-equal"),//
 								new StringAttributeValue("Paul"), //
 								new BagResult<>(new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George"), new StringAttributeValue("Ringo") }, StringAttributeValue.class, StringAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.TRUE },
+						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ANY_OF,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:string-equal"),//
 								new StringAttributeValue("Paul"), //
 								new BagResult<>(new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("George"), new StringAttributeValue("Ringo") }, StringAttributeValue.class, StringAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.FALSE },
+						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:all-of
 				new Object[] { NAME_ALL_OF,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 								new IntegerAttributeValue("10"), //
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("9"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4"), new IntegerAttributeValue("2") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.TRUE },
+						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ALL_OF,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 								new IntegerAttributeValue("10"), //
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("9"), new IntegerAttributeValue("3"), new IntegerAttributeValue("14"), new IntegerAttributeValue("2") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.FALSE },
+						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:any-of-any
 				new Object[] { NAME_ANY_OF_ANY,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:string-equal"),//
 								new BagResult<>(new StringAttributeValue[] { new StringAttributeValue("Ringo"), new StringAttributeValue("Mary") }, StringAttributeValue.class, StringAttributeValue.BAG_TYPE),//
 								new BagResult<>(new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George"), new StringAttributeValue("Ringo") }, StringAttributeValue.class, StringAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.TRUE },
+						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ANY_OF_ANY,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:string-equal"),//
 								new BagResult<>(new StringAttributeValue[] { new StringAttributeValue("Ringo"), new StringAttributeValue("Mary") }, StringAttributeValue.class, StringAttributeValue.BAG_TYPE),//
 								new BagResult<>(new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George") }, StringAttributeValue.class, StringAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.FALSE },
+						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:all-of-any
 				new Object[] { NAME_ALL_OF_ANY,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("10"), new IntegerAttributeValue("20") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("3") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.TRUE },
+						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ALL_OF_ANY,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("10"), new IntegerAttributeValue("20") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("11"), new IntegerAttributeValue("13"), new IntegerAttributeValue("15"), new IntegerAttributeValue("19") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.FALSE },
+						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:any-of-all
 				new Object[] { NAME_ANY_OF_ALL,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("3"), new IntegerAttributeValue("5") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.TRUE },
+						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ANY_OF_ALL,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("3"), new IntegerAttributeValue("4") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.FALSE },
+						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:all-of-all
 				new Object[] { NAME_ALL_OF_ALL,//
 						Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("6"), new IntegerAttributeValue("5") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
 								new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.TRUE },
+						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ALL_OF_ALL, Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:integer-greater-than"),//
 						new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("3"), new IntegerAttributeValue("5") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
 						new BagResult<>(new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") }, IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)),//
-						PrimitiveResult.FALSE },
+						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:map
 				new Object[] { NAME_MAP, Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case"),//

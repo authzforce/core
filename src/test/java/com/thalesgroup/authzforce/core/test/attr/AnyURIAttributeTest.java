@@ -42,8 +42,8 @@ public class AnyURIAttributeTest
 				{ "mailto:info@datypic.com", "absolute URI", true },
 				{ "../%C3%A9dition.html", "relative URI containing escaped non-ASCII character", true },
 				{ "../édition.html", "relative URI containing escaped non-ASCII character", true },
-				{ "http://datypic.com/prod.html#shirt", "URI with fragment identifier", true },
-				{ "../prod.html#shirt", "relative URI with fragment identifier", true }, { "", "an empty value is allowed", true },
+				{ "http://datypic.com/prod.html#shirt", "URI with fragment TYPE_URI", true },
+				{ "../prod.html#shirt", "relative URI with fragment TYPE_URI", true }, { "", "an empty value is allowed", true },
 				{ "http://datypic.com#frag1#frag2", "too many # characters", false },
 				{ "http://datypic.com#f% rag", "% character followed by something other than two hexadecimal digits", false } };
 		return Arrays.asList(data);

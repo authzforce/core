@@ -41,8 +41,9 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
-import com.thalesgroup.authzforce.core.func.BaseFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
  * A class that implements the not function. This function takes one boolean argument and returns
@@ -53,11 +54,11 @@ import com.thalesgroup.authzforce.core.func.BaseFunction;
  * @author Steve Hanna
  * @author Seth Proctor
  */
-public class NotFunction extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+public class NotFunction extends FirstOrderFunction<BooleanAttributeValue>
 {
 
 	/**
-	 * Standard identifier for the not function.
+	 * Standard TYPE_URI for the not function.
 	 */
 	public static final String NAME_NOT = FUNCTION_NS_1 + "not";
 
@@ -70,14 +71,14 @@ public class NotFunction extends BaseFunction<PrimitiveResult<BooleanAttributeVa
 	}
 
 	@Override
-	protected Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEvalCall<BooleanAttributeValue>(BooleanAttributeValue[].class, checkedArgExpressions, checkedRemainingArgTypes)
+		return new EagerPrimitiveEval<BooleanAttributeValue, BooleanAttributeValue>(signature, BooleanAttributeValue[].class, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected PrimitiveResult<BooleanAttributeValue> evaluate(BooleanAttributeValue[] args) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(BooleanAttributeValue[] args) throws IndeterminateEvaluationException
 			{
-				return new PrimitiveResult<>(eval(args[0]), BooleanAttributeValue.TYPE);
+				return eval(args[0]);
 			}
 
 		};

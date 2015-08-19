@@ -51,13 +51,13 @@ public class TotalComparisonFunction<T extends AttributeValue & Comparable<T>> e
 			INSTANCES.addAll(Arrays
 					.asList(
 					//
-					new TotalComparisonFunction<>(FUNCTION_NS_1 + "integer", IntegerAttributeValue.identifier, IntegerAttributeValue[].class,
+					new TotalComparisonFunction<>(FUNCTION_NS_1 + "integer", IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class,
 							condition),
 					//
-							new TotalComparisonFunction<>(FUNCTION_NS_1 + "double", DoubleAttributeValue.identifier, DoubleAttributeValue[].class,
+							new TotalComparisonFunction<>(FUNCTION_NS_1 + "double", DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class,
 									condition),
 							//
-							new TotalComparisonFunction<>(FUNCTION_NS_1 + "string", StringAttributeValue.identifier, StringAttributeValue[].class,
+							new TotalComparisonFunction<>(FUNCTION_NS_1 + "string", StringAttributeValue.TYPE_URI, StringAttributeValue[].class,
 									condition)));
 		}
 	}

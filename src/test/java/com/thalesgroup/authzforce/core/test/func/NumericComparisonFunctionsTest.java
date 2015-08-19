@@ -27,11 +27,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class NumericComparisonFunctionsTest extends GeneralFunctionTest
@@ -51,44 +51,44 @@ public class NumericComparisonFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than
-				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), PrimitiveResult.TRUE },
-				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")), PrimitiveResult.FALSE },
-				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), PrimitiveResult.FALSE },
+				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal
-				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), PrimitiveResult.TRUE },
-				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")), PrimitiveResult.FALSE },
-				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), PrimitiveResult.TRUE },
+				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-less-than
-				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), PrimitiveResult.FALSE },
-				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")), PrimitiveResult.TRUE },
-				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), PrimitiveResult.FALSE },
+				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), BooleanAttributeValue.FALSE }, new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")),
+						BooleanAttributeValue.TRUE },
+				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal
-				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), PrimitiveResult.FALSE },
-				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")), PrimitiveResult.TRUE },
-				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), PrimitiveResult.TRUE },
+				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("4")), BooleanAttributeValue.FALSE }, new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL,
+						Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("6")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerAttributeValue("5"), new IntegerAttributeValue("5")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-greater-than
-				new Object[] { NAME_DOUBLE_GREATER_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DOUBLE_GREATER_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DOUBLE_GREATER_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), PrimitiveResult.FALSE },
+				new Object[] { NAME_DOUBLE_GREATER_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), BooleanAttributeValue.TRUE }, new Object[] { NAME_DOUBLE_GREATER_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")),
+						BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DOUBLE_GREATER_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-greater-than-or-equal
-				new Object[] { NAME_DOUBLE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DOUBLE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), PrimitiveResult.FALSE },
-				new Object[] { NAME_DOUBLE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), PrimitiveResult.TRUE },
+				new Object[] { NAME_DOUBLE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DOUBLE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DOUBLE_GREATER_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-less-than
-				new Object[] { NAME_DOUBLE_LESS_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), PrimitiveResult.FALSE },//
-				new Object[] { NAME_DOUBLE_LESS_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), PrimitiveResult.TRUE },
-				new Object[] { NAME_DOUBLE_LESS_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), PrimitiveResult.FALSE },
+				new Object[] { NAME_DOUBLE_LESS_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), BooleanAttributeValue.FALSE },//
+				new Object[] { NAME_DOUBLE_LESS_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), BooleanAttributeValue.TRUE }, new Object[] { NAME_DOUBLE_LESS_THAN, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")),
+						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-less-than-or-equal
-				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), PrimitiveResult.FALSE },//
-				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), PrimitiveResult.TRUE }, //
-				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), PrimitiveResult.TRUE });
+				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), BooleanAttributeValue.FALSE },//
+				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), BooleanAttributeValue.TRUE }, //
+				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), BooleanAttributeValue.TRUE });
 	}
 
 	protected NumericComparisonFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

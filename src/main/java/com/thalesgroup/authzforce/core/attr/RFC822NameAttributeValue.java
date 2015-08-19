@@ -24,17 +24,17 @@ public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name";
+	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name";
 
 	/**
 	 * Generic type info
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
 
 	/**
 	 * Bag datatype definition of this attribute value
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -45,7 +45,7 @@ public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -61,11 +61,17 @@ public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
 	private final String domainPartLowerCase;
 
 	/**
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public RFC822NameAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 		/*
 		 * The validation with InternetAddress class in parse() method is not enough because
 		 * InternetAddress is much less restrictive than this XACML type, since it takes names
@@ -101,7 +107,7 @@ public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public RFC822NameAttributeValue(String value) throws IllegalArgumentException
 	{
-		this(new AttributeValueType(Collections.<Serializable> singletonList(value), identifier, null));
+		this(new AttributeValueType(Collections.<Serializable> singletonList(value), TYPE_URI, null));
 	}
 
 	@Override

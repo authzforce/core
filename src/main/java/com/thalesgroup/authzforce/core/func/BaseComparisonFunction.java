@@ -11,7 +11,7 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
  * A superclass of all the standard comparison functions (return a boolean).
@@ -19,7 +19,7 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  * @param <T>
  *            function parameter type
  */
-public abstract class BaseComparisonFunction<T extends AttributeValue> extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+public abstract class BaseComparisonFunction<T extends AttributeValue> extends FirstOrderFunction<BooleanAttributeValue>
 {
 	private static interface PostConditionChecker
 	{
@@ -106,7 +106,7 @@ public abstract class BaseComparisonFunction<T extends AttributeValue> extends B
 	 *            {@link #compare(AttributeValue, AttributeValue)} to zero
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if the function isn't known
+	 *             if the function is unknown
 	 */
 	public BaseComparisonFunction(String funcIdPrefix, String paramTypeURI, Class<T[]> paramArrayType, PostCondition condition)
 	{
@@ -118,18 +118,18 @@ public abstract class BaseComparisonFunction<T extends AttributeValue> extends B
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.func.BaseFunction#getFunctionCall(java.util.List,
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
+	protected final FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes)
 	{
-		return new EagerPrimitiveEvalCall<T>(paramArrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+		return new EagerPrimitiveEval<BooleanAttributeValue, T>(signature, paramArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected PrimitiveResult<BooleanAttributeValue> evaluate(T[] args) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(T[] args) throws IndeterminateEvaluationException
 			{
-				return PrimitiveResult.getInstance(eval(args[0], args[1]));
+				return BooleanAttributeValue.valueOf(eval(args[0], args[1]));
 			}
 
 		};

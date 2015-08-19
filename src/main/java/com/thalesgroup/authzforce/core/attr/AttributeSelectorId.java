@@ -5,7 +5,7 @@ import java.util.Objects;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 
 /**
- * AttributeSelector identifier (category, contextSelectorId, path). Why not use AttributeSelector directly?
+ * AttributeSelector TYPE_URI (category, contextSelectorId, path). Why not use AttributeSelector directly?
  * Because we don't care about MustBePresent or Datatype for lookup here. This is used for example
  * as key in a map to retrieve corresponding AttributeValue when it has already been evaluated.
  * <p>

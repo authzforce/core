@@ -35,8 +35,8 @@ package com.sun.xacml;
 
 
 /**
- * Exception that gets thrown if an unknown identifier was used, such as the
- * identifier used in any of the standard factories.
+ * Exception that gets thrown if an unknown TYPE_URI was used, such as the
+ * TYPE_URI used in any of the standard factories.
  *
  * @since 1.0
  * @author Seth Proctor

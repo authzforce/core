@@ -16,17 +16,17 @@ public class DayTimeDurationAttributeValue extends DurationAttributeValue
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#dayTimeDuration";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#dayTimeDuration";
 
 	/**
 	 * Generic type info
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
 
 	/**
 	 * Bag datatype definition of this attribute value
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -37,23 +37,29 @@ public class DayTimeDurationAttributeValue extends DurationAttributeValue
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
 		public DayTimeDurationAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
 		{
-			return new DayTimeDurationAttributeValue(jaxbAttributeValue);
+			return new DayTimeDurationAttributeValue(TYPE, jaxbAttributeValue);
 		}
 
 	};
 
 	/**
-	 * @see DurationAttributeValue#DurationAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see DurationAttributeValue#DurationAttributeValue(DatatypeDef, AttributeValueType)
 	 */
-	public DayTimeDurationAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
+	public DayTimeDurationAttributeValue(DatatypeDef datatype, AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(datatype, jaxbAttrVal);
 	}
 
 	/**
@@ -66,7 +72,7 @@ public class DayTimeDurationAttributeValue extends DurationAttributeValue
 	 */
 	public DayTimeDurationAttributeValue(String val) throws IllegalArgumentException
 	{
-		super(identifier, val);
+		super(TYPE, val);
 	}
 
 	@Override

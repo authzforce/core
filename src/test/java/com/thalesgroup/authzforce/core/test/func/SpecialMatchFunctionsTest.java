@@ -30,12 +30,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class SpecialMatchFunctionsTest extends GeneralFunctionTest
@@ -49,21 +49,21 @@ public class SpecialMatchFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:x500Name-match
-				new Object[] { NAME_X500NAME_MATCH, Arrays.asList(new X500NameAttributeValue("O=Medico Corp,C=US"), new X500NameAttributeValue("cn=John Smith,o=Medico Corp, c=US")), PrimitiveResult.TRUE },
-				new Object[] { NAME_X500NAME_MATCH, Arrays.asList(new X500NameAttributeValue("O=Another Corp,C=US"), new X500NameAttributeValue("cn=John Smith,o=Medico Corp, c=US")), PrimitiveResult.FALSE },
+				new Object[] { NAME_X500NAME_MATCH, Arrays.asList(new X500NameAttributeValue("O=Medico Corp,C=US"), new X500NameAttributeValue("cn=John Smith,o=Medico Corp, c=US")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_X500NAME_MATCH, Arrays.asList(new X500NameAttributeValue("O=Another Corp,C=US"), new X500NameAttributeValue("cn=John Smith,o=Medico Corp, c=US")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), PrimitiveResult.TRUE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@SUN.COM")), PrimitiveResult.TRUE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anne.Anderson@sun.com")), PrimitiveResult.FALSE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("anderson@sun.com")), PrimitiveResult.FALSE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@east.sun.com")), PrimitiveResult.FALSE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), PrimitiveResult.TRUE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("sun.com"), new RFC822NameAttributeValue("Baxter@SUN.COM")), PrimitiveResult.TRUE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("sun.com"), new RFC822NameAttributeValue("Anderson@east.sun.com")), PrimitiveResult.FALSE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("Anderson@east.sun.com")), PrimitiveResult.TRUE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("anne.anderson@ISRG.EAST.SUN.COM")), PrimitiveResult.TRUE },
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), PrimitiveResult.FALSE });
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@SUN.COM")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anne.Anderson@sun.com")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("anderson@sun.com")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@east.sun.com")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("sun.com"), new RFC822NameAttributeValue("Baxter@SUN.COM")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue("sun.com"), new RFC822NameAttributeValue("Anderson@east.sun.com")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("Anderson@east.sun.com")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("anne.anderson@ISRG.EAST.SUN.COM")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), BooleanAttributeValue.FALSE });
 	}
 
 	protected SpecialMatchFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

@@ -18,17 +18,17 @@ public class TimeAttributeValue extends BaseTimeAttributeValue<TimeAttributeValu
 	/**
 	 * XACML URI of this datatype
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#time";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#time";
 
 	/**
 	 * Primitive datatype info
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
 
 	/**
 	 * Bag datatype info
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -39,7 +39,7 @@ public class TimeAttributeValue extends BaseTimeAttributeValue<TimeAttributeValu
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -60,7 +60,7 @@ public class TimeAttributeValue extends BaseTimeAttributeValue<TimeAttributeValu
 	 */
 	public TimeAttributeValue(String time) throws IllegalArgumentException
 	{
-		super(identifier, time);
+		super(TYPE, time);
 	}
 
 	/**
@@ -74,15 +74,21 @@ public class TimeAttributeValue extends BaseTimeAttributeValue<TimeAttributeValu
 	 */
 	public TimeAttributeValue(XMLGregorianCalendar time) throws IllegalArgumentException
 	{
-		super(identifier, time);
+		super(TYPE, time);
 	}
 
 	/**
-	 * @see BaseTimeAttributeValue#BaseTimeAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see BaseTimeAttributeValue#BaseTimeAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public TimeAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	@Override

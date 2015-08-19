@@ -89,7 +89,7 @@ public class CombinerParameter extends oasis.names.tc.xacml._3_0.core.schema.wd_
 	 */
 	public CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param, ExpressionFactory expFactory) throws ParsingException
 	{
-		this(param.getParameterName(), expFactory.createAttributeValueExpression(param.getAttributeValue()).value());
+		this(param.getParameterName(), expFactory.createAttributeValue(param.getAttributeValue()));
 	}
 
 	/**

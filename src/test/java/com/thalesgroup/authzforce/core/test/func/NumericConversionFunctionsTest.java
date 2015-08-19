@@ -31,7 +31,6 @@ import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class NumericConversionFunctionsTest extends GeneralFunctionTest
@@ -45,11 +44,11 @@ public class NumericConversionFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 		// urn:oasis:names:tc:xacml:1.0:function:double-to-integer
-				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleAttributeValue("5.25")), new PrimitiveResult<>(new IntegerAttributeValue("5"), IntegerAttributeValue.TYPE) }, new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleAttributeValue("5.75")),
-						new PrimitiveResult<>(new IntegerAttributeValue("5"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleAttributeValue("5.25")), new IntegerAttributeValue("5") },//
+				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleAttributeValue("5.75")), new IntegerAttributeValue("5") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-to-double
-				new Object[] { NAME_INTEGER_TO_DOUBLE, Arrays.asList(new IntegerAttributeValue("5")), new PrimitiveResult<>(new DoubleAttributeValue("5."), IntegerAttributeValue.TYPE) });
+				new Object[] { NAME_INTEGER_TO_DOUBLE, Arrays.asList(new IntegerAttributeValue("5")), new DoubleAttributeValue("5.") });
 	}
 
 	protected NumericConversionFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

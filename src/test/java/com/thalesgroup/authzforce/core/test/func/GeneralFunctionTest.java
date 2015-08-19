@@ -68,7 +68,7 @@ public abstract class GeneralFunctionTest
 			funcCall = null;
 		} else
 		{
-			funcCall = function.parseInputs(inputs);
+			funcCall = function.newCall(inputs);
 		}
 
 		this.expectedResult = expectedResult;

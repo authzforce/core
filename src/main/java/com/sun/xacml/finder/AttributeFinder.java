@@ -61,7 +61,7 @@ public interface AttributeFinder
 	 * @param datatype
 	 *            datatype URI the datatype of the attribute to be matched
 	 * @param attributeGUID
-	 *            the global identifier (Category,Issuer,AttributeId) of the attribute to find
+	 *            the global TYPE_URI (Category,Issuer,AttributeId) of the attribute to find
 	 * @param context
 	 *            the representation of the request data
 	 * @param datatypeClass

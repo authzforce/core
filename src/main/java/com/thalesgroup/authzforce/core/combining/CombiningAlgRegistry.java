@@ -15,7 +15,7 @@ public interface CombiningAlgRegistry extends PdpExtensionRegistry<CombiningAlgo
 	 * Tries to return the correct combinging algorithm based on the given algorithm ID.
 	 * 
 	 * @param algId
-	 *            the identifier by which the algorithm is known
+	 *            the TYPE_URI by which the algorithm is known
 	 *            <p>
 	 *            WARNING: java.net.URI cannot be used here for XACML category and ID, because not
 	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in

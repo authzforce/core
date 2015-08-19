@@ -62,7 +62,7 @@ public class FunctionRegistry
 	 * 
 	 * @return function instance, null if none with such ID in the registry of non-generic
 	 *         functions, in which case it may be a generic function and you should try
-	 *         {@link #getFunction(String, BaseFunction, Class)} instead.
+	 *         {@link #getFunction(String, FirstOrderFunction, Class)} instead.
 	 */
 	public Function<? extends ExpressionResult<? extends AttributeValue>> getFunction(String functionId)
 	{
@@ -85,7 +85,7 @@ public class FunctionRegistry
 	 * @return function instance
 	 */
 	public <SUB_RETURN_T extends AttributeValue> Function<? extends ExpressionResult<? extends AttributeValue>> getFunction(String functionId,
-			BaseFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction, Class<? extends SUB_RETURN_T> subFunctionReturnType)
+			FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction, Class<? extends SUB_RETURN_T> subFunctionReturnType)
 	{
 		final Function<? extends ExpressionResult<? extends AttributeValue>> nonGenericFunc = nonGenericFunctionRegistry.getExtension(functionId);
 		if (nonGenericFunc != null)

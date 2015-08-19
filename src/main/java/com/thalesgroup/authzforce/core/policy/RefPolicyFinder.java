@@ -70,7 +70,7 @@ public class RefPolicyFinder implements Closeable
 	 * data to lookup a policy.
 	 * 
 	 * @param idRef
-	 *            the identifier used to resolve the policy by its Policy(Set)Id
+	 *            the TYPE_URI used to resolve the policy by its Policy(Set)Id
 	 *            <p>
 	 *            WARNING: java.net.URI cannot be used here, because not equivalent to XML schema
 	 *            anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.

@@ -34,7 +34,6 @@ import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class NumericArithmeticFunctionsTest extends GeneralFunctionTest
@@ -59,79 +58,79 @@ public class NumericArithmeticFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-add
-				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("1")), new PrimitiveResult<>(new IntegerAttributeValue("3"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("1")), new IntegerAttributeValue("3") },
 				//
-				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1")), new PrimitiveResult<>(new IntegerAttributeValue("1"), IntegerAttributeValue.TYPE) },
-				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1"), new IntegerAttributeValue("0"), new IntegerAttributeValue("3")), new PrimitiveResult<>(new IntegerAttributeValue("4"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1")), new IntegerAttributeValue("1") },
+				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1"), new IntegerAttributeValue("0"), new IntegerAttributeValue("3")), new IntegerAttributeValue("4") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-add
-				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("2.5")), new PrimitiveResult<>(new DoubleAttributeValue("4."), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("2.5")), new DoubleAttributeValue("4.") },
 				//
-				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("-2.5")), new PrimitiveResult<>(new DoubleAttributeValue("-1."), DoubleAttributeValue.TYPE) },
-				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleAttributeValue("1.25"), new DoubleAttributeValue("-2.75"), new DoubleAttributeValue("0."), new DoubleAttributeValue("4.")), new PrimitiveResult<>(new DoubleAttributeValue("2.5"), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("-2.5")), new DoubleAttributeValue("-1.") },
+				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleAttributeValue("1.25"), new DoubleAttributeValue("-2.75"), new DoubleAttributeValue("0."), new DoubleAttributeValue("4.")), new DoubleAttributeValue("2.5") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-subtract
-				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("1")), new PrimitiveResult<>(new IntegerAttributeValue("1"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("1")), new IntegerAttributeValue("1") },
 				//
-				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1")), new PrimitiveResult<>(new IntegerAttributeValue("3"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1")), new IntegerAttributeValue("3") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-subtract
-				new Object[] { NAME_DOUBLE_SUBTRACT, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("2.5")), new PrimitiveResult<>(new DoubleAttributeValue("-1."), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_DOUBLE_SUBTRACT, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("2.5")), new DoubleAttributeValue("-1.") },
 				//
-				new Object[] { NAME_DOUBLE_SUBTRACT, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("-2.5")), new PrimitiveResult<>(new DoubleAttributeValue("4."), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_DOUBLE_SUBTRACT, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("-2.5")), new DoubleAttributeValue("4.") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-multiply
-				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), new PrimitiveResult<>(new IntegerAttributeValue("6"), IntegerAttributeValue.TYPE) },//
-				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("0")), new PrimitiveResult<>(new IntegerAttributeValue("0"), IntegerAttributeValue.TYPE) },
-				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1"), new IntegerAttributeValue("3")), new PrimitiveResult<>(new IntegerAttributeValue("-6"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), new IntegerAttributeValue("6") },//
+				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("0")), new IntegerAttributeValue("0") },
+				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("-1"), new IntegerAttributeValue("3")), new IntegerAttributeValue("-6") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-multiply
-				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("2.5")), new PrimitiveResult<>(new DoubleAttributeValue("3.75"), DoubleAttributeValue.TYPE) },//
-				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("0")), new PrimitiveResult<>(new DoubleAttributeValue("0"), DoubleAttributeValue.TYPE) },
-				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleAttributeValue("1.25"), new DoubleAttributeValue("-2.75"), new DoubleAttributeValue("1.5")), new PrimitiveResult<>(new DoubleAttributeValue("-5.15625"), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("2.5")), new DoubleAttributeValue("3.75") },//
+				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleAttributeValue("1.5"), new DoubleAttributeValue("0")), new DoubleAttributeValue("0") },
+				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleAttributeValue("1.25"), new DoubleAttributeValue("-2.75"), new DoubleAttributeValue("1.5")), new DoubleAttributeValue("-5.15625") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-divide
-				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerAttributeValue("6"), new IntegerAttributeValue("3")), new PrimitiveResult<>(new IntegerAttributeValue("2"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerAttributeValue("6"), new IntegerAttributeValue("3")), new IntegerAttributeValue("2") },
 				//
-				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerAttributeValue("7"), new IntegerAttributeValue("-3")), new PrimitiveResult<>(new IntegerAttributeValue("-2"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerAttributeValue("7"), new IntegerAttributeValue("-3")), new IntegerAttributeValue("-2") },
 				//
-				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerAttributeValue("0"), new IntegerAttributeValue("-3")), new PrimitiveResult<>(new IntegerAttributeValue("0"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerAttributeValue("0"), new IntegerAttributeValue("-3")), new IntegerAttributeValue("0") },
 				//
 				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerAttributeValue("-3"), new IntegerAttributeValue("0")), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-divide
 				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleAttributeValue("6.5"), new DoubleAttributeValue("2.5")), new DoubleAttributeValue("2.6") },
 				//
-				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleAttributeValue("7."), new DoubleAttributeValue("-2.")), new PrimitiveResult<>(new DoubleAttributeValue("-3.5"), DoubleAttributeValue.TYPE) }, //
-				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleAttributeValue("0."), new DoubleAttributeValue("-3.14")), new PrimitiveResult<>(new DoubleAttributeValue("0."), DoubleAttributeValue.TYPE) }, //
+				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleAttributeValue("7."), new DoubleAttributeValue("-2.")), new DoubleAttributeValue("-3.5") }, //
+				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleAttributeValue("0."), new DoubleAttributeValue("-3.14")), new DoubleAttributeValue("0.") }, //
 				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleAttributeValue("-3.14"), new DoubleAttributeValue("0.")), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-mod
-				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerAttributeValue("6"), new IntegerAttributeValue("3")), new PrimitiveResult<>(new IntegerAttributeValue("0"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerAttributeValue("6"), new IntegerAttributeValue("3")), new IntegerAttributeValue("0") },
 				//
-				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerAttributeValue("7"), new IntegerAttributeValue("3")), new PrimitiveResult<>(new IntegerAttributeValue("1"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerAttributeValue("7"), new IntegerAttributeValue("3")), new IntegerAttributeValue("1") },
 				//
-				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerAttributeValue("0"), new IntegerAttributeValue("-3")), new PrimitiveResult<>(new IntegerAttributeValue("0"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerAttributeValue("0"), new IntegerAttributeValue("-3")), new IntegerAttributeValue("0") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-abs
-				new Object[] { NAME_INTEGER_ABS, Arrays.asList(new IntegerAttributeValue("5")), new PrimitiveResult<>(new IntegerAttributeValue("5"), IntegerAttributeValue.TYPE) },//
-				new Object[] { NAME_INTEGER_ABS, Arrays.asList(new IntegerAttributeValue("-5")), new PrimitiveResult<>(new IntegerAttributeValue("5"), IntegerAttributeValue.TYPE) },
+				new Object[] { NAME_INTEGER_ABS, Arrays.asList(new IntegerAttributeValue("5")), new IntegerAttributeValue("5") },//
+				new Object[] { NAME_INTEGER_ABS, Arrays.asList(new IntegerAttributeValue("-5")), new IntegerAttributeValue("5") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-abs
-				new Object[] { NAME_DOUBLE_ABS, Arrays.asList(new DoubleAttributeValue("5.25")), new PrimitiveResult<>(new DoubleAttributeValue("5.25"), DoubleAttributeValue.TYPE) },//
-				new Object[] { NAME_DOUBLE_ABS, Arrays.asList(new DoubleAttributeValue("-5.")), new PrimitiveResult<>(new DoubleAttributeValue("5."), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_DOUBLE_ABS, Arrays.asList(new DoubleAttributeValue("5.25")), new DoubleAttributeValue("5.25") },//
+				new Object[] { NAME_DOUBLE_ABS, Arrays.asList(new DoubleAttributeValue("-5.")), new DoubleAttributeValue("5.") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:round
-				new Object[] { NAME_ROUND, Arrays.asList(new DoubleAttributeValue("5.25")), new PrimitiveResult<>(new DoubleAttributeValue("5."), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_ROUND, Arrays.asList(new DoubleAttributeValue("5.25")), new DoubleAttributeValue("5.") },
 				//
-				new Object[] { NAME_ROUND, Arrays.asList(new DoubleAttributeValue("-5.75")), new PrimitiveResult<>(new DoubleAttributeValue("-6."), DoubleAttributeValue.TYPE) },//
-				new Object[] { NAME_ROUND, Arrays.asList(new DoubleAttributeValue("5.5")), new PrimitiveResult<>(new DoubleAttributeValue("6."), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_ROUND, Arrays.asList(new DoubleAttributeValue("-5.75")), new DoubleAttributeValue("-6.") },//
+				new Object[] { NAME_ROUND, Arrays.asList(new DoubleAttributeValue("5.5")), new DoubleAttributeValue("6.") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:floor
-				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleAttributeValue("5.25")), new PrimitiveResult<>(new DoubleAttributeValue("5."), DoubleAttributeValue.TYPE) },
+				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleAttributeValue("5.25")), new DoubleAttributeValue("5.") },
 				//
-				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleAttributeValue("-5.25")), new PrimitiveResult<>(new DoubleAttributeValue("-6."), DoubleAttributeValue.TYPE) },//
-				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleAttributeValue("5.5")), new PrimitiveResult<>(new DoubleAttributeValue("5."), DoubleAttributeValue.TYPE) });
+				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleAttributeValue("-5.25")), new DoubleAttributeValue("-6.") },//
+				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleAttributeValue("5.5")), new DoubleAttributeValue("5.") });
 	}
 
 	public NumericArithmeticFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

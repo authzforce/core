@@ -59,7 +59,7 @@ public class TestAttributeFinderModule extends AttributeFinderModule
 		@Override
 		public DependencyAwareFactory<TestAttributeFinder> parseDependencies(final TestAttributeFinder conf)
 		{
-			return new DependencyAwareFactory<TestAttributeFinder>(conf)
+			return new DependencyAwareFactory<TestAttributeFinder>()
 			{
 
 				@Override

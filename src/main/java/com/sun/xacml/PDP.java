@@ -319,7 +319,7 @@ public class PDP implements Closeable
 		 * Every request context (named attributes) is completed with common current date/time
 		 * attribute (same values) set/"issued" locally (here by the PDP engine) according to XACML
 		 * core spec:
-		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created."
+		 * "This TYPE_URI indicates the current time at the context handler. In practice it is the time at which the request context was created."
 		 * (§ B.7).
 		 */
 		final Map<AttributeGUID, BagResult<? extends AttributeValue>> pdpIssuedAttributes = new HashMap<>();

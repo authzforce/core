@@ -138,7 +138,7 @@ public class DNSNameAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public DNSNameAttributeValue(AttributeValueType jaxbAttrVal)
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 		final Entry<String, PortRange> hostAndPortRange = parseDnsName(this.value);
 		this.hostname = hostAndPortRange.getKey();
 		this.portRange = hostAndPortRange.getValue();

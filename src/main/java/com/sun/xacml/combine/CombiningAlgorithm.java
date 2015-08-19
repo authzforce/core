@@ -60,7 +60,7 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 {
 	private static final String LEGACY_ALG_WARNING = "{} is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
 
-	// the identifier for the algorithm
+	// the TYPE_URI for the algorithm
 	private final String id;
 
 	private final String toString;
@@ -72,8 +72,8 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 	/**
 	 * Constructor that takes the algorithm's identifiers.
 	 * 
-	 * @param identifier
-	 *            the algorithm's identifier WARNING: java.net.URI cannot be used here for XACML
+	 * @param TYPE_URI
+	 *            the algorithm's TYPE_URI WARNING: java.net.URI cannot be used here for XACML
 	 *            category and ID, because not equivalent to XML schema anyURI type. Spaces are
 	 *            allowed in XSD anyURI [1], not in java.net.URI for example. That's why we use
 	 *            String instead. </p>
@@ -89,10 +89,10 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 	}
 
 	/**
-	 * Constructor that takes the algorithm's identifier.
+	 * Constructor that takes the algorithm's TYPE_URI.
 	 * 
-	 * @param identifier
-	 *            the algorithm's identifier
+	 * @param TYPE_URI
+	 *            the algorithm's TYPE_URI
 	 *            <p>
 	 *            WARNING: java.net.URI cannot be used here for XACML category and ID, because not
 	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in

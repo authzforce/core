@@ -29,7 +29,9 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerBagEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPartlyBagEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
  * Base class for first-order bag function groups, as opposed to the higher-order bag functions (see
@@ -41,37 +43,37 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 {
 	private static enum StandardTypeParameter
 	{
-		STRING(new GenericTypeParameter<>(StringAttributeValue.identifier, StringAttributeValue[].class, Function.FUNCTION_NS_1 + "string")),
+		STRING(new GenericTypeParameter<>(StringAttributeValue.TYPE_URI, StringAttributeValue[].class, Function.FUNCTION_NS_1 + "string")),
 		//
-		BOOLEAN(new GenericTypeParameter<>(BooleanAttributeValue.identifier, BooleanAttributeValue[].class, Function.FUNCTION_NS_1 + "boolean")),
+		BOOLEAN(new GenericTypeParameter<>(BooleanAttributeValue.TYPE_URI, BooleanAttributeValue[].class, Function.FUNCTION_NS_1 + "boolean")),
 		//
-		INTEGER(new GenericTypeParameter<>(IntegerAttributeValue.identifier, IntegerAttributeValue[].class, Function.FUNCTION_NS_1 + "integer")),
+		INTEGER(new GenericTypeParameter<>(IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class, Function.FUNCTION_NS_1 + "integer")),
 		//
-		DOUBLE(new GenericTypeParameter<>(DoubleAttributeValue.identifier, DoubleAttributeValue[].class, Function.FUNCTION_NS_1 + "double")),
+		DOUBLE(new GenericTypeParameter<>(DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class, Function.FUNCTION_NS_1 + "double")),
 		//
-		TIME(new GenericTypeParameter<>(TimeAttributeValue.identifier, TimeAttributeValue[].class, Function.FUNCTION_NS_1 + "time")),
+		TIME(new GenericTypeParameter<>(TimeAttributeValue.TYPE_URI, TimeAttributeValue[].class, Function.FUNCTION_NS_1 + "time")),
 		//
-		DATE(new GenericTypeParameter<>(DateAttributeValue.identifier, DateAttributeValue[].class, Function.FUNCTION_NS_1 + "date")),
+		DATE(new GenericTypeParameter<>(DateAttributeValue.TYPE_URI, DateAttributeValue[].class, Function.FUNCTION_NS_1 + "date")),
 		//
-		DATETIME(new GenericTypeParameter<>(DateTimeAttributeValue.identifier, DateTimeAttributeValue[].class, Function.FUNCTION_NS_1 + "dateTime")),
+		DATETIME(new GenericTypeParameter<>(DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue[].class, Function.FUNCTION_NS_1 + "dateTime")),
 		//
-		ANYURI(new GenericTypeParameter<>(AnyURIAttributeValue.identifier, AnyURIAttributeValue[].class, Function.FUNCTION_NS_1 + "anyURI")),
+		ANYURI(new GenericTypeParameter<>(AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue[].class, Function.FUNCTION_NS_1 + "anyURI")),
 		//
-		HEXBINARY(new GenericTypeParameter<>(HexBinaryAttributeValue.identifier, HexBinaryAttributeValue[].class, Function.FUNCTION_NS_1 + "hexBinary")),
+		HEXBINARY(new GenericTypeParameter<>(HexBinaryAttributeValue.TYPE_URI, HexBinaryAttributeValue[].class, Function.FUNCTION_NS_1 + "hexBinary")),
 		//
-		BASE64BINARY(new GenericTypeParameter<>(Base64BinaryAttributeValue.identifier, Base64BinaryAttributeValue[].class, Function.FUNCTION_NS_1 + "base64Binary")),
+		BASE64BINARY(new GenericTypeParameter<>(Base64BinaryAttributeValue.TYPE_URI, Base64BinaryAttributeValue[].class, Function.FUNCTION_NS_1 + "base64Binary")),
 		//
-		X500NAME(new GenericTypeParameter<>(X500NameAttributeValue.identifier, X500NameAttributeValue[].class, Function.FUNCTION_NS_1 + "x500Name")),
+		X500NAME(new GenericTypeParameter<>(X500NameAttributeValue.TYPE_URI, X500NameAttributeValue[].class, Function.FUNCTION_NS_1 + "x500Name")),
 		//
-		RFC822NAME(new GenericTypeParameter<>(RFC822NameAttributeValue.identifier, RFC822NameAttributeValue[].class, Function.FUNCTION_NS_1 + "rfc822Name")),
+		RFC822NAME(new GenericTypeParameter<>(RFC822NameAttributeValue.TYPE_URI, RFC822NameAttributeValue[].class, Function.FUNCTION_NS_1 + "rfc822Name")),
 		//
 		IPADDRESS(new GenericTypeParameter<>(IPAddressAttributeValue.identifier, IPAddressAttributeValue[].class, Function.FUNCTION_NS_2 + "ipAddress")),
 		//
 		DNSNAME(new GenericTypeParameter<>(DNSNameAttributeValue.identifier, DNSNameAttributeValue[].class, Function.FUNCTION_NS_2 + "dnsName")),
 		//
-		DAYTIMEDURATION(new GenericTypeParameter<>(DayTimeDurationAttributeValue.identifier, DayTimeDurationAttributeValue[].class, Function.FUNCTION_NS_3 + "dayTimeDuration")),
+		DAYTIMEDURATION(new GenericTypeParameter<>(DayTimeDurationAttributeValue.TYPE_URI, DayTimeDurationAttributeValue[].class, Function.FUNCTION_NS_3 + "dayTimeDuration")),
 		//
-		YEARMONTHDURATION(new GenericTypeParameter<>(YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue[].class, Function.FUNCTION_NS_3 + "yearMonthDuration"));
+		YEARMONTHDURATION(new GenericTypeParameter<>(YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue[].class, Function.FUNCTION_NS_3 + "yearMonthDuration"));
 
 		private final GenericTypeParameter<? extends AttributeValue> genericTypeParameter;
 
@@ -164,7 +166,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 	}
 
-	private static class SingletonBagToPrimitive<T extends AttributeValue> extends BaseFunction<PrimitiveResult<T>>
+	private static class SingletonBagToPrimitive<T extends AttributeValue> extends FirstOrderFunction<T>
 	{
 
 		private final Class<T[]> arrayClass;
@@ -178,15 +180,15 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+		protected final FirstOrderFunctionCall<T> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerBagEvalCall<T>(arrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+			return new EagerBagEval<T, T>(signature, arrayClass, argExpressions, remainingArgTypes)
 			{
 
 				@Override
-				protected final PrimitiveResult<T> evaluate(T[][] bagArgs, T[] remainingArgs) throws IndeterminateEvaluationException
+				protected final T evaluate(T[][] bagArgs, T[] remainingArgs) throws IndeterminateEvaluationException
 				{
-					return new PrimitiveResult<>(eval(bagArgs[0]), returnType);
+					return eval(bagArgs[0]);
 				}
 			};
 		}
@@ -202,7 +204,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 	}
 
-	private static class BagSize<T extends AttributeValue> extends BaseFunction<PrimitiveResult<IntegerAttributeValue>>
+	private static class BagSize<T extends AttributeValue> extends FirstOrderFunction<IntegerAttributeValue>
 	{
 
 		private final Class<T[]> arrayClass;
@@ -214,15 +216,15 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+		protected final FirstOrderFunctionCall<IntegerAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerBagEvalCall<T>(arrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+			return new EagerBagEval<IntegerAttributeValue, T>(signature, arrayClass, argExpressions, remainingArgTypes)
 			{
 
 				@Override
-				protected final PrimitiveResult<IntegerAttributeValue> evaluate(T[][] bagArgs, T[] remainingArgs) throws IndeterminateEvaluationException
+				protected final IntegerAttributeValue evaluate(T[][] bagArgs, T[] remainingArgs) throws IndeterminateEvaluationException
 				{
-					return new PrimitiveResult<>(eval(bagArgs[0]), returnType);
+					return eval(bagArgs[0]);
 				}
 
 			};
@@ -235,7 +237,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 
 	}
 
-	private static class BagContains<T extends AttributeValue> extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+	private static class BagContains<T extends AttributeValue> extends FirstOrderFunction<BooleanAttributeValue>
 	{
 
 		private final Class<T[]> arrayClass;
@@ -247,15 +249,15 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+		protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerPartlyBagEvalCall<T>(arrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+			return new EagerPartlyBagEval<BooleanAttributeValue, T>(signature, arrayClass, argExpressions, remainingArgTypes)
 			{
 
 				@Override
-				protected final PrimitiveResult<BooleanAttributeValue> evaluate(T[] primArgsBeforeBag, T[][] bagArgs, T[] remainingArgs) throws IndeterminateEvaluationException
+				protected final BooleanAttributeValue evaluate(T[] primArgsBeforeBag, T[][] bagArgs, T[] remainingArgs) throws IndeterminateEvaluationException
 				{
-					return PrimitiveResult.getInstance(eval(primArgsBeforeBag[0], bagArgs[0]));
+					return BooleanAttributeValue.valueOf(eval(primArgsBeforeBag[0], bagArgs[0]));
 				}
 
 			};
@@ -275,7 +277,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 	}
 
-	private static class PrimitiveToBag<T extends AttributeValue> extends BaseFunction<BagResult<T>>
+	private static class PrimitiveToBag<T extends AttributeValue> extends FirstOrderFunction<BagResult<T>>
 	{
 
 		private final Class<T[]> arrayClass;
@@ -289,19 +291,18 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+		protected final FirstOrderFunctionCall<BagResult<T>> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerPrimitiveEvalCall<T>(arrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+			return new EagerPrimitiveEval<BagResult<T>, T>(signature, arrayClass, argExpressions, remainingArgTypes)
 			{
 
 				@Override
 				protected BagResult<T> evaluate(T[] args) throws IndeterminateEvaluationException
 				{
-					return new BagResult<>(args, datatypeClass, returnType);
+					return new BagResult<>(args, datatypeClass, signature.getReturnType());
 				}
 			};
 		}
-
 	}
 
 	/**
@@ -355,7 +356,16 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 	}
 
-	private static abstract class SetFunction<PRIMITIVE_T extends AttributeValue, RETURN_T extends ExpressionResult<? extends AttributeValue>> extends BaseFunction<RETURN_T>
+	/**
+	 * 
+	 * Base class of all *-set functions
+	 * 
+	 * @param <PRIMITIVE_T>
+	 *            primitive type of elements in bag/set
+	 * @param <RETURN_T>
+	 *            return type
+	 */
+	private static abstract class SetFunction<PRIMITIVE_T extends AttributeValue, RETURN_T extends ExpressionResult<? extends AttributeValue>> extends FirstOrderFunction<RETURN_T>
 	{
 
 		private final Class<PRIMITIVE_T[]> arrayClass;
@@ -377,9 +387,9 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+		protected final FirstOrderFunctionCall<RETURN_T> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerBagEvalCall<PRIMITIVE_T>(arrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+			return new EagerBagEval<RETURN_T, PRIMITIVE_T>(signature, arrayClass, argExpressions, remainingArgTypes)
 			{
 
 				@Override
@@ -403,7 +413,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		@Override
 		protected final BagResult<T> eval(T[][] bagArgs)
 		{
-			return new BagResult<>(eval(bagArgs[0], bagArgs[1]), datatypeClass, returnType);
+			return new BagResult<>(eval(bagArgs[0], bagArgs[1]), datatypeClass, signature.getReturnType());
 		}
 
 		private final static <V extends AttributeValue> Set<V> eval(V[] bag0, V[] bag1)
@@ -416,7 +426,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 
 	}
 
-	private static class AtLeastOneMemberOf<T extends AttributeValue> extends SetFunction<T, PrimitiveResult<BooleanAttributeValue>>
+	private static class AtLeastOneMemberOf<T extends AttributeValue> extends SetFunction<T, BooleanAttributeValue>
 	{
 		private AtLeastOneMemberOf(String functionId, DatatypeDef bagType, Class<T[]> typeValArrayClass)
 		{
@@ -424,9 +434,9 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected final PrimitiveResult<BooleanAttributeValue> eval(T[][] bagArgs)
+		protected final BooleanAttributeValue eval(T[][] bagArgs)
 		{
-			return PrimitiveResult.getInstance(eval(bagArgs[0], bagArgs[1]));
+			return BooleanAttributeValue.valueOf(eval(bagArgs[0], bagArgs[1]));
 		}
 
 		private final static <V extends AttributeValue> boolean eval(V[] bag0, V[] bag1)
@@ -464,11 +474,11 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 				}
 			}
 
-			return new BagResult<>(result, datatypeClass, returnType);
+			return new BagResult<>(result, datatypeClass, signature.getReturnType());
 		}
 	}
 
-	private static class Subset<T extends AttributeValue> extends SetFunction<T, PrimitiveResult<BooleanAttributeValue>>
+	private static class Subset<T extends AttributeValue> extends SetFunction<T, BooleanAttributeValue>
 	{
 		private Subset(String functionId, DatatypeDef bagType, Class<T[]> typeValArrayClass)
 		{
@@ -476,9 +486,9 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected final PrimitiveResult<BooleanAttributeValue> eval(T[][] bagArgs)
+		protected final BooleanAttributeValue eval(T[][] bagArgs)
 		{
-			return PrimitiveResult.getInstance(eval(bagArgs[0], bagArgs[1]));
+			return BooleanAttributeValue.valueOf(eval(bagArgs[0], bagArgs[1]));
 		}
 
 		private final static <V extends AttributeValue> boolean eval(V[] bag0, V[] bag1)
@@ -490,7 +500,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 
 	}
 
-	private static class SetEquals<T extends AttributeValue> extends SetFunction<T, PrimitiveResult<BooleanAttributeValue>>
+	private static class SetEquals<T extends AttributeValue> extends SetFunction<T, BooleanAttributeValue>
 	{
 		private SetEquals(String functionId, DatatypeDef bagType, Class<T[]> typeValArrayClass)
 		{
@@ -498,9 +508,9 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		}
 
 		@Override
-		protected final PrimitiveResult<BooleanAttributeValue> eval(T[][] bagArgs)
+		protected final BooleanAttributeValue eval(T[][] bagArgs)
 		{
-			return PrimitiveResult.getInstance(eval(bagArgs[0], bagArgs[1]));
+			return BooleanAttributeValue.valueOf(eval(bagArgs[0], bagArgs[1]));
 		}
 
 		private final static <V extends AttributeValue> boolean eval(V[] bag0, V[] bag1)

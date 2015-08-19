@@ -67,8 +67,8 @@ import com.thalesgroup.authzforce.core.attr.XPathAttributeValue;
 import com.thalesgroup.authzforce.core.eval.BagResult;
 import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.JAXBBoundExpression;
 
 /**
  * Implements AttributeSelector support, which uses XPath expressions (using Saxon parser) to
@@ -100,7 +100,7 @@ import com.thalesgroup.authzforce.core.eval.JAXBBoundExpression;
  * @param <T>
  *            AttributeSelector evaluation results' primitive datatype
  */
-public class AttributeSelector<T extends AttributeValue> extends AttributeSelectorType implements JAXBBoundExpression<AttributeSelectorType, BagResult<T>>
+public class AttributeSelector<T extends AttributeValue> extends AttributeSelectorType implements Expression<BagResult<T>>
 {
 	/*
 	 * Wrapper around XPathExecutable that provides the original XPath expression from which the
@@ -378,9 +378,9 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 	 * Invokes the <code>AttributeFinder</code> used by the given <code>EvaluationContext</code> to
 	 * try to resolve an attribute value. If the selector is defined with MustBePresent as true,
 	 * then failure to find a matching value will result in Indeterminate, otherwise it will result
-	 * in an empty bag. To support the com.thalesgroup.authzforce.core.test.basic selector functionality defined in the XACML
-	 * specification, use a finder that has only the <code>SelectorModule</code> as a module that
-	 * supports selector finding.
+	 * in an empty bag. To support the com.thalesgroup.authzforce.core.test.basic selector
+	 * functionality defined in the XACML specification, use a finder that has only the
+	 * <code>SelectorModule</code> as a module that supports selector finding.
 	 * 
 	 * @param context
 	 *            representation of the request to search

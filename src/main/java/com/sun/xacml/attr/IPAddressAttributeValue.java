@@ -65,8 +65,7 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	private final InetAddress mask;
 	private final PortRange portRange;
 
-	private static void parseIPAddress(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask,
-			Holder<PortRange> returnedRange)
+	private static void parseIPAddress(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
 	{
 		// an IPv6 address starts with a '['
 		if (val.indexOf('[') == 0)
@@ -78,11 +77,10 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	}
 
 	/*
-	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
-	 * contrary to the JDK InetAddress.getByName(). Therefore no UnknownHostException to handle.
+	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to
+	 * the JDK InetAddress.getByName(). Therefore no UnknownHostException to handle.
 	 */
-	private static void parseIPv4Address(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask,
-			Holder<PortRange> returnedRange)
+	private static void parseIPv4Address(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
 	{
 		final InetAddress address;
 		final InetAddress mask;
@@ -126,7 +124,7 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 				 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
 				 * contrary to the JDK InetAddress.getByName().
 				 */
-				mask =InetAddresses.forString(val.substring(maskPos + 1, val.length()));
+				mask = InetAddresses.forString(val.substring(maskPos + 1, val.length()));
 				// if the range is null, then create it as unbound
 				range = new PortRange();
 			}
@@ -148,11 +146,10 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	}
 
 	/*
-	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
-	 * contrary to the JDK InetAddress.getByName(). Therefore no UnknownHostException to handle.
+	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to
+	 * the JDK InetAddress.getByName(). Therefore no UnknownHostException to handle.
 	 */
-	private static void parseIPv6Address(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask,
-			Holder<PortRange> returnedRange)
+	private static void parseIPv6Address(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
 	{
 		// Let's validate
 		final InetAddress address;
@@ -163,8 +160,8 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 		// get the required address component
 		int endIndex = val.indexOf(']');
 		/*
-		 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
-		 * contrary to the JDK InetAddress.getByName().
+		 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary
+		 * to the JDK InetAddress.getByName().
 		 */
 		address = InetAddresses.forString(val.substring(1, endIndex));
 
@@ -203,24 +200,27 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 
 	/**
 	 * Instantiates from string representation
-	 * @param val string form of IP address
+	 * 
+	 * @param val
+	 *            string form of IP address
 	 */
 	public IPAddressAttributeValue(String val)
 	{
-		this(new AttributeValueType(Collections.<Serializable>singletonList(val), identifier, null));
+		this(new AttributeValueType(Collections.<Serializable> singletonList(val), identifier, null));
 	}
 
 	/**
 	 * Instantiates from XACML AttributeValue
+	 * 
 	 * @param jaxbAttrVal
 	 */
 	public IPAddressAttributeValue(AttributeValueType jaxbAttrVal)
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 		final Holder<InetAddress> addressHolder = new Holder<>();
 		final Holder<InetAddress> maskHolder = new Holder<>();
 		final Holder<PortRange> rangeHolder = new Holder<>();
-		 parseIPAddress(this.value, addressHolder, maskHolder, rangeHolder);
+		parseIPAddress(this.value, addressHolder, maskHolder, rangeHolder);
 		address = addressHolder.value;
 		mask = maskHolder.value;
 		portRange = rangeHolder.value;
@@ -230,16 +230,17 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	 * Official name of this type
 	 */
 	public static final String identifier = "urn:oasis:names:tc:xacml:2.0:data-type:ipAddress";
-	
+
 	/**
 	 * Generic type info
 	 */
 	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
-	
+
 	/**
 	 * RefPolicyFinderModuleFactory instance
 	 */
-	public static final AttributeValue.Factory<IPAddressAttributeValue> FACTORY = new  AttributeValue.Factory<IPAddressAttributeValue>(IPAddressAttributeValue.class) {
+	public static final AttributeValue.Factory<IPAddressAttributeValue> FACTORY = new AttributeValue.Factory<IPAddressAttributeValue>(IPAddressAttributeValue.class)
+	{
 
 		@Override
 		public String getId()
@@ -252,7 +253,7 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 		{
 			return new IPAddressAttributeValue(jaxbAttributeValue);
 		}
-		
+
 	};
 
 	@Override

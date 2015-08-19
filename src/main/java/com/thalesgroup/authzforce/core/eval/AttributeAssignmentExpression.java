@@ -26,7 +26,7 @@ public class AttributeAssignmentExpression extends oasis.names.tc.xacml._3_0.cor
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeAssignmentExpression.class);
 
-	private final JAXBBoundExpression<?, ? extends ExpressionResult<? extends AttributeValue>> evaluatableExpression;
+	private final Expression<? extends ExpressionResult<? extends AttributeValue>> evaluatableExpression;
 
 	private static final UnsupportedOperationException UNSUPPORTED_SET_EXPRESSION_OPERATION_EXCEPTION = new UnsupportedOperationException("Unsupported operation: 'Expression' attribute is read-only");
 

@@ -47,7 +47,6 @@ import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.BagResult;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class SetFunctionsTest extends GeneralFunctionTest
@@ -242,133 +241,133 @@ public class SetFunctionsTest extends GeneralFunctionTest
 
 						// urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of
 						new Object[] { NAME_STRING_AT_LEAST_ONE_MEMBER_OF, new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-								new BagResult<>(Arrays.asList(new StringAttributeValue("String2"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE), PrimitiveResult.TRUE },
+								new BagResult<>(Arrays.asList(new StringAttributeValue("String2"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE), BooleanAttributeValue.TRUE },
 						new Object[] { NAME_STRING_AT_LEAST_ONE_MEMBER_OF, new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String1")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-								new BagResult<>(Arrays.asList(new StringAttributeValue("String2"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE), PrimitiveResult.FALSE },
+								new BagResult<>(Arrays.asList(new StringAttributeValue("String2"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:boolean-at-least-one-member-of
 						new Object[] { NAME_BOOLEAN_AT_LEAST_ONE_MEMBER_OF, new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE),
-								new BagResult<>(Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), PrimitiveResult.TRUE },
+								new BagResult<>(Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BOOLEAN_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE),
-										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-at-least-one-member-of
 						new Object[] {
 								NAME_INTEGER_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("2")),
-										IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_INTEGER_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("1")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new IntegerAttributeValue("2"), new IntegerAttributeValue("2")),
-										IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-at-least-one-member-of
 						new Object[] {
 								NAME_DOUBLE_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DoubleAttributeValue("3.14"), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DoubleAttributeValue("3.14"), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DOUBLE_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("2."), new DoubleAttributeValue("2.")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DoubleAttributeValue("3.14"), new DoubleAttributeValue("3.14")),
-										DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:time-at-least-one-member-of
 						new Object[] {
 								NAME_TIME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new TimeAttributeValue("17:18:19"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new TimeAttributeValue("17:18:19"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_TIME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new TimeAttributeValue("17:18:19"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new TimeAttributeValue("17:18:19"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:date-at-least-one-member-of
 						new Object[] {
 								NAME_DATE_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2003-10-25"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2003-10-25"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATE_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2003-10-25"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2003-10-25"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:dateTime-at-least-one-member-of
 						new Object[] {
 								NAME_DATETIME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2003-10-25T17:18:19"), new DateTimeAttributeValue("2003-10-25T17:18:19")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2003-10-25T17:18:19"), new DateTimeAttributeValue("2003-10-25T17:18:19")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATETIME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2003-10-25T17:18:19"), new DateTimeAttributeValue("2003-10-25T17:18:19")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2003-10-25T17:18:19"), new DateTimeAttributeValue("2003-10-25T17:18:19")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:anyURI-at-least-one-member-of
 						new Object[] {
 								NAME_ANYURI_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com/videos/sample.avi"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com/videos/sample.avi"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_ANYURI_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com/videos/sample.avi"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com/videos/sample.avi"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:hexBinary-at-least-one-member-of
 						new Object[] {
 								NAME_HEXBINARY_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB8"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB8"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_HEXBINARY_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB8"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB8"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:base64Binary-at-least-one-member-o
 						new Object[] { NAME_BASE64BINARY_AT_LEAST_ONE_MEMBER_OF, Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("T3RoZXI="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+								new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("T3RoZXI="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BASE64BINARY_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("T3RoZXI="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("T3RoZXI="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-at-least-one-member-of
 						new Object[] {
 								NAME_DAYTIMEDURATION_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("-P0D")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("PT26H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("PT26H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] { NAME_DAYTIMEDURATION_AT_LEAST_ONE_MEMBER_OF, Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("-P0D"), new DayTimeDurationAttributeValue("-P0D")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("PT26H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+								new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("PT26H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:3.0:function:yearMonthDuration-at-least-one-member-of
 						new Object[] {
 								NAME_YEARMONTHDURATION_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("-P0Y")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P14M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P14M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_YEARMONTHDURATION_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("-P0Y"), new YearMonthDurationAttributeValue("-P0Y")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P14M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P14M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:x500Name-at-least-one-member-of
 						new Object[] {
 								NAME_X500NAME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_X500NAME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-at-least-one-member-of
 						new Object[] {
 								NAME_RFC822NAME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("Smith@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("Smith@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_RFC822NAME_AT_LEAST_ONE_MEMBER_OF,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("Smith@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("Smith@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:string-union
 						new Object[] {
@@ -468,433 +467,435 @@ public class SetFunctionsTest extends GeneralFunctionTest
 						new Object[] {
 								NAME_STRING_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_STRING_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_STRING_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:boolean-subset
 						new Object[] {
 								NAME_BOOLEAN_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE),
-										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), PrimitiveResult.TRUE },
+										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BOOLEAN_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE),
-										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), PrimitiveResult.TRUE },
+										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BOOLEAN_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE),
-										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), PrimitiveResult.FALSE },
+										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-subset
 						new Object[] { NAME_INTEGER_SUBSET, Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("2")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+								new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_INTEGER_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_INTEGER_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-subset
 						new Object[] { NAME_DOUBLE_SUBSET, Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("2.")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+								new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DOUBLE_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DOUBLE_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2.")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2.")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:time-subset
 						new Object[] { NAME_TIME_SUBSET, Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+								new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_TIME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_TIME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:date-subset
 						new Object[] {
 								NAME_DATE_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATE_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATE_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:dateTime-subset
 						new Object[] {
 								NAME_DATETIME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)),
-								PrimitiveResult.TRUE },
+								BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATETIME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")),
 										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")),
-										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATETIME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")),
 										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:anyURI-subset
 						new Object[] {
 								NAME_ANYURI_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif")), AnyURIAttributeValue.class,
 										AnyURIAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")),
-										AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_ANYURI_SUBSET,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue(
 												"http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class,
-												AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+												AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_ANYURI_SUBSET,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue(
 												"http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:hexBinary-subset
 						new Object[] {
 								NAME_HEXBINARY_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_HEXBINARY_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_HEXBINARY_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:base64Binary-subset
 						new Object[] {
 								NAME_BASE64BINARY_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)),
-								PrimitiveResult.TRUE },
+								BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BASE64BINARY_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class,
 										Base64BinaryAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class,
-										Base64BinaryAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										Base64BinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BASE64BINARY_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class,
-										Base64BinaryAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										Base64BinaryAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)),
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-subset
 						new Object[] {
 								NAME_DAYTIMEDURATION_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT2H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.TRUE },
+								BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DAYTIMEDURATION_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class,
 										DayTimeDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class,
-										DayTimeDurationAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										DayTimeDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DAYTIMEDURATION_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class,
 										DayTimeDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("PT26H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:3.0:function:yearMonthDuration-subset
 						new Object[] {
 								NAME_YEARMONTHDURATION_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y2M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.TRUE },
+								BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_YEARMONTHDURATION_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class,
 										YearMonthDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class,
-										YearMonthDurationAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										YearMonthDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_YEARMONTHDURATION_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class,
 										YearMonthDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P14M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:x500Name-subset
 						new Object[] {
 								NAME_X500NAME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), X500NameAttributeValue.class,
 										X500NameAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")),
-										X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_X500NAME_SUBSET,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue(
 												"cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class,
-												X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+												X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_X500NAME_SUBSET,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue(
 												"cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-subset
 						new Object[] {
 								NAME_RFC822NAME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)),
-								PrimitiveResult.TRUE },
+								BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_RFC822NAME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")),
 										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")),
-										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_RFC822NAME_SUBSET,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")),
 										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com")), RFC822NameAttributeValue.class,
-										RFC822NameAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										RFC822NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:string-set-equals
 						new Object[] {
 								NAME_STRING_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_STRING_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_STRING_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2"), new StringAttributeValue("String2"), new StringAttributeValue("String3")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new StringAttributeValue("String1"), new StringAttributeValue("String2")), StringAttributeValue.class, StringAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:boolean-set-equals
 						new Object[] {
 								NAME_BOOLEAN_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE),
-										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), PrimitiveResult.FALSE },
+										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_BOOLEAN_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE),
-										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), PrimitiveResult.TRUE },
+										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BOOLEAN_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.TRUE),
-										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), PrimitiveResult.FALSE },
+										BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.class, BooleanAttributeValue.BAG_TYPE), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-set-equals
 						new Object[] { NAME_INTEGER_SET_EQUALS, Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("2")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+								new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_INTEGER_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_INTEGER_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2")), IntegerAttributeValue.class, IntegerAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-set-equals
 						new Object[] { NAME_DOUBLE_SET_EQUALS, Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("2.")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+								new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_DOUBLE_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DOUBLE_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2."), new DoubleAttributeValue("2."), new DoubleAttributeValue("3.14")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2.")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new DoubleAttributeValue("1.23"), new DoubleAttributeValue("2.")), DoubleAttributeValue.class, DoubleAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:time-set-equals
 						new Object[] { NAME_TIME_SET_EQUALS, Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),//
-								new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+								new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_TIME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_TIME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new TimeAttributeValue("08:15:56"), new TimeAttributeValue("09:30:15")), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:date-set-equals
 						new Object[] {
 								NAME_DATE_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_DATE_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATE_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new DateAttributeValue("2012-01-01"), new DateAttributeValue("2002-09-24")), DateAttributeValue.class, DateAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:dateTime-set-equals
 						new Object[] {
 								NAME_DATETIME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_DATETIME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")),
 										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")),
-										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DATETIME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")),
 										DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DateTimeAttributeValue("2012-01-01T08:15:56"), new DateTimeAttributeValue("2002-09-24T09:30:15")), DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:anyURI-set-equals
 						new Object[] {
 								NAME_ANYURI_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif")), AnyURIAttributeValue.class,
 										AnyURIAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")),
-										AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_ANYURI_SET_EQUALS,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue(
 												"http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class,
-												AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+												AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_ANYURI_SET_EQUALS,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif"), new AnyURIAttributeValue(
 												"http://www.example.com/videos/sample.avi")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com/images/logo.gif")), AnyURIAttributeValue.class, AnyURIAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:hexBinary-set-equals
 						new Object[] {
 								NAME_HEXBINARY_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_HEXBINARY_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_HEXBINARY_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new HexBinaryAttributeValue("0FB6"), new HexBinaryAttributeValue("0FB7")), HexBinaryAttributeValue.class, HexBinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:base64Binary-set-equals
 						new Object[] {
 								NAME_BASE64BINARY_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_BASE64BINARY_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class,
 										Base64BinaryAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class,
-										Base64BinaryAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										Base64BinaryAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_BASE64BINARY_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), Base64BinaryAttributeValue.class,
-										Base64BinaryAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										Base64BinaryAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new Base64BinaryAttributeValue("UGFyaXNTRw=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), Base64BinaryAttributeValue.class, Base64BinaryAttributeValue.BAG_TYPE)),
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-set-equals
 						new Object[] {
 								NAME_DAYTIMEDURATION_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT2H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_DAYTIMEDURATION_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class,
 										DayTimeDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("PT26H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class,
-										DayTimeDurationAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										DayTimeDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_DAYTIMEDURATION_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P0D")), DayTimeDurationAttributeValue.class,
 										DayTimeDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new DayTimeDurationAttributeValue("PT20M"), new DayTimeDurationAttributeValue("PT26H")), DayTimeDurationAttributeValue.class, DayTimeDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:3.0:function:yearMonthDuration-set-equals
 						new Object[] {
 								NAME_YEARMONTHDURATION_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y2M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_YEARMONTHDURATION_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class,
 										YearMonthDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P14M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class,
-										YearMonthDurationAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										YearMonthDurationAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_YEARMONTHDURATION_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P0Y")), YearMonthDurationAttributeValue.class,
 										YearMonthDurationAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new YearMonthDurationAttributeValue("P20M"), new YearMonthDurationAttributeValue("P14M")), YearMonthDurationAttributeValue.class, YearMonthDurationAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:x500Name-set-equals
 						new Object[] {
 								NAME_X500NAME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), X500NameAttributeValue.class,
 										X500NameAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")),
-										X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_X500NAME_SET_EQUALS,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue(
 												"cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class,
-												X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+												X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_X500NAME_SET_EQUALS,
 								Arrays.asList(
 										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue(
 												"cn=John Smith, o=Other Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE),
-										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE },
+										new BagResult<>(Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Thales, c=FR"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), X500NameAttributeValue.class, X500NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-set-equals
 						new Object[] {
 								NAME_RFC822NAME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE),
 										new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)),
-								PrimitiveResult.FALSE },
+								BooleanAttributeValue.FALSE },
 						new Object[] {
 								NAME_RFC822NAME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")),
 										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")),
-										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), PrimitiveResult.TRUE },
+										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.TRUE },
 						new Object[] {
 								NAME_RFC822NAME_SET_EQUALS,
 								Arrays.asList(new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")),
 										RFC822NameAttributeValue.class, RFC822NameAttributeValue.BAG_TYPE), new BagResult<>(Arrays.asList(new RFC822NameAttributeValue("toto@example.com"), new RFC822NameAttributeValue("Anderson@sun.com")), RFC822NameAttributeValue.class,
-										RFC822NameAttributeValue.BAG_TYPE)), PrimitiveResult.FALSE });
+										RFC822NameAttributeValue.BAG_TYPE)), BooleanAttributeValue.FALSE });
 	}
 
 	protected SetFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

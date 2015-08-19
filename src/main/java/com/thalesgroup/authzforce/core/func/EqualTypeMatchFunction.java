@@ -24,7 +24,7 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
  * Implements generic match functions taking parameters of same/equal type, i.e. standard (A.3.1)
@@ -33,97 +33,97 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  * @param <T>
  *            type of compared parameters
  */
-public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends FirstOrderFunction<BooleanAttributeValue>
 {
 
 	/**
-	 * Standard identifier for the string-equal function.
+	 * Standard TYPE_URI for the string-equal function.
 	 */
 	public static final String NAME_STRING_EQUAL = FUNCTION_NS_1 + "string-equal";
 
 	/**
-	 * Standard identifier for the boolean-equal function.
+	 * Standard TYPE_URI for the boolean-equal function.
 	 */
 	public static final String NAME_BOOLEAN_EQUAL = FUNCTION_NS_1 + "boolean-equal";
 
 	/**
-	 * Standard identifier for the integer-equal function.
+	 * Standard TYPE_URI for the integer-equal function.
 	 */
 	public static final String NAME_INTEGER_EQUAL = FUNCTION_NS_1 + "integer-equal";
 
 	/**
-	 * Standard identifier for the double-equal function.
+	 * Standard TYPE_URI for the double-equal function.
 	 */
 	public static final String NAME_DOUBLE_EQUAL = FUNCTION_NS_1 + "double-equal";
 
 	/**
-	 * Standard identifier for the date-equal function.
+	 * Standard TYPE_URI for the date-equal function.
 	 */
 	public static final String NAME_DATE_EQUAL = FUNCTION_NS_1 + "date-equal";
 
 	/**
-	 * Standard identifier for the time-equal function.
+	 * Standard TYPE_URI for the time-equal function.
 	 */
 	public static final String NAME_TIME_EQUAL = FUNCTION_NS_1 + "time-equal";
 
 	/**
-	 * Standard identifier for the dateTime-equal function.
+	 * Standard TYPE_URI for the dateTime-equal function.
 	 */
 	public static final String NAME_DATETIME_EQUAL = FUNCTION_NS_1 + "dateTime-equal";
 
 	/**
-	 * Standard identifier for the dayTimeDuration-equal function.
+	 * Standard TYPE_URI for the dayTimeDuration-equal function.
 	 */
 	public static final String NAME_DAYTIME_DURATION_EQUAL = FUNCTION_NS_3 + "dayTimeDuration-equal";
 
 	/**
-	 * Standard identifier for the yearMonthDuration-equal function.
+	 * Standard TYPE_URI for the yearMonthDuration-equal function.
 	 */
 	public static final String NAME_YEARMONTH_DURATION_EQUAL = FUNCTION_NS_3 + "yearMonthDuration-equal";
 
 	/**
-	 * Standard identifier for the anyURI-equal function.
+	 * Standard TYPE_URI for the anyURI-equal function.
 	 */
 	public static final String NAME_ANYURI_EQUAL = FUNCTION_NS_1 + "anyURI-equal";
 
 	/**
-	 * Standard identifier for the x500Name-equal function.
+	 * Standard TYPE_URI for the x500Name-equal function.
 	 */
 	public static final String NAME_X500NAME_EQUAL = FUNCTION_NS_1 + "x500Name-equal";
 
 	/**
-	 * Standard identifier for the rfc822Name-equal function.
+	 * Standard TYPE_URI for the rfc822Name-equal function.
 	 */
 	public static final String NAME_RFC822NAME_EQUAL = FUNCTION_NS_1 + "rfc822Name-equal";
 
 	/**
-	 * Standard identifier for the hexBinary-equal function.
+	 * Standard TYPE_URI for the hexBinary-equal function.
 	 */
 	public static final String NAME_HEXBINARY_EQUAL = FUNCTION_NS_1 + "hexBinary-equal";
 
 	/**
-	 * Standard identifier for the base64Binary-equal function.
+	 * Standard TYPE_URI for the base64Binary-equal function.
 	 */
 	public static final String NAME_BASE64BINARY_EQUAL = FUNCTION_NS_1 + "base64Binary-equal";
 
 	/**
-	 * Standard identifier for the ipAddress-equal function.
+	 * Standard TYPE_URI for the ipAddress-equal function.
 	 */
 	public static final String NAME_IPADDRESS_EQUAL = FUNCTION_NS_2 + "ipAddress-equal";
 
 	/**
-	 * Standard identifier for the dnsName-equal function.
+	 * Standard TYPE_URI for the dnsName-equal function.
 	 */
 	public static final String NAME_DNSNAME_EQUAL = FUNCTION_NS_2 + "dnsName-equal";
 
 	/**
-	 * Standard identifier for the string-equal-ignore-case function.
+	 * Standard TYPE_URI for the string-equal-ignore-case function.
 	 */
 	private static final String NAME_STRING_EQUAL_IGNORE_CASE = FUNCTION_NS_3 + "string-equal-ignore-case";
 
 	/**
-	 * Standard identifier for the x500Name-match function (different from x500Name-regexp-match
-	 * down below).
+	 * Standard TYPE_URI for the x500Name-match function (different from x500Name-regexp-match down
+	 * below).
 	 */
 	public static final String NAME_X500NAME_MATCH = FUNCTION_NS_1 + "x500Name-match";
 
@@ -140,39 +140,39 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends B
 	 */
 	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "equal-type-match",
 	//
-			new Equal<>(NAME_STRING_EQUAL, StringAttributeValue.identifier, StringAttributeValue[].class),
+			new Equal<>(NAME_STRING_EQUAL, StringAttributeValue.TYPE_URI, StringAttributeValue[].class),
 			//
-			new Equal<>(NAME_BOOLEAN_EQUAL, BooleanAttributeValue.identifier, BooleanAttributeValue[].class),
+			new Equal<>(NAME_BOOLEAN_EQUAL, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue[].class),
 			//
-			new Equal<>(NAME_INTEGER_EQUAL, IntegerAttributeValue.identifier, IntegerAttributeValue[].class),
+			new Equal<>(NAME_INTEGER_EQUAL, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class),
 			//
-			new Equal<>(NAME_DOUBLE_EQUAL, DoubleAttributeValue.identifier, DoubleAttributeValue[].class),
+			new Equal<>(NAME_DOUBLE_EQUAL, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class),
 			//
-			new Equal<>(NAME_DATE_EQUAL, DateAttributeValue.identifier, DateAttributeValue[].class),
+			new Equal<>(NAME_DATE_EQUAL, DateAttributeValue.TYPE_URI, DateAttributeValue[].class),
 			//
-			new Equal<>(NAME_TIME_EQUAL, TimeAttributeValue.identifier, TimeAttributeValue[].class),
+			new Equal<>(NAME_TIME_EQUAL, TimeAttributeValue.TYPE_URI, TimeAttributeValue[].class),
 			//
-			new Equal<>(NAME_DATETIME_EQUAL, DateTimeAttributeValue.identifier, DateTimeAttributeValue[].class),
+			new Equal<>(NAME_DATETIME_EQUAL, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue[].class),
 			//
-			new Equal<>(NAME_DAYTIME_DURATION_EQUAL, DayTimeDurationAttributeValue.identifier, DayTimeDurationAttributeValue[].class),
+			new Equal<>(NAME_DAYTIME_DURATION_EQUAL, DayTimeDurationAttributeValue.TYPE_URI, DayTimeDurationAttributeValue[].class),
 			//
-			new Equal<>(NAME_YEARMONTH_DURATION_EQUAL, YearMonthDurationAttributeValue.identifier, YearMonthDurationAttributeValue[].class),
+			new Equal<>(NAME_YEARMONTH_DURATION_EQUAL, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue[].class),
 			//
-			new Equal<>(NAME_ANYURI_EQUAL, AnyURIAttributeValue.identifier, AnyURIAttributeValue[].class),
+			new Equal<>(NAME_ANYURI_EQUAL, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue[].class),
 			//
-			new Equal<>(NAME_X500NAME_EQUAL, X500NameAttributeValue.identifier, X500NameAttributeValue[].class),
+			new Equal<>(NAME_X500NAME_EQUAL, X500NameAttributeValue.TYPE_URI, X500NameAttributeValue[].class),
 			//
-			new Equal<>(NAME_RFC822NAME_EQUAL, RFC822NameAttributeValue.identifier, RFC822NameAttributeValue[].class),
+			new Equal<>(NAME_RFC822NAME_EQUAL, RFC822NameAttributeValue.TYPE_URI, RFC822NameAttributeValue[].class),
 			//
-			new Equal<>(NAME_HEXBINARY_EQUAL, HexBinaryAttributeValue.identifier, HexBinaryAttributeValue[].class),
+			new Equal<>(NAME_HEXBINARY_EQUAL, HexBinaryAttributeValue.TYPE_URI, HexBinaryAttributeValue[].class),
 			//
-			new Equal<>(NAME_BASE64BINARY_EQUAL, Base64BinaryAttributeValue.identifier, Base64BinaryAttributeValue[].class),
+			new Equal<>(NAME_BASE64BINARY_EQUAL, Base64BinaryAttributeValue.TYPE_URI, Base64BinaryAttributeValue[].class),
 			//
 			new Equal<>(NAME_IPADDRESS_EQUAL, IPAddressAttributeValue.identifier, IPAddressAttributeValue[].class),
 			//
 			new Equal<>(NAME_DNSNAME_EQUAL, DNSNameAttributeValue.identifier, DNSNameAttributeValue[].class),
 			//
-			new EqualIgnoreCase<>(NAME_STRING_EQUAL_IGNORE_CASE, StringAttributeValue.identifier, StringAttributeValue[].class),
+			new EqualIgnoreCase<>(NAME_STRING_EQUAL_IGNORE_CASE, StringAttributeValue.TYPE_URI, StringAttributeValue[].class),
 			//
 			new X500NameMatch());
 
@@ -196,18 +196,18 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends B
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.func.BaseFunction#getFunctionCall(java.util.List,
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes)
 	{
-		return new EagerPrimitiveEvalCall<T>(parameterArrayClass, checkedArgExpressions, checkedRemainingArgTypes)
+		return new EagerPrimitiveEval<BooleanAttributeValue, T>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected final PrimitiveResult<BooleanAttributeValue> evaluate(T[] args) throws IndeterminateEvaluationException
+			protected final BooleanAttributeValue evaluate(T[] args) throws IndeterminateEvaluationException
 			{
-				return PrimitiveResult.getInstance(match(args[0], args[1]));
+				return BooleanAttributeValue.valueOf(match(args[0], args[1]));
 			}
 
 		};
@@ -289,7 +289,7 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends B
 		 */
 		public X500NameMatch()
 		{
-			super(NAME_X500NAME_MATCH, X500NameAttributeValue.identifier, X500NameAttributeValue[].class);
+			super(NAME_X500NAME_MATCH, X500NameAttributeValue.TYPE_URI, X500NameAttributeValue[].class);
 		}
 
 		@Override

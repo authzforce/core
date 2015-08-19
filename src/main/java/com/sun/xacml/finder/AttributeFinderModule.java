@@ -73,14 +73,8 @@ public abstract class AttributeFinderModule implements Closeable
 	 * @param <CONF_U>
 	 *            module configuration type (JAXB-generated)
 	 */
-	public static abstract class DependencyAwareFactory<CONF_U>
+	public static interface DependencyAwareFactory<CONF_U>
 	{
-		protected final CONF_U jaxbConf;
-
-		protected DependencyAwareFactory(CONF_U jaxbConf)
-		{
-			this.jaxbConf = jaxbConf;
-		}
 
 		/**
 		 * Returns non-null <code>Set</code> of <code>AttributeDesignator</code>s required as
@@ -95,7 +89,7 @@ public abstract class AttributeFinderModule implements Closeable
 		 * @return a <code>Set</code> of required <code>AttributeDesignatorType</code>s. Null or
 		 *         empty if none required.
 		 */
-		public abstract Set<AttributeDesignatorType> getDependencies();
+		Set<AttributeDesignatorType> getDependencies();
 
 		/**
 		 * Create AttributeFinderModule instance
@@ -108,7 +102,7 @@ public abstract class AttributeFinderModule implements Closeable
 		 * 
 		 * @return attribute value in internal model
 		 */
-		public abstract AttributeFinderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeFinder depAttrFinder);
+		AttributeFinderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeFinder depAttrFinder);
 	}
 
 	/**
@@ -155,7 +149,7 @@ public abstract class AttributeFinderModule implements Closeable
 	 * Instantiates the attribute finder module
 	 * 
 	 * @param instanceID
-	 *            module instance ID (to be used as unique identifier for this instance in the logs
+	 *            module instance ID (to be used as unique TYPE_URI for this instance in the logs
 	 *            for example);
 	 * @param attributeFactory
 	 *            factory for creating attribute values
@@ -213,7 +207,7 @@ public abstract class AttributeFinderModule implements Closeable
 	 * @param attributeType
 	 *            the datatype of the attributes to find
 	 * @param attributeGUID
-	 *            the global identifier (Category,Issuer,AttributeId) of the attribute to find
+	 *            the global TYPE_URI (Category,Issuer,AttributeId) of the attribute to find
 	 * @param context
 	 *            the representation of the request data
 	 * @param datatypeClass

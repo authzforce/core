@@ -33,7 +33,6 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class StringConversionFunctionsTest extends GeneralFunctionTest
@@ -47,12 +46,12 @@ public class StringConversionFunctionsTest extends GeneralFunctionTest
 	{
 		return Arrays.asList(
 		// urn:oasis:names:tc:xacml:1.0:function:string-normalize-space
-				new Object[] { NAME_STRING_NORMALIZE_SPACE, Arrays.asList(new StringAttributeValue("test")), new PrimitiveResult<>(new StringAttributeValue("test"), StringAttributeValue.TYPE) },//
-				new Object[] { NAME_STRING_NORMALIZE_SPACE, Arrays.asList(new StringAttributeValue("   test   ")), new PrimitiveResult<>(new StringAttributeValue("test"), StringAttributeValue.TYPE) },
+				new Object[] { NAME_STRING_NORMALIZE_SPACE, Arrays.asList(new StringAttributeValue("test")), new StringAttributeValue("test") },//
+				new Object[] { NAME_STRING_NORMALIZE_SPACE, Arrays.asList(new StringAttributeValue("   test   ")), new StringAttributeValue("test") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case
-				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringAttributeValue("test")), new PrimitiveResult<>(new StringAttributeValue("test"), StringAttributeValue.TYPE) },//
-				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringAttributeValue("TeST")), new PrimitiveResult<>(new StringAttributeValue("test"), StringAttributeValue.TYPE) });
+				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringAttributeValue("test")), new StringAttributeValue("test") },//
+				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringAttributeValue("TeST")), new StringAttributeValue("test") });
 	}
 
 	protected StringConversionFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)

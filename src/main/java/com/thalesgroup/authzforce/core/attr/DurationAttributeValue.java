@@ -9,6 +9,7 @@ import javax.xml.datatype.Duration;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -30,17 +31,17 @@ public abstract class DurationAttributeValue extends PrimitiveAttributeValue<Dur
 	 * @throws IllegalArgumentException
 	 *             if {@code val} is not a valid string representation for this datatype
 	 */
-	protected DurationAttributeValue(String datatype, String val) throws IllegalArgumentException
+	protected DurationAttributeValue(DatatypeDef datatype, String val) throws IllegalArgumentException
 	{
-		this(new AttributeValueType(Collections.<Serializable> singletonList(val), datatype, null));
+		this(datatype, new AttributeValueType(Collections.<Serializable> singletonList(val), datatype.datatypeURI(), null));
 	}
 
 	/**
 	 * @see PrimitiveAttributeValue#BasePrimitiveAttributeValue(AttributeValueType)
 	 */
-	protected DurationAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
+	protected DurationAttributeValue(DatatypeDef datatype, AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(datatype, jaxbAttrVal);
 	}
 
 	// /**

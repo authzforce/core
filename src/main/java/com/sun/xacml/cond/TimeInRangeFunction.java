@@ -44,8 +44,9 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
-import com.thalesgroup.authzforce.core.func.BaseFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
  * This class implements the time-in-range function, which takes three time values and returns true
@@ -59,11 +60,11 @@ import com.thalesgroup.authzforce.core.func.BaseFunction;
  * @since 2.0
  * @author seth proctor
  */
-public class TimeInRangeFunction extends BaseFunction<PrimitiveResult<BooleanAttributeValue>>
+public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValue>
 {
 
 	/**
-	 * The identifier for this function
+	 * The TYPE_URI for this function
 	 */
 	public static final String NAME = FUNCTION_NS_2 + "time-in-range";
 
@@ -169,17 +170,16 @@ public class TimeInRangeFunction extends BaseFunction<PrimitiveResult<BooleanAtt
 	}
 
 	@Override
-	protected Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEvalCall<TimeAttributeValue>(TimeAttributeValue[].class, checkedArgExpressions, checkedRemainingArgTypes)
+		return new EagerPrimitiveEval<BooleanAttributeValue, TimeAttributeValue>(signature, TimeAttributeValue[].class, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected PrimitiveResult<BooleanAttributeValue> evaluate(TimeAttributeValue[] args) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(TimeAttributeValue[] args) throws IndeterminateEvaluationException
 			{
-				return PrimitiveResult.getInstance(eval(args[0], args[1], args[2]));
+				return BooleanAttributeValue.valueOf(eval(args[0], args[1], args[2]));
 			}
 		};
 	}
-
 }

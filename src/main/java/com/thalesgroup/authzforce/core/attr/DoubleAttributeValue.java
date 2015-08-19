@@ -19,17 +19,17 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#double";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#double";
 
 	/**
 	 * Generic primitive type of this attribute value
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(DoubleAttributeValue.identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(DoubleAttributeValue.TYPE_URI);
 
 	/**
 	 * Generic bag type of this attribute value
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(DoubleAttributeValue.identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(DoubleAttributeValue.TYPE_URI, true);
 
 	/**
 	 * Value zero
@@ -45,7 +45,7 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -64,15 +64,21 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	 */
 	public DoubleAttributeValue(double value)
 	{
-		super(identifier, value);
+		super(TYPE, value);
 	}
 
 	/**
-	 * @see NumericAttributeValue#NumericAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see NumericAttributeValue#NumericAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public DoubleAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	/**
@@ -84,7 +90,7 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	 */
 	public DoubleAttributeValue(String val) throws IllegalArgumentException
 	{
-		super(identifier, val);
+		super(TYPE, val);
 	}
 
 	@Override

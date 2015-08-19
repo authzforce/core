@@ -31,7 +31,7 @@ public class AnyURIAttributeValue extends PrimitiveAttributeValue<String>
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#anyURI";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#anyURI";
 
 	/**
 	 * Creates a new <code>AnyURIAttributeValue</code> that represents the URI value supplied.
@@ -49,26 +49,32 @@ public class AnyURIAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public AnyURIAttributeValue(String value) throws IllegalArgumentException
 	{
-		super(identifier, value);
+		super(TYPE, value);
 	}
 
 	/**
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public AnyURIAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	/**
 	 * Generic type info
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
 
 	/**
 	 * Bag datatype definition of this attribute value
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -78,7 +84,7 @@ public class AnyURIAttributeValue extends PrimitiveAttributeValue<String>
 		@Override
 		public final String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override

@@ -12,7 +12,6 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * A class that implements all the numeric *-add functions (as opposed to date/time *-add-*
@@ -22,7 +21,7 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  *            type of returned and input attribute values
  * 
  */
-public abstract class NumericArithmeticFunction<T extends NumericAttributeValue<?, T>> extends BaseFunction<PrimitiveResult<T>>
+public abstract class NumericArithmeticFunction<T extends NumericAttributeValue<?, T>> extends FirstOrderFunction<T>
 {
 	/**
 	 * Standard integer-abs function URI
@@ -45,47 +44,47 @@ public abstract class NumericArithmeticFunction<T extends NumericAttributeValue<
 	public static final String NAME_DOUBLE_ADD = FUNCTION_NS_1 + "double-add";
 
 	/**
-	 * Standard identifier for the integer-multiply function.
+	 * Standard TYPE_URI for the integer-multiply function.
 	 */
 	public static final String NAME_INTEGER_MULTIPLY = FUNCTION_NS_1 + "integer-multiply";
 
 	/**
-	 * Standard identifier for the double-multiply function.
+	 * Standard TYPE_URI for the double-multiply function.
 	 */
 	public static final String NAME_DOUBLE_MULTIPLY = FUNCTION_NS_1 + "double-multiply";
 
 	/**
-	 * Standard identifier for the integer-subtract function.
+	 * Standard TYPE_URI for the integer-subtract function.
 	 */
 	public static final String NAME_INTEGER_SUBTRACT = FUNCTION_NS_1 + "integer-subtract";
 
 	/**
-	 * Standard identifier for the integer-subtract function.
+	 * Standard TYPE_URI for the integer-subtract function.
 	 */
 	public static final String NAME_DOUBLE_SUBTRACT = FUNCTION_NS_1 + "double-subtract";
 
 	/**
-	 * Standard identifier for the integer-divide function.
+	 * Standard TYPE_URI for the integer-divide function.
 	 */
 	public static final String NAME_INTEGER_DIVIDE = FUNCTION_NS_1 + "integer-divide";
 
 	/**
-	 * Standard identifier for the double-divide function.
+	 * Standard TYPE_URI for the double-divide function.
 	 */
 	public static final String NAME_DOUBLE_DIVIDE = FUNCTION_NS_1 + "double-divide";
 
 	/**
-	 * Standard identifier for the integer-mod function.
+	 * Standard TYPE_URI for the integer-mod function.
 	 */
 	public static final String NAME_INTEGER_MOD = FUNCTION_NS_1 + "integer-mod";
 
 	/**
-	 * Standard identifier for the round function.
+	 * Standard TYPE_URI for the round function.
 	 */
 	public static final String NAME_ROUND = FUNCTION_NS_1 + "round";
 
 	/**
-	 * Standard identifier for the floor function.
+	 * Standard TYPE_URI for the floor function.
 	 */
 	public static final String NAME_FLOOR = FUNCTION_NS_1 + "floor";
 
@@ -96,25 +95,25 @@ public abstract class NumericArithmeticFunction<T extends NumericAttributeValue<
 	 */
 	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "numeric-arithmetic",
 	//
-			new Abs<>(NAME_INTEGER_ABS, IntegerAttributeValue.identifier, IntegerAttributeValue[].class),
+			new Abs<>(NAME_INTEGER_ABS, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class),
 			//
-			new Abs<>(NAME_DOUBLE_ABS, DoubleAttributeValue.identifier, DoubleAttributeValue[].class),
+			new Abs<>(NAME_DOUBLE_ABS, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class),
 			//
-			new Add<>(NAME_INTEGER_ADD, IntegerAttributeValue.identifier, IntegerAttributeValue[].class),
+			new Add<>(NAME_INTEGER_ADD, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class),
 			//
-			new Add<>(NAME_DOUBLE_ADD, DoubleAttributeValue.identifier, DoubleAttributeValue[].class),
+			new Add<>(NAME_DOUBLE_ADD, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class),
 			//
-			new Multiply<>(NAME_INTEGER_MULTIPLY, IntegerAttributeValue.identifier, IntegerAttributeValue[].class),
+			new Multiply<>(NAME_INTEGER_MULTIPLY, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class),
 			//
-			new Multiply<>(NAME_DOUBLE_MULTIPLY, DoubleAttributeValue.identifier, DoubleAttributeValue[].class),
+			new Multiply<>(NAME_DOUBLE_MULTIPLY, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class),
 			//
-			new Subtract<>(NAME_INTEGER_SUBTRACT, IntegerAttributeValue.identifier, IntegerAttributeValue[].class),
+			new Subtract<>(NAME_INTEGER_SUBTRACT, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class),
 			//
-			new Subtract<>(NAME_DOUBLE_SUBTRACT, DoubleAttributeValue.identifier, DoubleAttributeValue[].class),
+			new Subtract<>(NAME_DOUBLE_SUBTRACT, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class),
 			//
-			new Divide<>(NAME_INTEGER_DIVIDE, IntegerAttributeValue.identifier, IntegerAttributeValue[].class),
+			new Divide<>(NAME_INTEGER_DIVIDE, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class),
 			//
-			new Divide<>(NAME_DOUBLE_DIVIDE, DoubleAttributeValue.identifier, DoubleAttributeValue[].class),
+			new Divide<>(NAME_DOUBLE_DIVIDE, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class),
 			//
 			new IntegerMod(),
 			//
@@ -160,7 +159,7 @@ public abstract class NumericArithmeticFunction<T extends NumericAttributeValue<
 	abstract protected T eval(T[] args) throws IndeterminateEvaluationException;
 
 	@Override
-	protected final Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
+	protected final FirstOrderFunctionCall getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes) throws IllegalArgumentException
 	{
 		/**
 		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all
@@ -176,9 +175,9 @@ public abstract class NumericArithmeticFunction<T extends NumericAttributeValue<
 		{
 
 			@Override
-			protected final PrimitiveResult<T> evaluate(T[] args) throws IndeterminateEvaluationException
+			protected final T evaluate(T[] args) throws IndeterminateEvaluationException
 			{
-				return new PrimitiveResult<>(eval(args), returnType);
+				return eval(args);
 			}
 
 		};

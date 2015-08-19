@@ -69,7 +69,7 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Decidable;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactoryImpl;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.func.BaseFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
 import com.thalesgroup.authzforce.core.func.FunctionSet;
 import com.thalesgroup.authzforce.core.func.StandardFunctionRegistry;
@@ -491,12 +491,12 @@ public class PdpConfigurationParser
 		 * higher-order function happens to take a XPathExpression parameter, it is actually a
 		 * parameter to the first-order sub-function. Plus it is not possible to add extensions that
 		 * are higher-order functions in this PDP implementation. Therefore, it is enough to check
-		 * first-order functions (class BaseFunction) only. (Remember that such functions may be
+		 * first-order functions (class FirstOrderFunction) only. (Remember that such functions may be
 		 * used as parameter to a higher-order function.)
 		 */
-		if (function instanceof BaseFunction)
+		if (function instanceof FirstOrderFunction)
 		{
-			final DatatypeDef[] paramTypes = ((BaseFunction<?>) function).getParameterTypes();
+			final DatatypeDef[] paramTypes = ((FirstOrderFunction<?>) function).getParameterTypes();
 			for (final DatatypeDef paramType : paramTypes)
 			{
 				if (paramType.datatypeURI().equals(XACMLDatatype.XPATH_EXPRESSION.value()))

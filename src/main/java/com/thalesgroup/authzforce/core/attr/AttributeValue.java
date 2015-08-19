@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
@@ -12,18 +13,20 @@ import javax.xml.namespace.QName;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import com.thalesgroup.authzforce.core.PdpExtension;
+import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * The base type for all attribute value datatypes used in a policy or request/response, this
  * abstract class represents a value for a given attribute type. All the required types defined in
  * the XACML specification are provided as instances of <code>AttributeValue<code>s. If you want to
- * provide a new type, extend this class, implement at least one Constructor with same signature as {@link #AttributeValue(AttributeValueType)} and calling this super constructor, and implement the
- * <code>equals(Object)</code> and <code>hashCode</code> methods from <code>Object</code>, which are
- * used for equality checking and hash-based storage.
+ * provide a new type, extend {@link Factory}.
  * 
  */
-public abstract class AttributeValue extends AttributeValueType implements Serializable
+public abstract class AttributeValue extends AttributeValueType implements Serializable, ExpressionResult<AttributeValue, AttributeValue>
 {
 	/**
 	 * XML datatype factory for parsing XML-Schema-compliant date/time/duration values into Java
@@ -56,7 +59,7 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 	public static abstract class Factory<T extends AttributeValue> implements PdpExtension
 	{
 		private final Class<T> instanceClass;
-		private final DatatypeDef datatype;
+		protected final DatatypeDef datatype;
 
 		protected Factory(Class<T> instanceClass)
 		{
@@ -158,6 +161,8 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 
 	private static final UnsupportedOperationException UNSUPPORTED_SET_DATATYPE_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeValue.setDataType() not allowed");
 
+	private final DatatypeDef datatypeDef;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -171,23 +176,61 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 		throw UNSUPPORTED_SET_DATATYPE_OPERATION_EXCEPTION;
 	}
 
-	protected AttributeValue(AttributeValueType jaxbVal)
+	protected AttributeValue(DatatypeDef datatype, AttributeValueType jaxbVal)
 	{
-		this(jaxbVal.getContent(), jaxbVal.getDataType(), jaxbVal.getOtherAttributes());
+		this(datatype, jaxbVal.getContent(), jaxbVal.getOtherAttributes());
 	}
 
-	protected AttributeValue(String datatype, List<Serializable> content)
+	protected AttributeValue(DatatypeDef datatype, List<Serializable> content)
 	{
-		this(content, datatype, null);
+		this(datatype, content, null);
 	}
 
-	protected AttributeValue(List<Serializable> content, String datatype, Map<QName, String> otherAttributes)
+	protected AttributeValue(DatatypeDef datatype, List<Serializable> content, Map<QName, String> otherAttributes)
 	{
-		super(content, datatype, otherAttributes);
+		super(content, datatype == null ? null : datatype.datatypeURI(), otherAttributes);
 		if (datatype == null)
 		{
 			throw UNDEF_ATTR_VAL_TYPE_EXCEPTION;
 		}
+
+		this.datatypeDef = datatype;
+	}
+
+	@Override
+	public boolean isStatic()
+	{
+		return true;
+	}
+
+	@Override
+	public DatatypeDef getReturnType()
+	{
+		return this.datatypeDef;
+	}
+
+	@Override
+	public AttributeValue value()
+	{
+		return this;
+	}
+
+	@Override
+	public AttributeValue[] values()
+	{
+		return new AttributeValue[] { this };
+	}
+
+	@Override
+	public AttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	{
+		return this;
+	}
+
+	@Override
+	public JAXBElement<AttributeValueType> getJAXBElement()
+	{
+		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeValue(this);
 	}
 
 }

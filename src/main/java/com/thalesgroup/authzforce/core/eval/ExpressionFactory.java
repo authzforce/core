@@ -12,7 +12,7 @@ import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
-import com.thalesgroup.authzforce.core.func.BaseFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 
 /**
  * Expression factory for parsing XACML {@link ExpressionType}s: AttributeDesignator,
@@ -48,18 +48,18 @@ public interface ExpressionFactory extends Closeable
 	 * @throws ParsingException
 	 *             error parsing instance of ExpressionType
 	 */
-	JAXBBoundExpression<?, ? extends ExpressionResult<? extends AttributeValue>> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException;
+	Expression<? extends ExpressionResult<? extends AttributeValue>> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException;
 
 	/**
 	 * Parse/create an attribute value from XACML-schema-derived JAXB model
 	 * 
 	 * @param jaxbAttrVal
 	 *            XACML-schema-derived JAXB AttributeValue
-	 * @return attribute value as evaluatable expression
+	 * @return attribute value
 	 * @throws ParsingException
 	 *             if value cannot be parsed into the value's defined datatype
 	 */
-	PrimitiveResult<? extends AttributeValue> createAttributeValueExpression(AttributeValueType jaxbAttrVal) throws ParsingException;
+	AttributeValue createAttributeValue(AttributeValueType jaxbAttrVal) throws ParsingException;
 
 	/**
 	 * Create a function instance
@@ -84,7 +84,7 @@ public interface ExpressionFactory extends Closeable
 	 *             if sub-function's return datatype is not valid/supported
 	 * 
 	 */
-	Function<? extends ExpressionResult<? extends AttributeValue>> getHigherOrderFunction(String functionId, BaseFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction) throws UnknownIdentifierException;
+	Function<? extends ExpressionResult<? extends AttributeValue>> getHigherOrderFunction(String functionId, FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction) throws UnknownIdentifierException;
 
 	/**
 	 * Add VariableDefinition to be managed

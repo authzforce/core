@@ -8,7 +8,6 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * 
@@ -35,7 +34,7 @@ public class MapFunction<SUB_RETURN_T extends AttributeValue> extends HigherOrde
 		}
 
 		@Override
-		public final <SUB_RETURN_T extends AttributeValue> HigherOrderBagFunction<? extends ExpressionResult<? extends AttributeValue>, SUB_RETURN_T> getInstance(BaseFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction, Class<SUB_RETURN_T> subFunctionReturnType)
+		public final <SUB_RETURN_T extends AttributeValue> HigherOrderBagFunction<? extends ExpressionResult<? extends AttributeValue>, SUB_RETURN_T> getInstance(FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction, Class<SUB_RETURN_T> subFunctionReturnType)
 		{
 			return new MapFunction<>(subFunction.getReturnType().datatypeURI(), subFunctionReturnType);
 		}
@@ -59,12 +58,12 @@ public class MapFunction<SUB_RETURN_T extends AttributeValue> extends HigherOrde
 	}
 
 	@Override
-	protected final BagResult<SUB_RETURN_T> evaluate(BaseFunction<PrimitiveResult<? extends SUB_RETURN_T>>.Call subFuncCall, AttributeValue[] lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
+	protected final BagResult<SUB_RETURN_T> evaluate(FirstOrderFunction<SUB_RETURN_T>.FirstOrderFunctionCall subFuncCall, AttributeValue[] lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final SUB_RETURN_T[] results = (SUB_RETURN_T[]) Array.newInstance(datatypeClass, lastArgBag.length);
 		for (int valIndex = 0; valIndex < lastArgBag.length; valIndex++)
 		{
-			final PrimitiveResult<? extends SUB_RETURN_T> subResult;
+			final SUB_RETURN_T subResult;
 			try
 			{
 				subResult = subFuncCall.evaluate(context, lastArgBag[valIndex]);
@@ -73,13 +72,12 @@ public class MapFunction<SUB_RETURN_T extends AttributeValue> extends HigherOrde
 				throw new IndeterminateEvaluationException(this + ": Error calling sub-function (specified as first argument) with last arg=" + lastArgBag[valIndex], e.getStatusCode(), e);
 			}
 
-			final SUB_RETURN_T subResultVal = subResult.value();
-			if (subResultVal == null)
+			if (subResult == null)
 			{
 				throw getIndeterminateArgException(lastArgIndex);
 			}
 
-			results[valIndex] = subResultVal;
+			results[valIndex] = subResult;
 		}
 
 		return new BagResult<>(results, datatypeClass, subFuncReturnType);

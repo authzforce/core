@@ -16,17 +16,17 @@ public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
 	/**
 	 * XACML datatype URI
 	 */
-	public static final String identifier = "urn:oasis:names:tc:xacml:1.0:data-type:x500Name";
+	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:1.0:data-type:x500Name";
 
 	/**
 	 * Generic type info
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
 
 	/**
 	 * Bag datatype definition of this attribute value
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
 
 	/**
 	 * RefPolicyFinderModuleFactory instance
@@ -37,7 +37,7 @@ public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -49,11 +49,17 @@ public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
 	};
 
 	/**
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public X500NameAttributeValue(AttributeValueType jaxbAttrVal)
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	/**
@@ -80,7 +86,7 @@ public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public X500NameAttributeValue(String value) throws IllegalArgumentException
 	{
-		super(identifier, value);
+		super(TYPE, value);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeFinder.class);
 
-	private static final Status MISSING_ATTRIBUTE_IN_CONTEXT_WITH_NO_MODULE_STATUS = new Status(Status.STATUS_MISSING_ATTRIBUTE, "Not in context and no attribute finder module registered");
+	private static final IndeterminateEvaluationException MISSING_ATTRIBUTE_IN_CONTEXT_WITH_NO_MODULE_EXCEPTION = new IndeterminateEvaluationException("Not in context and no attribute finder module registered", Status.STATUS_MISSING_ATTRIBUTE);
 
 	// AttributeDesignator finder modules by global attribute ID (global ID: category, issuer,
 	// AttributeId)
@@ -94,29 +94,26 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 			if (designatorModsByAttrId == null || designatorModsByAttrId.isEmpty())
 			{
 				LOGGER.debug("No value found for attribute {}/type={} in evaluation context and no attribute finder module registered", attributeGUID, datatype);
-				result = new BagResult<>(MISSING_ATTRIBUTE_IN_CONTEXT_WITH_NO_MODULE_STATUS, datatypeClass, datatype);
-			} else
-			{
-
-				// else attribute not found in context, ask the finder modules, if any
-				final AttributeFinderModule designatorMod = designatorModsByAttrId.get(attributeGUID);
-				if (designatorMod == null)
-				{
-					LOGGER.debug("No value found for attribute {}/type={} in evaluation context and not supported by any attribute finder module", attributeGUID, datatype);
-					result = new BagResult<>(new Status(Status.STATUS_MISSING_ATTRIBUTE, "Not in context and no attribute finder module supporting attribute " + attributeGUID), datatypeClass, datatype);
-				} else
-				{
-
-					final List<T> bag = designatorMod.findAttribute(datatype, attributeGUID, context, datatypeClass);
-					result = new BagResult<>(bag, datatypeClass, datatype);
-				}
-				/*
-				 * Cache the attribute value(s) in context to avoid waste of time querying the
-				 * module twice for same attribute
-				 */
-				context.putAttributeDesignatorResultIfAbsent(attributeGUID, result);
-				LOGGER.debug("Values of attribute {}/type={} returned by attribute finder module #{} (cached in context): {}", attributeGUID, datatype, designatorMod, result);
+				throw MISSING_ATTRIBUTE_IN_CONTEXT_WITH_NO_MODULE_EXCEPTION;
 			}
+
+			// else attribute not found in context, ask the finder modules, if any
+			final AttributeFinderModule designatorMod = designatorModsByAttrId.get(attributeGUID);
+			if (designatorMod == null)
+			{
+				LOGGER.debug("No value found for required attribute {}/type={} in evaluation context and not supported by any attribute finder module", attributeGUID, datatype);
+				throw new IndeterminateEvaluationException("Not in context and no attribute finder module supporting attribute " + attributeGUID, Status.STATUS_MISSING_ATTRIBUTE);
+			}
+
+			final List<T> bag = designatorMod.findAttribute(datatype, attributeGUID, context, datatypeClass);
+			result = new BagResult<>(bag, datatypeClass, datatype);
+
+			/*
+			 * Cache the attribute value(s) in context to avoid waste of time querying the module
+			 * twice for same attribute
+			 */
+			context.putAttributeDesignatorResultIfAbsent(attributeGUID, result);
+			LOGGER.debug("Values of attribute {}/type={} returned by attribute finder module #{} (cached in context): {}", attributeGUID, datatype, designatorMod, result);
 
 			return result;
 		} catch (IndeterminateEvaluationException e)
@@ -125,12 +122,12 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 			 * If error occurred, we put the empty value to prevent retry in the same context, which
 			 * may succeed at another time in the same context, resulting in different value of the
 			 * same attribute at different times during evaluation within the same context,
-			 * therefore inconsistencies. The value(s) must remain constant during the evalution
+			 * therefore inconsistencies. The value(s) must remain constant during the evaluation
 			 * context, as explained in section 7.3.5 Attribute Retrieval of XACML core spec:
 			 * <p>
 			 * Regardless of any dynamic modifications of the request context during policy
-			 * evaluation, the PDP 3311 SHALL behave as if each bag of attribute values is fully
-			 * populated in the context before it is first tested, 3312 and is thereafter immutable
+			 * evaluation, the PDP SHALL behave as if each bag of attribute values is fully
+			 * populated in the context before it is first tested, and is thereafter immutable
 			 * during evaluation. (That is, every subsequent test of that attribute shall use 3313
 			 * the same bag of values that was initially tested.)
 			 * </p>

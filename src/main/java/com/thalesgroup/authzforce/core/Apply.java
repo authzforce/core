@@ -20,14 +20,13 @@ import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.JAXBBoundExpression;
-import com.thalesgroup.authzforce.core.func.BaseFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 
 /**
  * Evaluates XACML Apply
  */
-public class Apply extends ApplyType implements JAXBBoundExpression<ApplyType, ExpressionResult<? extends AttributeValue>>
+public class Apply extends ApplyType implements Expression<ExpressionResult<? extends AttributeValue>>
 {
 	private final FunctionCall<? extends ExpressionResult<? extends AttributeValue>> functionCall;
 
@@ -147,7 +146,7 @@ public class Apply extends ApplyType implements JAXBBoundExpression<ApplyType, E
 
 		// get the function instance
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
-		final BaseFunction<? extends ExpressionResult<? extends AttributeValue>> subFunc;
+		final FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunc;
 		if (xprs.isEmpty())
 		{
 			subFunc = null;
@@ -156,12 +155,12 @@ public class Apply extends ApplyType implements JAXBBoundExpression<ApplyType, E
 			final Expression<? extends ExpressionResult<? extends AttributeValue>> xpr0 = xprs.get(0);
 			if (xpr0 instanceof Function<?>)
 			{
-				if (!(xpr0 instanceof BaseFunction))
+				if (!(xpr0 instanceof FirstOrderFunction))
 				{
-					throw new ParsingException(this + ": Invalid sub-function used as first argument: " + xpr0 + ". Expected to be a first-order function (subclass of " + BaseFunction.class + ").");
+					throw new ParsingException(this + ": Invalid sub-function used as first argument: " + xpr0 + ". Expected to be a first-order function (subclass of " + FirstOrderFunction.class + ").");
 				}
 
-				subFunc = (BaseFunction<?>) xpr0;
+				subFunc = (FirstOrderFunction<?>) xpr0;
 			} else
 			{
 				subFunc = null;
@@ -189,7 +188,7 @@ public class Apply extends ApplyType implements JAXBBoundExpression<ApplyType, E
 		}
 
 		// check that the given inputs work for the function and get the optimized functionCall
-		final FunctionCall<? extends ExpressionResult<? extends AttributeValue>> funcCall = function.parseInputs(Collections.unmodifiableList(xprs));
+		final FunctionCall<? extends ExpressionResult<? extends AttributeValue>> funcCall = function.newCall(Collections.unmodifiableList(xprs));
 
 		// Are all input expressions static?
 		boolean allStatic = true;

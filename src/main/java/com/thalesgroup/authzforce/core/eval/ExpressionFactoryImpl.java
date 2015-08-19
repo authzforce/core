@@ -47,7 +47,7 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.func.BaseFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
 import com.thalesgroup.authzforce.xacml.schema.XPATHVersion;
 
@@ -262,7 +262,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * 
 	 */
 	@Override
-	public Function<? extends ExpressionResult<? extends AttributeValue>> getHigherOrderFunction(String functionId, BaseFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction) throws UnknownIdentifierException
+	public Function<? extends ExpressionResult<? extends AttributeValue>> getHigherOrderFunction(String functionId, FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction) throws UnknownIdentifierException
 	{
 		final String subFuncReturnTypeURI = subFunction.getReturnType().datatypeURI();
 		final AttributeValue.Factory<? extends AttributeValue> subFuncReturnTypeFactory = this.attributeFactoryRegistry.getExtension(subFuncReturnTypeURI);
@@ -283,9 +283,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * java.util.List)
 	 */
 	@Override
-	public JAXBBoundExpression<?, ? extends ExpressionResult<? extends AttributeValue>> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException
+	public Expression<? extends ExpressionResult<? extends AttributeValue>> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException
 	{
-		final JAXBBoundExpression<?, ? extends ExpressionResult<? extends AttributeValue>> expression;
+		final Expression<? extends ExpressionResult<? extends AttributeValue, ?>> expression;
 		// We check all types of Expression: <Apply>, <AttributeSelector>,
 		// <AttributeValue>,
 		// <Function>, <VariableReference> and <AttributeDesignator>
@@ -327,7 +327,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 			}
 		} else if (expr instanceof AttributeValueType)
 		{
-			expression = createAttributeValueExpression((AttributeValueType) expr);
+			expression = createAttributeValue((AttributeValueType) expr);
 		} else if (expr instanceof FunctionType)
 		{
 			final FunctionType jaxbFunc = (FunctionType) expr;
@@ -365,11 +365,11 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
 	 */
 	@Override
-	public PrimitiveResult<? extends AttributeValue> createAttributeValueExpression(AttributeValueType jaxbAttrVal) throws ParsingException
+	public AttributeValue createAttributeValue(AttributeValueType jaxbAttrVal) throws ParsingException
 	{
 		try
 		{
-			return new PrimitiveResult<>(this.attributeFactoryRegistry.createValue(jaxbAttrVal), new DatatypeDef(jaxbAttrVal.getDataType()));
+			return this.attributeFactoryRegistry.createValue(jaxbAttrVal);
 		} catch (UnknownIdentifierException e)
 		{
 			throw new ParsingException("Error parsing AttributeValue expression: invalid/unsupported datatype URI", e);

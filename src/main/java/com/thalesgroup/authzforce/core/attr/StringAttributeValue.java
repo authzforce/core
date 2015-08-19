@@ -23,7 +23,7 @@ public class StringAttributeValue extends PrimitiveAttributeValue<String> implem
 		@Override
 		public String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -37,17 +37,17 @@ public class StringAttributeValue extends PrimitiveAttributeValue<String> implem
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#string";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#string";
 
 	/**
 	 * StringAttributeValue type as generic type (primitive)
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(StringAttributeValue.identifier);
+	public static final DatatypeDef TYPE = new DatatypeDef(StringAttributeValue.TYPE_URI);
 
 	/**
 	 * StringAttributeValue bag type as generic type
 	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(StringAttributeValue.identifier, true);
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(StringAttributeValue.TYPE_URI, true);
 
 	private static final StringAttributeValue TRUE = new StringAttributeValue("true");
 	private static final StringAttributeValue FALSE = new StringAttributeValue("false");
@@ -62,15 +62,21 @@ public class StringAttributeValue extends PrimitiveAttributeValue<String> implem
 	 */
 	public StringAttributeValue(String value) throws IllegalArgumentException
 	{
-		super(identifier, value);
+		super(TYPE, value);
 	}
 
 	/**
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(AttributeValueType)
+	 * Creates instance from XML/JAXB value
+	 * 
+	 * @param jaxbAttrVal
+	 *            JAXB AttributeValue
+	 * @throws IllegalArgumentException
+	 *             if not valid value for datatype {@value #TYPE_URI}
+	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
 	 */
 	public StringAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	@Override
@@ -148,5 +154,10 @@ public class StringAttributeValue extends PrimitiveAttributeValue<String> implem
 	// System.out.println(result2 == s2);
 	//
 	// }
+
+	public static void main(String[] args)
+	{
+		System.out.println(new StringAttributeValue("Test"));
+	}
 
 }

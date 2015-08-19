@@ -12,7 +12,6 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 /**
  * Implements string-substring function
@@ -21,16 +20,16 @@ import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
  *            parameter type
  * 
  */
-public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extends BaseFunction<PrimitiveResult<StringAttributeValue>>
+public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extends FirstOrderFunction<StringAttributeValue>
 {
 
 	/**
-	 * Standard identifier for the string-substring function.
+	 * Standard TYPE_URI for the string-substring function.
 	 */
 	public static final String NAME_STRING_SUBSTRING = FUNCTION_NS_3 + "string-substring";
 
 	/**
-	 * Standard identifier for the anyURI-substring function.
+	 * Standard TYPE_URI for the anyURI-substring function.
 	 */
 	public static final String NAME_ANYURI_SUBSTRING = FUNCTION_NS_3 + "anyURI-substring";
 
@@ -67,17 +66,17 @@ public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extend
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.func.BaseFunction#getFunctionCall(java.util.List,
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected Call getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
+	protected FirstOrderFunctionCall getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
 	{
 		return new EagerPrimitiveEvalCall<AttributeValue>(AttributeValue[].class, checkedArgExpressions, checkedRemainingArgTypes)
 		{
 
 			@Override
-			protected PrimitiveResult<StringAttributeValue> evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
+			protected StringAttributeValue evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
 			{
 				final T arg0;
 				final IntegerAttributeValue beginIndex;
@@ -92,7 +91,7 @@ public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extend
 					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + args[0].getClass().getSimpleName() + "," + args[1].getClass().getSimpleName() + "," + args[2].getClass().getSimpleName(), Status.STATUS_PROCESSING_ERROR, e);
 				}
 
-				return new PrimitiveResult<>(eval(arg0, beginIndex, endIndex), returnType);
+				return eval(arg0, beginIndex, endIndex);
 			}
 
 		};

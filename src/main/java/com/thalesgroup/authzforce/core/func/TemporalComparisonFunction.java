@@ -32,10 +32,10 @@ public class TemporalComparisonFunction<T extends BaseTimeAttributeValue<T>> ext
 	{
 		for (final PostCondition condition : PostCondition.values())
 		{
-			INSTANCES.addAll(Arrays.asList(new TemporalComparisonFunction<>(FUNCTION_NS_1 + "time", TimeAttributeValue.identifier,
-					TimeAttributeValue[].class, condition), new TemporalComparisonFunction<>(FUNCTION_NS_1 + "date", DateAttributeValue.identifier,
+			INSTANCES.addAll(Arrays.asList(new TemporalComparisonFunction<>(FUNCTION_NS_1 + "time", TimeAttributeValue.TYPE_URI,
+					TimeAttributeValue[].class, condition), new TemporalComparisonFunction<>(FUNCTION_NS_1 + "date", DateAttributeValue.TYPE_URI,
 					DateAttributeValue[].class, condition), new TemporalComparisonFunction<>(FUNCTION_NS_1 + "dateTime",
-					DateTimeAttributeValue.identifier, DateTimeAttributeValue[].class, condition)));
+					DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue[].class, condition)));
 		}
 	}
 

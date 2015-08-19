@@ -48,7 +48,6 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.JAXBBoundExpression;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 
 /**
@@ -59,7 +58,7 @@ import com.thalesgroup.authzforce.core.func.FunctionCall;
  * @param <T>
  *            return type of this function, i.e. single-valued V or bag of Vs
  */
-public abstract class Function<T extends ExpressionResult<? extends AttributeValue>> extends FunctionType implements JAXBBoundExpression<FunctionType, T>, PdpExtension
+public abstract class Function<T extends ExpressionResult<? extends AttributeValue>> extends FunctionType implements Expression<T>, PdpExtension
 {
 	/**
 	 * Returns the function ID (as PDP extension ID)
@@ -95,7 +94,8 @@ public abstract class Function<T extends ExpressionResult<? extends AttributeVal
 	}
 
 	/**
-	 * Parse/validate the function inputs.
+	 * Creates new function call with given arguments (Expressions). Any implementation of this
+	 * method should first validate inputs according to the function signature/definition.
 	 * 
 	 * @param inputExpressions
 	 *            function arguments (expressions)
@@ -106,7 +106,7 @@ public abstract class Function<T extends ExpressionResult<? extends AttributeVal
 	 * @throws IllegalArgumentException
 	 *             if inputs are invalid for this function
 	 */
-	public abstract FunctionCall<T> parseInputs(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputExpressions) throws IllegalArgumentException;
+	public abstract FunctionCall<T> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputExpressions) throws IllegalArgumentException;
 
 	/*
 	 * (non-Javadoc)

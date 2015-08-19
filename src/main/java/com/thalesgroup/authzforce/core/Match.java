@@ -35,7 +35,6 @@ import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 import com.thalesgroup.authzforce.core.func.HigherOrderBagFunction;
 
@@ -57,7 +56,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 	 * Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction, attributeValue,
 	 * bagExpression)
 	 */
-	private final FunctionCall<PrimitiveResult<BooleanAttributeValue>> anyOfFuncCall;
+	private final FunctionCall<BooleanAttributeValue> anyOfFuncCall;
 
 	/*
 	 * (non-Javadoc)
@@ -155,10 +154,10 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		final Expression<? extends ExpressionResult<? extends AttributeValue>> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, policyDefaults, null);
 
 		this.attributeValue = jaxbMatch.getAttributeValue();
-		final PrimitiveResult<? extends AttributeValue> attrValueExpr;
+		final AttributeValue attrValueExpr;
 		try
 		{
-			attrValueExpr = expFactory.createAttributeValueExpression(attributeValue);
+			attrValueExpr = expFactory.createAttributeValue(attributeValue);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException("Error parsing <Match>'s <AttributeValue>", e);
@@ -166,7 +165,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 
 		// Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction,
 		// attributeValue, bagExpression)
-		final Function<PrimitiveResult<BooleanAttributeValue>> anyOfFunc = (Function<PrimitiveResult<BooleanAttributeValue>>) expFactory.getFunction(HigherOrderBagFunction.NAME_ANY_OF);
+		final Function<BooleanAttributeValue> anyOfFunc = (Function<BooleanAttributeValue>) expFactory.getFunction(HigherOrderBagFunction.NAME_ANY_OF);
 		if (anyOfFunc == null)
 		{
 			throw new ParsingException("Unsupported function '" + HigherOrderBagFunction.NAME_ANY_OF + "' required for Match evaluation");
@@ -175,7 +174,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> anyOfFuncInputs = Arrays.asList(matchFunction, attrValueExpr, bagExpression);
 		try
 		{
-			anyOfFuncCall = anyOfFunc.parseInputs(anyOfFuncInputs);
+			anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
 		} catch (IllegalArgumentException e)
 		{
 			throw new ParsingException("Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): " + anyOfFuncInputs, e);
@@ -194,7 +193,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		final PrimitiveResult<BooleanAttributeValue> anyOfFuncCallResult;
+		final BooleanAttributeValue anyOfFuncCallResult;
 		try
 		{
 			anyOfFuncCallResult = anyOfFuncCall.evaluate(context);
@@ -202,7 +201,8 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		{
 			throw new IndeterminateEvaluationException("Error evaluating Match (with equivalent 'any-of' function)", e.getStatusCode(), e);
 		}
-		return anyOfFuncCallResult.value().getValue();
+
+		return anyOfFuncCallResult.getValue();
 	}
 
 }

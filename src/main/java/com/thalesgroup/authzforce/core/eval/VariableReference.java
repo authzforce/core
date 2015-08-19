@@ -16,7 +16,7 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue;
  * simply Expressions identified by an ID (VariableId) and replace original XACML VariableReferences
  * for actual evaluation.
  */
-public class VariableReference extends VariableReferenceType implements JAXBBoundExpression<VariableReferenceType, ExpressionResult<? extends AttributeValue>>
+public class VariableReference extends VariableReferenceType implements Expression<ExpressionResult<? extends AttributeValue>>
 {
 	private static final UnsupportedOperationException UNSUPPORTED_SET_VARIABLE_OPERATION_EXCEPTION = new UnsupportedOperationException("VariableReference.setVariableId() not allowed");
 	private final Expression<? extends ExpressionResult<? extends AttributeValue>> expression;
@@ -61,7 +61,7 @@ public class VariableReference extends VariableReferenceType implements JAXBBoun
 	private final List<String> longestVariableReferenceChain;
 
 	/**
-	 * Constructor that takes the reference identifier
+	 * Constructor that takes the reference TYPE_URI
 	 * 
 	 * @param varId
 	 *            input VariableReference from XACML model

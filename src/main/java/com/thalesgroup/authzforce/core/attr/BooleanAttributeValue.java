@@ -25,7 +25,7 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 		@Override
 		public final String getId()
 		{
-			return identifier;
+			return TYPE_URI;
 		}
 
 		@Override
@@ -39,7 +39,22 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "http://www.w3.org/2001/XMLSchema#boolean";
+	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#boolean";
+
+	/*
+	 * WARNING: these static variables must be declared before TRUE and FALSE static variables,
+	 * because the latter needs the former to get initialized, and static variables are initialized
+	 * in order of declaration.
+	 */
+	/**
+	 * Primitive datatype definition of this attribute value
+	 */
+	public static final DatatypeDef TYPE = new DatatypeDef(BooleanAttributeValue.TYPE_URI);
+
+	/**
+	 * Bag datatype definition of this attribute value
+	 */
+	public static final DatatypeDef BAG_TYPE = new DatatypeDef(BooleanAttributeValue.TYPE_URI, true);
 
 	/**
 	 * Single instance of BooleanAttributeValue that represents true. Initialized by the static
@@ -54,16 +69,6 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	public static BooleanAttributeValue FALSE = new BooleanAttributeValue(false);
 
 	/**
-	 * Primitive datatype definition of this attribute value
-	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(BooleanAttributeValue.identifier);
-
-	/**
-	 * Bag datatype definition of this attribute value
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(BooleanAttributeValue.identifier, true);
-
-	/**
 	 * Instantiates from XACML AttributeValue
 	 * 
 	 * @param jaxbAttrVal
@@ -74,7 +79,7 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	 */
 	public BooleanAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(TYPE, jaxbAttrVal);
 	}
 
 	/**
@@ -82,7 +87,8 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	 * {@link DatatypeConverter#parseBoolean(String)} to convert to boolean value.
 	 * 
 	 * @param val
-	 * @return instance
+	 *            string form of boolean
+	 * @return instance of BooleanAttributeValue corresponding to {@code val}
 	 * @throws IllegalArgumentException
 	 *             if string parameter does not conform to lexical value space defined in XML Schema
 	 *             Part 2: Datatypes for xsd:boolean.
@@ -102,7 +108,7 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	 */
 	private BooleanAttributeValue(boolean value)
 	{
-		super(identifier, value, value);
+		super(TYPE, value, value);
 	}
 
 	/**

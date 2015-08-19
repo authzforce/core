@@ -28,6 +28,8 @@ import javax.xml.namespace.QName;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
+import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+
 /**
  * Superclass of all Primitive Attribute Value (for primitive datatypes) which actually represents
  * all XACML standard datatypes //*@param <T> concrete attribute value type as subclass of this
@@ -92,9 +94,9 @@ public abstract class PrimitiveAttributeValue<V> extends AttributeValue
 	 *             if first element of {@link jaxbAttrVal#getContent()} is not a valid string
 	 *             representation for this value datatype
 	 */
-	protected PrimitiveAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
+	protected PrimitiveAttributeValue(DatatypeDef datatype, AttributeValueType jaxbAttrVal) throws IllegalArgumentException
 	{
-		super(jaxbAttrVal);
+		super(datatype, jaxbAttrVal);
 		if (content.isEmpty())
 		{
 			throw new IllegalArgumentException("Invalid primitive AttributeValueType: content is empty");
@@ -124,7 +126,7 @@ public abstract class PrimitiveAttributeValue<V> extends AttributeValue
 	 * @throws IllegalArgumentException
 	 *             if {@code val} is not a valid string representation for this value datatype
 	 */
-	protected PrimitiveAttributeValue(String datatype, String val) throws IllegalArgumentException
+	protected PrimitiveAttributeValue(DatatypeDef datatype, String val) throws IllegalArgumentException
 	{
 		super(datatype, Collections.<Serializable> singletonList(val));
 		if (val == null)
@@ -146,7 +148,7 @@ public abstract class PrimitiveAttributeValue<V> extends AttributeValue
 	 * @param jaxbVal
 	 *            JAXB-compatible type {@link Serializable} form of <code>val</code>
 	 */
-	protected PrimitiveAttributeValue(String datatype, V val, Serializable jaxbVal)
+	protected PrimitiveAttributeValue(DatatypeDef datatype, V val, Serializable jaxbVal)
 	{
 		super(datatype, Collections.<Serializable> singletonList(jaxbVal));
 		if (val == null || jaxbVal == null)

@@ -48,8 +48,8 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.eval.BagResult;
 import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.JAXBBoundExpression;
 
 /**
  * AttributeDesignator
@@ -72,7 +72,7 @@ import com.thalesgroup.authzforce.core.eval.JAXBBoundExpression;
  *            AttributeDesignator evaluation result value's primitive datatype
  * 
  */
-public class AttributeDesignator<T extends AttributeValue> extends AttributeDesignatorType implements JAXBBoundExpression<AttributeDesignatorType, BagResult<T>>
+public class AttributeDesignator<T extends AttributeValue> extends AttributeDesignatorType implements Expression<BagResult<T>>
 {
 	/**
 	 * The standard URI for the default subject category value

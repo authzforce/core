@@ -36,7 +36,6 @@ import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionResult;
-import com.thalesgroup.authzforce.core.eval.PrimitiveResult;
 
 @RunWith(Parameterized.class)
 public class DateTimeArithmeticFunctionsTest extends GeneralFunctionTest
@@ -53,29 +52,29 @@ public class DateTimeArithmeticFunctionsTest extends GeneralFunctionTest
 	public static Collection<Object[]> params() throws Exception
 	{
 		return Arrays.asList(
-		// urn:oasis:names:tc:xacml:3.0:function:dateTime-add-dayTimeDuration
-				new Object[] { NAME_DATETIME_ADD_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("P1DT2H")), new PrimitiveResult<>(new DateTimeAttributeValue("2002-09-25T11:30:15"), DateTimeAttributeValue.TYPE) }, //
-				new Object[] { NAME_DATETIME_ADD_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("-P1DT2H")), new PrimitiveResult<>(new DateTimeAttributeValue("2002-09-23T07:30:15"), DateTimeAttributeValue.TYPE) },
+				// urn:oasis:names:tc:xacml:3.0:function:dateTime-add-dayTimeDuration
+				new Object[] { NAME_DATETIME_ADD_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("P1DT2H")), new DateTimeAttributeValue("2002-09-25T11:30:15") }, //
+				new Object[] { NAME_DATETIME_ADD_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("-P1DT2H")), new DateTimeAttributeValue("2002-09-23T07:30:15") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:dateTime-add-yearMonthDuration
-				new Object[] { NAME_DATETIME_ADD_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("P1Y2M")), new PrimitiveResult<>(new DateTimeAttributeValue("2003-11-24T09:30:15"), DateTimeAttributeValue.TYPE) },//
-				new Object[] { NAME_DATETIME_ADD_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("-P1Y2M")), new PrimitiveResult<>(new DateTimeAttributeValue("2001-07-24T09:30:15"), DateTimeAttributeValue.TYPE) },
+				new Object[] { NAME_DATETIME_ADD_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("P1Y2M")), new DateTimeAttributeValue("2003-11-24T09:30:15") },//
+				new Object[] { NAME_DATETIME_ADD_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("-P1Y2M")), new DateTimeAttributeValue("2001-07-24T09:30:15") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:dateTime-subtract-dayTimeDuration
-				new Object[] { NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("P1DT2H")), new PrimitiveResult<>(new DateTimeAttributeValue("2002-09-23T07:30:15"), DateTimeAttributeValue.TYPE) },//
-				new Object[] { NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("-P1DT2H")), new PrimitiveResult<>(new DateTimeAttributeValue("2002-09-25T11:30:15"), DateTimeAttributeValue.TYPE) },
+				new Object[] { NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("P1DT2H")), new DateTimeAttributeValue("2002-09-23T07:30:15") },//
+				new Object[] { NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DayTimeDurationAttributeValue("-P1DT2H")), new DateTimeAttributeValue("2002-09-25T11:30:15") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:dateTime-subtract-yearMonthDuration
-				new Object[] { NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("P1Y2M")), new PrimitiveResult<>(new DateTimeAttributeValue("2001-07-24T09:30:15"), DateTimeAttributeValue.TYPE) },//
-				new Object[] { NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("-P1Y2M")), new PrimitiveResult<>(new DateTimeAttributeValue("2003-11-24T09:30:15"), DateTimeAttributeValue.TYPE) },
+				new Object[] { NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("P1Y2M")), new DateTimeAttributeValue("2001-07-24T09:30:15") },//
+				new Object[] { NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new YearMonthDurationAttributeValue("-P1Y2M")), new DateTimeAttributeValue("2003-11-24T09:30:15") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:date-add-yearMonthDuration
-				new Object[] { NAME_DATE_ADD_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("P1Y2M")), new PrimitiveResult<>(new DateAttributeValue("2003-11-24"), DateAttributeValue.TYPE) }, new Object[] { NAME_DATE_ADD_YEARMONTHDURATION,
-						Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("-P1Y2M")), new PrimitiveResult<>(new DateAttributeValue("2001-07-24"), DateAttributeValue.TYPE) },
+				new Object[] { NAME_DATE_ADD_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("P1Y2M")), new DateAttributeValue("2003-11-24") },
+				new Object[] { NAME_DATE_ADD_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("-P1Y2M")), new DateAttributeValue("2001-07-24") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:date-subtract-yearMonthDuration
-				new Object[] { NAME_DATE_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("P1Y2M")), new PrimitiveResult<>(new DateAttributeValue("2001-07-24"), DateAttributeValue.TYPE) },//
-				new Object[] { NAME_DATE_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("-P1Y2M")), new PrimitiveResult<>(new DateAttributeValue("2003-11-24"), DateAttributeValue.TYPE) });
+				new Object[] { NAME_DATE_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("P1Y2M")), new DateAttributeValue("2001-07-24") },//
+				new Object[] { NAME_DATE_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("-P1Y2M")), new DateAttributeValue("2003-11-24") });
 	}
 
 	public DateTimeArithmeticFunctionsTest(String functionName, final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult) throws Exception
