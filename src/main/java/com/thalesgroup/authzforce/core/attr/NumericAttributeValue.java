@@ -18,24 +18,18 @@
  */
 package com.thalesgroup.authzforce.core.attr;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
-
 /**
  * Superclass of all numeric Attribute Values (integer, double...)
  * 
  * @param <N>
  *            actual Java type of the underlying numeric value (Integer, Double...)
- * @param <T>
- *            type of result returned by arithmetic functions with this type of arguments:
- *            {@link #abs()}, {@link #add(T[], int)}, etc. Basically, we expect that arithmetic
- *            functions applied to args of type T will return a result of the same type T.
+ * @param <NAV>
+ *            Concreate NumericAttributeValue type subclass
  * 
  */
-public abstract class NumericAttributeValue<N extends Number, T extends NumericAttributeValue<N, T>> extends PrimitiveAttributeValue<N>
+public abstract class NumericAttributeValue<N extends Number, NAV extends NumericAttributeValue<N, NAV>> extends SimpleAttributeValue<N, NAV>
 {
-	protected NumericAttributeValue(DatatypeDef datatype, N val)
+	protected NumericAttributeValue(Datatype<NAV> datatype, N val)
 	{
 		super(datatype, val, val);
 	}
@@ -49,17 +43,9 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	 *             if <code>val</code> is not a valid string representation for this numeric
 	 *             datatype
 	 */
-	protected NumericAttributeValue(DatatypeDef datatype, String val) throws IllegalArgumentException
+	protected NumericAttributeValue(Datatype<NAV> datatype, String val) throws IllegalArgumentException
 	{
 		super(datatype, val);
-	}
-
-	/**
-	 * @see PrimitiveAttributeValue#BasePrimitiveAttributeValue(AttributeValueType)
-	 */
-	protected NumericAttributeValue(DatatypeDef datatype, AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(datatype, jaxbAttrVal);
 	}
 
 	/**
@@ -67,7 +53,7 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	 * 
 	 * @return the absolute value
 	 */
-	public abstract T abs();
+	public abstract NAV abs();
 
 	/**
 	 * Adds numbers to this. Used by the XACML numeric *-add functions.
@@ -78,7 +64,7 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	 *            index in <code>others</code> where to start adding values
 	 * @return sum of this and the others
 	 */
-	public abstract T add(T[] others, int offset);
+	public abstract NAV add(NAV[] others, int offset);
 
 	/**
 	 * Multiply <code>this</code> by other numbers, starting to multiply others from a specific
@@ -90,7 +76,7 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	 *            index in <code>others</code> where to start adding array values
 	 * @return product of this by the others
 	 */
-	public abstract T multiply(T[] others, int offset);
+	public abstract NAV multiply(NAV[] others, int offset);
 
 	/**
 	 * Divide <code>this</code> by some other number. Used by XACML *-divide functions.
@@ -102,7 +88,7 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	 * @throws ArithmeticException
 	 *             if divisor is zero
 	 */
-	public abstract T divide(T divisor) throws ArithmeticException;
+	public abstract NAV divide(NAV divisor) throws ArithmeticException;
 
 	/**
 	 * Substract a number from this. Used by XACML numeric *-subtract functions.
@@ -111,5 +97,5 @@ public abstract class NumericAttributeValue<N extends Number, T extends NumericA
 	 *            value to be subtracted from <code>this</code>
 	 * @return this - substractedVal
 	 */
-	public abstract T subtract(T subtractedVal);
+	public abstract NAV subtract(NAV subtractedVal);
 }

@@ -18,11 +18,11 @@
  */
 package com.thalesgroup.authzforce.core.test.utils;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.Iterator;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -105,10 +105,15 @@ public class TestUtils
 		 */
 		String requestFileResourceName = rootDirectory + "/" + versionDirectory + "/" + REQUEST_DIRECTORY + "/" + requestFilename;
 		URL requestFileURL = Thread.currentThread().getContextClassLoader().getResource(requestFileResourceName);
+		if (requestFileURL == null)
+		{
+			throw new IllegalArgumentException("No XACML Request file found at location: 'classpath:" + requestFileResourceName + "'");
+		}
+
 		LOGGER.debug("Request file to read: {}", requestFileURL);
 		Unmarshaller u = XACMLBindingUtils.createXacml3Unmarshaller();
-		JAXBElement<Request> jaxbElt = (JAXBElement<Request>) u.unmarshal(requestFileURL);
-		return jaxbElt.getValue();
+		Request request = (Request) u.unmarshal(requestFileURL);
+		return request;
 	}
 
 	/**
@@ -141,10 +146,10 @@ public class TestUtils
 		 */
 		String responseFileResourceName = rootDirectory + "/" + versionDirectory + "/" + RESPONSE_DIRECTORY + "/" + responseFilename;
 		URL responseFileURL = Thread.currentThread().getContextClassLoader().getResource(responseFileResourceName);
-		LOGGER.debug("Request file to read: {}", responseFileURL);
+		LOGGER.debug("Response file to read: {}", responseFileURL);
 		Unmarshaller u = XACMLBindingUtils.createXacml3Unmarshaller();
-		JAXBElement<Response> jaxbElt = (JAXBElement<Response>) u.unmarshal(responseFileURL);
-		return jaxbElt.getValue();
+		Response response = (Response) u.unmarshal(responseFileURL);
+		return response;
 	}
 
 	public static String printRequest(Request request)
@@ -178,42 +183,77 @@ public class TestUtils
 		return writer.toString();
 	}
 
-	public static boolean match(Response testedResponse, Response expectedResponse)
+	/**
+	 * Normalize a XACML response for comparison with another normalized one. In particular, it
+	 * removes every Result's status as we choose to ignore the Status. Indeed, a PDP implementation
+	 * might return a perfectly XACML-compliant response but with extra StatusCode/Message/Detail
+	 * that we would not expect.
+	 * 
+	 * @param response
+	 *            input XACML Response
+	 */
+	private static void normalizeForComparison(Response response)
 	{
-		if (testedResponse.getResults().size() != expectedResponse.getResults().size())
-		{
-			LOGGER.debug("Number of results in tested response  (={}) differs from expected (={})", testedResponse.getResults().size(), expectedResponse.getResults().size());
-			return false;
-		}
-
 		/*
 		 * We iterate over all results, because for each results, we don't compare everything. In
 		 * particular, we choose to ignore the Status. Indeed, a PDP implementation might return a
 		 * perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would
 		 * not expect.
 		 */
-		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResultsIterator = expectedResponse.getResults().iterator();
-		Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> testedResultsIterator = testedResponse.getResults().iterator();
-		int i = 0;
-		while (expectedResultsIterator.hasNext())
+		for (Result result : response.getResults())
 		{
-			Result expectedResult = expectedResultsIterator.next();
-			Result testedResult = testedResultsIterator.next();
 			// We ignore the status, so set it to null in both expected and tested response to avoid
 			// Status comparison
-			expectedResult.setStatus(null);
-			testedResult.setStatus(null);
-			if (!testedResult.equals(expectedResult))
-			{
-				LOGGER.debug("Result #" + i + " in tested response ( {} ) does not match (Status ignored) the expected one ( {} )", testedResult, expectedResult);
-				return false;
-			}
-
-			i++;
+			result.setStatus(null);
 		}
-
-		return true;
 	}
+
+	// Replaced by Response#equals()
+	// TODO: remove it once Response#equals() checks OK.
+	// public static boolean match(Response normalizedActualResponse, Response
+	// normalizedExpectedResponse)
+	// {
+	// if (normalizedActualResponse.getResults().size() !=
+	// normalizedExpectedResponse.getResults().size())
+	// {
+	// LOGGER.debug("Number of results in tested response  (={}) differs from expected (={})",
+	// normalizedActualResponse.getResults().size(),
+	// normalizedExpectedResponse.getResults().size());
+	// return false;
+	// }
+	//
+	// /*
+	// * We iterate over all results, because for each results, we don't compare everything. In
+	// * particular, we choose to ignore the Status. Indeed, a PDP implementation might return a
+	// * perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would
+	// * not expect.
+	// */
+	// Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResultsIterator =
+	// normalizedExpectedResponse.getResults().iterator();
+	// Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> testedResultsIterator =
+	// normalizedActualResponse.getResults().iterator();
+	// int i = 0;
+	// while (expectedResultsIterator.hasNext())
+	// {
+	// Result expectedResult = expectedResultsIterator.next();
+	// Result testedResult = testedResultsIterator.next();
+	// // We ignore the status, so set it to null in both expected and tested response to avoid
+	// // Status comparison
+	// expectedResult.setStatus(null);
+	// testedResult.setStatus(null);
+	// if (!testedResult.equals(expectedResult))
+	// {
+	// LOGGER.debug("Result #" + i +
+	// " in tested response ( {} ) does not match (Status ignored) the expected one ( {} )",
+	// testedResult, expectedResult);
+	// return false;
+	// }
+	//
+	// i++;
+	// }
+	//
+	// return true;
+	// }
 
 	/**
 	 * Returns a new PDP instance with a new root XACML policy loaded from {@code rootDir}/
@@ -284,5 +324,23 @@ public class TestUtils
 		 */
 		IndividualDecisionRequest individualDecisionReq = BASIC_REQUEST_FILTER.filter(request).get(0);
 		return new IndividualDecisionRequestContext(individualDecisionReq);
+	}
+
+	/**
+	 * assertEquals() for XACML responses (handles normalization of the responses)
+	 * 
+	 * @param testId
+	 *            test identifier
+	 * @param expectedResponse
+	 *            expected response
+	 * @param actualResponse
+	 *            actual response
+	 */
+	public static void assertNormalizedEquals(String testId, Response expectedResponse, Response actualResponse)
+	{
+		// normalize responses for comparison
+		TestUtils.normalizeForComparison(expectedResponse);
+		TestUtils.normalizeForComparison(actualResponse);
+		assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", expectedResponse, actualResponse);
 	}
 }

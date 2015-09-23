@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.policy;
 
 import java.io.IOException;
@@ -145,7 +163,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 
 		try
 		{
-			rootPolicy = new Policy(jaxbPolicy, expressionFactory, combiningAlgRegistry);
+			rootPolicy = new Policy(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing Policy: " + jaxbPolicy.getPolicyId(), e);
@@ -179,14 +197,9 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 			throw new IllegalArgumentException("Undefined CombiningAlgorithm registry");
 		}
 
-		if (refPolicyFinder == null)
-		{
-			throw new IllegalArgumentException("Undefined RefPolicyFinderModule for resolution of Policy(Set)IdReferences although the root policy is a PolicySet element that may use such references.");
-		}
-
 		try
 		{
-			rootPolicy = new PolicySet(jaxbPolicySet, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
+			rootPolicy = new PolicySet(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing PolicySet: " + jaxbPolicySet.getPolicySetId(), e);

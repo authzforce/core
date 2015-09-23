@@ -1,17 +1,34 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
+
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
 
 /**
  * Representation of XACML XPath expression datatype. This class supports parsing xs:string values.
  * All objects of this class are immutable and all methods of the class are thread-safe.
  */
-public class XPathAttributeValue extends PrimitiveAttributeValue<String>
+public class XPathAttributeValue extends SimpleAttributeValue<String, XPathAttributeValue>
 {
 	private static final QName XPATH_CATEGORY_ATTRIBUTE_QNAME = new QName(XACMLVersion.V3_0.getNamespace(), "XPathCategory");
 
@@ -23,9 +40,17 @@ public class XPathAttributeValue extends PrimitiveAttributeValue<String>
 	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression";
 
 	/**
-	 * Primitive datatype info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
+	public static final AttributeValue.Factory<XPathAttributeValue> FACTORY = new SimpleAttributeValue.Factory<XPathAttributeValue>(XPathAttributeValue.class, TYPE_URI)
+	{
+		@Override
+		public XPathAttributeValue getInstance(String value, Map<QName, String> otherXmlAttributes) throws IllegalArgumentException
+		{
+			return new XPathAttributeValue(value, otherXmlAttributes.get(XPATH_CATEGORY_ATTRIBUTE_QNAME));
+		}
+
+	};
 
 	/**
 	 * Instantiates from XPath expression.
@@ -39,24 +64,9 @@ public class XPathAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public XPathAttributeValue(String value, String xpathCategory) throws IllegalArgumentException
 	{
-		super(TYPE, value);
+		super(FACTORY.instanceDatatype, value);
 		this.xpathCategory = xpathCategory;
 		this.getOtherAttributes().put(XPATH_CATEGORY_ATTRIBUTE_QNAME, xpathCategory);
-	}
-
-	/**
-	 * Creates instance from XML/JAXB value
-	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
-	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
-	 */
-	public XPathAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(TYPE, jaxbAttrVal);
-		this.xpathCategory = this.getOtherAttributes().get(XPATH_CATEGORY_ATTRIBUTE_QNAME);
 	}
 
 	@Override
@@ -71,6 +81,12 @@ public class XPathAttributeValue extends PrimitiveAttributeValue<String>
 	public String getXpathCategory()
 	{
 		return xpathCategory;
+	}
+
+	@Override
+	public XPathAttributeValue one()
+	{
+		return this;
 	}
 
 }

@@ -36,10 +36,10 @@ package com.sun.xacml.finder;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagResult;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * AttributeFinder used to resolve {@link AttributeDesignator}s.
@@ -58,18 +58,17 @@ public interface AttributeFinder
 	 * java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
 	 * </p>
 	 * 
-	 * @param datatype
-	 *            datatype URI the datatype of the attribute to be matched
 	 * @param attributeGUID
-	 *            the global TYPE_URI (Category,Issuer,AttributeId) of the attribute to find
+	 *            the global identifier (Category,Issuer,AttributeId) of the attribute to find
 	 * @param context
 	 *            the representation of the request data
-	 * @param datatypeClass
-	 *            datatype implementation class
-	 * @return the result of attribute retrieval, which will be a bag of attributes or an error
+	 * @param resultDatatype
+	 *            result (bag) datatype ({@code AV is the expected type of every element in the bag}
+	 *            )
+	 * @return the result of retrieving the attribute, which will be a bag of attribute values
 	 * @throws IndeterminateEvaluationException
 	 *             if any error finding attribute value
 	 */
-	<T extends AttributeValue> BagResult<T> findAttribute(DatatypeDef datatype, AttributeGUID attributeGUID, EvaluationContext context, Class<T> datatypeClass) throws IndeterminateEvaluationException;
+	<AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> resultDatatype) throws IndeterminateEvaluationException;
 
 }

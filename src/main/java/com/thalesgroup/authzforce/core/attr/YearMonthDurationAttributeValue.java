@@ -1,10 +1,24 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import javax.xml.datatype.Duration;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 
 /**
  * Representation of an xs:yearMonthDuration value. This class supports parsing xs:yearMonthDuration
@@ -14,7 +28,7 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
  * javax.xml.datatype package.
  * 
  */
-public class YearMonthDurationAttributeValue extends DurationAttributeValue
+public class YearMonthDurationAttributeValue extends DurationAttributeValue<YearMonthDurationAttributeValue>
 {
 	/**
 	 * Official name of this type
@@ -22,48 +36,18 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#yearMonthDuration";
 
 	/**
-	 * Generic type info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
-
-	/**
-	 * Bag datatype definition of this attribute value
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<YearMonthDurationAttributeValue> FACTORY = new AttributeValue.Factory<YearMonthDurationAttributeValue>(YearMonthDurationAttributeValue.class)
+	public static final AttributeValue.Factory<YearMonthDurationAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<YearMonthDurationAttributeValue>(YearMonthDurationAttributeValue.class, TYPE_URI)
 	{
 
 		@Override
-		public String getId()
+		protected YearMonthDurationAttributeValue getInstance(String val)
 		{
-			return TYPE_URI;
-		}
-
-		@Override
-		public YearMonthDurationAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new YearMonthDurationAttributeValue(jaxbAttributeValue);
+			return new YearMonthDurationAttributeValue(val);
 		}
 
 	};
-
-	/**
-	 * Creates instance from XML/JAXB value
-	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
-	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see DurationAttributeValue#DurationAttributeValue(DatatypeDef, AttributeValueType)
-	 */
-	public YearMonthDurationAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(TYPE, jaxbAttrVal);
-	}
 
 	/**
 	 * Instantiates duration attribute value from string representation
@@ -86,12 +70,18 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue
 	 */
 	public YearMonthDurationAttributeValue(String value) throws IllegalArgumentException
 	{
-		super(TYPE, value);
+		super(FACTORY.instanceDatatype, value);
 	}
 
 	@Override
 	protected Duration parse(String stringForm) throws IllegalArgumentException
 	{
 		return XML_TEMPORAL_DATATYPE_FACTORY.newDurationYearMonth(stringForm);
+	}
+
+	@Override
+	public YearMonthDurationAttributeValue one()
+	{
+		return this;
 	}
 }

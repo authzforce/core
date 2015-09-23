@@ -33,19 +33,13 @@
  */
 package com.sun.xacml.attr;
 
-import java.io.Serializable;
 import java.net.InetAddress;
-import java.util.Collections;
-import java.util.Objects;
 
 import javax.xml.ws.Holder;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
 import com.google.common.net.InetAddresses;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.PrimitiveAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 
 /**
  * Represents the IPAddress datatype introduced in XACML 2.0. All objects of this class are
@@ -54,7 +48,7 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
  * @since 2.0
  * @author Seth Proctor
  */
-public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
+public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddressAttributeValue>
 {
 	/*
 	 * These fields are not actually needed in the XACML core specification since no function uses
@@ -71,9 +65,10 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 		if (val.indexOf('[') == 0)
 		{
 			parseIPv6Address(val, returnedAddress, returnedMask, returnedRange);
+		} else
+		{
+			parseIPv4Address(val, returnedAddress, returnedMask, returnedRange);
 		}
-
-		parseIPv4Address(val, returnedAddress, returnedMask, returnedRange);
 	}
 
 	/*
@@ -82,6 +77,8 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	private static void parseIPv4Address(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
 	{
+		assert val != null;
+
 		final InetAddress address;
 		final InetAddress mask;
 		final PortRange range;
@@ -199,6 +196,11 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	}
 
 	/**
+	 * Official name of this type
+	 */
+	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:2.0:data-type:ipAddress";
+
+	/**
 	 * Instantiates from string representation
 	 * 
 	 * @param val
@@ -206,17 +208,7 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public IPAddressAttributeValue(String val)
 	{
-		this(new AttributeValueType(Collections.<Serializable> singletonList(val), identifier, null));
-	}
-
-	/**
-	 * Instantiates from XACML AttributeValue
-	 * 
-	 * @param jaxbAttrVal
-	 */
-	public IPAddressAttributeValue(AttributeValueType jaxbAttrVal)
-	{
-		super(TYPE, jaxbAttrVal);
+		super(FACTORY.getDatatype(), val);
 		final Holder<InetAddress> addressHolder = new Holder<>();
 		final Holder<InetAddress> maskHolder = new Holder<>();
 		final Holder<PortRange> rangeHolder = new Holder<>();
@@ -227,31 +219,14 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	}
 
 	/**
-	 * Official name of this type
+	 * Datatype factory instance
 	 */
-	public static final String identifier = "urn:oasis:names:tc:xacml:2.0:data-type:ipAddress";
-
-	/**
-	 * Generic type info
-	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<IPAddressAttributeValue> FACTORY = new AttributeValue.Factory<IPAddressAttributeValue>(IPAddressAttributeValue.class)
+	public static final AttributeValue.Factory<IPAddressAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<IPAddressAttributeValue>(IPAddressAttributeValue.class, TYPE_URI)
 	{
-
 		@Override
-		public String getId()
+		public IPAddressAttributeValue getInstance(String value)
 		{
-			return identifier;
-		}
-
-		@Override
-		public IPAddressAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new IPAddressAttributeValue(jaxbAttributeValue);
+			return new IPAddressAttributeValue(value);
 		}
 
 	};
@@ -296,17 +271,6 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(address, mask, portRange);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -319,11 +283,11 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 		if (getClass() != obj.getClass())
 			return false;
 		final IPAddressAttributeValue other = (IPAddressAttributeValue) obj;
-		if (address == null)
-		{
-			if (other.address != null)
-				return false;
-		} else if (!address.equals(other.address))
+		// address and range non-null
+		/*
+		 * if (address == null) { if (other.address != null) return false; } else
+		 */
+		if (!address.equals(other.address))
 			return false;
 		if (mask == null)
 		{
@@ -331,13 +295,18 @@ public class IPAddressAttributeValue extends PrimitiveAttributeValue<String>
 				return false;
 		} else if (!mask.equals(other.mask))
 			return false;
-		if (portRange == null)
-		{
-			if (other.portRange != null)
-				return false;
-		} else if (!portRange.equals(other.portRange))
+		/*
+		 * if (portRange == null) { if (other.portRange != null) return false; } else
+		 */
+		if (!portRange.equals(other.portRange))
 			return false;
 		return true;
+	}
+
+	@Override
+	public IPAddressAttributeValue one()
+	{
+		return this;
 	}
 
 }

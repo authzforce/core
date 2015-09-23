@@ -1,7 +1,24 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -10,10 +27,11 @@ import org.slf4j.LoggerFactory;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.AttributeFinderModule;
-import com.thalesgroup.authzforce.core.eval.BagResult;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * Implementation of CloseAttributeFinder initialized with sub-modules, each responsible of finding
@@ -79,21 +97,21 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 	 * com.thalesgroup.authzforce.core.eval.EvaluationContext, java.lang.Class)
 	 */
 	@Override
-	public final <T extends AttributeValue> BagResult<T> findAttribute(DatatypeDef datatype, AttributeGUID attributeGUID, EvaluationContext context, Class<T> datatypeClass) throws IndeterminateEvaluationException
+	public final <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> bagDatatype) throws IndeterminateEvaluationException
 	{
 		try
 		{
-			final BagResult<T> contextBag = context.getAttributeDesignatorResult(attributeGUID, datatypeClass, datatype);
+			final Bag<AV> contextBag = context.getAttributeDesignatorResult(attributeGUID, bagDatatype);
 			if (contextBag != null)
 			{
-				LOGGER.debug("Values of attribute {}/type={} found in evaluation context: {}", attributeGUID, datatype, contextBag);
+				LOGGER.debug("Values of attribute {}, type={} found in evaluation context: {}", attributeGUID, bagDatatype, contextBag);
 				return contextBag;
 			}
 
-			final BagResult<T> result;
+			final Bag<AV> result;
 			if (designatorModsByAttrId == null || designatorModsByAttrId.isEmpty())
 			{
-				LOGGER.debug("No value found for attribute {}/type={} in evaluation context and no attribute finder module registered", attributeGUID, datatype);
+				LOGGER.debug("No value found for attribute {}, type={} in evaluation context and no attribute finder module registered", attributeGUID, bagDatatype);
 				throw MISSING_ATTRIBUTE_IN_CONTEXT_WITH_NO_MODULE_EXCEPTION;
 			}
 
@@ -101,23 +119,29 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 			final AttributeFinderModule designatorMod = designatorModsByAttrId.get(attributeGUID);
 			if (designatorMod == null)
 			{
-				LOGGER.debug("No value found for required attribute {}/type={} in evaluation context and not supported by any attribute finder module", attributeGUID, datatype);
+				LOGGER.debug("No value found for required attribute {}, type={} in evaluation context and not supported by any attribute finder module", attributeGUID, bagDatatype);
 				throw new IndeterminateEvaluationException("Not in context and no attribute finder module supporting attribute " + attributeGUID, Status.STATUS_MISSING_ATTRIBUTE);
 			}
 
-			final List<T> bag = designatorMod.findAttribute(datatype, attributeGUID, context, datatypeClass);
-			result = new BagResult<>(bag, datatypeClass, datatype);
+			result = designatorMod.findAttribute(attributeGUID, context, bagDatatype);
 
 			/*
 			 * Cache the attribute value(s) in context to avoid waste of time querying the module
 			 * twice for same attribute
 			 */
 			context.putAttributeDesignatorResultIfAbsent(attributeGUID, result);
-			LOGGER.debug("Values of attribute {}/type={} returned by attribute finder module #{} (cached in context): {}", attributeGUID, datatype, designatorMod, result);
-
+			LOGGER.debug("Values of attribute {}, type={} returned by attribute finder module #{} (cached in context): {}", attributeGUID, bagDatatype, designatorMod, result);
 			return result;
 		} catch (IndeterminateEvaluationException e)
 		{
+			/*
+			 * This error does not necessarily matter, it depends on whether the attribute is
+			 * required, i.e. MustBePresent=true for AttributeDesignator/Selector So we let
+			 * AttributeDesignator/Select#evaluate() method log the errors if MustBePresent=true.
+			 * Here debug level is enough
+			 */
+			LOGGER.debug("Error finding attribute {}, type={}", attributeGUID, bagDatatype, e);
+
 			/**
 			 * If error occurred, we put the empty value to prevent retry in the same context, which
 			 * may succeed at another time in the same context, resulting in different value of the
@@ -133,8 +157,27 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 			 * </p>
 			 * Therefore, if no value found, we keep it that way until evaluation is done for the
 			 * current request context.
+			 * <p>
+			 * We could put the null value to indicate the evaluation error, instead of an empty
+			 * Bag, but it would make the result of the code used at the start of this method
+			 * ambiguous/confusing:
+			 * <p>
+			 * <code>
+			 * final Bag<T> contextBag = context.getAttributeDesignatorResult(attributeGUID,...)
+			 * </code>
+			 * </p>
+			 * <p>
+			 * Indeed, contextBag could be null for one of these two reasons:
+			 * <ol>
+			 * <li>The attribute ('attributeGUID') has never been requested in this context;
+			 * <li>It has been requested before in this context but could not be found: error
+			 * occurred (IndeterminateEvaluationException)</li>
+			 * </ol>
+			 * To avoid this confusion, we put an empty Bag (with some error info saying why
+			 * this is empty).
+			 * </p>
 			 */
-			final BagResult<T> result = new BagResult<>(e.getStatus(), datatypeClass, datatype);
+			final Bag<AV> result = Bags.empty(bagDatatype, e);
 			context.putAttributeDesignatorResultIfAbsent(attributeGUID, result);
 			return result;
 		}
@@ -154,9 +197,9 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 	{
 
 		@Override
-		public final <T extends AttributeValue> BagResult<T> findAttribute(DatatypeDef attributeType, AttributeGUID attributeGUID, EvaluationContext context, Class<T> datatypeClass) throws IndeterminateEvaluationException
+		public final <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> resultDatatype) throws IndeterminateEvaluationException
 		{
-			return CloseableAttributeFinderImpl.this.findAttribute(attributeType, attributeGUID, context, datatypeClass);
+			return CloseableAttributeFinderImpl.this.findAttribute(attributeGUID, context, resultDatatype);
 		}
 
 	}

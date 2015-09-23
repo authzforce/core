@@ -33,7 +33,6 @@ import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 import com.thalesgroup.authzforce.core.func.HigherOrderBagFunction;
@@ -141,7 +140,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		// get the matchFunction type, making sure that it's really a correct
 		// Target matchFunction
 		this.matchId = jaxbMatch.getMatchId();
-		final Function<? extends ExpressionResult<? extends AttributeValue>> matchFunction = expFactory.getFunction(matchId);
+		final Function<?> matchFunction = expFactory.getFunction(matchId);
 		if (matchFunction == null)
 		{
 			throw new ParsingException("Unsupported function for MatchId: " + matchId);
@@ -151,10 +150,10 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		// value paired with it
 		this.attributeDesignator = jaxbMatch.getAttributeDesignator();
 		this.attributeSelector = jaxbMatch.getAttributeSelector();
-		final Expression<? extends ExpressionResult<? extends AttributeValue>> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, policyDefaults, null);
+		final Expression<?> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, policyDefaults, null);
 
 		this.attributeValue = jaxbMatch.getAttributeValue();
-		final AttributeValue attrValueExpr;
+		final AttributeValue<?> attrValueExpr;
 		try
 		{
 			attrValueExpr = expFactory.createAttributeValue(attributeValue);
@@ -171,7 +170,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 			throw new ParsingException("Unsupported function '" + HigherOrderBagFunction.NAME_ANY_OF + "' required for Match evaluation");
 		}
 
-		final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> anyOfFuncInputs = Arrays.asList(matchFunction, attrValueExpr, bagExpression);
+		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr, bagExpression);
 		try
 		{
 			anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
@@ -202,7 +201,7 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 			throw new IndeterminateEvaluationException("Error evaluating Match (with equivalent 'any-of' function)", e.getStatusCode(), e);
 		}
 
-		return anyOfFuncCallResult.getValue();
+		return anyOfFuncCallResult.getUnderlyingValue();
 	}
 
 }

@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
@@ -56,15 +58,16 @@ import com.thalesgroup.authzforce.core.DecisionResultFilter;
 import com.thalesgroup.authzforce.core.IndividualDecisionRequest;
 import com.thalesgroup.authzforce.core.RequestFilter;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagResult;
+import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.DecisionResult;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
@@ -136,10 +139,10 @@ public class PDP implements Closeable
 
 	private class IndividualDecisionRequestEvaluator
 	{
-		protected final Result evaluate(IndividualDecisionRequest request, Map<AttributeGUID, BagResult<? extends AttributeValue>> pdpIssuedAttributes)
+		protected final Result evaluate(IndividualDecisionRequest request, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
 			// convert to EvaluationContext
-			final Map<AttributeGUID, BagResult<? extends AttributeValue>> namedAttributes = request.getNamedAttributes();
+			final Map<AttributeGUID, Bag<?>> namedAttributes = request.getNamedAttributes();
 			namedAttributes.putAll(pdpIssuedAttributes);
 			final EvaluationContext ctx = new IndividualDecisionRequestContext(namedAttributes, request.getExtraContentsByCategory());
 			final DecisionResult result = rootPolicyFinder.findAndEvaluate(ctx);
@@ -147,7 +150,7 @@ public class PDP implements Closeable
 			return result;
 		}
 
-		protected List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, BagResult<? extends AttributeValue>> pdpIssuedAttributes)
+		protected List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
 			final List<Result> results = new ArrayList<>();
 			for (final IndividualDecisionRequest request : individualDecisionRequests)
@@ -175,7 +178,7 @@ public class PDP implements Closeable
 		}
 
 		@Override
-		protected final List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, BagResult<? extends AttributeValue>> pdpIssuedAttributes)
+		protected final List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
 			final List<Result> results = new ArrayList<>();
 			final Map<IndividualDecisionRequest, Result> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
@@ -319,17 +322,17 @@ public class PDP implements Closeable
 		 * Every request context (named attributes) is completed with common current date/time
 		 * attribute (same values) set/"issued" locally (here by the PDP engine) according to XACML
 		 * core spec:
-		 * "This TYPE_URI indicates the current time at the context handler. In practice it is the time at which the request context was created."
+		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created."
 		 * (§ B.7).
 		 */
-		final Map<AttributeGUID, BagResult<? extends AttributeValue>> pdpIssuedAttributes = new HashMap<>();
+		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>();
 		// current datetime
 		final DateTimeAttributeValue currentDateTimeValue = new DateTimeAttributeValue(new GregorianCalendar());
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, new BagResult<>(currentDateTimeValue, DateTimeAttributeValue.class, DateTimeAttributeValue.BAG_TYPE));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATETIME.BAG_TYPE, currentDateTimeValue));
 		// current date
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, new BagResult<>(currentDateTimeValue.toDate(), DateAttributeValue.class, DateAttributeValue.BAG_TYPE));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATE.BAG_TYPE, DateAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 		// current time
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, new BagResult<>(currentDateTimeValue.toTime(), TimeAttributeValue.class, TimeAttributeValue.BAG_TYPE));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.TIME.BAG_TYPE, TimeAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 
 		// evaluate the individual decision requests with the extra common attributes set previously
 		final List<Result> results = individualReqEvaluator.evaluate(individualDecisionRequests, pdpIssuedAttributes);

@@ -37,19 +37,16 @@ import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinder;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagResult;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * AttributeDesignator
@@ -68,31 +65,27 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  * https://java.net/projects/jaxb/lists/users/archive/2011-07/message/16
  * </p>
  * 
- * @param <T>
+ * @param <AV>
  *            AttributeDesignator evaluation result value's primitive datatype
  * 
  */
-public class AttributeDesignator<T extends AttributeValue> extends AttributeDesignatorType implements Expression<BagResult<T>>
+public class AttributeDesignator<AV extends AttributeValue<AV>> extends AttributeDesignatorType implements Expression<Bag<AV>>
 {
-	/**
-	 * The standard URI for the default subject category value
-	 */
-	// public static final String SUBJECT_CATEGORY_DEFAULT =
-	// XACMLCategory.XACML_1_0_SUBJECT_CATEGORY_ACCESS_SUBJECT.value();
-
 	// the LOGGER we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeDesignator.class);
+	// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeDesignator.class);
 	private static final IllegalArgumentException NULL_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute designator category");
 	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute designator datatype");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_EXCEPTION = new IllegalArgumentException("Undefined attribute finder");
 
-	private final IndeterminateEvaluationException missingAttributeException;
 	private final String missingAttributeMessage;
-	private final DatatypeDef returnType;
+	// private final DatatypeDef returnType;
 	private final AttributeGUID attrGUID;
 	private final AttributeFinder attrFinder;
-	private final Class<T> dataTypeClass;
+	// private final Class<T> returnType;
+	private final BagDatatype<AV> returnType;
+	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
+	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
 
 	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("DataType field is read-only");
 	private static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeId field is read-only");
@@ -172,77 +165,28 @@ public class AttributeDesignator<T extends AttributeValue> extends AttributeDesi
 	 * 
 	 * @param attrDesignator
 	 *            the AttributeDesignatorType we want to convert
-	 * @param datatypeClass
-	 *            the class corresponding to the data type of the attribute (values) designated by
-	 *            by this designator
+	 * @param resultDatatype
+	 *            expected datatype of the result of evaluating this AttributeDesignator (
+	 *            {@code AV is the expected type of every element in the bag})
 	 * @param attrFinder
 	 *            Attribute Finder responsible for finding the attribute designated by this in a
 	 *            given evaluation context at runtime
 	 */
-	public AttributeDesignator(AttributeDesignatorType attrDesignator, Class<T> datatypeClass, AttributeFinder attrFinder)
+	public AttributeDesignator(AttributeDesignatorType attrDesignator, BagDatatype<AV> resultDatatype, AttributeFinder attrFinder)
 	{
-		this(attrDesignator.getCategory(), attrDesignator.getDataType(), datatypeClass, attrDesignator.getAttributeId(), attrDesignator.isMustBePresent(), attrDesignator.getIssuer(), attrFinder);
-	}
-
-	/**
-	 * Creates a new <code>AttributeDesignator</code> without the optional issuer.
-	 * 
-	 * @param category
-	 *            the category
-	 * @param datatypeURI
-	 *            attribute datatype URI
-	 * @param datatypeClass
-	 *            the class corresponding to the data type of the attribute (values) designated by
-	 *            by this designator
-	 * @param id
-	 *            the attribute id looked for by this designator
-	 * @param mustBePresent
-	 *            whether resolution must find a value
-	 * @param attrFinder
-	 *            Attribute Finder responsible for finding the attribute designated by this in a
-	 *            given evaluation context at runtime
-	 */
-	public AttributeDesignator(String category, String datatypeURI, Class<T> datatypeClass, String id, boolean mustBePresent, AttributeFinder attrFinder)
-	{
-		this(category, datatypeURI, datatypeClass, id, mustBePresent, null, attrFinder);
-	}
-
-	/**
-	 * Creates a new <code>AttributeDesignator</code> with the optional issuer.
-	 * 
-	 * @param category
-	 *            attribute category
-	 * @param datatypeURI
-	 *            attribute datatype URI
-	 * @param datatypeClass
-	 *            the class corresponding to the data type of the attribute (values) designated by
-	 *            by this designator
-	 * @param id
-	 *            the attribute id looked for by this designator
-	 * @param mustBePresent
-	 *            whether resolution must find a value
-	 * @param issuer
-	 *            the issuer of the values to search for or null if no issuer is specified
-	 * @param attrFinder
-	 *            Attribute Finder responsible for finding the attribute designated by this in a
-	 *            given evaluation context at runtime
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if {@code category}, {@code datatypeURI}, {@code id} or {@code attrFinder} is
-	 *             null
-	 */
-	public AttributeDesignator(String category, String datatypeURI, Class<T> datatypeClass, String id, boolean mustBePresent, String issuer, AttributeFinder attrFinder)
-	{
-		if (category == null)
+		final String categoryURI = attrDesignator.getCategory();
+		if (categoryURI == null)
 		{
 			throw NULL_CATEGORY_EXCEPTION;
 		}
 
+		final String datatypeURI = attrDesignator.getDataType();
 		if (datatypeURI == null)
 		{
 			throw NULL_DATATYPE_EXCEPTION;
 		}
 
+		final String id = attrDesignator.getAttributeId();
 		if (id == null)
 		{
 			throw NULL_ATTRIBUTE_ID_EXCEPTION;
@@ -254,19 +198,22 @@ public class AttributeDesignator<T extends AttributeValue> extends AttributeDesi
 		}
 
 		// JAXB attributes
-		this.category = category;
+		this.category = categoryURI;
 		this.attributeId = id;
 		this.dataType = datatypeURI;
-		this.issuer = issuer;
-		this.mustBePresent = mustBePresent;
+		this.issuer = attrDesignator.getIssuer();
+		this.mustBePresent = attrDesignator.isMustBePresent();
 
 		// others
-		this.missingAttributeMessage = "No attribute matching " + this;
-		this.missingAttributeException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage);
 		this.attrGUID = new AttributeGUID(category, issuer, id);
-		this.returnType = new DatatypeDef(dataType, true);
-		this.dataTypeClass = datatypeClass;
+		// this.returnType = new DatatypeDef(dataType, true);
+		this.returnType = resultDatatype;
 		this.attrFinder = attrFinder;
+
+		// error messages/exceptions
+		this.missingAttributeMessage = this + " not found in context";
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
 	}
 
 	/**
@@ -280,22 +227,22 @@ public class AttributeDesignator<T extends AttributeValue> extends AttributeDesi
 	 *         least one value
 	 */
 	@Override
-	public BagResult<T> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		if (context == null)
 		{
-			throw new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
+			throw missingAttributeBecauseNullContextException;
 		}
 
-		final BagResult<T> bag = attrFinder.findAttribute(returnType, attrGUID, context, dataTypeClass);
-		if (bag.isEmpty())
+		final Bag<AV> bag = attrFinder.findAttribute(attrGUID, context, returnType);
+		if (bag == null)
 		{
-			// if it's empty, this may be an error
-			if (mustBePresent)
-			{
-				LOGGER.info(missingAttributeMessage);
-				throw missingAttributeException;
-			}
+			throw this.missingAttributeForUnknownReasonException;
+		}
+
+		if (mustBePresent && bag.isEmpty())
+		{
+			throw new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, bag.getReasonWhyEmpty());
 		}
 
 		// if we got here the bag wasn't empty, or mustBePresent was false,
@@ -304,7 +251,7 @@ public class AttributeDesignator<T extends AttributeValue> extends AttributeDesi
 	}
 
 	@Override
-	public DatatypeDef getReturnType()
+	public Datatype<Bag<AV>> getReturnType()
 	{
 		return this.returnType;
 	}

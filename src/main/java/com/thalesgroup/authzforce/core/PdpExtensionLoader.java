@@ -170,7 +170,7 @@ public class PdpExtensionLoader
 	 * Get XML/JAXB-bound extension
 	 * 
 	 * @param extensionType
-	 *            type of extension: {@link com.thalesgroup.authzforce.core.test.finder.AttributeFinderModule.Builder },
+	 *            type of extension, e.g.
 	 *            {@link com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule.Factory},
 	 *            etc.
 	 * @param jaxbPdpExtensionClass
@@ -180,9 +180,9 @@ public class PdpExtensionLoader
 	 * @throws IllegalArgumentException
 	 *             if there is no extension supporting {@code jaxbPdpExtensionClass}
 	 */
-	public static <JAXB_T extends AbstractPdpExtension, T extends JaxbBoundPdpExtension<? extends JAXB_T>> T getJaxbBoundExtension(Class<T> extensionType, Class<? extends JAXB_T> jaxbPdpExtensionClass) throws IllegalArgumentException
+	public static <JAXB_T extends AbstractPdpExtension, T extends JaxbBoundPdpExtension<?>> T getJaxbBoundExtension(Class<T> extensionType, Class<? extends JAXB_T> jaxbPdpExtensionClass) throws IllegalArgumentException
 	{
-		final JaxbBoundPdpExtension<? extends AbstractPdpExtension> ext = JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbPdpExtensionClass);
+		final JaxbBoundPdpExtension<?> ext = JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbPdpExtensionClass);
 		if (ext == null)
 		{
 			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: " + jaxbPdpExtensionClass + ". Expected types: " + JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());

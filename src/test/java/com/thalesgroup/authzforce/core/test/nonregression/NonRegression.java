@@ -18,9 +18,6 @@
  */
 package com.thalesgroup.authzforce.core.test.nonregression;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -31,8 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -40,7 +35,6 @@ import javax.xml.bind.Unmarshaller;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -98,10 +92,6 @@ public class NonRegression
 	 * the logger we'll use for all messages
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(NonRegression.class);
-	/**
-	 * The map of results
-	 */
-	private static Map<String, String> results = new TreeMap<>();
 
 	final String testDirName;
 
@@ -119,12 +109,6 @@ public class NonRegression
 	public static void setUp() throws Exception
 	{
 		LOGGER.info("Launching tests in '{}'", TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
-	}
-
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		showResults();
 	}
 
 	/**
@@ -189,44 +173,12 @@ public class NonRegression
 		final URL reqFileURL = ResourceUtils.getResourceURL(testResourceLocationPrefix + REQUEST_FILENAME);
 		final Unmarshaller xacmlUnmarshaller = XACMLBindingUtils.createXacml3Unmarshaller();
 		final Request request = (Request) xacmlUnmarshaller.unmarshal(reqFileURL);
-		if (request != null)
-		{
-			LOGGER.debug("XACML Request that is sent to the PDP: {}", TestUtils.printRequest(request));
-
-			final Response response = pdp.evaluate(request);
-			if (response != null)
-			{
-				LOGGER.debug("XACML Response that is received from the PDP: {}", response);
-				final URL expectedRespFileURL = ResourceUtils.getResourceURL(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
-				final Response expectedResponse = (Response) xacmlUnmarshaller.unmarshal(expectedRespFileURL);
-				if (expectedResponse != null)
-				{
-					final boolean matched = TestUtils.match(response, expectedResponse);
-					final String resultMsg = matched ? "SUCCESS" : "FAILED";
-					LOGGER.info("Assertion {} for test: {}", new Object[] { resultMsg, testResourceLocationPrefix });
-					results.put(testResourceLocationPrefix, resultMsg);
-					assertTrue(matched);
-				} else
-				{
-					fail("Expected XACML response read from location '" + expectedRespFileURL + "' is null");
-				}
-			} else
-			{
-				fail("Actual XACML response received from PDP is Null");
-			}
-		} else
-		{
-			fail("XACML Request read from location '" + reqFileURL + "' is null");
-		}
-
+		LOGGER.debug("XACML Request that is sent to the PDP: {}", TestUtils.printRequest(request));
+		final Response response = pdp.evaluate(request);
+		LOGGER.debug("XACML Response that is received from the PDP: {}", response);
+		final URL expectedRespFileURL = ResourceUtils.getResourceURL(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
+		final Response expectedResponse = (Response) xacmlUnmarshaller.unmarshal(expectedRespFileURL);
+		TestUtils.assertNormalizedEquals(testResourceLocationPrefix, expectedResponse, response);
 		LOGGER.debug("Test '{}' is finished", testResourceLocationPrefix);
-	}
-
-	private static void showResults() throws Exception
-	{
-		for (String key : results.keySet())
-		{
-			LOGGER.debug(key + ":" + results.get(key));
-		}
 	}
 }

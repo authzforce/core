@@ -42,12 +42,11 @@ import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.sun.xacml.attr.xacmlv3.AttributeSelector;
 import com.sun.xacml.cond.Function;
 import com.thalesgroup.authzforce.core.Apply;
-import com.thalesgroup.authzforce.core.PdpExtensionRegistry;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
+import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
 import com.thalesgroup.authzforce.xacml.schema.XPATHVersion;
 
@@ -71,7 +70,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	private final CloseableAttributeFinder attributeFinder;
 	private final int maxVariableReferenceDepth;
 	// the map from identifiers to internal data
-	private final Map<String, VariableReference> idToVariableMap = new HashMap<>();
+	private final Map<String, VariableReference<?>> idToVariableMap = new HashMap<>();
 	private final boolean allowAttributeSelectors;
 	private final Map<String, XPathCompiler> xpathCompilersByVersionURI;
 
@@ -134,7 +133,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 *             )
 	 */
 	@Override
-	public VariableReference addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, DefaultsType policyDefaultValues) throws ParsingException
+	public VariableReference<?> addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, DefaultsType policyDefaultValues) throws ParsingException
 	{
 		final String varId = varDef.getVariableId();
 		/*
@@ -147,12 +146,14 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		 * Apply, and each may be referencing a different VariableDefinition; but we are interested
 		 * only in the one with the longest chain of references.
 		 */
-		// we need to check the longest variableReference chain does not have circular reference and
-		// does not exceed a specific value (need to call contains() method repeatedly and preserve
-		// the order)
+		/*
+		 * we need to check the longest variableReference chain does not have circular reference and
+		 * does not exceed a specific value (need to call contains() method repeatedly and preserve
+		 * the order).
+		 */
 		final List<String> longestVarRefChain = new ArrayList<>();
-		final Expression<? extends ExpressionResult<? extends AttributeValue>> varExpr = getInstance(varDef.getExpression().getValue(), policyDefaultValues, longestVarRefChain);
-		final VariableReference var = new VariableReference(varId, varExpr, longestVarRefChain);
+		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), policyDefaultValues, longestVarRefChain);
+		final VariableReference<?> var = new VariableReference<>(varId, varExpr, longestVarRefChain);
 		return idToVariableMap.put(varId, var);
 	}
 
@@ -164,7 +165,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 *         was no such variable.
 	 */
 	@Override
-	public VariableReference removeVariable(String varId)
+	public VariableReference<?> removeVariable(String varId)
 	{
 		return idToVariableMap.remove(varId);
 	}
@@ -200,10 +201,10 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * @throws UnknownIdentifierException
 	 *             if VariableReference's VariableId is unknown by this factory
 	 */
-	private VariableReference getVariable(VariableReferenceType jaxbVarRef, List<String> longestVarRefChain) throws UnknownIdentifierException, ParsingException
+	private VariableReference<?> getVariable(VariableReferenceType jaxbVarRef, List<String> longestVarRefChain) throws UnknownIdentifierException, ParsingException
 	{
 		final String varId = jaxbVarRef.getVariableId();
-		final VariableReference var = idToVariableMap.get(varId);
+		final VariableReference<?> var = idToVariableMap.get(varId);
 		if (var == null)
 		{
 			throw new UnknownIdentifierException("VariableReference's VariableId=" + varId + " does not match any prior VariableDefinition's VariableId");
@@ -233,45 +234,53 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	/**
 	 * Create a function instance using the function registry passed as parameter to
 	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean, Map)}
-	 * and {@link PdpExtensionRegistry#getExtension(String)}
+	 * .
 	 * 
 	 * @param functionId
 	 *            function ID (XACML URI)
-	 * @return function instance, or null if no function with ID {@code functionId} supported
-	 * 
+	 * @return function instance; or null if no such function with ID {@code functionId}
 	 */
 	@Override
-	public Function<? extends ExpressionResult<? extends AttributeValue>> getFunction(String functionId)
+	public Function<?> getFunction(String functionId)
 	{
 		return this.functionRegistry.getFunction(functionId);
 	}
 
 	/**
-	 * Create a higher-order function instance using the function registry passed as parameter to
+	 * Create a function instance using the function registry passed as parameter to
 	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean, Map)}
-	 * and the sub-function parameters
+	 * .
 	 * 
 	 * @param functionId
-	 *            higher-order function ID (XACML URI)
-	 * @param subFunction
-	 *            sub-function used as first parameter to higher-order function
-	 * @return higher-order function instance, or null if no function with ID {@code functionId}
-	 *         supported {@code subFunction}'s return type is unknown datatype
+	 *            function ID (XACML URI)
+	 * @param subFunctionReturnType
+	 *            optional sub-function's return type required only if a generic higher-order
+	 *            function is expected as the result, of which the sub-function is expected to be
+	 *            the first parameter; otherwise null (for first-order function). A generic
+	 *            higher-order function is a function whose return type depends on the sub-function
+	 *            ('s return type).
+	 * @return function instance; or null if no such function with ID {@code functionId}, or if
+	 *         non-null {@code subFunctionReturnTypeId} specified and no higher-order function
+	 *         compatible with sub-function's return type {@code subFunctionReturnTypeId}
 	 * @throws UnknownIdentifierException
-	 *             if sub-function's return datatype is not valid/supported
+	 *             if datatype {@code subFunctionReturnType} is not supported/known
 	 * 
 	 */
 	@Override
-	public Function<? extends ExpressionResult<? extends AttributeValue>> getHigherOrderFunction(String functionId, FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction) throws UnknownIdentifierException
+	public Function<?> getFunction(String functionId, Datatype<?> subFunctionReturnType) throws UnknownIdentifierException
 	{
-		final String subFuncReturnTypeURI = subFunction.getReturnType().datatypeURI();
-		final AttributeValue.Factory<? extends AttributeValue> subFuncReturnTypeFactory = this.attributeFactoryRegistry.getExtension(subFuncReturnTypeURI);
-		if (subFuncReturnTypeFactory == null)
+		if (subFunctionReturnType == null)
 		{
-			throw new UnknownIdentifierException("Unsupported Datatype ('" + subFuncReturnTypeURI + "') returned by function '" + subFunction.getFunctionId() + "' used as sub-function of function '" + functionId + "'");
+			return getFunction(functionId);
 		}
 
-		return this.functionRegistry.getFunction(functionId, subFunction, subFuncReturnTypeFactory.getInstanceClass());
+		final AttributeValue.Factory<?> subFuncReturnTypeFactory = this.attributeFactoryRegistry.getExtension(subFunctionReturnType.getId());
+		if (subFuncReturnTypeFactory == null)
+		{
+			throw new UnknownIdentifierException("Invalid sub-function's return type specified: unknown/unsupported ID: " + subFunctionReturnType.getId());
+		}
+
+		return this.functionRegistry.getFunction(functionId, subFuncReturnTypeFactory.getDatatype());
 	}
 
 	/*
@@ -283,25 +292,26 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * java.util.List)
 	 */
 	@Override
-	public Expression<? extends ExpressionResult<? extends AttributeValue>> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException
+	public Expression<?> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException
 	{
-		final Expression<? extends ExpressionResult<? extends AttributeValue, ?>> expression;
-		// We check all types of Expression: <Apply>, <AttributeSelector>,
-		// <AttributeValue>,
-		// <Function>, <VariableReference> and <AttributeDesignator>
+		final Expression<?> expression;
+		/*
+		 * We check all types of Expression: <Apply>, <AttributeSelector>, <AttributeValue>,
+		 * <Function>, <VariableReference> and <AttributeDesignator>
+		 */
 		if (expr instanceof ApplyType)
 		{
-			expression = new Apply((ApplyType) expr, policyDefaultValues, this, longestVarRefChain);
+			expression = Apply.getInstance((ApplyType) expr, policyDefaultValues, this, longestVarRefChain);
 		} else if (expr instanceof AttributeDesignatorType)
 		{
 			final AttributeDesignatorType jaxbAttrDes = (AttributeDesignatorType) expr;
-			final AttributeValue.Factory<? extends AttributeValue> attrFactory = attributeFactoryRegistry.getExtension(jaxbAttrDes.getDataType());
+			final AttributeValue.Factory<?> attrFactory = attributeFactoryRegistry.getExtension(jaxbAttrDes.getDataType());
 			if (attrFactory == null)
 			{
 				throw new ParsingException("Unsupported Datatype used in AttributeDesignator: " + jaxbAttrDes.getDataType());
 			}
 
-			expression = new AttributeDesignator<>(jaxbAttrDes, attrFactory.getInstanceClass(), attributeFinder);
+			expression = new AttributeDesignator<>(jaxbAttrDes, attrFactory.getBagDatatype(), attributeFinder);
 		} else if (expr instanceof AttributeSelectorType)
 		{
 			if (!allowAttributeSelectors)
@@ -310,7 +320,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 			}
 
 			final AttributeSelectorType jaxbAttrSelector = (AttributeSelectorType) expr;
-			final AttributeValue.Factory<? extends AttributeValue> attrFactory = attributeFactoryRegistry.getExtension(jaxbAttrSelector.getDataType());
+			final AttributeValue.Factory<?> attrFactory = attributeFactoryRegistry.getExtension(jaxbAttrSelector.getDataType());
 			if (attrFactory == null)
 			{
 				throw new ParsingException("Unsupported Datatype used in AttributeSelector: " + jaxbAttrSelector.getDataType());
@@ -320,7 +330,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 			final XPathCompiler xpathCompiler = xpathCompilersByVersionURI.get(policyDefaultValues == null ? XPATHVersion.V1_0.getURI() : policyDefaultValues.getXPathVersion());
 			try
 			{
-				expression = new AttributeSelector<>(jaxbAttrSelector, xpathCompiler, this.attributeFinder, attrFactory, attrFactory.getInstanceClass());
+				expression = new AttributeSelector<>(jaxbAttrSelector, xpathCompiler, attributeFinder, attrFactory);
 			} catch (XPathExpressionException e)
 			{
 				throw new ParsingException("Error parsing AttributeSelector's Path='" + jaxbAttrSelector.getPath() + "' into a XPath expression", e);
@@ -331,7 +341,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		} else if (expr instanceof FunctionType)
 		{
 			final FunctionType jaxbFunc = (FunctionType) expr;
-			final Function<? extends ExpressionResult<? extends AttributeValue>> func = getFunction(jaxbFunc.getFunctionId());
+			final Function<?> func = getFunction(jaxbFunc.getFunctionId());
 			if (func != null)
 			{
 				expression = func;
@@ -365,7 +375,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
 	 */
 	@Override
-	public AttributeValue createAttributeValue(AttributeValueType jaxbAttrVal) throws ParsingException
+	public AttributeValue<?> createAttributeValue(AttributeValueType jaxbAttrVal) throws ParsingException
 	{
 		try
 		{

@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.util.HashSet;
@@ -14,14 +32,14 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue.Factory;
 /**
  * Basic implementation of <code>DatatypeFactoryRegistry</code>.
  */
-public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<AttributeValue.Factory<? extends AttributeValue>> implements DatatypeFactoryRegistry
+public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<AttributeValue.Factory<?>> implements DatatypeFactoryRegistry
 {
 
 	private final Set<Factory<?>> datatypeFactoryClasses = new HashSet<>();
 
 	protected BaseDatatypeFactoryRegistry(Map<String, AttributeValue.Factory<?>> attributeValueFactoriesByDatatypeURI)
 	{
-		super(attributeValueFactoriesByDatatypeURI);
+		super(AttributeValue.Factory.class, attributeValueFactoriesByDatatypeURI);
 	}
 
 	/**
@@ -34,7 +52,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Attrib
 	 */
 	public BaseDatatypeFactoryRegistry(BaseDatatypeFactoryRegistry baseFactory)
 	{
-		super(baseFactory);
+		super(AttributeValue.Factory.class, baseFactory);
 	}
 
 	/**
@@ -42,40 +60,42 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Attrib
 	 */
 	public BaseDatatypeFactoryRegistry()
 	{
-		super();
+		super(AttributeValue.Factory.class);
 	}
 
 	@Override
-	public AttributeValue createValue(AttributeValueType attrVal) throws UnknownIdentifierException, ParsingException
-	{
-		return createValue(attrVal, AttributeValue.class);
-	}
-
-	@Override
-	public <T extends AttributeValue> T createValue(AttributeValueType jaxbAttrVal, Class<T> valClass) throws UnknownIdentifierException, ParsingException
+	public AttributeValue<?> createValue(AttributeValueType jaxbAttrVal) throws UnknownIdentifierException, ParsingException
 	{
 		final String type = jaxbAttrVal.getDataType();
-		final AttributeValue.Factory<? extends AttributeValue> attrFactory = getExtension(type);
+		final AttributeValue.Factory<?> attrFactory = getExtension(type);
 		if (attrFactory == null)
 		{
 			throw new UnknownIdentifierException("Attribute datatype '" + type + "' is not supported.");
 		}
 
-		final AttributeValue attrVal;
+		final AttributeValue<?> attrVal;
 		try
 		{
-			attrVal = attrFactory.getInstance(jaxbAttrVal);
+			attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes());
 		} catch (IllegalArgumentException e)
 		{
-			throw new ParsingException("Error creating Attribute value of type '" + type + "'", e);
+			throw new ParsingException("Invalid Attribute value of type '" + type + "'", e);
 		}
+
+		return attrVal;
+	}
+
+	@Override
+	public <T extends AttributeValue<T>> T createValue(AttributeValueType jaxbAttrVal, Class<T> valClass) throws UnknownIdentifierException, ParsingException
+	{
+		final AttributeValue<?> attrVal = createValue(jaxbAttrVal);
 
 		try
 		{
 			return valClass.cast(attrVal);
 		} catch (ClassCastException e)
 		{
-			throw new IllegalArgumentException("Invalid attribute value class argument (" + valClass + ") for the datatype argument '" + type + "'. Expected: " + attrVal.getClass() + " (as defined in attribute datatype factory) or any superclass/superinterface");
+			throw new IllegalArgumentException("Required attribute value class (" + valClass + ") does not match actual class (" + attrVal.getClass() + ") returned by datatype factory for input XACML/JAXB AttributeValue's datatype URI  (" + jaxbAttrVal.getDataType() + ")", e);
 		}
 	}
 
@@ -87,7 +107,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Attrib
 	 * .core.PdpExtension)
 	 */
 	@Override
-	public void addExtension(Factory<? extends AttributeValue> datatypeFactory) throws IllegalArgumentException
+	public void addExtension(AttributeValue.Factory<?> datatypeFactory) throws IllegalArgumentException
 	{
 		if (!datatypeFactoryClasses.add(datatypeFactory))
 		{

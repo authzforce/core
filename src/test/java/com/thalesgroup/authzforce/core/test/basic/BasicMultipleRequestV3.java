@@ -18,9 +18,6 @@
  */
 package com.thalesgroup.authzforce.core.test.basic;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -98,40 +95,12 @@ public class BasicMultipleRequestV3
 			}
 
 			request = TestUtils.createRequest(ROOT_DIRECTORY, VERSION_DIRECTORY, "request_0014_" + reqResNo + ".xml");
-			if (request != null)
-			{
-				LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
-				response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policyFilename).evaluate(request);
-				if (response != null)
-				{
-					LOGGER.info("Response that is received from the PDP :  " + response);
-					expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY, VERSION_DIRECTORY, "response_0014_" + reqResNo + ".xml");
-					LOGGER.info("Response expected:  " + TestUtils.printResponse(expectedResponse));
-					if (expectedResponse != null)
-					{
-						boolean assertion = TestUtils.match(response, expectedResponse);
-						if (assertion)
-						{
-							LOGGER.debug("Assertion SUCCESS for: IIIA" + "response_0014_" + reqResNo);
-							results.put("response_0014_" + reqResNo, "SUCCESS");
-						} else
-						{
-							LOGGER.error("Assertion FAILED for: TestPolicy_0014.xml and response_0014_" + reqResNo);
-							results.put("response_0014_" + reqResNo, "FAILED");
-						}
-						assertTrue(assertion);
-					} else
-					{
-						assertTrue("Response read from file is Null", false);
-					}
-				} else
-				{
-					assertFalse("Response received PDP is Null", false);
-				}
-			} else
-			{
-				assertTrue("Request read from file is Null", false);
-			}
+			LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
+			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policyFilename).evaluate(request);
+			LOGGER.info("Response that is received from the PDP :  " + response);
+			expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY, VERSION_DIRECTORY, "response_0014_" + reqResNo + ".xml");
+			LOGGER.info("Response expected:  " + TestUtils.printResponse(expectedResponse));
+			TestUtils.assertNormalizedEquals(ROOT_DIRECTORY + "/" + VERSION_DIRECTORY + "/request_0014_" + reqResNo, expectedResponse, response);
 			LOGGER.info("Basic Test 0014 is finished");
 		}
 	}

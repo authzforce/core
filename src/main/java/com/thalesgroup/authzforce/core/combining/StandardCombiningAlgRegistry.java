@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.combining;
 
 import java.util.Collections;
@@ -5,6 +23,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.OnlyOneApplicablePolicyAlg;
@@ -21,6 +42,7 @@ import com.thalesgroup.authzforce.core.eval.Decidable;
  */
 public class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 {
+	private static final Logger LOGGER = LoggerFactory.getLogger(StandardCombiningAlgRegistry.class);
 	/**
 	 * Singleton function registry instance for standard functions
 	 */
@@ -55,6 +77,7 @@ public class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 		}
 
 		INSTANCE = new StandardCombiningAlgRegistry(stdExtMap);
+		LOGGER.info("Loaded XACML standard combining algorithms: {}", stdExtMap.keySet());
 	}
 
 	private StandardCombiningAlgRegistry(Map<String, CombiningAlgorithm<? extends Decidable>> stdExtMap)

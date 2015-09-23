@@ -37,6 +37,7 @@ import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.Base64BinaryAttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
@@ -48,14 +49,19 @@ import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagResult;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
 @RunWith(Parameterized.class)
 public class BagFunctionsTest extends GeneralFunctionTest
 {
+
+	public BagFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
 
 	private static final String NAME_STRING_ONE_AND_ONLY = "urn:oasis:names:tc:xacml:1.0:function:string-one-and-only";
 	private static final String NAME_BOOLEAN_ONE_AND_ONLY = "urn:oasis:names:tc:xacml:1.0:function:boolean-one-and-only";
@@ -132,25 +138,21 @@ public class BagFunctionsTest extends GeneralFunctionTest
 	 * parameter, then with an invalid parameter that is an empty bag, then an invalid parameter
 	 * that is a two-value bag.
 	 */
-	private static <T extends AttributeValue> Collection<Object[]> newOneAndOnlyFunctionTestParams(String oneAndOnlyFunctionId, Class<T[]> typeArrayClass, String typeURI, T primitiveValue)
+	private static <AV extends AttributeValue<AV>> Collection<Object[]> newOneAndOnlyFunctionTestParams(String oneAndOnlyFunctionId, DatatypeConstants<AV> typeParam, AV primitiveValue)
 	{
-		DatatypeDef bagType = new DatatypeDef(typeURI, true);
-		DatatypeDef primitiveType = new DatatypeDef(typeURI, false);
 		Collection<Object[]> params = new ArrayList<>();
-		Class<T> typeClass = (Class<T>) typeArrayClass.getComponentType();
 
+		// case 1: empty bag {}
 		// one-and-only({}) -> Indeterminate
-		T[] emptyArray = (T[]) Array.newInstance(typeClass, 0);
-
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(new BagResult<>(emptyArray, typeClass, bagType)), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(typeParam.EMPTY_BAG), null });
 
 		// one-and-only({val}) -> val
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(new BagResult<>(primitiveValue, typeClass, bagType)), primitiveValue });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.singleton(typeParam.BAG_TYPE, primitiveValue)), primitiveValue });
 
 		// one-and-only({val, val}) -> Indeterminate
-		T[] twoValArray = (T[]) Array.newInstance(typeClass, 2);
+		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
 		Arrays.fill(twoValArray, primitiveValue);
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(new BagResult<>(twoValArray, typeClass, bagType)), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.getInstance(typeParam.BAG_TYPE, twoValArray)), null });
 
 		return params;
 	}
@@ -163,24 +165,20 @@ public class BagFunctionsTest extends GeneralFunctionTest
 	 * *-bag-size function test parameters. For each, we test with an empty bag parameter, then with
 	 * an one-value bag, then a two-value bag.
 	 */
-	private static <T extends AttributeValue> Collection<Object[]> newBagSizeFunctionTestParams(String bagSizeFunctionId, Class<T[]> typeArrayClass, String typeURI, T primitiveValue)
+	private static <AV extends AttributeValue<AV>> Collection<Object[]> newBagSizeFunctionTestParams(String bagSizeFunctionId, DatatypeConstants<AV> typeParam, AV primitiveValue)
 	{
-		DatatypeDef bagType = new DatatypeDef(typeURI, true);
-		DatatypeDef primitiveType = new DatatypeDef(typeURI, false);
 		Collection<Object[]> params = new ArrayList<>();
-		Class<T> typeClass = (Class<T>) typeArrayClass.getComponentType();
 
 		// bag-size({}) -> 0
-		T[] emptyArray = (T[]) Array.newInstance(typeClass, 0);
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(new BagResult<>(emptyArray, typeClass, bagType)), zeroIntValue });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(typeParam.EMPTY_BAG), zeroIntValue });
 
 		// bag-size({val}) -> 1
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(new BagResult<>(primitiveValue, typeClass, bagType)), oneIntValue });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.singleton(typeParam.BAG_TYPE, primitiveValue)), oneIntValue });
 
 		// bag-size({val, val}) -> 2
-		T[] twoValArray = (T[]) Array.newInstance(typeClass, 2);
+		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
 		Arrays.fill(twoValArray, primitiveValue);
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(new BagResult<>(twoValArray, typeClass, bagType)), twoIntValue });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.getInstance(typeParam.BAG_TYPE, twoValArray)), twoIntValue });
 		return params;
 	}
 
@@ -191,44 +189,39 @@ public class BagFunctionsTest extends GeneralFunctionTest
 	 * <p>
 	 * Parameters primitiveValue1 and primitiveValue2 MUST be different values.
 	 */
-	private static <T extends AttributeValue> Collection<Object[]> newIsInFunctionTestParams(String isInFunctionId, Class<T[]> typeArrayClass, String typeURI, T primitiveValue1, T primitiveValue2)
+	private static <AV extends AttributeValue<AV>> Collection<Object[]> newIsInFunctionTestParams(String isInFunctionId, DatatypeConstants<AV> typeParam, AV primitiveValue1, AV primitiveValue2)
 	{
-		DatatypeDef bagType = new DatatypeDef(typeURI, true);
-		DatatypeDef primitiveType = new DatatypeDef(typeURI, false);
 		Collection<Object[]> params = new ArrayList<>();
-		Class<T> typeClass = (Class<T>) typeArrayClass.getComponentType();
 
 		// is-in(val, {}) -> false
-		T[] emptyArray = (T[]) Array.newInstance(typeClass, 0);
-		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, new BagResult<>(emptyArray, typeClass, bagType)), BooleanAttributeValue.FALSE });
+		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, typeParam.EMPTY_BAG), BooleanAttributeValue.FALSE });
 
 		// is-in(val2, {val1, val2}) -> true
-		T[] twoValArray = (T[]) Array.newInstance(typeClass, 2);
+		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
 		twoValArray[0] = primitiveValue1;
 		twoValArray[1] = primitiveValue2;
-		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, new BagResult<>(twoValArray, typeClass, bagType)), BooleanAttributeValue.TRUE });
+		Bag<AV> twoValBag = Bags.getInstance(typeParam.BAG_TYPE, twoValArray);
+		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag), BooleanAttributeValue.TRUE });
 
 		// is-in(val2, {val1, val1}) -> false
 		twoValArray[1] = primitiveValue1;
-		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, new BagResult<>(twoValArray, typeClass, bagType)), BooleanAttributeValue.FALSE });
+		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag), BooleanAttributeValue.FALSE });
 		return params;
 	}
 
 	/**
 	 * *-bag function test parameters.
 	 */
-	private static <T extends AttributeValue> Collection<Object[]> newBagOfFunctionTestParams(String bagOfFunctionId, Class<T[]> typeArrayClass, String typeURI, T primitiveValue1, T primitiveValue2)
+	private static <AV extends AttributeValue<AV>> Collection<Object[]> newBagOfFunctionTestParams(String bagOfFunctionId, DatatypeConstants<AV> typeParam, AV primitiveValue1, AV primitiveValue2)
 	{
-		DatatypeDef bagType = new DatatypeDef(typeURI, true);
 		Collection<Object[]> params = new ArrayList<>();
-		Class<T> typeClass = (Class<T>) typeArrayClass.getComponentType();
 
 		// is-in(val2, {val1, val2}) -> true
-		T[] twoValArray = (T[]) Array.newInstance(typeClass, 2);
+		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
 		twoValArray[0] = primitiveValue1;
 		twoValArray[1] = primitiveValue2;
-		params.add(new Object[] { bagOfFunctionId, Arrays.asList(primitiveValue1, primitiveValue2), new BagResult<>(twoValArray, typeClass, bagType) });
-
+		Bag<AV> twoValBag = Bags.getInstance(typeParam.BAG_TYPE, twoValArray);
+		params.add(new Object[] { bagOfFunctionId, Arrays.asList(primitiveValue1, primitiveValue2), twoValBag });
 		return params;
 	}
 
@@ -238,83 +231,78 @@ public class BagFunctionsTest extends GeneralFunctionTest
 		Collection<Object[]> params = new ArrayList<>();
 
 		// *-one-and-only functions
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_STRING_ONE_AND_ONLY, StringAttributeValue[].class, StringAttributeValue.TYPE_URI, new StringAttributeValue("Test")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BOOLEAN_ONE_AND_ONLY, BooleanAttributeValue[].class, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue.FALSE));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_INTEGER_ONE_AND_ONLY, IntegerAttributeValue[].class, IntegerAttributeValue.TYPE_URI, new IntegerAttributeValue("3")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DOUBLE_ONE_AND_ONLY, DoubleAttributeValue[].class, DoubleAttributeValue.TYPE_URI, new DoubleAttributeValue("3.14")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_ANYURI_ONE_AND_ONLY, AnyURIAttributeValue[].class, AnyURIAttributeValue.TYPE_URI, new AnyURIAttributeValue("http://www.example.com")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_HEXBINARY_ONE_AND_ONLY, HexBinaryAttributeValue[].class, HexBinaryAttributeValue.TYPE_URI, new HexBinaryAttributeValue("0FB7")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BASE64BINARY_ONE_AND_ONLY, Base64BinaryAttributeValue[].class, Base64BinaryAttributeValue.TYPE_URI, new Base64BinaryAttributeValue("RXhhbXBsZQ==")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_TIME_ONE_AND_ONLY, TimeAttributeValue[].class, TimeAttributeValue.TYPE_URI, new TimeAttributeValue("09:30:15")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATE_ONE_AND_ONLY, DateAttributeValue[].class, DateAttributeValue.TYPE_URI, new DateAttributeValue("2002-09-24")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATETIME_ONE_AND_ONLY, DateTimeAttributeValue[].class, DateTimeAttributeValue.TYPE_URI, new DateTimeAttributeValue("2002-09-24T09:30:15")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DAYTIMEDURATION_ONE_AND_ONLY, DayTimeDurationAttributeValue[].class, DayTimeDurationAttributeValue.TYPE_URI, new DayTimeDurationAttributeValue("P1DT2H")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_YEARMONTHDURATION_ONE_AND_ONLY, YearMonthDurationAttributeValue[].class, YearMonthDurationAttributeValue.TYPE_URI, new YearMonthDurationAttributeValue("P1Y2M")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_X500NAME_ONE_AND_ONLY, X500NameAttributeValue[].class, X500NameAttributeValue.TYPE_URI, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_RFC822NAME_ONE_AND_ONLY, RFC822NameAttributeValue[].class, RFC822NameAttributeValue.TYPE_URI, new RFC822NameAttributeValue("Anderson@sun.com")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_IPADDRESS_ONE_AND_ONLY, IPAddressAttributeValue[].class, IPAddressAttributeValue.identifier, new IPAddressAttributeValue("192.168.1.10")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DNSNAME_ONE_AND_ONLY, DNSNameAttributeValue[].class, DNSNameAttributeValue.identifier, new DNSNameAttributeValue("example.com")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_STRING_ONE_AND_ONLY, DatatypeConstants.STRING, new StringAttributeValue("Test")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BOOLEAN_ONE_AND_ONLY, DatatypeConstants.BOOLEAN, BooleanAttributeValue.FALSE));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_INTEGER_ONE_AND_ONLY, DatatypeConstants.INTEGER, new IntegerAttributeValue("3")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DOUBLE_ONE_AND_ONLY, DatatypeConstants.DOUBLE, new DoubleAttributeValue("3.14")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_ANYURI_ONE_AND_ONLY, DatatypeConstants.ANYURI, new AnyURIAttributeValue("http://www.example.com")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_HEXBINARY_ONE_AND_ONLY, DatatypeConstants.HEXBINARY, new HexBinaryAttributeValue("0FB7")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BASE64BINARY_ONE_AND_ONLY, DatatypeConstants.BASE64BINARY, new Base64BinaryAttributeValue("RXhhbXBsZQ==")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_TIME_ONE_AND_ONLY, DatatypeConstants.TIME, new TimeAttributeValue("09:30:15")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATE_ONE_AND_ONLY, DatatypeConstants.DATE, new DateAttributeValue("2002-09-24")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATETIME_ONE_AND_ONLY, DatatypeConstants.DATETIME, new DateTimeAttributeValue("2002-09-24T09:30:15")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DAYTIMEDURATION_ONE_AND_ONLY, DatatypeConstants.DAYTIMEDURATION, new DayTimeDurationAttributeValue("P1DT2H")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_YEARMONTHDURATION_ONE_AND_ONLY, DatatypeConstants.YEARMONTHDURATION, new YearMonthDurationAttributeValue("P1Y2M")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_X500NAME_ONE_AND_ONLY, DatatypeConstants.X500NAME, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_RFC822NAME_ONE_AND_ONLY, DatatypeConstants.RFC822NAME, new RFC822NameAttributeValue("Anderson@sun.com")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_IPADDRESS_ONE_AND_ONLY, DatatypeConstants.IPADDRESS, new IPAddressAttributeValue("192.168.1.10")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DNSNAME_ONE_AND_ONLY, DatatypeConstants.DNSNAME, new DNSNameAttributeValue("example.com")));
 
 		// *-bag-size functions
-		params.addAll(newBagSizeFunctionTestParams(NAME_STRING_BAG_SIZE, StringAttributeValue[].class, StringAttributeValue.TYPE_URI, new StringAttributeValue("Test")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_BOOLEAN_BAG_SIZE, BooleanAttributeValue[].class, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue.FALSE));
-		params.addAll(newBagSizeFunctionTestParams(NAME_INTEGER_BAG_SIZE, IntegerAttributeValue[].class, IntegerAttributeValue.TYPE_URI, new IntegerAttributeValue("1")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DOUBLE_BAG_SIZE, DoubleAttributeValue[].class, DoubleAttributeValue.TYPE_URI, new DoubleAttributeValue("3.14")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_ANYURI_BAG_SIZE, AnyURIAttributeValue[].class, AnyURIAttributeValue.TYPE_URI, new AnyURIAttributeValue("http://www.example.com")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_HEXBINARY_BAG_SIZE, HexBinaryAttributeValue[].class, HexBinaryAttributeValue.TYPE_URI, new HexBinaryAttributeValue("0FB7")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_BASE64BINARY_BAG_SIZE, Base64BinaryAttributeValue[].class, Base64BinaryAttributeValue.TYPE_URI, new Base64BinaryAttributeValue("RXhhbXBsZQ==")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_TIME_BAG_SIZE, TimeAttributeValue[].class, TimeAttributeValue.TYPE_URI, new TimeAttributeValue("09:30:15")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DATE_BAG_SIZE, DateAttributeValue[].class, DateAttributeValue.TYPE_URI, new DateAttributeValue("2002-09-24")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DATETIME_BAG_SIZE, DateTimeAttributeValue[].class, DateTimeAttributeValue.TYPE_URI, new DateTimeAttributeValue("2002-09-24T09:30:15")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DAYTIMEDURATION_BAG_SIZE, DayTimeDurationAttributeValue[].class, DayTimeDurationAttributeValue.TYPE_URI, new DayTimeDurationAttributeValue("P1DT2H")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_YEARMONTHDURATION_BAG_SIZE, YearMonthDurationAttributeValue[].class, YearMonthDurationAttributeValue.TYPE_URI, new YearMonthDurationAttributeValue("P1Y2M")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_X500NAME_BAG_SIZE, X500NameAttributeValue[].class, X500NameAttributeValue.TYPE_URI, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_RFC822NAME_BAG_SIZE, RFC822NameAttributeValue[].class, RFC822NameAttributeValue.TYPE_URI, new RFC822NameAttributeValue("Anderson@sun.com")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_IPADDRESS_BAG_SIZE, IPAddressAttributeValue[].class, IPAddressAttributeValue.identifier, new IPAddressAttributeValue("192.168.1.10")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DNSNAME_BAG_SIZE, DNSNameAttributeValue[].class, DNSNameAttributeValue.identifier, new DNSNameAttributeValue("example.com")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_STRING_BAG_SIZE, DatatypeConstants.STRING, new StringAttributeValue("Test")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_BOOLEAN_BAG_SIZE, DatatypeConstants.BOOLEAN, BooleanAttributeValue.FALSE));
+		params.addAll(newBagSizeFunctionTestParams(NAME_INTEGER_BAG_SIZE, DatatypeConstants.INTEGER, new IntegerAttributeValue("1")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DOUBLE_BAG_SIZE, DatatypeConstants.DOUBLE, new DoubleAttributeValue("3.14")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_ANYURI_BAG_SIZE, DatatypeConstants.ANYURI, new AnyURIAttributeValue("http://www.example.com")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_HEXBINARY_BAG_SIZE, DatatypeConstants.HEXBINARY, new HexBinaryAttributeValue("0FB7")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_BASE64BINARY_BAG_SIZE, DatatypeConstants.BASE64BINARY, new Base64BinaryAttributeValue("RXhhbXBsZQ==")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_TIME_BAG_SIZE, DatatypeConstants.TIME, new TimeAttributeValue("09:30:15")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DATE_BAG_SIZE, DatatypeConstants.DATE, new DateAttributeValue("2002-09-24")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DATETIME_BAG_SIZE, DatatypeConstants.DATETIME, new DateTimeAttributeValue("2002-09-24T09:30:15")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DAYTIMEDURATION_BAG_SIZE, DatatypeConstants.DAYTIMEDURATION, new DayTimeDurationAttributeValue("P1DT2H")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_YEARMONTHDURATION_BAG_SIZE, DatatypeConstants.YEARMONTHDURATION, new YearMonthDurationAttributeValue("P1Y2M")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_X500NAME_BAG_SIZE, DatatypeConstants.X500NAME, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_RFC822NAME_BAG_SIZE, DatatypeConstants.RFC822NAME, new RFC822NameAttributeValue("Anderson@sun.com")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_IPADDRESS_BAG_SIZE, DatatypeConstants.IPADDRESS, new IPAddressAttributeValue("192.168.1.10")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DNSNAME_BAG_SIZE, DatatypeConstants.DNSNAME, new DNSNameAttributeValue("example.com")));
 
 		// *-is-in functions
-		params.addAll(newIsInFunctionTestParams(NAME_STRING_IS_IN, StringAttributeValue[].class, StringAttributeValue.TYPE_URI, new StringAttributeValue("Test1"), new StringAttributeValue("Test2")));
-		params.addAll(newIsInFunctionTestParams(NAME_BOOLEAN_IS_IN, BooleanAttributeValue[].class, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE));
-		params.addAll(newIsInFunctionTestParams(NAME_INTEGER_IS_IN, IntegerAttributeValue[].class, IntegerAttributeValue.TYPE_URI, new IntegerAttributeValue("1"), new IntegerAttributeValue("2")));
-		params.addAll(newIsInFunctionTestParams(NAME_DOUBLE_IS_IN, DoubleAttributeValue[].class, DoubleAttributeValue.TYPE_URI, new DoubleAttributeValue("-4.21"), new DoubleAttributeValue("3.14")));
-		params.addAll(newIsInFunctionTestParams(NAME_ANYURI_IS_IN, AnyURIAttributeValue[].class, AnyURIAttributeValue.TYPE_URI, new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example1.com")));
-		params.addAll(newIsInFunctionTestParams(NAME_HEXBINARY_IS_IN, HexBinaryAttributeValue[].class, HexBinaryAttributeValue.TYPE_URI, new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")));
-		params.addAll(newIsInFunctionTestParams(NAME_BASE64BINARY_IS_IN, Base64BinaryAttributeValue[].class, Base64BinaryAttributeValue.TYPE_URI, new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")));
-		params.addAll(newIsInFunctionTestParams(NAME_TIME_IS_IN, TimeAttributeValue[].class, TimeAttributeValue.TYPE_URI, new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")));
-		params.addAll(newIsInFunctionTestParams(NAME_DATE_IS_IN, DateAttributeValue[].class, DateAttributeValue.TYPE_URI, new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")));
-		params.addAll(newIsInFunctionTestParams(NAME_DATETIME_IS_IN, DateTimeAttributeValue[].class, DateTimeAttributeValue.TYPE_URI, new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")));
-		params.addAll(newIsInFunctionTestParams(NAME_DAYTIMEDURATION_IS_IN, DayTimeDurationAttributeValue[].class, DayTimeDurationAttributeValue.TYPE_URI, new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("-P1DT3H")));
-		params.addAll(newIsInFunctionTestParams(NAME_YEARMONTHDURATION_IS_IN, YearMonthDurationAttributeValue[].class, YearMonthDurationAttributeValue.TYPE_URI, new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("-P1Y3M")));
-		params.addAll(newIsInFunctionTestParams(NAME_X500NAME_IS_IN, X500NameAttributeValue[].class, X500NameAttributeValue.TYPE_URI, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")));
-		params.addAll(newIsInFunctionTestParams(NAME_RFC822NAME_IS_IN, RFC822NameAttributeValue[].class, RFC822NameAttributeValue.TYPE_URI, new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")));
-		params.addAll(newIsInFunctionTestParams(NAME_IPADDRESS_IS_IN, IPAddressAttributeValue[].class, IPAddressAttributeValue.identifier, new IPAddressAttributeValue("192.168.1.10"), new IPAddressAttributeValue("192.168.1.11")));
-		params.addAll(newIsInFunctionTestParams(NAME_DNSNAME_IS_IN, DNSNameAttributeValue[].class, DNSNameAttributeValue.identifier, new DNSNameAttributeValue("example.com"), new DNSNameAttributeValue("example1.com")));
+		params.addAll(newIsInFunctionTestParams(NAME_STRING_IS_IN, DatatypeConstants.STRING, new StringAttributeValue("Test1"), new StringAttributeValue("Test2")));
+		params.addAll(newIsInFunctionTestParams(NAME_BOOLEAN_IS_IN, DatatypeConstants.BOOLEAN, BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE));
+		params.addAll(newIsInFunctionTestParams(NAME_INTEGER_IS_IN, DatatypeConstants.INTEGER, new IntegerAttributeValue("1"), new IntegerAttributeValue("2")));
+		params.addAll(newIsInFunctionTestParams(NAME_DOUBLE_IS_IN, DatatypeConstants.DOUBLE, new DoubleAttributeValue("-4.21"), new DoubleAttributeValue("3.14")));
+		params.addAll(newIsInFunctionTestParams(NAME_ANYURI_IS_IN, DatatypeConstants.ANYURI, new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example1.com")));
+		params.addAll(newIsInFunctionTestParams(NAME_HEXBINARY_IS_IN, DatatypeConstants.HEXBINARY, new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")));
+		params.addAll(newIsInFunctionTestParams(NAME_BASE64BINARY_IS_IN, DatatypeConstants.BASE64BINARY, new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")));
+		params.addAll(newIsInFunctionTestParams(NAME_TIME_IS_IN, DatatypeConstants.TIME, new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")));
+		params.addAll(newIsInFunctionTestParams(NAME_DATE_IS_IN, DatatypeConstants.DATE, new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")));
+		params.addAll(newIsInFunctionTestParams(NAME_DATETIME_IS_IN, DatatypeConstants.DATETIME, new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")));
+		params.addAll(newIsInFunctionTestParams(NAME_DAYTIMEDURATION_IS_IN, DatatypeConstants.DAYTIMEDURATION, new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("-P1DT3H")));
+		params.addAll(newIsInFunctionTestParams(NAME_YEARMONTHDURATION_IS_IN, DatatypeConstants.YEARMONTHDURATION, new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("-P1Y3M")));
+		params.addAll(newIsInFunctionTestParams(NAME_X500NAME_IS_IN, DatatypeConstants.X500NAME, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")));
+		params.addAll(newIsInFunctionTestParams(NAME_RFC822NAME_IS_IN, DatatypeConstants.RFC822NAME, new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")));
+		params.addAll(newIsInFunctionTestParams(NAME_IPADDRESS_IS_IN, DatatypeConstants.IPADDRESS, new IPAddressAttributeValue("192.168.1.10"), new IPAddressAttributeValue("192.168.1.11")));
+		params.addAll(newIsInFunctionTestParams(NAME_DNSNAME_IS_IN, DatatypeConstants.DNSNAME, new DNSNameAttributeValue("example.com"), new DNSNameAttributeValue("example1.com")));
 
 		// *-bag functions
-		params.addAll(newBagOfFunctionTestParams(NAME_STRING_BAG, StringAttributeValue[].class, StringAttributeValue.TYPE_URI, new StringAttributeValue("Test1"), new StringAttributeValue("Test2")));
-		params.addAll(newBagOfFunctionTestParams(NAME_BOOLEAN_BAG, BooleanAttributeValue[].class, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE));
-		params.addAll(newBagOfFunctionTestParams(NAME_INTEGER_BAG, IntegerAttributeValue[].class, IntegerAttributeValue.TYPE_URI, new IntegerAttributeValue("1"), new IntegerAttributeValue("2")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DOUBLE_BAG, DoubleAttributeValue[].class, DoubleAttributeValue.TYPE_URI, new DoubleAttributeValue("-4.21"), new DoubleAttributeValue("3.14")));
-		params.addAll(newBagOfFunctionTestParams(NAME_ANYURI_BAG, AnyURIAttributeValue[].class, AnyURIAttributeValue.TYPE_URI, new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example1.com")));
-		params.addAll(newBagOfFunctionTestParams(NAME_HEXBINARY_BAG, HexBinaryAttributeValue[].class, HexBinaryAttributeValue.TYPE_URI, new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")));
-		params.addAll(newBagOfFunctionTestParams(NAME_BASE64BINARY_BAG, Base64BinaryAttributeValue[].class, Base64BinaryAttributeValue.TYPE_URI, new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")));
-		params.addAll(newBagOfFunctionTestParams(NAME_TIME_BAG, TimeAttributeValue[].class, TimeAttributeValue.TYPE_URI, new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DATE_BAG, DateAttributeValue[].class, DateAttributeValue.TYPE_URI, new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DATETIME_BAG, DateTimeAttributeValue[].class, DateTimeAttributeValue.TYPE_URI, new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DAYTIMEDURATION_BAG, DayTimeDurationAttributeValue[].class, DayTimeDurationAttributeValue.TYPE_URI, new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("-P1DT3H")));
-		params.addAll(newBagOfFunctionTestParams(NAME_YEARMONTHDURATION_BAG, YearMonthDurationAttributeValue[].class, YearMonthDurationAttributeValue.TYPE_URI, new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("-P1Y3M")));
-		params.addAll(newBagOfFunctionTestParams(NAME_X500NAME_BAG, X500NameAttributeValue[].class, X500NameAttributeValue.TYPE_URI, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")));
-		params.addAll(newBagOfFunctionTestParams(NAME_RFC822NAME_BAG, RFC822NameAttributeValue[].class, RFC822NameAttributeValue.TYPE_URI, new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")));
-		params.addAll(newBagOfFunctionTestParams(NAME_IPADDRESS_BAG, IPAddressAttributeValue[].class, IPAddressAttributeValue.identifier, new IPAddressAttributeValue("192.168.1.10"), new IPAddressAttributeValue("192.168.1.11")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DNSNAME_BAG, DNSNameAttributeValue[].class, DNSNameAttributeValue.identifier, new DNSNameAttributeValue("example.com"), new DNSNameAttributeValue("example1.com")));
+		params.addAll(newBagOfFunctionTestParams(NAME_STRING_BAG, DatatypeConstants.STRING, new StringAttributeValue("Test1"), new StringAttributeValue("Test2")));
+		params.addAll(newBagOfFunctionTestParams(NAME_BOOLEAN_BAG, DatatypeConstants.BOOLEAN, BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE));
+		params.addAll(newBagOfFunctionTestParams(NAME_INTEGER_BAG, DatatypeConstants.INTEGER, new IntegerAttributeValue("1"), new IntegerAttributeValue("2")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DOUBLE_BAG, DatatypeConstants.DOUBLE, new DoubleAttributeValue("-4.21"), new DoubleAttributeValue("3.14")));
+		params.addAll(newBagOfFunctionTestParams(NAME_ANYURI_BAG, DatatypeConstants.ANYURI, new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example1.com")));
+		params.addAll(newBagOfFunctionTestParams(NAME_HEXBINARY_BAG, DatatypeConstants.HEXBINARY, new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")));
+		params.addAll(newBagOfFunctionTestParams(NAME_BASE64BINARY_BAG, DatatypeConstants.BASE64BINARY, new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")));
+		params.addAll(newBagOfFunctionTestParams(NAME_TIME_BAG, DatatypeConstants.TIME, new TimeAttributeValue("09:30:15"), new TimeAttributeValue("17:18:19")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DATE_BAG, DatatypeConstants.DATE, new DateAttributeValue("2002-09-24"), new DateAttributeValue("2003-10-25")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DATETIME_BAG, DatatypeConstants.DATETIME, new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2003-10-25T17:18:19")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DAYTIMEDURATION_BAG, DatatypeConstants.DAYTIMEDURATION, new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("-P1DT3H")));
+		params.addAll(newBagOfFunctionTestParams(NAME_YEARMONTHDURATION_BAG, DatatypeConstants.YEARMONTHDURATION, new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("-P1Y3M")));
+		params.addAll(newBagOfFunctionTestParams(NAME_X500NAME_BAG, DatatypeConstants.X500NAME, new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")));
+		params.addAll(newBagOfFunctionTestParams(NAME_RFC822NAME_BAG, DatatypeConstants.RFC822NAME, new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")));
+		params.addAll(newBagOfFunctionTestParams(NAME_IPADDRESS_BAG, DatatypeConstants.IPADDRESS, new IPAddressAttributeValue("192.168.1.10"), new IPAddressAttributeValue("192.168.1.11")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DNSNAME_BAG, DatatypeConstants.DNSNAME, new DNSNameAttributeValue("example.com"), new DNSNameAttributeValue("example1.com")));
 
 		return params;
-	}
-
-	public BagFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)
-	{
-		super(functionName, inputs, expectedResult);
 	}
 
 }

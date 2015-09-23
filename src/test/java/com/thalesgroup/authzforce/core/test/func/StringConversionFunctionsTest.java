@@ -29,14 +29,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 @RunWith(Parameterized.class)
 public class StringConversionFunctionsTest extends GeneralFunctionTest
 {
+
+	public StringConversionFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
 
 	private static final String NAME_STRING_NORMALIZE_SPACE = "urn:oasis:names:tc:xacml:1.0:function:string-normalize-space";
 	private static final String NAME_STRING_NORMALIZE_TO_LOWER_CASE = "urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case";
@@ -52,11 +56,6 @@ public class StringConversionFunctionsTest extends GeneralFunctionTest
 				// urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case
 				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringAttributeValue("test")), new StringAttributeValue("test") },//
 				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringAttributeValue("TeST")), new StringAttributeValue("test") });
-	}
-
-	protected StringConversionFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)
-	{
-		super(functionName, inputs, expectedResult);
 	}
 
 }

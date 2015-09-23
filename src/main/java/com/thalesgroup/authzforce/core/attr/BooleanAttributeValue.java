@@ -1,10 +1,26 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import javax.xml.bind.DatatypeConverter;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import net.sf.saxon.value.BooleanValue;
 
 /**
  * Representation of an xs:boolean value. This class supports parsing xs:boolean values. All objects
@@ -13,48 +29,27 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
  * https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  * 
  */
-public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
+public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, BooleanAttributeValue>
 {
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<BooleanAttributeValue> FACTORY = new AttributeValue.Factory<BooleanAttributeValue>(BooleanAttributeValue.class)
-	{
-
-		@Override
-		public final String getId()
-		{
-			return TYPE_URI;
-		}
-
-		@Override
-		public final BooleanAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new BooleanAttributeValue(jaxbAttributeValue);
-		}
-
-	};
 
 	/**
 	 * Official name of this type
 	 */
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#boolean";
 
-	/*
-	 * WARNING: these static variables must be declared before TRUE and FALSE static variables,
-	 * because the latter needs the former to get initialized, and static variables are initialized
-	 * in order of declaration.
-	 */
 	/**
-	 * Primitive datatype definition of this attribute value
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(BooleanAttributeValue.TYPE_URI);
+	public static final AttributeValue.Factory<BooleanAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<BooleanAttributeValue>(BooleanAttributeValue.class, TYPE_URI)
+	{
 
-	/**
-	 * Bag datatype definition of this attribute value
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(BooleanAttributeValue.TYPE_URI, true);
+		@Override
+		protected BooleanAttributeValue getInstance(String val)
+		{
+			return BooleanAttributeValue.fromString(val);
+		}
+
+	};
 
 	/**
 	 * Single instance of BooleanAttributeValue that represents true. Initialized by the static
@@ -69,33 +64,53 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	public static BooleanAttributeValue FALSE = new BooleanAttributeValue(false);
 
 	/**
-	 * Instantiates from XACML AttributeValue
+	 * Convert a boolean value from string, according to the XML Schema definition. Adapted from
+	 * {@link BooleanValue#fromString(CharSequence)}, but without whitespace trimming. This is meant
+	 * to replace {@link DatatypeConverter#parseBoolean(String)} which is flawed and does not comply
+	 * with XSD definition of boolean type as of now (JDK7/8). See
+	 * https://java.net/jira/browse/JAXB-901, and https://java.net/jira/browse/JAXB-902. E.g.
+	 * DatatypeConverter.parseBoolean("not") throws NullPointerException instead of
+	 * IllegalArgumentException as expected according to javadoc.
 	 * 
-	 * @param jaxbAttrVal
-	 *            XACML attribute value
-	 * @throws IllegalArgumentException
-	 *             if first value in {@code jaxbAttrVal.getContent()} is not a valid string
-	 *             representation of xs:boolean
-	 */
-	public BooleanAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(TYPE, jaxbAttrVal);
-	}
-
-	/**
-	 * Creates instance from string representation using
-	 * {@link DatatypeConverter#parseBoolean(String)} to convert to boolean value.
-	 * 
-	 * @param val
-	 *            string form of boolean
-	 * @return instance of BooleanAttributeValue corresponding to {@code val}
+	 * @param s
+	 *            XSD-compliant string representation of boolean
+	 * @return boolean value corresponding to {@code s}
 	 * @throws IllegalArgumentException
 	 *             if string parameter does not conform to lexical value space defined in XML Schema
 	 *             Part 2: Datatypes for xsd:boolean.
 	 */
-	public static BooleanAttributeValue getInstance(String val) throws IllegalArgumentException
+	public static BooleanAttributeValue fromString(String s) throws IllegalArgumentException
 	{
-		return valueOf(DatatypeConverter.parseBoolean(val));
+		// implementation designed to avoid creating new objects
+		// contrary to Saxon's original code, we don't allow whispaces to apply the XML schema spec
+		// strictly
+		// s = Whitespace.trimWhitespace(s);
+		int len = s.length();
+		if (len == 1)
+		{
+			char c = s.charAt(0);
+			if (c == '1')
+			{
+				return TRUE;
+			} else if (c == '0')
+			{
+				return FALSE;
+			}
+		} else if (len == 4)
+		{
+			if (s.charAt(0) == 't' && s.charAt(1) == 'r' && s.charAt(2) == 'u' && s.charAt(3) == 'e')
+			{
+				return TRUE;
+			}
+		} else if (len == 5)
+		{
+			if (s.charAt(0) == 'f' && s.charAt(1) == 'a' && s.charAt(2) == 'l' && s.charAt(3) == 's' && s.charAt(4) == 'e')
+			{
+				return FALSE;
+			}
+		}
+
+		throw new IllegalArgumentException("The string '" + (s.length() > 5 ? (s.substring(0, 5) + "... (content omitted)") : s) + "' is not a valid xs:boolean value.");
 	}
 
 	/**
@@ -108,7 +123,7 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	 */
 	private BooleanAttributeValue(boolean value)
 	{
-		super(TYPE, value, value);
+		super(FACTORY.instanceDatatype, value, value);
 	}
 
 	/**
@@ -121,12 +136,6 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	public static BooleanAttributeValue valueOf(boolean b)
 	{
 		return b ? TRUE : FALSE;
-	}
-
-	@Override
-	protected Boolean parse(String stringForm) throws IllegalArgumentException
-	{
-		return DatatypeConverter.parseBoolean(stringForm);
 	}
 
 	/**
@@ -144,5 +153,27 @@ public class BooleanAttributeValue extends PrimitiveAttributeValue<Boolean>
 	{
 		return DatatypeConverter.printBoolean(value);
 	}
+
+	@Override
+	public BooleanAttributeValue one()
+	{
+		return this;
+	}
+
+	@Override
+	protected Boolean parse(String stringForm) throws IllegalArgumentException
+	{
+		/*
+		 * We could as well make a parsing method that returns a Boolean/boolean directly but then
+		 * we would need to create a new BooleanAttributeValue object after parsing, which we want
+		 * to avoid.
+		 */
+		return fromString(stringForm).value;
+	}
+
+	// public static void main(String[] args)
+	// {
+	// System.out.println(fromString("not"));
+	// }
 
 }

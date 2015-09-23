@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core;
 
 import java.util.HashMap;
@@ -7,14 +25,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>PdpExtensionRegistry</code>.
+ * This is a com.thalesgroup.authzforce.core.test.basic implementation of
+ * <code>PdpExtensionRegistry</code>.
  * 
  * @param <T>
  *            type of extension in this registry
  */
 public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExtensionRegistry<T>
 {
-	private final Logger logger;
+	private static final Logger LOGGER = LoggerFactory.getLogger(BasePdpExtensionRegistry.class);
+
+	private static final IllegalArgumentException NULL_EXTENSION_CLASS_EXCEPTION = new IllegalArgumentException("Extension class arg undefined");
+	private static final IllegalArgumentException NULL_EXTENSIONS_EXCEPTION = new IllegalArgumentException("ExtensionsById arg undefined");
+
+	private final Class<? super T> extClass;
 
 	// the backing maps for the Function objects
 	private final Map<String, T> extensionsById;
@@ -22,26 +46,37 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 	/**
 	 * Instantiates registry from a map (id -> extension)
 	 * 
+	 * @param extensionClass
+	 *            extension class
+	 * 
 	 * @param extensionsById
 	 *            extensions indexed by ID
 	 */
-	public BasePdpExtensionRegistry(Map<String, T> extensionsById)
+	public BasePdpExtensionRegistry(Class<? super T> extensionClass, Map<String, T> extensionsById)
 	{
-		assert extensionsById != null;
-		this.logger = LoggerFactory.getLogger(this.getClass());
-		this.extensionsById = extensionsById;
-		if (logger.isDebugEnabled())
+		if (extensionClass == null)
 		{
-			logger.debug("Added PDP extensions: {}", extensionsById.values());
+			throw NULL_EXTENSION_CLASS_EXCEPTION;
 		}
+
+		if (extensionsById == null)
+		{
+			throw NULL_EXTENSIONS_EXCEPTION;
+		}
+
+		this.extClass = extensionClass;
+		this.extensionsById = extensionsById;
 	}
 
 	/**
 	 * Default constructor. No superset factory is used.
+	 * 
+	 * @param extensionClass
+	 *            extension class
 	 */
-	public BasePdpExtensionRegistry()
+	public BasePdpExtensionRegistry(Class<? super T> extensionClass)
 	{
-		this(new HashMap<String, T>());
+		this(extensionClass, new HashMap<String, T>());
 	}
 
 	/**
@@ -51,10 +86,12 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 	 * 
 	 * @param baseRegistry
 	 *            the base/parent registry on which this one is based or null
+	 * @param extensionClass
+	 *            extension class
 	 */
-	public BasePdpExtensionRegistry(BasePdpExtensionRegistry<T> baseRegistry)
+	public BasePdpExtensionRegistry(Class<? super T> extensionClass, BasePdpExtensionRegistry<T> baseRegistry)
 	{
-		this(baseRegistry == null ? new HashMap<String, T>() : new HashMap<>(baseRegistry.extensionsById));
+		this(extensionClass, baseRegistry == null ? new HashMap<String, T>() : new HashMap<>(baseRegistry.extensionsById));
 	}
 
 	@Override
@@ -68,8 +105,7 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 		}
 
 		extensionsById.put(id, extension);
-
-		logger.debug("Added PDP extension: {}", extension);
+		LOGGER.debug("Added PDP extension of {} to registry: {}", extClass, extension);
 	}
 
 	@Override

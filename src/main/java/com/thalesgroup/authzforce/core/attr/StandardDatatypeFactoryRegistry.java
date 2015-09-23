@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.util.Collections;
@@ -9,23 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.AttributeValue.Factory;
-import com.thalesgroup.authzforce.core.attr.Base64BinaryAttributeValue;
-import com.thalesgroup.authzforce.core.attr.BaseDatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.HexBinaryAttributeValue;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 
 /**
  * This registry provides the factories for standard attribute datatypes specified in XACML.
@@ -92,6 +94,7 @@ public class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 		}
 
 		INSTANCE = new StandardDatatypeFactoryRegistry(attrDatatypeUriToFactoryMap);
+		LOGGER.info("Loaded XACML standard datatypes: {}", attrDatatypeUriToFactoryMap.keySet());
 	}
 
 	/**
@@ -103,7 +106,6 @@ public class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 	private StandardDatatypeFactoryRegistry(Map<String, Factory<?>> stdDatatypeUriToFactoryMap)
 	{
 		super(Collections.unmodifiableMap(stdDatatypeUriToFactoryMap));
-		LOGGER.info("Loaded standard datatypes");
 	}
 
 	/**
@@ -111,7 +113,7 @@ public class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 	 * a standard factory supports.
 	 */
 	@Override
-	public void addExtension(AttributeValue.Factory<? extends AttributeValue> attrDatatypeFactory)
+	public void addExtension(AttributeValue.Factory<?> attrDatatypeFactory)
 	{
 		throw new UnsupportedOperationException("This factory does not support custom datatypes but only standard ones.");
 	}

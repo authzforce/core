@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.func;
 
 import java.util.List;
@@ -14,15 +32,14 @@ import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.HexBinaryAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.PrimitiveAttributeValue;
 import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
+import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
@@ -30,100 +47,100 @@ import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiv
  * Implements generic match functions taking parameters of same/equal type, i.e. standard (A.3.1)
  * Equality predicates and special match function x500Name-match
  * 
- * @param <T>
+ * @param <PARAM>
  *            type of compared parameters
  */
-public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends FirstOrderFunction<BooleanAttributeValue>
+public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>> extends FirstOrderFunction<BooleanAttributeValue>
 {
 
 	/**
-	 * Standard TYPE_URI for the string-equal function.
+	 * Standard identifier for the string-equal function.
 	 */
 	public static final String NAME_STRING_EQUAL = FUNCTION_NS_1 + "string-equal";
 
 	/**
-	 * Standard TYPE_URI for the boolean-equal function.
+	 * Standard identifier for the boolean-equal function.
 	 */
 	public static final String NAME_BOOLEAN_EQUAL = FUNCTION_NS_1 + "boolean-equal";
 
 	/**
-	 * Standard TYPE_URI for the integer-equal function.
+	 * Standard identifier for the integer-equal function.
 	 */
 	public static final String NAME_INTEGER_EQUAL = FUNCTION_NS_1 + "integer-equal";
 
 	/**
-	 * Standard TYPE_URI for the double-equal function.
+	 * Standard identifier for the double-equal function.
 	 */
 	public static final String NAME_DOUBLE_EQUAL = FUNCTION_NS_1 + "double-equal";
 
 	/**
-	 * Standard TYPE_URI for the date-equal function.
+	 * Standard identifier for the date-equal function.
 	 */
 	public static final String NAME_DATE_EQUAL = FUNCTION_NS_1 + "date-equal";
 
 	/**
-	 * Standard TYPE_URI for the time-equal function.
+	 * Standard identifier for the time-equal function.
 	 */
 	public static final String NAME_TIME_EQUAL = FUNCTION_NS_1 + "time-equal";
 
 	/**
-	 * Standard TYPE_URI for the dateTime-equal function.
+	 * Standard identifier for the dateTime-equal function.
 	 */
 	public static final String NAME_DATETIME_EQUAL = FUNCTION_NS_1 + "dateTime-equal";
 
 	/**
-	 * Standard TYPE_URI for the dayTimeDuration-equal function.
+	 * Standard identifier for the dayTimeDuration-equal function.
 	 */
 	public static final String NAME_DAYTIME_DURATION_EQUAL = FUNCTION_NS_3 + "dayTimeDuration-equal";
 
 	/**
-	 * Standard TYPE_URI for the yearMonthDuration-equal function.
+	 * Standard identifier for the yearMonthDuration-equal function.
 	 */
 	public static final String NAME_YEARMONTH_DURATION_EQUAL = FUNCTION_NS_3 + "yearMonthDuration-equal";
 
 	/**
-	 * Standard TYPE_URI for the anyURI-equal function.
+	 * Standard identifier for the anyURI-equal function.
 	 */
 	public static final String NAME_ANYURI_EQUAL = FUNCTION_NS_1 + "anyURI-equal";
 
 	/**
-	 * Standard TYPE_URI for the x500Name-equal function.
+	 * Standard identifier for the x500Name-equal function.
 	 */
 	public static final String NAME_X500NAME_EQUAL = FUNCTION_NS_1 + "x500Name-equal";
 
 	/**
-	 * Standard TYPE_URI for the rfc822Name-equal function.
+	 * Standard identifier for the rfc822Name-equal function.
 	 */
 	public static final String NAME_RFC822NAME_EQUAL = FUNCTION_NS_1 + "rfc822Name-equal";
 
 	/**
-	 * Standard TYPE_URI for the hexBinary-equal function.
+	 * Standard identifier for the hexBinary-equal function.
 	 */
 	public static final String NAME_HEXBINARY_EQUAL = FUNCTION_NS_1 + "hexBinary-equal";
 
 	/**
-	 * Standard TYPE_URI for the base64Binary-equal function.
+	 * Standard identifier for the base64Binary-equal function.
 	 */
 	public static final String NAME_BASE64BINARY_EQUAL = FUNCTION_NS_1 + "base64Binary-equal";
 
 	/**
-	 * Standard TYPE_URI for the ipAddress-equal function.
+	 * Standard identifier for the ipAddress-equal function.
 	 */
 	public static final String NAME_IPADDRESS_EQUAL = FUNCTION_NS_2 + "ipAddress-equal";
 
 	/**
-	 * Standard TYPE_URI for the dnsName-equal function.
+	 * Standard identifier for the dnsName-equal function.
 	 */
 	public static final String NAME_DNSNAME_EQUAL = FUNCTION_NS_2 + "dnsName-equal";
 
 	/**
-	 * Standard TYPE_URI for the string-equal-ignore-case function.
+	 * Standard identifier for the string-equal-ignore-case function.
 	 */
 	private static final String NAME_STRING_EQUAL_IGNORE_CASE = FUNCTION_NS_3 + "string-equal-ignore-case";
 
 	/**
-	 * Standard TYPE_URI for the x500Name-match function (different from x500Name-regexp-match down
-	 * below).
+	 * Standard identifier for the x500Name-match function (different from x500Name-regexp-match
+	 * down below).
 	 */
 	public static final String NAME_X500NAME_MATCH = FUNCTION_NS_1 + "x500Name-match";
 
@@ -133,46 +150,46 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 	// private static final Logger LOGGER = LoggerFactory
 	// .getLogger(EqualTypeMatchFunction.class);
 
-	private final Class<T[]> parameterArrayClass;
+	private final Class<PARAM[]> parameterArrayClass;
 
 	/**
 	 * Function cluster
 	 */
 	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "equal-type-match",
 	//
-			new Equal<>(NAME_STRING_EQUAL, StringAttributeValue.TYPE_URI, StringAttributeValue[].class),
+			new Equal<>(NAME_STRING_EQUAL, DatatypeConstants.STRING.TYPE, StringAttributeValue[].class),
 			//
-			new Equal<>(NAME_BOOLEAN_EQUAL, BooleanAttributeValue.TYPE_URI, BooleanAttributeValue[].class),
+			new Equal<>(NAME_BOOLEAN_EQUAL, DatatypeConstants.BOOLEAN.TYPE, BooleanAttributeValue[].class),
 			//
-			new Equal<>(NAME_INTEGER_EQUAL, IntegerAttributeValue.TYPE_URI, IntegerAttributeValue[].class),
+			new Equal<>(NAME_INTEGER_EQUAL, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class),
 			//
-			new Equal<>(NAME_DOUBLE_EQUAL, DoubleAttributeValue.TYPE_URI, DoubleAttributeValue[].class),
+			new Equal<>(NAME_DOUBLE_EQUAL, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class),
 			//
-			new Equal<>(NAME_DATE_EQUAL, DateAttributeValue.TYPE_URI, DateAttributeValue[].class),
+			new Equal<>(NAME_DATE_EQUAL, DatatypeConstants.DATE.TYPE, DateAttributeValue[].class),
 			//
-			new Equal<>(NAME_TIME_EQUAL, TimeAttributeValue.TYPE_URI, TimeAttributeValue[].class),
+			new Equal<>(NAME_TIME_EQUAL, DatatypeConstants.TIME.TYPE, TimeAttributeValue[].class),
 			//
-			new Equal<>(NAME_DATETIME_EQUAL, DateTimeAttributeValue.TYPE_URI, DateTimeAttributeValue[].class),
+			new Equal<>(NAME_DATETIME_EQUAL, DatatypeConstants.DATETIME.TYPE, DateTimeAttributeValue[].class),
 			//
-			new Equal<>(NAME_DAYTIME_DURATION_EQUAL, DayTimeDurationAttributeValue.TYPE_URI, DayTimeDurationAttributeValue[].class),
+			new Equal<>(NAME_DAYTIME_DURATION_EQUAL, DatatypeConstants.DAYTIMEDURATION.TYPE, DayTimeDurationAttributeValue[].class),
 			//
-			new Equal<>(NAME_YEARMONTH_DURATION_EQUAL, YearMonthDurationAttributeValue.TYPE_URI, YearMonthDurationAttributeValue[].class),
+			new Equal<>(NAME_YEARMONTH_DURATION_EQUAL, DatatypeConstants.YEARMONTHDURATION.TYPE, YearMonthDurationAttributeValue[].class),
 			//
-			new Equal<>(NAME_ANYURI_EQUAL, AnyURIAttributeValue.TYPE_URI, AnyURIAttributeValue[].class),
+			new Equal<>(NAME_ANYURI_EQUAL, DatatypeConstants.ANYURI.TYPE, AnyURIAttributeValue[].class),
 			//
-			new Equal<>(NAME_X500NAME_EQUAL, X500NameAttributeValue.TYPE_URI, X500NameAttributeValue[].class),
+			new Equal<>(NAME_X500NAME_EQUAL, DatatypeConstants.X500NAME.TYPE, X500NameAttributeValue[].class),
 			//
-			new Equal<>(NAME_RFC822NAME_EQUAL, RFC822NameAttributeValue.TYPE_URI, RFC822NameAttributeValue[].class),
+			new Equal<>(NAME_RFC822NAME_EQUAL, DatatypeConstants.RFC822NAME.TYPE, RFC822NameAttributeValue[].class),
 			//
-			new Equal<>(NAME_HEXBINARY_EQUAL, HexBinaryAttributeValue.TYPE_URI, HexBinaryAttributeValue[].class),
+			new Equal<>(NAME_HEXBINARY_EQUAL, DatatypeConstants.HEXBINARY.TYPE, HexBinaryAttributeValue[].class),
 			//
-			new Equal<>(NAME_BASE64BINARY_EQUAL, Base64BinaryAttributeValue.TYPE_URI, Base64BinaryAttributeValue[].class),
+			new Equal<>(NAME_BASE64BINARY_EQUAL, DatatypeConstants.BASE64BINARY.TYPE, Base64BinaryAttributeValue[].class),
 			//
-			new Equal<>(NAME_IPADDRESS_EQUAL, IPAddressAttributeValue.identifier, IPAddressAttributeValue[].class),
+			new Equal<>(NAME_IPADDRESS_EQUAL, DatatypeConstants.IPADDRESS.TYPE, IPAddressAttributeValue[].class),
 			//
-			new Equal<>(NAME_DNSNAME_EQUAL, DNSNameAttributeValue.identifier, DNSNameAttributeValue[].class),
+			new Equal<>(NAME_DNSNAME_EQUAL, DatatypeConstants.DNSNAME.TYPE, DNSNameAttributeValue[].class),
 			//
-			new EqualIgnoreCase<>(NAME_STRING_EQUAL_IGNORE_CASE, StringAttributeValue.TYPE_URI, StringAttributeValue[].class),
+			new EqualIgnoreCase<>(NAME_STRING_EQUAL_IGNORE_CASE, DatatypeConstants.STRING.TYPE, StringAttributeValue[].class),
 			//
 			new X500NameMatch());
 
@@ -182,14 +199,14 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 	 * @param functionName
 	 *            the standard XACML name of the function to be handled by this object, including
 	 *            the full namespace
-	 * @param paramTypeURI
-	 *            parameter type URI
+	 * @param paramType
+	 *            parameter type
 	 * @param paramArrayType
 	 *            parameter array type
 	 */
-	public EqualTypeMatchFunction(String functionName, String paramTypeURI, Class<T[]> paramArrayType)
+	public EqualTypeMatchFunction(String functionName, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
 	{
-		super(functionName, BooleanAttributeValue.TYPE, false, new DatatypeDef(paramTypeURI), new DatatypeDef(paramTypeURI));
+		super(functionName, DatatypeConstants.BOOLEAN.TYPE, false, paramType, paramType);
 		this.parameterArrayClass = paramArrayType;
 	}
 
@@ -200,12 +217,12 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes)
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerPrimitiveEval<BooleanAttributeValue, T>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
+		return new EagerPrimitiveEval<BooleanAttributeValue, PARAM>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected final BooleanAttributeValue evaluate(T[] args) throws IndeterminateEvaluationException
+			protected final BooleanAttributeValue evaluate(PARAM[] args) throws IndeterminateEvaluationException
 			{
 				return BooleanAttributeValue.valueOf(match(args[0], args[1]));
 			}
@@ -213,15 +230,15 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 		};
 	}
 
-	protected abstract boolean match(T arg0, T arg1);
+	protected abstract boolean match(PARAM arg0, PARAM arg1);
 
 	/**
 	 * *-equal function
 	 * 
-	 * @param <T>
+	 * @param <PARAM>
 	 *            parameter type
 	 */
-	private static class Equal<T extends AttributeValue> extends EqualTypeMatchFunction<T>
+	private static class Equal<PARAM extends AttributeValue<PARAM>> extends EqualTypeMatchFunction<PARAM>
 	{
 
 		/**
@@ -229,18 +246,18 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 		 * 
 		 * @param functionName
 		 *            function ID
-		 * @param paramTypeURI
-		 *            datatype URI of parameters
+		 * @param paramType
+		 *            datatype of parameters
 		 * @param paramArrayType
 		 *            parameter array type
 		 */
-		public Equal(String functionName, String paramTypeURI, Class<T[]> paramArrayType)
+		public Equal(String functionName, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
 		{
-			super(functionName, paramTypeURI, paramArrayType);
+			super(functionName, paramType, paramArrayType);
 		}
 
 		@Override
-		public final boolean match(T arg0, T arg1)
+		public final boolean match(PARAM arg0, PARAM arg1)
 		{
 			return arg0.equals(arg1);
 		}
@@ -249,10 +266,10 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 	/**
 	 * *-equal-ignore-case function
 	 * 
-	 * @param <T>
+	 * @param <PARAM>
 	 *            parameter type
 	 */
-	private static class EqualIgnoreCase<T extends PrimitiveAttributeValue<String>> extends EqualTypeMatchFunction<T>
+	private static class EqualIgnoreCase<PARAM extends SimpleAttributeValue<String, PARAM>> extends EqualTypeMatchFunction<PARAM>
 	{
 
 		/**
@@ -260,20 +277,20 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 		 * 
 		 * @param functionName
 		 *            function ID
-		 * @param paramTypeURI
-		 *            datatype URI of parameters
+		 * @param paramType
+		 *            datatype of parameters
 		 * @param paramArrayType
 		 *            parameter class
 		 */
-		public EqualIgnoreCase(String functionName, String paramTypeURI, Class<T[]> paramArrayType)
+		public EqualIgnoreCase(String functionName, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
 		{
-			super(functionName, paramTypeURI, paramArrayType);
+			super(functionName, paramType, paramArrayType);
 		}
 
 		@Override
-		public final boolean match(T arg0, T arg1)
+		public final boolean match(PARAM arg0, PARAM arg1)
 		{
-			return arg0.getValue().equalsIgnoreCase(arg1.getValue());
+			return arg0.getUnderlyingValue().equalsIgnoreCase(arg1.getUnderlyingValue());
 		}
 	}
 
@@ -289,7 +306,7 @@ public abstract class EqualTypeMatchFunction<T extends AttributeValue> extends F
 		 */
 		public X500NameMatch()
 		{
-			super(NAME_X500NAME_MATCH, X500NameAttributeValue.TYPE_URI, X500NameAttributeValue[].class);
+			super(NAME_X500NAME_MATCH, DatatypeConstants.X500NAME.TYPE, X500NameAttributeValue[].class);
 		}
 
 		@Override

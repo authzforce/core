@@ -53,9 +53,6 @@ import net.sf.saxon.s9api.XdmValue;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinder;
@@ -63,12 +60,14 @@ import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeSelectorId;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.XPathAttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagResult;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * Implements AttributeSelector support, which uses XPath expressions (using Saxon parser) to
@@ -97,10 +96,10 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  * </ol>
  * </p>
  * 
- * @param <T>
- *            AttributeSelector evaluation results' primitive datatype
+ * @param <AV>
+ *            AttributeSelector evaluation results' primitive returnType
  */
-public class AttributeSelector<T extends AttributeValue> extends AttributeSelectorType implements Expression<BagResult<T>>
+public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeSelectorType implements Expression<Bag<AV>>
 {
 	/*
 	 * Wrapper around XPathExecutable that provides the original XPath expression from which the
@@ -125,11 +124,11 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 	}
 
 	// the logger we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
+	// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
 	private static final IllegalArgumentException NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("XACML/JAXB AttributeSelector element undefined");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION = new IllegalArgumentException("Attribute finder undefined but required for non-null ContextSelectorId in AttributeSelector");
 	private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException("XPath compiler undefined");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_FACTORY_EXCEPTION = new IllegalArgumentException("Attribute datatype factory undefined");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_FACTORY_EXCEPTION = new IllegalArgumentException("Attribute returnType factory undefined");
 	private static final UnsupportedOperationException UNSUPPORTED_PATH_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Path field is read-only");
 	private static final UnsupportedOperationException UNSUPPORTED_CONTEXT_SELECTOR_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("ContextSelectorId field is read-only");
 	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Category field is read-only");
@@ -157,6 +156,12 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 				xacmlAttrVal.getContent().add(node.getStringValue());
 				break;
 
+			/*
+			 * TODO: the commented cases below are more complex to handle. Further checking/testing
+			 * is required before providing support for them. But first of all, are these cases
+			 * worth the trouble? Find a few good use cases for them. In the meantime, do not remove
+			 * these lines of code below, unless to rewrite/refactor with same quality level.
+			 */
 			// case Node.DOCUMENT_NODE:
 			// case Node.ELEMENT_NODE:
 			// final Unmarshaller u;
@@ -195,9 +200,7 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 		return xacmlAttrVal;
 	}
 
-	private final IndeterminateEvaluationException missingAttributeException;
 	private final String missingAttributeMessage;
-	private final DatatypeDef returnType;
 
 	private final AttributeFinder attrFinder;
 
@@ -205,13 +208,21 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 
 	private final XPathExecutableWrapper xpathExecWrapper;
 
-	private final AttributeValue.Factory<? extends AttributeValue> attrFactory;
+	private final AttributeValue.Factory<?> attrFactory;
 
 	private final AttributeSelectorId id;
 
-	private final Class<T> datatypeClass;
+	private final BagDatatype<AV> returnType;
 
 	private final XPathCompiler xpathCompiler;
+	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
+	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
+	private final IndeterminateEvaluationException missingAttributesContentException;
+	private final String missingContextSelectorAttributeExceptionMessage;
+	private final String xpathEvalExceptionMessage;
+
+	// cached method results
+	private String toString;
 
 	/*
 	 * (non-Javadoc)
@@ -294,8 +305,6 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 	 * @param attrFactory
 	 *            attribute factory to create the AttributeValue(s) from the XML node(s) resolved by
 	 *            XPath
-	 * @param datatypeClass
-	 *            evaluation result's primitive datatype class
 	 * @throws XPathExpressionException
 	 *             if the Path could not be compiled to an XPath expression (using
 	 *             <code>namespaceContextNode</code> if non-null)
@@ -303,7 +312,7 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is
 	 *             null; or ContextSelectorId is not null but {@code attrFinder} is null
 	 */
-	public AttributeSelector(AttributeSelectorType attrSelectorElement, XPathCompiler xpathCompiler, AttributeFinder attrFinder, AttributeValue.Factory<? extends AttributeValue> attrFactory, Class<T> datatypeClass) throws XPathExpressionException, IllegalArgumentException
+	public AttributeSelector(AttributeSelectorType attrSelectorElement, XPathCompiler xpathCompiler, AttributeFinder attrFinder, AttributeValue.Factory<AV> attrFactory) throws XPathExpressionException, IllegalArgumentException
 	{
 		if (attrSelectorElement == null)
 		{
@@ -322,6 +331,8 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 		{
 			this.contextSelectorGUID = null;
 			this.attrFinder = null;
+			this.missingContextSelectorAttributeExceptionMessage = null;
+			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category;
 		} else
 		{
 			this.contextSelectorGUID = new AttributeGUID(category, null, contextSelectorId);
@@ -331,6 +342,8 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 			}
 
 			this.attrFinder = attrFinder;
+			this.missingContextSelectorAttributeExceptionMessage = this + ": No value found for attribute designated by Category=" + category + " and ContextSelectorId=" + contextSelectorId;
+			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category + "' selected by ContextSelectorId='" + contextSelectorId + "'";
 		}
 
 		if (xpathCompiler == null)
@@ -346,10 +359,7 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 		this.id = new AttributeSelectorId(attrSelectorElement);
 		this.xpathCompiler = xpathCompiler;
 		this.attrFactory = attrFactory;
-		this.returnType = new DatatypeDef(dataType, true);
-		this.missingAttributeMessage = "No attribute matching " + this;
-		this.missingAttributeException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage);
-		this.datatypeClass = datatypeClass;
+		this.returnType = attrFactory.getBagDatatype();
 
 		final XPathExecutable xpathExec;
 		try
@@ -361,17 +371,32 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 		}
 
 		xpathExecWrapper = new XPathExecutableWrapper(xpathExec, path);
+
+		// error messages/exceptions
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.id + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No Content element found in Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
+		this.missingAttributeMessage = this + " not found in context";
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
 	}
 
 	/**
-	 * Returns the data type of the attribute values that this selector will resolve
+	 * Returns the data type of the attribute values that the evaluation of this selector will
+	 * return
 	 * 
 	 * @return the data type of the values found by this selector
 	 */
 	@Override
-	public DatatypeDef getReturnType()
+	public Datatype<Bag<AV>> getReturnType()
 	{
 		return this.returnType;
+	}
+
+	private void validateResult(Bag<AV> result) throws IndeterminateEvaluationException
+	{
+		if (mustBePresent && result.isEmpty())
+		{
+			throw new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, result.getReasonWhyEmpty());
+		}
 	}
 
 	/**
@@ -389,25 +414,29 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 	 *         least one value, or status associated with an Indeterminate result
 	 */
 	@Override
-	public BagResult<T> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		if (context == null)
 		{
-			throw new IndeterminateEvaluationException("Missing Attributes/Content for evaluation of AttributeSelector '" + id + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
+			throw missingAttributeBecauseNullContextException;
 		}
 
-		final BagResult<T> ctxResult = context.getAttributeSelectorResult(id, datatypeClass, dataType);
-		final BagResult<T> result;
+		final Bag<AV> ctxResult = context.getAttributeSelectorResult(id, returnType);
+		// IF AttributeSelector already resolved in context
 		if (ctxResult != null)
 		{
-			result = ctxResult;
-		} else
+			validateResult(ctxResult);
+			return ctxResult;
+		}
+
+		// ELSE AttributeSelector not yet resolved in context, we have to do it now
+		// get the DOM root of the request document
+		final XdmNode contentNode = context.getAttributesContent(category);
+		try
 		{
-			// get the DOM root of the request document
-			final XdmNode contentNode = context.getAttributesContent(category);
 			if (contentNode == null)
 			{
-				throw new IndeterminateEvaluationException(this + ": No Content element found in Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
+				throw this.missingAttributesContentException;
 			}
 
 			final XdmItem contextNode;
@@ -416,13 +445,18 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 				contextNode = contentNode;
 			} else
 			{
-				final BagResult<XPathAttributeValue> bag = attrFinder.findAttribute(returnType, contextSelectorGUID, context, XPathAttributeValue.class);
-				if (bag == null || bag.isEmpty())
+				final Bag<XPathAttributeValue> bag = attrFinder.findAttribute(contextSelectorGUID, context, DatatypeConstants.XPATH.BAG_TYPE);
+				if (bag == null)
 				{
-					throw new IndeterminateEvaluationException(this + ": No value found for attribute designated by Category=" + category + " and ContextSelectorId=" + contextSelectorId, Status.STATUS_MISSING_ATTRIBUTE);
+					throw this.missingAttributeForUnknownReasonException;
 				}
 
-				final String contextSelectorPath = bag.values()[0].getValue();
+				if (bag.isEmpty())
+				{
+					throw new IndeterminateEvaluationException(missingContextSelectorAttributeExceptionMessage, Status.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
+				}
+
+				final String contextSelectorPath = bag.one().getUnderlyingValue();
 				try
 				{
 					contextNode = xpathCompiler.evaluateSingle(contextSelectorPath, contentNode);
@@ -450,11 +484,11 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 				xpathEvalResult = xpathSelector.evaluate();
 			} catch (SaxonApiException e)
 			{
-				throw new IndeterminateEvaluationException(this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category + contextSelectorId == null ? "" : ("' selected by ContextSelectorId='" + contextSelectorId + "'"), Status.STATUS_SYNTAX_ERROR, e);
+				throw new IndeterminateEvaluationException(this.xpathEvalExceptionMessage, Status.STATUS_SYNTAX_ERROR, e);
 			}
 
 			// preserve order of results
-			final Queue<T> resultBag = new ArrayDeque<>();
+			final Queue<AV> resultBag = new ArrayDeque<>();
 			int xpathEvalResultItemIndex = 0;
 			for (final XdmItem xpathEvalResultItem : xpathEvalResult)
 			{
@@ -479,37 +513,66 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + xpathEvalResultItem.getClass().getName(), Status.STATUS_SYNTAX_ERROR);
 				}
 
-				final AttributeValue attrVal;
+				final AttributeValue<?> attrVal;
 				try
 				{
-					attrVal = attrFactory.getInstance(jaxbAttrVal);
+					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes());
 				} catch (IllegalArgumentException e)
 				{
 					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + dataType + "' from result #" + xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category
 							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, Status.STATUS_SYNTAX_ERROR, e);
 				}
 
-				resultBag.add(datatypeClass.cast(attrVal));
+				resultBag.add(returnType.getElementType().cast(attrVal));
 				xpathEvalResultItemIndex++;
 			}
 
-			result = new BagResult<>(resultBag, datatypeClass, returnType);
+			final Bag<AV> result = Bags.getInstance(returnType, resultBag);
 			context.putAttributeSelectorResultIfAbsent(id, result);
-		}
-
-		// see if it's an empty bag
-		if (result.isEmpty())
+			validateResult(result);
+			return result;
+		} catch (IndeterminateEvaluationException e)
 		{
-			// see if this is an error or not
-			if (mustBePresent)
-			{
-				// this is an error
-				LOGGER.info(missingAttributeMessage);
-				throw missingAttributeException;
-			}
+			/**
+			 * If error occurred, we put the empty value to prevent retry in the same context, which
+			 * may succeed at another time in the same context, resulting in different value of the
+			 * same attribute at different times during evaluation within the same context,
+			 * therefore inconsistencies. The value(s) must remain constant during the evaluation
+			 * context, as explained in section 7.3.5 Attribute Retrieval of XACML core spec:
+			 * <p>
+			 * Regardless of any dynamic modifications of the request context during policy
+			 * evaluation, the PDP SHALL behave as if each bag of attribute values is fully
+			 * populated in the context before it is first tested, and is thereafter immutable
+			 * during evaluation. (That is, every subsequent test of that attribute shall use 3313
+			 * the same bag of values that was initially tested.)
+			 * </p>
+			 * Therefore, if no value found, we keep it that way until evaluation is done for the
+			 * current request context.
+			 * <p>
+			 * We could put the null value to indicate the evaluation error, instead of an empty
+			 * Bag, but it would make the result of the code used at the start of this method
+			 * ambiguous/confusing:
+			 * <p>
+			 * <code>
+			 * final Bag<T> contextBag = context.getAttributeSelectorResult(id,...)
+			 * </code>
+			 * </p>
+			 * <p>
+			 * Indeed, contextBag could be null for one of these two reasons:
+			 * <ol>
+			 * <li>The attribute selector has never been requested in this context;
+			 * <li>It has been requested before in this context but could not be found: error
+			 * occurred (IndeterminateEvaluationException)</li>
+			 * </ol>
+			 * To avoid this confusion, we put an empty Bag (with some error info saying why
+			 * this is empty).
+			 * </p>
+			 */
+			final Bag<AV> result = Bags.empty(returnType, e);
+			context.putAttributeSelectorResultIfAbsent(id, result);
+			validateResult(result);
+			return result;
 		}
-
-		return result;
 	}
 
 	/*
@@ -520,8 +583,17 @@ public class AttributeSelector<T extends AttributeValue> extends AttributeSelect
 	@Override
 	public String toString()
 	{
-		return "AttributeSelector [" + (category != null ? "category=" + category + ", " : "") + (contextSelectorId != null ? "contextSelectorId=" + contextSelectorId + ", " : "") + (path != null ? "path=" + path + ", " : "") + (dataType != null ? "dataType=" + dataType + ", " : "")
-				+ "mustBePresent=" + mustBePresent + "]";
+		/*
+		 * Because this class is immutable (excluding toString which is derived from others), we can
+		 * do caching (and lazy init) of this method result.
+		 */
+		if (toString == null)
+		{
+			toString = "AttributeSelector [" + (category != null ? "category=" + category + ", " : "") + (contextSelectorId != null ? "contextSelectorId=" + contextSelectorId + ", " : "") + (path != null ? "path=" + path + ", " : "") + (dataType != null ? "dataType=" + dataType + ", " : "")
+					+ "mustBePresent=" + mustBePresent + "]";
+		}
+
+		return toString;
 	}
 
 	@Override

@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.eval;
 
 import java.io.Closeable;
@@ -12,7 +30,7 @@ import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
+import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 
 /**
  * Expression factory for parsing XACML {@link ExpressionType}s: AttributeDesignator,
@@ -48,7 +66,7 @@ public interface ExpressionFactory extends Closeable
 	 * @throws ParsingException
 	 *             error parsing instance of ExpressionType
 	 */
-	Expression<? extends ExpressionResult<? extends AttributeValue>> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException;
+	Expression<?> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException;
 
 	/**
 	 * Parse/create an attribute value from XACML-schema-derived JAXB model
@@ -59,32 +77,7 @@ public interface ExpressionFactory extends Closeable
 	 * @throws ParsingException
 	 *             if value cannot be parsed into the value's defined datatype
 	 */
-	AttributeValue createAttributeValue(AttributeValueType jaxbAttrVal) throws ParsingException;
-
-	/**
-	 * Create a function instance
-	 * 
-	 * @param functionId
-	 *            function ID (XACML URI)
-	 * @return function instance, or null if no function with ID {@code functionId} supported
-	 * 
-	 */
-	Function<? extends ExpressionResult<? extends AttributeValue>> getFunction(String functionId);
-
-	/**
-	 * Create a higher-order function instance with a first-order sub-function as argument
-	 * 
-	 * @param functionId
-	 *            higher-order function ID (XACML URI)
-	 * @param subFunction
-	 *            sub-function used as first parameter to the result higher-order function
-	 * @return higher-order function instance, or null if no function with ID {@code functionId}
-	 *         supported {@code subFunction}'s return type is unknown datatype
-	 * @throws UnknownIdentifierException
-	 *             if sub-function's return datatype is not valid/supported
-	 * 
-	 */
-	Function<? extends ExpressionResult<? extends AttributeValue>> getHigherOrderFunction(String functionId, FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunction) throws UnknownIdentifierException;
+	AttributeValue<?> createAttributeValue(AttributeValueType jaxbAttrVal) throws ParsingException;
 
 	/**
 	 * Add VariableDefinition to be managed
@@ -97,7 +90,7 @@ public interface ExpressionFactory extends Closeable
 	 * @throws ParsingException
 	 *             error parsing expression in <code>var</code>
 	 */
-	VariableReference addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, DefaultsType policyDefaultValues) throws ParsingException;
+	VariableReference<?> addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, DefaultsType policyDefaultValues) throws ParsingException;
 
 	/**
 	 * Removes the VariableReference(Definition) from the manager
@@ -106,6 +99,35 @@ public interface ExpressionFactory extends Closeable
 	 * @return the VariableReference previously identified by <code>varId</code>, or null if there
 	 *         was no such variable.
 	 */
-	VariableReference removeVariable(String varId);
+	VariableReference<?> removeVariable(String varId);
 
+	/**
+	 * Gets a non-generic function instance
+	 * 
+	 * @param functionId
+	 *            function ID (XACML URI)
+	 * @return function instance; or null if no such function with ID {@code functionId}
+	 * 
+	 */
+	Function<?> getFunction(String functionId);
+
+	/**
+	 * Gets a function instance (generic or non-generic).
+	 * 
+	 * @param functionId
+	 *            function ID (XACML URI)
+	 * @param subFunctionReturnType
+	 *            optional sub-function's return type required only if a generic higher-order
+	 *            function is expected as the result, of which the sub-function is expected to be
+	 *            the first parameter; otherwise null (for first-order function). A generic
+	 *            higher-order function is a function whose return type depends on the sub-function
+	 *            ('s return type).
+	 * @return function instance; or null if no such function with ID {@code functionId}, or if
+	 *         non-null {@code subFunctionReturnTypeId} specified and no higher-order function
+	 *         compatible with sub-function's return type {@code subFunctionReturnTypeId}
+	 * @throws UnknownIdentifierException
+	 *             if datatype {@code subFunctionReturnType} is not supported
+	 * 
+	 */
+	Function<?> getFunction(String functionId, Datatype<?> subFunctionReturnType) throws UnknownIdentifierException;
 }

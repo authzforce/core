@@ -32,7 +32,6 @@ import org.junit.runners.Parameterized.Parameters;
 import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
 import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
@@ -45,11 +44,16 @@ import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 @RunWith(Parameterized.class)
 public class StringFunctionsTest extends GeneralFunctionTest
 {
+	public StringFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
+
 	private static final String NAME_STRING_CONCATENATE = "urn:oasis:names:tc:xacml:2.0:function:string-concatenate";
 	private static final String NAME_BOOLEAN_FROM_STRING = "urn:oasis:names:tc:xacml:3.0:function:boolean-from-string";
 	private static final String NAME_STRING_FROM_BOOLEAN = "urn:oasis:names:tc:xacml:3.0:function:string-from-boolean";
@@ -216,11 +220,6 @@ public class StringFunctionsTest extends GeneralFunctionTest
 				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new IntegerAttributeValue("11"), new IntegerAttributeValue("106")), null },//
 				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new IntegerAttributeValue("-1"), new IntegerAttributeValue("7")), null },//
 				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new IntegerAttributeValue("-1"), new IntegerAttributeValue("-1")), null });
-	}
-
-	protected StringFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)
-	{
-		super(functionName, inputs, expectedResult);
 	}
 
 }

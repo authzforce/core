@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core;
 
 import java.util.ArrayList;
@@ -13,42 +31,29 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 
 /**
  * Evaluates XACML Apply
+ * 
+ * @param <V>
+ *            evaluation's return type
  */
-public class Apply extends ApplyType implements Expression<ExpressionResult<? extends AttributeValue>>
+public class Apply<V extends Expression.Value<?, V>> extends ApplyType implements Expression<V>
 {
-	private final FunctionCall<? extends ExpressionResult<? extends AttributeValue>> functionCall;
+	private final FunctionCall<V> functionCall;
 
 	private final boolean isStatic;
 
 	private static final UnsupportedOperationException UNSUPPORTED_FUNCTION_ID_CHANGE_EXCEPTION = new UnsupportedOperationException("FunctionId is read-only");
 
-	private static final IllegalArgumentException NULL_FUNCTION_ID_EXCEPTION = new IllegalArgumentException("Undefined function ID argument");
-
 	private static final IllegalArgumentException NULL_EXPRESSION_FACTORY_EXCEPTION = new IllegalArgumentException("Undefined expression factory argument");
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType#getExpressions()
-	 */
-	@Override
-	public final List<JAXBElement<? extends ExpressionType>> getExpressions()
-	{
-		// Make it read-only to avoid being de-synchronized with functionCall field derived from it
-		return Collections.unmodifiableList(super.getExpressions());
-	}
+	private static final IllegalArgumentException NULL_XACML_APPLY_ELEMENT_EXCEPTION = new IllegalArgumentException("Undefined argument: XACML Apply element");
 
 	/*
 	 * (non-Javadoc)
@@ -60,27 +65,6 @@ public class Apply extends ApplyType implements Expression<ExpressionResult<? ex
 	{
 		// Make it read-only to avoid being de-synchronized with functionCall field derived from it
 		throw UNSUPPORTED_FUNCTION_ID_CHANGE_EXCEPTION;
-	}
-
-	private static List<Expression<? extends ExpressionResult<? extends AttributeValue>>> getFunctionInputs(List<JAXBElement<? extends ExpressionType>> expressions, ExpressionFactory expFactory, DefaultsType policyDefaults, List<String> longestVarRefChain) throws ParsingException
-	{
-		// function args
-		final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs = new ArrayList<>();
-		for (final JAXBElement<? extends ExpressionType> exprElt : expressions)
-		{
-			final Expression<? extends ExpressionResult<? extends AttributeValue>> exprHandler;
-			try
-			{
-				exprHandler = expFactory.getInstance(exprElt.getValue(), policyDefaults, longestVarRefChain);
-			} catch (ParsingException e)
-			{
-				throw new ParsingException("Error parsing one of Apply's function arguments (Expressions)", e);
-			}
-
-			inputs.add(exprHandler);
-		}
-
-		return inputs;
 	}
 
 	/**
@@ -100,39 +84,18 @@ public class Apply extends ApplyType implements Expression<ExpressionResult<? ex
 	 *            detect exceeding depth of VariableReference reference when a new VariableReference
 	 *            occurs in a VariableDefinition's expression. May be null, if this expression does
 	 *            not belong to any VariableDefinition.
+	 * @return Apply instance
 	 * @throws ParsingException
+	 *             if {@code xacmlApply} or {@code expFactory} is null; or function ID not
+	 *             supported/unknown; if {@code xprs} are invalid expressions, or invalid arguments
+	 *             for this function; or if all {@code xprs} are static but calling the function
+	 *             statically (with these static arguments) failed
 	 */
-	public Apply(ApplyType xacmlApply, DefaultsType policyDefaults, ExpressionFactory expFactory, List<String> longestVarRefChain) throws ParsingException
+	public static Apply<?> getInstance(ApplyType xacmlApply, DefaultsType policyDefaults, ExpressionFactory expFactory, List<String> longestVarRefChain) throws ParsingException
 	{
-		this(xacmlApply.getFunctionId(), getFunctionInputs(xacmlApply.getExpressions(), expFactory, policyDefaults, longestVarRefChain), xacmlApply.getDescription(), expFactory);
-	}
-
-	/**
-	 * Constructs an <code>Apply</code> instance.
-	 * 
-	 * @param functionId
-	 *            identifies the function to apply to the elements in the apply. If this is a
-	 *            higher-order function, the sub-function is expected to be the first item of
-	 *            {@code xprs}
-	 * @param xprs
-	 *            the contents of the apply which will be the parameters to the function, each of
-	 *            which is an <code>Expression</code>
-	 * @param description
-	 *            Description; may be null if no description
-	 * @param expFactory
-	 *            expression factory that instantiates the evaluable Function as required by the
-	 *            evaluation engine
-	 * 
-	 * @throws ParsingException
-	 *             if the input expressions don't match the signature of the function
-	 * @throws IllegalArgumentException
-	 *             if {@code functionId} or {@code expFactory} is null
-	 */
-	public Apply(String functionId, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> xprs, String description, ExpressionFactory expFactory) throws ParsingException, IllegalArgumentException
-	{
-		if (functionId == null)
+		if (xacmlApply == null)
 		{
-			throw NULL_FUNCTION_ID_EXCEPTION;
+			throw NULL_XACML_APPLY_ELEMENT_EXCEPTION;
 		}
 
 		if (expFactory == null)
@@ -140,59 +103,104 @@ public class Apply extends ApplyType implements Expression<ExpressionResult<? ex
 			throw NULL_EXPRESSION_FACTORY_EXCEPTION;
 		}
 
-		// set the JAXB and internal member attributes
-		this.description = description;
-		this.functionId = functionId;
+		final String applyDesc = xacmlApply.getDescription();
+		// function args
+		final List<Expression<?>> funcInputs = new ArrayList<>();
+		for (final JAXBElement<? extends ExpressionType> exprElt : xacmlApply.getExpressions())
+		{
+			final Expression<?> exprHandler;
+			try
+			{
+				exprHandler = expFactory.getInstance(exprElt.getValue(), policyDefaults, longestVarRefChain);
+			} catch (ParsingException e)
+			{
+				throw new ParsingException("Error parsing one of Apply[description=" + applyDesc + "]'s function arguments (Expressions)", e);
+			}
+
+			funcInputs.add(exprHandler);
+		}
 
 		// get the function instance
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
-		final FirstOrderFunction<? extends ExpressionResult<? extends AttributeValue>> subFunc;
-		if (xprs.isEmpty())
+		final Datatype<?> subFuncReturnType;
+		if (funcInputs.isEmpty())
 		{
-			subFunc = null;
+			subFuncReturnType = null;
 		} else
 		{
-			final Expression<? extends ExpressionResult<? extends AttributeValue>> xpr0 = xprs.get(0);
+			final Expression<?> xpr0 = funcInputs.get(0);
 			if (xpr0 instanceof Function<?>)
 			{
-				if (!(xpr0 instanceof FirstOrderFunction))
-				{
-					throw new ParsingException(this + ": Invalid sub-function used as first argument: " + xpr0 + ". Expected to be a first-order function (subclass of " + FirstOrderFunction.class + ").");
-				}
-
-				subFunc = (FirstOrderFunction<?>) xpr0;
+				subFuncReturnType = xpr0.getReturnType();
 			} else
 			{
-				subFunc = null;
+				subFuncReturnType = null;
 			}
 		}
 
-		final Function<? extends ExpressionResult<? extends AttributeValue>> function;
-		if (subFunc == null)
+		final String functionId = xacmlApply.getFunctionId();
+		final Function<?> function;
+		try
 		{
-			function = expFactory.getFunction(functionId);
-		} else
+			function = expFactory.getFunction(functionId, subFuncReturnType);
+		} catch (UnknownIdentifierException e)
 		{
-			try
-			{
-				function = expFactory.getHigherOrderFunction(functionId, subFunc);
-			} catch (UnknownIdentifierException uie)
-			{
-				throw new ParsingException(this + ": Invalid return type of function '" + subFunc + "' used as sub-function of Apply Function '" + functionId + "'", uie);
-			}
+			throw new ParsingException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType + ") of sub-function (first-parameter) of Apply Function '" + functionId + "'", e);
 		}
 
 		if (function == null)
 		{
-			throw new ParsingException(this + ": Invalid Apply Function: function ID '" + functionId + "' not supported");
+			throw new ParsingException("Error parsing Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId + "' not supported");
 		}
 
+		return new Apply<>(function, funcInputs, xacmlApply.getExpressions(), applyDesc);
+	}
+
+	/**
+	 * Constructs an <code>Apply</code> instance.
+	 * 
+	 * @param function
+	 *            function to apply to {@code xprs}. If this is a higher-order function, the
+	 *            sub-function is expected to be the first item of {@code xprs}
+	 * @param xprs
+	 *            the arguments to the function
+	 * @param originalXacmlExpressions
+	 *            XACML Expressions from which {@code xprs} are parsed
+	 * @param description
+	 *            Description; may be null if no description
+	 * 
+	 * @throws ParsingException
+	 *             if {@code xprs} are invalid arguments for this function; or if all {@code xprs}
+	 *             are static but calling the function with these static arguments failed
+	 * 
+	 */
+	private Apply(Function<V> function, List<Expression<?>> xprs, List<JAXBElement<? extends ExpressionType>> originalXacmlExpressions, String description) throws ParsingException
+	{
+		assert function != null;
+
+		// JAXB fields
+		this.description = description;
+		this.functionId = function.getId();
+		/*
+		 * Make JAXB expression list read-only to avoid being de-synchronized with functionCall
+		 * field derived from it
+		 */
+		this.expressions = Collections.unmodifiableList(originalXacmlExpressions);
+
+		// Others
 		// check that the given inputs work for the function and get the optimized functionCall
-		final FunctionCall<? extends ExpressionResult<? extends AttributeValue>> funcCall = function.newCall(Collections.unmodifiableList(xprs));
+		final FunctionCall<V> funcCall;
+		try
+		{
+			funcCall = function.newCall(Collections.unmodifiableList(xprs));
+		} catch (IllegalArgumentException e)
+		{
+			throw new ParsingException("Error parsing Apply[Description = " + description + "]: Invalid args for function " + function, e);
+		}
 
 		// Are all input expressions static?
 		boolean allStatic = true;
-		for (final Expression<? extends ExpressionResult<? extends AttributeValue>> xpr : xprs)
+		for (final Expression<?> xpr : xprs)
 		{
 			if (!xpr.isStatic())
 			{
@@ -204,30 +212,30 @@ public class Apply extends ApplyType implements Expression<ExpressionResult<? ex
 		// if all input expressions static, the Apply is static, we can pre-evaluate the result
 		if (allStatic)
 		{
-			final ExpressionResult<? extends AttributeValue> staticEvalResult;
+			final V staticEvalResult;
 			try
 			{
 				staticEvalResult = funcCall.evaluate(null);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new ParsingException(this + ": Error pre-evaluating the function " + function + " with static arguments: " + xprs);
+				throw new ParsingException("Error parsing Apply[Description = " + description + "]: Error pre-evaluating the function call " + function + " with (all static) arguments: " + xprs);
 			}
 
 			/*
 			 * Create a static function call, i.e. that returns the same constant (pre-evaluated)
 			 * result right away, to avoid useless re-evaluation.
 			 */
-			this.functionCall = new FunctionCall<ExpressionResult<? extends AttributeValue>>()
+			this.functionCall = new FunctionCall<V>()
 			{
 
 				@Override
-				public ExpressionResult<? extends AttributeValue> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+				public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 				{
 					return staticEvalResult;
 				}
 
 				@Override
-				public DatatypeDef getReturnType()
+				public Datatype<V> getReturnType()
 				{
 					return funcCall.getReturnType();
 				}
@@ -258,7 +266,7 @@ public class Apply extends ApplyType implements Expression<ExpressionResult<? ex
 	 * @throws IndeterminateEvaluationException
 	 */
 	@Override
-	public ExpressionResult<? extends AttributeValue> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return functionCall.evaluate(context);
 	}
@@ -271,7 +279,7 @@ public class Apply extends ApplyType implements Expression<ExpressionResult<? ex
 	 * @return the type returned by <code>evaluate</code>
 	 */
 	@Override
-	public DatatypeDef getReturnType()
+	public Datatype<V> getReturnType()
 	{
 		return functionCall.getReturnType();
 	}

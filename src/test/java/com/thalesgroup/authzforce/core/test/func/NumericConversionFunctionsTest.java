@@ -26,15 +26,19 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 @RunWith(Parameterized.class)
 public class NumericConversionFunctionsTest extends GeneralFunctionTest
 {
+
+	public NumericConversionFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
 
 	private static final String NAME_DOUBLE_TO_INTEGER = "urn:oasis:names:tc:xacml:1.0:function:double-to-integer";
 	private static final String NAME_INTEGER_TO_DOUBLE = "urn:oasis:names:tc:xacml:1.0:function:integer-to-double";
@@ -51,8 +55,4 @@ public class NumericConversionFunctionsTest extends GeneralFunctionTest
 				new Object[] { NAME_INTEGER_TO_DOUBLE, Arrays.asList(new IntegerAttributeValue("5")), new DoubleAttributeValue("5.") });
 	}
 
-	protected NumericConversionFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)
-	{
-		super(functionName, inputs, expectedResult);
-	}
 }

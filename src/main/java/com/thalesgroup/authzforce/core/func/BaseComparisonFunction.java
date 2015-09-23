@@ -1,4 +1,22 @@
 /**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
  *
  */
 package com.thalesgroup.authzforce.core.func;
@@ -7,19 +25,18 @@ import java.util.List;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
  * A superclass of all the standard comparison functions (return a boolean).
  * 
- * @param <T>
+ * @param <AV>
  *            function parameter type
  */
-public abstract class BaseComparisonFunction<T extends AttributeValue> extends FirstOrderFunction<BooleanAttributeValue>
+public abstract class BaseComparisonFunction<AV extends AttributeValue<AV>> extends FirstOrderFunction<BooleanAttributeValue>
 {
 	private static interface PostConditionChecker
 	{
@@ -88,19 +105,14 @@ public abstract class BaseComparisonFunction<T extends AttributeValue> extends F
 		}
 	}
 
-	private final Class<T[]> paramArrayClass;
+	private final Class<AV[]> paramArrayClass;
 	private final PostCondition postCondition;
 
 	/**
 	 * Creates a new <code>BaseComparisonFunction</code> object.
 	 * 
-	 * @param funcIdPrefix
-	 *            function ID prefix up to the first hyphen (not included) or full ID if no hyphen
-	 * 
-	 * @param paramTypeURI
-	 *            parameter type URI
-	 * @param paramArrayType
-	 *            parameter array type
+	 * @param paramTypeDef
+	 *            parameter type
 	 * @param condition
 	 *            post-condition to hold true when comparing the result of
 	 *            {@link #compare(AttributeValue, AttributeValue)} to zero
@@ -108,10 +120,10 @@ public abstract class BaseComparisonFunction<T extends AttributeValue> extends F
 	 * @throws IllegalArgumentException
 	 *             if the function is unknown
 	 */
-	public BaseComparisonFunction(String funcIdPrefix, String paramTypeURI, Class<T[]> paramArrayType, PostCondition condition)
+	public BaseComparisonFunction(DatatypeConstants<AV> paramTypeDef, PostCondition condition)
 	{
-		super(funcIdPrefix + condition.functionSuffix, BooleanAttributeValue.TYPE, false, new DatatypeDef(paramTypeURI), new DatatypeDef(paramTypeURI));
-		this.paramArrayClass = paramArrayType;
+		super(paramTypeDef.FUNCTION_ID_PREFIX + condition.functionSuffix, DatatypeConstants.BOOLEAN.TYPE, false, paramTypeDef.TYPE, paramTypeDef.TYPE);
+		this.paramArrayClass = paramTypeDef.ARRAY_CLASS;
 		this.postCondition = condition;
 	}
 
@@ -122,12 +134,12 @@ public abstract class BaseComparisonFunction<T extends AttributeValue> extends F
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected final FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes)
+	protected final FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerPrimitiveEval<BooleanAttributeValue, T>(signature, paramArrayClass, argExpressions, remainingArgTypes)
+		return new EagerPrimitiveEval<BooleanAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected BooleanAttributeValue evaluate(T[] args) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(AV[] args) throws IndeterminateEvaluationException
 			{
 				return BooleanAttributeValue.valueOf(eval(args[0], args[1]));
 			}
@@ -146,7 +158,7 @@ public abstract class BaseComparisonFunction<T extends AttributeValue> extends F
 	 * @throws IndeterminateEvaluationException
 	 *             thrown when relationship between the arguments is indeterminate
 	 */
-	public final boolean eval(T arg0, T arg1) throws IndeterminateEvaluationException
+	public final boolean eval(AV arg0, AV arg1) throws IndeterminateEvaluationException
 	{
 
 		// Now that we have real values, perform the comparison operation
@@ -166,5 +178,5 @@ public abstract class BaseComparisonFunction<T extends AttributeValue> extends F
 	 * @throws IndeterminateEvaluationException
 	 *             thrown when relationship between the arguments is indeterminate
 	 */
-	protected abstract int compare(T arg0, T arg1) throws IndeterminateEvaluationException;
+	protected abstract int compare(AV arg0, AV arg1) throws IndeterminateEvaluationException;
 }

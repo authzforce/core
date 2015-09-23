@@ -46,22 +46,9 @@ import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
  * @since 2.0
  * @author Seth Proctor
  */
-public class CombinerParameter extends oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter
+class CombinerParameter extends oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter
 {
 	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_VALUE_OPERATION_EXCEPTION = new UnsupportedOperationException("CombinerParameter.setAttributeValue() not allowed");
-
-	/**
-	 * Creates a new CombinerParameter.
-	 * 
-	 * @param name
-	 *            the parameter's name
-	 * @param value
-	 *            the parameter's value
-	 */
-	public CombinerParameter(String name, AttributeValue value)
-	{
-		super(value, name);
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -87,9 +74,9 @@ public class CombinerParameter extends oasis.names.tc.xacml._3_0.core.schema.wd_
 	 *            attribute value factory
 	 * @throws ParsingException
 	 */
-	public CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param, ExpressionFactory expFactory) throws ParsingException
+	CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param, ExpressionFactory expFactory) throws ParsingException
 	{
-		this(param.getParameterName(), expFactory.createAttributeValue(param.getAttributeValue()));
+		super(expFactory.createAttributeValue(param.getAttributeValue()), param.getParameterName());
 	}
 
 	/**
@@ -97,13 +84,13 @@ public class CombinerParameter extends oasis.names.tc.xacml._3_0.core.schema.wd_
 	 * 
 	 * @return the value provided by this parameter
 	 */
-	public AttributeValue getValue()
+	public AttributeValue<?> getValue()
 	{
 		/*
 		 * In the constructor, we make sure input is an AttributeValue, and we override
 		 * setAttributeValue() to make it unsupported. So this cast should be safe
 		 */
-		return (AttributeValue) attributeValue;
+		return (AttributeValue<?>) attributeValue;
 	}
 
 }

@@ -37,12 +37,10 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
@@ -64,7 +62,7 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 {
 
 	/**
-	 * The TYPE_URI for this function
+	 * The identifier for this function
 	 */
 	public static final String NAME = FUNCTION_NS_2 + "time-in-range";
 
@@ -76,7 +74,7 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 		/**
 		 * boolean timeInRange(time,time,time)
 		 */
-		super(NAME, BooleanAttributeValue.TYPE, false, TimeAttributeValue.TYPE, TimeAttributeValue.TYPE, TimeAttributeValue.TYPE);
+		super(NAME, DatatypeConstants.BOOLEAN.TYPE, false, DatatypeConstants.TIME.TYPE, DatatypeConstants.TIME.TYPE, DatatypeConstants.TIME.TYPE);
 	}
 
 	private static final TimeZone DEFAULT_TZ = TimeZone.getDefault();
@@ -105,18 +103,18 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 	public static boolean eval(TimeAttributeValue arg, TimeAttributeValue lowerBound, TimeAttributeValue upperBound)
 	{
 		// get the three time values
-		final Calendar calCheckedWhetherInRange = arg.getValue().toGregorianCalendar();
+		final Calendar calCheckedWhetherInRange = arg.getUnderlyingValue().toGregorianCalendar();
 		if (calCheckedWhetherInRange.getTimeZone() == null)
 		{
 			calCheckedWhetherInRange.setTimeZone(DEFAULT_TZ);
 		}
 
-		final Calendar startCal = lowerBound.getValue().toGregorianCalendar();
+		final Calendar startCal = lowerBound.getUnderlyingValue().toGregorianCalendar();
 		if (startCal.getTimeZone() == null)
 		{
 			startCal.setTimeZone(calCheckedWhetherInRange.getTimeZone());
 		}
-		final Calendar endCal = upperBound.getValue().toGregorianCalendar();
+		final Calendar endCal = upperBound.getUnderlyingValue().toGregorianCalendar();
 		if (endCal.getTimeZone() == null)
 		{
 			endCal.setTimeZone(calCheckedWhetherInRange.getTimeZone());
@@ -170,7 +168,7 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 	}
 
 	@Override
-	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new EagerPrimitiveEval<BooleanAttributeValue, TimeAttributeValue>(signature, TimeAttributeValue[].class, argExpressions, remainingArgTypes)
 		{

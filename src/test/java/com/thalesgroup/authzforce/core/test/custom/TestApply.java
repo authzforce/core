@@ -65,14 +65,14 @@ public class TestApply
 		Unmarshaller u = null;
 		final JAXBElement<ApplyType> applyElt;
 		ApplyType applyType;
-		Apply apply = null;
+		Apply<?> apply = null;
 
 		try
 		{
 			u = XACMLBindingUtils.createXacml3Unmarshaller();
 			applyElt = (JAXBElement<ApplyType>) u.unmarshal(new File("src/test/resources/custom/TestApply.xml"));
 			applyType = applyElt.getValue();
-			apply = new Apply(applyType, new DefaultsType(), TestUtils.STD_EXPRESSION_FACTORY, null);
+			apply = Apply.getInstance(applyType, new DefaultsType(), TestUtils.STD_EXPRESSION_FACTORY, null);
 			marshaller = XACMLBindingUtils.createXacml3Marshaller();
 			marshaller.marshal(new ObjectFactory().createApply(apply), System.out);
 		} catch (JAXBException | ParsingException e)

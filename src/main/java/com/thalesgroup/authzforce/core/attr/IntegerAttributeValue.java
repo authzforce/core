@@ -1,12 +1,26 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.math.BigInteger;
 
 import javax.xml.bind.DatatypeConverter;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 
 /**
  * Representation of an xs:integer value. This class supports parsing xs:integer values. All objects
@@ -22,21 +36,25 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	 */
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#integer";
 
+	/**
+	 * Datatype factory instance
+	 */
+	public static final AttributeValue.Factory<IntegerAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<IntegerAttributeValue>(IntegerAttributeValue.class, TYPE_URI)
+	{
+
+		@Override
+		protected IntegerAttributeValue getInstance(String val)
+		{
+			return new IntegerAttributeValue(val);
+		}
+
+	};
+
 	/*
-	 * WARNING: these static variables must be declared before TRUE and FALSE static variables,
-	 * because the latter needs the former to get initialized, and static variables are initialized
-	 * in order of declaration.
+	 * WARNING: these static variables must be declared before ZERO static variable, because the
+	 * latter needs the former to get initialized, and static variables are initialized in order of
+	 * declaration.
 	 */
-	/**
-	 * Integer primitive datatype
-	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
-
-	/**
-	 * Integer bag datatype
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
-
 	private static final BigInteger MAX_INT_AS_BIGINT = BigInteger.valueOf(Integer.MAX_VALUE);
 
 	private static final BigInteger MIN_INT_AS_BIGINT = BigInteger.valueOf(Integer.MIN_VALUE);
@@ -47,33 +65,13 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	public static final IntegerAttributeValue ZERO = new IntegerAttributeValue(BigInteger.ZERO);
 
 	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<IntegerAttributeValue> FACTORY = new AttributeValue.Factory<IntegerAttributeValue>(IntegerAttributeValue.class)
-	{
-
-		@Override
-		public String getId()
-		{
-			return TYPE_URI;
-		}
-
-		@Override
-		public IntegerAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new IntegerAttributeValue(jaxbAttributeValue);
-		}
-
-	};
-
-	/**
 	 * Creates instance from integer argument
 	 * 
 	 * @param val
 	 */
 	public IntegerAttributeValue(BigInteger val)
 	{
-		super(TYPE, val);
+		super(FACTORY.instanceDatatype, val);
 	}
 
 	/**
@@ -99,21 +97,7 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	 */
 	public IntegerAttributeValue(String val) throws IllegalArgumentException
 	{
-		super(TYPE, val);
-	}
-
-	/**
-	 * Creates instance from XML/JAXB value
-	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
-	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see NumericAttributeValue#NumericAttributeValue(DatatypeDef, AttributeValueType)
-	 */
-	public IntegerAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(TYPE, jaxbAttrVal);
+		super(FACTORY.instanceDatatype, val);
 	}
 
 	@Override
@@ -231,6 +215,12 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 		}
 
 		return value.intValue();
+	}
+
+	@Override
+	public IntegerAttributeValue one()
+	{
+		return this;
 	}
 
 }

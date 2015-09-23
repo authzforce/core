@@ -1,15 +1,27 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
-import java.io.Serializable;
-import java.util.Collections;
 import java.util.Objects;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 
 /**
  * Representation of an RFC 822 email address. The valid syntax for such a name is described in IETF
@@ -18,7 +30,7 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
  * <p>
  * N.B.: This is more restrictive than a generic RFC 822 name.
  */
-public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
+public class RFC822NameAttributeValue extends SimpleAttributeValue<String, RFC822NameAttributeValue>
 {
 
 	/**
@@ -27,65 +39,21 @@ public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
 	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name";
 
 	/**
-	 * Generic type info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
-
-	/**
-	 * Bag datatype definition of this attribute value
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<RFC822NameAttributeValue> FACTORY = new AttributeValue.Factory<RFC822NameAttributeValue>(RFC822NameAttributeValue.class)
+	public static final AttributeValue.Factory<RFC822NameAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<RFC822NameAttributeValue>(RFC822NameAttributeValue.class, TYPE_URI)
 	{
 
 		@Override
-		public String getId()
+		protected RFC822NameAttributeValue getInstance(String val)
 		{
-			return TYPE_URI;
+			return new RFC822NameAttributeValue(val);
 		}
-
-		@Override
-		public RFC822NameAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new RFC822NameAttributeValue(jaxbAttributeValue);
-		}
-
 	};
 
 	private final String localPart;
 
 	private final String domainPartLowerCase;
-
-	/**
-	 * Creates instance from XML/JAXB value
-	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
-	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
-	 */
-	public RFC822NameAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(TYPE, jaxbAttrVal);
-		/*
-		 * The validation with InternetAddress class in parse() method is not enough because
-		 * InternetAddress is much less restrictive than this XACML type, since it takes names
-		 * without '@' such as "sun" or "sun.com" as valid.
-		 */
-		final String[] parts = this.value.split("@", 2);
-		if (parts.length < 2)
-		{
-			throw new IllegalArgumentException("Invalid value for type '" + dataType + "': '" + this.value + "' missing local/domain part.");
-		}
-
-		this.localPart = parts[0];
-		this.domainPartLowerCase = parts[1].toLowerCase();
-	}
 
 	/**
 	 * Creates instance from InternetAddress
@@ -107,7 +75,20 @@ public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public RFC822NameAttributeValue(String value) throws IllegalArgumentException
 	{
-		this(new AttributeValueType(Collections.<Serializable> singletonList(value), TYPE_URI, null));
+		super(FACTORY.instanceDatatype, value);
+		/*
+		 * The validation with InternetAddress class in parse() method is not enough because
+		 * InternetAddress is much less restrictive than this XACML type, since it takes names
+		 * without '@' such as "sun" or "sun.com" as valid.
+		 */
+		final String[] parts = this.value.split("@", 2);
+		if (parts.length < 2)
+		{
+			throw new IllegalArgumentException("Invalid value for type '" + dataType + "': '" + this.value + "' missing local/domain part.");
+		}
+
+		this.localPart = parts[0];
+		this.domainPartLowerCase = parts[1].toLowerCase();
 	}
 
 	@Override
@@ -265,6 +246,12 @@ public class RFC822NameAttributeValue extends PrimitiveAttributeValue<String>
 				System.out.println(val + " -> KO: " + e);
 			}
 		}
+	}
+
+	@Override
+	public RFC822NameAttributeValue one()
+	{
+		return this;
 	}
 
 }

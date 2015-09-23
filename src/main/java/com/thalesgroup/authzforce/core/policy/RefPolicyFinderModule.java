@@ -1,7 +1,25 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.policy;
 
 import java.io.Closeable;
-import java.util.Queue;
+import java.util.Deque;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
@@ -93,7 +111,7 @@ public interface RefPolicyFinderModule extends Closeable
 	 *            detect loops, i.e. circular references, and validate reference depth); therefore
 	 *            it is the responsibility of the implementation to pass this parameter as the last
 	 *            one to
-	 *            {@link PolicySet#PolicySet(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet, ExpressionFactory, CombiningAlgRegistry, RefPolicyFinder, Queue)}
+	 *            {@link PolicySet#PolicySet(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet, oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType, ExpressionFactory, CombiningAlgRegistry, RefPolicyFinder, Deque)}
 	 *            henever it instantiates a {@link PolicySet}.
 	 * 
 	 * @return the result of looking for a matching policy, or null if no policy found with PolicyId
@@ -105,5 +123,5 @@ public interface RefPolicyFinderModule extends Closeable
 	 *             if error determining the one matching policy of type {@code policyType}, e.g. if
 	 *             more than one policy is found
 	 */
-	<POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Queue<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException;
+	<POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Deque<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException;
 }

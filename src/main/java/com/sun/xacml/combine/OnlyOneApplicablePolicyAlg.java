@@ -67,7 +67,7 @@ public class OnlyOneApplicablePolicyAlg extends CombiningAlgorithm<IPolicy>
 	 */
 	public OnlyOneApplicablePolicyAlg()
 	{
-		super(ID, IPolicy.class);
+		super(ID, false, IPolicy.class);
 	}
 
 	@Override

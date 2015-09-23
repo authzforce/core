@@ -1,16 +1,30 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import javax.xml.datatype.Duration;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 
 /**
  * Representation of an xs:dayTimeDuration value. This class supports parsing xs:dayTimeDuration
  * values. All objects of this class are immutable and thread-safe.
  */
-public class DayTimeDurationAttributeValue extends DurationAttributeValue
+public class DayTimeDurationAttributeValue extends DurationAttributeValue<DayTimeDurationAttributeValue>
 {
 
 	/**
@@ -19,48 +33,18 @@ public class DayTimeDurationAttributeValue extends DurationAttributeValue
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#dayTimeDuration";
 
 	/**
-	 * Generic type info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
-
-	/**
-	 * Bag datatype definition of this attribute value
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<DayTimeDurationAttributeValue> FACTORY = new AttributeValue.Factory<DayTimeDurationAttributeValue>(DayTimeDurationAttributeValue.class)
+	public static final AttributeValue.Factory<DayTimeDurationAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<DayTimeDurationAttributeValue>(DayTimeDurationAttributeValue.class, TYPE_URI)
 	{
 
 		@Override
-		public String getId()
+		protected DayTimeDurationAttributeValue getInstance(String val)
 		{
-			return TYPE_URI;
-		}
-
-		@Override
-		public DayTimeDurationAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new DayTimeDurationAttributeValue(TYPE, jaxbAttributeValue);
+			return new DayTimeDurationAttributeValue(val);
 		}
 
 	};
-
-	/**
-	 * Creates instance from XML/JAXB value
-	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
-	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see DurationAttributeValue#DurationAttributeValue(DatatypeDef, AttributeValueType)
-	 */
-	public DayTimeDurationAttributeValue(DatatypeDef datatype, AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(datatype, jaxbAttrVal);
-	}
 
 	/**
 	 * Creates instance from string representation
@@ -72,12 +56,18 @@ public class DayTimeDurationAttributeValue extends DurationAttributeValue
 	 */
 	public DayTimeDurationAttributeValue(String val) throws IllegalArgumentException
 	{
-		super(TYPE, val);
+		super(FACTORY.instanceDatatype, val);
 	}
 
 	@Override
 	protected Duration parse(String stringForm)
 	{
 		return XML_TEMPORAL_DATATYPE_FACTORY.newDurationDayTime(stringForm);
+	}
+
+	@Override
+	public DayTimeDurationAttributeValue one()
+	{
+		return this;
 	}
 }

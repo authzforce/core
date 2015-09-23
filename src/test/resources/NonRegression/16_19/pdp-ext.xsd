@@ -4,15 +4,9 @@
 	attributeFormDefault="unqualified">
 	<xs:annotation>
 		<xs:documentation xml:lang="en">
-			Thales Authorization Service extensions to Data Model
-			for RESTful Authorization API. To be customized for your own instance of the Authzforce webapp,
-			with the extensions that you want to enable such as PDP attribute finders, policy finders, etc.
-			The value
-			of 'schemaLocation' attribute without the '.xsd' extension must
-			match the name of a valid fully
-			qualified Java class available on the classpath.
-			This schema is used to import schemas of all extensions that may be configured via the API.
+			Import here the schema(s) of any XSD-defined PDP extension that you want to use in a PDP configuration: attribute finders, policy finders, etc.
+			Indicate only the namespace here and use the XML catalog to resolve the schema location.
 		</xs:documentation>
 	</xs:annotation>
-	<xs:import namespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test" schemaLocation="com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder.xsd" />
+	<xs:import namespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test" />
 </xs:schema>

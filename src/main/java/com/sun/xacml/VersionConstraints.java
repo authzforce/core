@@ -33,7 +33,7 @@
  */
 package com.sun.xacml;
 
-import com.thalesgroup.authzforce.core.policy.PolicyVersionId;
+import com.thalesgroup.authzforce.core.policy.PolicyVersion;
 
 /**
  * Supports the three version constraints that can be included with a policy reference. This class
@@ -110,7 +110,7 @@ public class VersionConstraints
 			return xacmlVersionMatch;
 		}
 
-		private boolean matches(PolicyVersionId version)
+		private boolean matches(PolicyVersion version)
 		{
 			final int[] versionNumbers = version.getNumberSequence();
 			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
@@ -144,7 +144,7 @@ public class VersionConstraints
 			return matchNumbers.length == versionNumbers.length;
 		}
 
-		public boolean isLaterOrMatches(PolicyVersionId version)
+		public boolean isLaterOrMatches(PolicyVersion version)
 		{
 			final int[] versionNumbers = version.getNumberSequence();
 			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
@@ -189,7 +189,7 @@ public class VersionConstraints
 			return matchNumbers.length >= versionNumbers.length;
 		}
 
-		public boolean isEarlierOrMatches(PolicyVersionId version)
+		public boolean isEarlierOrMatches(PolicyVersion version)
 		{
 			final int[] versionNumbers = version.getNumberSequence();
 			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
@@ -252,7 +252,7 @@ public class VersionConstraints
 	 * @param latestMatch
 	 *            matching expression for the earliest acceptable version; or null if none
 	 */
-	public VersionConstraints(String versionMatch, String earliestMatch, String latestMatch)
+	VersionConstraints(String versionMatch, String earliestMatch, String latestMatch)
 	{
 		this.versionPattern = versionMatch == null ? null : new PolicyVersionPattern(versionMatch);
 		this.earliestVersionPattern = earliestMatch == null ? null : new PolicyVersionPattern(earliestMatch);
@@ -267,7 +267,7 @@ public class VersionConstraints
 	// *
 	// * @return true if the given version meets all the constraints
 	// */
-	// public boolean match(PolicyVersionId otherVersion)
+	// public boolean match(PolicyVersion otherVersion)
 	// {
 	// return (versionPattern == null || versionPattern.matches(otherVersion)) &&
 	// (latestVersionPattern == null || latestVersionPattern.isLaterOrMatches(otherVersion)) &&
@@ -292,7 +292,7 @@ public class VersionConstraints
 	 *            input version to be checked
 	 * @return true iff LatestVersion matched
 	 */
-	public boolean matchLatestVersion(PolicyVersionId version)
+	public boolean matchLatestVersion(PolicyVersion version)
 	{
 		return latestVersionPattern == null || latestVersionPattern.isLaterOrMatches(version);
 	}
@@ -304,7 +304,7 @@ public class VersionConstraints
 	 *            input version to be checked
 	 * @return true iff EarliestVersion matched
 	 */
-	public boolean matchEarliestVersion(PolicyVersionId version)
+	public boolean matchEarliestVersion(PolicyVersion version)
 	{
 		return earliestVersionPattern == null || earliestVersionPattern.isEarlierOrMatches(version);
 	}
@@ -316,7 +316,7 @@ public class VersionConstraints
 	 *            input version to be checked
 	 * @return true iff Version matched
 	 */
-	public boolean matchVersion(PolicyVersionId version)
+	public boolean matchVersion(PolicyVersion version)
 	{
 		return versionPattern == null || versionPattern.matches(version);
 	}
@@ -354,7 +354,7 @@ public class VersionConstraints
 	// public static void main(String... args)
 	// {
 	// PolicyVersionPattern vp = new PolicyVersionPattern("1.*.4.5");
-	// PolicyVersionId v = new PolicyVersionId("1.2.4.5");
+	// PolicyVersion v = new PolicyVersion("1.2.4.5");
 	// System.out.println(vp.isLaterOrMatches(v));
 	// }
 }

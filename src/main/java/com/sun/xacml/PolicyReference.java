@@ -33,7 +33,7 @@
  */
 package com.sun.xacml;
 
-import java.util.Queue;
+import java.util.Deque;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
@@ -71,9 +71,9 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 
 	protected final Class<T> referredPolicyClass;
 
-	protected final String toString;
+	private final String toString;
 
-	protected PolicyReference(String idRef, VersionConstraints versionConstraints, Class<T> policyReferenceType)
+	private PolicyReference(String idRef, VersionConstraints versionConstraints, Class<T> policyReferenceType)
 	{
 		this.versionConstraints = versionConstraints;
 		this.referredPolicyClass = policyReferenceType;
@@ -188,9 +188,13 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 		// this policyFinder to use in finding the referenced policy
 		private final RefPolicyFinder refPolicyFinder;
 
-		private final Queue<String> policySetRefChain;
+		/*
+		 * (Do not use a Queue as it is FIFO, and we need LIFO and iteration in order of insertion,
+		 * so different from Collections.asLifoQueue(Deque) as well.)
+		 */
+		private final Deque<String> policySetRefChain;
 
-		private Dynamic(String policyIdRef, VersionConstraints versionConstraints, Class<T> policyReferenceType, RefPolicyFinder refPolicyFinder, Queue<String> policyRefChain)
+		private Dynamic(String policyIdRef, VersionConstraints versionConstraints, Class<T> policyReferenceType, RefPolicyFinder refPolicyFinder, Deque<String> policyRefChain)
 		{
 			super(policyIdRef, versionConstraints, policyReferenceType);
 			if (refPolicyFinder == null)
@@ -274,7 +278,7 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 	 * @throws IllegalArgumentException
 	 *             if {@code refPolicyFinder} undefined
 	 */
-	public static <T extends IPolicy> PolicyReference<T> getInstance(IdReferenceType idRef, RefPolicyFinder refPolicyFinder, Class<T> refPolicyType, Queue<String> parentPolicySetRefChain) throws ParsingException, IllegalArgumentException
+	public static <T extends IPolicy> PolicyReference<T> getInstance(IdReferenceType idRef, RefPolicyFinder refPolicyFinder, Class<T> refPolicyType, Deque<String> parentPolicySetRefChain) throws ParsingException, IllegalArgumentException
 	{
 		if (refPolicyFinder == null)
 		{

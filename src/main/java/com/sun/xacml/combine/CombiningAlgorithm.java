@@ -58,9 +58,9 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
  */
 public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExtension
 {
-	private static final String LEGACY_ALG_WARNING = "{} is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
+	private static final String LEGACY_ALG_WARNING = "%s is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
 
-	// the TYPE_URI for the algorithm
+	// the identifier for the algorithm
 	private final String id;
 
 	private final String toString;
@@ -70,29 +70,10 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 	private final Class<T> combinedElementType;
 
 	/**
-	 * Constructor that takes the algorithm's identifiers.
+	 * Constructor
 	 * 
-	 * @param TYPE_URI
-	 *            the algorithm's TYPE_URI WARNING: java.net.URI cannot be used here for XACML
-	 *            category and ID, because not equivalent to XML schema anyURI type. Spaces are
-	 *            allowed in XSD anyURI [1], not in java.net.URI for example. That's why we use
-	 *            String instead. </p>
-	 *            <p>
-	 *            [1] http://www.w3.org/TR/xmlschema-2/#anyURI
-	 *            </p>
-	 * @param combinedType
-	 *            combined element type
-	 */
-	public CombiningAlgorithm(String identifier, Class<T> combinedType)
-	{
-		this(identifier, false, combinedType);
-	}
-
-	/**
-	 * Constructor that takes the algorithm's TYPE_URI.
-	 * 
-	 * @param TYPE_URI
-	 *            the algorithm's TYPE_URI
+	 * @param id
+	 *            the algorithm's id
 	 *            <p>
 	 *            WARNING: java.net.URI cannot be used here for XACML category and ID, because not
 	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
@@ -102,19 +83,20 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 	 *            [1] http://www.w3.org/TR/xmlschema-2/#anyURI
 	 *            </p>
 	 * @param isLegacy
-	 *            whether this algorithm is legacy. true, implementations not willing to support
-	 *            legacy algorithms can throw {@link #unsupportedLegacyAlgorithmException} that uses
-	 *            the message format below to produce the exception message:
+	 *            true iff the algorithm to instantiate is legacy ("legacy" as defined in XACML 3.0
+	 *            or any combining algorithm replaced with new one). Implementations not willing to
+	 *            support legacy algorithms can throw {@link #unsupportedLegacyAlgorithmException}
+	 *            that uses the message format below to produce the exception message:
 	 *            {@value #LEGACY_ALG_WARNING}. Else {@link #unsupportedLegacyAlgorithmException} is
 	 *            null.
 	 * @param combinedType
 	 *            combined element type
 	 */
-	public CombiningAlgorithm(String identifier, boolean isLegacy, Class<T> combinedType)
+	public CombiningAlgorithm(String id, boolean isLegacy, Class<T> combinedType)
 	{
 		this.combinedElementType = combinedType;
-		this.id = identifier;
-		this.toString = "CombiningAlgorithm[" + identifier + "]";
+		this.id = id;
+		this.toString = "CombiningAlgorithm[" + id + "]";
 		this.unsupportedLegacyAlgorithmException = isLegacy ? new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this)) : null;
 	}
 

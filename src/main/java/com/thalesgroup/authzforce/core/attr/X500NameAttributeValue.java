@@ -1,16 +1,30 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import javax.security.auth.x500.X500Principal;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 
 /**
  * Representation of an X.500 Directory Name.
  * 
  */
-public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
+public class X500NameAttributeValue extends SimpleAttributeValue<String, X500NameAttributeValue>
 {
 
 	/**
@@ -19,48 +33,18 @@ public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
 	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:1.0:data-type:x500Name";
 
 	/**
-	 * Generic type info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
-
-	/**
-	 * Bag datatype definition of this attribute value
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<X500NameAttributeValue> FACTORY = new AttributeValue.Factory<X500NameAttributeValue>(X500NameAttributeValue.class)
+	public static final AttributeValue.Factory<X500NameAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<X500NameAttributeValue>(X500NameAttributeValue.class, TYPE_URI)
 	{
 
 		@Override
-		public String getId()
+		protected X500NameAttributeValue getInstance(String val)
 		{
-			return TYPE_URI;
-		}
-
-		@Override
-		public X500NameAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new X500NameAttributeValue(jaxbAttributeValue);
+			return new X500NameAttributeValue(val);
 		}
 
 	};
-
-	/**
-	 * Creates instance from XML/JAXB value
-	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
-	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see PrimitiveAttributeValue#PrimitiveAttributeValue(DatatypeDef, AttributeValueType)
-	 */
-	public X500NameAttributeValue(AttributeValueType jaxbAttrVal)
-	{
-		super(TYPE, jaxbAttrVal);
-	}
 
 	/**
 	 * Creates a new <code>X500NameAttributeValue</code> that represents the value supplied.
@@ -86,7 +70,7 @@ public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public X500NameAttributeValue(String value) throws IllegalArgumentException
 	{
-		super(TYPE, value);
+		super(FACTORY.instanceDatatype, value);
 	}
 
 	@Override
@@ -107,6 +91,12 @@ public class X500NameAttributeValue extends PrimitiveAttributeValue<String>
 	public boolean match(X500NameAttributeValue other)
 	{
 		return other.value.endsWith(this.value);
+	}
+
+	@Override
+	public X500NameAttributeValue one()
+	{
+		return this;
 	}
 
 }

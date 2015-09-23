@@ -27,13 +27,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
-import com.thalesgroup.authzforce.core.func.StandardFunctionRegistry;
+import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 /**
  * An abstract class to easily test a function evaluation, according to a given function name, a
@@ -43,9 +44,11 @@ import com.thalesgroup.authzforce.core.func.StandardFunctionRegistry;
  */
 public abstract class GeneralFunctionTest
 {
-	private final Function<? extends ExpressionResult<? extends AttributeValue>> function;
-	private final FunctionCall<? extends ExpressionResult<? extends AttributeValue>> funcCall;
-	private final ExpressionResult<? extends AttributeValue> expectedResult;
+	// private static final Logger LOGGER = LoggerFactory.getLogger(GeneralFunctionTest.class);
+
+	private final Function<?> function;
+	private final FunctionCall<?> funcCall;
+	private final Value<?, ?> expectedResult;
 
 	/**
 	 * 
@@ -57,12 +60,36 @@ public abstract class GeneralFunctionTest
 	 * @param expectedResult
 	 *            The expected function evaluation result, according to the given inputs; null if
 	 *            evaluation expected to throw an error (IndeterminateEvaluationException)
+	 * @throws UnknownIdentifierException
 	 */
-	protected GeneralFunctionTest(final String functionName, final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, final ExpressionResult<? extends AttributeValue> expectedResult)
+	protected GeneralFunctionTest(final String functionName, final List<Expression<?>> inputs, final Value<?, ?> expectedResult)
 	{
-		this.function = StandardFunctionRegistry.INSTANCE.getFunction(functionName);
-		// -> function is null if not supported
+		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
+		final Datatype<?> subFuncReturnType;
+		if (inputs.isEmpty())
+		{
+			subFuncReturnType = null;
+		} else
+		{
+			final Expression<?> xpr0 = inputs.get(0);
+			if (xpr0 instanceof Function<?>)
+			{
+				subFuncReturnType = xpr0.getReturnType();
+			} else
+			{
+				subFuncReturnType = null;
+			}
+		}
 
+		try
+		{
+			this.function = TestUtils.STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
+		} catch (UnknownIdentifierException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		// -> function is null if not supported
 		if (function == null)
 		{
 			funcCall = null;
@@ -91,7 +118,7 @@ public abstract class GeneralFunctionTest
 		 */
 		try
 		{
-			ExpressionResult<? extends AttributeValue> actualResult = funcCall.evaluate(null);
+			Value<?, ?> actualResult = funcCall.evaluate(null);
 			Assert.assertEquals(expectedResult, actualResult);
 		} catch (IndeterminateEvaluationException e)
 		{

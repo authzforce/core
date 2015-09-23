@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.func;
 
 import java.util.List;
@@ -5,10 +23,9 @@ import java.util.List;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -24,7 +41,7 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue>
 {
 	/**
-	 * XACML standard TYPE_URI for the "and" logical function
+	 * XACML standard identifier for the "and" logical function
 	 */
 	public static final String NAME_AND = FUNCTION_NS_1 + "and";
 
@@ -34,7 +51,7 @@ public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue
 	 */
 	public LogicalAndFunction()
 	{
-		super(NAME_AND, BooleanAttributeValue.TYPE, true, BooleanAttributeValue.TYPE);
+		super(NAME_AND, DatatypeConstants.BOOLEAN.TYPE, true, DatatypeConstants.BOOLEAN.TYPE);
 	}
 
 	private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + BooleanAttributeValue.class.getName() + ") of arg#";
@@ -52,22 +69,22 @@ public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue
 	 * @return true iff all checkedArgExpressions return True and all remainingArgs are True
 	 * @throws IndeterminateEvaluationException
 	 */
-	public BooleanAttributeValue eval(EvaluationContext context, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, AttributeValue[] checkedRemainingArgs) throws IndeterminateEvaluationException
+	public BooleanAttributeValue eval(EvaluationContext context, List<Expression<?>> checkedArgExpressions, AttributeValue<?>[] checkedRemainingArgs) throws IndeterminateEvaluationException
 	{
 		int argIndex = 0;
-		for (final Expression<? extends ExpressionResult<? extends AttributeValue>> arg : checkedArgExpressions)
+		for (final Expression<?> arg : checkedArgExpressions)
 		{
 			// Evaluate the argument
 			final BooleanAttributeValue attrVal;
 			try
 			{
-				attrVal = Utils.evalPrimitiveArg(arg, context, BooleanAttributeValue.class);
+				attrVal = Utils.evalSingle(arg, context, BooleanAttributeValue.class);
 			} catch (IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), Status.STATUS_PROCESSING_ERROR, e);
 			}
 
-			if (!attrVal.getValue())
+			if (!attrVal.getUnderlyingValue())
 			{
 				return BooleanAttributeValue.FALSE;
 			}
@@ -76,7 +93,7 @@ public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue
 		}
 
 		// do the same with remaining arg values
-		for (final AttributeValue arg : checkedRemainingArgs)
+		for (final AttributeValue<?> arg : checkedRemainingArgs)
 		{
 			// Evaluate the argument
 			final BooleanAttributeValue attrVal;
@@ -88,7 +105,7 @@ public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue
 				throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), Status.STATUS_PROCESSING_ERROR, e);
 			}
 
-			if (!attrVal.getValue())
+			if (!attrVal.getUnderlyingValue())
 			{
 				return BooleanAttributeValue.FALSE;
 			}
@@ -106,7 +123,7 @@ public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes)
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
 		/**
 		 * TODO: optimize this function call by checking the following:
@@ -128,7 +145,7 @@ public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue
 		{
 
 			@Override
-			protected BooleanAttributeValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
 			{
 				return eval(context, argExpressions, remainingArgs);
 			}

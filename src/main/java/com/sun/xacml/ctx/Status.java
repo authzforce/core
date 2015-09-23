@@ -51,22 +51,22 @@ public class Status extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Status
 {
 
 	/**
-	 * Standard TYPE_URI for the OK status
+	 * Standard identifier for the OK status
 	 */
 	public static final String STATUS_OK = "urn:oasis:names:tc:xacml:1.0:status:ok";
 
 	/**
-	 * Standard TYPE_URI for the MissingAttribute status
+	 * Standard identifier for the MissingAttribute status
 	 */
 	public static final String STATUS_MISSING_ATTRIBUTE = "urn:oasis:names:tc:xacml:1.0:status:missing-attribute";
 
 	/**
-	 * Standard TYPE_URI for the SyntaxError status
+	 * Standard identifier for the SyntaxError status
 	 */
 	public static final String STATUS_SYNTAX_ERROR = "urn:oasis:names:tc:xacml:1.0:status:syntax-error";
 
 	/**
-	 * Standard TYPE_URI for the ProcessingError status
+	 * Standard identifier for the ProcessingError status
 	 */
 	public static final String STATUS_PROCESSING_ERROR = "urn:oasis:names:tc:xacml:1.0:status:processing-error";
 

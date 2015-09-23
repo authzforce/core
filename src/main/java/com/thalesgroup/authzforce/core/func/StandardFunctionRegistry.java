@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.func;
 
 import java.util.Collections;
@@ -14,8 +32,6 @@ import com.sun.xacml.cond.NotFunction;
 import com.sun.xacml.cond.StringNormalizeFunction;
 import com.sun.xacml.cond.TimeInRangeFunction;
 import com.thalesgroup.authzforce.core.BasePdpExtensionRegistry;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 
 /**
  * This factory supports the standard set of functions specified in XACML 1.x and 2.0 and 3.0.
@@ -38,7 +54,7 @@ public class StandardFunctionRegistry extends FunctionRegistry
 	public static StandardFunctionRegistry INSTANCE;
 	static
 	{
-		final Set<Function<? extends ExpressionResult<? extends AttributeValue>>> standardExtensions = new HashSet<>();
+		final Set<Function<?>> standardExtensions = new HashSet<>();
 		/*
 		 * Add standard functions in an order as close as possible to the order of declaration in
 		 * the XACML spec (A.3).
@@ -138,19 +154,24 @@ public class StandardFunctionRegistry extends FunctionRegistry
 		 * A.3.15 and A.3.16 (optional) not supported
 		 */
 
-		final Map<String, Function<? extends ExpressionResult<? extends AttributeValue>>> stdExtMap = new HashMap<>();
-		for (final Function<? extends ExpressionResult<? extends AttributeValue>> stdExt : standardExtensions)
+		final Map<String, Function<?>> nonGenericStdFuncMap = new HashMap<>();
+		for (final Function<?> stdExt : standardExtensions)
 		{
-			stdExtMap.put(stdExt.getId(), stdExt);
+			nonGenericStdFuncMap.put(stdExt.getId(), stdExt);
 		}
 
-		final BasePdpExtensionRegistry<Function<? extends ExpressionResult<? extends AttributeValue>>> nonGenericFuncRegistry = new  BasePdpExtensionRegistry<>(Collections.unmodifiableMap(stdExtMap));
-		
-		// Generic functions
+		final BasePdpExtensionRegistry<Function<?>> nonGenericFuncRegistry = new BasePdpExtensionRegistry<>(Function.class, Collections.unmodifiableMap(nonGenericStdFuncMap));
+
+		// Generic functions, e.g. map function
 		final GenericHigherOrderFunctionFactory mapFuncFactory = new MapFunction.Factory();
-		final BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFuncFactoryRegistry = new BasePdpExtensionRegistry<>(Collections.singletonMap(mapFuncFactory.getId(), mapFuncFactory));
+		final Map<String, GenericHigherOrderFunctionFactory> genericStdFuncMap = Collections.singletonMap(mapFuncFactory.getId(), mapFuncFactory);
+		final BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFuncFactoryRegistry = new BasePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class, genericStdFuncMap);
 
 		INSTANCE = new StandardFunctionRegistry(nonGenericFuncRegistry, genericFuncFactoryRegistry);
+		if (LOGGER.isDebugEnabled())
+		{
+			LOGGER.debug("Loaded XACML standard functions: generic = {}, non-generic = {}", nonGenericStdFuncMap.keySet(), genericStdFuncMap.keySet());
+		}
 	}
 
 	/**
@@ -161,11 +182,9 @@ public class StandardFunctionRegistry extends FunctionRegistry
 	 * @param functionRegistry
 	 * @param genericFunctionFactoryRegistry
 	 */
-	private StandardFunctionRegistry(BasePdpExtensionRegistry<Function<? extends ExpressionResult<? extends AttributeValue>>> functionRegistry,
-			BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFunctionFactoryRegistry)
+	private StandardFunctionRegistry(BasePdpExtensionRegistry<Function<?>> functionRegistry, BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFunctionFactoryRegistry)
 	{
 		super(functionRegistry, genericFunctionFactoryRegistry);
-		LOGGER.info("Loaded standard functions");
 	}
 
 	/**
@@ -179,7 +198,7 @@ public class StandardFunctionRegistry extends FunctionRegistry
 	 *             always
 	 */
 	@Override
-	public void addFunction(Function<? extends ExpressionResult<? extends AttributeValue>> function) throws IllegalArgumentException
+	public void addFunction(Function<?> function) throws IllegalArgumentException
 	{
 		throw new UnsupportedOperationException("a standard factory cannot be modified");
 	}

@@ -50,7 +50,7 @@ import com.thalesgroup.authzforce.core.eval.DecisionResult;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.RulePepActionExpressions;
+import com.thalesgroup.authzforce.core.eval.RulePepActionExpressionsEvaluator;
 
 /**
  * Represents the oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule XACML type. This has a target for
@@ -74,7 +74,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	private final DecisionType effectAsDecision;
 	private final Target evaluatableTarget;
 	private final Condition evaluatableCondition;
-	private final RulePepActionExpressions effectMatchPepActionExps;
+	private final RulePepActionExpressionsEvaluator effectMatchPepActionExps;
 	private final DecisionResult nullActionsRuleDecisionResult;
 	private final String toString;
 
@@ -201,13 +201,24 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	public Rule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule ruleElt, DefaultsType policyDefaults, ExpressionFactory expressionFactory) throws ParsingException
 	// throws ParsingException
 	{
+		// JAXB fields initialization
 		this.ruleId = ruleElt.getRuleId();
-		this.toString = this.getClass().getSimpleName() + "#" + this.ruleId;
-
 		this.effect = ruleElt.getEffect();
-		this.effectAsDecision = effect == EffectType.DENY ? DecisionType.DENY : DecisionType.PERMIT;
-
 		this.description = ruleElt.getDescription();
+		// this.target set to null, see getTarget() override based on this.evaluatableTarget
+		this.target = null;
+		// this.condition set null, see getCondition() override based on this.evaluatableCondition
+		this.condition = null;
+		/*
+		 * this.obligationExpressions/adviceExpressions set null, see
+		 * getObligation/AdviceExpressions() override based on this.effectMatchPepActionExps
+		 */
+		this.obligationExpressions = null;
+		this.adviceExpressions = null;
+		// END OF JAXB fields initialization
+
+		this.toString = this.getClass().getSimpleName() + "[" + this.ruleId + "]";
+		this.effectAsDecision = effect == EffectType.DENY ? DecisionType.DENY : DecisionType.PERMIT;
 
 		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Target targetElt = ruleElt.getTarget();
 		try
@@ -218,9 +229,6 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 			throw new ParsingException(this + ": Error parsing Target", e);
 		}
 
-		// this.target set to null, see getTarget() override based on evaluatableTarget
-		this.target = null;
-
 		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condElt = ruleElt.getCondition();
 		try
 		{
@@ -230,22 +238,14 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 			throw new ParsingException(this + ": Error parsing Condition", e);
 		}
 
-		// this.condition set null, see getCondition() override based on evaluatableCondition
-		this.condition = null;
-
 		try
 		{
-			this.effectMatchPepActionExps = RulePepActionExpressions.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), policyDefaults, expressionFactory, effect);
+			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), policyDefaults, expressionFactory, effect);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException(this + ": Error parsing ObligationExpressions/AdviceExpressions", e);
 		}
 
-		// this.obligationExpressions/adviceExpressions set null, see
-		// getObligation/AdviceExpressions()
-		// override based on evaluatableTarget
-		this.obligationExpressions = null;
-		this.adviceExpressions = null;
 		if (this.effectMatchPepActionExps == null)
 		{
 
@@ -289,7 +289,9 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 				if (!evaluatableTarget.match(context))
 				{
 					LOGGER.debug("{}/Target -> No-match", this);
-					return DecisionResult.NOT_APPLICABLE;
+					final DecisionResult result = DecisionResult.NOT_APPLICABLE;
+					LOGGER.debug("{} -> {}", this, result);
+					return result;
 				}
 
 				LOGGER.debug("{}/Target -> Match", this);
@@ -306,7 +308,9 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 				 * FIXME: implement Extended Indeterminate: "Indeterminate{P}" if the Rule's Effect
 				 * is Permit, or "Indeterminate{D}" if the Rule's Effect is Deny
 				 */
-				return new DecisionResult(e.getStatus());
+				final DecisionResult result = new DecisionResult(e.getStatus());
+				LOGGER.debug("{} -> {}", this, result);
+				return result;
 			}
 		}
 
@@ -316,7 +320,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 		 * result is the Rule's Effect, unless condition is not null AND it evaluates to False or
 		 * throws Indeterminate exception.
 		 */
-		if (condition == null)
+		if (evaluatableCondition == null)
 		{
 			LOGGER.debug("{}/Condition (none/empty) -> True", this);
 		} else
@@ -335,13 +339,17 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 				 * than Error level)
 				 */
 				LOGGER.info("{}/Condition -> Indeterminate", this, e);
-				return new DecisionResult(e.getStatus());
+				final DecisionResult result = new DecisionResult(e.getStatus());
+				LOGGER.debug("{} -> {}", this, result);
+				return result;
 			}
 
 			if (!isConditionTrue)
 			{
 				LOGGER.debug("{}/Condition -> False", this);
-				return DecisionResult.NOT_APPLICABLE;
+				final DecisionResult result = DecisionResult.NOT_APPLICABLE;
+				LOGGER.debug("{} -> {}", this, result);
+				return result;
 			}
 
 			LOGGER.debug("{}/Condition -> True", this);
@@ -353,14 +361,15 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 		if (effectMatchPepActionExps == null)
 		{
 			// no obligations/advice
+			LOGGER.debug("{} -> {}", this, nullActionsRuleDecisionResult);
 			return nullActionsRuleDecisionResult;
 		}
 
 		/*
 		 * Evaluate obligations/advice we have already filtered out obligations/advice that do not
-		 * apply to Rule's effect, after calling PepActionExpressions.getInstance(..., effect) in
-		 * the constructor. So no need to do it again, that's why Effect not used as argument to
-		 * evaluate() here.
+		 * apply to Rule's effect, after calling PepActionExpressionsEvaluator.getInstance(...,
+		 * effect) in the constructor. So no need to do it again, that's why Effect not used as
+		 * argument to evaluate() here.
 		 */
 		final PepActions pepActions;
 		try
@@ -381,10 +390,14 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 			 * the whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core
 			 * spec, section 7.18).
 			 */
-			return new DecisionResult(e.getStatus());
+			final DecisionResult result = new DecisionResult(e.getStatus());
+			LOGGER.debug("{} -> {}", this, result);
+			return result;
 		}
 
-		return new DecisionResult(this.effectAsDecision, pepActions);
+		final DecisionResult result = new DecisionResult(this.effectAsDecision, pepActions);
+		LOGGER.debug("{} -> {}", this, result);
+		return result;
 	}
 
 	@Override

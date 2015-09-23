@@ -18,19 +18,16 @@
  */
 package com.thalesgroup.authzforce.core.test.attr;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.xmlbeans.XmlAnyURI;
-import org.apache.xmlbeans.XmlError;
-import org.apache.xmlbeans.XmlException;
-import org.apache.xmlbeans.XmlOptions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
 
 @RunWith(value = Parameterized.class)
 public class AnyURIAttributeTest
@@ -38,14 +35,9 @@ public class AnyURIAttributeTest
 	@Parameters
 	public static Collection<Object[]> data()
 	{
-		Object[][] data = new Object[][] { { "http://datypic.com", "absolute URI (also a URL)", true },
-				{ "mailto:info@datypic.com", "absolute URI", true },
-				{ "../%C3%A9dition.html", "relative URI containing escaped non-ASCII character", true },
-				{ "../édition.html", "relative URI containing escaped non-ASCII character", true },
-				{ "http://datypic.com/prod.html#shirt", "URI with fragment TYPE_URI", true },
-				{ "../prod.html#shirt", "relative URI with fragment TYPE_URI", true }, { "", "an empty value is allowed", true },
-				{ "http://datypic.com#frag1#frag2", "too many # characters", false },
-				{ "http://datypic.com#f% rag", "% character followed by something other than two hexadecimal digits", false } };
+		Object[][] data = new Object[][] { { "http://datypic.com", "absolute URI (also a URL)", true }, { "mailto:info@datypic.com", "absolute URI", true }, { "../%C3%A9dition.html", "relative URI containing escaped non-ASCII character", true },
+				{ "../édition.html", "relative URI containing escaped non-ASCII character", true }, { "http://datypic.com/prod.html#shirt", "URI with fragment identifier", true }, { "../prod.html#shirt", "relative URI with fragment identifier", true }, { "", "an empty value is allowed", true },
+				{ "http://datypic.com#frag1#frag2", "too many # characters", false }, { "http://datypic.com#f% rag", "% character followed by something other than two hexadecimal digits", false } };
 		return Arrays.asList(data);
 	}
 
@@ -61,15 +53,18 @@ public class AnyURIAttributeTest
 	}
 
 	@Test
-	public void test() throws XmlException
+	public void test()
 	{
-		XmlOptions validationOps = new XmlOptions();
-		validationOps.setValidateStrict();
-		Collection<XmlError> errors = new ArrayList<>();
-		validationOps.setErrorListener(errors);
-		XmlAnyURI xmlAnyURI2 = XmlAnyURI.Factory.parse(String.format("<xml-fragment>%s</xml-fragment>", this.value));
-		xmlAnyURI2.validate(validationOps);
-		Assert.assertEquals("Test failed on: '" + this.value + "' (" + this.comment + ")", isValid, errors.isEmpty());
+		boolean actualIsValidResult = false;
+		try
+		{
+			final AnyURIAttributeValue val = new AnyURIAttributeValue(this.value);
+			actualIsValidResult = true;
+		} catch (IllegalArgumentException e)
+		{
+		}
+
+		Assert.assertEquals("Test failed on: '" + this.value + "' (" + this.comment + ")", isValid, actualIsValidResult);
 	}
 
 }

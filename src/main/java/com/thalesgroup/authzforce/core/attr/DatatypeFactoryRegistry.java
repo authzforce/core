@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import com.sun.xacml.ParsingException;
@@ -10,7 +28,7 @@ import com.thalesgroup.authzforce.core.PdpExtensionRegistry;
  * datatype URIs (AttributeValueType DataType field)
  * 
  */
-public interface DatatypeFactoryRegistry extends PdpExtensionRegistry<AttributeValue.Factory<? extends AttributeValue>>
+public interface DatatypeFactoryRegistry extends PdpExtensionRegistry<AttributeValue.Factory<?>>
 {
 
 	/**
@@ -24,7 +42,7 @@ public interface DatatypeFactoryRegistry extends PdpExtensionRegistry<AttributeV
 	 * @throws UnknownIdentifierException
 	 *             value datatype unknown/not supported
 	 */
-	AttributeValue createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value) throws UnknownIdentifierException, ParsingException;
+	AttributeValue<?> createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value) throws UnknownIdentifierException, ParsingException;
 
 	/**
 	 * Create internal model's AttributeValue
@@ -39,5 +57,5 @@ public interface DatatypeFactoryRegistry extends PdpExtensionRegistry<AttributeV
 	 * @throws UnknownIdentifierException
 	 *             value datatype unknown/not supported
 	 */
-	<T extends AttributeValue> T createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value, Class<T> valueClass) throws UnknownIdentifierException, ParsingException;
+	<T extends AttributeValue<T>> T createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value, Class<T> valueClass) throws UnknownIdentifierException, ParsingException;
 }

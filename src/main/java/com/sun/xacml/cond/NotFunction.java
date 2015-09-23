@@ -35,11 +35,9 @@ package com.sun.xacml.cond;
 
 import java.util.List;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
@@ -58,7 +56,7 @@ public class NotFunction extends FirstOrderFunction<BooleanAttributeValue>
 {
 
 	/**
-	 * Standard TYPE_URI for the not function.
+	 * Standard identifier for the not function.
 	 */
 	public static final String NAME_NOT = FUNCTION_NS_1 + "not";
 
@@ -67,11 +65,11 @@ public class NotFunction extends FirstOrderFunction<BooleanAttributeValue>
 	 */
 	public NotFunction()
 	{
-		super(NAME_NOT, BooleanAttributeValue.TYPE, false, BooleanAttributeValue.TYPE);
+		super(NAME_NOT, DatatypeConstants.BOOLEAN.TYPE, false, DatatypeConstants.BOOLEAN.TYPE);
 	}
 
 	@Override
-	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new EagerPrimitiveEval<BooleanAttributeValue, BooleanAttributeValue>(signature, BooleanAttributeValue[].class, argExpressions, remainingArgTypes)
 		{

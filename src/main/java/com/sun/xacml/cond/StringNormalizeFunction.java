@@ -36,11 +36,9 @@ package com.sun.xacml.cond;
 import java.util.List;
 import java.util.Locale;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
@@ -58,12 +56,12 @@ public abstract class StringNormalizeFunction extends FirstOrderFunction<StringA
 {
 
 	/**
-	 * Standard TYPE_URI for the string-normalize-space function.
+	 * Standard identifier for the string-normalize-space function.
 	 */
 	public static final String NAME_STRING_NORMALIZE_SPACE = FUNCTION_NS_1 + "string-normalize-space";
 
 	/**
-	 * Standard TYPE_URI for the string-normalize-to-lower-case function.
+	 * Standard identifier for the string-normalize-to-lower-case function.
 	 */
 	public static final String NAME_STRING_NORMALIZE_TO_LOWER_CASE = FUNCTION_NS_1 + "string-normalize-to-lower-case";
 
@@ -76,7 +74,7 @@ public abstract class StringNormalizeFunction extends FirstOrderFunction<StringA
 	 */
 	public StringNormalizeFunction(String functionName)
 	{
-		super(functionName, StringAttributeValue.TYPE, false, StringAttributeValue.TYPE);
+		super(functionName, DatatypeConstants.STRING.TYPE, false, DatatypeConstants.STRING.TYPE);
 	}
 
 	/**
@@ -91,7 +89,7 @@ public abstract class StringNormalizeFunction extends FirstOrderFunction<StringA
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected final FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> argExpressions, DatatypeDef... remainingArgTypes) throws IllegalArgumentException
+	protected final FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new EagerPrimitiveEval<StringAttributeValue, StringAttributeValue>(signature, StringAttributeValue[].class, argExpressions, remainingArgTypes)
 		{

@@ -22,9 +22,7 @@
 package com.thalesgroup.authzforce.core.test.utils;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
@@ -34,9 +32,11 @@ import com.sun.xacml.finder.AttributeFinderModule;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder;
 
 /**
@@ -47,6 +47,10 @@ import com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttribute
  */
 public class TestAttributeFinderModule extends AttributeFinderModule
 {
+	/**
+	 * module factory
+	 * 
+	 */
 	public static class Factory extends AttributeFinderModule.Factory<TestAttributeFinder>
 	{
 
@@ -104,11 +108,11 @@ public class TestAttributeFinderModule extends AttributeFinderModule
 	}
 
 	@Override
-	public <V extends AttributeValue> List<V> findAttribute(DatatypeDef attributeType, AttributeGUID attributeGUID, EvaluationContext context, Class<V> datatypeClass) throws IndeterminateEvaluationException
+	public <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> returnDatatype) throws IndeterminateEvaluationException
 	{
 		if (supportedAttrIds.contains(attributeGUID))
 		{
-			return Collections.EMPTY_LIST;
+			return Bags.empty(returnDatatype, null);
 		}
 
 		return null;

@@ -1,190 +1,173 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.eval;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.PepActions;
 
 /**
- * Evaluator of PEP action (Obligation/Advice) expressions of a Policy(Set) or Rule
+ * Low-level interface to a list of PEP action (obligation/advice) expressions
  * 
  */
-public abstract class PepActionExpressions
+public interface PepActionExpressions
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(PepActionExpressions.class);
-	private final ObligationExpressions jaxbObligationExpressions;
-	private final AdviceExpressions jaxbAdviceExpressions;
-	protected final DefaultsType policyDefaults;
-
-	protected abstract void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp, ExpressionFactory expFactory) throws ParsingException;
-
-	protected abstract void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp, ExpressionFactory expFactory) throws ParsingException;
-
-	protected abstract List<ObligationExpression> getObligationExpressionList();
-
-	protected abstract List<AdviceExpression> getAdviceExpressionList();
-
-	protected PepActionExpressions(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	/**
+	 * PepActionExpressions factory
+	 * 
+	 * @param <T>
+	 *            type of created instance
+	 */
+	interface Factory<T extends PepActionExpressions>
 	{
-		this.policyDefaults = policyDefaults;
+		T getInstance(DefaultsType policyDefaults, ExpressionFactory expressionFactory);
+	}
 
-		if (jaxbObligationExpressions == null)
+	/**
+	 * Effect-specific obligation/advice expressions. Only expressions applying to such effect are
+	 * allowed to be added to the list.
+	 * 
+	 */
+	public static class EffectSpecific
+	{
+		// effect to which obligation and advice below apply
+		private final EffectType effect;
+		private final List<ObligationExpression> obligationExpList = new ArrayList<>();
+		private final List<AdviceExpression> adviceExpList = new ArrayList<>();
+
+		/**
+		 * @param effect
+		 *            Effect to which all obligation/advice expressions must apply
+		 */
+		public EffectSpecific(EffectType effect)
 		{
-			this.jaxbObligationExpressions = null;
-		} else
-		{
-			final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression> jaxbObligationExpList = jaxbObligationExpressions.getObligationExpressions();
-			if (jaxbObligationExpList.isEmpty())
-			{
-				this.jaxbObligationExpressions = null;
-			} else
-			{
-				for (oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp : jaxbObligationExpList)
-				{
-					try
-					{
-						add(jaxbObligationExp, expFactory);
-					} catch (ParsingException e)
-					{
-						throw new ParsingException("Error parsing ObligationExpression[@ObligationId='" + jaxbObligationExp.getObligationId() + "']/AttributeAssignmentExpression/Expression elements", e);
-					}
-				}
-
-				// get list of ObligationExpressions after parsing/filtering (based on FulfillOn)
-				final List<ObligationExpression> obligExpList = getObligationExpressionList();
-				if (obligExpList == null)
-				{
-					this.jaxbObligationExpressions = null;
-				} else
-				{
-					this.jaxbObligationExpressions = new ObligationExpressions(Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression> unmodifiableList(obligExpList));
-
-				}
-			}
+			this.effect = effect;
 		}
 
-		if (jaxbAdviceExpressions == null)
+		/**
+		 * Adds an ObligationExpression to the list only if matching the the effect argument to
+		 * {@link EffectSpecific#EffectSpecific(EffectType)}
+		 * 
+		 * @param obligationExpression
+		 *            ObligationExpression
+		 * @return true iff {@code obligationExpression} actually added to the expressions, i.e.
+		 *         fulfillOn matches the effect argument to
+		 *         {@link EffectSpecific#EffectSpecific(EffectType)}
+		 */
+		public boolean add(ObligationExpression obligationExpression)
 		{
-			this.jaxbAdviceExpressions = null;
-		} else
-		{
-			final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression> jaxbAdviceExpList = jaxbAdviceExpressions.getAdviceExpressions();
-			if (jaxbAdviceExpList.isEmpty())
+			if (obligationExpression.getFulfillOn() != effect)
 			{
-				this.jaxbAdviceExpressions = null;
-			} else
-			{
-				for (oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp : jaxbAdviceExpList)
-				{
-					try
-					{
-						add(jaxbAdviceExp, expFactory);
-					} catch (ParsingException e)
-					{
-						throw new ParsingException("Error parsing one of the AdviceExpression[@AdviceId='" + jaxbAdviceExp.getAdviceId() + "']/AttributeAssignmentExpression/Expression elements", e);
-					}
-				}
-
-				// get list of AdviceExpressions after parsing/filtering (based on AppliesTo)
-				final List<AdviceExpression> adviceExpList = getAdviceExpressionList();
-				if (adviceExpList == null)
-				{
-					this.jaxbAdviceExpressions = null;
-				} else
-				{
-					this.jaxbAdviceExpressions = new AdviceExpressions(Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression> unmodifiableList(adviceExpList));
-
-				}
+				return false;
 			}
+
+			return obligationExpList.add(obligationExpression);
+		}
+
+		/**
+		 * Adds an AdviceExpression to the list only if matching the the effect argument to
+		 * {@link EffectSpecific#EffectSpecific(EffectType)}
+		 * 
+		 * @param adviceExpression
+		 *            AdviceExpression
+		 * @return true iff {@code adviceExpression} actually added to the expressions, i.e.
+		 *         appliesTo matches the effect argument to
+		 *         {@link EffectSpecific#EffectSpecific(EffectType)}
+		 */
+		public boolean add(AdviceExpression adviceExpression)
+		{
+			if (adviceExpression.getAppliesTo() != effect)
+			{
+				return false;
+			}
+
+			return adviceExpList.add(adviceExpression);
+		}
+
+		/**
+		 * Effect-specific ObligationExpressions
+		 * 
+		 * @return the effect-specific ObligationExpressions
+		 */
+		public List<ObligationExpression> getObligationExpressions()
+		{
+			return this.obligationExpList;
+		}
+
+		/**
+		 * Effect-specific AdviceExpressions
+		 * 
+		 * @return the effect-specific AdviceExpressions
+		 */
+		public List<AdviceExpression> getAdviceExpressions()
+		{
+			return this.adviceExpList;
+		}
+
+		/**
+		 * Get Effect to be matched by all expressions
+		 * 
+		 * @return effect
+		 */
+		public EffectType getEffect()
+		{
+			return effect;
 		}
 	}
 
 	/**
-	 * Get the corresponding XACML/JAXB ObligationExpressions element
+	 * Adds a XACML ObligationExpression to the list
 	 * 
-	 * @return ObligationExpressions element
+	 * @param jaxbObligationExp
+	 *            XACML ObligationExpression
+	 * @throws ParsingException
+	 *             if error (e.g. syntax error) parsing the expression
 	 */
-	public final ObligationExpressions getObligationExpressions()
-	{
-		return jaxbObligationExpressions;
-	}
+	void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp) throws ParsingException;
 
 	/**
-	 * Get the corresponding XACML/JAXB AdviceExpressions element
+	 * Adds a XACML AdviceExpression to the list
 	 * 
-	 * @return AdviceExpressions element
+	 * @param jaxbAdviceExp
+	 *            XACML ObligationExpression
+	 * @throws ParsingException
+	 *             if error (e.g. syntax error) parsing the expression
 	 */
-	public final AdviceExpressions getAdviceExpressions()
-	{
-		return jaxbAdviceExpressions;
-	}
+	void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp) throws ParsingException;
 
-	protected static PepActions evaluate(List<ObligationExpression> obligationExpList, List<AdviceExpression> adviceExpList, EvaluationContext context) throws IndeterminateEvaluationException
-	{
-		final List<Obligation> obligations;
-		if (obligationExpList.isEmpty())
-		{
-			obligations = null;
-		} else
-		{
-			obligations = new ArrayList<>();
-			for (final ObligationExpression obligationExp : obligationExpList)
-			{
-				final Obligation obligation;
-				try
-				{
-					obligation = obligationExp.evaluate(context);
-					if (LOGGER.isDebugEnabled())
-					{
-						LOGGER.debug("ObligationExpression[@ObligationId={}] -> {}", obligationExp.getObligationId(), obligation);
-					}
-				} catch (IndeterminateEvaluationException e)
-				{
-					throw new IndeterminateEvaluationException("Error evaluating one of the ObligationExpression[@ObligationId=" + obligationExp.getObligationId() + "]/AttributeAssignmentExpression/Expression elements", e.getStatusCode(), e);
-				}
+	/**
+	 * Gets all the expressions added with
+	 * {@link #add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression)}
+	 * 
+	 * @return list of ObligationExpressions
+	 */
+	List<ObligationExpression> getObligationExpressionList();
 
-				obligations.add(obligation);
-			}
-		}
-
-		final List<Advice> advices;
-		if (adviceExpList.isEmpty())
-		{
-			advices = null;
-		} else
-		{
-			advices = new ArrayList<>();
-			for (final AdviceExpression adviceExp : adviceExpList)
-			{
-				final Advice advice;
-				try
-				{
-					advice = adviceExp.evaluate(context);
-				} catch (IndeterminateEvaluationException e)
-				{
-					throw new IndeterminateEvaluationException("Error evaluating one of the AdviceExpression[@AdviceId=" + adviceExp.getAdviceId() + "]/AttributeAssignmentExpression/Expression elements", e.getStatusCode(), e);
-				}
-				if (LOGGER.isDebugEnabled())
-				{
-					LOGGER.debug("AdviceExpression[@AdviceId={}] -> {}", adviceExp.getAdviceId(), advice);
-				}
-
-				advices.add(advice);
-			}
-		}
-
-		return obligations == null && advices == null ? null : new PepActions(obligations, advices);
-	}
-
+	/**
+	 * Gets all the expressions added with
+	 * {@link #add(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression)}
+	 * 
+	 * @return list of AdviceExpressions
+	 */
+	List<AdviceExpression> getAdviceExpressionList();
 }

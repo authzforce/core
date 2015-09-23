@@ -1,6 +1,26 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,21 +32,36 @@ import javax.xml.namespace.QName;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
+import org.w3c.dom.Element;
+
 import com.thalesgroup.authzforce.core.PdpExtension;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * The base type for all attribute value datatypes used in a policy or request/response, this
  * abstract class represents a value for a given attribute type. All the required types defined in
  * the XACML specification are provided as instances of <code>AttributeValue<code>s. If you want to
  * provide a new type, extend {@link Factory}.
+ * Following JAXB fields (inherited from {@link AttributeValueType}) are made immutable by this class:
+ * <ul>
+ * <li>content (also accessible via {@link #getContent()} )</li>
+ * <li>dataType (also accessible via {@link #getDataType()}) </li>
+ * <li>otherAttributes (accessible via {@link #getOtherAttributes()}) </li>
+ * </ul>
+ * 
+ * 
+ * 
+ * @param <V>
+ *            concrete type subclass
  * 
  */
-public abstract class AttributeValue extends AttributeValueType implements Serializable, ExpressionResult<AttributeValue, AttributeValue>
+public abstract class AttributeValue<V extends AttributeValue<V>> extends AttributeValueType implements Serializable, Value<V, V>
 {
 	/**
 	 * XML datatype factory for parsing XML-Schema-compliant date/time/duration values into Java
@@ -49,33 +84,43 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 	}
 
 	/**
-	 * Datatype-specific Attribute Value RefPolicyFinderModuleFactory. Implementations of
-	 * {@link #getId()} (PDP extension ID) must return the URI of the value datatype the factory
-	 * implementation supports.
+	 * Datatype-specific Attribute Value Factory.
 	 * 
-	 * @param <T>
-	 *            type of attribute values
+	 * @param <AV>
+	 *            type of attribute values created by this factory
 	 */
-	public static abstract class Factory<T extends AttributeValue> implements PdpExtension
+	public static abstract class Factory<AV extends AttributeValue<AV>> implements PdpExtension
 	{
-		private final Class<T> instanceClass;
-		protected final DatatypeDef datatype;
+		private static final IllegalArgumentException NULL_DATATYPE_CLASS_EXCEPTION = new IllegalArgumentException("Undefined instanceClass argument");
+		private static final IllegalArgumentException NULL_DATATYPE_ID_EXCEPTION = new IllegalArgumentException("Undefined datatypeId argument");
 
-		protected Factory(Class<T> instanceClass)
+		protected final Datatype<AV> instanceDatatype;
+		private final Bag<AV> emptyBag;
+
+		// cached method result
+		private int hashCode = 0;
+		private String toString = null;
+
+		protected Factory(Class<AV> instanceClass, String datatypeId)
 		{
-			this.instanceClass = instanceClass;
-			this.datatype = new DatatypeDef(getId());
+			if (instanceClass == null)
+			{
+				throw NULL_DATATYPE_CLASS_EXCEPTION;
+			}
+
+			if (datatypeId == null)
+			{
+				throw NULL_DATATYPE_ID_EXCEPTION;
+			}
+
+			this.instanceDatatype = new Datatype<>(instanceClass, datatypeId);
+			this.emptyBag = Bags.empty(instanceDatatype);
 		}
 
-		/**
-		 * Get the class of all instances created by this factory, i.e. the class of attribute
-		 * values
-		 * 
-		 * @return instance class
-		 */
-		public Class<T> getInstanceClass()
+		@Override
+		public final String getId()
 		{
-			return instanceClass;
+			return this.instanceDatatype.getId();
 		}
 
 		/**
@@ -83,10 +128,45 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 		 * 
 		 * @return supported attribute value datatype
 		 */
-		public DatatypeDef getDatatype()
+		public final Datatype<AV> getDatatype()
 		{
-			return datatype;
+			return instanceDatatype;
 		}
+
+		/**
+		 * Gets empty bag
+		 * 
+		 * @return empty bag
+		 */
+		public Bag<AV> getEmptyBag()
+		{
+			return emptyBag;
+		}
+
+		/**
+		 * Gets empty bag
+		 * 
+		 * @return empty bag
+		 */
+		public BagDatatype<AV> getBagDatatype()
+		{
+			return emptyBag.getDatatype();
+		}
+
+		/**
+		 * Create attribute value from XML/JAXB mixed content and other XML attributes
+		 * 
+		 * @param content
+		 *            list of (XACML/JAXB) AttributeValueType's mixed content elements of the
+		 *            following types: {@link String}, {@link Element}
+		 * @param otherAttributes
+		 *            other XML attributes
+		 * @return attribute value in internal model compatible with expression evaluator
+		 * @throws IllegalArgumentException
+		 *             if content/otherAttributes are not valid for the datatype handled by this
+		 *             factory
+		 */
+		public abstract AV getInstance(List<Serializable> content, Map<QName, String> otherAttributes) throws IllegalArgumentException;
 
 		/*
 		 * (non-Javadoc)
@@ -94,9 +174,14 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
-		public String toString()
+		public final String toString()
 		{
-			return getClass().getName() + "[datatypeURI=" + getId() + ", datatypeClass=" + instanceClass + "]";
+			// immutable class -> we can cache the result
+			if (toString == null)
+			{
+				toString = getClass().getName() + "[datatype=" + instanceDatatype + "]";
+			}
+			return toString;
 		}
 
 		/*
@@ -105,9 +190,14 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 		 * @see java.lang.Object#hashCode()
 		 */
 		@Override
-		public int hashCode()
+		public final int hashCode()
 		{
-			return Objects.hash(instanceClass);
+			// immutable class -> we can cache the result
+			if (hashCode == 0)
+			{
+				hashCode = Objects.hash(instanceDatatype.getValueClass());
+			}
+			return hashCode;
 		}
 
 		/*
@@ -130,38 +220,26 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 			{
 				return false;
 			}
-			Factory<?> other = (Factory<?>) obj;
-			if (instanceClass == null)
-			{
-				if (other.instanceClass != null)
-				{
-					return false;
-				}
-			} else if (!instanceClass.equals(other.instanceClass))
+			final Factory<?> other = (Factory<?>) obj;
+			/*
+			 * if (instanceClass == null) { if (other.instanceClass != null) { return false; } }
+			 * else
+			 */if (!instanceDatatype.equals(other.instanceDatatype))
 			{
 				return false;
 			}
 			return true;
 		}
-
-		/**
-		 * Create attribute value from XML input (unmarshalled with JAXB)
-		 * 
-		 * @param jaxbAttributeValue
-		 *            JAXB-unmarshalled XML input value
-		 * @return attribute value in internal model compatible with expression evaluator
-		 * @throws IllegalArgumentException
-		 *             if jaxbAttributeValue is the datatype URI or content is not valid for this
-		 *             factory
-		 */
-		public abstract T getInstance(AttributeValueType jaxbAttributeValue) throws IllegalArgumentException;
 	}
 
-	private static IllegalArgumentException UNDEF_ATTR_VAL_TYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute value datatype");
+	private static IllegalArgumentException UNDEF_ATTR_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute datatype");
 
 	private static final UnsupportedOperationException UNSUPPORTED_SET_DATATYPE_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeValue.setDataType() not allowed");
 
-	private final DatatypeDef datatypeDef;
+	private final Datatype<V> datatype;
+
+	// cached method result(s)
+	private V[] all = null;
 
 	/*
 	 * (non-Javadoc)
@@ -176,25 +254,36 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 		throw UNSUPPORTED_SET_DATATYPE_OPERATION_EXCEPTION;
 	}
 
-	protected AttributeValue(DatatypeDef datatype, AttributeValueType jaxbVal)
+	/**
+	 * Default constructor
+	 * 
+	 * @param datatype
+	 *            datatype.
+	 * @param content
+	 *            list of JAXB content elements of the following types: {@link String},
+	 *            {@link Element}. Made immutable by this constructor.
+	 * @param otherAttributes
+	 *            other attributes, made immutable by this constructor.
+	 * @throws IllegalArgumentException
+	 *             if {@code datatype == null}
+	 */
+	protected AttributeValue(Datatype<V> datatype, List<Serializable> content, Map<QName, String> otherAttributes) throws IllegalArgumentException
 	{
-		this(datatype, jaxbVal.getContent(), jaxbVal.getOtherAttributes());
+		// assert datatype != null;
+		// assert content != null;
+		// make fields immutable (datatype made immutable through overriding setDatatype())
+		super(content == null ? null : Collections.unmodifiableList(content), validateAndGetId(datatype), otherAttributes == null ? null : Collections.unmodifiableMap(otherAttributes));
+		this.datatype = datatype;
 	}
 
-	protected AttributeValue(DatatypeDef datatype, List<Serializable> content)
+	private static String validateAndGetId(Datatype<?> datatype)
 	{
-		this(datatype, content, null);
-	}
-
-	protected AttributeValue(DatatypeDef datatype, List<Serializable> content, Map<QName, String> otherAttributes)
-	{
-		super(content, datatype == null ? null : datatype.datatypeURI(), otherAttributes);
 		if (datatype == null)
 		{
-			throw UNDEF_ATTR_VAL_TYPE_EXCEPTION;
+			throw UNDEF_ATTR_DATATYPE_EXCEPTION;
 		}
 
-		this.datatypeDef = datatype;
+		return datatype.getId();
 	}
 
 	@Override
@@ -204,33 +293,33 @@ public abstract class AttributeValue extends AttributeValueType implements Seria
 	}
 
 	@Override
-	public DatatypeDef getReturnType()
+	public Datatype<V> getReturnType()
 	{
-		return this.datatypeDef;
-	}
-
-	@Override
-	public AttributeValue value()
-	{
-		return this;
-	}
-
-	@Override
-	public AttributeValue[] values()
-	{
-		return new AttributeValue[] { this };
-	}
-
-	@Override
-	public AttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
-	{
-		return this;
+		return this.datatype;
 	}
 
 	@Override
 	public JAXBElement<AttributeValueType> getJAXBElement()
 	{
 		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeValue(this);
+	}
+
+	@Override
+	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	{
+		return one();
+	}
+
+	@Override
+	public V[] all()
+	{
+		if (all == null)
+		{
+			all = (V[]) Array.newInstance(datatype.getValueClass(), 1);
+			all[0] = one();
+		}
+
+		return all;
 	}
 
 }

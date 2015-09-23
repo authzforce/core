@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.func;
 
 import java.util.Collections;
@@ -8,11 +26,10 @@ import java.util.Set;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -36,7 +53,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 {
 
 	/**
-	 * Standard TYPE_URI for the n-of function.
+	 * Standard identifier for the n-of function.
 	 */
 	public static final String NAME_N_OF = FUNCTION_NS_1 + "n-of";
 
@@ -48,7 +65,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 	 */
 	public LogicalNOfFunction()
 	{
-		super(NAME_N_OF, BooleanAttributeValue.TYPE, true, IntegerAttributeValue.TYPE, BooleanAttributeValue.TYPE);
+		super(NAME_N_OF, DatatypeConstants.BOOLEAN.TYPE, true, DatatypeConstants.INTEGER.TYPE, DatatypeConstants.BOOLEAN.TYPE);
 	}
 
 	/**
@@ -63,45 +80,6 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 
 	private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_N_OF + ": Invalid type (expected = " + BooleanAttributeValue.class.getName() + ") of arg#";
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
-	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
-	@Override
-	protected FirstOrderFunctionCall getFunctionCall(final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
-	{
-		/*
-		 * Arg datatypes and number is already checked in superclass but we need to do further
-		 * checks specific to this function such as the first argument which must be a positive
-		 * integer
-		 */
-
-		/**
-		 * TODO: optimize this function call by checking the following:
-		 * <ol>
-		 * <li>If eval(null, checkedArgExpressions, null) returns a result (no
-		 * IndeterminateEvaluationException thrown), then it will always return this result</li>
-		 * <li>
-		 * Else If any argument expression is constant BooleanAttributeValue False, remove it from
-		 * the arguments and always decrement the first integer argument by one, as it has no effect
-		 * on the final result. Indeed, n-of function is commutative except for the first argument,
-		 * and n-of(N, false, x, y...) = n-of(N, x, y...).</li>
-		 * </ol>
-		 */
-
-		return new FirstOrderFunctionCall(checkedRemainingArgTypes)
-		{
-
-			@Override
-			protected BooleanAttributeValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
-			{
-				return eval(context, checkedArgExpressions, remainingArgs);
-			}
-		};
-	}
-
 	/**
 	 * Logical 'n-of' evaluation method
 	 * 
@@ -115,7 +93,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 	 * @return true iff all checkedArgExpressions return True and all remainingArgs are True
 	 * @throws IndeterminateEvaluationException
 	 */
-	public BooleanAttributeValue eval(EvaluationContext context, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, AttributeValue[] checkedRemainingArgValues) throws IndeterminateEvaluationException
+	public BooleanAttributeValue eval(EvaluationContext context, List<Expression<?>> checkedArgExpressions, AttributeValue<?>[] checkedRemainingArgValues) throws IndeterminateEvaluationException
 	{
 
 		// Evaluate the arguments one by one. As soon as we can return
@@ -128,7 +106,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 		final IntegerAttributeValue intAttrVal;
 		try
 		{
-			intAttrVal = evalPrimitiveArg(input0, context, IntegerAttributeValue.class);
+			intAttrVal = Utils.evalSingle(input0, context, IntegerAttributeValue.class);
 		} catch (IndeterminateEvaluationException e)
 		{
 			throw new IndeterminateEvaluationException(getIndeterminateArgMessage(0), Status.STATUS_PROCESSING_ERROR, e);
@@ -138,7 +116,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 
 		// We downsize the BigInteger value to int right away, because anyway inputs.size() is an
 		// int, so we cannot do better and don't need to.
-		int nOfRequiredTrues = intAttrVal.getValue().intValue();
+		int nOfRequiredTrues = intAttrVal.getUnderlyingValue().intValue();
 
 		// If the number of trues needed is less than zero, report an error.
 		if (nOfRequiredTrues < 0)
@@ -170,13 +148,13 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 			final BooleanAttributeValue attrVal;
 			try
 			{
-				attrVal = evalPrimitiveArg(input, context, BooleanAttributeValue.class);
+				attrVal = Utils.evalSingle(input, context, BooleanAttributeValue.class);
 			} catch (IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), Status.STATUS_PROCESSING_ERROR, e);
 			}
 
-			if (attrVal.getValue())
+			if (attrVal.getUnderlyingValue())
 			{
 				// we're one closer to our goal...see if we met it
 				nOfRequiredTrues--;
@@ -199,7 +177,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 		// do the same loop with remaining arg values
 		if (checkedRemainingArgValues != null)
 		{
-			for (final AttributeValue arg : checkedRemainingArgValues)
+			for (final AttributeValue<?> arg : checkedRemainingArgValues)
 			{
 				final BooleanAttributeValue attrVal;
 				try
@@ -210,7 +188,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 					throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), Status.STATUS_PROCESSING_ERROR, e);
 				}
 
-				if (attrVal.getValue())
+				if (attrVal.getUnderlyingValue())
 				{
 					// we're one closer to our goal...see if we met it
 					nOfRequiredTrues--;
@@ -233,6 +211,45 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 
 		// if we got here then we didn't meet our quota
 		return BooleanAttributeValue.FALSE;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
+	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
+	 */
+	@Override
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+	{
+		/*
+		 * Arg datatypes and number is already checked in superclass but we need to do further
+		 * checks specific to this function such as the first argument which must be a positive
+		 * integer
+		 */
+
+		/**
+		 * TODO: optimize this function call by checking the following:
+		 * <ol>
+		 * <li>If eval(null, checkedArgExpressions, null) returns a result (no
+		 * IndeterminateEvaluationException thrown), then it will always return this result</li>
+		 * <li>
+		 * Else If any argument expression is constant BooleanAttributeValue False, remove it from
+		 * the arguments and always decrement the first integer argument by one, as it has no effect
+		 * on the final result. Indeed, n-of function is commutative except for the first argument,
+		 * and n-of(N, false, x, y...) = n-of(N, x, y...).</li>
+		 * </ol>
+		 */
+
+		return new FirstOrderFunctionCall<BooleanAttributeValue>(signature, argExpressions, remainingArgTypes)
+		{
+
+			@Override
+			protected BooleanAttributeValue evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
+			{
+				return eval(context, argExpressions, remainingArgs);
+			}
+		};
 	}
 
 }

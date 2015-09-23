@@ -52,13 +52,8 @@
 			<artifactId>logback-classic</artifactId>
 		</dependency>
 		<dependency>
-			<!-- For validating certain entities of XACML standard datatypes actually defined by XML schema (e.g. anyURI type) -->
-			<groupId>org.apache.xmlbeans</groupId>
-			<artifactId>xmlbeans</artifactId>
-			<version>2.6.0</version>
-		</dependency>
-		<dependency>
-			<!-- For validating IP addresses (XACML IPAdress datatype), Domain names (XACML DNSName datatype), etc. without any DNS resolution -->
+			<!-- For validating IP addresses (XACML IPAdress datatype), Domain names (XACML DNSName datatype), 
+				etc. without any DNS resolution -->
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
@@ -77,12 +72,6 @@
 		<!-- /Authzforce dependencies -->
 
 		<!-- Test dependencies -->
-		<!-- <dependency> -->
-		<!-- <groupId>commons-jxpath</groupId> -->
-		<!-- <artifactId>commons-jxpath</artifactId> -->
-		<!-- <version>1.3</version> -->
-		<!-- <scope>test</scope> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -93,6 +82,39 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.5</version>
+				<configuration>
+					<targetJdk>1.7</targetJdk>
+					<excludeRoots>
+						<excludeRoot>target/generated-sources</excludeRoot>
+						<excludeRoot>target/generated-test-sources</excludeRoot>
+					</excludeRoots>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<!-- Apache license Headers -->
 				<groupId>com.mycila</groupId>

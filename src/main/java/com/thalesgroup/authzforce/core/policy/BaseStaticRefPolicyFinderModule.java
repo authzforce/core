@@ -1,14 +1,32 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.policy;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -80,29 +98,29 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		}
 	}
 
-	private static class PolicyVersions<P> implements Iterable<Entry<PolicyVersionId, P>>
+	private static class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 	{
 		/*
 		 * Version-to-policy map with reverse ordering, to have the latest version first, since, by
 		 * default, the latest version is always preferred. See §5.10 of XACML core spec:
 		 * "In the case that more than one matching version can be obtained, then the most recent one SHOULD be used."
 		 */
-		final TreeMap<PolicyVersionId, P> policiesByVersion = new TreeMap<>(Collections.reverseOrder());
+		final TreeMap<PolicyVersion, P> policiesByVersion = new TreeMap<>(Collections.reverseOrder());
 
-		private P put(PolicyVersionId version, P policy)
+		private P put(PolicyVersion version, P policy)
 		{
 			return policiesByVersion.put(version, policy);
 		}
 
-		private P get(PolicyVersionId version)
+		private P get(PolicyVersion version)
 		{
 			return policiesByVersion.get(version);
 		}
 
-		private Entry<PolicyVersionId, P> getLatest(VersionConstraints constraints)
+		private Entry<PolicyVersion, P> getLatest(VersionConstraints constraints)
 		{
 			// policiesByVersion is not empty -> at least one value
-			final Iterator<Entry<PolicyVersionId, P>> versionPolicyPairsIterator = policiesByVersion.entrySet().iterator();
+			final Iterator<Entry<PolicyVersion, P>> versionPolicyPairsIterator = policiesByVersion.entrySet().iterator();
 			if (constraints == null)
 			{
 				/*
@@ -120,8 +138,8 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			boolean earliestVersionMatched = false;
 			while (versionPolicyPairsIterator.hasNext())
 			{
-				final Entry<PolicyVersionId, P> versionPolicyPair = versionPolicyPairsIterator.next();
-				final PolicyVersionId version = versionPolicyPair.getKey();
+				final Entry<PolicyVersion, P> versionPolicyPair = versionPolicyPairsIterator.next();
+				final PolicyVersion version = versionPolicyPair.getKey();
 				/*
 				 * Versions ordered by latest first, so check against constraints' LatestVersion
 				 * pattern first. If LatestVersion is matched by this version, no need to check
@@ -176,7 +194,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		}
 
 		@Override
-		public Iterator<Entry<PolicyVersionId, P>> iterator()
+		public Iterator<Entry<PolicyVersion, P>> iterator()
 		{
 			return policiesByVersion.entrySet().iterator();
 		}
@@ -198,7 +216,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		 */
 		private P put(String policyId, String policyVersion, P policy)
 		{
-			final PolicyVersionId version = new PolicyVersionId(policyVersion);
+			final PolicyVersion version = new PolicyVersion(policyVersion);
 			final PolicyVersions<P> oldPolicyVersions = policiesById.get(policyId);
 			final PolicyVersions<P> newPolicyVersions;
 			if (oldPolicyVersions == null)
@@ -213,7 +231,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			return newPolicyVersions.put(version, policy);
 		}
 
-		private Entry<PolicyVersionId, P> get(String id, VersionConstraints constraints)
+		private Entry<PolicyVersion, P> get(String id, VersionConstraints constraints)
 		{
 			final PolicyVersions<P> policyVersions = policiesById.get(id);
 			// id not matched
@@ -284,24 +302,24 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		}
 
 		@Override
-		public <POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Queue<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException
+		public <POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Deque<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException
 		{
 			// If this is a request for Policy (from PolicyIdReference)
 			if (policyType == Policy.class)
 			{
-				final Entry<PolicyVersionId, Policy> policyEntry = policyMap.get(id, constraints);
+				final Entry<PolicyVersion, Policy> policyEntry = policyMap.get(id, constraints);
 				return policyEntry == null ? null : policyType.cast(policyEntry.getValue());
 			}
 
 			// Else this is a request for PolicySet (from PolicySetIdReference)
-			final Entry<PolicyVersionId, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetEntry = jaxbPolicySetMap.get(id, constraints);
+			final Entry<PolicyVersion, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetEntry = jaxbPolicySetMap.get(id, constraints);
 			if (jaxbPolicySetEntry == null)
 			{
 				// no such policy
 				return null;
 			}
 
-			final PolicyVersionId jaxbPolicySetVersion = jaxbPolicySetEntry.getKey();
+			final PolicyVersion jaxbPolicySetVersion = jaxbPolicySetEntry.getKey();
 			// Check whether already parsed
 			final PolicyVersions<PolicySet> policySetVersions = policySetMapToUpdate.get(id);
 			final PolicyVersions<PolicySet> newPolicySetVersions;
@@ -334,7 +352,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			final PolicySet policySet;
 			try
 			{
-				policySet = new PolicySet(jaxbPolicySet, expressionFactory, combiningAlgRegistry, refPolicyFinder, policySetRefChain);
+				policySet = new PolicySet(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyFinder, policySetRefChain);
 			} catch (ParsingException e)
 			{
 				throw new IllegalArgumentException("Error parsing PolicySet with PolicySetId=" + id + ", Version=" + jaxbPolicySetVersion, e);
@@ -420,7 +438,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 				final Policy policy;
 				try
 				{
-					policy = new Policy(jaxbPolicy, expressionFactory, combiningAlgRegistry);
+					policy = new Policy(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
 				} catch (ParsingException e)
 				{
 					throw new IllegalArgumentException("Error parsing Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
@@ -506,7 +524,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 				final Policy policy;
 				try
 				{
-					policy = new Policy(jaxbPolicy, expressionFactory, combiningAlgRegistry);
+					policy = new Policy(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
 				} catch (ParsingException e)
 				{
 					throw new IllegalArgumentException("Error parsing Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
@@ -578,9 +596,9 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 				}
 
 				final PolicyVersions<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetVersions = jaxbPolicySet.getValue();
-				for (final Entry<PolicyVersionId, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetEntry : jaxbPolicySetVersions)
+				for (final Entry<PolicyVersion, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetEntry : jaxbPolicySetVersions)
 				{
-					final PolicyVersionId policySetVersion = jaxbPolicySetEntry.getKey();
+					final PolicyVersion policySetVersion = jaxbPolicySetEntry.getKey();
 					// check whether not already parsed
 					final PolicySet policySet = newPolicySetVersions.get(policySetVersion);
 					if (policySet != null)
@@ -594,7 +612,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 					final PolicySet newPolicySet;
 					try
 					{
-						newPolicySet = new PolicySet(jaxbPolicySetEntry.getValue(), expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
+						newPolicySet = new PolicySet(jaxbPolicySetEntry.getValue(), null, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
 					} catch (ParsingException e)
 					{
 						throw new IllegalArgumentException("Error parsing PolicySet with PolicySetId=" + policySetId + ", Version=" + policySetVersion, e);
@@ -613,9 +631,9 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 	}
 
 	@Override
-	public <POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Queue<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException
+	public <POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Deque<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException
 	{
-		final Entry<PolicyVersionId, ? extends IPolicy> policyEntry;
+		final Entry<PolicyVersion, ? extends IPolicy> policyEntry;
 		if (policyType == Policy.class)
 		{
 			// Request for Policy (from PolicyIdReference)

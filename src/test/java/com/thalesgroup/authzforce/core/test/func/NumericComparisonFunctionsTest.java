@@ -26,16 +26,20 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 @RunWith(Parameterized.class)
 public class NumericComparisonFunctionsTest extends GeneralFunctionTest
 {
+
+	public NumericComparisonFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
 
 	private static final String NAME_INTEGER_GREATER_THAN = "urn:oasis:names:tc:xacml:1.0:function:integer-greater-than";
 	private static final String NAME_INTEGER_GREATER_THAN_OR_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal";
@@ -89,11 +93,6 @@ public class NumericComparisonFunctionsTest extends GeneralFunctionTest
 				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.4")), BooleanAttributeValue.FALSE },//
 				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.6")), BooleanAttributeValue.TRUE }, //
 				new Object[] { NAME_DOUBLE_LESS_THAN_OR_EQUAL, Arrays.asList(new DoubleAttributeValue("5.5"), new DoubleAttributeValue("5.5")), BooleanAttributeValue.TRUE });
-	}
-
-	protected NumericComparisonFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)
-	{
-		super(functionName, inputs, expectedResult);
 	}
 
 }

@@ -1,23 +1,49 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.func;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Objects;
 
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 /**
  * First-order function signature (name, return type, arity, parameter types)
+ * 
+ * @param <RETURN_T>
+ *            function's return type
  */
-public class FunctionSignature
+public class FunctionSignature<RETURN_T extends Value<?, RETURN_T>>
 {
+	private static final IllegalArgumentException NULL_NAME_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined function name arg");
+	private static final IllegalArgumentException NULL_RETURN_TYPE_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined function return type arg");
 	private static final IllegalArgumentException INVALID_VARARG_METHOD_PARAMETER_COUNT_EXCEPTION = new IllegalArgumentException("Invalid number of parameter types (0) for a varargs function. Such function requires at least one type for the final variable-length argument.");
 	// function name
 	private final String name;
 
 	// the return type of the function
-	private final DatatypeDef returnType;
+	private final Datatype<RETURN_T> returnType;
 
 	// parameter types
-	private final DatatypeDef[] paramTypes;
+	private final Datatype<?>[] paramTypes;
 
 	/**
 	 * Is the last parameter specified in <code>paramTypes</code> considered as variable-length
@@ -48,6 +74,10 @@ public class FunctionSignature
 	 * </p>
 	 */
 	private final boolean isVarArgs;
+
+	// cached method results
+	private int hashCode = 0;
+	private String toString = null;
 
 	/**
 	 * Creates function signature
@@ -82,8 +112,18 @@ public class FunctionSignature
 	 *             if function is Varargs but not parameter specified (
 	 *             {@code varArgs == true && parameterTypes.length == 0})
 	 */
-	public FunctionSignature(String name, DatatypeDef returnType, boolean varArgs, DatatypeDef... parameterTypes) throws IllegalArgumentException
+	public FunctionSignature(String name, Datatype<RETURN_T> returnType, boolean varArgs, Datatype<?>... parameterTypes) throws IllegalArgumentException
 	{
+		if (name == null)
+		{
+			throw NULL_NAME_ARGUMENT_EXCEPTION;
+		}
+
+		if (returnType == null)
+		{
+			throw NULL_RETURN_TYPE_ARGUMENT_EXCEPTION;
+		}
+
 		if (varArgs && parameterTypes.length == 0)
 		{
 			throw INVALID_VARARG_METHOD_PARAMETER_COUNT_EXCEPTION;
@@ -110,7 +150,7 @@ public class FunctionSignature
 	 * 
 	 * @return function return type
 	 */
-	public DatatypeDef getReturnType()
+	public Datatype<RETURN_T> getReturnType()
 	{
 		return returnType;
 	}
@@ -120,7 +160,7 @@ public class FunctionSignature
 	 * 
 	 * @return function parameter types
 	 */
-	public DatatypeDef[] getParameterTypes()
+	public Datatype<?>[] getParameterTypes()
 	{
 		return paramTypes;
 	}
@@ -135,4 +175,68 @@ public class FunctionSignature
 	{
 		return isVarArgs;
 	}
+
+	@Override
+	public int hashCode()
+	{
+		// immutable class -> cache hashCode
+		if (hashCode == 0)
+		{
+			hashCode = Objects.hash(name, returnType, isVarArgs, paramTypes);
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (obj == null)
+		{
+			return false;
+		}
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+		final FunctionSignature<?> other = (FunctionSignature<?>) obj;
+		if (isVarArgs != other.isVarArgs)
+		{
+			return false;
+		}
+		/*
+		 * if (name == null) { if (other.name != null) { return false; } } else
+		 */if (!name.equals(other.name))
+		{
+			return false;
+		}
+		if (!Arrays.equals(paramTypes, other.paramTypes))
+		{
+			return false;
+		}
+		/*
+		 * if (returnType == null) { if (other.returnType != null) { return false; } } else
+		 */if (!returnType.equals(other.returnType))
+		{
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public String toString()
+	{
+		// immutable class -> cache result
+		if (toString == null)
+		{
+			toString = "FunctionSignature [name=" + name + ", returnType=" + returnType + ", isVarArgs=" + isVarArgs + ", paramTypes=" + Arrays.toString(paramTypes) + "]";
+		}
+
+		return toString;
+	}
+
 }

@@ -18,13 +18,8 @@
  */
 package com.thalesgroup.authzforce.core.test.conformance;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
@@ -37,6 +32,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.xacml.PDP;
 import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 /**
@@ -91,12 +87,7 @@ public class ConformanceV3
 	public void testConformanceTestA() throws Exception
 	{
 
-		String policyNumber;
-		Response response = null;
-		Response expectedResponse = null;
-		Request request = null;
-		Map<String, String> results = new TreeMap<>();
-
+		final String policyNumber;
 		if (numTest < 10)
 		{
 			policyNumber = "00" + numTest;
@@ -109,50 +100,14 @@ public class ConformanceV3
 		}
 
 		LOGGER.debug("Conformance Test IIIA{} is started", policyNumber);
-
-		request = TestUtils.createRequest(ROOT_DIRECTORY, VERSION_DIRECTORY, "IIIA" + policyNumber + "Request.xacml3.xml");
-		if (request != null)
-		{
-			LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
-			String policyFilename = "IIIA" + policyNumber + "Policy.xacml3.xml";
-			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policyFilename).evaluate(request);
-			if (response != null)
-			{
-				expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY, VERSION_DIRECTORY, "IIIA" + policyNumber + "Response.xacml3.xml");
-				LOGGER.debug("Response that is received from the PDP :  " + response);
-				LOGGER.debug("Going to assert it");
-				if (expectedResponse != null)
-				{
-					boolean assertion = TestUtils.match(response, expectedResponse);
-					if (assertion)
-					{
-						LOGGER.info("Assertion SUCCESS for: IIIA" + policyNumber);
-						results.put(policyNumber, "SUCCESS");
-					} else
-					{
-						LOGGER.error("Assertion FAILED for: IIIA" + policyNumber);
-					}
-					assertTrue(assertion);
-				} else
-				{
-					LOGGER.error("Assertion FAILED for: IIIA" + policyNumber);
-					assertTrue("Response read from file is Null", false);
-				}
-			} else
-			{
-				LOGGER.error("Assertion FAILED for: IIIA" + policyNumber);
-				assertFalse("Response received PDP is Null", false);
-			}
-		} else
-		{
-			LOGGER.error("Assertion FAILED for: IIIA" + policyNumber);
-			assertTrue("Request read from file is Null", false);
-		}
-
+		Request request = TestUtils.createRequest(ROOT_DIRECTORY, VERSION_DIRECTORY, "IIIA" + policyNumber + "Request.xml");
+		LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
+		String policyFilename = "IIIA" + policyNumber + "Policy.xml";
+		PDP pdp = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policyFilename);
+		Response response = pdp.evaluate(request);
+		Response expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY, VERSION_DIRECTORY, "IIIA" + policyNumber + "Response.xml");
+		LOGGER.debug("Response that is received from the PDP :  " + response);
+		TestUtils.assertNormalizedEquals(ROOT_DIRECTORY + "/" + VERSION_DIRECTORY + "/IIIA" + policyNumber, expectedResponse, response);
 		LOGGER.info("Conformance Test IIIA" + policyNumber + " is finished");
-		for (String key : results.keySet())
-		{
-			LOGGER.debug(key + ":" + results.get(key));
-		}
 	}
 }

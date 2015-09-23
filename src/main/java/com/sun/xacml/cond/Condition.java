@@ -39,13 +39,11 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -64,8 +62,6 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 	 * Logger used for all classes
 	 */
 	// private static final Logger LOGGER = LoggerFactory.getLogger(Condition.class);
-
-	private static final IndeterminateEvaluationException INVALID_EXP_RESULT_INDETERMINATE_EVAL_EX = new IndeterminateEvaluationException(Status.STATUS_PROCESSING_ERROR, "Invalid result (no value) of Condition's Expression evaluation");
 
 	private static final UnsupportedOperationException UNSUPPORTED_SET_EXPRESSION_OPERATION = new UnsupportedOperationException("Condition.setExpression() not allowed");
 
@@ -111,10 +107,10 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 	public Condition(oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition, DefaultsType policyDefaults, ExpressionFactory expFactory) throws IllegalArgumentException, ParsingException
 	{
 		final ExpressionType exprElt = condition.getExpression().getValue();
-		final Expression<? extends ExpressionResult<? extends AttributeValue>> expr = expFactory.getInstance(exprElt, policyDefaults, null);
+		final Expression<?> expr = expFactory.getInstance(exprElt, policyDefaults, null);
 
 		// make sure it's a boolean expression...
-		if (!(expr.getReturnType().equals(BooleanAttributeValue.TYPE)))
+		if (!(expr.getReturnType().equals(DatatypeConstants.BOOLEAN.TYPE)))
 		{
 			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}
@@ -142,7 +138,7 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 	public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final BooleanAttributeValue boolVal = evaluatableExpression.evaluate(context);
-		return boolVal.getValue();
+		return boolVal.getUnderlyingValue();
 	}
 
 }

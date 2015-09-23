@@ -29,17 +29,21 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 @RunWith(Parameterized.class)
 public class DateTimeArithmeticFunctionsTest extends GeneralFunctionTest
 {
+
+	public DateTimeArithmeticFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
 
 	private static final String NAME_DATETIME_ADD_DAYTIMEDURATION = "urn:oasis:names:tc:xacml:3.0:function:dateTime-add-dayTimeDuration";
 	private static final String NAME_DATETIME_ADD_YEARMONTHDURATION = "urn:oasis:names:tc:xacml:3.0:function:dateTime-add-yearMonthDuration";
@@ -75,11 +79,6 @@ public class DateTimeArithmeticFunctionsTest extends GeneralFunctionTest
 				// urn:oasis:names:tc:xacml:3.0:function:date-subtract-yearMonthDuration
 				new Object[] { NAME_DATE_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("P1Y2M")), new DateAttributeValue("2001-07-24") },//
 				new Object[] { NAME_DATE_SUBTRACT_YEARMONTHDURATION, Arrays.asList(new DateAttributeValue("2002-09-24"), new YearMonthDurationAttributeValue("-P1Y2M")), new DateAttributeValue("2003-11-24") });
-	}
-
-	public DateTimeArithmeticFunctionsTest(String functionName, final List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult) throws Exception
-	{
-		super(functionName, inputs, expectedResult);
 	}
 
 }

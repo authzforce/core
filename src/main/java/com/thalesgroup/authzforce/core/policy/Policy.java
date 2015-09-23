@@ -37,9 +37,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParameters;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.Rule;
 import com.sun.xacml.UnknownIdentifierException;
@@ -68,6 +65,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	private static final UnsupportedOperationException UNSUPPORTED_SET_POLICY_DEFAULTS_OPERATION_EXCEPTION = new UnsupportedOperationException("PolicySet/PolicySetDefaults is read-only");
 
 	private final String toString;
+	private final int hashCode;
 
 	private final PolicyEvaluator<Rule> policyEvaluator;
 
@@ -151,6 +149,9 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	 * 
 	 * @param policyElement
 	 *            Policy (XACML)
+	 * @param parentPolicySetDefaults
+	 *            parent PolicySetDefaults; null if this Policy has no parent PolicySet (root), or
+	 *            none defined in parent
 	 * @param expressionFactory
 	 *            Expression factory/parser
 	 * @param combiningAlgRegistry
@@ -158,7 +159,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	 * @throws ParsingException
 	 *             if PolicyElement is invalid
 	 */
-	public Policy(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policyElement, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws ParsingException
+	public Policy(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policyElement, DefaultsType parentPolicySetDefaults, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws ParsingException
 	{
 		this.policyId = policyElement.getPolicyId();
 		if (policyId == null)
@@ -172,16 +173,27 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 			throw new ParsingException("Undefined Policy required attribute: Version");
 		}
 
-		this.toString = this.getClass().getSimpleName() + "#" + this.policyId + "#v" + this.version;
+		this.policyIssuer = policyElement.getPolicyIssuer();
+
+		this.toString = this.getClass().getSimpleName() + "[" + this.policyId + "#v" + this.version + "]";
+		/*
+		 * Note that we ignore the PolicyIssuer in the hashCode because it is ignored/unused as well
+		 * in PolicyIdReferences. So we consider it is useless for identification in the XACML
+		 * model.
+		 */
+		this.hashCode = Objects.hash(this.policyId, this.version);
+
 		this.maxDelegationDepth = policyElement.getMaxDelegationDepth();
 		this.description = policyElement.getDescription();
-		this.policyIssuer = policyElement.getPolicyIssuer();
 		this.policyDefaults = policyElement.getPolicyDefaults();
+		// Inherited PolicySetDefaults is this.policyDefaults if not null, the
+		// parentPolicySetDefaults otherwise
+		final DefaultsType inheritedPolicyDefaults = policyDefaults == null ? parentPolicySetDefaults : policyDefaults;
 
 		final Target evaluatableTarget;
 		try
 		{
-			evaluatableTarget = new Target(policyElement.getTarget(), policyDefaults, expressionFactory);
+			evaluatableTarget = new Target(policyElement.getTarget(), inheritedPolicyDefaults, expressionFactory);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException(this + ": Error parsing Target", e);
@@ -193,11 +205,11 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		final List<CombinerElement<? extends Rule>> ruleCombinerParameters = new ArrayList<>();
 
 		/*
-		 * Keep a copy of variable IDs defined in this policy, to remove them from the global
-		 * manager at the end of parsing this policy. They should not be visible outside the scope
-		 * of this policy.
+		 * Keep a copy of locally-defined variable IDs defined in this policy, to remove them from
+		 * the global manager at the end of parsing this policy. They should not be visible outside
+		 * the scope of this policy.
 		 */
-		final Set<String> variableIds = new HashSet<>();
+		final Set<String> localVariableIds = new HashSet<>();
 		/*
 		 * Map to get rules by their ID so that we can resolve rules associated with
 		 * CombinerParameters
@@ -241,10 +253,10 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 			} else if (policyChildElt instanceof VariableDefinition)
 			{
 				final VariableDefinition varDef = (VariableDefinition) policyChildElt;
-				final VariableReference var;
+				final VariableReference<?> var;
 				try
 				{
-					var = expressionFactory.addVariable(varDef, policyDefaults);
+					var = expressionFactory.addVariable(varDef, inheritedPolicyDefaults);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (VariableDefinition)", e);
@@ -252,18 +264,20 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 
 				if (var != null)
 				{
-					// Conflicts can occur between variables defined in this policy but also with
-					// others defined in parent/ancestor policy
+					/*
+					 * Conflicts can occur between variables defined in this policy but also with
+					 * others already in a wider scope, i.e. defined in parent/ancestor policy
+					 */
 					throw new ParsingException(this + ": Duplicable VariableDefinition for VariableId=" + var.getVariableId());
 				}
 
-				variableIds.add(varDef.getVariableId());
+				localVariableIds.add(varDef.getVariableId());
 			} else if (policyChildElt instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule)
 			{
 				final Rule rule;
 				try
 				{
-					rule = new Rule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule) policyChildElt, policyDefaults, expressionFactory);
+					rule = new Rule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule) policyChildElt, inheritedPolicyDefaults, expressionFactory);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (Rule)", e);
@@ -288,7 +302,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 			throw new ParsingException(this + ": Unknown rule-combining algorithm ID=" + ruleCombiningAlgId, e);
 		}
 
-		final PolicyPepActionExpressions pepActionExps = PolicyPepActionExpressions.getInstance(policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(), policyDefaults, expressionFactory);
+		final PolicyPepActionExpressionsEvaluator pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(), inheritedPolicyDefaults, expressionFactory);
 		if (pepActionExps == null)
 		{
 			this.obligationExpressions = null;
@@ -299,17 +313,16 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 			this.adviceExpressions = pepActionExps.getAdviceExpressions();
 		}
 
+		this.policyEvaluator = new PolicyEvaluator<>(evaluatableTarget, rules, ruleCombinerParameters, ruleCombiningAlg, pepActionExps, Collections.unmodifiableSet(localVariableIds), toString);
+
 		/*
 		 * We are done parsing expressions in this policy, including VariableReferences, it's time
 		 * to remove variables scoped to this policy from the variable manager
 		 */
-		for (final String varId : variableIds)
+		for (final String varId : localVariableIds)
 		{
 			expressionFactory.removeVariable(varId);
 		}
-
-		final Logger evaluatorLogger = LoggerFactory.getLogger(PolicyEvaluator.class.getName() + "(" + this + ")");
-		this.policyEvaluator = new PolicyEvaluator<>(evaluatableTarget, rules, ruleCombinerParameters, ruleCombiningAlg, pepActionExps, evaluatorLogger);
 	}
 
 	@Override
@@ -339,8 +352,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	@Override
 	public int hashCode()
 	{
-		// TODO: take the policyIssuer into account
-		return Objects.hash(this.policyId, this.version);
+		return hashCode;
 	}
 
 	@Override
@@ -352,9 +364,11 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Policy other = (Policy) obj;
-		// TODO: take the policyIssuer into account
-		// policyId and version non null check by constructor
+		final Policy other = (Policy) obj;
+		/*
+		 * We ignore the policyIssuer because it is no part of PolicyReferences, therefore we
+		 * consider it is not part of the Policy uniqueness
+		 */
 		if (this.policyId != other.policyId)
 		{
 			return false;

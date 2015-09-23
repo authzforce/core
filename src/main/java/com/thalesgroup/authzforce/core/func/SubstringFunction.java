@@ -1,48 +1,56 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.func;
 
 import java.util.List;
 
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.PrimitiveAttributeValue;
+import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
- * Implements string-substring function
+ * Implements *-substring functions
  * 
- * @param <T>
+ * @param <AV>
  *            parameter type
  * 
  */
-public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extends FirstOrderFunction<StringAttributeValue>
+public class SubstringFunction<AV extends SimpleAttributeValue<String, AV>> extends FirstOrderFunction<StringAttributeValue>
 {
 
 	/**
-	 * Standard TYPE_URI for the string-substring function.
+	 * Standard identifier for the string-substring function.
 	 */
 	public static final String NAME_STRING_SUBSTRING = FUNCTION_NS_3 + "string-substring";
 
 	/**
-	 * Standard TYPE_URI for the anyURI-substring function.
+	 * Standard identifier for the anyURI-substring function.
 	 */
 	public static final String NAME_ANYURI_SUBSTRING = FUNCTION_NS_3 + "anyURI-substring";
 
-	/**
-	 * Function cluster
-	 */
-	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "substring",
-	//
-			new SubstringFunction<>(NAME_STRING_SUBSTRING, StringAttributeValue.TYPE, StringAttributeValue.class),
-			//
-			new SubstringFunction<>(NAME_ANYURI_SUBSTRING, AnyURIAttributeValue.TYPE, AnyURIAttributeValue.class));
-
-	private final Class<T> firstParamClass;
+	private final Class<AV> firstParamClass;
 
 	private final String invalidArgTypesErrorMsg;
 
@@ -53,13 +61,11 @@ public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extend
 	 *            function ID
 	 * @param param0Type
 	 *            First parameter type
-	 * @param param0Class
-	 *            First parameter class
 	 */
-	public SubstringFunction(String functionId, DatatypeDef param0Type, Class<T> param0Class)
+	public SubstringFunction(String functionId, Datatype<AV> param0Type)
 	{
-		super(functionId, StringAttributeValue.TYPE, false, param0Type, IntegerAttributeValue.TYPE, IntegerAttributeValue.TYPE);
-		this.firstParamClass = param0Class;
+		super(functionId, DatatypeConstants.STRING.TYPE, false, param0Type, DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE);
+		this.firstParamClass = param0Type.getValueClass();
 		this.invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + firstParamClass.getSimpleName() + ", integer, integer): ";
 	}
 
@@ -70,15 +76,15 @@ public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extend
 	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall getFunctionCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> checkedArgExpressions, DatatypeDef[] checkedRemainingArgTypes)
+	protected FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerPrimitiveEvalCall<AttributeValue>(AttributeValue[].class, checkedArgExpressions, checkedRemainingArgTypes)
+		return new EagerPrimitiveEval<StringAttributeValue, AttributeValue>(signature, AttributeValue[].class, argExpressions, remainingArgTypes)
 		{
 
 			@Override
 			protected StringAttributeValue evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
 			{
-				final T arg0;
+				final AV arg0;
 				final IntegerAttributeValue beginIndex;
 				final IntegerAttributeValue endIndex;
 				try
@@ -119,14 +125,14 @@ public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extend
 	 * @throws IndeterminateEvaluationException
 	 *             if {@code beginIndex} or {@code endIndex} are out of bounds
 	 */
-	public StringAttributeValue eval(T arg0, IntegerAttributeValue beginIndex, IntegerAttributeValue endIndex) throws IndeterminateEvaluationException
+	public StringAttributeValue eval(AV arg0, IntegerAttributeValue beginIndex, IntegerAttributeValue endIndex) throws IndeterminateEvaluationException
 	{
 		final String substring;
 		try
 		{
 			final int beginIndexInt = beginIndex.intValueExact();
 			final int endIndexInt = endIndex.intValueExact();
-			substring = endIndexInt == -1 ? arg0.getValue().substring(beginIndexInt) : arg0.getValue().substring(beginIndexInt, endIndexInt);
+			substring = endIndexInt == -1 ? arg0.getUnderlyingValue().substring(beginIndexInt) : arg0.getUnderlyingValue().substring(beginIndexInt, endIndexInt);
 		} catch (ArithmeticException | IndexOutOfBoundsException e)
 		{
 			throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, Status.STATUS_PROCESSING_ERROR, e);
@@ -134,5 +140,14 @@ public class SubstringFunction<T extends PrimitiveAttributeValue<String>> extend
 
 		return new StringAttributeValue(substring);
 	}
+
+	/**
+	 * Function cluster
+	 */
+	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "substring",
+	//
+			new SubstringFunction<>(NAME_STRING_SUBSTRING, DatatypeConstants.STRING.TYPE),
+			//
+			new SubstringFunction<>(NAME_ANYURI_SUBSTRING, DatatypeConstants.ANYURI.TYPE));
 
 }

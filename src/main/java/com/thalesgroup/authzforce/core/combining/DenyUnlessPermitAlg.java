@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.combining;
 
 import java.util.List;
@@ -29,14 +47,15 @@ public class DenyUnlessPermitAlg extends CombiningAlgorithm<Decidable>
 
 	private DenyUnlessPermitAlg(String algId)
 	{
-		super(algId, Decidable.class);
+		super(algId, false, Decidable.class);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.test.combine.PolicyCombiningAlgorithm#combine(com.thalesgroup.authzforce.core.test. EvaluationContext,
-	 * java.util.List, java.util.List)
+	 * @see
+	 * com.thalesgroup.authzforce.core.test.combine.PolicyCombiningAlgorithm#combine(com.thalesgroup
+	 * .authzforce.core.test. EvaluationContext, java.util.List, java.util.List)
 	 */
 	@Override
 	public DecisionResult combine(EvaluationContext context, List<CombinerElement<? extends Decidable>> parameters, List<? extends Decidable> combinedElements)

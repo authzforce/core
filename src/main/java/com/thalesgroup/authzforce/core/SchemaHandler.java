@@ -270,7 +270,12 @@ public class SchemaHandler
 		@Override
 		public final Reader getCharacterStream()
 		{
-			throw new UnsupportedOperationException();
+			/*
+			 * No character stream, only byte streams are allowed. Do not throw exception, otherwise
+			 * the resolution of the resource fails, even if byte stream OK
+			 */
+			return null;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -288,7 +293,12 @@ public class SchemaHandler
 		@Override
 		public final String getStringData()
 		{
-			throw new UnsupportedOperationException();
+			/*
+			 * Not supported. Do not throw exception, otherwise the resolution of the resource
+			 * fails.
+			 */
+			return null;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -312,7 +322,12 @@ public class SchemaHandler
 		@Override
 		public final String getBaseURI()
 		{
-			throw new UnsupportedOperationException();
+			/*
+			 * No base URI, only absolute URIs are allowed. Do not throw exception if no base URI,
+			 * otherwise the resolution of the resource fails, even for absolute URIs
+			 */
+			return null;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -324,7 +339,13 @@ public class SchemaHandler
 		@Override
 		public final String getEncoding()
 		{
-			throw new UnsupportedOperationException();
+			/*
+			 * No encoding override, only absolute URIs are allowed. Do not throw exception if no
+			 * base URI, otherwise the resolution of the resource fails, even if encoding specified
+			 * in other way
+			 */
+			return null;
+			// throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -496,8 +517,7 @@ public class SchemaHandler
 										}
 									} catch (Exception ex)
 									{
-										final String errMsg = String.format("Unable to resolve schema-required entity with XML catalog ('%s'): type=%s, namespaceURI=%s, publicId=%s, systemId=%, baseURI=%s", catalogLocation, type, namespaceURI, publicId, systemId, baseURI);
-										LOGGER.error(errMsg, ex);
+										final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='" + catalogLocation + "'): type=" + type + ", namespaceURI=" + namespaceURI + ", publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
 										throw new RuntimeException(errMsg, ex);
 									}
 									return null;
@@ -506,7 +526,7 @@ public class SchemaHandler
 							});
 						} catch (IOException ex)
 						{
-							throw new IllegalArgumentException("Catalog " + catalogLocation + " can not be loaded", ex);
+							throw new IllegalArgumentException("Catalog located at '" + catalogLocation + "' can not be loaded", ex);
 						}
 					}
 				}

@@ -65,10 +65,9 @@ import com.thalesgroup.authzforce.core.attr.StandardDatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.combining.BaseCombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.combining.StandardCombiningAlgRegistry;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.Decidable;
+import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactoryImpl;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
 import com.thalesgroup.authzforce.core.func.FunctionSet;
@@ -78,7 +77,7 @@ import com.thalesgroup.authzforce.core.policy.RefPolicyFinderModule;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule;
 import com.thalesgroup.authzforce.pdp.model._2015._06.Pdp;
-import com.thalesgroup.authzforce.xacml.schema.XACMLDatatype;
+import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypeId;
 import com.thalesgroup.authzforce.xacml.schema.XPATHVersion;
 
 /**
@@ -287,7 +286,11 @@ public class PdpConfigurationParser
 			final File parentDir = confFile.getParentFile();
 			final Properties props = new Properties();
 			final URI propVal = parentDir.toURI();
-			props.put(PARENT_DIRECTORY_PROPERTY_NAME, propVal);
+			/*
+			 * Property value must be a String! Using props.put(Object,Object) is misleading here as
+			 * it makes falsely believe other datatypes would work
+			 */
+			props.setProperty(PARENT_DIRECTORY_PROPERTY_NAME, propVal.toString());
 			LOGGER.debug("Property {} = {}", PARENT_DIRECTORY_PROPERTY_NAME, propVal);
 			final PropertyPlaceholderHelper propPlaceholderHelper = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX, PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
 			final String confString = new String(FileCopyUtils.copyToByteArray(confFile), StandardCharsets.UTF_8);
@@ -333,7 +336,7 @@ public class PdpConfigurationParser
 		final FunctionRegistry functionRegistry = new FunctionRegistry(pdpJaxbConf.isUseStandardFunctions() ? StandardFunctionRegistry.INSTANCE : null);
 		for (final String funcId : pdpJaxbConf.getFunctions())
 		{
-			final Function<? extends ExpressionResult<? extends AttributeValue>> function = PdpExtensionLoader.getExtension(Function.class, funcId);
+			final Function<?> function = PdpExtensionLoader.getExtension(Function.class, funcId);
 			isAnyFuncXPathBased = isXpathBased(function);
 			functionRegistry.addFunction(function);
 		}
@@ -341,7 +344,7 @@ public class PdpConfigurationParser
 		for (final String funcSetId : pdpJaxbConf.getFunctionSets())
 		{
 			final FunctionSet functionSet = PdpExtensionLoader.getExtension(FunctionSet.class, funcSetId);
-			for (final Function<? extends ExpressionResult<? extends AttributeValue>> function : functionSet.getSupportedFunctions())
+			for (final Function<?> function : functionSet.getSupportedFunctions())
 			{
 				isAnyFuncXPathBased = isXpathBased(function);
 				functionRegistry.addFunction(function);
@@ -482,7 +485,7 @@ public class PdpConfigurationParser
 		return new PDP(rootPolicyFinder, requestFilter, decisionResultFilter, decisionCache);
 	}
 
-	private static boolean isXpathBased(Function<? extends ExpressionResult<? extends AttributeValue>> function)
+	private static boolean isXpathBased(Function<?> function)
 	{
 		/*
 		 * A function is said "XPath-based" iff it takes at least one XPathExpression parameter.
@@ -491,15 +494,15 @@ public class PdpConfigurationParser
 		 * higher-order function happens to take a XPathExpression parameter, it is actually a
 		 * parameter to the first-order sub-function. Plus it is not possible to add extensions that
 		 * are higher-order functions in this PDP implementation. Therefore, it is enough to check
-		 * first-order functions (class FirstOrderFunction) only. (Remember that such functions may be
-		 * used as parameter to a higher-order function.)
+		 * first-order functions (class FirstOrderFunction) only. (Remember that such functions may
+		 * be used as parameter to a higher-order function.)
 		 */
 		if (function instanceof FirstOrderFunction)
 		{
-			final DatatypeDef[] paramTypes = ((FirstOrderFunction<?>) function).getParameterTypes();
-			for (final DatatypeDef paramType : paramTypes)
+			final Datatype<?>[] paramTypes = ((FirstOrderFunction<?>) function).getParameterTypes();
+			for (final Datatype<?> paramType : paramTypes)
 			{
-				if (paramType.datatypeURI().equals(XACMLDatatype.XPATH_EXPRESSION.value()))
+				if (paramType.getId().equals(XACMLDatatypeId.XPATH_EXPRESSION.value()))
 				{
 					return true;
 				}

@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.util.Objects;
@@ -5,7 +23,7 @@ import java.util.Objects;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
 /**
- * Attribute's Globally unique TYPE_URI, as opposed to AttributeId which is local to a specific
+ * Attribute's Globally unique identifier, as opposed to AttributeId which is local to a specific
  * category and/or issuer. Why not use AttributeDesignator? Because we don't care about
  * MustBePresent or Datatype for lookup here. This is used for example as key in a map to retrieve
  * corresponding AttributeValue or AttributeFinder module.
@@ -32,6 +50,10 @@ public class AttributeGUID
 
 	private final String issuer;
 	private final String id;
+
+	// cached method results
+	private int hashCode = 0;
+	private String toString = null;
 
 	/**
 	 * @return the id
@@ -82,7 +104,12 @@ public class AttributeGUID
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(category, issuer, id);
+		if (hashCode == 0)
+		{
+			hashCode = Objects.hash(category, issuer, id);
+		}
+
+		return hashCode;
 	}
 
 	/*
@@ -137,6 +164,11 @@ public class AttributeGUID
 	@Override
 	public String toString()
 	{
-		return "[category=" + category + ", issuer=" + issuer + ", id=" + id + "]";
+		if (toString == null)
+		{
+			toString = "[category=" + category + ", issuer=" + issuer + ", id=" + id + "]";
+		}
+
+		return toString;
 	}
 }

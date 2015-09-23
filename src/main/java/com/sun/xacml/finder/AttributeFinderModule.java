@@ -34,7 +34,6 @@
 package com.sun.xacml.finder;
 
 import java.io.Closeable;
-import java.util.List;
 import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
@@ -44,9 +43,10 @@ import com.thalesgroup.authzforce.core.JaxbBoundPdpExtension;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * This is the abstract class that all <code>AttributeFinder</code> modules extend.
@@ -149,7 +149,7 @@ public abstract class AttributeFinderModule implements Closeable
 	 * Instantiates the attribute finder module
 	 * 
 	 * @param instanceID
-	 *            module instance ID (to be used as unique TYPE_URI for this instance in the logs
+	 *            module instance ID (to be used as unique identifier for this instance in the logs
 	 *            for example);
 	 * @param attributeFactory
 	 *            factory for creating attribute values
@@ -204,20 +204,17 @@ public abstract class AttributeFinderModule implements Closeable
 	 * 
 	 * If this is an AttributeSelector-only finder module, always return null.
 	 * 
-	 * @param attributeType
-	 *            the datatype of the attributes to find
 	 * @param attributeGUID
-	 *            the global TYPE_URI (Category,Issuer,AttributeId) of the attribute to find
+	 *            the global identifier (Category,Issuer,AttributeId) of the attribute to find
 	 * @param context
 	 *            the representation of the request data
-	 * @param datatypeClass
-	 *            datatype implementation class
+	 * @param returnDatatype
+	 *            expected return datatype (
+	 *            {@code AV is the expected type of every element in the bag})
 	 * 
-	 * @return the bag of attribute values (order matters, e.g. if an attribute finder wants to make
-	 *         sure that the attribute values are retrieved/evaluated by the PDP in same order as it
-	 *         has returned them)
+	 * @return the bag of attribute values
 	 * @throws IndeterminateEvaluationException
 	 *             if some error occurs, esp. error retrieving the attribute values
 	 */
-	public abstract <V extends AttributeValue> List<V> findAttribute(DatatypeDef attributeType, AttributeGUID attributeGUID, EvaluationContext context, Class<V> datatypeClass) throws IndeterminateEvaluationException;
+	public abstract <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> returnDatatype) throws IndeterminateEvaluationException;
 }

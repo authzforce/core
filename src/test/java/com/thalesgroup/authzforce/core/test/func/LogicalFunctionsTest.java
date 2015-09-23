@@ -27,15 +27,19 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 @RunWith(Parameterized.class)
 public class LogicalFunctionsTest extends GeneralFunctionTest
 {
+
+	public LogicalFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
 
 	private static final String NAME_OR = "urn:oasis:names:tc:xacml:1.0:function:or";
 	private static final String NAME_AND = "urn:oasis:names:tc:xacml:1.0:function:and";
@@ -70,11 +74,6 @@ public class LogicalFunctionsTest extends GeneralFunctionTest
 
 				// urn:oasis:names:tc:xacml:1.0:function:not
 				new Object[] { NAME_NOT, Arrays.asList(BooleanAttributeValue.TRUE), BooleanAttributeValue.FALSE }, new Object[] { NAME_NOT, Arrays.asList(BooleanAttributeValue.FALSE), BooleanAttributeValue.TRUE });
-	}
-
-	protected LogicalFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)
-	{
-		super(functionName, inputs, expectedResult);
 	}
 
 }

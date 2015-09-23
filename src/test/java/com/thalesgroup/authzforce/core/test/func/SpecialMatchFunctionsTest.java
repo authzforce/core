@@ -29,17 +29,21 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
 @RunWith(Parameterized.class)
 public class SpecialMatchFunctionsTest extends GeneralFunctionTest
 {
+
+	public SpecialMatchFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	{
+		super(functionName, inputs, expectedResult);
+	}
 
 	private static final String NAME_X500NAME_MATCH = "urn:oasis:names:tc:xacml:1.0:function:x500Name-match";
 	private static final String NAME_RFC822NAME_MATCH = "urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match";
@@ -64,11 +68,6 @@ public class SpecialMatchFunctionsTest extends GeneralFunctionTest
 				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("Anderson@east.sun.com")), BooleanAttributeValue.TRUE },
 				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("anne.anderson@ISRG.EAST.SUN.COM")), BooleanAttributeValue.TRUE },
 				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringAttributeValue(".east.sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), BooleanAttributeValue.FALSE });
-	}
-
-	protected SpecialMatchFunctionsTest(String functionName, List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputs, ExpressionResult<? extends AttributeValue> expectedResult)
-	{
-		super(functionName, inputs, expectedResult);
 	}
 
 }

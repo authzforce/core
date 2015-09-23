@@ -1,13 +1,30 @@
 /**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
  * 
  */
 package com.thalesgroup.authzforce.core.func;
 
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
+import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -20,11 +37,11 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  * instance, a static regex parameter to regexp-match function may be pre-compiled to a regex for
  * re-use.
  * 
- * @param <T>
+ * @param <RETURN_T>
  *            call's return type (typically the same as the internal function's)
  * 
  */
-public interface FunctionCall<T extends ExpressionResult<? extends AttributeValue>>
+public interface FunctionCall<RETURN_T extends Expression.Value<?, RETURN_T>>
 {
 
 	/**
@@ -36,7 +53,7 @@ public interface FunctionCall<T extends ExpressionResult<? extends AttributeValu
 	 * @throws IndeterminateEvaluationException
 	 *             if any evaluation error
 	 */
-	T evaluate(EvaluationContext context) throws IndeterminateEvaluationException;
+	RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException;
 
 	/**
 	 * Get the actual return type of this call (same as the internal function's return type), used
@@ -44,6 +61,6 @@ public interface FunctionCall<T extends ExpressionResult<? extends AttributeValu
 	 * 
 	 * @return return type
 	 */
-	DatatypeDef getReturnType();
+	Datatype<RETURN_T> getReturnType();
 
 }

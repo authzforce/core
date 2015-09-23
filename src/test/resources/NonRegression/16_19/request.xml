@@ -1,11 +1,11 @@
-<Request xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" ReturnPolicyIdList="true" CombinedDecision="false"> 
+<Request xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" ReturnPolicyIdList="false" CombinedDecision="false"> 
    <Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" >
-     <Attribute IncludeInResult="false" AttributeId="urn:thalesgroup:examples:auth-token">
-      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">uKqU9dTB6gKwG6jQCuXYAiMNdfNRw98Hw_IWuA5MaMo</AttributeValue>
+     <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role">
+      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">physician</AttributeValue>
 	</Attribute>
   </Attributes>
   <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
-    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id">
+    <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id">
       <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">foo/public/content1</AttributeValue>
     </Attribute>
   </Attributes>

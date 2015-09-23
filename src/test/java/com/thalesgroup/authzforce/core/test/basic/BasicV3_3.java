@@ -18,9 +18,6 @@
  */
 package com.thalesgroup.authzforce.core.test.basic;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -52,7 +49,7 @@ public class BasicV3_3
 	/**
 	 * directory name that states the test type
 	 */
-	private final static String ROOT_DIRECTORY = "com.thalesgroup.authzforce.core.test.basic";
+	private final static String ROOT_DIRECTORY = "basic";
 
 	/**
 	 * directory name that states XACML version
@@ -114,40 +111,11 @@ public class BasicV3_3
 		}
 
 		request = TestUtils.createRequest(ROOT_DIRECTORY, VERSION_DIRECTORY, "request_0003_" + reqResNo + ".xml");
-		if (request != null)
-		{
-			LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
-			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policiyFilename).evaluate(request);
-			if (response != null)
-			{
-				LOGGER.debug("Response that is received from the PDP :  " + response);
-				expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY, VERSION_DIRECTORY, "response_0003_" + reqResNo + ".xml");
-				if (expectedResponse != null)
-				{
-					boolean assertion = TestUtils.match(response, expectedResponse);
-					if (assertion)
-					{
-						LOGGER.debug("Assertion SUCCESS for: IIIA" + "response_0003_" + reqResNo);
-						results.put("response_0003_" + reqResNo, "SUCCESS");
-					} else
-					{
-						LOGGER.error("Assertion FAILED for: TestPolicy_0003 and response_0003_" + reqResNo);
-						results.put("response_0003_" + reqResNo, "FAILED");
-					}
-					assertTrue(assertion);
-				} else
-				{
-					assertTrue("Response read from file is Null", false);
-				}
-			} else
-			{
-				assertFalse("Response received PDP is Null", false);
-			}
-		} else
-		{
-			assertTrue("Request read from file is Null", false);
-		}
-
+		LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
+		response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY, VERSION_DIRECTORY, policiyFilename).evaluate(request);
+		LOGGER.debug("Response that is received from the PDP :  " + response);
+		expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY, VERSION_DIRECTORY, "response_0003_" + reqResNo + ".xml");
+		TestUtils.assertNormalizedEquals(ROOT_DIRECTORY + "/" + VERSION_DIRECTORY + "/request_0003_" + reqResNo, expectedResponse, response);
 		LOGGER.debug("Basic Test v3 v3 " + numTest + " is finished");
 	}
 

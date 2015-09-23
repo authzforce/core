@@ -23,11 +23,11 @@ package com.thalesgroup.authzforce.core.policy;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
 
 import javax.xml.bind.JAXBElement;
 
@@ -38,9 +38,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyCombinerParameters;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetCombinerParameters;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyReference;
@@ -68,10 +65,13 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 	private static final UnsupportedOperationException UNSUPPORTED_SET_VERSION_OPERATION_EXCEPTION = new UnsupportedOperationException("PolicySet/Version is read-only");
 	private static final UnsupportedOperationException UNSUPPORTED_SET_POLICYSET_ID_OPERATION_EXCEPTION = new UnsupportedOperationException("PolicySet/PolicySetId is read-only");
 	private static final UnsupportedOperationException UNSUPPORTED_SET_POLICYSET_DEFAULTS_OPERATION_EXCEPTION = new UnsupportedOperationException("PolicySet/PolicySetDefaults is read-only");
+	private static final ParsingException NULL_POLICYSET_ID_EXCEPTION = new ParsingException("Undefined PolicySetId");
+	private static final ParsingException NULL_VERSION_EXCEPTION = new ParsingException("Undefined Version");
 
 	private final PolicyEvaluator<IPolicy> policyEvaluator;
 
 	private final String toString;
+	private final int hashCode;
 
 	/*
 	 * (non-Javadoc)
@@ -153,7 +153,10 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 	 * Creates Policy handler from Policy element as defined in OASIS XACML model
 	 * 
 	 * @param policySetElement
-	 *            Policy (XACML)
+	 *            PolicySet (XACML)
+	 * @param parentPolicySetDefaults
+	 *            parent PolicySetDefaults; null if this PolicySet has no parent (root) , or none
+	 *            defined in parent
 	 * @param expressionFactory
 	 *            Expression factory/parser
 	 * @param combiningAlgorithmRegistry
@@ -172,30 +175,41 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 	 * @throws ParsingException
 	 *             if PolicyElement is invalid
 	 */
-	public PolicySet(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySetElement, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgorithmRegistry, RefPolicyFinder refPolicyFinder, Queue<String> policySetRefChain) throws ParsingException
+	public PolicySet(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet policySetElement, DefaultsType parentPolicySetDefaults, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgorithmRegistry, RefPolicyFinder refPolicyFinder, Deque<String> policySetRefChain)
+			throws ParsingException
 	{
 		this.policySetId = policySetElement.getPolicySetId();
 		if (policySetId == null)
 		{
-			throw new ParsingException("Undefined PolicySet required attribute: PolicySetId");
+			throw NULL_POLICYSET_ID_EXCEPTION;
 		}
 
 		this.version = policySetElement.getVersion();
 		if (version == null)
 		{
-			throw new ParsingException("Undefined PolicySet required attribute: Version");
+			throw NULL_VERSION_EXCEPTION;
 		}
 
-		this.toString = this.getClass().getSimpleName() + "#" + this.policySetId + "#v" + this.version;
+		this.toString = this.getClass().getSimpleName() + "[" + this.policySetId + "#v" + this.version + "]";
+		/*
+		 * Note that we ignore the PolicyIssuer in the hashCode because it is ignored/unused as well
+		 * in PolicySetIdReferences. So we consider it is useless for identification in the XACML
+		 * model.
+		 */
+		this.hashCode = Objects.hash(this.policySetId, this.version);
+
 		this.maxDelegationDepth = policySetElement.getMaxDelegationDepth();
 		this.description = policySetElement.getDescription();
 		this.policyIssuer = policySetElement.getPolicyIssuer();
 		this.policySetDefaults = policySetElement.getPolicySetDefaults();
+		// Inherited PolicySetDefaults is this.policySetDefaults if not null, the
+		// parentPolicySetDefaults otherwise
+		final DefaultsType inheritedPolicySetDefaults = policySetDefaults == null ? parentPolicySetDefaults : policySetDefaults;
 
 		final Target evaluatableTarget;
 		try
 		{
-			evaluatableTarget = new Target(policySetElement.getTarget(), policySetDefaults, expressionFactory);
+			evaluatableTarget = new Target(policySetElement.getTarget(), inheritedPolicySetDefaults, expressionFactory);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException(this + ": Error parsing Target", e);
@@ -272,10 +286,20 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 				final String eltNameLocalPart = jaxbElt.getName().getLocalPart();
 				if (eltNameLocalPart.equals(XACMLNodeName.POLICY_ID_REFERENCE.value()))
 				{
+					if (refPolicyFinder == null)
+					{
+						throw new ParsingException(this + ": Error parsing child #" + childIndex + " (PolicyIdReference): no refPolicyFinder (module responsible for resolving Policy(Set)IdReferences) defined to support it.");
+					}
+
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
 					combinedChildElements.add(PolicyReference.getInstance(idRef, refPolicyFinder, Policy.class, null));
 				} else if (eltNameLocalPart.equals(XACMLNodeName.POLICYSET_ID_REFERENCE.value()))
 				{
+					if (refPolicyFinder == null)
+					{
+						throw new ParsingException(this + ": Error parsing child #" + childIndex + " (PolicyIdReference): no refPolicyFinder (module responsible for resolving Policy(Set)IdReferences) defined to support it.");
+					}
+
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
 					combinedChildElements.add(PolicyReference.getInstance(idRef, refPolicyFinder, PolicySet.class, policySetRefChain));
 				} else if (eltNameLocalPart.equals(XACMLNodeName.COMBINER_PARAMETERS.value()))
@@ -298,16 +322,10 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 				final PolicySet childPolicySet;
 				try
 				{
-					childPolicySet = new PolicySet((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) policySetChildElt, expressionFactory, combiningAlgorithmRegistry, refPolicyFinder, policySetRefChain);
+					childPolicySet = new PolicySet((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) policySetChildElt, inheritedPolicySetDefaults, expressionFactory, combiningAlgorithmRegistry, refPolicyFinder, policySetRefChain);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (PolicySet)", e);
-				}
-
-				if (childPolicySet.getPolicySetDefaults() == null)
-				{
-					// inherit defaults from this PolicySet
-					childPolicySet.setPolicySetDefaults(policySetDefaults);
 				}
 
 				childPolicySetsById.put(childPolicySet.getPolicySetId(), childPolicySet);
@@ -317,16 +335,10 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 				final Policy childPolicy;
 				try
 				{
-					childPolicy = new Policy((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) policySetChildElt, expressionFactory, combiningAlgorithmRegistry);
+					childPolicy = new Policy((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) policySetChildElt, inheritedPolicySetDefaults, expressionFactory, combiningAlgorithmRegistry);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (Policy)", e);
-				}
-
-				if (childPolicy.getPolicyDefaults() == null)
-				{
-					// inherit defaults from this PolicySet
-					childPolicy.setPolicyDefaults(policySetDefaults);
 				}
 
 				childPoliciesById.put(childPolicy.getPolicyId(), childPolicy);
@@ -376,7 +388,7 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 			throw new ParsingException(this + ": Unknown policy-combining algorithm ID=" + policyCombiningAlgId, e);
 		}
 
-		final PolicyPepActionExpressions pepActionExps = PolicyPepActionExpressions.getInstance(policySetElement.getObligationExpressions(), policySetElement.getAdviceExpressions(), policySetDefaults, expressionFactory);
+		final PolicyPepActionExpressionsEvaluator pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(policySetElement.getObligationExpressions(), policySetElement.getAdviceExpressions(), inheritedPolicySetDefaults, expressionFactory);
 		if (pepActionExps == null)
 		{
 			this.obligationExpressions = null;
@@ -398,8 +410,7 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 		// expFactory.remove(varId);
 		// }
 
-		final Logger evaluatorLogger = LoggerFactory.getLogger(PolicyEvaluator.class.getName() + "(" + this + ")");
-		this.policyEvaluator = new PolicyEvaluator<>(evaluatableTarget, combinedChildElements, policyCombinerParameters, policyCombiningAlg, pepActionExps, evaluatorLogger);
+		this.policyEvaluator = new PolicyEvaluator<>(evaluatableTarget, combinedChildElements, policyCombinerParameters, policyCombiningAlg, pepActionExps, Collections.EMPTY_SET, toString);
 	}
 
 	@Override
@@ -429,8 +440,7 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 	@Override
 	public int hashCode()
 	{
-		// TODO: take the policyIssuer into account
-		return Objects.hash(this.policySetId, this.version);
+		return hashCode;
 	}
 
 	@Override
@@ -442,9 +452,11 @@ public class PolicySet extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Polic
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		PolicySet other = (PolicySet) obj;
-		// TODO: take the policyIssuer into account
-		// policyId and version non null check by constructor
+		final PolicySet other = (PolicySet) obj;
+		/*
+		 * We ignore he policyIssuer because it is no part of PolicyReferences, therefore we
+		 * consider it is not part of the Policy uniqueness
+		 */
 		if (this.policySetId != other.policySetId)
 		{
 			return false;

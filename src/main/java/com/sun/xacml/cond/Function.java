@@ -43,10 +43,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.PdpExtension;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionResult;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 
@@ -55,11 +53,14 @@ import com.thalesgroup.authzforce.core.func.FunctionCall;
  * 
  * @since 1.0
  * @author Seth Proctor
- * @param <T>
+ * @param <RETURN_T>
  *            return type of this function, i.e. single-valued V or bag of Vs
  */
-public abstract class Function<T extends ExpressionResult<? extends AttributeValue>> extends FunctionType implements Expression<T>, PdpExtension
+public abstract class Function<RETURN_T extends Expression.Value<?, RETURN_T>> extends FunctionType implements Expression<RETURN_T>, PdpExtension
 {
+	// cached hashcode result
+	private int hashCode = 0;
+
 	/**
 	 * Returns the function ID (as PDP extension ID)
 	 * 
@@ -72,17 +73,17 @@ public abstract class Function<T extends ExpressionResult<? extends AttributeVal
 	}
 
 	/**
-	 * The standard namespace where all XACML 1.0 spec-defined functions live
+	 * The standard namespace where all XACML 1.0 spec-defined functions are defined
 	 */
 	public static final String FUNCTION_NS_1 = "urn:oasis:names:tc:xacml:1.0:function:";
 
 	/**
-	 * The standard namespace where all XACML 2.0 spec-defined functions live
+	 * The standard namespace where all XACML 2.0 spec-defined functions are defined
 	 */
 	public static final String FUNCTION_NS_2 = "urn:oasis:names:tc:xacml:2.0:function:";
 
 	/**
-	 * The standard namespace where all XACML 3.0 spec-defined functions live
+	 * The standard namespace where all XACML 3.0 spec-defined functions are defined
 	 */
 	public static final String FUNCTION_NS_3 = "urn:oasis:names:tc:xacml:3.0:function:";
 
@@ -106,7 +107,7 @@ public abstract class Function<T extends ExpressionResult<? extends AttributeVal
 	 * @throws IllegalArgumentException
 	 *             if inputs are invalid for this function
 	 */
-	public abstract FunctionCall<T> newCall(List<Expression<? extends ExpressionResult<? extends AttributeValue>>> inputExpressions) throws IllegalArgumentException;
+	public abstract FunctionCall<RETURN_T> newCall(List<Expression<?>> inputExpressions) throws IllegalArgumentException;
 
 	/*
 	 * (non-Javadoc)
@@ -121,7 +122,7 @@ public abstract class Function<T extends ExpressionResult<? extends AttributeVal
 	}
 
 	@Override
-	public final T evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public final RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		// Expression#evaluate()
 		/*
@@ -140,7 +141,11 @@ public abstract class Function<T extends ExpressionResult<? extends AttributeVal
 	@Override
 	public final int hashCode()
 	{
-		return Objects.hash(this.functionId);
+		if (hashCode == 0)
+		{
+			hashCode = Objects.hash(this.functionId);
+		}
+		return hashCode;
 	}
 
 	@Override
@@ -155,11 +160,8 @@ public abstract class Function<T extends ExpressionResult<? extends AttributeVal
 		if (getClass() != obj.getClass())
 			return false;
 		final Function<?> other = (Function<?>) obj;
-		if (this.functionId == null)
-		{
-			if (other.functionId != null)
-				return false;
-		} else if (!functionId.equals(other.functionId))
+		// functionId never null
+		if (!functionId.equals(other.functionId))
 			return false;
 		return true;
 	}

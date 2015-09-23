@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.eval;
 
 import java.util.List;
@@ -6,20 +24,21 @@ import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
-import com.sun.xacml.ProcessingException;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 
 /**
  * This class defines a VariableReference built from VariableReference after the referenced
  * VariableDefinition has been resolved and therefore its expression. As a result, Variables are
  * simply Expressions identified by an ID (VariableId) and replace original XACML VariableReferences
  * for actual evaluation.
+ * 
+ * @param <V>
+ *            evaluation's return type
  */
-public class VariableReference extends VariableReferenceType implements Expression<ExpressionResult<? extends AttributeValue>>
+public class VariableReference<V extends Expression.Value<?, V>> extends VariableReferenceType implements Expression<V>
 {
 	private static final UnsupportedOperationException UNSUPPORTED_SET_VARIABLE_OPERATION_EXCEPTION = new UnsupportedOperationException("VariableReference.setVariableId() not allowed");
-	private final Expression<? extends ExpressionResult<? extends AttributeValue>> expression;
+	private final Expression<V> expression;
 
 	/*
 	 * (non-Javadoc)
@@ -53,7 +72,7 @@ public class VariableReference extends VariableReferenceType implements Expressi
 	 * 
 	 * @return the expression
 	 */
-	public Expression<? extends ExpressionResult<? extends AttributeValue>> getReferencedExpression()
+	public Expression<?> getReferencedExpression()
 	{
 		return expression;
 	}
@@ -61,7 +80,7 @@ public class VariableReference extends VariableReferenceType implements Expressi
 	private final List<String> longestVariableReferenceChain;
 
 	/**
-	 * Constructor that takes the reference TYPE_URI
+	 * Constructor that takes a variable identifier
 	 * 
 	 * @param varId
 	 *            input VariableReference from XACML model
@@ -72,7 +91,7 @@ public class VariableReference extends VariableReferenceType implements Expressi
 	 *            -> Vn, where "V1 -> V2" means VariableReference V1's expression contains one or
 	 *            more VariableReferences to V2)
 	 */
-	public VariableReference(String varId, Expression<? extends ExpressionResult<? extends AttributeValue>> varExpr, List<String> longestVarRefChain)
+	public VariableReference(String varId, Expression<V> varExpr, List<String> longestVarRefChain)
 	{
 		this.variableId = varId;
 		this.expression = varExpr;
@@ -90,7 +109,7 @@ public class VariableReference extends VariableReferenceType implements Expressi
 	 * @return the result of evaluation
 	 */
 	@Override
-	public ExpressionResult<? extends AttributeValue> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		/*
 		 * Even if context == null, evaluation may work because expression may be static/constant
@@ -102,17 +121,15 @@ public class VariableReference extends VariableReferenceType implements Expressi
 			return expression.evaluate(null);
 		}
 
-		final ExpressionResult<? extends AttributeValue> ctxVal = context.getVariableValue(this.variableId);
-		final ExpressionResult<? extends AttributeValue> result;
-		if (ctxVal == null)
+		final V ctxVal = context.getVariableValue(this.variableId, expression.getReturnType());
+		if (ctxVal != null)
 		{
-			result = expression.evaluate(context);
-			context.putVariableIfAbsent(this.variableId, result);
-		} else
-		{
-			result = ctxVal;
+			return ctxVal;
 		}
 
+		// ctxVal == null: not evaluated yet in this context -> evaluate now
+		final V result = expression.evaluate(context);
+		context.putVariableIfAbsent(this.variableId, result);
 		return result;
 	}
 
@@ -121,11 +138,9 @@ public class VariableReference extends VariableReferenceType implements Expressi
 	 * 
 	 * @return the attribute return type of the referenced expression
 	 * 
-	 * @throws ProcessingException
-	 *             if the type couldn't be resolved
 	 */
 	@Override
-	public DatatypeDef getReturnType()
+	public Datatype<V> getReturnType()
 	{
 		return expression.getReturnType();
 	}

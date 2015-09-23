@@ -33,18 +33,12 @@
  */
 package com.sun.xacml.attr;
 
-import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Collections;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.PrimitiveAttributeValue;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
+import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 
 /**
  * Represents the DNSName datatype introduced in XACML 2.0. All objects of this class are immutable
@@ -53,37 +47,26 @@ import com.thalesgroup.authzforce.core.eval.DatatypeDef;
  * @since 2.0
  * @author Seth Proctor
  */
-public class DNSNameAttributeValue extends PrimitiveAttributeValue<String>
+public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameAttributeValue>
 {
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<DNSNameAttributeValue> FACTORY = new AttributeValue.Factory<DNSNameAttributeValue>(DNSNameAttributeValue.class)
-	{
-
-		@Override
-		public String getId()
-		{
-			return identifier;
-		}
-
-		@Override
-		public DNSNameAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new DNSNameAttributeValue(jaxbAttributeValue);
-		}
-
-	};
-
 	/**
 	 * Official name of this type
 	 */
-	public static final String identifier = "urn:oasis:names:tc:xacml:2.0:data-type:dnsName";
+	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:2.0:data-type:dnsName";
 
 	/**
-	 * Generic type info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(identifier);
+	public static final AttributeValue.Factory<DNSNameAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<DNSNameAttributeValue>(DNSNameAttributeValue.class, TYPE_URI)
+	{
+
+		@Override
+		public DNSNameAttributeValue getInstance(String value)
+		{
+			return new DNSNameAttributeValue(value);
+		}
+
+	};
 
 	/**
 	 * <p>
@@ -128,27 +111,14 @@ public class DNSNameAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	private static boolean isValidHostName(String hostname)
 	{
+		assert hostname != null;
 		return HOSTNAME_PATTERN.matcher(hostname).matches();
-	}
-
-	/**
-	 * Creates instance from XACML AttributeValueType
-	 * 
-	 * @param jaxbAttrVal
-	 */
-	public DNSNameAttributeValue(AttributeValueType jaxbAttrVal)
-	{
-		super(TYPE, jaxbAttrVal);
-		final Entry<String, PortRange> hostAndPortRange = parseDnsName(this.value);
-		this.hostname = hostAndPortRange.getKey();
-		this.portRange = hostAndPortRange.getValue();
-
-		// see if hostname started with a '*' character
-		this.isAnySubdomain = hostname.charAt(0) == '*' ? true : false;
 	}
 
 	private static Entry<String, PortRange> parseDnsName(String dnsName)
 	{
+		assert dnsName != null;
+
 		final String host;
 		final PortRange range;
 		final int portSep = dnsName.indexOf(':');
@@ -183,7 +153,13 @@ public class DNSNameAttributeValue extends PrimitiveAttributeValue<String>
 	 */
 	public DNSNameAttributeValue(String val)
 	{
-		this(new AttributeValueType(Collections.<Serializable> singletonList(val), identifier, null));
+		super(FACTORY.getDatatype(), val);
+		final Entry<String, PortRange> hostAndPortRange = parseDnsName(this.value);
+		this.hostname = hostAndPortRange.getKey();
+		this.portRange = hostAndPortRange.getValue();
+
+		// see if hostname started with a '*' character
+		this.isAnySubdomain = hostname.charAt(0) == '*' ? true : false;
 	}
 
 	@Override
@@ -227,17 +203,6 @@ public class DNSNameAttributeValue extends PrimitiveAttributeValue<String>
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.attr.PrimitiveAttributeValue#hashCode()
-	 */
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(hostname, portRange);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 * 
 	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of
@@ -254,19 +219,26 @@ public class DNSNameAttributeValue extends PrimitiveAttributeValue<String>
 		if (getClass() != obj.getClass())
 			return false;
 		final DNSNameAttributeValue other = (DNSNameAttributeValue) obj;
-		if (hostname == null)
-		{
-			if (other.hostname != null)
-				return false;
-		} else if (!hostname.equalsIgnoreCase(other.hostname))
+
+		// hostname and portRange are not null
+		/*
+		 * if (hostname == null) { if (other.hostname != null) return false; } else
+		 */
+
+		if (!hostname.equalsIgnoreCase(other.hostname))
 			return false;
-		if (portRange == null)
-		{
-			if (other.portRange != null)
-				return false;
-		} else if (!portRange.equals(other.portRange))
+		/*
+		 * if (portRange == null) { if (other.portRange != null) return false; } else
+		 */
+		if (!portRange.equals(other.portRange))
 			return false;
 		return true;
+	}
+
+	@Override
+	public DNSNameAttributeValue one()
+	{
+		return this;
 	}
 
 }

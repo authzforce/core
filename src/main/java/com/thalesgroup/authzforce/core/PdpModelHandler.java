@@ -64,7 +64,6 @@ public class PdpModelHandler
 	private final static Class<?> SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE = Pdp.class;
 
 	private final Schema confSchema;
-	private final Class<?>[] extJaxbBoundClasses;
 	private final JAXBContext confJaxbCtx;
 
 	/**
@@ -124,13 +123,13 @@ public class PdpModelHandler
 		 */
 		final Set<Class<?>> jaxbBoundClassList = new HashSet<Class<?>>(PdpExtensionLoader.getExtensionJaxbClasses());
 		LOGGER.info("Final list of loaded extension models (JAXB classes): {}", jaxbBoundClassList);
-		this.extJaxbBoundClasses = jaxbBoundClassList.toArray(new Class<?>[jaxbBoundClassList.size()]);
 
 		// Classes to be bound when creating new instance of JAXB context
 		jaxbBoundClassList.add(SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE);
 		try
 		{
 			confJaxbCtx = JAXBContext.newInstance(jaxbBoundClassList.toArray(new Class<?>[jaxbBoundClassList.size()]));
+			LOGGER.debug("JAXB context for PDP configuration (un)marshalling: {}", confJaxbCtx);
 		} catch (JAXBException e)
 		{
 			throw new RuntimeException("Failed to initialize configuration unmarshaller", e);
@@ -149,16 +148,6 @@ public class PdpModelHandler
 		}
 
 		confSchema = SchemaHandler.createSchema(schemaLocations, schemaHandlerCatalogLocation);
-	}
-
-	/**
-	 * Get extension classes bound to the JAXB context
-	 * 
-	 * @return extension classes
-	 */
-	public Class<?>[] getExtensionJaxbBoundClasses()
-	{
-		return extJaxbBoundClasses;
 	}
 
 	/**

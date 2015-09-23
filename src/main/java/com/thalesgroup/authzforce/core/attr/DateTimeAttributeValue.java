@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.util.GregorianCalendar;
@@ -5,10 +23,6 @@ import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 
 /**
  * Representation of an xs:dateTime value. This class supports parsing xs:dateTime values. All
@@ -22,31 +36,15 @@ public class DateTimeAttributeValue extends BaseTimeAttributeValue<DateTimeAttri
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#dateTime";
 
 	/**
-	 * Primitive datatype info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
-
-	/**
-	 * Bag datatype info
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<DateTimeAttributeValue> FACTORY = new AttributeValue.Factory<DateTimeAttributeValue>(DateTimeAttributeValue.class)
+	public static final AttributeValue.Factory<DateTimeAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<DateTimeAttributeValue>(DateTimeAttributeValue.class, TYPE_URI)
 	{
 
 		@Override
-		public String getId()
+		protected DateTimeAttributeValue getInstance(String val)
 		{
-			return TYPE_URI;
-		}
-
-		@Override
-		public DateTimeAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new DateTimeAttributeValue(jaxbAttributeValue);
+			return new DateTimeAttributeValue(val);
 		}
 
 	};
@@ -61,7 +59,7 @@ public class DateTimeAttributeValue extends BaseTimeAttributeValue<DateTimeAttri
 	 */
 	public DateTimeAttributeValue(String dateTime) throws IllegalArgumentException
 	{
-		super(TYPE, dateTime);
+		super(FACTORY.instanceDatatype, dateTime);
 	}
 
 	/**
@@ -75,21 +73,7 @@ public class DateTimeAttributeValue extends BaseTimeAttributeValue<DateTimeAttri
 	 */
 	public DateTimeAttributeValue(XMLGregorianCalendar dateTime) throws IllegalArgumentException
 	{
-		super(TYPE, dateTime);
-	}
-
-	/**
-	 * Creates instance from XML/JAXB value
-	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
-	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see BaseTimeAttributeValue#BaseTimeAttributeValue(DatatypeDef, AttributeValueType)
-	 */
-	public DateTimeAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
-	{
-		super(TYPE, jaxbAttrVal);
+		super(FACTORY.instanceDatatype, dateTime);
 	}
 
 	/**
@@ -112,48 +96,24 @@ public class DateTimeAttributeValue extends BaseTimeAttributeValue<DateTimeAttri
 	}
 
 	@Override
-	public DateTimeAttributeValue add(DurationAttributeValue durationVal)
+	public DateTimeAttributeValue add(DurationAttributeValue<?> durationVal)
 	{
 		final XMLGregorianCalendar cal = (XMLGregorianCalendar) value.clone();
 		cal.add(durationVal.value);
-		return new DateTimeAttributeValue(durationVal);
+		return new DateTimeAttributeValue(cal);
 	}
 
 	@Override
-	public DateTimeAttributeValue subtract(DurationAttributeValue durationVal)
+	public DateTimeAttributeValue subtract(DurationAttributeValue<?> durationVal)
 	{
 		final XMLGregorianCalendar cal = (XMLGregorianCalendar) value.clone();
 		cal.add(durationVal.value.negate());
-		return new DateTimeAttributeValue(durationVal);
+		return new DateTimeAttributeValue(cal);
 	}
 
-	/**
-	 * Create the date AttributeValue corresponding to the date part of this date-time attribute
-	 * value.
-	 * 
-	 * @return date part as attribute value
-	 */
-	public DateAttributeValue toDate()
+	@Override
+	public DateTimeAttributeValue one()
 	{
-		final XMLGregorianCalendar dateCalendar = (XMLGregorianCalendar) value.clone();
-		// we only want the date, so unset time fields
-		dateCalendar.setTime(DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED);
-		return new DateAttributeValue(dateCalendar);
-	}
-
-	/**
-	 * Create the time AttributeValue corresponding to the time part of this date-time attribute
-	 * value.
-	 * 
-	 * @return time part as attribute value
-	 */
-	public TimeAttributeValue toTime()
-	{
-		final XMLGregorianCalendar timeCalendar = (XMLGregorianCalendar) value.clone();
-		// we only want the time, so unset all non-time fields
-		timeCalendar.setYear(DatatypeConstants.FIELD_UNDEFINED);
-		timeCalendar.setMonth(DatatypeConstants.FIELD_UNDEFINED);
-		timeCalendar.setDay(DatatypeConstants.FIELD_UNDEFINED);
-		return new TimeAttributeValue(timeCalendar);
+		return this;
 	}
 }

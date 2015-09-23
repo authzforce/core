@@ -1,6 +1,24 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core;
 
-import java.lang.reflect.Array;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,9 +42,8 @@ import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
+import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes.MutableBag;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.BagResult;
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
@@ -51,13 +68,13 @@ public abstract class RequestFilter
 {
 
 	/**
-	 * RefPolicyFinderModuleFactory of RequestFilter
+	 * Factory of RequestFilters
 	 * 
 	 */
 	public static interface Factory extends PdpExtension
 	{
 		/**
-		 * RefPolicyFinderModuleFactory for instantiating a RequestPreProcessor
+		 * Create instance of RequestFilter
 		 * 
 		 * @param datatypeFactoryRegistry
 		 *            attribute datatype factory for parsing XACML Request AttributeValues into Java
@@ -145,17 +162,22 @@ public abstract class RequestFilter
 				 * multiple requests when implementing MultiRequests of Multiple Decision Profile,
 				 * not implemented here.
 				 */
-				final Map<AttributeGUID, BagResult<? extends AttributeValue>> attrMap = new HashMap<>();
 
 				/*
 				 * Let's iterate over the attributes to convert the list to a map indexed by the
-				 * attribute category/id/issuer for quicker access during request evaluation. We use
-				 * an iterator to be able to remove the current element from the list when
-				 * isIncludeInResult=false so that we have the list of attributes to be included in
-				 * the result right away at the end of the iteration, without having to create a new
-				 * list.
+				 * attribute category/id/issuer for quicker access during request evaluation. There
+				 * might be multiple occurrences of <Attribute> with same meta-data (id, etc.), so
+				 * the map value type need to be expandable/appendable to merge new values when new
+				 * occurrences are found, e.g. Collection.
 				 */
-				// attributes included in result initialized to all attributes in the <Attributes>
+				final Map<AttributeGUID, MutableBag<?>> attrMap = new HashMap<>();
+				/*
+				 * Attributes included in result initialized to all attributes in the <Attributes>
+				 * jaxbAttributes. We use an iterator to be able to remove the current <Attribute>
+				 * element from the list when isIncludeInResult=false so that we have the list of
+				 * attributes to be included in the result right away at the end of the iteration:
+				 * jaxbAttributes itself. So no need to create a new list.
+				 */
 				final Iterator<Attribute> categoryAttrsIterator = categoryAttrs.iterator();
 				while (categoryAttrsIterator.hasNext())
 				{
@@ -178,28 +200,70 @@ public abstract class RequestFilter
 					 * <p>
 					 * The bag datatypeURI/datatype class is obtained from first value.
 					 */
-					final String bagDatatypeURI = jaxbAttrValues.get(0).getDataType();
-					final AttributeValue.Factory<? extends AttributeValue> bagDatatypeFactory = datatypeFactoryRegistry.getExtension(bagDatatypeURI);
-					if (bagDatatypeFactory == null)
+					final AttributeValueType jaxbAttrVal0 = jaxbAttrValues.get(0);
+					final String bagDatatypeURI = jaxbAttrVal0.getDataType();
+					final AttributeValue.Factory<?> bagElementDatatypeFactory = datatypeFactoryRegistry.getExtension(bagDatatypeURI);
+					if (bagElementDatatypeFactory == null)
 					{
 						throw new IndeterminateEvaluationException("Unsupported AttributeValue DataType in Attribute" + attrGUID + ": " + bagDatatypeURI, Status.STATUS_SYNTAX_ERROR);
 					}
 
-					final BagResult<?> attributeBag = parseJaxbAttributeValues(attrGUID, jaxbAttrValues, bagDatatypeFactory.getInstanceClass(), bagDatatypeFactory);
-
 					/*
-					 * XACML Multiple Decision Profile, § 2.3.3: "... If such a <Attributes> element
-					 * contains a 'scope' attribute having any value other than 'Immediate', then
-					 * the Individual Request SHALL be further processed according to the processing
-					 * model specified in Section 4." We do not support 'scope' other than
-					 * 'Immediate' so throw an error if different.
+					 * Input AttributeValues have now been validated. Let's check any existing
+					 * values for the same attrGUID (<Attribute> with same meta-data) in the map. As
+					 * discussed on the xacml-dev mailing list (see
+					 * https://lists.oasis-open.org/archives/xacml-dev/201507/msg00001.html), the
+					 * following excerpt from the XACML 3.0 core spec, §7.3.3, indicates that
+					 * multiple occurrences of the same <Attribute> with same meta-data but
+					 * different values should be considered equivalent to a single <Attribute>
+					 * element with same meta-data and merged values (multi-valued Attribute).
+					 * Moreover, the conformance test 'IIIA024' expects this behavior: the multiple
+					 * subject-id Attributes are expected to result in a multi-value bag during
+					 * evaluation of the AttributeDesignator.
+					 * 
+					 * Therefore, we choose to merge the attribute values here if this is a new
+					 * occurrence of the same Attribute, i.e. attrMap.get(attrGUID) != null. In this
+					 * case, we can reuse the list already created for the previous occurrence to
+					 * store the new values resulting from parsing.
 					 */
-					if (attrGUID.equals(RESOURCE_SCOPE_ATTRIBUTE_GUID) && !attributeBag.value().equals(XACMLResourceScope.IMMEDIATE.value()))
+					final MutableBag<?> previousVals = attrMap.get(attrGUID);
+					final MutableBag<?> valsToUpdate;
+					if (previousVals == null)
 					{
-						throw UNSUPPORTED_MULTIPLE_SCOPE_EXCEPTION;
+						/*
+						 * First occurrence of this attribute ID (attrGUID). Check whether this is
+						 * not an unsupported resource-scope attribute. XACML Multiple Decision
+						 * Profile, § 2.3.3: "... If such a <Attributes> element contains a 'scope'
+						 * attribute having any value other than 'Immediate', then the Individual
+						 * Request SHALL be further processed according to the processing model
+						 * specified in Section 4." We do not support 'scope' other than 'Immediate'
+						 * so throw an error if different.
+						 */
+						if (attrGUID.equals(RESOURCE_SCOPE_ATTRIBUTE_GUID))
+						{
+							final List<Serializable> jaxbContent = jaxbAttrVal0.getContent();
+							if (!jaxbContent.isEmpty() && !jaxbContent.get(0).equals(XACMLResourceScope.IMMEDIATE.value()))
+							{
+								throw UNSUPPORTED_MULTIPLE_SCOPE_EXCEPTION;
+							}
+						}
+
+						valsToUpdate = new MutableBag<>(bagElementDatatypeFactory);
+						attrMap.put(attrGUID, valsToUpdate);
+					} else
+					{
+						/*
+						 * Collection of values already in the map for this Attribute id,
+						 * reuse/update it directly
+						 */
+						valsToUpdate = previousVals;
 					}
 
-					attrMap.put(attrGUID, attributeBag);
+					/*
+					 * Update valsToUpdate with new values resulting from parsing the new XACML
+					 * AttributeValues
+					 */
+					valsToUpdate.add(jaxbAttrValues);
 
 					// Remove attribute from categoryAttrs, and therefore from jaxbAttrCategory, if
 					// IncludeInResult = false
@@ -343,58 +407,6 @@ public abstract class RequestFilter
 	 * preprocessor
 	 */
 	protected static final IndeterminateEvaluationException UNSUPPORTED_MULTI_REQUESTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported feature: <MultiRequests>", Status.STATUS_SYNTAX_ERROR);
-
-	/**
-	 * Parses XACML Request AttributeValues
-	 * 
-	 * @param attributeGUID
-	 *            attribute's global ID
-	 * @param jaxbAttributeValues
-	 *            AttributeValues from XACML Request
-	 * @param expectedDatatypeClass
-	 *            internal Java type compatible with/optimized for the policy evaluation engine, and
-	 *            into which all values in {@code jaxbAttributeValues} must be parsed/converted
-	 * @param datatypeFactory
-	 *            factory for creating instances of {@code expectedDatatype} from values in
-	 *            {@code jaxbAttributeValues}
-	 * @return bag of attribute values ready for evaluation
-	 * @throws IndeterminateEvaluationException
-	 *             if any value in {@code jaxbAttributeValues} is not valid for the dataype
-	 *             specified by {@code expectedDatatype}
-	 */
-	private static <T extends AttributeValue> BagResult<T> parseJaxbAttributeValues(AttributeGUID attributeGUID, List<AttributeValueType> jaxbAttributeValues, Class<T> expectedDatatypeClass, AttributeValue.Factory<? extends AttributeValue> datatypeFactory) throws IndeterminateEvaluationException
-	{
-		final DatatypeDef datatype = datatypeFactory.getDatatype();
-
-		// Parse attribute values to Java type compatible with evaluation engine
-		final T[] evaluationReadyValues = (T[]) Array.newInstance(expectedDatatypeClass, jaxbAttributeValues.size());
-		int valIndex = 0;
-		for (final AttributeValueType jaxbAttrVal : jaxbAttributeValues)
-		{
-			/*
-			 * XACML spec says for Attribute Bags (7.3.2): "There SHALL be no notion of a bag
-			 * containing bags, or a bag containing values of differing types; i.e., a bag in XACML
-			 * SHALL contain only values that are of the same data-type." So we check that all
-			 * values have same datatype.
-			 */
-			if (!jaxbAttrVal.getDataType().equals(datatype))
-			{
-				throw new IndeterminateEvaluationException("Invalid Attribute: AttributeValues of different DataTypes ('" + datatype + "' and '" + jaxbAttrVal.getDataType() + "') in Attribute" + attributeGUID, Status.STATUS_SYNTAX_ERROR);
-			}
-
-			try
-			{
-				evaluationReadyValues[valIndex] = expectedDatatypeClass.cast(datatypeFactory.getInstance(jaxbAttrVal));
-			} catch (IllegalArgumentException | ClassCastException e)
-			{
-				throw new IndeterminateEvaluationException("Invalid AttributeValue #" + valIndex + " in Attribute" + attributeGUID + " for datatype " + datatype, Status.STATUS_SYNTAX_ERROR, e);
-			}
-
-			valIndex++;
-		}
-
-		return new BagResult<>(evaluationReadyValues, expectedDatatypeClass, datatype);
-	}
 
 	private final XACMLAttributesParserFactory xacmlAttrsParserFactory;
 

@@ -1,12 +1,26 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
-import com.thalesgroup.authzforce.core.eval.DatatypeDef;
 
 /**
  * Representation of an xs:date value. This class supports parsing xs:date values. All objects of
@@ -20,31 +34,15 @@ public class DateAttributeValue extends BaseTimeAttributeValue<DateAttributeValu
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#date";
 
 	/**
-	 * Primitive datatype info
+	 * Datatype factory instance
 	 */
-	public static final DatatypeDef TYPE = new DatatypeDef(TYPE_URI);
-
-	/**
-	 * Bag datatype info
-	 */
-	public static final DatatypeDef BAG_TYPE = new DatatypeDef(TYPE_URI, true);
-
-	/**
-	 * RefPolicyFinderModuleFactory instance
-	 */
-	public static final AttributeValue.Factory<DateAttributeValue> FACTORY = new AttributeValue.Factory<DateAttributeValue>(DateAttributeValue.class)
+	public static final AttributeValue.Factory<DateAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<DateAttributeValue>(DateAttributeValue.class, TYPE_URI)
 	{
 
 		@Override
-		public String getId()
+		protected DateAttributeValue getInstance(String val)
 		{
-			return TYPE_URI;
-		}
-
-		@Override
-		public DateAttributeValue getInstance(AttributeValueType jaxbAttributeValue)
-		{
-			return new DateAttributeValue(jaxbAttributeValue);
+			return new DateAttributeValue(val);
 		}
 
 	};
@@ -59,34 +57,38 @@ public class DateAttributeValue extends BaseTimeAttributeValue<DateAttributeValu
 	 */
 	public DateAttributeValue(String date) throws IllegalArgumentException
 	{
-		super(TYPE, date);
+		super(FACTORY.instanceDatatype, date);
 	}
 
 	/**
-	 * Creates a new <code>DateAttributeValue</code> that represents the supplied date
+	 * Creates instance from Calendar
 	 * 
 	 * @param date
-	 *            a <code>XMLGregorianCalendar</code> object representing the specified date
+	 *            date (all time fields assumed unset)
 	 * @throws IllegalArgumentException
-	 *             if {@code date} does not correspond to a valid xs:date
+	 *             if {@code date == null}
 	 */
-	public DateAttributeValue(XMLGregorianCalendar date) throws IllegalArgumentException
+	private DateAttributeValue(XMLGregorianCalendar date) throws IllegalArgumentException
 	{
-		super(TYPE, date);
+		super(FACTORY.instanceDatatype, date);
 	}
 
 	/**
-	 * Creates instance from XML/JAXB value
+	 * Creates a new <code>DateAttributeValue</code> from a Calendar
 	 * 
-	 * @param jaxbAttrVal
-	 *            JAXB AttributeValue
+	 * @param calendar
+	 *            a <code>XMLGregorianCalendar</code> object representing the specified date; beware
+	 *            that this method modifies {@code calendar} by unsetting all time fields:
+	 *            {@code calendar.setTime(DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED)}
+	 * @return new instance
 	 * @throws IllegalArgumentException
-	 *             if not valid value for datatype {@value #TYPE_URI}
-	 * @see BaseTimeAttributeValue#BaseTimeAttributeValue(DatatypeDef, AttributeValueType)
+	 *             if {@code calendar == null}
 	 */
-	public DateAttributeValue(AttributeValueType jaxbAttrVal) throws IllegalArgumentException
+	public static DateAttributeValue getInstance(XMLGregorianCalendar calendar) throws IllegalArgumentException
 	{
-		super(TYPE, jaxbAttrVal);
+		// we only want the date, so unset time fields
+		calendar.setTime(DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED);
+		return new DateAttributeValue(calendar);
 	}
 
 	@Override
@@ -96,18 +98,24 @@ public class DateAttributeValue extends BaseTimeAttributeValue<DateAttributeValu
 	}
 
 	@Override
-	public DateAttributeValue add(DurationAttributeValue durationVal)
+	public DateAttributeValue add(DurationAttributeValue<?> durationVal)
 	{
 		final XMLGregorianCalendar cal = (XMLGregorianCalendar) value.clone();
 		cal.add(durationVal.value);
-		return new DateAttributeValue(durationVal);
+		return new DateAttributeValue(cal);
 	}
 
 	@Override
-	public DateAttributeValue subtract(DurationAttributeValue durationVal)
+	public DateAttributeValue subtract(DurationAttributeValue<?> durationVal)
 	{
 		final XMLGregorianCalendar cal = (XMLGregorianCalendar) value.clone();
 		cal.add(durationVal.value.negate());
-		return new DateAttributeValue(durationVal);
+		return new DateAttributeValue(cal);
+	}
+
+	@Override
+	public DateAttributeValue one()
+	{
+		return this;
 	}
 }
