@@ -246,8 +246,11 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 			private final Expression<?> lastArgBag;
 			private final int lastArgIndex;
 
-			protected OneBagOnlyFunctionCall(FirstOrderFunction<SUB_RETURN_T> subFunction, List<Expression<?>> primitiveInputs, Expression<Bag<?>> lastInputBag)
+			protected OneBagOnlyFunctionCall(FirstOrderFunction<SUB_RETURN_T> subFunction, List<Expression<?>> primitiveInputs, Expression<?> lastInputBag)
 			{
+				assert lastInputBag.getReturnType().isBag();
+				// primitiveInputs types are validated by subFunction.newCall(...);
+
 				/*
 				 * The actual expression passed as last argument to the sub-function is not yet
 				 * known; but we know the expected datatype is the type of each element
@@ -310,7 +313,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 			// inputs that we can parse/validate for the sub-function are the primitive inputs, i.e.
 			// all except last one which is a bag
 			final List<Expression<?>> primitiveInputs = new ArrayList<>();
-			Expression<Bag<?>> lastInputBag = null;
+			Expression<?> lastInputBag = null;
 			boolean hasNextInput = true;
 			while (hasNextInput)
 			{
@@ -334,7 +337,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 						throw new IllegalArgumentException(this + ": Invalid last argument type: primitive (not a bag). Required: a bag");
 					}
 
-					lastInputBag = (Expression<Bag<?>>) input;
+					lastInputBag = input;
 				}
 			}
 

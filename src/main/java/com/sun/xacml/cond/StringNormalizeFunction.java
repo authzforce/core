@@ -42,7 +42,7 @@ import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import com.thalesgroup.authzforce.core.func.FunctionSet;
 
 /**
@@ -91,7 +91,7 @@ public abstract class StringNormalizeFunction extends FirstOrderFunction<StringA
 	@Override
 	protected final FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEval<StringAttributeValue, StringAttributeValue>(signature, StringAttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<StringAttributeValue, StringAttributeValue>(signature, StringAttributeValue[].class, argExpressions, remainingArgTypes)
 		{
 			@Override
 			protected StringAttributeValue evaluate(StringAttributeValue[] args) throws IndeterminateEvaluationException

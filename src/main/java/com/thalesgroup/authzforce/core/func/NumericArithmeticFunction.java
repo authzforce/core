@@ -28,7 +28,7 @@ import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.attr.NumericAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * A class that implements all the numeric *-add functions (as opposed to date/time *-add-*
@@ -157,7 +157,7 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 		 * 
 		 */
 
-		return new EagerPrimitiveEval<AV, AV>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<AV, AV>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
 		{
 
 			@Override

@@ -41,7 +41,7 @@ import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * Implements generic match functions taking parameters of same/equal type, i.e. standard (A.3.1)
@@ -219,7 +219,7 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 	@Override
 	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerPrimitiveEval<BooleanAttributeValue, PARAM>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, PARAM>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
 			protected final BooleanAttributeValue evaluate(PARAM[] args) throws IndeterminateEvaluationException

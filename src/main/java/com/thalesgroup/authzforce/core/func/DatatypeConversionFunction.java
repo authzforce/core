@@ -41,7 +41,7 @@ import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * A class that implements all the primitive datatype conversion functions: double-to-integer,
@@ -285,7 +285,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 	@Override
 	protected final FirstOrderFunctionCall<RETURN_T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEval<RETURN_T, PARAM_T>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<RETURN_T, PARAM_T>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
 			protected RETURN_T evaluate(PARAM_T[] args) throws IndeterminateEvaluationException

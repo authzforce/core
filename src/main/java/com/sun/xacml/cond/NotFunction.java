@@ -41,7 +41,7 @@ import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * A class that implements the not function. This function takes one boolean argument and returns
@@ -71,7 +71,7 @@ public class NotFunction extends FirstOrderFunction<BooleanAttributeValue>
 	@Override
 	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEval<BooleanAttributeValue, BooleanAttributeValue>(signature, BooleanAttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, BooleanAttributeValue>(signature, BooleanAttributeValue[].class, argExpressions, remainingArgTypes)
 		{
 			@Override
 			protected BooleanAttributeValue evaluate(BooleanAttributeValue[] args) throws IndeterminateEvaluationException

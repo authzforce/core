@@ -28,7 +28,7 @@ import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 
 /**
  * Implements *-substring functions
@@ -78,11 +78,11 @@ public class SubstringFunction<AV extends SimpleAttributeValue<String, AV>> exte
 	@Override
 	protected FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerPrimitiveEval<StringAttributeValue, AttributeValue>(signature, AttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerMultiPrimitiveTypeEval<StringAttributeValue>(signature, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected StringAttributeValue evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
+			protected StringAttributeValue evaluate(AttributeValue<?>[] args) throws IndeterminateEvaluationException
 			{
 				final AV arg0;
 				final IntegerAttributeValue beginIndex;

@@ -25,7 +25,7 @@ import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * Implements string-concatenate function
@@ -65,7 +65,7 @@ public class StringConcatenateFunction<AV extends SimpleAttributeValue<String, A
 	protected FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
 
-		return new EagerPrimitiveEval<StringAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<StringAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
 		{
 
 			@Override

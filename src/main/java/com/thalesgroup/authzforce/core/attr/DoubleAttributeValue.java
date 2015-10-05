@@ -173,20 +173,21 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 		return new DoubleAttributeValue(Math.rint(value));
 	}
 
-	public static void main(String... args)
-	{
-		Double arg1 = new Double("1");
-		Double divisor = new Double("0");
-		Double result = arg1 / divisor;
-		System.out.println(result); // Infinity!
-		arg1 = new Double("-1");
-		result = arg1 / divisor;
-		System.out.println(result); // -Infinity!
-
-		Double positiveZero = new Double("0.");
-		Double negativeZero = new Double("-0.");
-		System.out.println(positiveZero.equals(negativeZero));
-	}
+	// For quick testing
+	// public static void main(String... args)
+	// {
+	// Double arg1 = new Double("1");
+	// Double divisor = new Double("0");
+	// Double result = arg1 / divisor;
+	// System.out.println(result); // Infinity!
+	// arg1 = new Double("-1");
+	// result = arg1 / divisor;
+	// System.out.println(result); // -Infinity!
+	//
+	// Double positiveZero = new Double("0.");
+	// Double negativeZero = new Double("-0.");
+	// System.out.println(positiveZero.equals(negativeZero));
+	// }
 
 	@Override
 	public DoubleAttributeValue subtract(DoubleAttributeValue subtractedVal)

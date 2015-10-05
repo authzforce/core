@@ -37,7 +37,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerBagEval;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPartlyBagEval;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * Base class for first-order bag function groups, as opposed to the higher-order bag functions (see
@@ -216,7 +216,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		@Override
 		protected final FirstOrderFunctionCall<Bag<AV>> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerPrimitiveEval<Bag<AV>, AV>(signature, arrayClass, argExpressions, remainingArgTypes)
+			return new EagerSinglePrimitiveTypeEval<Bag<AV>, AV>(signature, arrayClass, argExpressions, remainingArgTypes)
 			{
 
 				@Override

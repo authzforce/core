@@ -27,7 +27,7 @@ import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.DurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
@@ -97,12 +97,13 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 	@Override
 	protected final FirstOrderFunctionCall<T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEval<T, AttributeValue>(signature, AttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerMultiPrimitiveTypeEval<T>(signature, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected T evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
+			protected T evaluate(AttributeValue<?>[] args) throws IndeterminateEvaluationException
 			{
+
 				final T arg0;
 				final D arg1;
 				try

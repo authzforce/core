@@ -36,7 +36,7 @@ import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 
 /**
  * Implements generic match functions taking two parameters of possibly different types, e.g. a
@@ -161,11 +161,11 @@ public abstract class NonEqualTypeMatchFunction<T0 extends AttributeValue<T0>, T
 		 * Actual argument types are expected to be different, therefore we use the supertype
 		 * AttributeValue as generic parameter type for all when creating the function call
 		 */
-		return new EagerPrimitiveEval<BooleanAttributeValue, AttributeValue>(signature, AttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerMultiPrimitiveTypeEval<BooleanAttributeValue>(signature, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected final BooleanAttributeValue evaluate(AttributeValue[] args) throws IndeterminateEvaluationException
+			protected final BooleanAttributeValue evaluate(AttributeValue<?>[] args) throws IndeterminateEvaluationException
 			{
 				final T0 arg0;
 				final T1 arg1;

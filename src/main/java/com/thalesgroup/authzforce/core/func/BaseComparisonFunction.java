@@ -28,7 +28,7 @@ import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * A superclass of all the standard comparison functions (return a boolean).
@@ -136,7 +136,7 @@ public abstract class BaseComparisonFunction<AV extends AttributeValue<AV>> exte
 	@Override
 	protected final FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerPrimitiveEval<BooleanAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
 		{
 			@Override
 			protected BooleanAttributeValue evaluate(AV[] args) throws IndeterminateEvaluationException

@@ -142,12 +142,14 @@ public class X500NameAttributeValue extends SimpleAttributeValue<String, X500Nam
 		return ldapName.equals(other.ldapName);
 	}
 
-	public static void main(String[] args) throws InvalidNameException
-	{
-		// System.out.println(new LdapName("cn=John Smith, o=Medico Corp, c=US").equals(new
-		// LdapName("cn= John Smith,o =Medico Corp, C=US")));
-		// System.out.println(new LdapName("ou=test+cn=bob,dc =example,dc=com"));
-		System.out.println(new LdapName("cn=John Smith, o=Medico Corp, c=US").endsWith(new LdapName("o=Medico Corp, c=US").getRdns()));
-	}
+	// For quick testing
+	// public static void main(String[] args) throws InvalidNameException
+	// {
+	// // System.out.println(new LdapName("cn=John Smith, o=Medico Corp, c=US").equals(new
+	// // LdapName("cn= John Smith,o =Medico Corp, C=US")));
+	// // System.out.println(new LdapName("ou=test+cn=bob,dc =example,dc=com"));
+	// System.out.println(new LdapName("cn=John Smith, o=Medico Corp, c=US").endsWith(new
+	// LdapName("o=Medico Corp, c=US").getRdns()));
+	// }
 
 }

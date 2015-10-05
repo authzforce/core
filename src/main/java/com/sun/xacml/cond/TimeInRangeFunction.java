@@ -44,7 +44,7 @@ import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
  * This class implements the time-in-range function, which takes three time values and returns true
@@ -192,7 +192,7 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 	@Override
 	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerPrimitiveEval<BooleanAttributeValue, TimeAttributeValue>(signature, TimeAttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, TimeAttributeValue>(signature, TimeAttributeValue[].class, argExpressions, remainingArgTypes)
 		{
 
 			@Override
