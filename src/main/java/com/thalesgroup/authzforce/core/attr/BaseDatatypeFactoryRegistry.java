@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import com.sun.xacml.ParsingException;
@@ -64,7 +65,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Attrib
 	}
 
 	@Override
-	public AttributeValue<?> createValue(AttributeValueType jaxbAttrVal) throws UnknownIdentifierException, ParsingException
+	public AttributeValue<?> createValue(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException
 	{
 		final String type = jaxbAttrVal.getDataType();
 		final AttributeValue.Factory<?> attrFactory = getExtension(type);
@@ -76,7 +77,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Attrib
 		final AttributeValue<?> attrVal;
 		try
 		{
-			attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes());
+			attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), xPathCompiler);
 		} catch (IllegalArgumentException e)
 		{
 			throw new ParsingException("Invalid Attribute value of type '" + type + "'", e);
@@ -86,9 +87,9 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Attrib
 	}
 
 	@Override
-	public <T extends AttributeValue<T>> T createValue(AttributeValueType jaxbAttrVal, Class<T> valClass) throws UnknownIdentifierException, ParsingException
+	public <T extends AttributeValue<T>> T createValue(AttributeValueType jaxbAttrVal, Class<T> valClass, XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException
 	{
-		final AttributeValue<?> attrVal = createValue(jaxbAttrVal);
+		final AttributeValue<?> attrVal = createValue(jaxbAttrVal, xPathCompiler);
 
 		try
 		{

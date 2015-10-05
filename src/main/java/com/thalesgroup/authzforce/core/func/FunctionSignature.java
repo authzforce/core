@@ -204,27 +204,7 @@ public class FunctionSignature<RETURN_T extends Value<?, RETURN_T>>
 			return false;
 		}
 		final FunctionSignature<?> other = (FunctionSignature<?>) obj;
-		if (isVarArgs != other.isVarArgs)
-		{
-			return false;
-		}
-		/*
-		 * if (name == null) { if (other.name != null) { return false; } } else
-		 */if (!name.equals(other.name))
-		{
-			return false;
-		}
-		if (!Arrays.equals(paramTypes, other.paramTypes))
-		{
-			return false;
-		}
-		/*
-		 * if (returnType == null) { if (other.returnType != null) { return false; } } else
-		 */if (!returnType.equals(other.returnType))
-		{
-			return false;
-		}
-		return true;
+		return isVarArgs == other.isVarArgs && name.equals(other.name) && Arrays.equals(paramTypes, other.paramTypes) && returnType.equals(other.returnType);
 	}
 
 	@Override

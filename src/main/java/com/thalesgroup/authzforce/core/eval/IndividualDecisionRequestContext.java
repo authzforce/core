@@ -21,7 +21,9 @@ package com.thalesgroup.authzforce.core.eval;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	private final Map<AttributeSelectorId, Bag<?>> attributeSelectorResults;
 
+	private final XPathCompiler defaultXPathCompiler;
+
 	/**
 	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request
 	 * attributes and extra contents with support for XPath evaluation against Content element in
@@ -79,13 +83,17 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 * @param extraContentsByAttributeCategory
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content
 	 *            elements); null iff no Content in the attribute category.
+	 * @param requestDefaultXPathCompiler
+	 *            Request's default XPath Compiler (derived from
+	 *            {@link RequestDefaults#getXPathVersion()})
 	 * 
 	 */
-	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> attributeMap, Map<String, XdmNode> extraContentsByAttributeCategory)
+	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> attributeMap, Map<String, XdmNode> extraContentsByAttributeCategory, XPathCompiler requestDefaultXPathCompiler)
 	{
-		attributes = attributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : attributeMap;
+		this.attributes = attributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : attributeMap;
 		this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
-		attributeSelectorResults = extraContentsByAttributeCategory == null ? null : new HashMap<AttributeSelectorId, Bag<?>>();
+		this.attributeSelectorResults = extraContentsByAttributeCategory == null ? null : new HashMap<AttributeSelectorId, Bag<?>>();
+		this.defaultXPathCompiler = requestDefaultXPathCompiler;
 	}
 
 	/**
@@ -96,7 +104,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	public IndividualDecisionRequestContext(IndividualDecisionRequest individualDecisionReq)
 	{
-		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory());
+		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq.getDefaultXPathCompiler());
 	}
 
 	@Override
@@ -116,8 +124,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		/*
 		 * If datatype classes match, bagResult should have same type as datatypeClass.
 		 * 
-		 * TODO: to avoid unchecked cast, we might want to return a new Bag after casting all
-		 * values in bagResult with datatypeClass. Is it worth the trouble?
+		 * TODO: to avoid unchecked cast, we might want to return a new Bag after casting all values
+		 * in bagResult with datatypeClass. Is it worth the trouble?
 		 */
 		return (Bag<AV>) bagResult;
 	}
@@ -155,6 +163,11 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	public <V extends Value<?, ?>> V getVariableValue(String variableId, Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
 	{
 		final Value<?, ?> val = varValsById.get(variableId);
+		if (val == null)
+		{
+			return null;
+		}
+
 		final Datatype<?> actualType = val.getReturnType();
 		if (!actualType.equals(expectedDatatype))
 		{
@@ -204,8 +217,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		/*
 		 * If datatype classes match, bagResult should has same type as datatypeClass.
 		 * 
-		 * TODO: to avoid unchecked cast, we might want to return a new Bag after casting all
-		 * values in bagResult with datatypeClass. Is it worth the trouble?
+		 * TODO: to avoid unchecked cast, we might want to return a new Bag after casting all values
+		 * in bagResult with datatypeClass. Is it worth the trouble?
 		 */
 		return (Bag<AV>) bagResult;
 	}
@@ -251,5 +264,11 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	public Object remove(String key)
 	{
 		return updatableProperties.remove(key);
+	}
+
+	@Override
+	public XPathCompiler getDefaultXPathCompiler()
+	{
+		return this.defaultXPathCompiler;
 	}
 }

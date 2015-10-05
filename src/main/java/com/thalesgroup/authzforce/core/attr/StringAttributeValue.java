@@ -41,7 +41,7 @@ public class StringAttributeValue extends SimpleAttributeValue<String, StringAtt
 	{
 
 		@Override
-		protected StringAttributeValue getInstance(String val)
+		public StringAttributeValue getInstance(String val)
 		{
 			return new StringAttributeValue(val);
 		}
@@ -108,12 +108,6 @@ public class StringAttributeValue extends SimpleAttributeValue<String, StringAtt
 	{
 		final String result = value.toLowerCase(locale);
 		return result == value ? this : new StringAttributeValue(result);
-	}
-
-	@Override
-	public String toString()
-	{
-		return DatatypeConverter.printString(value);
 	}
 
 	/**

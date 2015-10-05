@@ -21,9 +21,9 @@ package com.thalesgroup.authzforce.core.eval;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
@@ -52,17 +52,17 @@ public abstract class PepActionExpressionsEvaluator
 	 *            XACML ObligationExpressions
 	 * @param jaxbAdviceExpressions
 	 *            XACML AdviceExpressions
-	 * @param policyDefaults
-	 *            XACML Policy Defaults element
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            XACML Expression factory
 	 * @throws ParsingException
 	 *             if there is a parsing/syntax error with one of the obligation/advice expressions
 	 */
-	protected static <T extends PepActionExpressions> T parseActionExpressions(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, DefaultsType policyDefaults, ExpressionFactory expFactory, PepActionExpressions.Factory<T> actionExpressionsFactory)
+	protected static <T extends PepActionExpressions> T parseActionExpressions(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, Expression.Factory expFactory, PepActionExpressions.Factory<T> actionExpressionsFactory)
 			throws ParsingException
 	{
-		final T actionExpressions = actionExpressionsFactory.getInstance(policyDefaults, expFactory);
+		final T actionExpressions = actionExpressionsFactory.getInstance(xPathCompiler, expFactory);
 		if (jaxbObligationExpressions != null)
 		{
 			final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression> jaxbObligationExpList = jaxbObligationExpressions.getObligationExpressions();

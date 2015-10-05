@@ -87,13 +87,13 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 	 * @param checkedArgExpressions
 	 *            arg expression whose return type is assumed valid (already checked) for this
 	 *            function
-	 * @param checkedRemainingArgValues
+	 * @param checkedRemainingArgs
 	 *            remaining arg values, whose datatype is assumed valid (already checked) for this
 	 *            function; may be null if none
 	 * @return true iff all checkedArgExpressions return True and all remainingArgs are True
 	 * @throws IndeterminateEvaluationException
 	 */
-	public BooleanAttributeValue eval(EvaluationContext context, List<Expression<?>> checkedArgExpressions, AttributeValue<?>[] checkedRemainingArgValues) throws IndeterminateEvaluationException
+	public BooleanAttributeValue eval(EvaluationContext context, List<Expression<?>> checkedArgExpressions, AttributeValue<?>[] checkedRemainingArgs) throws IndeterminateEvaluationException
 	{
 
 		// Evaluate the arguments one by one. As soon as we can return
@@ -132,13 +132,15 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 
 		// else nOfRequiredTrues > 0
 		// make sure it's possible to find n true values in the remaining arguments
-		int nOfRemainingArgs = checkedArgExpressions.size() + (checkedRemainingArgValues == null ? 0 : checkedRemainingArgValues.length) - 1;
+		int nOfRemainingArgs = checkedArgExpressions.size() + (checkedRemainingArgs == null ? 0 : checkedRemainingArgs.length) - 1;
 		if (nOfRequiredTrues > nOfRemainingArgs)
 		{
 			throw new IndeterminateEvaluationException("Function " + NAME_N_OF + ": Invalid arguments to n-of function: value of arg #0 (i.e. number of required Trues = " + nOfRequiredTrues + ") > value of arg #1 (i.e. number of remaining args = " + nOfRemainingArgs + ")",
 					Status.STATUS_PROCESSING_ERROR);
 		}
 
+		IndeterminateEvaluationException lastIndeterminateException = null;
+		int nOfIndeterminateArgs = 0;
 		// loop through the inputs, trying to find at least n trues
 		int argIndex = 1;
 		while (argExpsIterator.hasNext())
@@ -149,25 +151,44 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 			try
 			{
 				attrVal = Utils.evalSingle(input, context, BooleanAttributeValue.class);
+				if (attrVal.getUnderlyingValue())
+				{
+					// we're one closer to our goal...see if we met it
+					nOfRequiredTrues--;
+					if (nOfRequiredTrues == 0)
+					{
+						return BooleanAttributeValue.TRUE;
+					}
+
+					// nOfRequiredTrues != 0
+					if (nOfRequiredTrues == nOfIndeterminateArgs)
+					{
+						// nOfIndeterminateArgs != 0 as well
+						// if all indeterminate args have been TRUE, result would be TRUE ->
+						// indeterminate result
+						if (lastIndeterminateException == null)
+						{
+							// this should not happen in theory as lastIndeterminateException !=
+							// null when nOfIndeterminateArgs != 0
+							throw new IndeterminateEvaluationException(this + ": evaluation failed because of indeterminate arg", Status.STATUS_PROCESSING_ERROR);
+						}
+
+						throw lastIndeterminateException;
+					}
+
+					final int nOfPossibleTrues = nOfRemainingArgs + nOfIndeterminateArgs;
+					if (nOfRequiredTrues > nOfPossibleTrues)
+					{
+						// check whether we have enough remaining args
+						return BooleanAttributeValue.FALSE;
+					}
+				}
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), Status.STATUS_PROCESSING_ERROR, e);
-			}
-
-			if (attrVal.getUnderlyingValue())
-			{
-				// we're one closer to our goal...see if we met it
-				nOfRequiredTrues--;
-				if (nOfRequiredTrues == 0)
-				{
-					return BooleanAttributeValue.TRUE;
-				}
-
-				if (nOfRequiredTrues > nOfRemainingArgs)
-				{
-					// check whether we have enough remaining args
-					return BooleanAttributeValue.FALSE;
-				}
+				// keep the indeterminate arg error to throw later, in case there was not enough
+				// TRUEs in the remaining args
+				lastIndeterminateException = new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), Status.STATUS_PROCESSING_ERROR, e);
+				nOfIndeterminateArgs++;
 			}
 
 			nOfRemainingArgs--;
@@ -175,9 +196,9 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 		}
 
 		// do the same loop with remaining arg values
-		if (checkedRemainingArgValues != null)
+		if (checkedRemainingArgs != null)
 		{
-			for (final AttributeValue<?> arg : checkedRemainingArgValues)
+			for (final AttributeValue<?> arg : checkedRemainingArgs)
 			{
 				final BooleanAttributeValue attrVal;
 				try
@@ -210,6 +231,22 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 		}
 
 		// if we got here then we didn't meet our quota
+		// nOfRequiredTrues != 0
+		if (nOfRequiredTrues == nOfIndeterminateArgs)
+		{
+			// nOfIndeterminateArgs != 0 as well, so lastIndeterminateException != null
+			// if all indeterminate args have been TRUE, result would be TRUE -> indeterminate
+			// result
+			if (lastIndeterminateException == null)
+			{
+				// this should not happen in theory as lastIndeterminateException !=
+				// null when nOfIndeterminateArgs != 0
+				throw new IndeterminateEvaluationException(this + ": evaluation failed because of indeterminate arg", Status.STATUS_PROCESSING_ERROR);
+			}
+
+			throw lastIndeterminateException;
+		}
+
 		return BooleanAttributeValue.FALSE;
 	}
 

@@ -31,6 +31,7 @@ import javax.xml.bind.util.JAXBSource;
 import net.sf.saxon.s9api.DocumentBuilder;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
@@ -113,12 +114,15 @@ public abstract class RequestFilter
 		 *            included in the final Result, i.e. all Attribute elements with IncludeInresult
 		 *            = false and the Content are removed after this method returns (a non-null
 		 *            result).
+		 * @param xPathCompiler
+		 *            XPath compiler for compiling any XPath expressions in attribute values (e.g.
+		 *            xpathExpression datatype)
 		 * @return Attributes parsing result; null if nothing to parse, i.e. no Attribute and (no
 		 *         Content or Content parsing skipped because xmlDocumentBuilder == null);
 		 * @throws IndeterminateEvaluationException
 		 *             if any parsing error occurs
 		 */
-		CategorySpecificAttributes parse(Attributes jaxbAttributes) throws IndeterminateEvaluationException;
+		CategorySpecificAttributes parse(Attributes jaxbAttributes, XPathCompiler xPathCompiler) throws IndeterminateEvaluationException;
 	}
 
 	private static abstract class XACMLAttributesParserFactory
@@ -144,7 +148,7 @@ public abstract class RequestFilter
 			protected abstract XdmNode parseContent(String categoryName, Content jaxbContent) throws IndeterminateEvaluationException;
 
 			@Override
-			public CategorySpecificAttributes parse(Attributes jaxbAttributes) throws IndeterminateEvaluationException
+			public CategorySpecificAttributes parse(Attributes jaxbAttributes, XPathCompiler xPathCompiler) throws IndeterminateEvaluationException
 			{
 				final String categoryName = jaxbAttributes.getCategory();
 				final List<Attribute> categoryAttrs = jaxbAttributes.getAttributes();
@@ -263,7 +267,7 @@ public abstract class RequestFilter
 					 * Update valsToUpdate with new values resulting from parsing the new XACML
 					 * AttributeValues
 					 */
-					valsToUpdate.add(jaxbAttrValues);
+					valsToUpdate.add(jaxbAttrValues, extraContent, xPathCompiler);
 
 					// Remove attribute from categoryAttrs, and therefore from jaxbAttrCategory, if
 					// IncludeInResult = false
@@ -454,7 +458,8 @@ public abstract class RequestFilter
 	 *         as defined in Multiple Decision Profile, or a singleton list if no multiple decision
 	 *         requested or supported by the filter)
 	 *         <p>
-	 *         TODO: why return a List here and not an array for example?
+	 *         Return a Collection and not array to make it easy for the implementer to create a
+	 *         defensive copy with Collections#unmodifiableList() and alike.
 	 *         </p>
 	 * @throws IndeterminateEvaluationException
 	 *             if some feature requested in the Request is not supported by this

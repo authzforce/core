@@ -23,10 +23,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.xml.namespace.QName;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import org.w3c.dom.Element;
@@ -76,6 +76,21 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 		}
 
 		/**
+		 * Creates attribute value from string representation and possibly extra XML attributes
+		 * 
+		 * @param val
+		 *            string representation
+		 * @param otherXmlAttributes
+		 *            other XML attributes (optional, i.e. null if none; if always null, use
+		 *            {@link SimpleAttributeValue.StringContentOnlyFactory} instead)
+		 * @param xPathCompiler
+		 *            XPath compiler for compiling/evaluating any XPath expression in the value,
+		 *            e.g. {@link XPathAttributeValue}
+		 * @return instance of {@code F_AV}
+		 */
+		public abstract F_AV getInstance(String val, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler);
+
+		/**
 		 * Creates an instance of {@code F_AV} from a XACML AttributeValueType-originating content (
 		 * {@code jaxbAttrVal.getContent()}) of which must contain a single value that is a valid
 		 * String representation for datatype {@code datatype} and possibly other XML attributes; or
@@ -95,7 +110,7 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 		 *             valid string representation for this datatype
 		 */
 		@Override
-		public F_AV getInstance(List<Serializable> content, Map<QName, String> otherXmlAttributes) throws IllegalArgumentException
+		public F_AV getInstance(List<Serializable> content, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException
 		{
 			final String inputStrVal;
 
@@ -122,31 +137,19 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 				}
 			}
 
-			return getInstance(inputStrVal, otherXmlAttributes);
+			return getInstance(inputStrVal, otherXmlAttributes, xPathCompiler);
 		}
-
-		/**
-		 * Creates attribute value from string representation and possibly extra XML attributes
-		 * 
-		 * @param val
-		 *            string representation
-		 * @param otherXmlAttributes
-		 *            other XML attributes (optional, i.e. null if none; if always null, use
-		 *            {@link StringContentOnlyFactory} instead)
-		 * @return instance of {@code F_AV}
-		 */
-		public abstract F_AV getInstance(String val, Map<QName, String> otherXmlAttributes);
 
 	}
 
 	/**
 	 * Datatype-specific Attribute Value Factory that supports values only based on string content,
-	 * without any XML attributes.
+	 * without any XML attributes, and independent from the context, i.e. constant values.
 	 * 
 	 * @param <SCOF_AV>
 	 *            type of attribute values created by this factory
 	 */
-	protected static abstract class StringContentOnlyFactory<SCOF_AV extends AttributeValue<SCOF_AV>> extends Factory<SCOF_AV>
+	public static abstract class StringContentOnlyFactory<SCOF_AV extends AttributeValue<SCOF_AV>> extends Factory<SCOF_AV>
 	{
 		private static final IllegalArgumentException NON_NULL_OTHER_XML_ATTRIBUTES_ARG_EXCEPTION = new IllegalArgumentException("Invalid value content: extra XML attributes are not supported by this primitive datatype, only string content.");
 
@@ -156,7 +159,7 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 		}
 
 		@Override
-		public SCOF_AV getInstance(String val, Map<QName, String> otherXmlAttributes)
+		public SCOF_AV getInstance(String val, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler)
 		{
 			if (otherXmlAttributes != null && !otherXmlAttributes.isEmpty())
 			{
@@ -173,7 +176,7 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 		 *            string representation
 		 * @return instance of {@code SCOF_AV}
 		 */
-		protected abstract SCOF_AV getInstance(String val);
+		public abstract SCOF_AV getInstance(String val);
 	}
 
 	private static IllegalArgumentException UNDEF_ATTR_CONTENT_EXCEPTION = new IllegalArgumentException("Undefined attribute value");
@@ -185,7 +188,6 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 	protected final V value;
 
 	// cached method results (because class is immutable)
-	private int hashCode = 0;
 	private String toString = null;
 
 	/**
@@ -264,17 +266,48 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 		return value;
 	}
 
+	/**
+	 * Convert to StringAttributeValue
+	 * 
+	 * @return StringAttributeValue based on string representation of {@link #getUnderlyingValue()}
+	 */
+	public StringAttributeValue toStringAttributeValue()
+	{
+		return new StringAttributeValue(content.get(0).toString());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		// class is immutable -> cache method result
+		if (toString == null)
+		{
+			toString = "AttributeValue[type=" + dataType + ", value=" + this.content.get(0) + "]";
+		}
+
+		return toString;
+	}
+
+	private int hashCode = 0;
+
 	@Override
 	public int hashCode()
 	{
-		// class is immutable -> cache hashCode() result
 		if (hashCode == 0)
 		{
-			hashCode = Objects.hash(dataType, value);
+			/*
+			 * WARNING: this part is not correct for array comparison, so we need to override equals
+			 * if V is an array type.
+			 */
+			hashCode = value.hashCode();
 		}
 
 		return hashCode;
-
 	}
 
 	@Override
@@ -289,48 +322,19 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 		{
 			return false;
 		}
+
 		final SimpleAttributeValue<?, ?> other = (SimpleAttributeValue<?, ?>) obj;
+		// no need to check datatype as there is one-to-one mapping between class (already checked
+		// above) and datatype
+
 		/*
 		 * if (value == null) { if (other.value != null) { return false; } } else
-		 */if (!value.equals(other.value))
-		{
-			return false;
-		}
-
-		if (!dataType.equals(other.dataType))
-		{
-			return false;
-		}
-		return true;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString()
-	{
-		// class is immutable -> cache method result
-		if (toString == null)
-		{
-			toString = "AttributeValue[type=" + dataType + ", value=" + toString(this.value) + "]";
-		}
-		return toString;
-	}
-
-	/**
-	 * Get string representation of internal value using {@link #toString()} by default. You must
-	 * override this method for attribute values whose toString() does not return proper String for
-	 * XML/display (e.g. byte[]).
-	 * 
-	 * @param val
-	 * @return string form of internal value
-	 */
-	public String toString(V val)
-	{
-		return val.toString();
+		 */
+		/*
+		 * WARNING: this part is not correct for array comparison, so we need to override equals if
+		 * V is an array type.
+		 */
+		return value.equals(other.value);
 	}
 
 }

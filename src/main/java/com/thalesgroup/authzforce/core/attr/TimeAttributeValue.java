@@ -41,7 +41,7 @@ public class TimeAttributeValue extends BaseTimeAttributeValue<TimeAttributeValu
 	{
 
 		@Override
-		protected TimeAttributeValue getInstance(String val)
+		public TimeAttributeValue getInstance(String val)
 		{
 			return new TimeAttributeValue(val);
 		}

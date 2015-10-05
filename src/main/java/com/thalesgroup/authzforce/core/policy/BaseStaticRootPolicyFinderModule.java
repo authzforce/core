@@ -18,17 +18,18 @@
  */
 package com.thalesgroup.authzforce.core.policy;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.net.URL;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.springframework.util.ResourceUtils;
+
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.ResourceUtils;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.pdp.model._2015._06.BaseStaticPolicyFinder;
 
 /**
@@ -58,14 +59,14 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 		}
 
 		@Override
-		public RootPolicyFinderModule getInstance(BaseStaticPolicyFinder conf, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder)
+		public RootPolicyFinderModule getInstance(BaseStaticPolicyFinder conf, Expression.Factory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder)
 		{
 			final URL rootPolicyURL;
 			try
 			{
 				// try to load the policy location as a Spring resource
-				rootPolicyURL = ResourceUtils.getResourceURL(conf.getPolicyLocation());
-			} catch (IOException ioe)
+				rootPolicyURL = ResourceUtils.getURL(conf.getPolicyLocation());
+			} catch (FileNotFoundException ioe)
 			{
 				throw new IllegalArgumentException("Error loading root policy (as Spring resource) from the following URL : " + conf.getPolicyLocation(), ioe);
 			}
@@ -89,58 +90,6 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	 * Creates a <code>BaseStaticRootPolicyFinderModule</code> with the root Policy already resolved
 	 * once and for all
 	 * 
-	 * @param rootPolicyURL
-	 *            location of root Policy(Set) (JAXB) to be parsed
-	 * @param combiningAlgRegistry
-	 *            registry of policy/rule combining algorithms
-	 * @param expressionFactory
-	 *            Expression factory for parsing Expressions used in the policy(set)
-	 * @param refPolicyFinder
-	 *            module finding policies by reference, i.e. resolving any Policy(Set)IdReference in
-	 *            the root policy located at {@code policyURL}
-	 * @return instance of this class
-	 */
-	public static BaseStaticRootPolicyFinderModule getInstance(URL rootPolicyURL, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder)
-	{
-		if (rootPolicyURL == null)
-		{
-			throw new IllegalArgumentException("Undefined root policy URL");
-		}
-
-		final Unmarshaller unmarshaller;
-		try
-		{
-			unmarshaller = XACMLBindingUtils.createXacml3Unmarshaller();
-		} catch (JAXBException e)
-		{
-			throw new IllegalArgumentException("Failed to create JAXB unmarshaller for XML Policy(Set)", e);
-		}
-
-		final Object jaxbPolicyOrPolicySetObj;
-		try
-		{
-			jaxbPolicyOrPolicySetObj = unmarshaller.unmarshal(rootPolicyURL);
-		} catch (JAXBException e)
-		{
-			throw new IllegalArgumentException("Failed to unmarshall Policy(Set) XML document from policy location: " + rootPolicyURL, e);
-		}
-
-		if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
-		{
-			return new BaseStaticRootPolicyFinderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbPolicyOrPolicySetObj, expressionFactory, combiningAlgRegistry);
-		} else if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
-		{
-			return new BaseStaticRootPolicyFinderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbPolicyOrPolicySetObj, expressionFactory, combiningAlgRegistry, refPolicyFinder);
-		} else
-		{
-			throw new IllegalArgumentException("Unexpected element found as root of the policy document: " + jaxbPolicyOrPolicySetObj.getClass().getSimpleName());
-		}
-	}
-
-	/**
-	 * Creates a <code>BaseStaticRootPolicyFinderModule</code> with the root Policy already resolved
-	 * once and for all
-	 * 
 	 * @param jaxbPolicy
 	 *            root Policy (JAXB) to be parsed
 	 * @param combiningAlgRegistry
@@ -148,7 +97,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
 	 */
-	public BaseStaticRootPolicyFinderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy jaxbPolicy, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry)
+	public BaseStaticRootPolicyFinderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy jaxbPolicy, Expression.Factory expressionFactory, CombiningAlgRegistry combiningAlgRegistry)
 	{
 		super(expressionFactory, null);
 		if (expressionFactory == null)
@@ -184,7 +133,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	 *            module finding policies by reference, i.e. resolving any Policy(Set)IdReference in
 	 *            the root policy located at {@code policyURL}
 	 */
-	public BaseStaticRootPolicyFinderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet jaxbPolicySet, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder)
+	public BaseStaticRootPolicyFinderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet jaxbPolicySet, Expression.Factory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder)
 	{
 		super(expressionFactory, refPolicyFinder);
 		if (expressionFactory == null)
@@ -203,6 +152,58 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
+		}
+	}
+
+	/**
+	 * Creates a <code>BaseStaticRootPolicyFinderModule</code> with the root Policy already resolved
+	 * once and for all
+	 * 
+	 * @param rootPolicyURL
+	 *            location of root Policy(Set) (JAXB) to be parsed
+	 * @param combiningAlgRegistry
+	 *            registry of policy/rule combining algorithms
+	 * @param expressionFactory
+	 *            Expression factory for parsing Expressions used in the policy(set)
+	 * @param refPolicyFinder
+	 *            module finding policies by reference, i.e. resolving any Policy(Set)IdReference in
+	 *            the root policy located at {@code policyURL}
+	 * @return instance of this class
+	 */
+	public static BaseStaticRootPolicyFinderModule getInstance(URL rootPolicyURL, Expression.Factory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder)
+	{
+		if (rootPolicyURL == null)
+		{
+			throw new IllegalArgumentException("Undefined root policy URL");
+		}
+
+		final Unmarshaller unmarshaller;
+		try
+		{
+			unmarshaller = XACMLBindingUtils.createXacml3Unmarshaller();
+		} catch (JAXBException e)
+		{
+			throw new IllegalArgumentException("Failed to create JAXB unmarshaller for XML Policy(Set)", e);
+		}
+
+		final Object jaxbPolicyOrPolicySetObj;
+		try
+		{
+			jaxbPolicyOrPolicySetObj = unmarshaller.unmarshal(rootPolicyURL);
+		} catch (JAXBException e)
+		{
+			throw new IllegalArgumentException("Failed to unmarshall Policy(Set) XML document from policy location: " + rootPolicyURL, e);
+		}
+
+		if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
+		{
+			return new BaseStaticRootPolicyFinderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbPolicyOrPolicySetObj, expressionFactory, combiningAlgRegistry);
+		} else if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
+		{
+			return new BaseStaticRootPolicyFinderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbPolicyOrPolicySetObj, expressionFactory, combiningAlgRegistry, refPolicyFinder);
+		} else
+		{
+			throw new IllegalArgumentException("Unexpected element found as root of the policy document: " + jaxbPolicyOrPolicySetObj.getClass().getSimpleName());
 		}
 	}
 

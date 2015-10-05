@@ -19,11 +19,11 @@
 package com.thalesgroup.authzforce.core;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,19 +33,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.PropertyPlaceholderHelper;
-import org.springframework.xml.transform.ResourceSource;
+import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.PDP;
 import com.sun.xacml.combine.CombiningAlgorithm;
@@ -67,6 +61,7 @@ import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.combining.StandardCombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.eval.Decidable;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
+import com.thalesgroup.authzforce.core.eval.Expression.Utils;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactoryImpl;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
@@ -78,7 +73,6 @@ import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule;
 import com.thalesgroup.authzforce.pdp.model._2015._06.Pdp;
 import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypeId;
-import com.thalesgroup.authzforce.xacml.schema.XPATHVersion;
 
 /**
  * XML-based PDP Configuration parser
@@ -87,41 +81,6 @@ import com.thalesgroup.authzforce.xacml.schema.XPATHVersion;
 public class PdpConfigurationParser
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpConfigurationParser.class);
-
-	/**
-	 * Saxon configuration file for AttributeSelector's XPath evaluation
-	 */
-	public static final String SAXON_CONFIGURATION_PATH = "classpath:saxon.xml";
-	/**
-	 * SAXON XML/XPath Processor
-	 */
-	private static final Processor SAXON_PROCESSOR;
-	static
-	{
-		final ResourceLoader resLoader = new DefaultResourceLoader();
-		final Resource saxonConfRes = resLoader.getResource(SAXON_CONFIGURATION_PATH);
-		if (!saxonConfRes.exists())
-		{
-			throw new RuntimeException("No Saxon configuration file exists at default location: " + SAXON_CONFIGURATION_PATH);
-		}
-
-		final File saxonConfFile;
-		try
-		{
-			saxonConfFile = saxonConfRes.getFile();
-		} catch (IOException e)
-		{
-			throw new RuntimeException("No Saxon configuration file exists at default location: " + SAXON_CONFIGURATION_PATH, e);
-		}
-
-		try
-		{
-			SAXON_PROCESSOR = new Processor(new StreamSource(saxonConfFile));
-		} catch (SaxonApiException e)
-		{
-			throw new RuntimeException("Error loading Saxon processor from configuration file at this location: " + SAXON_CONFIGURATION_PATH, e);
-		}
-	}
 
 	/**
 	 * Load PDP configuration handler.
@@ -202,34 +161,7 @@ public class PdpConfigurationParser
 	private static final String PROPERTY_PLACEHOLDER_SUFFIX = "}";
 	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = ":";
 	private static final String PARENT_DIRECTORY_PROPERTY_NAME = "PARENT_DIR";
-
-	private static XPathCompiler newXPathCompiler(XPATHVersion xpathVersion)
-	{
-		final XPathCompiler xpathCompiler = SAXON_PROCESSOR.newXPathCompiler();
-		final String versionString;
-		switch (xpathVersion)
-		{
-			case V1_0:
-				versionString = "1.0";
-				break;
-			case V2_0:
-				versionString = "2.0";
-				break;
-			default:
-				throw new UnsupportedOperationException("Unsupported XPath version: " + xpathVersion + ". Versions supported: " + Arrays.asList(XPATHVersion.values()));
-
-		}
-
-		xpathCompiler.setLanguageVersion(versionString);
-		xpathCompiler.setSchemaAware(false);
-
-		/*
-		 * TODO: we could enable caching of XPATH compiled queries but only once we have implemented
-		 * a way to clear the cache periodically, otherwise it grows indefinitely.
-		 */
-		// xpathCompiler.setCaching(true);
-		return xpathCompiler;
-	}
+	private static final String PARENT_DIRECTORY_PROPERTY_UNDEFINED_ERROR_MESSAGE = "Property '" + PARENT_DIRECTORY_PROPERTY_NAME + "' undefined because location of PDP configuration could not be resolved to a file on the filesystem: ";
 
 	/**
 	 * @param confLocation
@@ -245,12 +177,6 @@ public class PdpConfigurationParser
 	 */
 	private static PDP getPDP(String confLocation, PdpModelHandler modelhandler) throws IOException, JAXBException, IllegalArgumentException
 	{
-		final Resource confResource = ResourceUtils.getResource(confLocation);
-		if (confResource == null || !confResource.exists())
-		{
-			throw new IllegalArgumentException("No resource available at this location: " + confLocation);
-		}
-
 		/*
 		 * To allow using file paths relative to the parent folder of the configuration file
 		 * (located at confLocation) anywhere in this configuration file (including in PDP
@@ -263,40 +189,33 @@ public class PdpConfigurationParser
 		File confFile = null;
 		try
 		{
-			confFile = confResource.getFile();
-		} catch (IOException e)
+			confFile = ResourceUtils.getFile(confLocation);
+		} catch (FileNotFoundException e)
 		{
-			LOGGER.warn("Property '" + PARENT_DIRECTORY_PROPERTY_NAME + " undefined because location of PDP configuration could not be resolved to a file on the filesystem");
+			throw new IllegalArgumentException(PARENT_DIRECTORY_PROPERTY_UNDEFINED_ERROR_MESSAGE + confLocation, e);
 		}
 
-		final Source xmlSrc;
-		if (confFile == null)
+		if (confFile == null || !confFile.exists())
 		{
 			// no property replacement of PARENT_DIRECTORY
-			try
-			{
-				xmlSrc = new ResourceSource(confResource);
-			} catch (IOException e)
-			{
-				throw new IOException("Error reading from configuration location: " + confLocation, e);
-			}
-		} else
-		{
-			// property replacement of PARENT_DIRECTORY
-			final File parentDir = confFile.getParentFile();
-			final Properties props = new Properties();
-			final URI propVal = parentDir.toURI();
-			/*
-			 * Property value must be a String! Using props.put(Object,Object) is misleading here as
-			 * it makes falsely believe other datatypes would work
-			 */
-			props.setProperty(PARENT_DIRECTORY_PROPERTY_NAME, propVal.toString());
-			LOGGER.debug("Property {} = {}", PARENT_DIRECTORY_PROPERTY_NAME, propVal);
-			final PropertyPlaceholderHelper propPlaceholderHelper = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX, PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
-			final String confString = new String(FileCopyUtils.copyToByteArray(confFile), StandardCharsets.UTF_8);
-			final String newConfString = propPlaceholderHelper.replacePlaceholders(confString, props);
-			xmlSrc = new StreamSource(new StringReader(newConfString));
+			throw new IllegalArgumentException("Invalid configuration file location: No file exists at: " + confLocation);
 		}
+
+		// configuration file exists
+		// property replacement of PARENT_DIRECTORY
+		final File parentDir = confFile.getParentFile();
+		final Properties props = new Properties();
+		final URI propVal = parentDir.toURI();
+		/*
+		 * Property value must be a String! Using props.put(Object,Object) is misleading here as it
+		 * makes falsely believe other datatypes would work
+		 */
+		props.setProperty(PARENT_DIRECTORY_PROPERTY_NAME, propVal.toString());
+		LOGGER.debug("Property {} = {}", PARENT_DIRECTORY_PROPERTY_NAME, propVal);
+		final PropertyPlaceholderHelper propPlaceholderHelper = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX, PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
+		final String confString = new String(FileCopyUtils.copyToByteArray(confFile), StandardCharsets.UTF_8);
+		final String newConfString = propPlaceholderHelper.replacePlaceholders(confString, props);
+		final Source xmlSrc = new StreamSource(new StringReader(newConfString));
 
 		final Pdp pdpJaxbConf = modelhandler.unmarshal(xmlSrc, Pdp.class);
 		return getPDP(pdpJaxbConf);
@@ -355,7 +274,6 @@ public class PdpConfigurationParser
 		final Map<AttributeGUID, AttributeFinderModule> attrFinderModsByAttrId = new HashMap<>();
 		for (final AbstractAttributeFinder jaxbAttrFinder : pdpJaxbConf.getAttributeFinders())
 		{
-			// FIXME: unchecked call
 			final AttributeFinderModule.Factory<AbstractAttributeFinder> attrFinderModBuilder = PdpExtensionLoader.getJaxbBoundExtension(AttributeFinderModule.Factory.class, jaxbAttrFinder.getClass());
 			final AttributeFinderModule.DependencyAwareFactory<AbstractAttributeFinder> depAwareAttrFinderModBuilder = attrFinderModBuilder.parseDependencies(jaxbAttrFinder);
 			final Set<AttributeDesignatorType> requiredAttrs = depAwareAttrFinderModBuilder.getDependencies();
@@ -404,13 +322,7 @@ public class PdpConfigurationParser
 		final CloseableAttributeFinder rootAttrFinder = new CloseableAttributeFinderImpl(attrFinderModsByAttrId);
 
 		// Initialize ExpressionFactoryImpl
-		final Map<String, XPathCompiler> xpathCompilersByVersionURI = new HashMap<>();
-		// XPATH 1.0 compiler
-		xpathCompilersByVersionURI.put(XPATHVersion.V1_0.getURI(), newXPathCompiler(XPATHVersion.V1_0));
-		// XPATH 2.0 compiler
-		xpathCompilersByVersionURI.put(XPATHVersion.V2_0.getURI(), newXPathCompiler(XPATHVersion.V2_0));
-
-		final ExpressionFactoryImpl expressionFactoryImpl = new ExpressionFactoryImpl(attributeFactory, functionRegistry, rootAttrFinder, pdpJaxbConf.getMaxVariableRefDepth(), pdpJaxbConf.isEnableAttributeSelectors(), xpathCompilersByVersionURI);
+		final ExpressionFactoryImpl expressionFactoryImpl = new ExpressionFactoryImpl(attributeFactory, functionRegistry, rootAttrFinder, pdpJaxbConf.getMaxVariableRefDepth(), pdpJaxbConf.isEnableAttributeSelectors());
 
 		// Combining Algorithms
 		final CombiningAlgRegistry combiningAlgRegistry = new BaseCombiningAlgRegistry(pdpJaxbConf.isUseStandardCombiningAlgorithms() ? StandardCombiningAlgRegistry.INSTANCE : null);
@@ -443,32 +355,18 @@ public class PdpConfigurationParser
 
 		// Request preprocessor
 		final String requesFilterId = pdpJaxbConf.getRequestFilter();
-		final RequestFilter.Factory requestFilterFactory;
-		if (requesFilterId == null)
-		{
-			requestFilterFactory = DefaultRequestFilter.FACTORY;
-		} else
-		{
-			requestFilterFactory = PdpExtensionLoader.getExtension(RequestFilter.Factory.class, requesFilterId);
-		}
+		final RequestFilter.Factory requestFilterFactory = requesFilterId == null ? DefaultRequestFilter.FACTORY : PdpExtensionLoader.getExtension(RequestFilter.Factory.class, requesFilterId);
 
 		/*
 		 * Is the request filter required to parse/prepare Attributes/Content element for XPath
 		 * evaluation (AttributeSelector, XPath-based function...)?
 		 */
 		final boolean isContentRequiredForXPathEval = pdpJaxbConf.isEnableAttributeSelectors() || isAnyFuncXPathBased;
-		final RequestFilter requestFilter = requestFilterFactory.getInstance(attributeFactory, isContentRequiredForXPathEval, XACMLBindingUtils.XACML_3_0_JAXB_CONTEXT, SAXON_PROCESSOR);
+		final RequestFilter requestFilter = requestFilterFactory.getInstance(attributeFactory, isContentRequiredForXPathEval, XACMLBindingUtils.XACML_3_0_JAXB_CONTEXT, Utils.SAXON_PROCESSOR);
 
 		// Decision combiner
 		final String resultFilterId = pdpJaxbConf.getResultFilter();
-		final DecisionResultFilter decisionResultFilter;
-		if (resultFilterId == null)
-		{
-			decisionResultFilter = null;
-		} else
-		{
-			decisionResultFilter = PdpExtensionLoader.getExtension(DecisionResultFilter.class, resultFilterId);
-		}
+		final DecisionResultFilter decisionResultFilter = resultFilterId == null ? null : PdpExtensionLoader.getExtension(DecisionResultFilter.class, resultFilterId);
 
 		// responseCacheStore and cache key generator
 		final AbstractDecisionCache jaxbDecisionCache = pdpJaxbConf.getDecisionCache();

@@ -48,22 +48,27 @@ import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
-import com.thalesgroup.authzforce.xacml.schema.XPATHVersion;
 
 /**
  * Implementation of ExpressionFactory that supports the Expressions defined in VariableDefinitions
  * in order to resolve VariableReferences. In particular, it makes sure the depth of recursivity of
  * VariableDefinition does not exceed a value (to avoid inconveniences such as stackoverflow or very
  * negative performance impact) defined by parameter to
- * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinder, int, boolean, Map)}
+ * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinder, int, boolean)}
  * parameter. Note that reference loops are avoided by the fact that a VariableReference can
  * reference only a VariableDefinition defined previously to the VariableReference in this
  * implementation.
  * 
  */
-public class ExpressionFactoryImpl implements ExpressionFactory
+public class ExpressionFactoryImpl implements Expression.Factory
 {
 	private static final ParsingException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new ParsingException("Unsupported Expression type (optional XACML feature): AttributeSelector");
+
+	private static final IllegalArgumentException NULL_FUNCTION_REGISTRY_EXCEPTION = new IllegalArgumentException("Undefined function registry");
+
+	private static final IllegalArgumentException NULL_ATTRIBUTE_DATATYPE_REGISTRY_EXCEPTION = new IllegalArgumentException("Undefined attribute datatype registry");
+
+	private static final ParsingException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_FINDER_EXCEPTION = new ParsingException("Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute finder defined");
 
 	private final DatatypeFactoryRegistry attributeFactoryRegistry;
 	private final FunctionRegistry functionRegistry;
@@ -72,7 +77,6 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	// the map from identifiers to internal data
 	private final Map<String, VariableReference<?>> idToVariableMap = new HashMap<>();
 	private final boolean allowAttributeSelectors;
-	private final Map<String, XPathCompiler> xpathCompilersByVersionURI;
 
 	/**
 	 * Maximum VariableReference depth allowed for VariableDefinitions to be managed. Examples:
@@ -86,16 +90,13 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * </ul>
 	 * 
 	 * @param attrFactory
-	 *            attribute value factory
+	 *            attribute value factory (not null)
 	 * @param functionRegistry
-	 *            function registry
+	 *            function registry (not null)
 	 * @param attributeFinder
 	 *            Attribute Finder for AttributeDesignator expressions that will need it at
-	 *            evaluation time
-	 * @param xpathCompilersByVersionURI
-	 *            XPATH compilers by XPATH version specification URI, as returned by
-	 *            {@link XPATHVersion#getURI()}, for XPath evaluation in AttributeSelector
-	 *            evaluation; may be null if {@code allowAttributeSelectors == false}
+	 *            evaluation time; may be null for static expression evaluation (out of context), in
+	 *            which case AttributeSelectors/AttributeDesignators are not supported
 	 * @param maxVarRefDepth
 	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition
 	 *            ->... ('->' represents a VariableReference)
@@ -103,18 +104,27 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 *            allow use of AttributeSelectors (experimental, not for production, use with
 	 *            caution)
 	 */
-	public ExpressionFactoryImpl(DatatypeFactoryRegistry attrFactory, FunctionRegistry functionRegistry, CloseableAttributeFinder attributeFinder, int maxVarRefDepth, boolean allowAttributeSelectors, Map<String, XPathCompiler> xpathCompilersByVersionURI)
+	public ExpressionFactoryImpl(DatatypeFactoryRegistry attrFactory, FunctionRegistry functionRegistry, CloseableAttributeFinder attributeFinder, int maxVarRefDepth, boolean allowAttributeSelectors)
 	{
-		this.attributeFactoryRegistry = attrFactory;
-		this.functionRegistry = functionRegistry;
+		if (attrFactory == null)
+		{
+			throw NULL_ATTRIBUTE_DATATYPE_REGISTRY_EXCEPTION;
+		}
+
+		if (functionRegistry == null)
+		{
+			throw NULL_FUNCTION_REGISTRY_EXCEPTION;
+		}
+
 		if (maxVarRefDepth < 0)
 		{
 			throw new IllegalArgumentException("Invalid max VariableReference depth: " + maxVarRefDepth + ". Expected: (integer) > 0");
 		}
 
+		this.attributeFactoryRegistry = attrFactory;
+		this.functionRegistry = functionRegistry;
 		this.maxVariableReferenceDepth = maxVarRefDepth;
 		this.attributeFinder = attributeFinder;
-		this.xpathCompilersByVersionURI = xpathCompilersByVersionURI;
 		this.allowAttributeSelectors = allowAttributeSelectors;
 	}
 
@@ -123,17 +133,18 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * 
 	 * @param varDef
 	 *            VariableDefinition
-	 * @param policyDefaultValues
-	 *            Policy(Set) default values, such XPath version
+	 * @param xPathCompiler
+	 *            Enclosing PolicySet default XPath compiler, corresponding to the PolicySet's
+	 *            default XPath version specified in {@link DefaultsType#getXPathVersion()}
 	 * @return The previous VariableReference if VariableId already used
 	 * @throws ParsingException
 	 *             error parsing expression in <code>var</code>, in particular if reference depth
 	 *             exceeded (as fixed by max parameter to
-	 *             {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean, Map)}
+	 *             {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean)}
 	 *             )
 	 */
 	@Override
-	public VariableReference<?> addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, DefaultsType policyDefaultValues) throws ParsingException
+	public VariableReference<?> addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, XPathCompiler xPathCompiler) throws ParsingException
 	{
 		final String varId = varDef.getVariableId();
 		/*
@@ -152,7 +163,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		 * the order).
 		 */
 		final List<String> longestVarRefChain = new ArrayList<>();
-		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), policyDefaultValues, longestVarRefChain);
+		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), xPathCompiler, longestVarRefChain);
 		final VariableReference<?> var = new VariableReference<>(varId, varExpr, longestVarRefChain);
 		return idToVariableMap.put(varId, var);
 	}
@@ -233,7 +244,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 	/**
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean, Map)}
+	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean)}
 	 * .
 	 * 
 	 * @param functionId
@@ -248,7 +259,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 	/**
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean, Map)}
+	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean)}
 	 * .
 	 * 
 	 * @param functionId
@@ -292,7 +303,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * java.util.List)
 	 */
 	@Override
-	public Expression<?> getInstance(ExpressionType expr, DefaultsType policyDefaultValues, List<String> longestVarRefChain) throws ParsingException
+	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, List<String> longestVarRefChain) throws ParsingException
 	{
 		final Expression<?> expression;
 		/*
@@ -301,9 +312,14 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		 */
 		if (expr instanceof ApplyType)
 		{
-			expression = Apply.getInstance((ApplyType) expr, policyDefaultValues, this, longestVarRefChain);
+			expression = Apply.getInstance((ApplyType) expr, xPathCompiler, this, longestVarRefChain);
 		} else if (expr instanceof AttributeDesignatorType)
 		{
+			if (this.attributeFinder == null)
+			{
+				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_FINDER_EXCEPTION;
+			}
+
 			final AttributeDesignatorType jaxbAttrDes = (AttributeDesignatorType) expr;
 			final AttributeValue.Factory<?> attrFactory = attributeFactoryRegistry.getExtension(jaxbAttrDes.getDataType());
 			if (attrFactory == null)
@@ -319,6 +335,11 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				throw UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION;
 			}
 
+			if (this.attributeFinder == null)
+			{
+				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_FINDER_EXCEPTION;
+			}
+
 			final AttributeSelectorType jaxbAttrSelector = (AttributeSelectorType) expr;
 			final AttributeValue.Factory<?> attrFactory = attributeFactoryRegistry.getExtension(jaxbAttrSelector.getDataType());
 			if (attrFactory == null)
@@ -326,18 +347,22 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				throw new ParsingException("Unsupported Datatype used in AttributeSelector: " + jaxbAttrSelector.getDataType());
 			}
 
-			// Default XPath version is 1.0 unless Policy(Set)Defaults specified
-			final XPathCompiler xpathCompiler = xpathCompilersByVersionURI.get(policyDefaultValues == null ? XPATHVersion.V1_0.getURI() : policyDefaultValues.getXPathVersion());
+			// Check whether default XPath compiler/version specified for the XPath evaluator
+			if (xPathCompiler == null)
+			{
+				throw new ParsingException("AttributeSelector found but missing Policy(Set)Defaults/XPathVersion required for XPath evaluation in AttributeSelector");
+			}
+
 			try
 			{
-				expression = new AttributeSelector<>(jaxbAttrSelector, xpathCompiler, attributeFinder, attrFactory);
+				expression = new AttributeSelector<>(jaxbAttrSelector, xPathCompiler, attributeFinder, attrFactory);
 			} catch (XPathExpressionException e)
 			{
 				throw new ParsingException("Error parsing AttributeSelector's Path='" + jaxbAttrSelector.getPath() + "' into a XPath expression", e);
 			}
 		} else if (expr instanceof AttributeValueType)
 		{
-			expression = createAttributeValue((AttributeValueType) expr);
+			expression = createAttributeValue((AttributeValueType) expr, xPathCompiler);
 		} else if (expr instanceof FunctionType)
 		{
 			final FunctionType jaxbFunc = (FunctionType) expr;
@@ -375,11 +400,11 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
 	 */
 	@Override
-	public AttributeValue<?> createAttributeValue(AttributeValueType jaxbAttrVal) throws ParsingException
+	public AttributeValue<?> createAttributeValue(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws ParsingException
 	{
 		try
 		{
-			return this.attributeFactoryRegistry.createValue(jaxbAttrVal);
+			return this.attributeFactoryRegistry.createValue(jaxbAttrVal, xPathCompiler);
 		} catch (UnknownIdentifierException e)
 		{
 			throw new ParsingException("Error parsing AttributeValue expression: invalid/unsupported datatype URI", e);
@@ -389,7 +414,10 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	@Override
 	public void close() throws IOException
 	{
-		attributeFinder.close();
+		if (attributeFinder != null)
+		{
+			attributeFinder.close();
+		}
 	}
 
 }

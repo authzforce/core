@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 import org.slf4j.Logger;
@@ -59,7 +59,8 @@ public class AdviceExpression extends oasis.names.tc.xacml._3_0.core.schema.wd_1
 		/*
 		 * Make fulfillOn field read-only because this ObligationExpression is selected or ignored
 		 * by parent Rule/Policy evaluator based on 'fulfillOn' field once and for all at
-		 * initialization time. See PolicyPepActionExpressionsEvaluator and RulePepActionExpressionsEvaluator classes.
+		 * initialization time. See PolicyPepActionExpressionsEvaluator and
+		 * RulePepActionExpressionsEvaluator classes.
 		 */
 		throw UNSUPPORTED_SET_APPLIES_TO_OPERATION_EXCEPTION;
 	}
@@ -68,16 +69,16 @@ public class AdviceExpression extends oasis.names.tc.xacml._3_0.core.schema.wd_1
 	 * Instantiates Advice expression from JAXB equivalent model in XACML
 	 * 
 	 * @param jaxbAdviceExp
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing/instantiating AttributeAssignment expressions
 	 * @throws ParsingException
 	 *             error parsing one of the AttributeAssignmentExpressions' Expression
 	 */
-	public AdviceExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public AdviceExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
-		this(jaxbAdviceExp.getAdviceId(), jaxbAdviceExp.getAppliesTo(), jaxbAdviceExp.getAttributeAssignmentExpressions(), policyDefaults, expFactory);
+		this(jaxbAdviceExp.getAdviceId(), jaxbAdviceExp.getAppliesTo(), jaxbAdviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
 	}
 
 	/**
@@ -89,14 +90,14 @@ public class AdviceExpression extends oasis.names.tc.xacml._3_0.core.schema.wd_1
 	 *            the effect denoting when to apply this advice
 	 * @param jaxbAssignmentExps
 	 *            a <code>List</code> of <code>AttributeAssignmentExpression</code>s
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing/instantiating AttributeAssignment expressions
 	 * @throws ParsingException
 	 *             error parsing one of the AttributeAssignmentExpressions' Expression
 	 */
-	public AdviceExpression(String id, EffectType appliesTo, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression> jaxbAssignmentExps, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public AdviceExpression(String id, EffectType appliesTo, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression> jaxbAssignmentExps, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
 		this.adviceId = id;
 
@@ -115,7 +116,7 @@ public class AdviceExpression extends oasis.names.tc.xacml._3_0.core.schema.wd_1
 				final AttributeAssignmentExpression attrAssignExp;
 				try
 				{
-					attrAssignExp = new AttributeAssignmentExpression(jaxbAttrAssignExp, policyDefaults, expFactory);
+					attrAssignExp = new AttributeAssignmentExpression(jaxbAttrAssignExp, xPathCompiler, expFactory);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException("Error parsing AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId() + "]/Expression", e);

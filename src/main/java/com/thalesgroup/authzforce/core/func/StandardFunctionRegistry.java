@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ import com.sun.xacml.cond.NotFunction;
 import com.sun.xacml.cond.StringNormalizeFunction;
 import com.sun.xacml.cond.TimeInRangeFunction;
 import com.thalesgroup.authzforce.core.BasePdpExtensionRegistry;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 
 /**
  * This factory supports the standard set of functions specified in XACML 1.x and 2.0 and 3.0.
@@ -114,7 +116,7 @@ public class StandardFunctionRegistry extends FunctionRegistry
 		 * String-concatenate function (start of A.3.9, other parts addressed above by
 		 * DatatypeConversionFunction, and below by NonEqualTypeMatchFunction and SubstringFunction)
 		 */
-		standardExtensions.add(new StringConcatenateFunction());
+		standardExtensions.add(new StringConcatenateFunction<>(DatatypeConstants.STRING));
 
 		/*
 		 * Match functions taking parameters of possibly different types, i.e. *-contains /
@@ -170,7 +172,8 @@ public class StandardFunctionRegistry extends FunctionRegistry
 		INSTANCE = new StandardFunctionRegistry(nonGenericFuncRegistry, genericFuncFactoryRegistry);
 		if (LOGGER.isDebugEnabled())
 		{
-			LOGGER.debug("Loaded XACML standard functions: generic = {}, non-generic = {}", nonGenericStdFuncMap.keySet(), genericStdFuncMap.keySet());
+			// TreeSet for sorting functions, easier to read
+			LOGGER.debug("Loaded XACML standard functions: non-generic = {}, generic = {}", new TreeSet<>(nonGenericStdFuncMap.keySet()), new TreeSet<>(genericStdFuncMap.keySet()));
 		}
 	}
 

@@ -76,9 +76,10 @@ public class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 			// 2.x datatypes
 			DNSNameAttributeValue.FACTORY,
 			//
-			IPAddressAttributeValue.FACTORY
-	//
-	};
+			IPAddressAttributeValue.FACTORY,
+			// 3.x datatype(s)
+			// Support of this datatype is optional in the spec
+			XPathAttributeValue.FACTORY };
 
 	/**
 	 * Singleton instance of standard datatype factory.

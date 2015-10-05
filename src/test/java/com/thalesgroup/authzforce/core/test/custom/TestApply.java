@@ -26,7 +26,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
 
 import org.junit.Assert;
@@ -72,7 +71,7 @@ public class TestApply
 			u = XACMLBindingUtils.createXacml3Unmarshaller();
 			applyElt = (JAXBElement<ApplyType>) u.unmarshal(new File("src/test/resources/custom/TestApply.xml"));
 			applyType = applyElt.getValue();
-			apply = Apply.getInstance(applyType, new DefaultsType(), TestUtils.STD_EXPRESSION_FACTORY, null);
+			apply = Apply.getInstance(applyType, null, TestUtils.STD_EXPRESSION_FACTORY, null);
 			marshaller = XACMLBindingUtils.createXacml3Marshaller();
 			marshaller.marshal(new ObjectFactory().createApply(apply), System.out);
 		} catch (JAXBException | ParsingException e)

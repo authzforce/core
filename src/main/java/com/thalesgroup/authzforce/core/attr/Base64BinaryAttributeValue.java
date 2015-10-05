@@ -18,6 +18,8 @@
  */
 package com.thalesgroup.authzforce.core.attr;
 
+import java.util.Arrays;
+
 import javax.xml.bind.DatatypeConverter;
 
 /**
@@ -40,7 +42,7 @@ public class Base64BinaryAttributeValue extends SimpleAttributeValue<byte[], Bas
 	public static final AttributeValue.Factory<Base64BinaryAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<Base64BinaryAttributeValue>(Base64BinaryAttributeValue.class, TYPE_URI)
 	{
 		@Override
-		protected Base64BinaryAttributeValue getInstance(String val)
+		public Base64BinaryAttributeValue getInstance(String val)
 		{
 			return new Base64BinaryAttributeValue(val);
 		}
@@ -66,21 +68,43 @@ public class Base64BinaryAttributeValue extends SimpleAttributeValue<byte[], Bas
 		return DatatypeConverter.parseBase64Binary(stringForm);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.attr.SimpleAttributeValue#toString(java.lang.Object)
-	 */
-	@Override
-	public String toString(byte[] val)
-	{
-		return DatatypeConverter.printBase64Binary(val);
-	}
-
 	@Override
 	public Base64BinaryAttributeValue one()
 	{
 		return this;
+	}
+
+	private int hashCode = 0;
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = Arrays.hashCode(value);
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+
+		final Base64BinaryAttributeValue other = (Base64BinaryAttributeValue) obj;
+
+		/*
+		 * if (value == null) { if (other.value != null) { return false; } } else
+		 */
+		return Arrays.equals(value, other.value);
 	}
 
 }

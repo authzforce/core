@@ -58,16 +58,16 @@ import com.thalesgroup.authzforce.core.DecisionResultFilter;
 import com.thalesgroup.authzforce.core.IndividualDecisionRequest;
 import com.thalesgroup.authzforce.core.RequestFilter;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.DecisionResult;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
-import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
 import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
@@ -144,7 +144,7 @@ public class PDP implements Closeable
 			// convert to EvaluationContext
 			final Map<AttributeGUID, Bag<?>> namedAttributes = request.getNamedAttributes();
 			namedAttributes.putAll(pdpIssuedAttributes);
-			final EvaluationContext ctx = new IndividualDecisionRequestContext(namedAttributes, request.getExtraContentsByCategory());
+			final EvaluationContext ctx = new IndividualDecisionRequestContext(namedAttributes, request.getExtraContentsByCategory(), request.getDefaultXPathCompiler());
 			final DecisionResult result = rootPolicyFinder.findAndEvaluate(ctx);
 			result.setAttributes(request.getAttributesIncludedInResult());
 			return result;

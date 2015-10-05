@@ -54,7 +54,7 @@ public class SetFunctionsTest extends GeneralFunctionTest
 
 	public SetFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
 	{
-		super(functionName, inputs, expectedResult);
+		super(functionName, inputs, expectedResult, true);
 	}
 
 	private static final String NAME_STRING_INTERSECTION = "urn:oasis:names:tc:xacml:1.0:function:string-intersection";

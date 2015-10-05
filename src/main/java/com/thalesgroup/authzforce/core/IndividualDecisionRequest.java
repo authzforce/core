@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
@@ -42,19 +44,24 @@ public class IndividualDecisionRequest
 	private final Map<String, XdmNode> extraContentsByCategory;
 	private final List<Attributes> attributesToIncludeInResult;
 	private final boolean returnApplicablePolicyIdList;
+	private final XPathCompiler defaultXPathCompiler;
 
 	/**
 	 * Creates empty request (no attribute)
 	 * 
 	 * @param returnPolicyIdList
 	 *            equivalent of XACML ReturnPolicyIdList
+	 * @param defaultXPathCompiler
+	 *            default XPath compiler derived from request's
+	 *            {@link RequestDefaults#getXPathVersion()}; null if none defined
 	 */
-	public IndividualDecisionRequest(boolean returnPolicyIdList)
+	public IndividualDecisionRequest(boolean returnPolicyIdList, XPathCompiler defaultXPathCompiler)
 	{
 		attributes = new HashMap<>();
 		extraContentsByCategory = new HashMap<>();
 		attributesToIncludeInResult = new ArrayList<>();
 		returnApplicablePolicyIdList = returnPolicyIdList;
+		this.defaultXPathCompiler = defaultXPathCompiler;
 	}
 
 	/**
@@ -70,6 +77,7 @@ public class IndividualDecisionRequest
 		extraContentsByCategory = new HashMap<>(baseRequest.extraContentsByCategory);
 		attributesToIncludeInResult = new ArrayList<>(baseRequest.attributesToIncludeInResult);
 		returnApplicablePolicyIdList = baseRequest.returnApplicablePolicyIdList;
+		this.defaultXPathCompiler = baseRequest.defaultXPathCompiler;
 	}
 
 	/**
@@ -147,4 +155,15 @@ public class IndividualDecisionRequest
 	{
 		return this.extraContentsByCategory;
 	}
+
+	/**
+	 * Get RequestDefaults XPath version
+	 * 
+	 * @return default XPath version
+	 */
+	public XPathCompiler getDefaultXPathCompiler()
+	{
+		return defaultXPathCompiler;
+	}
+
 }

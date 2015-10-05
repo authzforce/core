@@ -128,32 +128,12 @@ public class AttributeGUID
 			return false;
 		final AttributeGUID other = (AttributeGUID) obj;
 		// category cannot be null (see constructor)
-		// if (category == null)
-		// {
-		// if (other.category != null)
-		// return false;
-		// } else
-		if (!category.equals(other.category))
-			return false;
 		// id cannot be null (see constructor)
-		// if (id == null)
-		// {
-		// if (other.id != null)
-		// return false;
-		// } else
-		if (!id.equals(other.id))
-			return false;
-
 		/*
 		 * According to XACML Core spec, 7.3.4 Attribute Matching, if the Issuer is not supplied,
 		 * ignore it in the match.
 		 */
-		if (issuer == null || other.issuer == null)
-		{
-			return true;
-		} else if (!issuer.equals(other.issuer))
-			return false;
-		return true;
+		return category.equals(other.category) && id.equals(other.id) && (issuer == null || other.issuer == null || issuer.equals(other.issuer));
 	}
 
 	/*

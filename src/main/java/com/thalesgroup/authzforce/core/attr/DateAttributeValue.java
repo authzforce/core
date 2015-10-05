@@ -40,7 +40,7 @@ public class DateAttributeValue extends BaseTimeAttributeValue<DateAttributeValu
 	{
 
 		@Override
-		protected DateAttributeValue getInstance(String val)
+		public DateAttributeValue getInstance(String val)
 		{
 			return new DateAttributeValue(val);
 		}

@@ -34,7 +34,6 @@
 package com.sun.xacml.cond;
 
 import java.util.List;
-import java.util.Objects;
 
 import javax.xml.bind.JAXBElement;
 
@@ -143,7 +142,7 @@ public abstract class Function<RETURN_T extends Expression.Value<?, RETURN_T>> e
 	{
 		if (hashCode == 0)
 		{
-			hashCode = Objects.hash(this.functionId);
+			hashCode = this.functionId.hashCode();
 		}
 		return hashCode;
 	}
@@ -153,17 +152,11 @@ public abstract class Function<RETURN_T extends Expression.Value<?, RETURN_T>> e
 	{
 		if (this == obj)
 			return true;
-
-		// if (!super.equals(obj))
-		// return false;
-
 		if (getClass() != obj.getClass())
 			return false;
 		final Function<?> other = (Function<?>) obj;
 		// functionId never null
-		if (!functionId.equals(other.functionId))
-			return false;
-		return true;
+		return functionId.equals(other.functionId);
 	}
 
 	private final String indeterminateArgMessagePrefix = "Function " + functionId + ": Indeterminate arg #";
@@ -210,7 +203,7 @@ public abstract class Function<RETURN_T extends Expression.Value<?, RETURN_T>> e
 	 * @see com.thalesgroup.authzforce.core.eval.Expression#createJAXBElement()
 	 */
 	@Override
-	public JAXBElement<FunctionType> getJAXBElement()
+	public final JAXBElement<FunctionType> getJAXBElement()
 	{
 		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createFunction(this);
 	}

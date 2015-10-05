@@ -45,7 +45,7 @@ public class RFC822NameAttributeValue extends SimpleAttributeValue<String, RFC82
 	{
 
 		@Override
-		protected RFC822NameAttributeValue getInstance(String val)
+		public RFC822NameAttributeValue getInstance(String val)
 		{
 			return new RFC822NameAttributeValue(val);
 		}
@@ -98,11 +98,17 @@ public class RFC822NameAttributeValue extends SimpleAttributeValue<String, RFC82
 		{
 			final InternetAddress email = new InternetAddress(stringForm, true);
 			email.validate();
-			return email.toString();
 		} catch (AddressException e)
 		{
 			throw new IllegalArgumentException("Invalid RFC822 name", e);
 		}
+
+		/*
+		 * The result value SHALL be the
+		 * "string in the form it was originally represented in XML form" to make sure the
+		 * string-from-ipAddress function works as expected
+		 */
+		return stringForm;
 	}
 
 	/**
@@ -121,6 +127,8 @@ public class RFC822NameAttributeValue extends SimpleAttributeValue<String, RFC82
 		return domainPartLowerCase;
 	}
 
+	private int hashCode = 0;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -129,7 +137,12 @@ public class RFC822NameAttributeValue extends SimpleAttributeValue<String, RFC82
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(localPart, domainPartLowerCase);
+		if (hashCode == 0)
+		{
+			hashCode = Objects.hash(localPart, domainPartLowerCase);
+		}
+
+		return hashCode;
 	}
 
 	/*
@@ -148,23 +161,13 @@ public class RFC822NameAttributeValue extends SimpleAttributeValue<String, RFC82
 		{
 			return false;
 		}
+
 		final RFC822NameAttributeValue other = (RFC822NameAttributeValue) obj;
 		/*
 		 * if (domainPartLowerCase == null) { if (other.domainPartLowerCase != null) { return false;
 		 * } } else
 		 */
-		if (!domainPartLowerCase.equals(other.domainPartLowerCase))
-		{
-			return false;
-		}
-		/*
-		 * if (localPart == null) { if (other.localPart != null) { return false; } } else
-		 */
-		if (!localPart.equals(other.localPart))
-		{
-			return false;
-		}
-		return true;
+		return domainPartLowerCase.equals(other.domainPartLowerCase) && localPart.equals(other.localPart);
 	}
 
 	/**

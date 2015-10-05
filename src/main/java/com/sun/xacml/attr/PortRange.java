@@ -192,6 +192,19 @@ class PortRange
 		return ((lowerBound == UNBOUND) && (upperBound == UNBOUND));
 	}
 
+	private int hashCode = 0;
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = Objects.hash(lowerBound, upperBound);
+		}
+
+		return hashCode;
+	}
+
 	/**
 	 * Returns true if the input is an instance of this class and if its value equals the value
 	 * contained in this class.
@@ -207,21 +220,8 @@ class PortRange
 		if (!(o instanceof PortRange))
 			return false;
 
-		PortRange other = (PortRange) o;
-
-		if (lowerBound != other.lowerBound)
-			return false;
-
-		if (upperBound != other.upperBound)
-			return false;
-
-		return true;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(lowerBound, upperBound);
+		final PortRange other = (PortRange) o;
+		return lowerBound == other.lowerBound && upperBound == other.upperBound;
 	}
 
 	/**

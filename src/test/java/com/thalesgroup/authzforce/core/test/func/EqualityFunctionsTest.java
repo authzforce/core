@@ -128,8 +128,10 @@ public class EqualityFunctionsTest extends GeneralFunctionTest
 				new Object[] { NAME_ANYURI_EQUAL, Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("https://www.example.com")), BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:x500Name-equal
-				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn= John Smith,o =Medico Corp, C=US")), BooleanAttributeValue.TRUE },
 				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), BooleanAttributeValue.FALSE },
+				// If RDN contains multiple attributeTypeAndValue pairs
+				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameAttributeValue("cn=John+o=Medico, c=US"), new X500NameAttributeValue("o=Medico+cn=John, c=US")), BooleanAttributeValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal
 				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), BooleanAttributeValue.TRUE },

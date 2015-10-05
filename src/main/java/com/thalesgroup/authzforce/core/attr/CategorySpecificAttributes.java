@@ -24,15 +24,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * 
@@ -86,10 +87,16 @@ public class CategorySpecificAttributes
 		 * 
 		 * @param jaxbAttributeValues
 		 *            XACML/JAXB AttributeValues from a XACML Attribute element
+		 * @param attributesContent
+		 *            Parent Attributes/Content (parsed into XDM datat model) of the Attribute
+		 *            having {@code jaxbAttributeValues} as values
+		 * @param xPathCompiler
+		 *            XPath compiler for compiling/evaluating any XPath expression in
+		 *            {@code jaxbAttributeValues} against {@code attributesContent}
 		 * 
 		 * @throws IndeterminateEvaluationException
 		 */
-		public void add(List<AttributeValueType> jaxbAttributeValues) throws IndeterminateEvaluationException
+		public void add(List<AttributeValueType> jaxbAttributeValues, XdmNode attributesContent, XPathCompiler xPathCompiler) throws IndeterminateEvaluationException
 		{
 			final Datatype<AV> datatype = this.elementDatatypeFactory.getDatatype();
 			// Parse attribute values to Java type compatible with evaluation engine
@@ -105,7 +112,7 @@ public class CategorySpecificAttributes
 				final AV resultValue;
 				try
 				{
-					resultValue = this.elementDatatypeFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes());
+					resultValue = this.elementDatatypeFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), xPathCompiler);
 				} catch (IllegalArgumentException | ClassCastException e)
 				{
 					throw new IndeterminateEvaluationException("Invalid AttributeValue #" + jaxbValIndex + " in Attribute element for datatype " + datatype, Status.STATUS_SYNTAX_ERROR, e);

@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 
@@ -58,7 +58,8 @@ public class ObligationExpression extends oasis.names.tc.xacml._3_0.core.schema.
 		/*
 		 * Make fulfillOn field read-only because this ObligationExpression is selected or ignored
 		 * by parent Rule/Policy evaluator based on 'fulfillOn' field once and for all at
-		 * initialization time. See PolicyPepActionExpressionsEvaluator and RulePepActionExpressionsEvaluator classes.
+		 * initialization time. See PolicyPepActionExpressionsEvaluator and
+		 * RulePepActionExpressionsEvaluator classes.
 		 */
 		throw UNSUPPORTED_SET_FULFILL_ON_OPERATION_EXCEPTION;
 	}
@@ -67,16 +68,16 @@ public class ObligationExpression extends oasis.names.tc.xacml._3_0.core.schema.
 	 * Instantiates Obligation expression from JAXB equivalent model in XACML
 	 * 
 	 * @param jaxbObligationExp
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing/instantiating AttributeAssignment expressions
 	 * @throws ParsingException
 	 *             error parsing one of AttributeAssignmentExpressions' Expression
 	 */
-	public ObligationExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public ObligationExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
-		this(jaxbObligationExp.getObligationId(), jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(), policyDefaults, expFactory);
+		this(jaxbObligationExp.getObligationId(), jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
 	}
 
 	/**
@@ -88,14 +89,14 @@ public class ObligationExpression extends oasis.names.tc.xacml._3_0.core.schema.
 	 *            the effect denoting when to fulfill this obligation
 	 * @param jaxbAssignmentExps
 	 *            a <code>List</code> of <code>AttributeAssignmentExpression</code>s
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing/instantiating AttributeAssignment expressions
 	 * @throws ParsingException
 	 *             error parsing one of the AttributeAssignmentExpressions' Expression
 	 */
-	public ObligationExpression(String id, EffectType fulfillOn, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression> jaxbAssignmentExps, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public ObligationExpression(String id, EffectType fulfillOn, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression> jaxbAssignmentExps, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
 		this.obligationId = id;
 		this.fulfillOn = fulfillOn;
@@ -113,7 +114,7 @@ public class ObligationExpression extends oasis.names.tc.xacml._3_0.core.schema.
 				final AttributeAssignmentExpression attrAssignExp;
 				try
 				{
-					attrAssignExp = new AttributeAssignmentExpression(jaxbAttrAssignExp, policyDefaults, expFactory);
+					attrAssignExp = new AttributeAssignmentExpression(jaxbAttrAssignExp, xPathCompiler, expFactory);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException("Error parsing AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId() + "]/Expression", e);

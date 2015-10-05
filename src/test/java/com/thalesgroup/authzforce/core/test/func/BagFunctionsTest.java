@@ -49,10 +49,10 @@ import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Value;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 @RunWith(Parameterized.class)
 public class BagFunctionsTest extends GeneralFunctionTest
@@ -204,8 +204,11 @@ public class BagFunctionsTest extends GeneralFunctionTest
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag), BooleanAttributeValue.TRUE });
 
 		// is-in(val2, {val1, val1}) -> false
-		twoValArray[1] = primitiveValue1;
-		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag), BooleanAttributeValue.FALSE });
+		// clone previous array but replace second value with same as first one
+		AV[] twoValArray2 = twoValArray.clone();
+		twoValArray2[1] = primitiveValue1;
+		Bag<AV> twoValBag2 = Bags.getInstance(typeParam.BAG_TYPE, twoValArray2);
+		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag2), BooleanAttributeValue.FALSE });
 		return params;
 	}
 

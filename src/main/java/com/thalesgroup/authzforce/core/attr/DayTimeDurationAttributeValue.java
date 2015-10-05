@@ -39,7 +39,7 @@ public class DayTimeDurationAttributeValue extends DurationAttributeValue<DayTim
 	{
 
 		@Override
-		protected DayTimeDurationAttributeValue getInstance(String val)
+		public DayTimeDurationAttributeValue getInstance(String val)
 		{
 			return new DayTimeDurationAttributeValue(val);
 		}

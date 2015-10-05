@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
@@ -32,7 +32,7 @@ import com.sun.xacml.ParsingException;
 import com.thalesgroup.authzforce.core.PepActions;
 import com.thalesgroup.authzforce.core.eval.AdviceExpression;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.eval.ObligationExpression;
 import com.thalesgroup.authzforce.core.eval.PepActionExpressions;
@@ -52,8 +52,8 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 	private static class ActionExpressionsParser implements PepActionExpressions
 	{
 
-		private final DefaultsType policyDefaults;
-		private final ExpressionFactory expFactory;
+		private final XPathCompiler xPathCompiler;
+		private final Expression.Factory expFactory;
 
 		private final PepActionExpressions.EffectSpecific denyActionExpressions = new EffectSpecific(EffectType.DENY);
 		private final PepActionExpressions.EffectSpecific permitActionExpressions = new EffectSpecific(EffectType.PERMIT);
@@ -61,21 +61,21 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 		/**
 		 * Creates instance
 		 * 
-		 * @param policyDefaults
-		 *            Enclosing policy default parameters for parsing expressions
+		 * @param xPathCompiler
+		 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 		 * @param expressionFactory
 		 *            expression factory for parsing expressions
 		 */
-		private ActionExpressionsParser(DefaultsType policyDefaults, ExpressionFactory expressionFactory)
+		private ActionExpressionsParser(XPathCompiler xPathCompiler, Expression.Factory expressionFactory)
 		{
-			this.policyDefaults = policyDefaults;
+			this.xPathCompiler = xPathCompiler;
 			this.expFactory = expressionFactory;
 		}
 
 		@Override
 		public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp) throws ParsingException
 		{
-			final ObligationExpression obligationExp = new ObligationExpression(jaxbObligationExp, policyDefaults, expFactory);
+			final ObligationExpression obligationExp = new ObligationExpression(jaxbObligationExp, xPathCompiler, expFactory);
 			final PepActionExpressions.EffectSpecific effectSpecificActionExps = obligationExp.getFulfillOn() == EffectType.DENY ? denyActionExpressions : permitActionExpressions;
 			effectSpecificActionExps.add(obligationExp);
 		}
@@ -83,7 +83,7 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 		@Override
 		public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp) throws ParsingException
 		{
-			final AdviceExpression adviceExp = new AdviceExpression(jaxbAdviceExp, policyDefaults, expFactory);
+			final AdviceExpression adviceExp = new AdviceExpression(jaxbAdviceExp, xPathCompiler, expFactory);
 			final PepActionExpressions.EffectSpecific effectSpecificActionExps = adviceExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions : permitActionExpressions;
 			effectSpecificActionExps.add(adviceExp);
 		}
@@ -109,9 +109,9 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 	{
 
 		@Override
-		public ActionExpressionsParser getInstance(DefaultsType policyDefaults, ExpressionFactory expressionFactory)
+		public ActionExpressionsParser getInstance(XPathCompiler xPathCompiler, Expression.Factory expressionFactory)
 		{
-			return new ActionExpressionsParser(policyDefaults, expressionFactory);
+			return new ActionExpressionsParser(xPathCompiler, expressionFactory);
 		}
 
 	}
@@ -121,9 +121,9 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 	private final PepActionExpressions.EffectSpecific denyActionExpressions;
 	private final PepActionExpressions.EffectSpecific permitActionExpressions;
 
-	private PolicyPepActionExpressionsEvaluator(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	private PolicyPepActionExpressionsEvaluator(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
-		final ActionExpressionsParser actionExpressionsParser = super.parseActionExpressions(jaxbObligationExpressions, jaxbAdviceExpressions, policyDefaults, expFactory, new ActionExpressionsFactory());
+		final ActionExpressionsParser actionExpressionsParser = super.parseActionExpressions(jaxbObligationExpressions, jaxbAdviceExpressions, xPathCompiler, expFactory, new ActionExpressionsFactory());
 		this.jaxbObligationExpressions = new ObligationExpressions(Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression> unmodifiableList(actionExpressionsParser.getObligationExpressionList()));
 		this.jaxbAdviceExpressions = new AdviceExpressions(Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression> unmodifiableList(actionExpressionsParser.getAdviceExpressionList()));
 		this.denyActionExpressions = actionExpressionsParser.denyActionExpressions;
@@ -138,8 +138,8 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 	 *            XACML-schema-derived ObligationExpressions
 	 * @param jaxbAdviceExpressions
 	 *            XACML-schema-derived AdviceExpressions
-	 * @param policyDefaults
-	 *            policy's default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing the AttributeAssignmentExpressions in the
 	 *            Obligation/Advice Expressions
@@ -147,14 +147,14 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 	 * @throws ParsingException
 	 *             if error parsing one of the AttributeAssignmentExpressions
 	 */
-	public static PolicyPepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public static PolicyPepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
 		if ((jaxbObligationExpressions == null || jaxbObligationExpressions.getObligationExpressions().isEmpty()) && (jaxbAdviceExpressions == null || jaxbAdviceExpressions.getAdviceExpressions().isEmpty()))
 		{
 			return null;
 		}
 
-		return new PolicyPepActionExpressionsEvaluator(jaxbObligationExpressions, jaxbAdviceExpressions, policyDefaults, expFactory);
+		return new PolicyPepActionExpressionsEvaluator(jaxbObligationExpressions, jaxbAdviceExpressions, xPathCompiler, expFactory);
 	}
 
 	/**

@@ -35,7 +35,7 @@ package com.sun.xacml.cond;
 
 import javax.xml.bind.JAXBElement;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import com.sun.xacml.ParsingException;
@@ -43,7 +43,6 @@ import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -96,18 +95,18 @@ public class Condition extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condi
 	 *            Condition in JAXB model
 	 * @param expFactory
 	 *            expression factory
-	 * @param policyDefaults
-	 *            policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * 
 	 * @throws IllegalArgumentException
 	 *             if the expression is not boolean or returns a bag
 	 * @throws ParsingException
 	 *             error parsing the expression in condition
 	 */
-	public Condition(oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition, DefaultsType policyDefaults, ExpressionFactory expFactory) throws IllegalArgumentException, ParsingException
+	public Condition(oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws IllegalArgumentException, ParsingException
 	{
 		final ExpressionType exprElt = condition.getExpression().getValue();
-		final Expression<?> expr = expFactory.getInstance(exprElt, policyDefaults, null);
+		final Expression<?> expr = expFactory.getInstance(exprElt, xPathCompiler, null);
 
 		// make sure it's a boolean expression...
 		if (!(expr.getReturnType().equals(DatatypeConstants.BOOLEAN.TYPE)))

@@ -29,6 +29,8 @@ package com.thalesgroup.authzforce.core.attr;
  */
 public abstract class NumericAttributeValue<N extends Number, NAV extends NumericAttributeValue<N, NAV>> extends SimpleAttributeValue<N, NAV>
 {
+	private static final IllegalArgumentException NEGATIVE_OFFSET_EXCEPTION = new IllegalArgumentException("Offset < 0!");
+
 	protected NumericAttributeValue(Datatype<NAV> datatype, N val)
 	{
 		super(datatype, val, val);
@@ -55,14 +57,27 @@ public abstract class NumericAttributeValue<N extends Number, NAV extends Numeri
 	 */
 	public abstract NAV abs();
 
+	protected static void checkOffset(Object[] vals, int offset) throws IllegalArgumentException
+	{
+		if (offset < 0)
+		{
+			throw NEGATIVE_OFFSET_EXCEPTION;
+		}
+
+		if (offset > vals.length)
+		{
+			throw new IllegalArgumentException("Offset out of bounds: >" + vals.length);
+		}
+	}
+
 	/**
 	 * Adds numbers to this. Used by the XACML numeric *-add functions.
 	 * 
 	 * @param others
 	 *            values to add to this value
 	 * @param offset
-	 *            index in <code>others</code> where to start adding values
-	 * @return sum of this and the others
+	 *            index in <code>others</code> where to start adding values.
+	 * @return sum of this and the others. 0 is returned if {@code offset >= others.length}.
 	 */
 	public abstract NAV add(NAV[] others, int offset);
 

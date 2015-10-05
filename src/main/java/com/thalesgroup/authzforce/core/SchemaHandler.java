@@ -45,6 +45,7 @@ import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.ErrorHandler;
@@ -145,7 +146,7 @@ public class SchemaHandler
 						{
 							try
 							{
-								final URL resourceURL = ResourceUtils.getResourceURL(s);
+								final URL resourceURL = ResourceUtils.getURL(s);
 								if (resourceURL != null)
 								{
 									return resourceURL.toExternalForm();
@@ -455,7 +456,7 @@ public class SchemaHandler
 				// if (loc.lastIndexOf(".") == -1 || loc.lastIndexOf('*') != -1) {
 				// schemaURLs = ClasspathScanner.findResources(loc, "xsd");
 				// } else {
-				final URL url = ResourceUtils.getResourceURL(loc);
+				final URL url = ResourceUtils.getURL(loc);
 				if (url != null)
 				{
 					schemaURLs.add(url);
@@ -483,7 +484,7 @@ public class SchemaHandler
 				final OASISCatalogManager catalogResolver = OASISCatalogManager.getCatalogManager();
 				if (catalogResolver != null)
 				{
-					final URL catalogURL = ResourceUtils.getResourceURL(catalogLocation);
+					final URL catalogURL = ResourceUtils.getURL(catalogLocation);
 					if (catalogURL != null)
 					{
 						try
@@ -509,10 +510,10 @@ public class SchemaHandler
 										}
 										if (resolvedLocation != null)
 										{
-											final InputStream resourceStream = ResourceUtils.getResourceStream(resolvedLocation);
-											if (resourceStream != null)
+											final URL resourceURL = ResourceUtils.getURL(resolvedLocation);
+											if (resourceURL != null)
 											{
-												return new LSInputImpl(publicId, systemId, resourceStream);
+												return new LSInputImpl(publicId, systemId, resourceURL.openStream());
 											}
 										}
 									} catch (Exception ex)

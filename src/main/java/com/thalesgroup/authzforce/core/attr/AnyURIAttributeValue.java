@@ -56,7 +56,7 @@ public class AnyURIAttributeValue extends SimpleAttributeValue<String, AnyURIAtt
 	{
 
 		@Override
-		protected AnyURIAttributeValue getInstance(String val)
+		public AnyURIAttributeValue getInstance(String val)
 		{
 			return new AnyURIAttributeValue(val);
 		}

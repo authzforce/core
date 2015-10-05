@@ -33,11 +33,13 @@
  */
 package com.sun.xacml.combine;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 
 import com.sun.xacml.ParsingException;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 
 /**
  * Represents a single named parameter to a combining algorithm. Parameters are only used by XACML
@@ -70,13 +72,16 @@ class CombinerParameter extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Comb
 	 * 
 	 * @param param
 	 *            CombinerParameter as defined by OASIS XACML model
+	 * @param xPathCompiler
+	 *            Policy(Set) default XPath compiler, corresponding to the Policy(Set)'s default
+	 *            XPath version specified in {@link DefaultsType} element; null if none specified
 	 * @param expFactory
 	 *            attribute value factory
 	 * @throws ParsingException
 	 */
-	CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param, ExpressionFactory expFactory) throws ParsingException
+	CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param, Expression.Factory expFactory, XPathCompiler xpathCompiler) throws ParsingException
 	{
-		super(expFactory.createAttributeValue(param.getAttributeValue()), param.getParameterName());
+		super(expFactory.createAttributeValue(param.getAttributeValue(), xpathCompiler), param.getParameterName());
 	}
 
 	/**

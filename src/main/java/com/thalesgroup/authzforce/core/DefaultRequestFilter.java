@@ -26,12 +26,15 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 
 import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.eval.Expression.Utils;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -92,16 +95,6 @@ public final class DefaultRequestFilter extends RequestFilter
 	@Override
 	public final List<IndividualDecisionRequest> filter(Request jaxbRequest) throws IndeterminateEvaluationException
 	{
-		// RequestDefaults element not supported (optional XACML feature)
-		if (jaxbRequest.getRequestDefaults() != null)
-		{
-			/*
-			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error
-			 * code for unsupported element
-			 */
-			throw UNSUPPORTED_REQUEST_DEFAULTS_EXCEPTION;
-		}
-
 		// MultiRequests element not supported (optional XACML feature)
 		if (jaxbRequest.getMultiRequests() != null)
 		{
@@ -112,6 +105,21 @@ public final class DefaultRequestFilter extends RequestFilter
 			throw UNSUPPORTED_MULTI_REQUESTS_EXCEPTION;
 		}
 
+		// RequestDefaults element is supported for XPath expressions (optional XACML feature)
+		final RequestDefaults reqDefs = jaxbRequest.getRequestDefaults();
+		final XPathCompiler reqDefXPathCompiler;
+		if (reqDefs == null)
+		{
+			reqDefXPathCompiler = null;
+		} else
+		{
+			reqDefXPathCompiler = Utils.XPATH_COMPILERS_BY_VERSION.get(reqDefs.getXPathVersion());
+			if (reqDefXPathCompiler == null)
+			{
+				throw new IndeterminateEvaluationException("Invalid <RequestDefaults>/XPathVersion: " + reqDefs.getXPathVersion(), Status.STATUS_SYNTAX_ERROR);
+			}
+		}
+
 		/*
 		 * No support for Multiple Decision Profile -> no support for repeated categories as
 		 * specified in Multiple Decision Profile. So we keep track of attribute categories to check
@@ -119,7 +127,15 @@ public final class DefaultRequestFilter extends RequestFilter
 		 */
 		final Set<String> attrCategoryNames = new HashSet<>();
 		final XACMLAttributesParser xacmlAttrsParser = getXACMLAttributesParserInstance();
-		final IndividualDecisionRequest individualDecisionRequest = new IndividualDecisionRequest(jaxbRequest.isReturnPolicyIdList());
+		final IndividualDecisionRequest individualDecisionRequest;
+		try
+		{
+			individualDecisionRequest = new IndividualDecisionRequest(jaxbRequest.isReturnPolicyIdList(), reqDefXPathCompiler);
+		} catch (IllegalArgumentException e)
+		{
+			throw new IndeterminateEvaluationException("Invalid RequestDefaults/XPathVersion", Status.STATUS_SYNTAX_ERROR, e);
+		}
+
 		for (final Attributes jaxbAttributes : jaxbRequest.getAttributes())
 		{
 			final String categoryName = jaxbAttributes.getCategory();
@@ -128,7 +144,7 @@ public final class DefaultRequestFilter extends RequestFilter
 				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName + "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", Status.STATUS_SYNTAX_ERROR);
 			}
 
-			final CategorySpecificAttributes categorySpecificAttributes = xacmlAttrsParser.parse(jaxbAttributes);
+			final CategorySpecificAttributes categorySpecificAttributes = xacmlAttrsParser.parse(jaxbAttributes, reqDefXPathCompiler);
 			if (categorySpecificAttributes == null)
 			{
 				// skip this empty Attributes
@@ -140,5 +156,4 @@ public final class DefaultRequestFilter extends RequestFilter
 
 		return Collections.singletonList(individualDecisionRequest);
 	}
-
 }

@@ -32,6 +32,8 @@ import net.sf.saxon.value.BooleanValue;
 public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, BooleanAttributeValue>
 {
 
+	private final int hashCode;
+
 	/**
 	 * Official name of this type
 	 */
@@ -44,7 +46,7 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 	{
 
 		@Override
-		protected BooleanAttributeValue getInstance(String val)
+		public BooleanAttributeValue getInstance(String val)
 		{
 			return BooleanAttributeValue.fromString(val);
 		}
@@ -124,6 +126,7 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 	private BooleanAttributeValue(boolean value)
 	{
 		super(FACTORY.instanceDatatype, value, value);
+		hashCode = this.value.hashCode();
 	}
 
 	/**
@@ -149,12 +152,6 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 	}
 
 	@Override
-	public String toString()
-	{
-		return DatatypeConverter.printBoolean(value);
-	}
-
-	@Override
 	public BooleanAttributeValue one()
 	{
 		return this;
@@ -176,4 +173,40 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 	// System.out.println(fromString("not"));
 	// }
 
+	@Override
+	public StringAttributeValue toStringAttributeValue()
+	{
+		return StringAttributeValue.getInstance(value);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+
+		final BooleanAttributeValue other = (BooleanAttributeValue) obj;
+
+		/*
+		 * if (value == null) { if (other.value != null) { return false; } } else
+		 */
+		/*
+		 * WARNING: this part is not correct for array comparison, so we need to override equals if
+		 * V is an array type.
+		 */
+		return value == other.value.booleanValue();
+	}
 }

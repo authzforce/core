@@ -25,14 +25,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
+import net.sf.saxon.s9api.XPathCompiler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -55,15 +55,15 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf
 	 * 
 	 * @param jaxbAnyOf
 	 *            JAXB AnyOf
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
 	 * 
 	 * @throws ParsingException
 	 *             if AnyOf element is invalid
 	 */
-	public AnyOf(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public AnyOf(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
 		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> jaxbAllOfList = jaxbAnyOf.getAllOves();
 		if (jaxbAllOfList.isEmpty())
@@ -77,7 +77,7 @@ public class AnyOf extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf
 			final AllOf allOf;
 			try
 			{
-				allOf = new AllOf(jaxbAllOf, policyDefaults, expFactory);
+				allOf = new AllOf(jaxbAllOf, xPathCompiler, expFactory);
 			} catch (ParsingException e)
 			{
 				throw new ParsingException("Error parsing <AllOf>'s <Match>#" + matchIndex, e);

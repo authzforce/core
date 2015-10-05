@@ -42,7 +42,7 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	{
 
 		@Override
-		protected DoubleAttributeValue getInstance(String val)
+		public DoubleAttributeValue getInstance(String val)
 		{
 			return new DoubleAttributeValue(val);
 		}
@@ -92,10 +92,12 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	@Override
 	public DoubleAttributeValue add(DoubleAttributeValue[] others, int offset)
 	{
+		checkOffset(others, offset);
+
 		double sum = value;
-		for (final DoubleAttributeValue other : others)
+		for (int i = offset; i < others.length; i++)
 		{
-			sum += other.value;
+			sum += others[i].value;
 		}
 
 		return new DoubleAttributeValue(sum);
@@ -104,10 +106,12 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	@Override
 	public DoubleAttributeValue multiply(DoubleAttributeValue[] others, int offset)
 	{
+		checkOffset(others, offset);
+
 		double product = value;
-		for (final DoubleAttributeValue other : others)
+		for (int i = offset; i < others.length; i++)
 		{
-			product *= other.value;
+			product *= others[i].value;
 		}
 
 		return new DoubleAttributeValue(product);
@@ -119,8 +123,10 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 		return DatatypeConverter.parseDouble(stringForm);
 	}
 
+	private static final ArithmeticException ILLEGAL_DIV_BY_ZERO_EXCEPTION = new ArithmeticException("Illegal division by zero");
+
 	@Override
-	public DoubleAttributeValue divide(DoubleAttributeValue divisor)
+	public DoubleAttributeValue divide(DoubleAttributeValue divisor) throws ArithmeticException
 	{
 		/*
 		 * Quotes from Java Language Specification (Java SE 7 Edition), §4.2.3. Floating-Point
@@ -133,7 +139,14 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 		 * Nan), so we can return the result of division by zero as it is (JAXB will convert it
 		 * properly).
 		 */
-		return new DoubleAttributeValue(value / divisor.value);
+
+		final Double result = new Double(value / divisor.value);
+		if (result.isInfinite() || result.isNaN())
+		{
+			throw ILLEGAL_DIV_BY_ZERO_EXCEPTION;
+		}
+
+		return new DoubleAttributeValue(result);
 	}
 
 	/**
@@ -160,7 +173,7 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 		return new DoubleAttributeValue(Math.rint(value));
 	}
 
-	protected static void main(String... args)
+	public static void main(String... args)
 	{
 		Double arg1 = new Double("1");
 		Double divisor = new Double("0");
@@ -169,6 +182,10 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 		arg1 = new Double("-1");
 		result = arg1 / divisor;
 		System.out.println(result); // -Infinity!
+
+		Double positiveZero = new Double("0.");
+		Double negativeZero = new Double("-0.");
+		System.out.println(positiveZero.equals(negativeZero));
 	}
 
 	@Override
@@ -185,17 +202,6 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	public IntegerAttributeValue toInteger()
 	{
 		return new IntegerAttributeValue(value.longValue());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.attr.SimpleAttributeValue#toString()
-	 */
-	@Override
-	public String toString()
-	{
-		return DatatypeConverter.printDouble(value);
 	}
 
 	@Override

@@ -18,10 +18,10 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
@@ -30,21 +30,29 @@ import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiv
 /**
  * Implements string-concatenate function
  * 
+ * @param <AV>
+ *            type of string-based primitive attribute values to concatenate
+ * 
  */
-public class StringConcatenateFunction extends FirstOrderFunction<StringAttributeValue>
+public class StringConcatenateFunction<AV extends SimpleAttributeValue<String, AV>> extends FirstOrderFunction<StringAttributeValue>
 {
 
 	/**
 	 * Standard identifier for the string-concatenate function.
 	 */
 	public static final String NAME_STRING_CONCATENATE = FUNCTION_NS_2 + "string-concatenate";
+	private final Class<AV[]> paramArrayClass;
 
 	/**
 	 * Instantiates function. Takes two or more arguments, i.e. third is varargs
+	 * 
+	 * @param typeParameter
+	 *            parameter type definition
 	 */
-	public StringConcatenateFunction()
+	public StringConcatenateFunction(DatatypeConstants<AV> typeParameter)
 	{
-		super(NAME_STRING_CONCATENATE, DatatypeConstants.STRING.TYPE, true, DatatypeConstants.STRING.TYPE, DatatypeConstants.STRING.TYPE, DatatypeConstants.STRING.TYPE);
+		super(NAME_STRING_CONCATENATE, DatatypeConstants.STRING.TYPE, true, typeParameter.TYPE, typeParameter.TYPE, typeParameter.TYPE);
+		this.paramArrayClass = typeParameter.ARRAY_CLASS;
 	}
 
 	/*
@@ -56,11 +64,12 @@ public class StringConcatenateFunction extends FirstOrderFunction<StringAttribut
 	@Override
 	protected FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerPrimitiveEval<StringAttributeValue, StringAttributeValue>(signature, StringAttributeValue[].class, argExpressions, remainingArgTypes)
+
+		return new EagerPrimitiveEval<StringAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected StringAttributeValue evaluate(StringAttributeValue[] args) throws IndeterminateEvaluationException
+			protected StringAttributeValue evaluate(AV[] args) throws IndeterminateEvaluationException
 			{
 				return eval(args);
 			}
@@ -75,10 +84,14 @@ public class StringConcatenateFunction extends FirstOrderFunction<StringAttribut
 	 *            strings to concatenate
 	 * @return concatenation of all args
 	 */
-	public static StringAttributeValue eval(StringAttributeValue[] args)
+	public static <AV extends SimpleAttributeValue<String, AV>> StringAttributeValue eval(AV[] args)
 	{
-
-		return new StringAttributeValue(Arrays.toString(args));
+		final StringBuilder strBuilder = new StringBuilder();
+		for (int i = 0; i < args.length; i++)
+		{
+			strBuilder.append(args[i].getUnderlyingValue());
+		}
+		return new StringAttributeValue(strBuilder.toString());
 	}
 
 }

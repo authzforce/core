@@ -34,6 +34,7 @@
 package com.sun.xacml.attr;
 
 import java.net.InetAddress;
+import java.util.Objects;
 
 import javax.xml.ws.Holder;
 
@@ -234,6 +235,11 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 	@Override
 	protected String parse(String stringForm)
 	{
+		/*
+		 * The result value SHALL be the
+		 * "string in the form it was originally represented in XML form" to make sure the
+		 * string-from-ipAddress function works as specified in the spec.
+		 */
 		return stringForm;
 	}
 
@@ -268,6 +274,20 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 		return portRange;
 	}
 
+	private int hashCode = 0;
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			// hash regardless of letter case
+			hashCode = Objects.hash(address, mask, portRange);
+		}
+
+		return hashCode;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -278,8 +298,6 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 	{
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
-			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		final IPAddressAttributeValue other = (IPAddressAttributeValue) obj;
@@ -298,9 +316,7 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 		/*
 		 * if (portRange == null) { if (other.portRange != null) return false; } else
 		 */
-		if (!portRange.equals(other.portRange))
-			return false;
-		return true;
+		return portRange.equals(other.portRange);
 	}
 
 	@Override

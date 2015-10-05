@@ -42,7 +42,7 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue<Year
 	{
 
 		@Override
-		protected YearMonthDurationAttributeValue getInstance(String val)
+		public YearMonthDurationAttributeValue getInstance(String val)
 		{
 			return new YearMonthDurationAttributeValue(val);
 		}

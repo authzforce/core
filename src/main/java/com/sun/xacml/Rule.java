@@ -33,9 +33,9 @@
  */
 package com.sun.xacml;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
@@ -48,7 +48,7 @@ import com.thalesgroup.authzforce.core.Target;
 import com.thalesgroup.authzforce.core.eval.Decidable;
 import com.thalesgroup.authzforce.core.eval.DecisionResult;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.eval.RulePepActionExpressionsEvaluator;
 
@@ -191,14 +191,14 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 	 * Instantiates rule from XACML RuleType
 	 * 
 	 * @param ruleElt
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expressionFactory
 	 *            Expression parser/factory
 	 * @throws ParsingException
 	 *             Error parsing Target and/or Condition
 	 */
-	public Rule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule ruleElt, DefaultsType policyDefaults, ExpressionFactory expressionFactory) throws ParsingException
+	public Rule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule ruleElt, XPathCompiler xPathCompiler, Expression.Factory expressionFactory) throws ParsingException
 	// throws ParsingException
 	{
 		// JAXB fields initialization
@@ -223,7 +223,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Target targetElt = ruleElt.getTarget();
 		try
 		{
-			this.evaluatableTarget = targetElt == null ? null : new Target(targetElt, policyDefaults, expressionFactory);
+			this.evaluatableTarget = targetElt == null ? null : new Target(targetElt, xPathCompiler, expressionFactory);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException(this + ": Error parsing Target", e);
@@ -232,7 +232,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condElt = ruleElt.getCondition();
 		try
 		{
-			this.evaluatableCondition = condElt == null ? null : new Condition(condElt, policyDefaults, expressionFactory);
+			this.evaluatableCondition = condElt == null ? null : new Condition(condElt, xPathCompiler, expressionFactory);
 		} catch (IllegalArgumentException | ParsingException e)
 		{
 			throw new ParsingException(this + ": Error parsing Condition", e);
@@ -240,7 +240,7 @@ public class Rule extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule imple
 
 		try
 		{
-			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), policyDefaults, expressionFactory, effect);
+			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), xPathCompiler, expressionFactory, effect);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException(this + ": Error parsing ObligationExpressions/AdviceExpressions", e);

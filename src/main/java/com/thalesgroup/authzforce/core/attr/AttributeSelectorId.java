@@ -104,7 +104,6 @@ public class AttributeSelectorId
 		// } else
 		if (!category.equals(other.category))
 			return false;
-		// path cannot be null (see constructor)
 		// if (path == null)
 		// {
 		// if (other.path != null)

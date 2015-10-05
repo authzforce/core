@@ -196,8 +196,7 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 		@Override
 		protected final NAV eval(NAV[] args)
 		{
-			args[0].add(args, 1);
-			return args[0];
+			return args[0].add(args, 1);
 		}
 
 	}
@@ -213,8 +212,7 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 		@Override
 		protected final NAV eval(NAV[] args)
 		{
-			args[0].multiply(args, 1);
-			return args[0];
+			return args[0].multiply(args, 1);
 		}
 
 	}
@@ -230,8 +228,7 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 		@Override
 		protected final NAV eval(NAV[] args)
 		{
-			args[0].subtract(args[1]);
-			return args[0];
+			return args[0].subtract(args[1]);
 		}
 
 	}

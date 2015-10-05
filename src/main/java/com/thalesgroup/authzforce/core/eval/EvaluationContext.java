@@ -18,7 +18,9 @@
  */
 package com.thalesgroup.authzforce.core.eval;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeSelectorId;
@@ -35,6 +37,15 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
  */
 public interface EvaluationContext
 {
+
+	/**
+	 * Get default XPath compiler for compiling/evaluating all XPath expressions in the request
+	 * context (derived from XACML {@link RequestDefaults#getXPathVersion()}); null if none
+	 * specified in the XACML Request.
+	 * 
+	 * @return default XPath compiler
+	 */
+	public XPathCompiler getDefaultXPathCompiler();
 
 	/**
 	 * Returns available context evaluation result for given AttributeDesignator.

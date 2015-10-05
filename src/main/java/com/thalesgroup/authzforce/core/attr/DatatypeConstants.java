@@ -1,3 +1,21 @@
+/**
+ * Copyright (C) 2011-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce.
+ *
+ * AuthZForce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.thalesgroup.authzforce.core.attr;
 
 import java.util.Arrays;
@@ -8,9 +26,9 @@ import java.util.Set;
 import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
 import com.sun.xacml.cond.Function;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * XACML standard datatype constants, i.e. constants related to XACML standard datatypes
@@ -138,9 +156,15 @@ public final class DatatypeConstants<AV extends AttributeValue<AV>>
 	 */
 	public final String FUNCTION_ID_PREFIX;
 
+	/**
+	 * Datatype factory
+	 */
+	public final AttributeValue.Factory<AV> FACTORY;
+
 	private DatatypeConstants(AttributeValue.Factory<AV> valueFactory, Class<AV[]> valueArrayClass, String functionIdPrefix)
 	{
 		this.TYPE = valueFactory.getDatatype();
+		this.FACTORY = valueFactory;
 		this.BAG_TYPE = valueFactory.getBagDatatype();
 		this.EMPTY_BAG = valueFactory.getEmptyBag();
 		this.ARRAY_CLASS = valueArrayClass;

@@ -21,7 +21,7 @@ package com.thalesgroup.authzforce.core.eval;
 import java.util.ArrayList;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 import com.sun.xacml.ParsingException;
@@ -40,7 +40,7 @@ public interface PepActionExpressions
 	 */
 	interface Factory<T extends PepActionExpressions>
 	{
-		T getInstance(DefaultsType policyDefaults, ExpressionFactory expressionFactory);
+		T getInstance(XPathCompiler xPathCompiler, Expression.Factory expressionFactory);
 	}
 
 	/**

@@ -34,7 +34,9 @@
 package com.sun.xacml.attr;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
@@ -100,7 +102,9 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 	// the optional port portRange
 	private final PortRange portRange;
 
-	// true if the hostname starts with a '*'
+	/*
+	 * true if the hostname starts with a '*', therefore this field is derived from hostname
+	 */
 	private final boolean isAnySubdomain;
 
 	/**
@@ -165,7 +169,12 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 	@Override
 	protected String parse(String val)
 	{
-		return val.toLowerCase();
+		/*
+		 * The result value SHALL be the
+		 * "string in the form it was originally represented in XML form" to make sure the
+		 * string-from-dnsName function works as specified in the spec.
+		 */
+		return val;
 	}
 
 	/**
@@ -200,6 +209,20 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 		return isAnySubdomain;
 	}
 
+	private int hashCode = 0;
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			// hash regardless of letter case
+			hashCode = Objects.hash(hostname.toLowerCase(Locale.US), portRange);
+		}
+
+		return hashCode;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -214,10 +237,9 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 	{
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
-			return false;
 		if (getClass() != obj.getClass())
 			return false;
+
 		final DNSNameAttributeValue other = (DNSNameAttributeValue) obj;
 
 		// hostname and portRange are not null
@@ -225,14 +247,7 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 		 * if (hostname == null) { if (other.hostname != null) return false; } else
 		 */
 
-		if (!hostname.equalsIgnoreCase(other.hostname))
-			return false;
-		/*
-		 * if (portRange == null) { if (other.portRange != null) return false; } else
-		 */
-		if (!portRange.equals(other.portRange))
-			return false;
-		return true;
+		return hostname.equalsIgnoreCase(other.hostname) && portRange.equals(other.portRange);
 	}
 
 	@Override

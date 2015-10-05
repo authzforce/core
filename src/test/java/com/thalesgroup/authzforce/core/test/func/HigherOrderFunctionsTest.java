@@ -93,6 +93,12 @@ public class HigherOrderFunctionsTest extends GeneralFunctionTest
 						Arrays.asList(stringEqualFunc,//
 								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("Ringo"), new StringAttributeValue("Mary") }),//
 								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George"), new StringAttributeValue("Ringo") })),//
+						BooleanAttributeValue.TRUE },//
+				// Example with matching string in last position in first bag
+				new Object[] { NAME_ANY_OF_ANY,//
+						Arrays.asList(stringEqualFunc,//
+								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("Ringo"), new StringAttributeValue("Mary") }),//
+								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("Mary"), new StringAttributeValue("Ringo") })),//
 						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ANY_OF_ANY,//

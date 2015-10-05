@@ -18,6 +18,8 @@
  */
 package com.thalesgroup.authzforce.core.attr;
 
+import net.sf.saxon.s9api.XPathCompiler;
+
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 import com.thalesgroup.authzforce.core.PdpExtensionRegistry;
@@ -36,13 +38,15 @@ public interface DatatypeFactoryRegistry extends PdpExtensionRegistry<AttributeV
 	 * 
 	 * @param value
 	 *            AttributeValue from OASIS XACML model
+	 * @param xPathCompiler
+	 *            XPath compiler for evaluating/compiling any XPath expression in {@code value}
 	 * @return AttributeValue
 	 * @throws ParsingException
 	 *             if value cannot be parsed into the value's defined datatype
 	 * @throws UnknownIdentifierException
 	 *             value datatype unknown/not supported
 	 */
-	AttributeValue<?> createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value) throws UnknownIdentifierException, ParsingException;
+	AttributeValue<?> createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value, XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException;
 
 	/**
 	 * Create internal model's AttributeValue
@@ -51,11 +55,13 @@ public interface DatatypeFactoryRegistry extends PdpExtensionRegistry<AttributeV
 	 *            AttributeValue from OASIS XACML model
 	 * @param valueClass
 	 *            concrete class of the instance returned
+	 * @param xPathCompiler
+	 *            XPath compiler for evaluating/compiling any XPath expression in {@code value}
 	 * @return SunXACML AttributeValue
 	 * @throws ParsingException
 	 *             if value cannot be parsed into the value's defined datatype
 	 * @throws UnknownIdentifierException
 	 *             value datatype unknown/not supported
 	 */
-	<T extends AttributeValue<T>> T createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value, Class<T> valueClass) throws UnknownIdentifierException, ParsingException;
+	<T extends AttributeValue<T>> T createValue(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value, Class<T> valueClass, XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException;
 }

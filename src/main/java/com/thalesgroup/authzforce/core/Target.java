@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
+import net.sf.saxon.s9api.XPathCompiler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -52,13 +52,13 @@ public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target
 	 * 
 	 * @param jaxbTarget
 	 *            XACML-schema-derived JAXB Target
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
 	 * @throws ParsingException
 	 */
-	public Target(oasis.names.tc.xacml._3_0.core.schema.wd_17.Target jaxbTarget, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public Target(oasis.names.tc.xacml._3_0.core.schema.wd_17.Target jaxbTarget, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
 		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf> jaxbAnyOfList = jaxbTarget.getAnyOves();
 		if (jaxbAnyOfList.isEmpty())
@@ -77,7 +77,7 @@ public class Target extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target
 			final AnyOf anyOf;
 			try
 			{
-				anyOf = new AnyOf(jaxbAnyOf, policyDefaults, expFactory);
+				anyOf = new AnyOf(jaxbAnyOf, xPathCompiler, expFactory);
 			} catch (ParsingException e)
 			{
 				throw new ParsingException("Error parsing <Target>'s <AnyOf>#" + childIndex, e);

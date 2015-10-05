@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
@@ -46,7 +47,8 @@ import com.thalesgroup.authzforce.core.Target;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.eval.DecisionResult;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.Expression.Utils;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.eval.VariableReference;
 
@@ -149,9 +151,9 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	 * 
 	 * @param policyElement
 	 *            Policy (XACML)
-	 * @param parentPolicySetDefaults
-	 *            parent PolicySetDefaults; null if this Policy has no parent PolicySet (root), or
-	 *            none defined in parent
+	 * @param parentDefaultXPathCompiler
+	 *            XPath compiler corresponding to parent PolicySetDefaults/XPathVersion; null if
+	 *            this Policy has no parent PolicySet (root), or none defined in parent
 	 * @param expressionFactory
 	 *            Expression factory/parser
 	 * @param combiningAlgRegistry
@@ -159,7 +161,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	 * @throws ParsingException
 	 *             if PolicyElement is invalid
 	 */
-	public Policy(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policyElement, DefaultsType parentPolicySetDefaults, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws ParsingException
+	public Policy(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy policyElement, XPathCompiler parentDefaultXPathCompiler, Expression.Factory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws ParsingException
 	{
 		this.policyId = policyElement.getPolicyId();
 		if (policyId == null)
@@ -186,14 +188,26 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		this.maxDelegationDepth = policyElement.getMaxDelegationDepth();
 		this.description = policyElement.getDescription();
 		this.policyDefaults = policyElement.getPolicyDefaults();
+
 		// Inherited PolicySetDefaults is this.policyDefaults if not null, the
 		// parentPolicySetDefaults otherwise
-		final DefaultsType inheritedPolicyDefaults = policyDefaults == null ? parentPolicySetDefaults : policyDefaults;
+		final XPathCompiler defaultXPathCompiler;
+		if (policyDefaults == null)
+		{
+			defaultXPathCompiler = parentDefaultXPathCompiler;
+		} else
+		{
+			defaultXPathCompiler = Utils.XPATH_COMPILERS_BY_VERSION.get(policyDefaults.getXPathVersion());
+			if (defaultXPathCompiler == null)
+			{
+				throw new ParsingException(this + ": Invalid PolicyDefaults/XPathVersion: " + policyDefaults.getXPathVersion());
+			}
+		}
 
 		final Target evaluatableTarget;
 		try
 		{
-			evaluatableTarget = new Target(policyElement.getTarget(), inheritedPolicyDefaults, expressionFactory);
+			evaluatableTarget = new Target(policyElement.getTarget(), defaultXPathCompiler, expressionFactory);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException(this + ": Error parsing Target", e);
@@ -230,7 +244,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 				final CombinerElement<Rule> combinerElt;
 				try
 				{
-					combinerElt = new CombinerElement<>(combinedRule, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory);
+					combinerElt = new CombinerElement<>(combinedRule, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (RuleCombinerParameters)", e);
@@ -243,7 +257,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 				final CombinerElement<Rule> combinerElt;
 				try
 				{
-					combinerElt = new CombinerElement<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory);
+					combinerElt = new CombinerElement<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (CombinerParameters)", e);
@@ -256,7 +270,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 				final VariableReference<?> var;
 				try
 				{
-					var = expressionFactory.addVariable(varDef, inheritedPolicyDefaults);
+					var = expressionFactory.addVariable(varDef, defaultXPathCompiler);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (VariableDefinition)", e);
@@ -277,7 +291,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 				final Rule rule;
 				try
 				{
-					rule = new Rule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule) policyChildElt, inheritedPolicyDefaults, expressionFactory);
+					rule = new Rule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule) policyChildElt, defaultXPathCompiler, expressionFactory);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(this + ": Error parsing child #" + childIndex + " (Rule)", e);
@@ -302,7 +316,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 			throw new ParsingException(this + ": Unknown rule-combining algorithm ID=" + ruleCombiningAlgId, e);
 		}
 
-		final PolicyPepActionExpressionsEvaluator pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(), inheritedPolicyDefaults, expressionFactory);
+		final PolicyPepActionExpressionsEvaluator pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(), defaultXPathCompiler, expressionFactory);
 		if (pepActionExps == null)
 		{
 			this.obligationExpressions = null;
@@ -360,8 +374,6 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 	{
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
-			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		final Policy other = (Policy) obj;
@@ -369,17 +381,7 @@ public class Policy extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy i
 		 * We ignore the policyIssuer because it is no part of PolicyReferences, therefore we
 		 * consider it is not part of the Policy uniqueness
 		 */
-		if (this.policyId != other.policyId)
-		{
-			return false;
-		}
-
-		if (this.version != other.version)
-		{
-			return false;
-		}
-
-		return true;
+		return this.policyId.equals(other.policyId) && this.version.equals(other.version);
 	}
 
 }

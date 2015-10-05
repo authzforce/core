@@ -30,11 +30,15 @@ import java.util.Queue;
 import javax.xml.bind.JAXBContext;
 
 import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
+import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.eval.Expression.Utils;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -76,16 +80,6 @@ public final class MultiDecisionRequestFilter extends RequestFilter
 	@Override
 	public final List<IndividualDecisionRequest> filter(Request request) throws IndeterminateEvaluationException
 	{
-		// RequestDefaults element not supported (optional XACML feature)
-		if (request.getRequestDefaults() != null)
-		{
-			/*
-			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error
-			 * code for unsupported element
-			 */
-			throw UNSUPPORTED_REQUEST_DEFAULTS_EXCEPTION;
-		}
-
 		/*
 		 * No support for MultiRequests (§2.4 of Multiple Decision Profile). We only support §2.3
 		 * for now.
@@ -99,6 +93,21 @@ public final class MultiDecisionRequestFilter extends RequestFilter
 			throw UNSUPPORTED_MULTI_REQUESTS_EXCEPTION;
 		}
 
+		// RequestDefaults element is supported for XPath expressions (optional XACML feature)
+		final RequestDefaults reqDefs = request.getRequestDefaults();
+		final XPathCompiler reqDefXPathCompiler;
+		if (reqDefs == null)
+		{
+			reqDefXPathCompiler = null;
+		} else
+		{
+			reqDefXPathCompiler = Utils.XPATH_COMPILERS_BY_VERSION.get(reqDefs.getXPathVersion());
+			if (reqDefXPathCompiler == null)
+			{
+				throw new IndeterminateEvaluationException("Invalid <RequestDefaults>/XPathVersion: " + reqDefs.getXPathVersion(), Status.STATUS_SYNTAX_ERROR);
+			}
+		}
+
 		/*
 		 * Parse Request attributes and group possibly repeated categories to implement Multiple
 		 * Decision Profile, §2.3.
@@ -108,7 +117,7 @@ public final class MultiDecisionRequestFilter extends RequestFilter
 		for (final Attributes jaxbAttributes : request.getAttributes())
 		{
 			final String categoryName = jaxbAttributes.getCategory();
-			final CategorySpecificAttributes categoryAttributesAlternative = xacmlAttrsParser.parse(jaxbAttributes);
+			final CategorySpecificAttributes categoryAttributesAlternative = xacmlAttrsParser.parse(jaxbAttributes, reqDefXPathCompiler);
 			if (categoryAttributesAlternative == null)
 			{
 				// skip this empty Attributes
@@ -133,7 +142,14 @@ public final class MultiDecisionRequestFilter extends RequestFilter
 		 * Create initial individual request from which all others will be created/cloned
 		 */
 		// returnPolicyIdList not supported so always set to false
-		final IndividualDecisionRequest initialIndividualReq = new IndividualDecisionRequest(request.isReturnPolicyIdList());
+		final IndividualDecisionRequest initialIndividualReq;
+		try
+		{
+			initialIndividualReq = new IndividualDecisionRequest(request.isReturnPolicyIdList(), reqDefXPathCompiler);
+		} catch (IllegalArgumentException e)
+		{
+			throw new IndeterminateEvaluationException("Invalid RequestDefaults/XPathVersion", Status.STATUS_SYNTAX_ERROR, e);
+		}
 		/*
 		 * Generate the Multiple Individual Decision Requests starting with initialIndividualReq and
 		 * cloning/adding new attributes/content for each new attribute category's Attributes

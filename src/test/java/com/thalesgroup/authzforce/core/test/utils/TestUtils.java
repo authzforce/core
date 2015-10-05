@@ -20,6 +20,7 @@ package com.thalesgroup.authzforce.core.test.utils;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.FileNotFoundException;
 import java.io.StringWriter;
 import java.net.URL;
 
@@ -33,6 +34,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.PDP;
 import com.thalesgroup.authzforce.core.DefaultRequestFilter;
@@ -44,7 +46,7 @@ import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
 import com.thalesgroup.authzforce.core.attr.StandardDatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.ExpressionFactoryImpl;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
@@ -57,11 +59,11 @@ public class TestUtils
 	/**
 	 * XACML standard Expression factory/parser
 	 */
-	public static final ExpressionFactory STD_EXPRESSION_FACTORY;
+	public static final Expression.Factory STD_EXPRESSION_FACTORY;
 	static
 	{
 		final CloseableAttributeFinder ctxOnlyAttrFinder = new CloseableAttributeFinderImpl(null);
-		STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.INSTANCE, StandardFunctionRegistry.INSTANCE, ctxOnlyAttrFinder, 0, false, null);
+		STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.INSTANCE, StandardFunctionRegistry.INSTANCE, ctxOnlyAttrFinder, 0, false);
 	}
 
 	/**
@@ -80,20 +82,18 @@ public class TestUtils
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestUtils.class);
 
 	/**
-	 * This creates the XACML request from file on classpath: {@code rootDirectory}/
-	 * {@code versionDirectory}/{@value #REQUEST_DIRECTORY}/{@code requestFilename}
+	 * This creates the XACML request from file on classpath
 	 * 
-	 * @param rootDirectory
-	 *            root directory of the request files
-	 * @param versionDirectory
-	 *            version directory of the request files
-	 * @param requestFilename
-	 *            request file name
-	 * @return String or null if any error
+	 * @param requestFileLocation
+	 *            file path (with Spring-supported URL prefixes: 'classpath:', etc.) path to the
+	 *            request file, relative to classpath
+	 * @return the XML/JAXB Request or null if any error
 	 * @throws JAXBException
-	 *             error reading XACML 3.0 Request from the file
+	 *             error reading XACML 3.0 Request from the file at {@code requestFileLocation}
+	 * @throws FileNotFoundException
+	 *             no file found at {@code requestFileLocation}
 	 */
-	public static Request createRequest(String rootDirectory, String versionDirectory, String requestFilename) throws JAXBException
+	public static Request createRequest(String requestFileLocation) throws JAXBException, FileNotFoundException
 	{
 		/**
 		 * Get absolute path/URL to request file in a portable way, using current class loader. As
@@ -103,11 +103,10 @@ public class TestUtils
 		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
 		 * by this method), and file will not be found as a result.
 		 */
-		String requestFileResourceName = rootDirectory + "/" + versionDirectory + "/" + REQUEST_DIRECTORY + "/" + requestFilename;
-		URL requestFileURL = Thread.currentThread().getContextClassLoader().getResource(requestFileResourceName);
+		URL requestFileURL = ResourceUtils.getURL(requestFileLocation);
 		if (requestFileURL == null)
 		{
-			throw new IllegalArgumentException("No XACML Request file found at location: 'classpath:" + requestFileResourceName + "'");
+			throw new FileNotFoundException("No XACML Request file found at location: 'classpath:" + requestFileLocation + "'");
 		}
 
 		LOGGER.debug("Request file to read: {}", requestFileURL);
@@ -117,24 +116,17 @@ public class TestUtils
 	}
 
 	/**
-	 * This creates the XACML request from file on classpath:
-	 * <p>
-	 * {@code rootDirectory}/{@code versionDirectory}/{@value #RESPONSE_DIRECTORY}/
-	 * {@code responseFilename}
-	 * </p>
+	 * This creates the XACML response from file on classpath
 	 * 
-	 * 
-	 * @param rootDirectory
-	 *            root directory of the request files
-	 * @param versionDirectory
-	 *            version directory of the request files
-	 * @param responseFilename
-	 *            request file name
-	 * @return String or null if any error
+	 * @param responseFileLocation
+	 *            path to the response file (with Spring-supported URL prefixes: 'classpath:', etc.)
+	 * @return the XML/JAXB Response or null if any error
 	 * @throws JAXBException
-	 *             error reading XACML 3.0 Request from the file
+	 *             error reading XACML 3.0 Request from the file at {@code responseFileLocation}
+	 * @throws FileNotFoundException
+	 *             no file found at {@code responseFileLocation}
 	 */
-	public static Response createResponse(String rootDirectory, String versionDirectory, String responseFilename) throws JAXBException
+	public static Response createResponse(String responseFileLocation) throws JAXBException, FileNotFoundException
 	{
 		/**
 		 * Get absolute path/URL to response file in a portable way, using current class loader. As
@@ -144,8 +136,7 @@ public class TestUtils
 		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
 		 * by this method), and file will not be found as a result.
 		 */
-		String responseFileResourceName = rootDirectory + "/" + versionDirectory + "/" + RESPONSE_DIRECTORY + "/" + responseFilename;
-		URL responseFileURL = Thread.currentThread().getContextClassLoader().getResource(responseFileResourceName);
+		URL responseFileURL = ResourceUtils.getURL(responseFileLocation);
 		LOGGER.debug("Response file to read: {}", responseFileURL);
 		Unmarshaller u = XACMLBindingUtils.createXacml3Unmarshaller();
 		Response response = (Response) u.unmarshal(responseFileURL);
@@ -256,37 +247,17 @@ public class TestUtils
 	// }
 
 	/**
-	 * Returns a new PDP instance with a new root XACML policy loaded from {@code rootDir}/
-	 * {@code versionDir}/{@value #POLICY_DIRECTORY}/{@code policyFilename} and supporting only
-	 * mandatory XACML core features (standard attribute datatypes and functions...)
+	 * Creates PDP from root policy file
 	 * 
-	 * @param rootDir
-	 *            test root directory name
-	 * @param versionDir
-	 *            XACML version directory name
-	 * 
-	 * @param policyFilename
-	 *            PDP's root policy filename
-	 * @return a PDP instance
-	 */
-	public static PDP getPDPNewInstance(String rootDir, String versionDir, String policyFilename)
-	{
-		return getPDPNewInstance(rootDir + "/" + versionDir + "/" + POLICY_DIRECTORY + "/", policyFilename);
-	}
-
-	/**
-	 * Creates PDP from policies and global configuration located at classpath:{@code pathPrefix} +
-	 * {@code policyfilename}
-	 * 
-	 * @param pathPrefix
-	 *            prefix to append before policy filename to have the actual policy file path in the
-	 *            classpath
-	 * @param policyfilename
-	 *            XACML policy filename relative to pathPrefix. If pathPrefix is null, filename is
-	 *            considered at the root of the classpath
+	 * @param policyLocation
+	 *            XACML policy location (with Spring-supported URL prefixes: 'classpath:', etc.)
 	 * @return PDP instance
+	 * @throws IllegalArgumentException
+	 *             invalid XACML policy located at {@code policyLocation}
+	 * @throws FileNotFoundException
+	 *             no file at location {@code policyLocation}
 	 */
-	public static PDP getPDPNewInstance(String pathPrefix, String policyfilename)
+	public static PDP getPDPNewInstance(String policyLocation) throws IllegalArgumentException, FileNotFoundException
 	{
 		/**
 		 * Get absolute path/URL to policy file in a portable way, using current class loader. As
@@ -296,23 +267,19 @@ public class TestUtils
 		 * and will be URL-encoded (%5c) by the getResource() method (not considered path separator
 		 * by this method), and file will not be found as a result.
 		 */
-		String policyFileResourceName = pathPrefix + policyfilename;
-		URL policyFileURL = Thread.currentThread().getContextClassLoader().getResource(policyFileResourceName);
+		URL policyFileURL = ResourceUtils.getURL(policyLocation);
+		if (policyFileURL == null)
+		{
+			throw new FileNotFoundException("No such file: " + policyLocation);
+		}
+
 		BaseStaticPolicyFinder jaxbRootPolicyFinder = new BaseStaticPolicyFinder();
 		jaxbRootPolicyFinder.setId("root");
 		jaxbRootPolicyFinder.setPolicyLocation(policyFileURL.toString());
 
 		Pdp jaxbPDP = new Pdp();
 		jaxbPDP.setRootPolicyFinder(jaxbRootPolicyFinder);
-		final PDP pdp;
-		try
-		{
-			pdp = PdpConfigurationParser.getPDP(jaxbPDP);
-		} catch (IllegalArgumentException e)
-		{
-			throw new RuntimeException("Error parsing policy from location: " + policyFileURL, e);
-		}
-
+		final PDP pdp = PdpConfigurationParser.getPDP(jaxbPDP);
 		return pdp;
 	}
 

@@ -112,9 +112,7 @@ public class PolicyVersion implements Comparable<PolicyVersion>
 		if (getClass() != obj.getClass())
 			return false;
 		final PolicyVersion other = (PolicyVersion) obj;
-		if (!Arrays.equals(numbers, other.numbers))
-			return false;
-		return true;
+		return Arrays.equals(numbers, other.numbers);
 	}
 
 	@Override

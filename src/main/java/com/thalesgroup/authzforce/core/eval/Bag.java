@@ -126,8 +126,8 @@ public abstract class Bag<AV extends AttributeValue<AV>> implements Value<AV, Ba
 			return false;
 		}
 
-		final Bag<?> otherBag = (Bag<?>) other;
-		return bagDatatype.getValueClass().equals(otherBag.bagDatatype.getValueClass()) && Arrays.equals(all(), otherBag.all());
+		final Bag<AV> otherBag = (Bag<AV>) other;
+		return bagDatatype.getValueClass() == otherBag.bagDatatype.getValueClass() && Arrays.equals(all(), otherBag.all());
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public abstract class Bag<AV extends AttributeValue<AV>> implements Value<AV, Ba
 			 * There must be one-to-one mapping between datatype and datatype, so no need to hash
 			 * both. Plus, causeForEmpty is just some optional info, ignore it in hash.
 			 */
-			hashCode = Objects.hash(bagDatatype.getValueClass(), all());
+			hashCode = Objects.hash(bagDatatype.getValueClass(), Arrays.hashCode(all()));
 		}
 
 		return hashCode;

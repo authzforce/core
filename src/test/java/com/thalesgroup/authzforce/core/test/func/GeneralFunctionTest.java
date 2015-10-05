@@ -21,14 +21,17 @@
  */
 package com.thalesgroup.authzforce.core.test.func;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.eval.Expression.Value;
@@ -46,9 +49,10 @@ public abstract class GeneralFunctionTest
 {
 	// private static final Logger LOGGER = LoggerFactory.getLogger(GeneralFunctionTest.class);
 
-	private final Function<?> function;
 	private final FunctionCall<?> funcCall;
 	private final Value<?, ?> expectedResult;
+	private final String toString;
+	private final boolean areBagsComparedAsSets;
 
 	/**
 	 * 
@@ -63,6 +67,25 @@ public abstract class GeneralFunctionTest
 	 * @throws UnknownIdentifierException
 	 */
 	protected GeneralFunctionTest(final String functionName, final List<Expression<?>> inputs, final Value<?, ?> expectedResult)
+	{
+		this(functionName, inputs, expectedResult, false);
+	}
+
+	/**
+	 * 
+	 * @param functionName
+	 *            The fully qualified name of the function to be tested. The function must be
+	 *            supported by the StandardFunctionRegistry.
+	 * @param inputs
+	 *            The list of the function arguments, in order.
+	 * @param expectedResult
+	 *            The expected function evaluation result, according to the given inputs; null if
+	 *            evaluation expected to throw an error (IndeterminateEvaluationException)
+	 * @param compareBagsAsSets
+	 *            true iff result bags should be compared as sets for equality check
+	 * @throws UnknownIdentifierException
+	 */
+	protected GeneralFunctionTest(final String functionName, final List<Expression<?>> inputs, final Value<?, ?> expectedResult, boolean compareBagsAsSets)
 	{
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
 		final Datatype<?> subFuncReturnType;
@@ -83,30 +106,25 @@ public abstract class GeneralFunctionTest
 
 		try
 		{
-			this.function = TestUtils.STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
+			final Function<?> function = TestUtils.STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
+			funcCall = function.newCall(inputs);
+
+			this.expectedResult = expectedResult;
+			this.toString = function + "( " + inputs + " )";
 		} catch (UnknownIdentifierException e)
 		{
 			throw new RuntimeException(e);
 		}
 
-		// -> function is null if not supported
-		if (function == null)
-		{
-			funcCall = null;
-		} else
-		{
-			funcCall = function.newCall(inputs);
-		}
-
-		this.expectedResult = expectedResult;
+		this.areBagsComparedAsSets = compareBagsAsSets;
 	}
 
-	@Before
-	public void skipIfFunctionNotSupported()
-	{
-		// assume test OK if function not supported -> skip it
-		org.junit.Assume.assumeTrue(function == null);
-	}
+	// @Before
+	// public void skipIfFunctionNotSupported()
+	// {
+	// // assume test OK if function not supported -> skip it
+	// org.junit.Assume.assumeTrue(function == null);
+	// }
 
 	@Test
 	public void testEvaluate()
@@ -119,11 +137,19 @@ public abstract class GeneralFunctionTest
 		try
 		{
 			Value<?, ?> actualResult = funcCall.evaluate(null);
-			Assert.assertEquals(expectedResult, actualResult);
+			if (expectedResult instanceof Bag && actualResult instanceof Bag && areBagsComparedAsSets)
+			{
+				Set<?> expectedSet = new HashSet(Arrays.asList(((Bag) expectedResult).all()));
+				Set<?> actualSet = new HashSet(Arrays.asList(((Bag) actualResult).all()));
+				Assert.assertEquals(toString, expectedSet, actualSet);
+			} else
+			{
+				Assert.assertEquals(toString, expectedResult, actualResult);
+			}
 		} catch (IndeterminateEvaluationException e)
 		{
 			// expectedResult must be null to indicate we expect an evaluation error
-			Assert.assertNull("Expected evaluation error", expectedResult);
+			Assert.assertNull("Expected evaluation error: ", expectedResult);
 
 		}
 	}

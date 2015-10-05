@@ -21,8 +21,8 @@ package com.thalesgroup.authzforce.core.eval;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
@@ -50,21 +50,21 @@ public class RulePepActionExpressionsEvaluator extends PepActionExpressionsEvalu
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(ActionExpressionsParser.class);
 
-		private final DefaultsType policyDefaults;
-		private final ExpressionFactory expFactory;
+		private final XPathCompiler xPathCompiler;
+		private final Expression.Factory expFactory;
 		private final PepActionExpressions.EffectSpecific ruleEffectMatchingActionExpressions;
 
 		/**
 		 * Creates instance
 		 * 
-		 * @param policyDefaults
-		 *            Enclosing policy default parameters for parsing expressions
+		 * @param xPathCompiler
+		 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 		 * @param expressionFactory
 		 *            expression factory for parsing expressions
 		 * @param ruleEffect
 		 *            XACML rule's Effect
 		 */
-		private ActionExpressionsParser(DefaultsType policyDefaults, ExpressionFactory expressionFactory, EffectType ruleEffect)
+		private ActionExpressionsParser(XPathCompiler xPathCompiler, Expression.Factory expressionFactory, EffectType ruleEffect)
 		{
 			if (ruleEffect == null)
 			{
@@ -72,14 +72,14 @@ public class RulePepActionExpressionsEvaluator extends PepActionExpressionsEvalu
 			}
 
 			this.ruleEffectMatchingActionExpressions = new EffectSpecific(ruleEffect);
-			this.policyDefaults = policyDefaults;
+			this.xPathCompiler = xPathCompiler;
 			this.expFactory = expressionFactory;
 		}
 
 		@Override
 		public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp) throws ParsingException
 		{
-			final ObligationExpression obligationExp = new ObligationExpression(jaxbObligationExp, policyDefaults, expFactory);
+			final ObligationExpression obligationExp = new ObligationExpression(jaxbObligationExp, xPathCompiler, expFactory);
 			final boolean isMatching = ruleEffectMatchingActionExpressions.add(obligationExp);
 			if (LOGGER.isWarnEnabled() && !isMatching)
 			{
@@ -90,7 +90,7 @@ public class RulePepActionExpressionsEvaluator extends PepActionExpressionsEvalu
 		@Override
 		public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp) throws ParsingException
 		{
-			final AdviceExpression adviceExp = new AdviceExpression(jaxbAdviceExp, policyDefaults, expFactory);
+			final AdviceExpression adviceExp = new AdviceExpression(jaxbAdviceExp, xPathCompiler, expFactory);
 			final boolean isMatching = ruleEffectMatchingActionExpressions.add(adviceExp);
 			if (LOGGER.isWarnEnabled() && !isMatching)
 			{
@@ -121,9 +121,9 @@ public class RulePepActionExpressionsEvaluator extends PepActionExpressionsEvalu
 		}
 
 		@Override
-		public ActionExpressionsParser getInstance(DefaultsType policyDefaults, ExpressionFactory expressionFactory)
+		public ActionExpressionsParser getInstance(XPathCompiler xPathCompiler, Expression.Factory expressionFactory)
 		{
-			return new ActionExpressionsParser(policyDefaults, expressionFactory, ruleEffect);
+			return new ActionExpressionsParser(xPathCompiler, expressionFactory, ruleEffect);
 		}
 
 	}
@@ -132,9 +132,9 @@ public class RulePepActionExpressionsEvaluator extends PepActionExpressionsEvalu
 	private final AdviceExpressions jaxbAdviceExpressions;
 	private final PepActionExpressions.EffectSpecific ruleEffectMatchingActionExpressions;
 
-	private RulePepActionExpressionsEvaluator(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, DefaultsType policyDefaults, ExpressionFactory expFactory, EffectType effect) throws ParsingException
+	private RulePepActionExpressionsEvaluator(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, Expression.Factory expFactory, EffectType effect) throws ParsingException
 	{
-		final ActionExpressionsParser actionExpressionsParser = super.parseActionExpressions(jaxbObligationExpressions, jaxbAdviceExpressions, policyDefaults, expFactory, new ActionExpressionsFactory(effect));
+		final ActionExpressionsParser actionExpressionsParser = super.parseActionExpressions(jaxbObligationExpressions, jaxbAdviceExpressions, xPathCompiler, expFactory, new ActionExpressionsFactory(effect));
 		this.jaxbObligationExpressions = new ObligationExpressions(Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression> unmodifiableList(actionExpressionsParser.getObligationExpressionList()));
 		this.jaxbAdviceExpressions = new AdviceExpressions(Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression> unmodifiableList(actionExpressionsParser.getAdviceExpressionList()));
 		this.ruleEffectMatchingActionExpressions = actionExpressionsParser.ruleEffectMatchingActionExpressions;
@@ -149,8 +149,8 @@ public class RulePepActionExpressionsEvaluator extends PepActionExpressionsEvalu
 	 *            XACML-schema-derived ObligationExpressions
 	 * @param jaxbAdviceExpressions
 	 *            XACML-schema-derived AdviceExpressions
-	 * @param policyDefaults
-	 *            enclosing policy default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing the AttributeAssignmentExpressions in the
 	 *            Obligation/Advice Expressions
@@ -161,14 +161,14 @@ public class RulePepActionExpressionsEvaluator extends PepActionExpressionsEvalu
 	 * @throws ParsingException
 	 *             if error parsing one of the AttributeAssignmentExpressions
 	 */
-	public static RulePepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, DefaultsType policyDefaults, ExpressionFactory expFactory, EffectType effect) throws ParsingException
+	public static RulePepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, Expression.Factory expFactory, EffectType effect) throws ParsingException
 	{
 		if ((jaxbObligationExpressions == null || jaxbObligationExpressions.getObligationExpressions().isEmpty()) && (jaxbAdviceExpressions == null || jaxbAdviceExpressions.getAdviceExpressions().isEmpty()))
 		{
 			return null;
 		}
 
-		return new RulePepActionExpressionsEvaluator(jaxbObligationExpressions, jaxbAdviceExpressions, policyDefaults, expFactory, effect);
+		return new RulePepActionExpressionsEvaluator(jaxbObligationExpressions, jaxbAdviceExpressions, xPathCompiler, expFactory, effect);
 	}
 
 	/**

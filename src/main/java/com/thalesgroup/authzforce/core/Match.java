@@ -21,10 +21,10 @@ package com.thalesgroup.authzforce.core;
 import java.util.Arrays;
 import java.util.List;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.cond.Function;
@@ -32,7 +32,6 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 import com.thalesgroup.authzforce.core.func.HigherOrderBagFunction;
@@ -130,12 +129,12 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 	 *            XACML-Schema-derived JAXB Match
 	 * @param expFactory
 	 *            bagExpression factory
-	 * @param policyDefaults
-	 *            policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @throws ParsingException
 	 *             error parsing <code>jaxbMatch</code>
 	 */
-	public Match(oasis.names.tc.xacml._3_0.core.schema.wd_17.Match jaxbMatch, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public Match(oasis.names.tc.xacml._3_0.core.schema.wd_17.Match jaxbMatch, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
 		// get the matchFunction type, making sure that it's really a correct
 		// Target matchFunction
@@ -150,13 +149,13 @@ public class Match extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 		// value paired with it
 		this.attributeDesignator = jaxbMatch.getAttributeDesignator();
 		this.attributeSelector = jaxbMatch.getAttributeSelector();
-		final Expression<?> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, policyDefaults, null);
+		final Expression<?> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, xPathCompiler, null);
 
 		this.attributeValue = jaxbMatch.getAttributeValue();
 		final AttributeValue<?> attrValueExpr;
 		try
 		{
-			attrValueExpr = expFactory.createAttributeValue(attributeValue);
+			attrValueExpr = expFactory.createAttributeValue(attributeValue, xPathCompiler);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException("Error parsing <Match>'s <AttributeValue>", e);

@@ -31,10 +31,10 @@ import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.VariableReference;
 
 /**
@@ -499,15 +499,15 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 				this.inputsAfterSubFunc = inputsAfterSubFunc;
 			}
 
-			private final BooleanAttributeValue eval(Iterator<Expression<?>> inputsAfterSubFuncIterator, ListIterator<AttributeValue<?>[]> nonFirstArgEvalResultsIterator, Deque<AttributeValue<?>> subFuncArgsStack, EvaluationContext context) throws IndeterminateEvaluationException
+			private final BooleanAttributeValue eval(Iterator<Expression<?>> argExpressionsAfterSubFuncIterator, ListIterator<AttributeValue<?>[]> argValuesAfterSubFuncIterator, Deque<AttributeValue<?>> subFuncArgsStack, EvaluationContext context) throws IndeterminateEvaluationException
 			{
 				final AttributeValue<?>[] argVals;
-				if (inputsAfterSubFuncIterator.hasNext())
+				if (argExpressionsAfterSubFuncIterator.hasNext())
 				{
 					// we are still evaluating argument expressions for the first time
 					try
 					{
-						argVals = inputsAfterSubFuncIterator.next().evaluate(context).all();
+						argVals = argExpressionsAfterSubFuncIterator.next().evaluate(context).all();
 						/*
 						 * If result bag empty, returns False as there will be no possibility for a
 						 * Predicate that is "True", in particular if
@@ -525,21 +525,23 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 					}
 					// save the result for reuse when building the next list of sub-function
 					// arguments to avoid re-evaluation
-					nonFirstArgEvalResultsIterator.add(argVals);
-				} else
-				/*
-				 * No more arg expression to evaluate, but we may have evaluated them all with
-				 * results put in nonFirstArgEvalResultsIterator, then started a new combination of
-				 * arguments from the start, working with nonFirstArgEvalResultsIterator only after
-				 * that So check where we are with nonFirstArgEvalResultsIterator
-				 */
-				if (nonFirstArgEvalResultsIterator.hasNext())
-				{
-					argVals = nonFirstArgEvalResultsIterator.next();
+					argValuesAfterSubFuncIterator.add(argVals);
 				} else
 				{
-					// no more argument to add to the list of sub-function arguments
-					argVals = null;
+					/*
+					 * No more arg expression to evaluate, but we may have evaluated them all with
+					 * results put in argValuesAfterSubFuncIterator, then started a new combination
+					 * of arguments from the start, working with argValuesAfterSubFuncIterator only
+					 * after that. So check where we are with argValuesAfterSubFuncIterator
+					 */
+					if (argValuesAfterSubFuncIterator.hasNext())
+					{
+						argVals = argValuesAfterSubFuncIterator.next();
+					} else
+					{
+						// no more argument to add to the list of sub-function arguments
+						argVals = null;
+					}
 				}
 
 				if (argVals == null)
@@ -563,12 +565,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 				for (final AttributeValue<?> argVal : argVals)
 				{
 					subFuncArgsStack.add(argVal);
-					final BooleanAttributeValue subResult = eval(inputsAfterSubFuncIterator, nonFirstArgEvalResultsIterator, subFuncArgsStack, context);
-					/*
-					 * On each call to eval, nonFirstArgEvalResultsIterator.next()/add() is called,
-					 * so we need to go backwards, when going back to the caller
-					 */
-					nonFirstArgEvalResultsIterator.previous();
+					final BooleanAttributeValue subResult = eval(argExpressionsAfterSubFuncIterator, argValuesAfterSubFuncIterator, subFuncArgsStack, context);
 					if (subResult.getUnderlyingValue())
 					{
 						return BooleanAttributeValue.TRUE;
@@ -581,6 +578,12 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 					subFuncArgsStack.removeLast();
 				}
 
+				/*
+				 * If we get here, argVals != null and either argValuesAfterSubFuncIterator.next()
+				 * or argValuesAfterSubFuncIterator.add(...) was called so we need to go backwards
+				 * now to prepare next eval().
+				 */
+				argValuesAfterSubFuncIterator.previous();
 				return BooleanAttributeValue.FALSE;
 			}
 

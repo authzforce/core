@@ -133,8 +133,7 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 		@Override
 		protected final T eval(T time, D duration)
 		{
-			time.add(duration);
-			return time;
+			return time.add(duration);
 
 		}
 
@@ -151,9 +150,7 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 		@Override
 		protected final T eval(T time, D duration)
 		{
-			time.subtract(duration);
-			return time;
-
+			return time.subtract(duration);
 		}
 
 	}

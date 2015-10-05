@@ -26,13 +26,9 @@ import org.junit.runners.Suite.SuiteClasses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thalesgroup.authzforce.core.test.basic.BasicFunctionV3;
-import com.thalesgroup.authzforce.core.test.basic.BasicV3_1;
-import com.thalesgroup.authzforce.core.test.basic.BasicV3_2;
-import com.thalesgroup.authzforce.core.test.basic.BasicV3_3;
-import com.thalesgroup.authzforce.core.test.basic.BasicV3_4;
-import com.thalesgroup.authzforce.core.test.basic.BasicV3_5;
-import com.thalesgroup.authzforce.core.test.conformance.ConformanceV3;
+import com.thalesgroup.authzforce.core.test.attr.AnyURIAttributeTest;
+import com.thalesgroup.authzforce.core.test.conformance.ConformanceV3FromV2;
+import com.thalesgroup.authzforce.core.test.conformance.ConformanceV3Others;
 import com.thalesgroup.authzforce.core.test.custom.TestApply;
 import com.thalesgroup.authzforce.core.test.custom.TestMatchAlg;
 import com.thalesgroup.authzforce.core.test.func.BagFunctionsTest;
@@ -53,18 +49,14 @@ import com.thalesgroup.authzforce.core.test.nonregression.NonRegression;
 
 /**
  * 
- * class to use for the testSuite MatchTest.class, ConformanceV3.class, BasicV3_1.class,
+ * class to use for the testSuite MatchTest.class, ConformanceV3FromV2.class, BasicV3_1.class,
  * BasicV3_2.class, BasicV3_3.class, BasicV3_4.class, BasicV3_5.class, BasicFunctionV3.class
  */
 @RunWith(Suite.class)
-@SuiteClasses(value = { EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class, NumericConversionFunctionsTest.class, LogicalFunctionsTest.class, NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class,
-		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class, SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, TestMatchAlg.class, ConformanceV3.class, BasicV3_1.class, BasicV3_2.class,
-		BasicV3_3.class, BasicV3_4.class, BasicV3_5.class, BasicFunctionV3.class, TestApply.class, NonRegression.class /*
-																														 * ,
-																														 * BasicMultipleRequestV3
-																														 * .
-																														 * class
-																														 */})
+@SuiteClasses(value = { AnyURIAttributeTest.class, EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class, NumericConversionFunctionsTest.class, LogicalFunctionsTest.class, NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class,
+		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class, SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, TestMatchAlg.class, ConformanceV3FromV2.class, ConformanceV3Others.class,
+		TestApply.class, NonRegression.class // MultipleDecisionProfileV3.class
+})
 public class MainTest
 {
 	/**

@@ -18,7 +18,8 @@
  */
 package com.thalesgroup.authzforce.core.attr;
 
-import javax.security.auth.x500.X500Principal;
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
 
 /**
  * Representation of an X.500 Directory Name.
@@ -39,25 +40,14 @@ public class X500NameAttributeValue extends SimpleAttributeValue<String, X500Nam
 	{
 
 		@Override
-		protected X500NameAttributeValue getInstance(String val)
+		public X500NameAttributeValue getInstance(String val)
 		{
 			return new X500NameAttributeValue(val);
 		}
 
 	};
 
-	/**
-	 * Creates a new <code>X500NameAttributeValue</code> that represents the value supplied.
-	 * 
-	 * @param value
-	 *            the X500 Name to be represented
-	 * @throws IllegalArgumentException
-	 *             if value does not correspond to a valid XACML X500Name
-	 */
-	public X500NameAttributeValue(X500Principal value) throws IllegalArgumentException
-	{
-		this(value.toString());
-	}
+	private final LdapName ldapName;
 
 	/**
 	 * Returns a new <code>X500NameAttributeValue</code> that represents the X500 Name value
@@ -71,12 +61,24 @@ public class X500NameAttributeValue extends SimpleAttributeValue<String, X500Nam
 	public X500NameAttributeValue(String value) throws IllegalArgumentException
 	{
 		super(FACTORY.instanceDatatype, value);
+		try
+		{
+			this.ldapName = new LdapName(value);
+		} catch (InvalidNameException e)
+		{
+			throw new IllegalArgumentException("Invalid value (X.500 Name) for datatype: " + TYPE_URI, e);
+		}
 	}
 
 	@Override
 	protected String parse(String stringForm)
 	{
-		return new X500Principal(stringForm).getName(X500Principal.CANONICAL);
+		/*
+		 * The result value SHALL be the
+		 * "string in the form it was originally represented in XML form" to make sure the
+		 * string-from-x500Name function works as specified in the spec.
+		 */
+		return stringForm;
 	}
 
 	/**
@@ -90,13 +92,62 @@ public class X500NameAttributeValue extends SimpleAttributeValue<String, X500Nam
 	 */
 	public boolean match(X500NameAttributeValue other)
 	{
-		return other.value.endsWith(this.value);
+		/*
+		 * As the Javadoc says,
+		 * "The right most RDN is at index 0, and the left most RDN is at index n-1. For example, the distinguished name: "
+		 * CN=Steve Kille, O=Isode Limited, C=GB
+		 * " is numbered in the following sequence ranging from 0 to 2: {C=GB, O=Isode Limited, CN=Steve Kille}"
+		 * Therefore RDNs are in reverse order of declaration in the string representation, so to
+		 * check the match against a terminal sequence of RDNs, we don't use the endsWith()
+		 * function, but startsWith()
+		 */
+		return other.ldapName.startsWith(this.ldapName.getRdns());
 	}
 
 	@Override
 	public X500NameAttributeValue one()
 	{
 		return this;
+	}
+
+	private int hashCode = 0;
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = this.ldapName.hashCode();
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+		final X500NameAttributeValue other = (X500NameAttributeValue) obj;
+		/*
+		 * This equals() has the same effect as the algorithm described in the spec
+		 */
+		return ldapName.equals(other.ldapName);
+	}
+
+	public static void main(String[] args) throws InvalidNameException
+	{
+		// System.out.println(new LdapName("cn=John Smith, o=Medico Corp, c=US").equals(new
+		// LdapName("cn= John Smith,o =Medico Corp, C=US")));
+		// System.out.println(new LdapName("ou=test+cn=bob,dc =example,dc=com"));
+		System.out.println(new LdapName("cn=John Smith, o=Medico Corp, c=US").endsWith(new LdapName("o=Medico Corp, c=US").getRdns()));
 	}
 
 }

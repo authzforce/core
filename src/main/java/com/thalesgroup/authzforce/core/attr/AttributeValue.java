@@ -23,25 +23,25 @@ import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import org.w3c.dom.Element;
 
 import com.thalesgroup.authzforce.core.PdpExtension;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression.Value;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * The base type for all attribute value datatypes used in a policy or request/response, this
@@ -161,12 +161,15 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 		 *            following types: {@link String}, {@link Element}
 		 * @param otherAttributes
 		 *            other XML attributes
+		 * @param xPathCompiler
+		 *            XPath compiler for compiling/evaluating XPath expressions in values, e.g.
+		 *            {@link XPathAttributeValue}
 		 * @return attribute value in internal model compatible with expression evaluator
 		 * @throws IllegalArgumentException
 		 *             if content/otherAttributes are not valid for the datatype handled by this
 		 *             factory
 		 */
-		public abstract AV getInstance(List<Serializable> content, Map<QName, String> otherAttributes) throws IllegalArgumentException;
+		public abstract AV getInstance(List<Serializable> content, Map<QName, String> otherAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException;
 
 		/*
 		 * (non-Javadoc)
@@ -195,7 +198,7 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 			// immutable class -> we can cache the result
 			if (hashCode == 0)
 			{
-				hashCode = Objects.hash(instanceDatatype.getValueClass());
+				hashCode = instanceDatatype.getValueClass().hashCode();
 			}
 			return hashCode;
 		}
@@ -220,15 +223,13 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 			{
 				return false;
 			}
+
 			final Factory<?> other = (Factory<?>) obj;
 			/*
 			 * if (instanceClass == null) { if (other.instanceClass != null) { return false; } }
 			 * else
-			 */if (!instanceDatatype.equals(other.instanceDatatype))
-			{
-				return false;
-			}
-			return true;
+			 */
+			return instanceDatatype.equals(other.instanceDatatype);
 		}
 	}
 

@@ -43,7 +43,7 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	{
 
 		@Override
-		protected IntegerAttributeValue getInstance(String val)
+		public IntegerAttributeValue getInstance(String val)
 		{
 			return new IntegerAttributeValue(val);
 		}
@@ -115,10 +115,12 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	@Override
 	public IntegerAttributeValue add(IntegerAttributeValue[] others, int offset)
 	{
+		checkOffset(others, offset);
+
 		BigInteger sum = value;
-		for (final IntegerAttributeValue other : others)
+		for (int i = offset; i < others.length; i++)
 		{
-			sum = sum.add(other.value);
+			sum = sum.add(others[i].value);
 		}
 
 		return new IntegerAttributeValue(sum);
@@ -127,10 +129,12 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	@Override
 	public IntegerAttributeValue multiply(IntegerAttributeValue[] others, int offset)
 	{
+		checkOffset(others, offset);
+
 		BigInteger product = value;
-		for (final IntegerAttributeValue other : others)
+		for (int i = offset; i < others.length; i++)
 		{
-			product = product.multiply(other.value);
+			product = product.multiply(others[i].value);
 		}
 
 		return new IntegerAttributeValue(product);
@@ -185,12 +189,6 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 		}
 
 		return new DoubleAttributeValue(doubleVal);
-	}
-
-	@Override
-	public String toString()
-	{
-		return DatatypeConverter.printInteger(value);
 	}
 
 	/**

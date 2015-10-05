@@ -79,6 +79,12 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 
 	private static final TimeZone DEFAULT_TZ = TimeZone.getDefault();
 
+	/**
+	 * Set {@code cal}'s date to the same as {@code ref}'s date
+	 * 
+	 * @param cal
+	 * @param ref
+	 */
 	private static void setSameDate(Calendar cal, Calendar ref)
 	{
 		cal.set(Calendar.YEAR, ref.get(Calendar.YEAR));
@@ -125,46 +131,62 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 		 * to the one of the start time
 		 */
 		setSameDate(calCheckedWhetherInRange, startCal);
-		final boolean isStrictlyBeforeStart = calCheckedWhetherInRange.before(startCal);
+		/*
+		 * Now we date does not matter in calendar comparison, we only compare times of the day so
+		 * ignoring the date, the checked time of the day might be before the lower time bound but
+		 * still be in range if considered this is the time on the next day. In this case, startCal
+		 * is on day N, and calCheckedWhetherInRange on day N+1.
+		 */
+		/*
+		 * Boolean below says whether the checked time is strictly after the start time if
+		 * considered on the *same day*, i.e. in terms of time of day.
+		 */
+		final boolean isCheckedDayTimeStrictlyBeforeStartDayTime = calCheckedWhetherInRange.before(startCal);
 		if (startCal.after(endCal))
 		{
 			/**
-			 * start time > end time, for instance 02:00:00 > 01:00:00 so we consider the end time
-			 * (01:00:00) a day later (later than the second argument - end time - by less than 24h,
-			 * the spec says) So we interpret the time interval as the date interval [startTime on
-			 * day 1, endTime on day 2] So we check the two possibilities considering:
-			 * <ol>
-			 * <li>Time checked assumed on day 1 (same as startCal) -> it is in range if and only if
-			 * after or equals startCal, i.e. not before 2.</li>
-			 * <li>(If not 1.) Time checked assumed on day 2 -> it is in range if and only if before
-			 * or equals endTime, i.e. not after.</li>
-			 * </ol>
+			 * start time of the day > end time of the day, for instance 02:00:00 > 01:00:00 so we
+			 * consider the end time (01:00:00) on the next day (later than the second argument -
+			 * end time - by less than 24h, the spec says). So we interpret the time interval as the
+			 * date interval [startTime on day N, endTime on day N+1]. If checked time of day <
+			 * start time of day (compared on the same day), then checked time can only be on day
+			 * after to be in range
 			 */
-			if (isStrictlyBeforeStart)
+			if (isCheckedDayTimeStrictlyBeforeStartDayTime)
 			{
-				// time checked is strictly before start time so not in range on day 1; try day 2
-				calCheckedWhetherInRange.add(Calendar.DAY_OF_YEAR, 1);
-				// set end time on the same day
-				setSameDate(endCal, calCheckedWhetherInRange);
-				// time checked is in range if and only if before or equals end time (on day 2),
+				/*
+				 * time checked is strictly before start time if considered on the same day, so not
+				 * in range unless considered on day N+1 So let's compared with end time after
+				 * considering them on the same day
+				 */
+				// calCheckedWhetherInRange.add(Calendar.DAY_OF_YEAR, 1);
+				// set checked time to same day as end time for comparison
+				setSameDate(calCheckedWhetherInRange, endCal);
+				// time checked is in range if and only if before or equals end time (on day N+1),
 				// i.e. not strictly after
-				return !calCheckedWhetherInRange.after(startCal);
+				return !calCheckedWhetherInRange.after(endCal);
 			}
 
-			// time checked is after or equal to start time, so it is in range on day1
+			/*
+			 * Time checked is after or equal to start time, so it is in range (on day N), as we
+			 * already consider end time to be on day N+1
+			 */
 			return true;
 		}
 
-		// start time <= end time, then all considered on the same day
-		if (isStrictlyBeforeStart)
+		// start time <= end time -> all considered on the same day
+		if (isCheckedDayTimeStrictlyBeforeStartDayTime)
 		{
+			// checked time < start time -> out of range
 			return false;
 		}
 
-		// set end time on the same day
-		setSameDate(endCal, calCheckedWhetherInRange);
+		// checked time >= start time
+
+		// set checked time to same day as end time for comparison
+		setSameDate(calCheckedWhetherInRange, endCal);
 		// time checked is in range if and only if before or equals end time, so not strictly after
-		return !calCheckedWhetherInRange.after(startCal);
+		return !calCheckedWhetherInRange.after(endCal);
 	}
 
 	@Override

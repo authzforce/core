@@ -26,7 +26,7 @@ import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
 import com.thalesgroup.authzforce.core.JaxbBoundPdpExtension;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
@@ -41,7 +41,7 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  */
 public abstract class RootPolicyFinderModule implements Closeable
 {
-	protected final ExpressionFactory expressionFactory;
+	protected final Expression.Factory expressionFactory;
 	protected final RefPolicyFinder refPolicyFinder;
 
 	/**
@@ -52,7 +52,7 @@ public abstract class RootPolicyFinderModule implements Closeable
 	 * @param refPolicyFinder
 	 *            referenced policy finder; null iff Policy references not supported
 	 */
-	protected RootPolicyFinderModule(ExpressionFactory expressionFactory, RefPolicyFinder refPolicyFinder)
+	protected RootPolicyFinderModule(Expression.Factory expressionFactory, RefPolicyFinder refPolicyFinder)
 	{
 		assert expressionFactory != null;
 		this.expressionFactory = expressionFactory;
@@ -86,7 +86,7 @@ public abstract class RootPolicyFinderModule implements Closeable
 		 * 
 		 * @return the module instance
 		 */
-		public abstract RootPolicyFinderModule getInstance(CONF_T conf, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder);
+		public abstract RootPolicyFinderModule getInstance(CONF_T conf, Expression.Factory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, RefPolicyFinder refPolicyFinder);
 	}
 
 	/**
@@ -132,7 +132,7 @@ public abstract class RootPolicyFinderModule implements Closeable
 	 */
 	public static abstract class Static extends RootPolicyFinderModule
 	{
-		protected Static(ExpressionFactory defaultExpressionFactory, RefPolicyFinder refPolicyFinder)
+		protected Static(Expression.Factory defaultExpressionFactory, RefPolicyFinder refPolicyFinder)
 		{
 			super(defaultExpressionFactory, refPolicyFinder);
 		}
@@ -148,8 +148,8 @@ public abstract class RootPolicyFinderModule implements Closeable
 		 * (non-Javadoc)
 		 * 
 		 * @see
-		 * com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule#findPolicy(com.thalesgroup.authzforce.core.test
-		 * .EvaluationCtx)
+		 * com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule#findPolicy(com.thalesgroup
+		 * .authzforce.core.test .EvaluationCtx)
 		 */
 		@Override
 		public final IPolicy findPolicy(EvaluationContext context) throws IndeterminateEvaluationException, ParsingException

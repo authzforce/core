@@ -18,6 +18,8 @@
  */
 package com.thalesgroup.authzforce.core.attr;
 
+import java.util.Arrays;
+
 import javax.xml.bind.DatatypeConverter;
 
 /**
@@ -41,7 +43,7 @@ public class HexBinaryAttributeValue extends SimpleAttributeValue<byte[], HexBin
 	{
 
 		@Override
-		protected HexBinaryAttributeValue getInstance(String val)
+		public HexBinaryAttributeValue getInstance(String val)
 		{
 			return new HexBinaryAttributeValue(val);
 		}
@@ -80,21 +82,44 @@ public class HexBinaryAttributeValue extends SimpleAttributeValue<byte[], HexBin
 		return DatatypeConverter.parseHexBinary(stringForm);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.attr.SimpleAttributeValue#toString(java.lang.Object)
-	 */
-	@Override
-	public String toString(byte[] val)
-	{
-		return DatatypeConverter.printHexBinary(val);
-	}
-
 	@Override
 	public HexBinaryAttributeValue one()
 	{
 		return this;
+	}
+
+	private int hashCode = 0;
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = Arrays.hashCode(value);
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (getClass() != obj.getClass())
+		{
+			return false;
+		}
+
+		final HexBinaryAttributeValue other = (HexBinaryAttributeValue) obj;
+
+		/*
+		 * if (value == null) { if (other.value != null) { return false; } } else
+		 */
+		return Arrays.equals(value, other.value);
 	}
 
 }

@@ -24,6 +24,7 @@ import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
+import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
@@ -33,6 +34,7 @@ import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue.StringContentOnlyFactory;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
@@ -265,16 +267,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 	 * 
 	 * @param paramArrayType
 	 *            function parameter array type
-	 * @param paramType
-	 *            parameter type
+	 * @param paramTypeDef
+	 *            parameter type definition
 	 * @param returnType
 	 *            return type
 	 * 
 	 */
-	protected DatatypeConversionFunction(String funcURI, Datatype<PARAM_T> paramType, Class<PARAM_T[]> paramArrayType, Datatype<RETURN_T> returnType)
+	protected DatatypeConversionFunction(String funcURI, DatatypeConstants<PARAM_T> paramTypeDef, Datatype<RETURN_T> returnType)
 	{
-		super(funcURI, returnType, false, paramType);
-		this.parameterArrayClass = paramArrayType;
+		super(funcURI, returnType, false, paramTypeDef.TYPE);
+		this.parameterArrayClass = paramTypeDef.ARRAY_CLASS;
 
 	}
 
@@ -299,7 +301,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		protected DoubleToInteger()
 		{
-			super(NAME_DOUBLE_TO_INTEGER, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class, DatatypeConstants.INTEGER.TYPE);
+			super(NAME_DOUBLE_TO_INTEGER, DatatypeConstants.DOUBLE, DatatypeConstants.INTEGER.TYPE);
 		}
 
 		@Override
@@ -315,7 +317,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		protected IntegerToDouble()
 		{
-			super(NAME_INTEGER_TO_DOUBLE, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class, DatatypeConstants.DOUBLE.TYPE);
+			super(NAME_INTEGER_TO_DOUBLE, DatatypeConstants.INTEGER, DatatypeConstants.DOUBLE.TYPE);
 		}
 
 		private static final IndeterminateEvaluationException INTEGER_OUT_OF_RANGE_EXCEPTION = new IndeterminateEvaluationException("Function " + NAME_INTEGER_TO_DOUBLE + ": integer argument is outside the range which can be represented by a double", Status.STATUS_PROCESSING_ERROR);
@@ -338,11 +340,19 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 	{
 
 		private final String invalidStringArgErrMessage;
+		private final StringContentOnlyFactory<RETURN> returnTypeFactory;
 
-		protected FromString(String funcURI, Datatype<RETURN> returnType)
+		protected FromString(String funcURI, DatatypeConstants<RETURN> returnTypeDef)
 		{
-			super(funcURI, DatatypeConstants.STRING.TYPE, StringAttributeValue[].class, returnType);
-			this.invalidStringArgErrMessage = "Function " + functionId + ": Invalid string arg: not a valid lexical representation of XACML datatype '" + returnType + "': ";
+			super(funcURI, DatatypeConstants.STRING, returnTypeDef.TYPE);
+			this.invalidStringArgErrMessage = "Function " + functionId + ": Invalid string arg: not a valid lexical representation of XACML datatype '" + returnTypeDef.TYPE + "': ";
+			final AttributeValue.Factory<RETURN> fac = returnTypeDef.FACTORY;
+			if (!(fac instanceof StringContentOnlyFactory))
+			{
+				throw new UnsupportedOperationException("Function '" + funcURI + "' not supported: incompatible return datatype: " + returnTypeDef.TYPE);
+			}
+
+			returnTypeFactory = (StringContentOnlyFactory<RETURN>) fac;
 		}
 
 		@Override
@@ -350,7 +360,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 		{
 			try
 			{
-				return convert(arg.getUnderlyingValue());
+				return returnTypeFactory.getInstance(arg.getUnderlyingValue());
 			} catch (IllegalArgumentException e)
 			{
 				throw new IndeterminateEvaluationException(invalidStringArgErrMessage + arg, Status.STATUS_SYNTAX_ERROR);
@@ -358,17 +368,32 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		}
 
-		abstract protected RETURN convert(String value) throws IllegalArgumentException;
-
 	}
 
 	private static abstract class ToString<PARAM extends SimpleAttributeValue<?, PARAM>> extends DatatypeConversionFunction<PARAM, StringAttributeValue>
 	{
 
-		protected ToString(String funcURI, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
+		protected ToString(String funcURI, DatatypeConstants<PARAM> paramTypeDef)
 		{
-			super(funcURI, paramType, paramArrayType, DatatypeConstants.STRING.TYPE);
+			super(funcURI, paramTypeDef, DatatypeConstants.STRING.TYPE);
 		}
+
+		@Override
+		protected final StringAttributeValue convert(PARAM arg) throws IndeterminateEvaluationException
+		{
+			return arg.toStringAttributeValue();
+		}
+
+	}
+
+	private static class BooleanToString extends ToString<BooleanAttributeValue>
+	{
+
+		private BooleanToString()
+		{
+			super(NAME_STRING_FROM_BOOLEAN, DatatypeConstants.BOOLEAN);
+		}
+
 	}
 
 	private static class BooleanFromString extends FromString<BooleanAttributeValue>
@@ -376,46 +401,8 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private BooleanFromString()
 		{
-			super(NAME_BOOLEAN_FROM_STRING, DatatypeConstants.BOOLEAN.TYPE);
+			super(NAME_BOOLEAN_FROM_STRING, DatatypeConstants.BOOLEAN);
 		}
-
-		@Override
-		protected final BooleanAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return BooleanAttributeValue.fromString(arg);
-
-		}
-	}
-
-	private static class BooleanToString extends ToString<BooleanAttributeValue>
-	{
-		private BooleanToString()
-		{
-			super(NAME_STRING_FROM_BOOLEAN, DatatypeConstants.BOOLEAN.TYPE, BooleanAttributeValue[].class);
-		}
-
-		@Override
-		protected final StringAttributeValue convert(BooleanAttributeValue arg)
-		{
-			return StringAttributeValue.getInstance(arg.getUnderlyingValue());
-		}
-
-	}
-
-	private static abstract class NonBooleanToString<PARAM extends SimpleAttributeValue<?, PARAM>> extends ToString<PARAM>
-	{
-
-		protected NonBooleanToString(String funcURI, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
-		{
-			super(funcURI, paramType, paramArrayType);
-		}
-
-		@Override
-		protected StringAttributeValue convert(PARAM arg)
-		{
-			return new StringAttributeValue(arg.toString());
-		}
-
 	}
 
 	private static class IntegerFromString extends FromString<IntegerAttributeValue>
@@ -423,23 +410,15 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private IntegerFromString()
 		{
-			super(NAME_INTEGER_FROM_STRING, DatatypeConstants.INTEGER.TYPE);
+			super(NAME_INTEGER_FROM_STRING, DatatypeConstants.INTEGER);
 		}
-
-		@Override
-		protected final IntegerAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new IntegerAttributeValue(arg);
-
-		}
-
 	}
 
-	private static class IntegerToString extends NonBooleanToString<IntegerAttributeValue>
+	private static class IntegerToString extends ToString<IntegerAttributeValue>
 	{
 		private IntegerToString()
 		{
-			super(NAME_STRING_FROM_INTEGER, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class);
+			super(NAME_STRING_FROM_INTEGER, DatatypeConstants.INTEGER);
 		}
 
 	}
@@ -449,23 +428,15 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private DoubleFromString()
 		{
-			super(NAME_DOUBLE_FROM_STRING, DatatypeConstants.DOUBLE.TYPE);
+			super(NAME_DOUBLE_FROM_STRING, DatatypeConstants.DOUBLE);
 		}
-
-		@Override
-		protected final DoubleAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new DoubleAttributeValue(arg);
-
-		}
-
 	}
 
-	private static class DoubleToString extends NonBooleanToString<DoubleAttributeValue>
+	private static class DoubleToString extends ToString<DoubleAttributeValue>
 	{
 		private DoubleToString()
 		{
-			super(NAME_STRING_FROM_DOUBLE, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class);
+			super(NAME_STRING_FROM_DOUBLE, DatatypeConstants.DOUBLE);
 		}
 
 	}
@@ -475,23 +446,15 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private TimeFromString()
 		{
-			super(NAME_TIME_FROM_STRING, DatatypeConstants.TIME.TYPE);
+			super(NAME_TIME_FROM_STRING, DatatypeConstants.TIME);
 		}
-
-		@Override
-		protected final TimeAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new TimeAttributeValue(arg);
-
-		}
-
 	}
 
-	private static class TimeToString extends NonBooleanToString<TimeAttributeValue>
+	private static class TimeToString extends ToString<TimeAttributeValue>
 	{
 		private TimeToString()
 		{
-			super(NAME_STRING_FROM_TIME, DatatypeConstants.TIME.TYPE, TimeAttributeValue[].class);
+			super(NAME_STRING_FROM_TIME, DatatypeConstants.TIME);
 		}
 
 	}
@@ -501,23 +464,15 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private DateFromString()
 		{
-			super(NAME_DATE_FROM_STRING, DatatypeConstants.DATE.TYPE);
+			super(NAME_DATE_FROM_STRING, DatatypeConstants.DATE);
 		}
-
-		@Override
-		protected final DateAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new DateAttributeValue(arg);
-
-		}
-
 	}
 
-	private static class DateToString extends NonBooleanToString<DateAttributeValue>
+	private static class DateToString extends ToString<DateAttributeValue>
 	{
 		private DateToString()
 		{
-			super(NAME_STRING_FROM_DATE, DatatypeConstants.DATE.TYPE, DateAttributeValue[].class);
+			super(NAME_STRING_FROM_DATE, DatatypeConstants.DATE);
 		}
 
 	}
@@ -527,23 +482,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private DateTimeFromString()
 		{
-			super(NAME_DATETIME_FROM_STRING, DatatypeConstants.DATETIME.TYPE);
-		}
-
-		@Override
-		protected final DateTimeAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new DateTimeAttributeValue(arg);
-
+			super(NAME_DATETIME_FROM_STRING, DatatypeConstants.DATETIME);
 		}
 
 	}
 
-	private static class DateTimeToString extends NonBooleanToString<DateTimeAttributeValue>
+	private static class DateTimeToString extends ToString<DateTimeAttributeValue>
 	{
 		private DateTimeToString()
 		{
-			super(NAME_STRING_FROM_DATETIME, DatatypeConstants.DATETIME.TYPE, DateTimeAttributeValue[].class);
+			super(NAME_STRING_FROM_DATETIME, DatatypeConstants.DATETIME);
 		}
 
 	}
@@ -553,23 +501,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private AnyUriFromString()
 		{
-			super(NAME_ANYURI_FROM_STRING, DatatypeConstants.ANYURI.TYPE);
-		}
-
-		@Override
-		protected final AnyURIAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new AnyURIAttributeValue(arg);
-
+			super(NAME_ANYURI_FROM_STRING, DatatypeConstants.ANYURI);
 		}
 
 	}
 
-	private static class AnyUriToString extends NonBooleanToString<AnyURIAttributeValue>
+	private static class AnyUriToString extends ToString<AnyURIAttributeValue>
 	{
 		private AnyUriToString()
 		{
-			super(NAME_STRING_FROM_ANYURI, DatatypeConstants.ANYURI.TYPE, AnyURIAttributeValue[].class);
+			super(NAME_STRING_FROM_ANYURI, DatatypeConstants.ANYURI);
 		}
 
 	}
@@ -579,23 +520,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private DayTimeDurationFromString()
 		{
-			super(NAME_DAYTIMEDURATION_FROM_STRING, DatatypeConstants.DAYTIMEDURATION.TYPE);
-		}
-
-		@Override
-		protected final DayTimeDurationAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new DayTimeDurationAttributeValue(arg);
-
+			super(NAME_DAYTIMEDURATION_FROM_STRING, DatatypeConstants.DAYTIMEDURATION);
 		}
 
 	}
 
-	private static class DayTimeDurationToString extends NonBooleanToString<DayTimeDurationAttributeValue>
+	private static class DayTimeDurationToString extends ToString<DayTimeDurationAttributeValue>
 	{
 		private DayTimeDurationToString()
 		{
-			super(NAME_STRING_FROM_DAYTIMEDURATION, DatatypeConstants.DAYTIMEDURATION.TYPE, DayTimeDurationAttributeValue[].class);
+			super(NAME_STRING_FROM_DAYTIMEDURATION, DatatypeConstants.DAYTIMEDURATION);
 		}
 
 	}
@@ -605,23 +539,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private YearMonthDurationFromString()
 		{
-			super(NAME_YEARMONTHDURATION_FROM_STRING, DatatypeConstants.YEARMONTHDURATION.TYPE);
-		}
-
-		@Override
-		protected final YearMonthDurationAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new YearMonthDurationAttributeValue(arg);
-
+			super(NAME_YEARMONTHDURATION_FROM_STRING, DatatypeConstants.YEARMONTHDURATION);
 		}
 
 	}
 
-	private static class YearMonthDurationToString extends NonBooleanToString<YearMonthDurationAttributeValue>
+	private static class YearMonthDurationToString extends ToString<YearMonthDurationAttributeValue>
 	{
 		private YearMonthDurationToString()
 		{
-			super(NAME_STRING_FROM_YEARMONTHDURATION, DatatypeConstants.YEARMONTHDURATION.TYPE, YearMonthDurationAttributeValue[].class);
+			super(NAME_STRING_FROM_YEARMONTHDURATION, DatatypeConstants.YEARMONTHDURATION);
 		}
 
 	}
@@ -631,23 +558,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private X500NameFromString()
 		{
-			super(NAME_X500NAME_FROM_STRING, DatatypeConstants.X500NAME.TYPE);
-		}
-
-		@Override
-		protected final X500NameAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new X500NameAttributeValue(arg);
-
+			super(NAME_X500NAME_FROM_STRING, DatatypeConstants.X500NAME);
 		}
 
 	}
 
-	private static class X500NameToString extends NonBooleanToString<X500NameAttributeValue>
+	private static class X500NameToString extends ToString<X500NameAttributeValue>
 	{
 		private X500NameToString()
 		{
-			super(NAME_STRING_FROM_X500NAME, DatatypeConstants.X500NAME.TYPE, X500NameAttributeValue[].class);
+			super(NAME_STRING_FROM_X500NAME, DatatypeConstants.X500NAME);
 		}
 	}
 
@@ -656,23 +576,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private RFC822NameFromString()
 		{
-			super(NAME_RFC822NAME_FROM_STRING, DatatypeConstants.RFC822NAME.TYPE);
-		}
-
-		@Override
-		protected final RFC822NameAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new RFC822NameAttributeValue(arg);
-
+			super(NAME_RFC822NAME_FROM_STRING, DatatypeConstants.RFC822NAME);
 		}
 
 	}
 
-	private static class RFC822NameToString extends NonBooleanToString<RFC822NameAttributeValue>
+	private static class RFC822NameToString extends ToString<RFC822NameAttributeValue>
 	{
 		private RFC822NameToString()
 		{
-			super(NAME_STRING_FROM_RFC822NAME, DatatypeConstants.RFC822NAME.TYPE, RFC822NameAttributeValue[].class);
+			super(NAME_STRING_FROM_RFC822NAME, DatatypeConstants.RFC822NAME);
 		}
 	}
 
@@ -681,23 +594,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private IpAddressFromString()
 		{
-			super(NAME_IPADDRESS_FROM_STRING, DatatypeConstants.IPADDRESS.TYPE);
-		}
-
-		@Override
-		protected final IPAddressAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new IPAddressAttributeValue(arg);
-
+			super(NAME_IPADDRESS_FROM_STRING, DatatypeConstants.IPADDRESS);
 		}
 
 	}
 
-	private static class IpAddressToString extends NonBooleanToString<IPAddressAttributeValue>
+	private static class IpAddressToString extends ToString<IPAddressAttributeValue>
 	{
 		private IpAddressToString()
 		{
-			super(NAME_STRING_FROM_IPADDRESS, DatatypeConstants.IPADDRESS.TYPE, IPAddressAttributeValue[].class);
+			super(NAME_STRING_FROM_IPADDRESS, DatatypeConstants.IPADDRESS);
 		}
 	}
 
@@ -706,23 +612,16 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 
 		private DnsNameFromString()
 		{
-			super(NAME_DNSNAME_FROM_STRING, DatatypeConstants.DNSNAME.TYPE);
-		}
-
-		@Override
-		protected final DNSNameAttributeValue convert(String arg) throws IllegalArgumentException
-		{
-			return new DNSNameAttributeValue(arg);
-
+			super(NAME_DNSNAME_FROM_STRING, DatatypeConstants.DNSNAME);
 		}
 
 	}
 
-	private static class DnsNameToString extends NonBooleanToString<DNSNameAttributeValue>
+	private static class DnsNameToString extends ToString<DNSNameAttributeValue>
 	{
 		private DnsNameToString()
 		{
-			super(NAME_STRING_FROM_DNSNAME, DatatypeConstants.DNSNAME.TYPE, DNSNameAttributeValue[].class);
+			super(NAME_STRING_FROM_DNSNAME, DatatypeConstants.DNSNAME);
 		}
 	}
 

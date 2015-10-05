@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
@@ -33,7 +34,6 @@ import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 
@@ -72,10 +72,11 @@ public class Apply<V extends Expression.Value<?, V>> extends ApplyType implement
 	 * 
 	 * @param xacmlApply
 	 *            XACML Apply element
+	 * @param xPathCompiler
+	 *            Enclosing Policy(Set)'s default XPath compiler, corresponding to the Policy(Set)'s
+	 *            default XPath version specified in {@link DefaultsType} element.
 	 * @param expFactory
 	 *            expression factory for instantiating Apply's parameters
-	 * @param policyDefaults
-	 *            policy(set) default parameters, e.g. XPath version
 	 * @param longestVarRefChain
 	 *            Longest chain of VariableReference references leading to this Apply, when
 	 *            evaluating a VariableDefinitions, i.e. list of VariableIds, such that V1-> V2
@@ -91,7 +92,7 @@ public class Apply<V extends Expression.Value<?, V>> extends ApplyType implement
 	 *             for this function; or if all {@code xprs} are static but calling the function
 	 *             statically (with these static arguments) failed
 	 */
-	public static Apply<?> getInstance(ApplyType xacmlApply, DefaultsType policyDefaults, ExpressionFactory expFactory, List<String> longestVarRefChain) throws ParsingException
+	public static Apply<?> getInstance(ApplyType xacmlApply, XPathCompiler xPathCompiler, Expression.Factory expFactory, List<String> longestVarRefChain) throws ParsingException
 	{
 		if (xacmlApply == null)
 		{
@@ -111,7 +112,7 @@ public class Apply<V extends Expression.Value<?, V>> extends ApplyType implement
 			final Expression<?> exprHandler;
 			try
 			{
-				exprHandler = expFactory.getInstance(exprElt.getValue(), policyDefaults, longestVarRefChain);
+				exprHandler = expFactory.getInstance(exprElt.getValue(), xPathCompiler, longestVarRefChain);
 			} catch (ParsingException e)
 			{
 				throw new ParsingException("Error parsing one of Apply[description=" + applyDesc + "]'s function arguments (Expressions)", e);
@@ -218,7 +219,7 @@ public class Apply<V extends Expression.Value<?, V>> extends ApplyType implement
 				staticEvalResult = funcCall.evaluate(null);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new ParsingException("Error parsing Apply[Description = " + description + "]: Error pre-evaluating the function call " + function + " with (all static) arguments: " + xprs);
+				throw new ParsingException("Error parsing Apply[Description = " + description + "]: Error pre-evaluating the function call " + function + " with (all static) arguments: " + xprs, e);
 			}
 
 			/*

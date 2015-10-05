@@ -26,8 +26,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.slf4j.Logger;
@@ -79,14 +79,14 @@ public class AttributeAssignmentExpression extends oasis.names.tc.xacml._3_0.cor
 	 * 
 	 * @param jaxbAttrAssignExp
 	 *            XACML-schema-derived JAXB AttributeAssignmentExpression
-	 * @param policyDefaults
-	 *            enclosing policy(set) default parameters, e.g. XPath version
+	 * @param xPathCompiler
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            expression factory for parsing the AttributeAssignmentExpression's expression
 	 * @throws ParsingException
 	 *             error parsing the AttributeAssignmentExpression's Expression
 	 */
-	public AttributeAssignmentExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression jaxbAttrAssignExp, DefaultsType policyDefaults, ExpressionFactory expFactory) throws ParsingException
+	public AttributeAssignmentExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression jaxbAttrAssignExp, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
 	{
 		// JAXB fields
 		this.attributeId = jaxbAttrAssignExp.getAttributeId();
@@ -99,7 +99,7 @@ public class AttributeAssignmentExpression extends oasis.names.tc.xacml._3_0.cor
 		this.expression = null;
 		// END OF JAXB fields
 
-		this.evaluatableExpression = expFactory.getInstance(jaxbAttrAssignExp.getExpression().getValue(), policyDefaults, null);
+		this.evaluatableExpression = expFactory.getInstance(jaxbAttrAssignExp.getExpression().getValue(), xPathCompiler, null);
 	}
 
 	/**

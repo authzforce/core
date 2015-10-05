@@ -44,7 +44,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XPathCompiler;
-import net.sf.saxon.s9api.XPathExecutable;
 import net.sf.saxon.s9api.XPathSelector;
 import net.sf.saxon.s9api.XdmAtomicValue;
 import net.sf.saxon.s9api.XdmItem;
@@ -62,12 +61,13 @@ import com.thalesgroup.authzforce.core.attr.AttributeSelectorId;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.XPathAttributeValue;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.Expression.Utils.XPathEvaluator;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * Implements AttributeSelector support, which uses XPath expressions (using Saxon parser) to
@@ -101,39 +101,17 @@ import com.thalesgroup.authzforce.core.eval.Bag;
  */
 public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeSelectorType implements Expression<Bag<AV>>
 {
-	/*
-	 * Wrapper around XPathExecutable that provides the original XPath expression from which the
-	 * XPathExecutable was compiled, via toString() method.
-	 */
-	private static class XPathExecutableWrapper
-	{
-		private final XPathExecutable exec;
-		private final String expr;
-
-		private XPathExecutableWrapper(XPathExecutable xpathExe, String xpathExpression)
-		{
-			this.exec = xpathExe;
-			this.expr = xpathExpression;
-		}
-
-		@Override
-		public String toString()
-		{
-			return expr;
-		}
-	}
-
 	// the logger we'll use for all messages
 	// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
-	private static final IllegalArgumentException NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("XACML/JAXB AttributeSelector element undefined");
+	private static final IllegalArgumentException NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("AttributeSelector's input XACML/JAXB AttributeSelector element undefined");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION = new IllegalArgumentException("Attribute finder undefined but required for non-null ContextSelectorId in AttributeSelector");
-	private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException("XPath compiler undefined");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_FACTORY_EXCEPTION = new IllegalArgumentException("Attribute returnType factory undefined");
-	private static final UnsupportedOperationException UNSUPPORTED_PATH_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Path field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_CONTEXT_SELECTOR_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("ContextSelectorId field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Category field is read-only");
+	private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException("XPath version/compiler undefined but required for AttributeSelector evaluation");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_FACTORY_EXCEPTION = new IllegalArgumentException("AttributeSelector's returnType factory undefined");
+	private static final UnsupportedOperationException UNSUPPORTED_PATH_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s Path field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_CONTEXT_SELECTOR_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s ContextSelectorId field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s Category field is read-only");
 
-	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("DataType field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s DataType field is read-only");
 
 	private static final String NODE_DESCRIPTION_FORMAT = "type=%s, name=%s, value=%s";
 
@@ -206,7 +184,8 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 
 	private final AttributeGUID contextSelectorGUID;
 
-	private final XPathExecutableWrapper xpathExecWrapper;
+	private final XPathCompiler xpathCompiler;
+	private final Utils.XPathEvaluator xpathEvaluator;
 
 	private final AttributeValue.Factory<?> attrFactory;
 
@@ -214,7 +193,6 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 
 	private final BagDatatype<AV> returnType;
 
-	private final XPathCompiler xpathCompiler;
 	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
 	private final IndeterminateEvaluationException missingAttributesContentException;
@@ -297,8 +275,9 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 	 * 
 	 * @param attrSelectorElement
 	 *            XACML AttributeSelector
-	 * @param xpathCompiler
-	 *            XPATH compiler for compiling {@code attrSelectorElement.getPath()}
+	 * @param xPathCompiler
+	 *            XPATH compiler used for compiling {@code attrSelectorElement.getPath()} and XPath
+	 *            given by {@code attrSelectorElement.getContextSelectorId()} if not null
 	 * @param attrFinder
 	 *            AttributeFinder for finding value of the attribute identified by ContextSelectorId
 	 *            in {@code attrSelectorElement}; may be null if ContextSelectorId not specified
@@ -312,11 +291,21 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is
 	 *             null; or ContextSelectorId is not null but {@code attrFinder} is null
 	 */
-	public AttributeSelector(AttributeSelectorType attrSelectorElement, XPathCompiler xpathCompiler, AttributeFinder attrFinder, AttributeValue.Factory<AV> attrFactory) throws XPathExpressionException, IllegalArgumentException
+	public AttributeSelector(AttributeSelectorType attrSelectorElement, XPathCompiler xPathCompiler, AttributeFinder attrFinder, AttributeValue.Factory<AV> attrFactory) throws XPathExpressionException, IllegalArgumentException
 	{
 		if (attrSelectorElement == null)
 		{
 			throw NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION;
+		}
+
+		if (attrFactory == null)
+		{
+			throw NULL_ATTRIBUTE_FACTORY_EXCEPTION;
+		}
+
+		if (xPathCompiler == null)
+		{
+			throw NULL_XPATH_COMPILER_EXCEPTION;
 		}
 
 		// JAXB attributes
@@ -332,49 +321,30 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 			this.contextSelectorGUID = null;
 			this.attrFinder = null;
 			this.missingContextSelectorAttributeExceptionMessage = null;
-			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category;
+			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category + "'";
+			this.xpathCompiler = null;
 		} else
 		{
-			this.contextSelectorGUID = new AttributeGUID(category, null, contextSelectorId);
 			if (attrFinder == null)
 			{
 				throw NULL_ATTRIBUTE_FINDER_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION;
 			}
 
+			this.contextSelectorGUID = new AttributeGUID(category, null, contextSelectorId);
 			this.attrFinder = attrFinder;
 			this.missingContextSelectorAttributeExceptionMessage = this + ": No value found for attribute designated by Category=" + category + " and ContextSelectorId=" + contextSelectorId;
 			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category + "' selected by ContextSelectorId='" + contextSelectorId + "'";
-		}
-
-		if (xpathCompiler == null)
-		{
-			throw NULL_XPATH_COMPILER_EXCEPTION;
-		}
-
-		if (attrFactory == null)
-		{
-			throw NULL_ATTRIBUTE_FACTORY_EXCEPTION;
+			this.xpathCompiler = xPathCompiler;
 		}
 
 		this.id = new AttributeSelectorId(attrSelectorElement);
-		this.xpathCompiler = xpathCompiler;
 		this.attrFactory = attrFactory;
 		this.returnType = attrFactory.getBagDatatype();
-
-		final XPathExecutable xpathExec;
-		try
-		{
-			xpathExec = xpathCompiler.compile(path);
-		} catch (SaxonApiException e)
-		{
-			throw new IllegalArgumentException(this + ": Invalid XPath", e);
-		}
-
-		xpathExecWrapper = new XPathExecutableWrapper(xpathExec, path);
+		this.xpathEvaluator = new XPathEvaluator(path, xPathCompiler);
 
 		// error messages/exceptions
 		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.id + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
-		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No Content element found in Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
+		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
 		this.missingAttributeMessage = this + " not found in context";
 		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
 	}
@@ -472,11 +442,11 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 			}
 
 			/*
-			 * An XPathExecutable is immutable, and therefore thread-safe. It is simplest to load a
+			 * An XPathExecutable is immutable, and therefore thread-safe. It is simpler to load a
 			 * new XPathSelector each time the expression is to be evaluated. However, the
 			 * XPathSelector is serially reusable within a single thread. See Saxon Javadoc.
 			 */
-			final XPathSelector xpathSelector = xpathExecWrapper.exec.load();
+			final XPathSelector xpathSelector = xpathEvaluator.load();
 			final XdmValue xpathEvalResult;
 			try
 			{
@@ -513,10 +483,11 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + xpathEvalResultItem.getClass().getName(), Status.STATUS_SYNTAX_ERROR);
 				}
 
+				final XPathCompiler defXPathCompiler = context.getDefaultXPathCompiler();
 				final AttributeValue<?> attrVal;
 				try
 				{
-					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes());
+					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), defXPathCompiler == null ? this.xpathCompiler : defXPathCompiler);
 				} catch (IllegalArgumentException e)
 				{
 					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + dataType + "' from result #" + xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category
@@ -564,8 +535,8 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 			 * <li>It has been requested before in this context but could not be found: error
 			 * occurred (IndeterminateEvaluationException)</li>
 			 * </ol>
-			 * To avoid this confusion, we put an empty Bag (with some error info saying why
-			 * this is empty).
+			 * To avoid this confusion, we put an empty Bag (with some error info saying why this is
+			 * empty).
 			 * </p>
 			 */
 			final Bag<AV> result = Bags.empty(returnType, e);

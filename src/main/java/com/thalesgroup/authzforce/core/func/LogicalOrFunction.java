@@ -72,6 +72,7 @@ public class LogicalOrFunction extends FirstOrderFunction<BooleanAttributeValue>
 	 */
 	public static BooleanAttributeValue eval(EvaluationContext context, List<Expression<?>> checkedArgExpressions, AttributeValue<?>[] checkedRemainingArgs) throws IndeterminateEvaluationException
 	{
+		IndeterminateEvaluationException indeterminateException = null;
 		int argIndex = 0;
 		for (final Expression<?> arg : checkedArgExpressions)
 		{
@@ -80,38 +81,50 @@ public class LogicalOrFunction extends FirstOrderFunction<BooleanAttributeValue>
 			try
 			{
 				attrVal = Utils.evalSingle(arg, context, BooleanAttributeValue.class);
+				if (attrVal.getUnderlyingValue())
+				{
+					return BooleanAttributeValue.TRUE;
+				}
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE_PREFIX + argIndex, Status.STATUS_PROCESSING_ERROR, e);
-			}
-
-			if (attrVal.getUnderlyingValue())
-			{
-				return BooleanAttributeValue.TRUE;
+				// save the indeterminate to throw later only if there was not any TRUE in remaining
+				// args
+				indeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE_PREFIX + argIndex, Status.STATUS_PROCESSING_ERROR, e);
 			}
 
 			argIndex++;
 		}
 
 		// do the same with remaining arg values
-		for (final AttributeValue<?> arg : checkedRemainingArgs)
+		if (checkedRemainingArgs != null)
 		{
-			// Evaluate the argument
-			final BooleanAttributeValue attrVal;
-			try
-			{
-				attrVal = BooleanAttributeValue.class.cast(arg);
-			} catch (ClassCastException e)
-			{
-				throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), Status.STATUS_PROCESSING_ERROR, e);
-			}
 
-			if (attrVal.getUnderlyingValue())
+			for (final AttributeValue<?> arg : checkedRemainingArgs)
 			{
-				return BooleanAttributeValue.TRUE;
-			}
+				// Evaluate the argument
+				final BooleanAttributeValue attrVal;
+				try
+				{
+					attrVal = BooleanAttributeValue.class.cast(arg);
+				} catch (ClassCastException e)
+				{
+					throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), Status.STATUS_PROCESSING_ERROR, e);
+				}
 
-			argIndex++;
+				if (attrVal.getUnderlyingValue())
+				{
+					return BooleanAttributeValue.TRUE;
+				}
+
+				argIndex++;
+			}
+		}
+
+		if (indeterminateException != null)
+		{
+			// there was at least one indeterminate arg that could have been TRUE or FALSE ->
+			// indeterminate result
+			throw indeterminateException;
 		}
 
 		return BooleanAttributeValue.FALSE;

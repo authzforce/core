@@ -18,6 +18,7 @@
  */
 package com.thalesgroup.authzforce.core.test.nonregression;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -42,11 +43,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
+import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.PDP;
 import com.thalesgroup.authzforce.core.PdpConfigurationParser;
-import com.thalesgroup.authzforce.core.ResourceUtils;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
@@ -98,7 +98,8 @@ public class NonRegression
 	/**
 	 * 
 	 * @param testDir
-	 *            subdirectory of {@literal #ROOT_DIRECTORY} where test data are located
+	 *            subdirectory of {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} where test data
+	 *            are located
 	 */
 	public NonRegression(String testDir)
 	{
@@ -126,7 +127,7 @@ public class NonRegression
 		 * Each sub-directory of the root directory is data for a specific test. So we configure a
 		 * test for each directory
 		 */
-		final URL testRootDir = ResourceUtils.getResourceURL(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		final URL testRootDir = ResourceUtils.getURL(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
 		final Path testRootPath = Paths.get(testRootDir.toURI());
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(testRootPath))
 		{
@@ -134,6 +135,8 @@ public class NonRegression
 			{
 				if (Files.isDirectory(path))
 				{
+					// add the test directory path used as arg to constructor NonRegression(String
+					// testDir)
 					testParams.add(new Object[] { path.getFileName().toString() });
 				}
 			}
@@ -150,12 +153,12 @@ public class NonRegression
 	public void test() throws Exception
 	{
 		final String testResourceLocationPrefix = TEST_RESOURCES_ROOT_DIRECTORY_LOCATION + "/" + testDirName + "/";
-		LOGGER.debug("Test '{}' is started", testResourceLocationPrefix);
+		LOGGER.debug("Starting test '{}'", testResourceLocationPrefix);
 
 		// Create PDP
 		final String pdpConfLocation = testResourceLocationPrefix + PDP_CONF_FILENAME;
 		final String pdpExtXsdLocation = testResourceLocationPrefix + PDP_EXTENSION_XSD;
-		final Resource pdpExtXsdRes = ResourceUtils.getResource(pdpExtXsdLocation);
+		final File pdpExtXsdFile = ResourceUtils.getFile(pdpExtXsdLocation);
 		final PDP pdp;
 		try
 		{
@@ -163,20 +166,20 @@ public class NonRegression
 			 * Load the PDP configuration from the configuration, and optionally, the PDP extension
 			 * XSD if this file exists, and the XML catalog required to resolve these extension XSDs
 			 */
-			pdp = pdpExtXsdRes.exists() ? PdpConfigurationParser.getPDP(pdpConfLocation, XML_CATALOG_LOCATION, pdpExtXsdLocation) : PdpConfigurationParser.getPDP(pdpConfLocation);
+			pdp = pdpExtXsdFile.exists() ? PdpConfigurationParser.getPDP(pdpConfLocation, XML_CATALOG_LOCATION, pdpExtXsdLocation) : PdpConfigurationParser.getPDP(pdpConfLocation);
 		} catch (IOException | JAXBException e)
 		{
 			throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfLocation + "' with extension XSD '" + pdpExtXsdLocation + "' and XML catalog file '" + XML_CATALOG_LOCATION + "'", e);
 		}
 
 		// Create request
-		final URL reqFileURL = ResourceUtils.getResourceURL(testResourceLocationPrefix + REQUEST_FILENAME);
+		final URL reqFileURL = ResourceUtils.getURL(testResourceLocationPrefix + REQUEST_FILENAME);
 		final Unmarshaller xacmlUnmarshaller = XACMLBindingUtils.createXacml3Unmarshaller();
 		final Request request = (Request) xacmlUnmarshaller.unmarshal(reqFileURL);
 		LOGGER.debug("XACML Request that is sent to the PDP: {}", TestUtils.printRequest(request));
 		final Response response = pdp.evaluate(request);
 		LOGGER.debug("XACML Response that is received from the PDP: {}", response);
-		final URL expectedRespFileURL = ResourceUtils.getResourceURL(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
+		final URL expectedRespFileURL = ResourceUtils.getURL(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
 		final Response expectedResponse = (Response) xacmlUnmarshaller.unmarshal(expectedRespFileURL);
 		TestUtils.assertNormalizedEquals(testResourceLocationPrefix, expectedResponse, response);
 		LOGGER.debug("Test '{}' is finished", testResourceLocationPrefix);

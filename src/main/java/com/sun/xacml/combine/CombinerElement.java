@@ -37,9 +37,12 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
+
 import com.sun.xacml.ParsingException;
 import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactory;
+import com.thalesgroup.authzforce.core.eval.Expression;
 
 /**
  * Represents a set of CombinerParameters to a combining algorithm that may or may not be associated
@@ -55,7 +58,7 @@ public class CombinerElement<T extends Decidable>
 {
 
 	// the element to be combined
-	private T element;
+	private final T element;
 
 	// the parameters used with this element
 	private final CombinerParameter[] parameters;
@@ -70,13 +73,15 @@ public class CombinerElement<T extends Decidable>
 	 *            a (possibly empty) non-null <code>List</code> of
 	 *            <code>CombinerParameter<code>s provided for general
 	 *                   use (for all pre-2.0 policies this must be empty)
+	 * @param xPathCompiler
+	 *            Policy(Set) default XPath compiler, corresponding to the Policy(Set)'s default
+	 *            XPath version specified in {@link DefaultsType} element; null if none specified
 	 * @param expFactory
 	 *            attribute value factory
 	 * @throws ParsingException
 	 *             if error parsing CombinerParameters
 	 */
-	public CombinerElement(T element, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter> jaxbCombinerParameters,
-			ExpressionFactory expFactory) throws ParsingException
+	public CombinerElement(T element, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter> jaxbCombinerParameters, Expression.Factory expFactory, XPathCompiler xPathCompiler) throws ParsingException
 	{
 		this.element = element;
 
@@ -88,13 +93,13 @@ public class CombinerElement<T extends Decidable>
 			{
 				try
 				{
-					final CombinerParameter combinerParam = new CombinerParameter(jaxbCombinerParam, expFactory);
+					final CombinerParameter combinerParam = new CombinerParameter(jaxbCombinerParam, expFactory, xPathCompiler);
 					modifiableParamList.add(combinerParam);
 				} catch (ParsingException e)
 				{
-					throw new ParsingException("Error parsing CombinerParameters/CombinerParameter#"+paramIndex, e);
+					throw new ParsingException("Error parsing CombinerParameters/CombinerParameter#" + paramIndex, e);
 				}
-				
+
 				paramIndex++;
 			}
 		}
