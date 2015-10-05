@@ -57,7 +57,7 @@ import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
 import com.thalesgroup.authzforce.core.attr.XPathAttributeValue;
-import com.thalesgroup.authzforce.xacml.schema.XPATHVersion;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XPATHVersion;
 
 /**
  * Super interface of any kinds of expression in a policy that the PDP evaluation engine may

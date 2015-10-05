@@ -65,9 +65,22 @@
 			<version>9.6.0-5</version>
 		</dependency>
 		<!-- Authzforce dependencies -->
+		<!-- xml-ns-model and xacml-model dependencies are declared here only to work around maven-jaxb2-plugin bug: cannot resolve 
+			episodes from indirect dependencies with useDependenciesAsEpisodes option. -->
 		<dependency>
 			<groupId>com.thalesgroup.authzforce</groupId>
-			<artifactId>authzforce-core-model</artifactId>
+			<artifactId>authzforce-xml-ns-model</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-xacml-model</artifactId>
+			<version>3.0.3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-pdp-ext-model</artifactId>
+			<version>3.2.7-SNAPSHOT</version>
 		</dependency>
 		<!-- /Authzforce dependencies -->
 

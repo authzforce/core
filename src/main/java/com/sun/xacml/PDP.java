@@ -69,8 +69,8 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
 
 /**
  * This is the core class for the XACML engine, providing the starting point for request evaluation.

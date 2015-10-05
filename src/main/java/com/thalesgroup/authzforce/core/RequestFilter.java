@@ -46,9 +46,9 @@ import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
 import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes.MutableBag;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
-import com.thalesgroup.authzforce.xacml.schema.XACMLResourceScope;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLAttributeId;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLResourceScope;
 
 /**
  * XACML Request filter; applies some validation and processing of the input request prior to the

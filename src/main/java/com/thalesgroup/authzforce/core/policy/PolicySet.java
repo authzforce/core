@@ -52,7 +52,7 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Utils;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.xacml.schema.XACMLNodeName;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLNodeName;
 
 /**
  * PolicySet Evaluator

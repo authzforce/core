@@ -72,7 +72,7 @@ import com.thalesgroup.authzforce.core.policy.RefPolicyFinderModule;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule;
 import com.thalesgroup.authzforce.pdp.model._2015._06.Pdp;
-import com.thalesgroup.authzforce.xacml.schema.XACMLDatatypeId;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLDatatypeId;
 
 /**
  * XML-based PDP Configuration parser

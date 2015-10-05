@@ -43,10 +43,10 @@ import com.thalesgroup.authzforce.core.JaxbBoundPdpExtension;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * This is the abstract class that all <code>AttributeFinder</code> modules extend.
