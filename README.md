@@ -41,31 +41,24 @@ TODO
 ## Conformance Tests
 TODO
 ## Installation
-* /etc/AuthZForce/conf	Configuration files
-*	log4j.properties: PDP log4j configuration file
-*	config.xml: PDP configuration file
-     * /etc/AuthZForce/policies	Contains an example policy
-     * /etc/AuthZForce/logs	Logs files
-*	pdp.log: PDP system logs
-*	pdp-audit.log: Authorization decision audit logs
+TODO
 
-### Copy the default configuration file in this directory: 
 ## Installation Checking
 
 Start the server by running this command: 
 ```bash
-[root@ authzforce ~]# /opt/apache-tomcat-6.0.35/bin/catalina.sh start
+[root@ authzforce ~]# service tomcat7 start 
 ````
 
 Test that the PDP and the REST interface is running by doing a GET request to the
 ```bash
-[root@ authzforce ~]# curl -X GET http://@IP:8080/AuthZForce-REST-[VERSION]/pdp/service
+[root@ authzforce ~]# curl -X POST http://@IP:8080/authzforce-rest-service-[VERSION]/domains/5e022256-6d0f-4eb8-aa9d-77db3d4ad141/pdp
 ```
-The Server should respond by a 200 status code and display "It Works !"
+The Server should respond by a 200 status code 
 
 # Authorization Server Configuration
 The authorization server configuration file is located in 
-> /etc/AuthZForce/conf/config.xml
+> /var/lib/tomcat7/conf/authzforce/domains/5e022256-6d0f-4eb8-aa9d-77db3d4ad141/pdp.xml 
 
 You can find below and example of configuration and a description of the different element. You can modify this configuration according to your situation:
 ```xml
@@ -117,21 +110,13 @@ You can find below and example of configuration and a description of the differe
  ````
  
 ## Policy Finder Configuration
-The Policy Decision Point has the ability to load XACML policies from different locations and types of stores. In this version, policies correspond to a single file located on the server. 
-```xml
-<!--******************Declaration of the Policy Finder******************************** -->
- <policyFinderModule class="com.sun.xacml.finder.impl.FilePolicyModule">
-      <list>
-         <string>/etc/AuthZForce/policies/policy-example.xml</string>
-         <string>/etc/AuthZForce/policies/policy-example-2.xml</string>
-      </list>
- </policyFinderModule>
- ````
-
-Once you have created your own policy, you will need to change this path to point to your policy file.
+The policy file evaluated by your authorization server is located at "/var/lib/tomcat7/conf/authzforce/domains/5e022256-6d0f-4eb8-aa9d-77db3d4ad141/policySet.xml"
+You can modify it to match your security requirements. After editing you need to reload the server so it can load the new policy.
 
 ## Attribute Finder Configuration File
 During an evaluation, the PDP may require other attributes that are not provided as part of the XACML request. To get those the PDP will ask the attribute finder(s) (configured below) to provide missing information. In this version, we provided two generic attribute finders that allow you to retrieve information from a LDAP directory and from a database.
+You can configure your attribute finder in this file /var/lib/tomcat7/conf/authzforce/domains/5e022256-6d0f-4eb8-aa9d-77db3d4ad141/attributeFinders.xml
+
 ### JDBC
 ```xml
 <attributeFinderModule class="com.sun.xacml.finder.impl.AttributeDBFinder">
@@ -173,6 +158,7 @@ overflowToDisk|if cache can write on the disk if the memory is full, true or fal
 eternal|do we store eternally the elements, true or false|
 timeToLiveSeconds|time to live of the stored elements, integer, (Optional)|
 timeToIdleSeconds|time to idle for the stored elements, integer, (Optional) |
+
 ### LDAP
 ```xml
 <attributeFinderModule class="com.sun.xacml.finder.impl.LdapAttributeFinder">
