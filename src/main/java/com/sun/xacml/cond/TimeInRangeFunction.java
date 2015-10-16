@@ -33,168 +33,173 @@
  */
 package com.sun.xacml.cond;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.attr.BooleanAttribute;
-import com.sun.xacml.attr.TimeAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-
+import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
+import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
 
 /**
- * This class implements the time-in-range function, which takes
- * three time values and returns true if the first value falls between the
- * second and the third value. This function was introduced in XACML 2.0.
+ * This class implements the time-in-range function, which takes three time values and returns true
+ * if the first value falls between the second and the third value. This function was introduced in
+ * XACML 2.0.
  * <p>
- * Note that this function allows any time ranges less than 24 hours. In
- * other words, it is not bound by normal day boundries (midnight GMT), but
- * by the minimum time in the range. This means that ranges like 9am-5pm
- * are supported, as are ranges like 5pm-9am.
- *
+ * Note that this function allows any time ranges less than 24 hours. In other words, it is not
+ * bound by normal day boundries (midnight GMT), but by the minimum time in the range. This means
+ * that ranges like 9am-5pm are supported, as are ranges like 5pm-9am.
+ * 
  * @since 2.0
  * @author seth proctor
  */
-public class TimeInRangeFunction extends FunctionBase
+public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValue>
 {
 
-    /**
-     * The identifier for this function
-     */
-    public static final String NAME = FUNCTION_NS_2 + "time-in-range";
+	/**
+	 * The identifier for this function
+	 */
+	public static final String NAME = FUNCTION_NS_2 + "time-in-range";
 
-    /**
-     * The number of milliseconds in a minute
-     */
-    public static final long MILLIS_PER_MINUTE = 1000 * 60;
+	/**
+	 * Default constructor.
+	 */
+	public TimeInRangeFunction()
+	{
+		/**
+		 * boolean timeInRange(time,time,time)
+		 */
+		super(NAME, DatatypeConstants.BOOLEAN.TYPE, false, DatatypeConstants.TIME.TYPE, DatatypeConstants.TIME.TYPE, DatatypeConstants.TIME.TYPE);
+	}
 
-    /**
-     * The number of milliseconds in a day
-     */
-    public static final long MILLIS_PER_DAY = MILLIS_PER_MINUTE * 60 * 24;
+	private static final TimeZone DEFAULT_TZ = TimeZone.getDefault();
 
-    /**
-     * Default constructor.
-     */
-    public TimeInRangeFunction() {
-        super(NAME, 0, TimeAttribute.identifier, false, 3,
-              BooleanAttribute.identifier, false);
-    }
+	/**
+	 * Set {@code cal}'s date to the same as {@code ref}'s date
+	 * 
+	 * @param cal
+	 * @param ref
+	 */
+	private static void setSameDate(Calendar cal, Calendar ref)
+	{
+		cal.set(Calendar.YEAR, ref.get(Calendar.YEAR));
+		cal.set(Calendar.DAY_OF_YEAR, ref.get(Calendar.DAY_OF_YEAR));
+	}
 
-    /**
-     * Evaluates the time-in-range function, which takes three
-     * <code>TimeAttribute</code> values. This function return true
-     * if the first value falls between the second and third values
-     * (ie., on or after the second time and on or before the third
-     * time). If no time zone is specified for the second and/or third
-     * time value, then the timezone from the first time value is
-     * used. This lets you say time-in-range(current-time, 9am, 5pm)
-     * and always have the evaluation happen in your current-time
-     * timezone.
-     *
-     * @param inputs a <code>List</code> of <code>Evaluatable</code>
-     *               objects representing the arguments passed to the function
-     * @param context the respresentation of the request
-     *
-     * @return an <code>EvaluationResult</code> containing true or false
-     */
-    public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
-        AttributeValue [] argValues = new AttributeValue[inputs.size()];
-        EvaluationResult result = evalArgs(inputs, context, argValues);
+	/**
+	 * Evaluates the time-in-range function, which takes three <code>TimeAttributeValue</code>
+	 * values. This function return true if the first value falls between the second and third
+	 * values (ie., on or after the second time and on or before the third time). If no time zone is
+	 * specified for the second and/or third time value, then the timezone from the first time value
+	 * is used. This lets you say time-in-range(current-time, 9am, 5pm) and always have the
+	 * evaluation happen in your current-time timezone.
+	 * 
+	 * @param arg
+	 * @param lowerBound
+	 * @param upperBound
+	 * @return true iff arg is in range [lowerBound, upperBound]
+	 * 
+	 * 
+	 */
+	public static boolean eval(TimeAttributeValue arg, TimeAttributeValue lowerBound, TimeAttributeValue upperBound)
+	{
+		// get the three time values
+		final Calendar calCheckedWhetherInRange = arg.getUnderlyingValue().toGregorianCalendar();
+		if (calCheckedWhetherInRange.getTimeZone() == null)
+		{
+			calCheckedWhetherInRange.setTimeZone(DEFAULT_TZ);
+		}
 
-        // check if any errors occured while resolving the inputs
-        if (result != null)
-            return result;
+		final Calendar startCal = lowerBound.getUnderlyingValue().toGregorianCalendar();
+		if (startCal.getTimeZone() == null)
+		{
+			startCal.setTimeZone(calCheckedWhetherInRange.getTimeZone());
+		}
+		final Calendar endCal = upperBound.getUnderlyingValue().toGregorianCalendar();
+		if (endCal.getTimeZone() == null)
+		{
+			endCal.setTimeZone(calCheckedWhetherInRange.getTimeZone());
+		}
 
-        // get the three time values
-        TimeAttribute attr = (TimeAttribute)(argValues[0]);
-        long middleTime = attr.getMilliseconds();
-        long minTime = resolveTime(attr, (TimeAttribute)(argValues[1]));
-        long maxTime = resolveTime(attr, (TimeAttribute)(argValues[2]));
-        
-        // first off, if the min and max are the same, then this can only
-        // be true is the middle is also the same value
-        if (minTime == maxTime)
-            return EvaluationResult.getInstance(middleTime == minTime);
+		/*
+		 * Use start time as reference for the day in time comparisons, so set the timeChecked day
+		 * to the one of the start time
+		 */
+		setSameDate(calCheckedWhetherInRange, startCal);
+		/*
+		 * Now we date does not matter in calendar comparison, we only compare times of the day so
+		 * ignoring the date, the checked time of the day might be before the lower time bound but
+		 * still be in range if considered this is the time on the next day. In this case, startCal
+		 * is on day N, and calCheckedWhetherInRange on day N+1.
+		 */
+		/*
+		 * Boolean below says whether the checked time is strictly after the start time if
+		 * considered on the *same day*, i.e. in terms of time of day.
+		 */
+		final boolean isCheckedDayTimeStrictlyBeforeStartDayTime = calCheckedWhetherInRange.before(startCal);
+		if (startCal.after(endCal))
+		{
+			/**
+			 * start time of the day > end time of the day, for instance 02:00:00 > 01:00:00 so we
+			 * consider the end time (01:00:00) on the next day (later than the second argument -
+			 * end time - by less than 24h, the spec says). So we interpret the time interval as the
+			 * date interval [startTime on day N, endTime on day N+1]. If checked time of day <
+			 * start time of day (compared on the same day), then checked time can only be on day
+			 * after to be in range
+			 */
+			if (isCheckedDayTimeStrictlyBeforeStartDayTime)
+			{
+				/*
+				 * time checked is strictly before start time if considered on the same day, so not
+				 * in range unless considered on day N+1 So let's compared with end time after
+				 * considering them on the same day
+				 */
+				// calCheckedWhetherInRange.add(Calendar.DAY_OF_YEAR, 1);
+				// set checked time to same day as end time for comparison
+				setSameDate(calCheckedWhetherInRange, endCal);
+				// time checked is in range if and only if before or equals end time (on day N+1),
+				// i.e. not strictly after
+				return !calCheckedWhetherInRange.after(endCal);
+			}
 
-        // shift the minTime to 00:00:00 so we can do a normal comparison,
-        // taking care to shift in the correct direction (left if the
-        // maxTime is bigger, otherwise right), and making sure that we
-        // handle any wrapping values for the middle time (the maxTime will
-        // never wrap around 00:00:00 GMT as long as we're dealing with
-        // windows of less than 24 hours)
+			/*
+			 * Time checked is after or equal to start time, so it is in range (on day N), as we
+			 * already consider end time to be on day N+1
+			 */
+			return true;
+		}
 
-        // the amount we're shifting
-        long shiftSpan;
+		// start time <= end time -> all considered on the same day
+		if (isCheckedDayTimeStrictlyBeforeStartDayTime)
+		{
+			// checked time < start time -> out of range
+			return false;
+		}
 
-        // figure out the right direction and get the shift amount
-        if (minTime < maxTime)
-            shiftSpan = -minTime;
-        else
-            shiftSpan = MILLIS_PER_DAY - minTime;
+		// checked time >= start time
 
-        // shift the maxTime and the middleTime
-        maxTime = maxTime + shiftSpan;
-        middleTime = handleWrap(middleTime + shiftSpan);
-        
-        // we're in the range if the middle is now between 0 and maxTime
-        return EvaluationResult.
-            getInstance((middleTime >= 0) && (middleTime <= maxTime));
-    }
-    
-    /**
-     * Private helper method that is used to resolve the correct values for
-     * min and max. If an explicit timezone is provided for either, then
-     * that value gets used. Otherwise we need to pick the timezone the
-     * middle time is using, and move the other time into that timezone.
-     */
-    private long resolveTime(TimeAttribute middleTime,
-                             TimeAttribute otherTime) {
-        long time = otherTime.getMilliseconds();
-        int tz = otherTime.getTimeZone();
+		// set checked time to same day as end time for comparison
+		setSameDate(calCheckedWhetherInRange, endCal);
+		// time checked is in range if and only if before or equals end time, so not strictly after
+		return !calCheckedWhetherInRange.after(endCal);
+	}
 
-        // if there's no explicit timezone, then the otherTime needs to
-        // be shifted to the middleTime's timezone
-        if (tz == TimeAttribute.TZ_UNSPECIFIED) {
-            // the other time didn't specify a timezone, so we use the
-            // timezone specified in the middle time...
-            int middleTz = middleTime.getTimeZone();
+	@Override
+	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	{
+		return new EagerPrimitiveEval<BooleanAttributeValue, TimeAttributeValue>(signature, TimeAttributeValue[].class, argExpressions, remainingArgTypes)
+		{
 
-            // ...and we get the default timezone from the otherTime
-            tz = otherTime.getDefaultedTimeZone();
-
-            // if there was no specified timezone for the middleTime, use
-            // the default timezone for that too
-            if (middleTz == TimeAttribute.TZ_UNSPECIFIED)
-                middleTz = middleTime.getDefaultedTimeZone();
-
-            // use the timezone to offset the time value, if the two aren't
-            // already in the same timezone
-            if (middleTz != tz) {
-                time -= ((middleTz - tz) * MILLIS_PER_MINUTE);
-                time = handleWrap(time);
-            }
-        }
-
-        return time;
-    }
-
-    /**
-     * Private helper method that handles when a time value wraps no more
-     * than 24 hours either above 23:59:59 or below 00:00:00.
-     */
-    private long handleWrap(long time) {
-        if (time < 0) {
-            // if it's negative, add one day
-            return time + MILLIS_PER_DAY;
-        }
-
-        if (time > MILLIS_PER_DAY) {
-            // if it's more than 24 hours, subtract one day
-            return time - MILLIS_PER_DAY;
-        }
-        
-        return time;
-    }
-
+			@Override
+			protected BooleanAttributeValue evaluate(TimeAttributeValue[] args) throws IndeterminateEvaluationException
+			{
+				return BooleanAttributeValue.valueOf(eval(args[0], args[1], args[2]));
+			}
+		};
+	}
 }

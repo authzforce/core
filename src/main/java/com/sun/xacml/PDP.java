@@ -33,173 +33,238 @@
  */
 package com.sun.xacml;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.ctx.ResponseCtx;
-import com.sun.xacml.ctx.Result;
 import com.sun.xacml.ctx.Status;
-import com.sun.xacml.finder.AttributeFinder;
-import com.sun.xacml.finder.PolicyFinder;
-import com.sun.xacml.finder.PolicyFinderResult;
-import com.sun.xacml.finder.ResourceFinder;
-import com.sun.xacml.finder.ResourceFinderResult;
-import com.thalesgroup.appsec.util.Utils;
+import com.thalesgroup.authzforce.core.DecisionCache;
+import com.thalesgroup.authzforce.core.DecisionResultFilter;
+import com.thalesgroup.authzforce.core.IndividualDecisionRequest;
+import com.thalesgroup.authzforce.core.RequestFilter;
+import com.thalesgroup.authzforce.core.attr.AttributeGUID;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
+import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
+import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
+import com.thalesgroup.authzforce.core.eval.Bag;
+import com.thalesgroup.authzforce.core.eval.Bags;
+import com.thalesgroup.authzforce.core.eval.DecisionResult;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
+import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
 
 /**
  * This is the core class for the XACML engine, providing the starting point for request evaluation.
  * To build an XACML policy engine, you start by instantiating this object.
+ * <p>
+ * This class implements {@link Closeable} because it depends on various modules - e.g. the root
+ * policy finder, an optional decision cache - that may very likely hold resources such as network
+ * resources and caches to get: the root policy or policies referenced by the root policy; or to get
+ * attributes used in the policies from remote sources when not provided in the Request; or to get
+ * cached decisions for requests already evaluated in the past, etc. Therefore, you are required to
+ * call {@link #close()} when you no longer need an instance - especially before replacing with a
+ * new instance - in order to make sure these resources are released properly by each underlying
+ * module (e.g. invalidate the attribute caches and/or network resources).
  * 
  * @since 1.0
  * @author Seth Proctor
  */
-public class PDP
+public class PDP implements Closeable
 {
-
-	// the single attribute finder that can be used to find external values
-	private AttributeFinder attributeFinder;
-
-	// the single policy finder that will be used to resolve policies
-	private PolicyFinder policyFinder;
-
-	// the single resource finder that will be used to resolve resources
-	private ResourceFinder resourceFinder;
 
 	// the logger we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(PDP.class);
 
-	private static Cache cache;
+	/**
+	 * Indeterminate response if ReturnPolicyIdList not supported.
+	 */
+	private static final Response UNSUPPORTED_POLICY_ID_LIST_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new Status("Unsupported feature (XACML optional): <PolicyIdentifierList>, ReturnPolicyIdList='true'", Status.STATUS_SYNTAX_ERROR))));
 
-	private static PDP authzforce;
+	private static final Result INVALID_DECISION_CACHE_RESULT = new DecisionResult(new Status(Status.STATUS_PROCESSING_ERROR, "Internal error"));
 
-	private PDPConfig config;
+	/**
+	 * Indeterminate response iff CombinedDecision element not supported because the request parser
+	 * does not support any scheme from MultipleDecisionProfile section 2.
+	 */
+	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new Status("Unsupported feature: CombinedDecision='true'", Status.STATUS_PROCESSING_ERROR))));
 
-	public static PDP getInstance()
+	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
+
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value());
+
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
+
+	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
 	{
-		if (authzforce == null)
+		private static final String ID = "urn:thalesgroup:xacml:result-filter:default";
+
+		@Override
+		public String getId()
 		{
-			authzforce = new PDP();
+			return ID;
 		}
-		return authzforce;
+
+		@Override
+		public List<Result> filter(List<Result> results)
+		{
+			return results;
+		}
+
+		@Override
+		public boolean supportsMultipleDecisionCombining()
+		{
+			return false;
+		}
+
+	};
+
+	private class IndividualDecisionRequestEvaluator
+	{
+		protected final Result evaluate(IndividualDecisionRequest request, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		{
+			// convert to EvaluationContext
+			final Map<AttributeGUID, Bag<?>> namedAttributes = request.getNamedAttributes();
+			namedAttributes.putAll(pdpIssuedAttributes);
+			final EvaluationContext ctx = new IndividualDecisionRequestContext(namedAttributes, request.getExtraContentsByCategory(), request.getDefaultXPathCompiler());
+			final DecisionResult result = rootPolicyFinder.findAndEvaluate(ctx);
+			result.setAttributes(request.getAttributesIncludedInResult());
+			return result;
+		}
+
+		protected List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		{
+			final List<Result> results = new ArrayList<>();
+			for (final IndividualDecisionRequest request : individualDecisionRequests)
+			{
+				final Result result = evaluate(request, pdpIssuedAttributes);
+				results.add(result);
+			}
+
+			return results;
+		}
 	}
 
-	public PDPConfig getPDPConfig()
-	{
-		return config;
-	}
+	private final RootPolicyFinder rootPolicyFinder;
+	private final DecisionCache decisionCache;
+	private final RequestFilter reqFilter;
+	private final IndividualDecisionRequestEvaluator individualReqEvaluator;
+	private final DecisionResultFilter resultFilter;
 
-	public PDP()
+	private class CachingIndividualRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
-		config = new PDPConfig(null, null, null, null);
+
+		private CachingIndividualRequestEvaluator()
+		{
+			assert decisionCache != null;
+		}
+
+		@Override
+		protected final List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		{
+			final List<Result> results = new ArrayList<>();
+			final Map<IndividualDecisionRequest, Result> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
+			if (cachedResultsByRequest == null)
+			{
+				// error, return indeterminate result as only result
+				LOGGER.error("Invalid decision cache result: null");
+				results.add(INVALID_DECISION_CACHE_RESULT);
+				return results;
+			}
+
+			// At least check that we have as many results from cache as input requests
+			// (For each request with no result in cache, there must still be an entry with value
+			// null.)
+			if (cachedResultsByRequest.size() != individualDecisionRequests.size())
+			{
+				// error, return indeterminate result as only result
+				LOGGER.error("Invalid decision cache result: number of returned decision results ({}) != number of input (individual) decision requests ({})", cachedResultsByRequest.size(), individualDecisionRequests.size());
+				results.add(INVALID_DECISION_CACHE_RESULT);
+				return results;
+			}
+
+			final Map<IndividualDecisionRequest, Result> newResultsByRequest = new HashMap<>();
+			for (final Entry<IndividualDecisionRequest, Result> cachedRequestResultPair : cachedResultsByRequest.entrySet())
+			{
+				final Result finalResult;
+				final Result cachedResult = cachedRequestResultPair.getValue();
+				if (cachedResult == null)
+				{
+					// result not in cache -> evaluate request
+					final IndividualDecisionRequest individuaDecisionRequest = cachedRequestResultPair.getKey();
+					finalResult = super.evaluate(individuaDecisionRequest, pdpIssuedAttributes);
+					newResultsByRequest.put(individuaDecisionRequest, finalResult);
+				} else
+				{
+					finalResult = cachedResult;
+				}
+
+				results.add(finalResult);
+			}
+
+			decisionCache.putAll(newResultsByRequest);
+			return results;
+		}
 	}
 
 	/**
 	 * Constructs a new <code>PDP</code> object with the given configuration information.
 	 * 
-	 * @param config
-	 *            user configuration data defining how to find policies, resolve external
-	 *            attributes, etc.
-	 */
-	public PDP(PDPConfig config)
-	{
-		LOGGER.info("creating a PDP");
-
-		this.config = config;
-
-		attributeFinder = config.getAttributeFinder();
-
-		policyFinder = config.getPolicyFinder();
-		policyFinder.init();
-
-		resourceFinder = config.getResourceFinder();
-
-		cache = config.getCache();
-	}
-
-	/**
-	 * This method is used to calculate the hashcode for caching and comparing Requests FIXME: Use
-	 * {@link Request#hashCode()} instead, since already provided by XSD-to-JAXB generation
+	 * @param rootPolicyFinder
+	 *            root policy finder (mandatory/not null)
+	 * @param requestFilter
+	 *            request filter (XACML Request processing prior to policy evaluation)
+	 * @param decisionResultFilter
+	 *            decision result filter (XACML Result processing after policy evaluation, before
+	 *            creating/returning final XACML Response)
+	 * @param decisionCache
+	 *            decision response cache
+	 * @throws IllegalArgumentException
+	 *             if rootPolicyFinder or requestParser is null
 	 * 
-	 * @param request
-	 *            Request
-	 * @return the calculated hashCode as a String
 	 */
-	public static String getHashCode(Request request)
+	public PDP(RootPolicyFinder rootPolicyFinder, RequestFilter requestFilter, DecisionResultFilter decisionResultFilter, DecisionCache decisionCache) throws IllegalArgumentException
 	{
-		int hash = 0;
-
-		/**
-		 * FIXME: MultiRequests, RequestDefaults, ReturnPolicyIdList, CombinedDecisions are ignored
-		 * by this hash algorithm, why?
-		 * Look at Request.hashCode() as a reference (generated by JAXB)
-		 */
-		for (Attributes avts : request.getAttributes())
+		if (rootPolicyFinder == null)
 		{
-			for (Attribute att : avts.getAttributes())
-			{
-				hash += att.getAttributeId().hashCode();
-				for (AttributeValueType attvt : att.getAttributeValues())
-				{
-					for (Object attContent : attvt.getContent())
-					{
-						hash += attContent.hashCode();
-					}
-				}
-			}
-
+			throw new IllegalArgumentException("Undefined root/top-level PolicyFinder for PDP");
 		}
 
-		return String.valueOf(hash);
-	}
+		if (requestFilter == null)
+		{
+			throw new IllegalArgumentException("Undefined RequestFilter for PDP");
+		}
 
-	/**
-	 * Used to initiate a reload of the policies without reload the whole server
-	 * 
-	 * @return the PolicyFinder used by the PDP
-	 */
-	public PolicyFinder getPolicyFinder()
-	{
-		return policyFinder;
-	}
-
-	public void setPolicyFinder(PolicyFinder policyFinder)
-	{
-		this.policyFinder = policyFinder;
-		// Used to reload
-		getPolicyFinder();
-	}
-
-	/**
-	 * Get the Attribute Finder, in order to update its attribute finder modules
-	 * 
-	 * @return the AttributeFinder used by the PDP
-	 */
-	public AttributeFinder getAttributeFinder()
-	{
-		return attributeFinder;
+		this.rootPolicyFinder = rootPolicyFinder;
+		this.reqFilter = requestFilter;
+		this.decisionCache = decisionCache == null || decisionCache.isDisabled() ? null : decisionCache;
+		this.individualReqEvaluator = this.decisionCache == null ? new IndividualDecisionRequestEvaluator() : new CachingIndividualRequestEvaluator();
+		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
 	/**
 	 * Attempts to evaluate the request against the policies known to this PDP. This is really the
 	 * core method of the entire XACML specification, and for most people will provide what you
 	 * want. If you need any special handling, you should look at the version of this method that
-	 * takes an <code>EvaluationCtx</code>.
+	 * takes an <code>EvaluationContext</code>.
 	 * <p>
 	 * Note that if the request is somehow invalid (it was missing a required attribute, it was
 	 * using an unsupported scope, etc), then the result will be a decision of INDETERMINATE.
@@ -208,332 +273,78 @@ public class PDP
 	 *            the request to evaluate
 	 * @return a response paired to the request
 	 */
-	public ResponseCtx evaluate(Request request)
+	public Response evaluate(Request request)
 	{
 		/*
-		 * TODO: make this code more category-independent. In the profile spec, nothing is specific
-		 * to subject, action or environment category for instance. So should be this code.
+		 * We do not support <PolicyIdentifierList> (optional feature of XACML spec), therefore not
+		 * ReturnPolicyIdentifierList = true either.
 		 */
-		List<Attributes> subjects = new ArrayList<>();
-		List<Attributes> actions = new ArrayList<>();
-		List<Attributes> resources = new ArrayList<>();
-		List<Attributes> environments = new ArrayList<>();
-		List<Attributes> customs = new ArrayList<>();
-		List<Request> requests = new ArrayList<>();
-		List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results = new ArrayList<>();
-
-		if (request.getMultiRequests() != null)
+		if (request.isReturnPolicyIdList())
 		{
-			// TODO: Implement multiRequest
-			// there was something wrong with the request, so we return
-			// Indeterminate with a status of syntax error...though this
-			// may change if a more appropriate status type exists
-			StatusCode code = new StatusCode();
-			code.setValue(Status.STATUS_SYNTAX_ERROR);
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
-			status.setStatusCode(code);
-			status.setStatusMessage("Multi Request not implemented yet");
-			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
-		}
-
-		// no MultiRequests
-		if (request.isCombinedDecision())
-		{
-			// TODO: Implement combinedDecision
-			// there was something wrong with the request, so we return
-			// Indeterminate with a status of syntax error...though this
-			// may change if a more appropriate status type exists
-			StatusCode code = new StatusCode();
-			code.setValue(Status.STATUS_SYNTAX_ERROR);
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
-			status.setStatusCode(code);
-			status.setStatusMessage("Combined decision not implemented yet");
-			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
-		}
-
-		// no MultiRequests and CombinedDecision=false
-		for (Attributes myAttrs : request.getAttributes())
-		{
-			try
-			{
-				final XACMLCategory category = XACMLCategory.fromValue(myAttrs.getCategory());
-				switch (category)
-				{
-					case XACML_1_0_SUBJECT_CATEGORY_ACCESS_SUBJECT:
-					case XACML_1_0_SUBJECT_CATEGORY_CODEBASE:
-					case XACML_1_0_SUBJECT_CATEGORY_INTERMEDIARY_SUBJECT:
-					case XACML_1_0_SUBJECT_CATEGORY_RECIPIENT_SUBJECT:
-					case XACML_1_0_SUBJECT_CATEGORY_REQUESTING_MACHINE:
-						subjects.add(myAttrs);
-						break;
-					case XACML_3_0_RESOURCE_CATEGORY_RESOURCE:
-						/* Searching for resource */
-						resources.add(myAttrs);
-						break;
-					case XACML_3_0_ACTION_CATEGORY_ACTION:
-						/* Searching for action */
-						actions.add(myAttrs);
-						break;
-					case XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT:
-						// finally, set up the environment data, which is also generic
-						environments.add(myAttrs);
-						break;
-				}
-			} catch (IllegalArgumentException e)
-			{
-				// Attribute category didn't match any known category so we store
-				// the attributes in an custom list
-				customs.add(myAttrs);
-			}
-		}
-
-		if (subjects.isEmpty() && actions.isEmpty() && resources.isEmpty())
-		{
-			// there was something wrong with the request, so we return
-			// Indeterminate with a status of syntax error...though this
-			// may change if a more appropriate status type exists
-			StatusCode code = new StatusCode();
-			code.setValue(Status.STATUS_SYNTAX_ERROR);
-			oasis.names.tc.xacml._3_0.core.schema.wd_17.Status status = new oasis.names.tc.xacml._3_0.core.schema.wd_17.Status();
-			status.setStatusCode(code);
-			status.setStatusMessage("Resource or Subject or Action attributes needs to be filled");
-			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
-		}
-		if (subjects.isEmpty())
-		{
-			Attributes subject = new Attributes();
-			subjects.add(subject);
-		}
-		if (actions.isEmpty())
-		{
-			Attributes action = new Attributes();
-			actions.add(action);
-		}
-		if (resources.isEmpty())
-		{
-			Attributes resource = new Attributes();
-			resources.add(resource);
-		}
-
-		for (Attributes subjectAttr : subjects)
-		{
-			for (Attributes actionsAttr : actions)
-			{
-				for (Attributes resourcesAttr : resources)
-				{
-					Request tmpRequest = new Request();
-					tmpRequest.setMultiRequests(request.getMultiRequests());
-					tmpRequest.setRequestDefaults(request.getRequestDefaults());
-					tmpRequest.setReturnPolicyIdList(request.isReturnPolicyIdList());
-					tmpRequest.setCombinedDecision(request.isCombinedDecision());
-					if (!subjectAttr.getAttributes().isEmpty())
-					{
-						tmpRequest.getAttributes().add(subjectAttr);
-					}
-					if (!actionsAttr.getAttributes().isEmpty())
-					{
-						tmpRequest.getAttributes().add(actionsAttr);
-					}
-					if (!resourcesAttr.getAttributes().isEmpty())
-					{
-						tmpRequest.getAttributes().add(resourcesAttr);
-					}
-
-					requests.add(tmpRequest);
-				}
-			}
+			/*
+			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error
+			 * code for unsupported element
+			 */
+			return UNSUPPORTED_POLICY_ID_LIST_RESPONSE;
 		}
 
 		/*
-		 * Evaluate each request and add each result to final response results
-		 * 
-		 * Try-finally block to clean ThreadLocal used in evaluatePrivate()
+		 * No support for CombinedDecision = true if no decisionCombiner defined. (The use of the
+		 * CombinedDecision attribute is specified in Multiple Decision Profile.)
 		 */
+		if (request.isCombinedDecision() && !resultFilter.supportsMultipleDecisionCombining())
+		{
+			/*
+			 * According to XACML core spec, 5.42, "If the PDP does not implement the relevant
+			 * functionality in [Multiple Decision Profile], then the PDP must return an
+			 * Indeterminate with a status code of
+			 * urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with
+			 * this attribute set to “true”.
+			 */
+			return UNSUPPORTED_COMBINED_DECISION_RESPONSE;
+		}
+
+		/*
+		 * The request parser may return multiple individual decision requests from a single
+		 * Request, e.g. if the request parser implements the Multiple Decision profile or
+		 * Hierarchical Resource profile
+		 */
+		final List<IndividualDecisionRequest> individualDecisionRequests;
 		try
 		{
-			for (Request requestList : requests)
-			{
-				requestList.getAttributes().addAll(environments);
-				requestList.getAttributes().addAll(customs);
-				ResponseCtx response = this.evaluatePrivate(requestList);
-				results.addAll(response.getResults());
-			}
-		} finally
+			individualDecisionRequests = reqFilter.filter(request);
+		} catch (IndeterminateEvaluationException e)
 		{
-			Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.remove();
+			LOGGER.info("Invalid or unsupported input XACML Request syntax", e);
+			return new Response(Collections.<Result> singletonList(new DecisionResult(e.getStatus())));
 		}
-
-		return new ResponseCtx(results);
-	}
-
-	/**
-	 * Uses {@code Utils#THREAD_LOCAL_NS_AWARE_DOC_BUILDER } Uses
-	 * {@link Utils#THREAD_LOCAL_NS_AWARE_DOC_BUILDER}. Call
-	 * {@code Utils.THREAD_LOCAL_NS_AWARE_DOC_BUILDER.remove()} after calling this method (in
-	 * finally block).
-	 */
-	private ResponseCtx evaluatePrivate(Request request)
-	{
-		// try to create the EvaluationCtx out of the request
-		try
-		{
-			final BasicEvaluationCtx evalCtx = new BasicEvaluationCtx(request, attributeFinder, PolicyMetaData.XACML_VERSION_3_0);
-
-			// Using the cache if defined
-			if (cache != null && !cache.isDisabled())
-			{
-				final String cacheKey = getHashCode(request);
-				final Element cacheResult = cache.get(cacheKey);
-				LOGGER.debug("cache.get({}) -> '{}'", cacheKey, cacheResult);
-				if (cacheResult != null)
-				{
-					LOGGER.debug("Response found in cache");
-					return (ResponseCtx) cacheResult.getObjectValue();
-				}
-
-				final ResponseCtx respCtx = evaluate(evalCtx);
-				cache.put(new Element(cacheKey, respCtx));
-				return respCtx;
-			}
-
-			return evaluate(evalCtx);
-		} catch (ParsingException | NumberFormatException | UnknownIdentifierException pe)
-		{
-			LOGGER.error("Invalid request to PDP", pe);
-
-			// there was something wrong with the request, so we return
-			// Indeterminate with a status of syntax error...though this
-			// may change if a more appropriate status type exists
-			final List<String> codes = new ArrayList<>();
-			codes.add(Status.STATUS_SYNTAX_ERROR);
-			Status status = new Status(codes, pe.getMessage());
-			return new ResponseCtx(new Result(DecisionType.INDETERMINATE, status));
-		}
-	}
-
-	/**
-	 * Uses the given <code>EvaluationCtx</code> against the available policies to determine a
-	 * response. If you are starting with a standard XACML Request, then you should use the version
-	 * of this method that takes a <code>Request</code>. This method should be used only if you have
-	 * a real need to directly construct an evaluation context (or if you need to use an
-	 * <code>EvaluationCtx</code> implementation other than <code>BasicEvaluationCtx</code>).
-	 * 
-	 * @param context
-	 *            representation of the request and the context used for evaluation
-	 * 
-	 * @return a response based on the contents of the context
-	 * 
-	 * @deprecated Use ResponseCtx(Request request)
-	 */
-	public ResponseCtx evaluate(EvaluationCtx context)
-	{
-
-		// see if we need to call the resource finder
-		if (context.getScope() != EvaluationCtx.SCOPE_IMMEDIATE)
-		{
-			AttributeValue parent = context.getResourceId();
-			ResourceFinderResult resourceResult = null;
-
-			if (context.getScope() == EvaluationCtx.SCOPE_CHILDREN)
-			{
-				resourceResult = resourceFinder.findChildResources(parent, context);
-			} else
-			{
-				resourceResult = resourceFinder.findDescendantResources(parent, context);
-			}
-
-			// see if we actually found anything
-			if (resourceResult.isEmpty())
-			{
-				// this is a problem, since we couldn't find any resources
-				// to work on...the spec is not explicit about what kind of
-				// error this is, so we're treating it as a processing error
-				List<String> codes = new ArrayList<>();
-				codes.add(Status.STATUS_PROCESSING_ERROR);
-				String msg = "Couldn't find any resources to work on.";
-
-				return new ResponseCtx(new Result(DecisionType.INDETERMINATE, new Status(codes, msg)));
-			}
-
-			// setup a list to keep track of the results
-			List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> results = new ArrayList<>();
-
-			// at this point, we need to go through all the resources we
-			// successfully found and start collecting results
-			Iterator it = resourceResult.getResources().iterator();
-			while (it.hasNext())
-			{
-				// get the next resource, and set it in the EvaluationCtx
-				AttributeValue resource = (AttributeValue) (it.next());
-				context.setResourceId(resource);
-
-				// do the evaluation, and set the resource in the result
-				Result result = evaluateContext(context);
-
-				// add the result
-				results.add(result);
-			}
-
-			// now that we've done all the successes, we add all the failures
-			// from the finder result
-			Map failureMap = resourceResult.getFailures();
-			it = failureMap.keySet().iterator();
-			while (it.hasNext())
-			{
-				// get the next resource, and use it to get its Status data
-				AttributeValue resource = (AttributeValue) (it.next());
-				Status status = (Status) (failureMap.get(resource));
-
-				// add a new result
-				results.add(new Result(DecisionType.INDETERMINATE, status));
-			}
-
-			// return the set of results
-			return new ResponseCtx(results);
-		}
-
-		// the scope was IMMEDIATE (or missing), so we can just evaluate
-		// the request and return whatever we get back
-		return new ResponseCtx(evaluateContext(context));
-	}
-
-	/**
-	 * A private helper routine that resolves a policy for the given context, and then tries to
-	 * evaluate based on the policy
-	 */
-	private Result evaluateContext(EvaluationCtx context)
-	{
-		// first off, try to find a policy
-		PolicyFinderResult finderResult = policyFinder.findPolicy(context);
-
-		// see if there weren't any applicable policies
-		if (finderResult.notApplicable())
-		{
-			AttributeValue resourceId = context.getResourceId();
-			if (resourceId != null)
-			{
-				return new Result(DecisionType.NOT_APPLICABLE, null, null, null, context.getIncludeInResults());
-			}
-			return new Result(DecisionType.NOT_APPLICABLE, null, null, null, context.getIncludeInResults());
-		}
-
-		// see if there were any errors in trying to get a policy
-		if (finderResult.indeterminate())
-		{
-			return new Result(DecisionType.INDETERMINATE, finderResult.getStatus(), null, null, context.getIncludeInResults());
-		}
-
-		// we found a valid policy, so we can do the evaluation
-		final Result result = finderResult.getPolicy().evaluate(context);
 		/*
-		 * Handle IncludeInResults only in final result, if we leave it to Policy.evaluate(), each
-		 * Policy will add IncludeInResults causing duplicates,
-		 * unless there are already IncludeInResults in the result.
+		 * Every request context (named attributes) is completed with common current date/time
+		 * attribute (same values) set/"issued" locally (here by the PDP engine) according to XACML
+		 * core spec:
+		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created."
+		 * (§ B.7).
 		 */
-		if(result.getAttributes().isEmpty() && context.getIncludeInResults() != null) {
-			result.getAttributes().addAll(context.getIncludeInResults());
-		}
-		
-		return result;
+		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>();
+		// current datetime
+		final DateTimeAttributeValue currentDateTimeValue = new DateTimeAttributeValue(new GregorianCalendar());
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATETIME.BAG_TYPE, currentDateTimeValue));
+		// current date
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATE.BAG_TYPE, DateAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+		// current time
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.TIME.BAG_TYPE, TimeAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+
+		// evaluate the individual decision requests with the extra common attributes set previously
+		final List<Result> results = individualReqEvaluator.evaluate(individualDecisionRequests, pdpIssuedAttributes);
+		final List<Result> filteredResults = resultFilter.filter(results);
+		return new Response(filteredResults);
 	}
+
+	@Override
+	public void close() throws IOException
+	{
+		decisionCache.close();
+		rootPolicyFinder.close();
+	}
+
 }

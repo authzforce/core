@@ -33,149 +33,99 @@
  */
 package com.sun.xacml.combine;
 
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 
-import com.sun.xacml.Indenter;
-import com.sun.xacml.PolicyTreeElement;
-import com.sun.xacml.Rule;
-import com.sun.xacml.xacmlv3.IPolicy;
-
+import com.sun.xacml.ParsingException;
+import com.thalesgroup.authzforce.core.eval.Decidable;
+import com.thalesgroup.authzforce.core.eval.Expression;
 
 /**
- * Represents one input (a Rule, Policy, PolicySet, or reference) to a
- * combining algorithm and combiner parameters associated with that input.
- *
+ * Represents a set of CombinerParameters to a combining algorithm that may or may not be associated
+ * with a policy/rule
+ * 
  * @since 2.0
  * @author Seth Proctor
+ * @param <T>
+ *            Type of combined element (Policy, Rule...) with which the CombinerParameters are
+ *            associated
  */
-public abstract class CombinerElement extends PolicyTreeElement
+public class CombinerElement<T extends Decidable>
 {
 
-    // the element to be combined
-    private Object element;
+	// the element to be combined
+	private final T element;
 
-    // the parameters used with this element
-    private List parameters;
+	// the parameters used with this element
+	private final CombinerParameter[] parameters;
 
-    /**
-     * Constructor that only takes an element. No parameters are associated
-     * with this element when combining.
-     *
-     * @param element a <code>PolicyTreeElement</code> to use in combining
-     */
-    public CombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy element) {
-        this(element, null);
-    }
-    
-    public CombinerElement(Rule element) {
-        this(element, null);
-    }
+	/**
+	 * Constructor that takes both the element to combine and its associated combiner parameters.
+	 * 
+	 * @param element
+	 *            combined element
+	 * 
+	 * @param jaxbCombinerParameters
+	 *            a (possibly empty) non-null <code>List</code> of
+	 *            <code>CombinerParameter<code>s provided for general
+	 *                   use (for all pre-2.0 policies this must be empty)
+	 * @param xPathCompiler
+	 *            Policy(Set) default XPath compiler, corresponding to the Policy(Set)'s default
+	 *            XPath version specified in {@link DefaultsType} element; null if none specified
+	 * @param expFactory
+	 *            attribute value factory
+	 * @throws ParsingException
+	 *             if error parsing CombinerParameters
+	 */
+	public CombinerElement(T element, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter> jaxbCombinerParameters, Expression.Factory expFactory, XPathCompiler xPathCompiler) throws ParsingException
+	{
+		this.element = element;
 
-    /**
-     * Constructor that takes both the element to combine and its associated
-     * combiner parameters.
-     *
-     * @param element a <code>PolicyTreeElement</code> to use in combining
-     * @param parameters a (possibly empty) non-null <code>List</code> of
-     *                   <code>CombinerParameter<code>s provided for general
-     *                   use (for all pre-2.0 policies this must be empty)
-     */
-    public CombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy element, List parameters) {
-        this.element = element;
+		final Queue<CombinerParameter> modifiableParamList = new ArrayDeque<>();
+		if (jaxbCombinerParameters != null)
+		{
+			int paramIndex = 0;
+			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter jaxbCombinerParam : jaxbCombinerParameters)
+			{
+				try
+				{
+					final CombinerParameter combinerParam = new CombinerParameter(jaxbCombinerParam, expFactory, xPathCompiler);
+					modifiableParamList.add(combinerParam);
+				} catch (ParsingException e)
+				{
+					throw new ParsingException("Error parsing CombinerParameters/CombinerParameter#" + paramIndex, e);
+				}
 
-        if (parameters == null) {
-            this.parameters = Collections.unmodifiableList(new ArrayList());
-        } else {
-            this.parameters = Collections.
-                unmodifiableList(new ArrayList(parameters));
-        }
-    }
-    
-    public CombinerElement(PolicySet element, List parameters) {
-        this.element = element;
+				paramIndex++;
+			}
+		}
 
-        if (parameters == null) {
-            this.parameters = Collections.unmodifiableList(new ArrayList());
-        } else {
-            this.parameters = Collections.
-                unmodifiableList(new ArrayList(parameters));
-        }
-    }
-    
-    public CombinerElement(oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule element, List parameters) {
-    	this.element = element;
+		this.parameters = modifiableParamList.toArray(new CombinerParameter[0]);
+	}
 
-        if (parameters == null) {
-            this.parameters = Collections.unmodifiableList(new ArrayList());
-            this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = Collections.unmodifiableList(new ArrayList());
-        } else {
-            this.parameters = Collections.
-                unmodifiableList(new ArrayList(parameters));
-            this.combinerParametersAndRuleCombinerParametersAndVariableDefinitions = Collections.unmodifiableList(parameters);
-        }
-    }
-    
-    /**
-     * Constructor that only takes an element. No parameters are associated
-     * with this element when combining.
-     *
-     * @param element a <code>PolicyTreeElement</code> to use in combining
-     */
-    public CombinerElement(IPolicy element) {
-        this(element, null);
-    }
-    
-    /**
-     * Constructor that takes both the element to combine and its associated
-     * combiner parameters.
-     *
-     * @param element a <code>PolicyTreeElement</code> to use in combining
-     * @param parameters a (possibly empty) non-null <code>List</code> of
-     *                   <code>CombinerParameter<code>s provided for general
-     *                   use (for all pre-2.0 policies this must be empty)
-     */
-    public CombinerElement(IPolicy element, List parameters) {
-        this.element = element;
+	/**
+	 * Returns the combined element. If null, it means, this CombinerElement (i.e. all its
+	 * CombinerParameters) is not associated with a particular rule
+	 * 
+	 * @return the combined element
+	 */
+	public T getCombinedElement()
+	{
+		return element;
+	}
 
-        if (parameters == null)
-            this.parameters = Collections.unmodifiableList(new ArrayList());
-        else
-            this.parameters = Collections.
-                unmodifiableList(new ArrayList(parameters));
-    }
-
-    /**
-     * Returns the <code>PolicyTreeElement</code> in this element.
-     *
-     * @return the <code>PolicyTreeElement</code>
-     */
-    public Object getElement() {
-        return element;
-    }
-
-    /**
-     * Returns the <code>CombinerParameter</code>s associated with this
-     * element.
-     *
-     * @return a <code>List</code> of <code>CombinerParameter</code>s
-     */
-    public List getParameters() {
-        return parameters;
-    }
-
-    /**
-     * Encodes the element and parameters in this <code>CombinerElement</code>
-     * into their XML representation and writes this encoding to the given
-     * <code>OutputStream</code> with indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     * @param indenter an object that creates indentation strings
-     */
-    public abstract void encode(OutputStream output, Indenter indenter);
+	/**
+	 * Returns the <code>CombinerParameter</code>s associated with this element.
+	 * 
+	 * @return a <code>List</code> of <code>CombinerParameter</code>s
+	 */
+	public CombinerParameter[] getParameters()
+	{
+		return parameters;
+	}
 
 }

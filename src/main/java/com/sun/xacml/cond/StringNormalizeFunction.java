@@ -33,136 +33,114 @@
  */
 package com.sun.xacml.cond;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.attr.StringAttribute;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
-
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
+import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
+import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPrimitiveEval;
+import com.thalesgroup.authzforce.core.func.FunctionSet;
 
 /**
- * A class that implements all the string conversion functions
- * (string-normalize-space and string-normalize-to-lower-case).
- * It takes string argument, normalizes that value, and returns
- * the result. If the argument is indeterminate, an indeterminate
- * result is returned.
- *
+ * *-string-normalize-* function
+ * 
  * @since 1.0
  * @author Steve Hanna
  * @author Seth Proctor
  */
-public class StringNormalizeFunction extends FunctionBase
+public abstract class StringNormalizeFunction extends FirstOrderFunction<StringAttributeValue>
 {
 
-    /**
-     * Standard identifier for the string-normalize-space function.
-     */
-    public static final String NAME_STRING_NORMALIZE_SPACE =
-        FUNCTION_NS + "string-normalize-space";
+	/**
+	 * Standard identifier for the string-normalize-space function.
+	 */
+	public static final String NAME_STRING_NORMALIZE_SPACE = FUNCTION_NS_1 + "string-normalize-space";
 
-    /**
-     * Standard identifier for the string-normalize-to-lower-case function.
-     */
-    public static final String NAME_STRING_NORMALIZE_TO_LOWER_CASE =
-        FUNCTION_NS + "string-normalize-to-lower-case";
+	/**
+	 * Standard identifier for the string-normalize-to-lower-case function.
+	 */
+	public static final String NAME_STRING_NORMALIZE_TO_LOWER_CASE = FUNCTION_NS_1 + "string-normalize-to-lower-case";
 
-    // private identifiers for the supported functions
-    private static final int ID_STRING_NORMALIZE_SPACE = 0;
-    private static final int ID_STRING_NORMALIZE_TO_LOWER_CASE = 1;
+	/**
+	 * Creates a new <code>StringNormalizeFunction</code> object.
+	 * 
+	 * @param functionName
+	 *            the standard XACML function URI
+	 * 
+	 */
+	public StringNormalizeFunction(String functionName)
+	{
+		super(functionName, DatatypeConstants.STRING.TYPE, false, DatatypeConstants.STRING.TYPE);
+	}
 
-    /**
-     * Creates a new <code>StringNormalizeFunction</code> object.
-     *
-     * @param functionName the standard XACML name of the function to be
-     *                     handled by this object, including the full namespace
-     *
-     * @throws IllegalArgumentException if the function is unknown
-     */
-    public StringNormalizeFunction(String functionName) {
-        super(functionName, getId(functionName), StringAttribute.identifier,
-              false, 1, StringAttribute.identifier, false);
-    }
+	/**
+	 * *-string-normalize-* function cluster
+	 */
+	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "string-normalize", new NormalizeSpaceFunction(), new NormalizeToLowerCaseFunction());
 
-    /**
-     * Private helper that returns the internal identifier used for the
-     * given standard function.
-     */
-    private static int getId(String functionName) {
-        if (functionName.equals(NAME_STRING_NORMALIZE_SPACE))
-            return ID_STRING_NORMALIZE_SPACE;
-        else if (functionName.equals(NAME_STRING_NORMALIZE_TO_LOWER_CASE))
-            return ID_STRING_NORMALIZE_TO_LOWER_CASE;
-        else
-            throw new IllegalArgumentException("unknown normalize function " +
-                                               functionName);
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List,
+	 * com.thalesgroup.authzforce.core.eval.DatatypeDef[])
+	 */
+	@Override
+	protected final FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	{
+		return new EagerPrimitiveEval<StringAttributeValue, StringAttributeValue>(signature, StringAttributeValue[].class, argExpressions, remainingArgTypes)
+		{
+			@Override
+			protected StringAttributeValue evaluate(StringAttributeValue[] args) throws IndeterminateEvaluationException
+			{
+				return eval(args[0]);
+			}
 
-    /**
-     * Returns a <code>Set</code> containing all the function identifiers
-     * supported by this class.
-     *
-     * @return a <code>Set</code> of <code>String</code>s
-     */
-    public static Set getSupportedIdentifiers() {
-        Set set = new HashSet();
+		};
+	}
 
-        set.add(NAME_STRING_NORMALIZE_SPACE);
-        set.add(NAME_STRING_NORMALIZE_TO_LOWER_CASE);
+	protected abstract StringAttributeValue eval(StringAttributeValue value);
 
-        return set;
-    }
+	private static class NormalizeSpaceFunction extends StringNormalizeFunction
+	{
 
-    /**
-     * Evaluate the function, using the specified parameters.
-     *
-     * @param inputs a <code>List</code> of <code>Evaluatable</code>
-     *               objects representing the arguments passed to the function
-     * @param context an <code>EvaluationCtx</code> so that the
-     *                <code>Evaluatable</code> objects can be evaluated
-     * @return an <code>EvaluationResult</code> representing the
-     *         function's result
-     */
-    public EvaluationResult evaluate(List inputs, EvaluationCtx context) {
-        // Evaluate the arguments
-        AttributeValue [] argValues = new AttributeValue[inputs.size()];
-        EvaluationResult result = evalArgs(inputs, context, argValues);
-        if (result != null)
-            return result;
+		private NormalizeSpaceFunction()
+		{
+			super(NAME_STRING_NORMALIZE_SPACE);
+		}
 
-        // Now that we have real values, perform the numeric conversion
-        // operation in the manner appropriate for this function.
-        switch (getId(getFunctionName())) {
-        case ID_STRING_NORMALIZE_SPACE: {
-            String str = ((StringAttribute) argValues[0]).getValue();
+		@Override
+		protected StringAttributeValue eval(StringAttributeValue value)
+		{
+			return value.trim();
+		}
 
-            // Trim whitespace from start and end of string
-            int startIndex = 0;
-            int endIndex = str.length() - 1;
-            while ((startIndex <= endIndex) &&
-                   Character.isWhitespace(str.charAt(startIndex)))
-                startIndex++;
-            while ((startIndex <= endIndex) &&
-                   Character.isWhitespace(str.charAt(endIndex)))
-                endIndex--;
-            String strResult = str.substring(startIndex, endIndex+1);
+	}
 
-            result = new EvaluationResult(new StringAttribute(strResult));
-            break;
-        }
-        case ID_STRING_NORMALIZE_TO_LOWER_CASE: {
-            String str = ((StringAttribute) argValues[0]).getValue();
+	private static class NormalizeToLowerCaseFunction extends StringNormalizeFunction
+	{
 
-            // Convert string to lower case
-            String strResult = str.toLowerCase();
+		public NormalizeToLowerCaseFunction()
+		{
+			super(NAME_STRING_NORMALIZE_TO_LOWER_CASE);
+		}
 
-            result = new EvaluationResult(new StringAttribute(strResult));
-            break;
-        }
-        }
+		@Override
+		protected StringAttributeValue eval(StringAttributeValue value)
+		{
+			/*
+			 * Specified by fn:lower-case function in [XF]. Looking at Saxon HE as our reference for
+			 * Java open source implementation of XPath functions, we can check in Saxon
+			 * implementation of fn:lower-case (LowerCase class), that this is equivalent to
+			 * String#toLowerCase(); English locale to be used for Locale-insensitive strings, see
+			 * String.toLowerCase()
+			 */
+			return value.toLowerCase(Locale.ENGLISH);
+		}
 
-        return result;
-    }
+	}
+
 }

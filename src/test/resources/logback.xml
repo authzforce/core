@@ -14,22 +14,13 @@
 		</encoder>
 	</appender>
 
-	<logger name="com.sun.xacml.cond" additivity="false" level="INFO">
+	<logger name="com.sun.xacml" additivity="false" level="DEBUG">
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="com.thalesgroup.authzforce.pdp.core.test" additivity="false" level="INFO">
-		<appender-ref ref="stdout" />
-	</logger>	
-	<logger name="net.sf.ehcache" additivity="false" level="INFO">
+	<logger name="com.thalesgroup.authzforce" additivity="false" level="DEBUG">
 		<appender-ref ref="stdout" />
 	</logger>
-	<logger name="org.apache.axis.ConfigurationException" additivity="false" level="INFO">
-		<appender-ref ref="stdout" />
-	</logger>
-	<logger name="org.apache.commons.digester" additivity="false" level="INFO">
-		<appender-ref ref="stdout" />
-	</logger>
-	<root level="INFO">
-		<appender-ref ref="stdout" />
-	</root>
+<!-- 	<root level="INFO"> -->
+<!-- 		<appender-ref ref="stdout" /> -->
+<!-- 	</root> -->
 </configuration>

@@ -1,12 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.6-OCW</version>
+		<version>3.0.9-SNAPSHOT</version>
 	</parent>
 	<artifactId>authzforce-core</artifactId>
-	<version>3.5.7</version>
+	<version>3.5.9-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
 		<name>Thales Services SAS</name>
@@ -24,11 +25,6 @@
 	</scm>
 	<dependencies>
 		<dependency>
-			<!-- Used only to do Strings.join() in StandardFactory's init debug messages -->
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
 		</dependency>
@@ -36,28 +32,21 @@
 			<groupId>org.springframework.ws</groupId>
 			<artifactId>spring-xml</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-core</artifactId>
-		</dependency>
-		<!-- Include cxf-rt-core/xercesImpl optional dependency: xml-resolver (do not include xercesImpl because 
-			conflicts with JRE) -->
-		<dependency>
+			<!-- For loading XML schemas with OASIS catalog (CatalogManager) -->
 			<groupId>xml-resolver</groupId>
 			<artifactId>xml-resolver</artifactId>
 			<version>1.2</version>
 		</dependency>
+
 		<dependency>
 			<!-- For validation of XACML RFC822Name (email address) -->
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
 			<version>1.5.4</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -75,11 +64,6 @@
 			<artifactId>Saxon-HE</artifactId>
 			<version>9.6.0-5</version>
 		</dependency>
-		<dependency>
-			<!-- Used for DOM parsing / XPath evaluation -->
-			<groupId>com.thalesgroup.appsec</groupId>
-			<artifactId>thales-appsec-common-utils</artifactId>
-		</dependency>
 		<!-- Authzforce dependencies -->
 		<!-- xml-ns-model and xacml-model dependencies are declared here only to work around maven-jaxb2-plugin bug: cannot resolve 
 			episodes from indirect dependencies with useDependenciesAsEpisodes option. -->
@@ -91,22 +75,16 @@
 		<dependency>
 			<groupId>com.thalesgroup.authzforce</groupId>
 			<artifactId>authzforce-xacml-model</artifactId>
-			<version>3.0.3</version>
+			<version>3.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.thalesgroup.authzforce</groupId>
 			<artifactId>authzforce-pdp-ext-model</artifactId>
-			<version>3.2.7</version>
-		</dependency>		
+			<version>3.2.7-SNAPSHOT</version>
+		</dependency>
 		<!-- /Authzforce dependencies -->
 
 		<!-- Test dependencies -->
-		<dependency>
-			<groupId>commons-jxpath</groupId>
-			<artifactId>commons-jxpath</artifactId>
-			<version>1.3</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -117,7 +95,7 @@
 	</dependencies>
 	<build>
 		<plugins>
-		<plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>3.5</version>
@@ -183,6 +161,16 @@
 								<exclude>**/*.gitignore</exclude>
 							</excludes>
 							<includes>
+								<include>src/main/java/com/sun/xacml/xacmlv3/**</include>
+								<include>src/main/java/com/sun/xacml/cond/xacmlv3/**</include>
+								<include>src/main/java/com/sun/xacml/ctx/xacmlv3/**</include>
+								<include>src/main/java/com/sun/xacml/CacheManager.java</include>
+								<include>src/main/java/com/sun/xacml/ObligationExpressions.java</include>
+								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</include>
+								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</include>
+								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
+								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
+								<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
 								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
 								<!-- Include test files also -->
 								<include>src/test/java/**</include>
@@ -268,7 +256,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>
 			<!-- Test configuration -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -281,6 +269,11 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
+							<systemPropertyVariables>
+								<!-- Use random address instead of the host MAC address to generate UUIDs as this test may be 
+									run on host disconnected from the network. -->
+								<com.thalesgroup.theresis.useRandomAddressBasedUUID>true</com.thalesgroup.theresis.useRandomAddressBasedUUID>
+							</systemPropertyVariables>
 							<failIfNoTests>false</failIfNoTests>
 							<skipTests>false</skipTests>
 							<includes>

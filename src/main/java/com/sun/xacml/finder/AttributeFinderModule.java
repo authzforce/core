@@ -33,159 +33,188 @@
  */
 package com.sun.xacml.finder;
 
-import java.net.URI;
+import java.io.Closeable;
 import java.util.Set;
 
-import org.w3c.dom.Node;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.thalesgroup.authz.model.ext._3.AbstractAttributeFinder;
-import com.thalesgroup.authzforce.core.IPdpExtension;
-
+import com.thalesgroup.authzforce.core.JaxbBoundPdpExtension;
+import com.thalesgroup.authzforce.core.attr.AttributeGUID;
+import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.eval.Bag;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
- * This is the abstract class that all <code>AttributeFinder</code> modules
- * extend. All methods have default values to represent that the given
- * feature isn't supported by this module, so module writers needs only
- * implement the methods for the features they're supporting.
- *
+ * This is the abstract class that all <code>AttributeFinder</code> modules extend.
+ * <p>
+ * Implements {@link Closeable} because it may may use resources external to the JVM such as a
+ * cache, a disk, a connection to a remote server, etc. for retrieving the attribute values.
+ * Therefore, these resources must be released by calling {@link #close()} when it is no longer
+ * needed.
+ * 
  * @since 1.0
  * @author Seth Proctor
- * @param <T> type of configuration supported by this module for initialization
  */
-public abstract class AttributeFinderModule<T extends AbstractAttributeFinder> implements IPdpExtension<T>
+public abstract class AttributeFinderModule implements Closeable
 {
+	/**
+	 * Intermediate dependency-aware {@link AttributeFinderModule} factory that can create instances
+	 * of modules from a XML/JAXB configuration, and also provides the dependencies (required
+	 * attributes) (based on this configuration), that any such instance (created by it) will need.
+	 * Providing the dependencies helps to optimize the {@code depAttrFinder} argument to
+	 * {@link #getInstance(DatatypeFactoryRegistry, AttributeFinder)} and therefore optimize the
+	 * created module's job of finding its own supported attribute values based on other attributes
+	 * in the evaluation context.
+	 * 
+	 * @param <CONF_U>
+	 *            module configuration type (JAXB-generated)
+	 */
+	public static interface DependencyAwareFactory<CONF_U>
+	{
 
-    /**
-     * Returns this module's identifier. A module does not need to provide
-     * a unique identifier, but it is a good idea, especially in support of
-     * management software. Common identifiers would be the full package
-     * and class name (the default if this method isn't overridden), just the
-     * class name, or some other well-known string that identifies this class.
-     *
-     * @return this module's identifier
-     */
-    public String getIdentifier() {
-        return getClass().getName();
-    }
+		/**
+		 * Returns non-null <code>Set</code> of <code>AttributeDesignator</code>s required as
+		 * runtime inputs to the attribute finder module instance created by this builder. The PDP
+		 * framework calls this method to know what input attributes the module will require
+		 * (dependencies) before {@link #getInstance(DatatypeFactoryRegistry, AttributeFinder)} ,
+		 * and based on this, creates a specific dependency attribute finder that will enable the
+		 * module to find its dependency attributes. So when the PDP framework calls
+		 * {@link #getInstance(DatatypeFactoryRegistry, AttributeFinder)} subsequently to
+		 * instantiate the module, the last argument is this dependency attribute finder.
+		 * 
+		 * @return a <code>Set</code> of required <code>AttributeDesignatorType</code>s. Null or
+		 *         empty if none required.
+		 */
+		Set<AttributeDesignatorType> getDependencies();
 
-    /**
-     * Returns true if this module supports retrieving attributes based on the
-     * data provided in an AttributeDesignatorType. By default this method
-     * returns false.
-     *
-     * @return true if retrieval based on designator data is supported
-     */
-    public abstract boolean isDesignatorSupported();
+		/**
+		 * Create AttributeFinderModule instance
+		 * 
+		 * @param attrDatatypeFactory
+		 *            Attribute datatype factory for the module to be able to create attribute
+		 *            values
+		 * @param depAttrFinder
+		 *            Attribute finder for the module to find dependency/required attributes
+		 * 
+		 * @return attribute value in internal model
+		 */
+		AttributeFinderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeFinder depAttrFinder);
+	}
 
-    /**
-     * Returns true if this module supports retrieving attributes based on the
-     * data provided in an AttributeSelectorType. By default this method
-     * returns false.
-     *
-     * @return true if retrieval based on selector data is supported
-     */
-    public abstract boolean isSelectorSupported();
+	/**
+	 * Preliminary factory that creates a dependency-aware AttributeFinderModule factory from
+	 * parsing thee attribute dependencies (attributes on which the module depends to find its own
+	 * supported attributes) declared in the XML configuration (possibly dynamic).
+	 * 
+	 * @param <CONF_T>
+	 *            type of configuration (XML-schema-derived) of the module (initialization
+	 *            parameter)
+	 * 
+	 *            This class follows the Step Factory Pattern to guide clients through the creation
+	 *            of the object in a particular sequence of method calls:
+	 *            <p>
+	 *            http://rdafbn.blogspot.fr/2012/07/step-builder-pattern_28.html
+	 *            </p>
+	 */
+	public static abstract class Factory<CONF_T extends AbstractAttributeFinder> extends JaxbBoundPdpExtension<CONF_T>
+	{
 
-    /**
-     * Returns a <code>Set</code> of <code>Integer</code>s that represent
-     * which AttributeDesignator types are supported (eg, Subject, Resource,
-     * etc.), or null meaning that no particular types are supported. A
-     * return value of null can mean that this module doesn't support
-     * designator retrieval, or that it supports designators of all types.
-     * If the set is non-null, it should contain the values specified in
-     * the <code>AttributeDesignator</code> *_TARGET fields.
-     *
-     * @return a <code>Set</code> of <code>Integer</code>s, or null
-     */
-    public abstract Set<Integer> getSupportedDesignatorTypes();
+		/**
+		 * Creates an attribute-dependency-aware module factory by inferring attribute dependencies
+		 * (required attributes) from {@code conf}.
+		 * 
+		 * @param conf
+		 *            module configuration, that may define what attributes are required (dependency
+		 *            attributes)
+		 * @return a factory aware of dependencies (required attributes) possibly inferred from
+		 *         input {@code conf}
+		 */
+		public abstract DependencyAwareFactory<CONF_T> parseDependencies(CONF_T conf);
+	}
 
-    /**
-     * Returns a <code>Set</code> of <code>URI</code>s that represent the
-     * attributeIds handled by this module, or null if this module doesn't
-     * handle any specific attributeIds. A return value of null means that
-     * this module will try to resolve attributes of any id.
-     *
-     * @return a <code>Set</code> of <code>URI</code>s, or null
-     */
-    public abstract Set getSupportedIds();
+	protected static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_CATEGORY_EXCEPTION = new UnsupportedOperationException("Unsupported attribute category");
+	protected static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ISSUER_EXCEPTION = new UnsupportedOperationException("Unsupported attribute issuer");
+	protected static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_EXCEPTION = new UnsupportedOperationException("Unsupported attribute ID");
+	protected static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_DATATYPE_EXCEPTION = new UnsupportedOperationException("Unsupported attribute datetype");
 
-    /**
-     * This is an experimental method that asks the module to invalidate any
-     * cacheManager values it may contain. This is not used by any of the core
-     * processing code, but it may be used by management software that wants
-     * to have some control over these modules. Since a module is free to
-     * decide how or if it caches values, and whether it is capable of
-     * updating values once in a cacheManager, a module is free to interpret this
-     * message in any way it sees fit (including ignoring the message). It
-     * is preferable, however, for a module to make every effort to clear
-     * any dynamically cached values it contains.
-     * <p>
-     * This method has been introduced to see what people think of this
-     * functionality, and how they would like to use it. It may be removed
-     * in future versions, or it may be changed to a more general
-     * message-passing system (if other useful messages are identified).
-     * 
-     * @since 1.2
-     */
-    public abstract void invalidateCache();
-    
-    /**
-     * Tries to find attribute values based on the given designator data.
-     * The result, if successful, must always contain a
-     * <code>BagAttribute</code>, even if only one value was found. If no
-     * values were found, but no other error occurred, an empty bag is
-     * returned. This method may need to invoke the context data to look
-     * for other attribute values, so a module writer must take care not
-     * to create a scenario that loops forever.
-     *
-     * @param attributeType the datatype of the attributes to find
-     * @param attributeId the identifier of the attributes to find
-     * @param issuer the issuer of the attributes, or null if unspecified
-     * @param subjectCategory the category of the attribute if the
-     *                        designatorType is SUBJECT_TARGET, otherwise null
-     * @param context the representation of the request data
-     * @param designatorType the type of designator as named by the *_TARGET
-     *                       fields in <code>AttributeDesignator</code>
-     *
-     * @return the result of attribute retrieval, which will be a bag of
-     *         attributes or an error
-     */
-    public EvaluationResult findAttribute(URI attributeType, URI attributeId,
-                                          URI issuer, URI subjectCategory,
-                                          EvaluationCtx context,
-                                          int designatorType) {
-        return new EvaluationResult(BagAttribute.
-                                    createEmptyBag(attributeType));
-    }
+	protected final String instanceID;
+	protected final AttributeFinder dependencyAttributeFinder;
+	protected final DatatypeFactoryRegistry attributeFactory;
 
-    /**
-     * Tries to find attribute values based on the given selector data.
-     * The result, if successful, must always contain a
-     * <code>BagAttribute</code>, even if only one value was found. If no
-     * values were found, but no other error occurred, an empty bag is
-     * returned. This method may need to invoke the context data to look
-     * for other attribute values, so a module writer must take care not
-     * to create a scenario that loops forever.
-     *
-     * @param contextPath the XPath expression to search against
-     * @param namespaceNode the DOM node defining namespace mappings to use,
-     *                      or null if mappings come from the context root
-     * @param attributeType the datatype of the attributes to find
-     * @param context the representation of the request data
-     * @param xpathVersion the XPath version to use
-     *
-     * @return the result of attribute retrieval, which will be a bag of
-     *         attributes or an error
-     */
-    public EvaluationResult findAttribute(String contextPath,
-                                          Node namespaceNode,
-                                          URI attributeType,
-                                          EvaluationCtx context,
-                                          String xpathVersion) {
-        return new EvaluationResult(BagAttribute.
-                                    createEmptyBag(attributeType));
-    }
+	/**
+	 * Instantiates the attribute finder module
+	 * 
+	 * @param instanceID
+	 *            module instance ID (to be used as unique identifier for this instance in the logs
+	 *            for example);
+	 * @param attributeFactory
+	 *            factory for creating attribute values
+	 * @param depAttributeFinder
+	 *            depenedency attribute finder. This module may require other attributes as input to
+	 *            do the job. As it does not know how to get them (it is not its job), it may call
+	 *            this {@code depAttributeFinder} to get them on its behalf.
+	 * @throws IllegalArgumentException
+	 *             if instanceId null
+	 */
+	protected AttributeFinderModule(String instanceID, DatatypeFactoryRegistry attributeFactory, AttributeFinder depAttributeFinder) throws IllegalArgumentException
+	{
+		if (instanceID == null)
+		{
+			throw new IllegalArgumentException("Undefined attribute finder module's instance ID");
+		}
+
+		this.instanceID = instanceID;
+		this.dependencyAttributeFinder = depAttributeFinder;
+		this.attributeFactory = attributeFactory;
+	}
+
+	/**
+	 * Get user-defined ID for this module instance
+	 * 
+	 * @return instance ID
+	 */
+	public final String getInstanceID()
+	{
+		return this.instanceID;
+	}
+
+	/**
+	 * Returns a non-null non-empty <code>Set</code> of <code>AttributeDesignator</code>s
+	 * provided/supported by this module.
+	 * 
+	 * @return a non-null non-empty <code>Set</code> of supported
+	 *         <code>AttributeDesignatorType</code>s
+	 */
+	public abstract Set<AttributeDesignatorType> getProvidedAttributes();
+
+	/**
+	 * Tries to find attribute values based on the given AttributeDesignator data. If no values were
+	 * found, but no other error occurred, an empty bag is returned. This method may need to invoke
+	 * the context data to look for other attribute values, so a module writer must take care not to
+	 * create a scenario that loops forever.
+	 * <p>
+	 * WARNING: java.net.URI cannot be used here for XACML datatype/id/category, because not
+	 * equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 * java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 * </p>
+	 * 
+	 * If this is an AttributeSelector-only finder module, always return null.
+	 * 
+	 * @param attributeGUID
+	 *            the global identifier (Category,Issuer,AttributeId) of the attribute to find
+	 * @param context
+	 *            the representation of the request data
+	 * @param returnDatatype
+	 *            expected return datatype (
+	 *            {@code AV is the expected type of every element in the bag})
+	 * 
+	 * @return the bag of attribute values
+	 * @throws IndeterminateEvaluationException
+	 *             if some error occurs, esp. error retrieving the attribute values
+	 */
+	public abstract <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> returnDatatype) throws IndeterminateEvaluationException;
 }

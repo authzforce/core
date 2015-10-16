@@ -4,11 +4,16 @@
 	<!-- For Maven JAXB plugin -->
 	<public publicId="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" uri="classpath:xacml-core-v3-schema-wd-17.xsd" />
 	<public publicId="http://thalesgroup.com/authz/model/ext/3.0" uri="classpath:authz-ext-base.xsd" />
-	
-	<!-- For AuthZForce SchemaHandler (more precisely: imported CXF OASISCatalogManager) -->
+
+	<!-- TODO: REMOVE THIS IF NOT NEEDED -->
+	<!-- For resolution by com.thalesgroup.authzforce.core.SchemaHandler -->
 	<uri name="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" uri="classpath:xacml-core-v3-schema-wd-17.xsd"/>
 	<uri name="http://thalesgroup.com/authz/model/ext/3.0" uri="classpath:authz-ext-base.xsd"/>
-	
-	<!-- PDP Extensions -->
-	<system systemId="com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder.xsd" uri="classpath:com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder.xsd"/>
+
+	<!-- PDP Extensions (<uri>'s 'name' attribute value must match the namespace indicated for the schema import 
+		in the PDP extensions schema (pdp-ext.xsd), do not specify any schemaLocation in this schema, only the namespace. 
+		e.g. in pdp-ext.xsd: <xs:import namespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test" />
+		and here: <uri name="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test" uri="...XSD location for this namespace..." />
+		-->
+	<uri name="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test" uri="classpath:com.thalesgroup.authzforce.test.utils.TestAttributeFinder.xsd" />
 </catalog>
