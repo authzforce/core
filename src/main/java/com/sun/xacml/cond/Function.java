@@ -33,147 +33,179 @@
  */
 package com.sun.xacml.cond;
 
-import java.io.OutputStream;
-import java.net.URI;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
+import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.core.PdpExtension;
+import com.thalesgroup.authzforce.core.XACMLBindingUtils;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.func.FunctionCall;
 
 /**
  * Interface that all functions in the system must implement.
- *
+ * 
  * @since 1.0
  * @author Seth Proctor
+ * @param <RETURN_T>
+ *            return type of this function, i.e. single-valued V or bag of Vs
  */
-public abstract class Function extends FunctionType
+public abstract class Function<RETURN_T extends Expression.Value<?, RETURN_T>> extends FunctionType implements Expression<RETURN_T>, PdpExtension
 {
+	// cached hashcode result
+	private int hashCode = 0;
 
-    /**
-     * Evaluates the <code>Function</code> using the given inputs.
-     * The <code>List</code> contains <code>Evaluatable<code>s which are all
-     * of the correct type if the <code>Function</code> has been created as
-     * part of an <code>Apply</code> or <code>TargetMatch</code>, but which
-     * may otherwise be invalid. Each parameter should be evaluated by the
-     * <code>Function</code>, unless the <code>Function</code>
-     * doesn't need to evaluate all inputs to determine a result (as in the
-     * case of the or function). The order of the <code>List</code> is
-     * significant, so a <code>Function</code> should have a very good reason
-     * if it wants to evaluate the inputs in a different order.
-     * <p>
-     * Note that if this is a higher-order function, like any-of, then
-     * some argument (typically the first) in the <code>List</code> will
-     * actually be a Function object representing the function to apply to
-     * some bag. A function needs to know if it's a higher-order function,
-     * and therefore whether or not to look for this case. Also, a
-     * higher-order function is responsible for checking that the inputs
-     * that it will pass to the <code>Function</code> provided as the first
-     * parameter are valid, ie. it must do a <code>checkInputs</code> on
-     * its sub-function when <code>checkInputs</code> is called on the
-     * higher-order function.
-     *
-     * @param expression the <code>List</code> of inputs for the function
-     * @param context the representation of the request
-     *
-     * @return a result containing the <code>AttributeValue</code> computed
-     *         when evaluating the function, or <code>Status</code>
-     *         specifying some error condition
-     */
-    public abstract EvaluationResult evaluate(List<JAXBElement<? extends ExpressionType>> expression, EvaluationCtx context);
+	/**
+	 * Returns the function ID (as PDP extension ID)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.PdpExtension#getId()
+	 */
+	@Override
+	public final String getId()
+	{
+		return this.functionId;
+	}
 
-    /**
-     * Returns the identifier of this function as known by the factories.
-     * In the case of the standard XACML functions, this will be one of the
-     * URIs defined in the standard namespace. This function must always
-     * return the complete namespace and identifier of this function.
-     *
-     * @return the function's identifier
-     */
-    public abstract URI getIdentifier();
+	/**
+	 * The standard namespace where all XACML 1.0 spec-defined functions are defined
+	 */
+	public static final String FUNCTION_NS_1 = "urn:oasis:names:tc:xacml:1.0:function:";
 
-    /**
-     * Provides the type of <code>AttributeValue</code> that this function
-     * returns from <code>evaluate</code> in a successful evaluation.
-     *
-     * @return the type returned by this function
-     */
-    public abstract URI getReturnType();
+	/**
+	 * The standard namespace where all XACML 2.0 spec-defined functions are defined
+	 */
+	public static final String FUNCTION_NS_2 = "urn:oasis:names:tc:xacml:2.0:function:";
 
-    /**
-     * Tells whether this function will return a bag of values or just a
-     * single value.
-     *
-     * @return true if evaluation will return a bag, false otherwise
-     */
-    public abstract boolean returnsBag();
+	/**
+	 * The standard namespace where all XACML 3.0 spec-defined functions are defined
+	 */
+	public static final String FUNCTION_NS_3 = "urn:oasis:names:tc:xacml:3.0:function:";
 
-    /**
-     * Checks that the given inputs are of the right types, in the right
-     * order, and are the right number for this function to evaluate. If
-     * the function cannot accept the inputs for evaluation, an
-     * <code>IllegalArgumentException</code> is thrown.
-     *
-     * @param inputs a <code>List</code> of <code>Evaluatable</code>s, with
-     *               the first argument being a <code>Function</code> if
-     *               this is a higher-order function
-     *
-     * @throws IllegalArgumentException if the inputs do match what the
-     *                                  function accepts for evaluation
-     */
-    public abstract void checkInputs(List<ExpressionType> inputs) throws IllegalArgumentException;
+	private static final UnsupportedOperationException UNSUPPORTED_SET_FUNCTION_ID_OPERATION_EXCEPTION = new UnsupportedOperationException("Function.setFunctionId() not allowed");
 
-    /**
-     * Checks that the given inputs are of the right types, in the right
-     * order, and are the right number for this function to evaluate. If
-     * the function cannot accept the inputs for evaluation, an
-     * <code>IllegalArgumentException</code> is thrown. Unlike the other
-     * <code>checkInput</code> method in this interface, this assumes that
-     * the parameters will never provide bags of values. This is useful if
-     * you're considering a target function which has a designator or
-     * selector in its input list, but which passes the values from the
-     * derived bags one at a time to the function, so the function doesn't
-     * have to deal with the bags that the selector or designator
-     * generates.
-     *
-     * @param inputs a <code>List</code> of <code>Evaluatable</code>s, with
-     *               the first argument being a <code>Function</code> if
-     *               this is a higher-order function
-     *
-     * @throws IllegalArgumentException if the inputs do match what the
-     *                                  function accepts for evaluation
-     */
-//    public void checkInputsNoBag(List<Evaluatable> inputs) throws IllegalArgumentException;
-    
-    public abstract void checkInputsNoBag(List<ExpressionType> inputs) throws IllegalArgumentException;
- 
-    /**
-     * Encodes this <code>Function</code> into its XML representation and
-     * writes this encoding to the given <code>OutputStream</code> with no
-     * indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     */
-    public abstract void encode(OutputStream output);
+	protected Function(String functionId)
+	{
+		this.functionId = functionId;
+	}
 
-    /**
-     * Encodes this <code>Function</code> into its XML representation and
-     * writes this encoding to the given <code>OutputStream</code> with
-     * indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     * @param indenter an object that creates indentation strings
-     */
-    public abstract void encode(OutputStream output, Indenter indenter);
-    
-    @Override
-    public String toString() {
-    	return getIdentifier().toString();
-    }
-   
+	/**
+	 * Creates new function call with given arguments (Expressions). Any implementation of this
+	 * method should first validate inputs according to the function signature/definition.
+	 * 
+	 * @param inputExpressions
+	 *            function arguments (expressions)
+	 * 
+	 * @return Function call handle for calling this function which such inputs (with possible
+	 *         changes from original inputs due to optimizations for instance)
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if inputs are invalid for this function
+	 */
+	public abstract FunctionCall<RETURN_T> newCall(List<Expression<?>> inputExpressions) throws IllegalArgumentException;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
+	 */
+	@Override
+	public final boolean isStatic()
+	{
+		// the function itself is static: constant identified by its ID
+		return true;
+	}
+
+	@Override
+	public final RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	{
+		// Expression#evaluate()
+		/*
+		 * The static function instance itself (as an expression, without any parameter) evaluates
+		 * to nothing, it is just a function ID
+		 */
+		return null;
+	}
+
+	@Override
+	public final String toString()
+	{
+		return this.getFunctionId();
+	}
+
+	@Override
+	public final int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = this.functionId.hashCode();
+		}
+		return hashCode;
+	}
+
+	@Override
+	public final boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		final Function<?> other = (Function<?>) obj;
+		// functionId never null
+		return functionId.equals(other.functionId);
+	}
+
+	private final String indeterminateArgMessagePrefix = "Function " + functionId + ": Indeterminate arg #";
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType#setFunctionId(java.lang.String)
+	 */
+	@Override
+	public final void setFunctionId(String value)
+	{
+		// disallow this method to avoid inconsistency with indeterminateArgMessagePrefix
+		throw UNSUPPORTED_SET_FUNCTION_ID_OPERATION_EXCEPTION;
+	}
+
+	/**
+	 * Get Indeterminate arg message
+	 * 
+	 * @param argIndex
+	 *            function argument index (#x) that could not be determined
+	 * @return "Indeterminate arg#x" exception
+	 */
+	public final String getIndeterminateArgMessage(int argIndex)
+	{
+		return indeterminateArgMessagePrefix + argIndex;
+	}
+
+	/**
+	 * Get Indeterminate arg exception
+	 * 
+	 * @param argIndex
+	 *            function argument index (#x) that could not be determined
+	 * @return "Indeterminate arg#x" exception
+	 */
+	public final IndeterminateEvaluationException getIndeterminateArgException(int argIndex)
+	{
+		return new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), Status.STATUS_PROCESSING_ERROR);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.eval.Expression#createJAXBElement()
+	 */
+	@Override
+	public final JAXBElement<FunctionType> getJAXBElement()
+	{
+		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createFunction(this);
+	}
+
 }

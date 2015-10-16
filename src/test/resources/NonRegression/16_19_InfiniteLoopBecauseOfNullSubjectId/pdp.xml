@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://thalesgroup.com/authzforce/pdp/model/2015/06"
+	xmlns:test="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test">
+	<attributeFinder id="testAttributeFinder" xsi:type="test:TestAttributeFinder">
+		<test:providedAttribute Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+			AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role" DataType="http://www.w3.org/2001/XMLSchema#string"
+			MustBePresent="true" />
+	</attributeFinder>
+	<rootPolicyFinder id="rootPolicyFinder"  xsi:type="BaseStaticPolicyFinder" policyLocation="${PARENT_DIR}/policy.xml" />
+</pdp>

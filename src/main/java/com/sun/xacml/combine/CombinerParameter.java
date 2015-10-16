@@ -33,135 +33,69 @@
  */
 package com.sun.xacml.combine;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
-
-import org.w3c.dom.Node;
-
-import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.attr.AttributeFactory;
-import com.sun.xacml.attr.xacmlv3.AttributeValue;
-
+import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.eval.Expression;
 
 /**
- * Represents a single named parameter to a combining algorithm. Parameters
- * are only used by XACML 2.0 and later policies.
- *
+ * Represents a single named parameter to a combining algorithm. Parameters are only used by XACML
+ * 2.0 and later policies.
+ * 
  * @since 2.0
  * @author Seth Proctor
  */
-public class CombinerParameter extends CombinerParametersType
+class CombinerParameter extends oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter
 {
+	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_VALUE_OPERATION_EXCEPTION = new UnsupportedOperationException("CombinerParameter.setAttributeValue() not allowed");
 
-    // the name of this parameter
-    private String name;
-
-    // the value of this parameter
-    private AttributeValue value;
-
-    /**
-     * Creates a new CombinerParameter.
-     *
-     * @param name the parameter's name
-     * @param value the parameter's value
-     */
-    public CombinerParameter(String name, AttributeValue value) {
-        this.name = name;
-        this.value = value;
-    }
-
-    /**
-     * Creates a new CombinerParameter handler.
-     * 
-     * @param param CombinerParameter as defined by OASIS XACML model
-     * @throws ParsingException
-     */
-    public CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param) throws ParsingException
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter#setAttributeValue(oasis.names
+	 * .tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
+	 */
+	@Override
+	public final void setAttributeValue(AttributeValueType value)
 	{
-    	// get the attribute value, the only child of this element
-        AttributeFactory attrFactory = AttributeFactory.getInstance();
-        AttributeValue value = null;
-
-        try {
-            value = attrFactory.createValue(param.getAttributeValue());
-        } catch (UnknownIdentifierException uie) {
-            throw new ParsingException("Unknown AttributeId", uie);
-        }
-        
-        this.name = param.getParameterName();
-        this.value = value;
+		// Cannot allow this because we have to make sure value is always instance of our internal
+		// AttributeValue class
+		throw UNSUPPORTED_SET_ATTRIBUTE_VALUE_OPERATION_EXCEPTION;
 	}
 
 	/**
-     * Returns a new instance of the <code>CombinerParameter</code> class
-     * based on a DOM node. The node must be the root of an XML
-     * CombinerParameterType.
-     *
-     * @param root the DOM root of a CombinerParameterType XML type
-     *
-     * @throws ParsingException if the CombinerParameterType is invalid
-     */
-    public static CombinerParameter getInstance(Node root)
-        throws ParsingException
-    {
-        // get the name, which is a required attribute
-        String name = root.getAttributes().getNamedItem("ParameterName").
-            getNodeValue();
+	 * Creates a new CombinerParameter handler.
+	 * 
+	 * @param param
+	 *            CombinerParameter as defined by OASIS XACML model
+	 * @param xPathCompiler
+	 *            Policy(Set) default XPath compiler, corresponding to the Policy(Set)'s default
+	 *            XPath version specified in {@link DefaultsType} element; null if none specified
+	 * @param expFactory
+	 *            attribute value factory
+	 * @throws ParsingException
+	 */
+	CombinerParameter(oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter param, Expression.Factory expFactory, XPathCompiler xpathCompiler) throws ParsingException
+	{
+		super(expFactory.createAttributeValue(param.getAttributeValue(), xpathCompiler), param.getParameterName());
+	}
 
-        // get the attribute value, the only child of this element
-        AttributeFactory attrFactory = AttributeFactory.getInstance();
-        AttributeValue value = null;
-
-        try {
-            value = attrFactory.createValue(root.getFirstChild());
-        } catch (UnknownIdentifierException uie) {
-            throw new ParsingException("Unknown AttributeId", uie);
-        }
-        
-        return new CombinerParameter(name, value);
-    }
-
-    /**
-     * Returns the name of this parameter.
-     *
-     * @return the name of this parameter
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Returns the value provided by this parameter.
-     *
-     * @return the value provided by this parameter
-     */
-    public AttributeValue getValue() {
-        return value;
-    }
-
-    /**
-     * Encodes this parameter into its  XML representation and writes this
-     * encoding to the given <code>OutputStream</code> with indentation.
-     *
-     * @param output a stream into which the XML-encoded data is written
-     * @param indenter an object that creates indentation strings
-     */
-    public void encode(OutputStream output, Indenter indenter) {
-        PrintStream out = new PrintStream(output);
-        String indent = indenter.makeString();
-
-        out.println(indent + "<CombinerParameter ParameterName=\"" +
-                    getName() + "\">");
-        indenter.in();
-
-        getValue().encode(output, indenter);
-
-        out.println(indent + "</CombinerParameter>");
-        indenter.out();
-    }
+	/**
+	 * Returns the value provided by this parameter.
+	 * 
+	 * @return the value provided by this parameter
+	 */
+	public AttributeValue<?> getValue()
+	{
+		/*
+		 * In the constructor, we make sure input is an AttributeValue, and we override
+		 * setAttributeValue() to make it unsupported. So this cast should be safe
+		 */
+		return (AttributeValue<?>) attributeValue;
+	}
 
 }

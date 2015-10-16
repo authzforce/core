@@ -4,85 +4,87 @@
 	<parent>
 		<groupId>com.thalesgroup.authzforce</groupId>
 		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.0</version>
+		<version>3.0.9-SNAPSHOT</version>
 	</parent>
-	<groupId>com.thalesgroup.authzforce.core</groupId>
 	<artifactId>authzforce-core</artifactId>
-	<!-- WARNING: this version must be the same as the managed version (defined in POM dependencyManagement 
-		element) in parent 'authzforce' project in order for reverse dependencies (such as project 'authzforce-core-ext-utils') 
-		to stay up-to-date. So any change here must be re-done there. -->
-	<version>3.5.3</version>
+	<version>3.5.9-SNAPSHOT</version>
 	<name>AuthZForce :: Core :: XACML Core Implementation</name>
 	<organization>
-		<name>Thales</name>
+		<name>Thales Services SAS</name>
 	</organization>
-	<description>An authorization server that supports XACML, X.509 attributes certificates, SQL and LDAP</description>
+	<description>XACML-compliant Authorization PDP Core Engine</description>
 	<inceptionYear>2011</inceptionYear>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<copyrightOwner>Thales Services - ThereSIS</copyrightOwner>
-		<jdk.source>1.7</jdk.source>
-		<jdk.target>1.7</jdk.target>
-	</properties>
+	<scm>
+		<!-- Used by Jenkins - Maven release plugin -->
+		<connection>scm:git:${scm.baseUrl}/core.git</connection>
+		<developerConnection>scm:git:${scm.baseUrl}/core.git</developerConnection>
+		<tag>HEAD</tag>
+
+		<!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
+		<url>${scm.baseUrl}/core</url>
+	</scm>
 	<dependencies>
-		<!-- Authzforce optionnal dependencies -->
-		<!-- <dependency> -->
-		<!-- <groupId>com.thalesgroup.authzforce</groupId> -->
-		<!-- <artifactId>authzforce-audit</artifactId> -->
-		<!-- <version>2.0.1</version> -->
-		<!-- </dependency> -->
 		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjrt</artifactId>
-			<version>1.6.11</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
 		</dependency>
-		<!-- /Authzforce optionnal dependencies -->
-		<!-- Authzforce dependencies -->
 		<dependency>
-			<groupId>com.thalesgroup.authzforce.core</groupId>
-			<artifactId>authzforce-model</artifactId>
+			<groupId>org.springframework.ws</groupId>
+			<artifactId>spring-xml</artifactId>
+		</dependency>
+
+		<dependency>
+			<!-- For loading XML schemas with OASIS catalog (CatalogManager) -->
+			<groupId>xml-resolver</groupId>
+			<artifactId>xml-resolver</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<dependency>
+			<!-- For validation of XACML RFC822Name (email address) -->
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.5.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
+			<!-- For validating IP addresses (XACML IPAdress datatype), Domain names (XACML DNSName datatype), 
+				etc. without any DNS resolution -->
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
+		<dependency>
+			<!-- For XACML AttributeSelector evaluation and XPath-based functions (making reference to [XF]) -->
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>Saxon-HE</artifactId>
+			<version>9.6.0-5</version>
+		</dependency>
+		<!-- Authzforce dependencies -->
+		<!-- xml-ns-model and xacml-model dependencies are declared here only to work around maven-jaxb2-plugin bug: cannot resolve 
+			episodes from indirect dependencies with useDependenciesAsEpisodes option. -->
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-xml-ns-model</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-xacml-model</artifactId>
+			<version>3.0.3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-pdp-ext-model</artifactId>
+			<version>3.2.7-SNAPSHOT</version>
 		</dependency>
 		<!-- /Authzforce dependencies -->
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.9.13</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
-			<version>1.11</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.ktd.scis</groupId>
-			<artifactId>oasis-xacml-model</artifactId>
-		</dependency>
+
 		<!-- Test dependencies -->
-		<!-- FIXME: Dependency no longer used. Remove it? -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.jvnet.jaxb2_commons</groupId> -->
-<!-- 			<artifactId>testing</artifactId> -->
-<!-- 			<version>0.4.1.5</version> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency> -->
-		<dependency>
-			<groupId>commons-jxpath</groupId>
-			<artifactId>commons-jxpath</artifactId>
-			<version>1.3</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -90,53 +92,158 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- /Test dependencies -->
-		<!-- Uncoment dependency below to use log4j as SLFJ implementation for test logs -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<!-- Uncoment dependency below to use logback as SLFJ implementation for test logs -->
-		<!-- <dependency> -->
-		<!-- <groupId>ch.qos.logback</groupId> -->
-		<!-- <artifactId>logback-classic</artifactId> -->
-		<!-- <version>1.0.7</version> -->
-		<!-- <scope>test</scope> -->
-		<!-- </dependency> -->		
 	</dependencies>
 	<build>
 		<plugins>
-			<!-- Maven compiler configuration -->
 			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.5</version>
+				<configuration>
+					<targetJdk>1.7</targetJdk>
+					<excludeRoots>
+						<excludeRoot>target/generated-sources</excludeRoot>
+						<excludeRoot>target/generated-test-sources</excludeRoot>
+					</excludeRoots>
+				</configuration>
 				<executions>
 					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
+						<phase>verify</phase>
 						<goals>
-							<goal>testCompile</goal>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- Apache license Headers -->
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-gplv3-license</id>
+						<phase>process-sources</phase>
+						<configuration>
+							<!-- Template location -->
+							<header>license/thales-gpl.txt</header>
+							<properties>
+								<!-- Values to be substituted in template -->
+								<inceptionYear>${project.inceptionYear}</inceptionYear>
+								<currentYear>${currentYear}</currentYear>
+								<copyrightOwner>${project.organization.name}</copyrightOwner>
+								<projectName>AuthZForce</projectName>
+							</properties>
+							<strictCheck>true</strictCheck>
+							<excludes>
+								<exclude>**/*.html</exclude>
+								<exclude>**/*.xml</exclude>
+								<exclude>**/*.txt</exclude>
+								<exclude>**/*.ec</exclude>
+								<exclude>**/*.log</exclude>
+								<exclude>**/*.css</exclude>
+								<exclude>**/*.js</exclude>
+								<exclude>**/*.jsp</exclude>
+								<exclude>**/*.md</exclude>
+								<exclude>**/*.properties</exclude>
+								<exclude>**/*.gitignore</exclude>
+							</excludes>
+							<includes>
+								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
+								<!-- Include test files also -->
+								<include>src/test/java/**</include>
+							</includes>
+						</configuration>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>add-gpl-license</id>
+						<phase>process-sources</phase>
+						<configuration>
+							<!-- Template location -->
+							<header>license/thales-gpl.txt</header>
+							<properties>
+								<!-- Values to be substituted in template -->
+								<inceptionYear>${project.inceptionYear}</inceptionYear>
+								<currentYear>${currentYear}</currentYear>
+								<copyrightOwner>${project.organization.name}</copyrightOwner>
+								<projectName>AuthZForce</projectName>
+							</properties>
+							<strictCheck>true</strictCheck>
+							<includes>
+								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
+							</includes>
+						</configuration>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>check-license</id>
+						<goals>
+							<!-- attached to verify phase -->
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<configuration>
+					<!-- debug=true will generate JAXBDebug class. More info: https://github.com/highsource/maven-jaxb2-plugin/wiki/Miscellaneous -->
+					<debug>false</debug>
+					<verbose>true</verbose>
+					<extension>true</extension>
+					<useDependenciesAsEpisodes>true</useDependenciesAsEpisodes>
+					<strict>false</strict>
+					<catalog>src/main/jaxb/catalog.xml</catalog>
+					<removeOldOutput>true</removeOldOutput>
+					<bindingDirectory>src/main/jaxb</bindingDirectory>
+					<bindingIncludes>
+						<include>bindings.xjb</include>
+					</bindingIncludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>jaxb-generate-compile-sources</id>
+						<goals>
+							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<source>${jdk.source}</source>
-							<target>${jdk.target}</target>
+							<schemaDirectory>src/main/resources</schemaDirectory>
+							<generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
+							<addCompileSourceRoot>true</addCompileSourceRoot>
+							<addTestCompileSourceRoot>false</addTestCompileSourceRoot>
 						</configuration>
 					</execution>
 					<execution>
-						<id>default-compile</id>
-						<phase>compile</phase>
+						<id>jaxb-generate-test-sources</id>
 						<goals>
-							<goal>compile</goal>
+							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<source>${jdk.source}</source>
-							<target>${jdk.target}</target>
+							<schemaDirectory>src/test/resources</schemaDirectory>
+							<generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+							<addCompileSourceRoot>false</addCompileSourceRoot>
+							<addTestCompileSourceRoot>true</addTestCompileSourceRoot>
 						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<source>${jdk.source}</source>
-					<target>${jdk.target}</target>
-				</configuration>
 			</plugin>
 			<!-- Test configuration -->
 			<plugin>
@@ -150,6 +257,11 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
+							<systemPropertyVariables>
+								<!-- Use random address instead of the host MAC address to generate UUIDs as this test may be 
+									run on host disconnected from the network. -->
+								<com.thalesgroup.theresis.useRandomAddressBasedUUID>true</com.thalesgroup.theresis.useRandomAddressBasedUUID>
+							</systemPropertyVariables>
 							<failIfNoTests>false</failIfNoTests>
 							<skipTests>false</skipTests>
 							<includes>
@@ -159,184 +271,18 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Creating current year element for license headers -->
 			<plugin>
-				<groupId>org.codehaus.gmaven</groupId>
-				<artifactId>gmaven-plugin</artifactId>
-				<version>1.5</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
 				<executions>
 					<execution>
-						<phase>validate</phase>
+						<id>attach-sources</id>
+						<phase>verify</phase>
 						<goals>
-							<goal>execute</goal>
-						</goals>
-						<configuration>
-							<source>
-								import java.util.Date
-								import java.text.MessageFormat
-								def
-								vartimestamp =
-								MessageFormat.format("{0,date,yyyy}", new Date())
-								project.properties['currentYear'] =
-								vartimestamp
-							</source>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Adding header to file -->
-			<!-- Sun License Header -->
-			<!-- <plugin> -->
-			<!-- <groupId>com.mycila.maven-license-plugin</groupId> -->
-			<!-- <artifactId>maven-license-plugin</artifactId> -->
-			<!-- <version>1.9.0</version> -->
-			<!-- <configuration> -->
-			<!-- Template location -->
-			<!-- <header>src/main/resources/fileHeader.txt</header> -->
-			<!-- <properties> -->
-			<!-- Values to be substituted in template -->
-			<!-- <h_inceptionYear>${inceptionYear}</h_inceptionYear> -->
-			<!-- <h_currentYear>${currentYear}</h_currentYear> -->
-			<!-- <h_copyrightOwner>${copyrightOwner}</h_copyrightOwner> -->
-			<!-- </properties> -->
-			<!-- <strictCheck>true</strictCheck> -->
-			<!-- <excludes> -->
-			<!-- <exclude>**/*.html</exclude> -->
-			<!-- <exclude>**/*.xml</exclude> -->
-			<!-- <exclude>**/*.txt</exclude> -->
-			<!-- <exclude>**/*.ec</exclude> -->
-			<!-- <exclude>**/*.log</exclude> -->
-			<!-- <exclude>**/*.css</exclude> -->
-			<!-- <exclude>**/*.js</exclude> -->
-			<!-- <exclude>**/*.jsp</exclude> -->
-			<!-- <exclude>**/*.md</exclude> -->
-			<!-- <exclude>**/*.properties</exclude> -->
-			<!-- <exclude>**/*.gitignore</exclude> -->
-			<!-- <exclude>src/test/**</exclude> -->
-			<!-- <exclude>src/main/resources/**</exclude> -->
-			<!-- Added by Thales -->
-			<!-- <exclude>src/main/java/com/thalesgroup/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/xacmlv3/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/cond/xacmlv3/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/ctx/xacmlv3/**</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/CacheManager.java</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/ObligationExpressions.java</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</exclude> -->
-			<!-- <exclude>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</exclude> -->
-			<!-- </excludes> -->
-			<!-- </configuration> -->
-			<!-- </plugin> -->
-			<plugin>
-				<!-- Thales's license Headers -->
-				<groupId>com.mycila.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.9.0</version>
-				<configuration>
-					<!-- Template location -->
-					<header>src/main/resources/fileHeader.apache2.txt</header>
-					<properties>
-						<!-- Values to be substituted in template -->
-						<h_inceptionYear>${project.inceptionYear}</h_inceptionYear>
-						<h_currentYear>${currentYear}</h_currentYear>
-						<h_copyrightOwner>${copyrightOwner}</h_copyrightOwner>
-					</properties>
-					<strictCheck>true</strictCheck>
-					<excludes>
-						<exclude>**/*.html</exclude>
-						<exclude>**/*.xml</exclude>
-						<exclude>**/*.txt</exclude>
-						<exclude>**/*.ec</exclude>
-						<exclude>**/*.log</exclude>
-						<exclude>**/*.css</exclude>
-						<exclude>**/*.js</exclude>
-						<exclude>**/*.jsp</exclude>
-						<exclude>**/*.md</exclude>
-						<exclude>**/*.properties</exclude>
-						<exclude>**/*.gitignore</exclude>
-						<exclude>src/test/**</exclude>
-						<exclude>src/main/resources/**</exclude>
-					</excludes>
-					<includes>
-						<include>src/main/java/com/thalesgroup/**</include>
-						<include>src/main/java/com/sun/xacml/xacmlv3/**</include>
-						<include>src/main/java/com/sun/cond/xacmlv3/**</include>
-						<include>src/main/java/com/sun/ctx/xacmlv3/**</include>
-						<include>src/main/java/com/sun/xacml/CacheManager.java</include>
-						<include>src/main/java/com/sun/xacml/ObligationExpressions.java</include>
-						<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</include>
-						<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</include>
-						<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
-						<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
-						<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
-					</includes>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>format</goal>
+							<goal>jar-no-fork</goal>
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<id>default</id>
-						<phase>compile</phase>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<debug>true</debug>
-					<verbose>true</verbose>
-					<extension>true</extension>
-					<args>
-						<arg>-Xannotate</arg>
-						<args>-Xequals</args>
-						<args>-XhashCode</args>
-					</args>
-					<episodes>
-						<episode>
-							<groupId>com.thalesgroup.ktd.scis</groupId>
-							<artifactId>oasis-xacml-model</artifactId>
-						</episode>
-					</episodes>
-					<plugins>
-						<plugin>
-							<groupId>org.jvnet.jaxb2_commons</groupId>
-							<artifactId>jaxb2-basics-annotate</artifactId>
-							<version>0.6.4</version>
-						</plugin>
-						<plugin>
-							<groupId>org.jvnet.jaxb2_commons</groupId>
-							<artifactId>jaxb2-basics</artifactId>
-							<version>0.6.4</version>
-						</plugin>
-						<plugin>
-							<groupId>com.thalesgroup.ktd.scis</groupId>
-							<artifactId>oasis-xacml-model</artifactId>
-						</plugin>
-					</plugins>
-					<catalog>src/main/resources/catalog.xml</catalog>
-					<catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

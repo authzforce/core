@@ -33,315 +33,187 @@
  */
 package com.sun.xacml.attr.xacmlv3;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
-
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.cond.Evaluatable;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.BindingUtility;
-import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
+import com.sun.xacml.finder.AttributeFinder;
+import com.thalesgroup.authzforce.core.XACMLBindingUtils;
+import com.thalesgroup.authzforce.core.attr.AttributeGUID;
+import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.eval.Bag;
 
-public class AttributeDesignator extends AttributeDesignatorType implements Evaluatable
+/**
+ * AttributeDesignator
+ * 
+ * <p>
+ * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent
+ * to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
+ * </p>
+ * <p>
+ * [1] http://www.w3.org/TR/xmlschema-2/#anyURI That's why we use String instead.
+ * </p>
+ * <p>
+ * See also:
+ * </p>
+ * <p>
+ * https://java.net/projects/jaxb/lists/users/archive/2011-07/message/16
+ * </p>
+ * 
+ * @param <AV>
+ *            AttributeDesignator evaluation result value's primitive datatype
+ * 
+ */
+public class AttributeDesignator<AV extends AttributeValue<AV>> extends AttributeDesignatorType implements Expression<Bag<AV>>
 {
-
-	/**
-	 * Tells designator to search in the subject section of the request
-	 */
-	public static final int SUBJECT_TARGET = 0;
-
-	/**
-	 * Tells designator to search in the resource section of the request
-	 */
-	public static final int RESOURCE_TARGET = 1;
-
-	/**
-	 * Tells designator to search in the action section of the request
-	 */
-	public static final int ACTION_TARGET = 2;
-
-	/**
-	 * Tells designator to search in the environment section of the request
-	 */
-	public static final int ENVIRONMENT_TARGET = 3;
-
-	/**
-	 * The standard URI for the default subject category value
-	 */
-	public static final String SUBJECT_CATEGORY_DEFAULT = "urn:oasis:names:tc:xacml:1.0:subject-category:access-subject";
-
-	// helper array of strings
-	static final private String[] targetTypes = { "Subject", "Resource", "Action", "Environment" };
-
-	// the type of designator we are
-	private int target;
-
-	// if we're a subject this is the category
-	// private URI category;
-
 	// the LOGGER we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeDesignator.class);
+	// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeDesignator.class);
+	private static final IllegalArgumentException NULL_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute designator category");
+	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute designator datatype");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_EXCEPTION = new IllegalArgumentException("Undefined attribute finder");
+
+	private final String missingAttributeMessage;
+	// private final DatatypeDef returnType;
+	private final AttributeGUID attrGUID;
+	private final AttributeFinder attrFinder;
+	// private final Class<T> returnType;
+	private final BagDatatype<AV> returnType;
+	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
+	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
+
+	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("DataType field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeId field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Category field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_ISSUER_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Issuer field is read-only");
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setCategory(java.lang
+	 * .String)
+	 */
+	@Override
+	public final void setCategory(String value)
+	{
+		// prevent de-synchronization with this.attrGUID's Category while keeping field final
+		throw UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setAttributeId(java.lang
+	 * .String)
+	 */
+	@Override
+	public final void setAttributeId(String value)
+	{
+		// prevent de-synchronization of this.attrGUID's AttributeId while keeping field final
+		throw UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setIssuer(java.lang.String
+	 * )
+	 */
+	@Override
+	public final void setIssuer(String value)
+	{
+		// prevent de-synchronization with this.attrGUID's issuer while keeping field final
+		throw UNSUPPORTED_ISSUER_SET_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setDataType(java.lang
+	 * .String)
+	 */
+	@Override
+	public final void setDataType(String value)
+	{
+		// prevent de-synchronization with this.returnType while keeping field final
+		throw UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
+	 */
+	@Override
+	public boolean isStatic()
+	{
+		// depends on the context
+		return false;
+	}
 
 	/**
 	 * Return an instance of an AttributeDesignator based on an AttributeDesignatorType
 	 * 
 	 * @param attrDesignator
 	 *            the AttributeDesignatorType we want to convert
-	 * 
-	 * @return the AttributeDesignator
+	 * @param resultDatatype
+	 *            expected datatype of the result of evaluating this AttributeDesignator (
+	 *            {@code AV is the expected type of every element in the bag})
+	 * @param attrFinder
+	 *            Attribute Finder responsible for finding the attribute designated by this in a
+	 *            given evaluation context at runtime
 	 */
-	public static AttributeDesignator getInstance(AttributeDesignatorType attrDesignator)
+	public AttributeDesignator(AttributeDesignatorType attrDesignator, BagDatatype<AV> resultDatatype, AttributeFinder attrFinder)
 	{
-		int target = -1;
-		URI attrId = null;
-		URI datatype = null;
-		URI issuer = null;
-		URI categoryURI = null;
-
-		try
+		final String categoryURI = attrDesignator.getCategory();
+		if (categoryURI == null)
 		{
-			final XACMLCategory category = XACMLCategory.fromValue(attrDesignator.getCategory());
-			switch (category)
-			{
-				case XACML_1_0_SUBJECT_CATEGORY_ACCESS_SUBJECT:
-				case XACML_1_0_SUBJECT_CATEGORY_CODEBASE:
-				case XACML_1_0_SUBJECT_CATEGORY_INTERMEDIARY_SUBJECT:
-				case XACML_1_0_SUBJECT_CATEGORY_RECIPIENT_SUBJECT:
-				case XACML_1_0_SUBJECT_CATEGORY_REQUESTING_MACHINE:
-					target = 0;
-					break;
-				case XACML_3_0_RESOURCE_CATEGORY_RESOURCE:
-					target = 1;
-					break;
-				case XACML_3_0_ACTION_CATEGORY_ACTION:
-					target = 2;
-					break;
-				case XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT:
-					target = 3;
-					break;
-			}
-		} catch (IllegalArgumentException e)
-		{
-			// unknown category
-			// target = -1;
+			throw NULL_CATEGORY_EXCEPTION;
 		}
 
-		if (attrDesignator.getDataType() != null)
+		final String datatypeURI = attrDesignator.getDataType();
+		if (datatypeURI == null)
 		{
-			datatype = URI.create(attrDesignator.getDataType());
-		}
-		if (attrDesignator.getIssuer() != null)
-		{
-			issuer = URI.create(attrDesignator.getIssuer());
-		}
-		if (attrDesignator.getAttributeId() != null)
-		{
-			attrId = URI.create(attrDesignator.getAttributeId());
-		}
-		if (attrDesignator.getCategory() != null)
-		{
-			categoryURI = URI.create(attrDesignator.getCategory());
-		}
-		return new AttributeDesignator(target, datatype, attrId, categoryURI, attrDesignator.isMustBePresent(), issuer);
-	}
-
-	public static AttributeDesignator getInstance(Node root, String myCategory, PolicyMetaData metadata)
-	{
-		return getInstance(root);
-	}
-
-	public static AttributeDesignator getInstance(Node root)
-	{
-		final JAXBElement<AttributeDesignatorType> match;
-		try
-		{
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
-			match = u.unmarshal(root, AttributeDesignatorType.class);
-			AttributeDesignatorType attrDes = match.getValue();
-			AttributeDesignator myAttr = getInstance(attrDes);
-			return myAttr;
-		} catch (Exception e)
-		{
-			LOGGER.error("Error unmarshalling AttributeDesignator", e);
+			throw NULL_DATATYPE_EXCEPTION;
 		}
 
-		return null;
-	}
-
-	/**
-	 * Creates a new <code>AttributeDesignator</code> without the optional issuer.
-	 * 
-	 * @param target
-	 *            the type of designator as specified by the 4 member *_TARGET fields
-	 * @param type
-	 *            the data type resolved by this designator
-	 * @param id
-	 *            the attribute id looked for by this designator
-	 * @param mustBePresent
-	 *            whether resolution must find a value
-	 */
-	public AttributeDesignator(int target, URI type, URI id, boolean mustBePresent)
-	{
-		this(target, type, id, mustBePresent, null);
-	}
-
-	/**
-	 * Creates a new <code>AttributeDesignator</code> with the optional issuer.
-	 * 
-	 * @param target
-	 *            the type of designator as specified by the 4 member *_TARGET fields
-	 * @param type
-	 *            the data type resolved by this designator
-	 * @param id
-	 *            the attribute id looked for by this designator
-	 * @param mustBePresent
-	 *            whether resolution must find a value
-	 * @param issuer
-	 *            the issuer of the values to search for or null if no issuer is specified
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the input target isn't a valid value
-	 */
-	public AttributeDesignator(int target, URI type, URI id, boolean mustBePresent, URI issuer)
-	{
-		this(target, type, id, null, mustBePresent, null);
-	}
-
-	/**
-	 * Creates a new <code>AttributeDesignator</code> with the optional issuer.
-	 * 
-	 * @param target
-	 *            the type of designator as specified by the 4 member *_TARGET fields
-	 * @param type
-	 *            the data type resolved by this designator
-	 * @param id
-	 *            the attribute id looked for by this designator
-	 * @param category
-	 *            the category looked for by this designator
-	 * @param mustBePresent
-	 *            whether resolution must find a value
-	 * @param issuer
-	 *            the issuer of the values to search for or null if no issuer is specified
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the input target isn't a valid value
-	 */
-	public AttributeDesignator(int target, URI type, URI id, URI category, boolean mustBePresent, URI issuer) throws IllegalArgumentException
-	{
-		this.target = target;
-		this.dataType = type.toASCIIString();
-		this.attributeId = id.toASCIIString();
-		this.mustBePresent = mustBePresent;
-		if (issuer != null)
+		final String id = attrDesignator.getAttributeId();
+		if (id == null)
 		{
-			this.issuer = issuer.toASCIIString();
-		} 
+			throw NULL_ATTRIBUTE_ID_EXCEPTION;
+		}
 
-		this.category = category.toASCIIString();
-	}
+		if (attrFinder == null)
+		{
+			throw NULL_ATTRIBUTE_FINDER_EXCEPTION;
+		}
 
-	/**
-	 * Sets the category if this is a SubjectAttributeDesignatorType
-	 * 
-	 * @param category
-	 *            the subject category
-	 */
-	public void setCategory(URI category)
-	{
-		this.category = category.toASCIIString();
-	}
+		// JAXB attributes
+		this.category = categoryURI;
+		this.attributeId = id;
+		this.dataType = datatypeURI;
+		this.issuer = attrDesignator.getIssuer();
+		this.mustBePresent = attrDesignator.isMustBePresent();
 
-	/**
-	 * Returns the type of this designator as specified by the *_TARGET fields.
-	 * 
-	 * @return the designator type
-	 */
-	public int getDesignatorType()
-	{
-		return target;
-	}
+		// others
+		this.attrGUID = new AttributeGUID(category, issuer, id);
+		// this.returnType = new DatatypeDef(dataType, true);
+		this.returnType = resultDatatype;
+		this.attrFinder = attrFinder;
 
-	/**
-	 * Returns the type of attribute that is resolved by this designator. While an AD will always
-	 * return a bag, this method will always return the type that is stored in the bag.
-	 * 
-	 * @return the attribute type
-	 */
-	public URI getType()
-	{
-		return URI.create(dataType);
-	}
-
-	/**
-	 * Returns the AttributeId of the values resolved by this designator.
-	 * 
-	 * @return identifier for the values to resolve
-	 */
-	public URI getId()
-	{
-		return URI.create(attributeId);
-	}
-
-	/**
-	 * Returns whether or not a value is required to be resolved by this designator.
-	 * 
-	 * @return true if a value is required, false otherwise
-	 */
-	public boolean mustBePresent()
-	{
-		return mustBePresent;
-	}
-
-	/**
-	 * Always returns true, since a designator always returns a bag of attribute values.
-	 * 
-	 * @return true
-	 */
-	public boolean returnsBag()
-	{
-		return true;
-	}
-
-	/**
-	 * Always returns true, since a designator always returns a bag of attribute values.
-	 * 
-	 * @deprecated As of 2.0, you should use the <code>returnsBag</code> method from the
-	 *             super-interface <code>Expression</code>.
-	 * 
-	 * @return true
-	 */
-	@Override
-	public boolean evaluatesToBag()
-	{
-		return true;
-	}
-
-	/**
-	 * Always returns an empty list since designators never have children.
-	 * 
-	 * @return an empty <code>List</code>
-	 */
-	@Override
-	public List getChildren()
-	{
-		return Collections.EMPTY_LIST;
+		// error messages/exceptions
+		this.missingAttributeMessage = this + " not found in context";
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
 	}
 
 	/**
@@ -352,129 +224,53 @@ public class AttributeDesignator extends AttributeDesignatorType implements Eval
 	 *            the representation of the request
 	 * 
 	 * @return a result containing a bag either empty because no values were found or containing at
-	 *         least one value, or status associated with an Indeterminate result
+	 *         least one value
 	 */
 	@Override
-	public EvaluationResult evaluate(EvaluationCtx context)
+	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		EvaluationResult result = null;
-		URI issuerURI = null;
-		if (this.getIssuer() != null)
+		if (context == null)
 		{
-			issuerURI = URI.create(this.getIssuer());
+			throw missingAttributeBecauseNullContextException;
 		}
 
-		// look in the right section for some attribute values
-		/*
-		 * TODO: simplify this using method EvaluationCtx#getAttribute(AttribtueDesignator) (to be
-		 * implemented)
-		 */
-		switch (target)
+		final Bag<AV> bag = attrFinder.findAttribute(attrGUID, context, returnType);
+		if (bag == null)
 		{
-			case SUBJECT_TARGET:
-				result = context.getSubjectAttribute(this.getType(), this.getId(), issuerURI, URI.create(category));
-				break;
-			case RESOURCE_TARGET:
-				result = context.getResourceAttribute(this.getType(), this.getId(), issuerURI);
-				break;
-			case ACTION_TARGET:
-				result = context.getActionAttribute(this.getType(), this.getId(), issuerURI);
-				break;
-			case ENVIRONMENT_TARGET:
-				result = context.getEnvironmentAttribute(this.getType(), this.getId(), issuerURI);
-				break;
-			default:
-				result = context.getCustomAttribute(this.getType(), this.getId(), issuerURI);
-				break;
+			throw this.missingAttributeForUnknownReasonException;
 		}
 
-		// if the lookup was indeterminate, then we return immediately
-		if (result.indeterminate())
+		if (mustBePresent && bag.isEmpty())
 		{
-			return result;
-		}
-
-		BagAttribute bag = (BagAttribute) (result.getAttributeValue());
-
-		if (bag.isEmpty())
-		{
-			// if it's empty, this may be an error
-			if (mustBePresent)
-			{
-				LOGGER.info("AttributeDesignator failed to resolve a " + "value for a required attribute: " + this.getId().toASCIIString());
-
-				List<String> codes = new ArrayList<>();
-				codes.add(Status.STATUS_MISSING_ATTRIBUTE);
-
-				String message = "Couldn't find " + targetTypes[target] + "AttributeDesignator attribute";
-
-				// Note that there is a bug in the XACML spec. You can't
-				// specify an identifier without specifying acceptable
-				// values. Until this is fixed, this code will only
-				// return the status code, and not any hints about what
-				// was missing
-
-				/*
-				 * List attrs = new ArrayList(); attrs.add(new Attribute(id, ((issuer == null) ?
-				 * null : issuer.toString()), null, null)); StatusDetail detail = new
-				 * StatusDetail(attrs);
-				 */
-
-				return new EvaluationResult(new Status(codes, message));
-			}
+			throw new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, bag.getReasonWhyEmpty());
 		}
 
 		// if we got here the bag wasn't empty, or mustBePresent was false,
 		// so we just return the result
-		return result;
+		return bag;
 	}
 
-	/**
-	 * Encodes this designator into its XML representation and writes this encoding to the given
-	 * <code>OutputStream</code> with no indentation.
-	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
-	 */
-	public void encode(OutputStream output)
-	{
-		encode(output, new Indenter(0));
-	}
-
-	/**
-	 * Encodes this designator into its XML representation and writes this encoding to the given
-	 * <code>OutputStream</code> with indentation.
-	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
-	 * @param indenter
-	 *            an object that creates indentation strings
-	 */
-	public void encode(OutputStream output, Indenter indenter)
-	{
-		PrintStream out = new PrintStream(output);
-		String indent = indenter.makeString();
-		out.println(indent + this);
-	}
-	
 	@Override
-	public String toString() {
-		String tag = "<AttributeDesignator";
-
-		if ((target == SUBJECT_TARGET) && (category != null))
-			tag += " Category=\"" + category.toString() + "\"";
-
-		tag += " AttributeId=\"" + this.getId().toASCIIString() + "\"";
-		tag += " DataType=\"" + dataType.toString() + "\"";
-
-		if (issuer != null)
-			tag += " Issuer=\"" + issuer.toString() + "\"";
-
-		if (mustBePresent)
-			tag += " MustBePresent=\"true\"";
-
-		tag += "/>";
-		
-		return tag;
+	public Datatype<Bag<AV>> getReturnType()
+	{
+		return this.returnType;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return "AttributeDesignator [category=" + category + ", attributeId=" + attributeId + ", dataType=" + dataType + ", issuer=" + issuer + ", mustBePresent=" + mustBePresent + "]";
+	}
+
+	@Override
+	public JAXBElement<AttributeDesignatorType> getJAXBElement()
+	{
+		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator(this);
+	}
+
 }

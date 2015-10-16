@@ -30,65 +30,116 @@
  *
  *  You acknowledge that this software is not designed or intended for use in
  *  the design, construction, operation or maintenance of any nuclear facility.
+ *  
  */
+
 package com.sun.xacml.combine;
-
-import com.sun.xacml.EvaluationCtx;
-
-import com.sun.xacml.ctx.Result;
-
-import java.net.URI;
 
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
-
+import com.thalesgroup.authzforce.core.PdpExtension;
+import com.thalesgroup.authzforce.core.eval.Decidable;
+import com.thalesgroup.authzforce.core.eval.DecisionResult;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 
 /**
- * The base type for all combining algorithms. It provides one method that
- * must be implemented.
- *
+ * The base type for all combining algorithms. It provides one method that must be implemented. In
+ * combining policies, obligations and advice must be handled correctly. Specifically, no
+ * obligation/advice may be included in the <code>Result</code> that doesn't match the permit/deny
+ * decision being returned. So, if INDETERMINATE or NOT_APPLICABLE is the returned decision, no
+ * obligations/advice may be included in the result. If the decision of the combining algorithm is
+ * PERMIT or DENY, then obligations/advice with a matching fulfillOn/AppliesTo effect are also
+ * included in the result.
+ * 
  * @since 1.0
  * @author Seth Proctor
+ * @param <T>
+ *            type of Decidable element (Policy, Rule...)
  */
-public abstract class CombiningAlgorithm
+public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExtension
 {
+	private static final String LEGACY_ALG_WARNING = "%s is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
 
-    // the identifier for the algorithm
-    private URI identifier;
+	// the identifier for the algorithm
+	private final String id;
 
-    /**
-     * Constructor that takes the algorithm's identifier.
-     *
-     * @param identifier the algorithm's identifier
-     */
-    public CombiningAlgorithm(URI identifier) {
-        this.identifier = identifier;
-    }
+	private final String toString;
 
-    /**
-     * Combines the results of the inputs based on the context to produce
-     * some unified result. This is the one function of a combining algorithm.
-     *
-     * @param context the representation of the request
-     * @param parameters a (possibly empty) non-null <code>List</code> of
-     *                   <code>CombinerParameter<code>s provided for general
-     *                   use (for all pre-2.0 policies this must be empty)
-     * @param inputs a <code>List</code> of <code>CombinerElements</code>s to
-     *               evaluate and combine
-     *
-     * @return a single unified result based on the combining logic
-     */
-    public abstract Result combine(EvaluationCtx context, CombinerParametersType parameters,
-                                   List inputs);
-    
-    /**
-     * Returns the identifier for this algorithm.
-     *
-     * @return the algorithm's identifier
-     */
-    public URI getIdentifier() {
-        return identifier;
-    }
+	protected final UnsupportedOperationException unsupportedLegacyAlgorithmException;
 
+	private final Class<T> combinedElementType;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param id
+	 *            the algorithm's id
+	 *            <p>
+	 *            WARNING: java.net.URI cannot be used here for XACML category and ID, because not
+	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
+	 *            java.net.URI for example. That's why we use String instead.
+	 *            </p>
+	 *            <p>
+	 *            [1] http://www.w3.org/TR/xmlschema-2/#anyURI
+	 *            </p>
+	 * @param isLegacy
+	 *            true iff the algorithm to instantiate is legacy ("legacy" as defined in XACML 3.0
+	 *            or any combining algorithm replaced with new one). Implementations not willing to
+	 *            support legacy algorithms can throw {@link #unsupportedLegacyAlgorithmException}
+	 *            that uses the message format below to produce the exception message:
+	 *            {@value #LEGACY_ALG_WARNING}. Else {@link #unsupportedLegacyAlgorithmException} is
+	 *            null.
+	 * @param combinedType
+	 *            combined element type
+	 */
+	public CombiningAlgorithm(String id, boolean isLegacy, Class<T> combinedType)
+	{
+		this.combinedElementType = combinedType;
+		this.id = id;
+		this.toString = "CombiningAlgorithm[" + id + "]";
+		this.unsupportedLegacyAlgorithmException = isLegacy ? new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this)) : null;
+	}
+
+	@Override
+	public final String getId()
+	{
+		return id;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public final String toString()
+	{
+		return this.toString;
+	}
+
+	/**
+	 * Get to know whether this is a policy/policySet or rule-combining algorithm
+	 * 
+	 * @return the combinedElementType
+	 */
+	public final Class<T> getCombinedElementType()
+	{
+		return combinedElementType;
+	}
+
+	/**
+	 * Combines the child elements (rules for rule combining, policies for policy combining) based
+	 * on the context to produce some unified result. To be implemented by algorithm
+	 * implementations.
+	 * 
+	 * @param context
+	 *            the representation of the request
+	 * @param params
+	 *            list of CombinerParameters that may be associated with a particular child element
+	 * @param combinedElements
+	 *            combined child elements
+	 * 
+	 * @return a combined result based on the combining logic
+	 */
+	public abstract DecisionResult combine(EvaluationContext context, List<CombinerElement<? extends T>> params, List<? extends T> combinedElements);
 }

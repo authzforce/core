@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicySetId="default" Version="1.0" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:ordered-permit-overrides">
    <Target />
-   <Policy PolicyId="testpolicy" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides">
+   <Policy PolicyId="testpolicy" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides">
       <Description>testpolicy</Description>
       <Target>
          <AnyOf>

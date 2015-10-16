@@ -33,308 +33,349 @@
  */
 package com.sun.xacml.attr.xacmlv3;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.URI;
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.List;
+import java.util.Queue;
 
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
+import javax.xml.xpath.XPathExpressionException;
 
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XPathSelector;
+import net.sf.saxon.s9api.XdmAtomicValue;
+import net.sf.saxon.s9api.XdmItem;
+import net.sf.saxon.s9api.XdmNode;
+import net.sf.saxon.s9api.XdmValue;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-
-import com.sun.xacml.EvaluationCtx;
-import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.PolicyMetaData;
-import com.sun.xacml.attr.BagAttribute;
-import com.sun.xacml.cond.Evaluatable;
-import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.BindingUtility;
+import com.sun.xacml.finder.AttributeFinder;
+import com.thalesgroup.authzforce.core.XACMLBindingUtils;
+import com.thalesgroup.authzforce.core.attr.AttributeGUID;
+import com.thalesgroup.authzforce.core.attr.AttributeSelectorId;
+import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.attr.XPathAttributeValue;
+import com.thalesgroup.authzforce.core.eval.Bag;
+import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.Bags;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.eval.Expression.Utils.XPathEvaluator;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
- * Supports the standard selector functionality in XACML, which uses XPath expressions to resolve
- * values from the Request or elsewhere. All selector queries are done by
- * <code>AttributeFinderModule</code>s so that it's easy to plugin different XPath implementations.
+ * Implements AttributeSelector support, which uses XPath expressions (using Saxon parser) to
+ * resolve values from the Request or elsewhere. The AttributeSelector feature in optional in the
+ * XACML core specification, and this implementation is experimental (not to be used in production).
+ * <p>
+ * Reasons for using SAXON's native API (s9api) in XPath evaluation instead of standard Java APIs
+ * (e.g. JAXP):
  * 
- * @author Romain Ferrari
+ * <ol>
+ * <li>Performance: See http://www.saxonica.com/documentation9.5/javadoc/net
+ * /sf/saxon/s9api/package-summary.html:
+ * <p>
+ * <i>This package provides Saxon's preferred Java API for XSLT, XQuery, XPath, and XML Schema
+ * processing. The interface is designed to hide as much as possible of the detail of the
+ * implementation. However, the API architecture faithfully reflects the internal architecture of
+ * the Saxon product, unlike standard APIs such as JAXP and XQJ which in many cases force
+ * compromises in the design and performance of the application.</i>
+ * </p>
+ * </li>
+ * 
+ * <li>Functional: s9api provides XPATH 3.0 support, whereas standard Java APIs designed for XPATH
+ * 1.0 support only. See http://www.saxonica.com/html/documentation/conformance/jaxp.html. However,
+ * for the moment, only XPath 1.0 and 2.0 are supported by this class. But we prepare for the
+ * future.</li>
+ * </ol>
+ * </p>
+ * 
+ * @param <AV>
+ *            AttributeSelector evaluation results' primitive returnType
  */
-public class AttributeSelector extends AttributeSelectorType implements Evaluatable
+public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeSelectorType implements Expression<Bag<AV>>
 {
-
-	// the data type returned by this selector
-	private URI type;
-
-	// the xpath version we've been told to use
-	private String xpathVersion;
-
-	// the policy root, where we get namespace mapping details
-	private Node policyRoot;
-
 	// the logger we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
+	// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
+	private static final IllegalArgumentException NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("AttributeSelector's input XACML/JAXB AttributeSelector element undefined");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION = new IllegalArgumentException("Attribute finder undefined but required for non-null ContextSelectorId in AttributeSelector");
+	private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException("XPath version/compiler undefined but required for AttributeSelector evaluation");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_FACTORY_EXCEPTION = new IllegalArgumentException("AttributeSelector's returnType factory undefined");
+	private static final UnsupportedOperationException UNSUPPORTED_PATH_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s Path field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_CONTEXT_SELECTOR_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s ContextSelectorId field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s Category field is read-only");
 
-	/**
-	 * Creates a new <code>AttributeSelector</code> with no policy root.
+	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("<AttributeSelector>'s DataType field is read-only");
+
+	private static final String NODE_DESCRIPTION_FORMAT = "type=%s, name=%s, value=%s";
+
+	private static String getDescription(XdmNode node)
+	{
+		return String.format(NODE_DESCRIPTION_FORMAT, node.getNodeKind(), node.getNodeName(), node.getStringValue());
+	}
+
+	private static AttributeValueType xdmToJaxbAttributeValue(String attrDatatype, XdmNode node) throws ParsingException
+	{
+		final AttributeValueType xacmlAttrVal = new AttributeValueType();
+		xacmlAttrVal.setDataType(attrDatatype);
+		switch (node.getNodeKind())
+		{
+			case ATTRIBUTE:
+				xacmlAttrVal.getOtherAttributes().put(new QName(node.getNodeName().getNamespaceURI(), node.getNodeName().getLocalName()), node.getStringValue());
+				break;
+
+			case TEXT:
+				xacmlAttrVal.getContent().add(node.getStringValue());
+				break;
+
+			/*
+			 * TODO: the commented cases below are more complex to handle. Further checking/testing
+			 * is required before providing support for them. But first of all, are these cases
+			 * worth the trouble? Find a few good use cases for them. In the meantime, do not remove
+			 * these lines of code below, unless to rewrite/refactor with same quality level.
+			 */
+			// case Node.DOCUMENT_NODE:
+			// case Node.ELEMENT_NODE:
+			// final Unmarshaller u;
+			// try
+			// {
+			// u = PdpModelHandler.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
+			// } catch (JAXBException e)
+			// {
+			// throw new ParsingException("Cannot create AttributeValue from XML node", e);
+			// }
+			//
+			// final Object attrValue;
+			// try
+			// {
+			// attrValue = u.unmarshal(node);
+			// } catch (JAXBException e)
+			// {
+			// throw new
+			// ParsingException(String.format("Cannot create AttributeValue from XML node: %s",
+			// getDescription(node.getUnderlyingNode())), e);
+			// }
+			//
+			// if (!(attrValue instanceof JAXBElement))
+			// {
+			// throw new
+			// ParsingException(String.format("Cannot create AttributeValue from XML node: %s",
+			// getDescription(node.getUnderlyingNode())));
+			// }
+			// xacmlAttrVal.getContent().add((Serializable) attrValue);
+			// break;
+
+			default:
+				throw new ParsingException("Cannot create AttributeValue from XML node (type not supported): " + getDescription(node));
+		}
+
+		return xacmlAttrVal;
+	}
+
+	private final String missingAttributeMessage;
+
+	private final AttributeFinder attrFinder;
+
+	private final AttributeGUID contextSelectorGUID;
+
+	private final XPathCompiler xpathCompiler;
+	private final Utils.XPathEvaluator xpathEvaluator;
+
+	private final AttributeValue.Factory<?> attrFactory;
+
+	private final AttributeSelectorId id;
+
+	private final BagDatatype<AV> returnType;
+
+	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
+	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
+	private final IndeterminateEvaluationException missingAttributesContentException;
+	private final String missingContextSelectorAttributeExceptionMessage;
+	private final String xpathEvalExceptionMessage;
+
+	// cached method results
+	private String toString;
+
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param type
-	 *            the data type of the attribute values this selector looks for
-	 * @param contextPath
-	 *            the XPath to query
-	 * @param mustBePresent
-	 *            must resolution find a match
-	 * @param xpathVersion
-	 *            the XPath version to use, which must be a valid XPath version string (the
-	 *            identifier for XPath 1.0 is provided in <code>PolicyMetaData</code>)
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setDataType(java.lang
+	 * .String)
 	 */
-	public AttributeSelector(String type, String contextPath, boolean mustBePresent, String xpathVersion)
+	@Override
+	public final void setDataType(String value)
 	{
-		this(type, contextPath, null, mustBePresent, xpathVersion);
+		// prevent de-synchronization of dataType with returnType while keeping field final
+		throw UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION;
 	}
-	
-	public AttributeSelector(String type, String contextPath, Node policyRoot, boolean mustBePresent, String xpathVersion)
-	{
-		this.type = URI.create(type); 
-		this.path = contextPath;
-		this.mustBePresent = mustBePresent;
-		this.xpathVersion = xpathVersion;
-		this.policyRoot = policyRoot;
 
-		this.dataType = type;
-		/*
-		 * FIXME: why assign Xpath value to contextSelectorId? 
-		 */
-		this.contextSelectorId = contextPath;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setCategory(java.lang
+	 * .String)
+	 */
+	@Override
+	public final void setCategory(String value)
+	{
+		// prevent de-synchronization with this.attrGUID's Category while keeping field final
+		throw UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION;
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setAttributeId(java.lang
+	 * .String)
+	 */
+	@Override
+	public final void setContextSelectorId(String value)
+	{
+		// prevent de-synchronization of this.attrGUID's AttributeId while keeping field final
+		throw UNSUPPORTED_CONTEXT_SELECTOR_ID_SET_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setDataType(java.lang
+	 * .String)
+	 */
+	@Override
+	public final void setPath(String value)
+	{
+		// prevent de-synchronization of Path with xpathExpr while keeping field final
+		throw UNSUPPORTED_PATH_SET_OPERATION_EXCEPTION;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
+	 */
+	@Override
+	public boolean isStatic()
+	{
+		// depends on the evaluation context
+		return false;
+	}
+
 	/**
+	 * Creates instance from XACML model
 	 * 
 	 * @param attrSelectorElement
-	 * @param xpathVersion
+	 *            XACML AttributeSelector
+	 * @param xPathCompiler
+	 *            XPATH compiler used for compiling {@code attrSelectorElement.getPath()} and XPath
+	 *            given by {@code attrSelectorElement.getContextSelectorId()} if not null
+	 * @param attrFinder
+	 *            AttributeFinder for finding value of the attribute identified by ContextSelectorId
+	 *            in {@code attrSelectorElement}; may be null if ContextSelectorId not specified
+	 * @param attrFactory
+	 *            attribute factory to create the AttributeValue(s) from the XML node(s) resolved by
+	 *            XPath
+	 * @throws XPathExpressionException
+	 *             if the Path could not be compiled to an XPath expression (using
+	 *             <code>namespaceContextNode</code> if non-null)
+	 * @throws IllegalArgumentException
+	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is
+	 *             null; or ContextSelectorId is not null but {@code attrFinder} is null
 	 */
-	public AttributeSelector(AttributeSelectorType attrSelectorElement, PolicyMetaData metaData)
+	public AttributeSelector(AttributeSelectorType attrSelectorElement, XPathCompiler xPathCompiler, AttributeFinder attrFinder, AttributeValue.Factory<AV> attrFactory) throws XPathExpressionException, IllegalArgumentException
 	{
-		this.type = URI.create(attrSelectorElement.getDataType());
-		this.path = attrSelectorElement.getPath();
-		this.mustBePresent = attrSelectorElement.isMustBePresent();
+		if (attrSelectorElement == null)
+		{
+			throw NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION;
+		}
+
+		if (attrFactory == null)
+		{
+			throw NULL_ATTRIBUTE_FACTORY_EXCEPTION;
+		}
+
+		if (xPathCompiler == null)
+		{
+			throw NULL_XPATH_COMPILER_EXCEPTION;
+		}
+
+		// JAXB attributes
+		this.category = attrSelectorElement.getCategory();
 		this.dataType = attrSelectorElement.getDataType();
+		this.mustBePresent = attrSelectorElement.isMustBePresent();
 		this.contextSelectorId = attrSelectorElement.getContextSelectorId();
-		
-		this.xpathVersion = metaData.getXPathIdentifier();
+		this.path = attrSelectorElement.getPath();
+
+		// others
+		if (contextSelectorId == null)
+		{
+			this.contextSelectorGUID = null;
+			this.attrFinder = null;
+			this.missingContextSelectorAttributeExceptionMessage = null;
+			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category + "'";
+			this.xpathCompiler = null;
+		} else
+		{
+			if (attrFinder == null)
+			{
+				throw NULL_ATTRIBUTE_FINDER_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION;
+			}
+
+			this.contextSelectorGUID = new AttributeGUID(category, null, contextSelectorId);
+			this.attrFinder = attrFinder;
+			this.missingContextSelectorAttributeExceptionMessage = this + ": No value found for attribute designated by Category=" + category + " and ContextSelectorId=" + contextSelectorId;
+			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category + "' selected by ContextSelectorId='" + contextSelectorId + "'";
+			this.xpathCompiler = xPathCompiler;
+		}
+
+		this.id = new AttributeSelectorId(attrSelectorElement);
+		this.attrFactory = attrFactory;
+		this.returnType = attrFactory.getBagDatatype();
+		this.xpathEvaluator = new XPathEvaluator(path, xPathCompiler);
+
+		// error messages/exceptions
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.id + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
+		this.missingAttributeMessage = this + " not found in context";
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
 	}
 
 	/**
-	 * Creates a new <code>AttributeSelector</code> based on the DOM root of the XML type. Note that
-	 * as of XACML 1.1 the XPathVersion element is required in any policy that uses a selector, so
-	 * if the <code>xpathVersion</code> string is null, then this will throw an exception.
-	 * 
-	 * @deprecated As of 2.0 you should avoid using this method and should instead use the version
-	 *             that takes a <code>PolicyMetaData</code> instance. This method will only work for
-	 *             XACML 1.x policies.
-	 * 
-	 * @param root
-	 *            the root of the DOM tree for the XML AttributeSelectorType XML type
-	 * @param xpathVersion
-	 *            the XPath version to use, or null if this is unspecified (ie, not supplied in the
-	 *            defaults section of the policy)
-	 * 
-	 * @return an <code>AttributeSelector</code>
-	 * 
-	 * @throws ParsingException
-	 *             if the AttributeSelectorType was invalid
-	 */
-	public static AttributeSelectorType getInstance(Node root, String xpathVersion) throws ParsingException
-	{
-		return getInstance(root, new PolicyMetaData(PolicyMetaData.XACML_1_0_IDENTIFIER, xpathVersion));
-	}
-
-	public static AttributeSelectorType getInstance(Node root)
-	{
-		final JAXBElement<AttributeSelectorType> attrSelector;
-		try
-		{
-			Unmarshaller u = BindingUtility.XACML3_0_JAXB_CONTEXT.createUnmarshaller();
-			attrSelector = u.unmarshal(root, AttributeSelectorType.class);
-			return attrSelector.getValue();
-		} catch (Exception e)
-		{
-			LOGGER.error("Error unmarshalling AttributeSelector", e);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Creates a new <code>AttributeSelector</code> based on the DOM root of the XML type. Note that
-	 * as of XACML 1.1 the XPathVersion element is required in any policy that uses a selector, so
-	 * if the <code>xpathVersion</code> string is null, then this will throw an exception.
-	 * 
-	 * @param root
-	 *            the root of the DOM tree for the XML AttributeSelectorType XML type
-	 * @param metaData
-	 *            the meta-data associated with the containing policy
-	 * 
-	 * @return an <code>AttributeSelector</code>
-	 * 
-	 * @throws ParsingException
-	 *             if the AttributeSelectorType was invalid
-	 */
-	public static AttributeSelector getInstance(Node root, PolicyMetaData metaData) throws ParsingException
-	{
-		URI type = null;
-		String contextPath = null;
-		boolean mustBePresent = false;
-		String xpathVersion = metaData.getXPathIdentifier();
-
-		// make sure we were given an xpath version
-		if (xpathVersion == null)
-			throw new ParsingException("An XPathVersion is required for any policies that use selectors");
-
-		NamedNodeMap attrs = root.getAttributes();
-
-		try
-		{
-			// there's always a DataType attribute
-			type = new URI(attrs.getNamedItem("DataType").getNodeValue());
-		} catch (Exception e)
-		{
-			throw new ParsingException("Error parsing required DataType attribute in AttributeSelector", e);
-		}
-
-		try
-		{
-			// there's always a RequestPath
-			contextPath = attrs.getNamedItem("RequestContextPath").getNodeValue();
-		} catch (Exception e)
-		{
-			throw new ParsingException("Error parsing required " + "RequestContextPath attribute in " + "AttributeSelector", e);
-		}
-
-		try
-		{
-			// there may optionally be a MustBePresent
-			Node node = attrs.getNamedItem("MustBePresent");
-			if (node != null)
-				if (node.getNodeValue().equals("true"))
-					mustBePresent = true;
-		} catch (Exception e)
-		{
-			// this shouldn't happen, since we check the cases, but still...
-			throw new ParsingException("Error parsing optional attributes " + "in AttributeSelector", e);
-		}
-
-		// as of 1.2 we need the root element of the policy so we can get
-		// the namespace mapping, but in order to leave the APIs unchanged,
-		// we'll walk up the tree to find the root rather than pass this
-		// element around through all the code
-		Node policyRoot = null;
-		Node node = root.getParentNode();
-
-		while ((node != null) && (node.getNodeType() == Node.ELEMENT_NODE))
-		{
-			policyRoot = node;
-			node = node.getParentNode();
-		}
-
-		// create the new selector
-		return new AttributeSelector(type.toASCIIString(), contextPath, policyRoot, mustBePresent, xpathVersion);
-	}
-
-	public static AttributeSelector getInstance(AttributeSelectorType attrSelector)
-	{
-		return new AttributeSelector(attrSelector.getDataType(), attrSelector.getContextSelectorId(), attrSelector.isMustBePresent(),
-				attrSelector.getPath());
-	}
-
-	/**
-	 * Returns the data type of the attribute values that this selector will resolve
+	 * Returns the data type of the attribute values that the evaluation of this selector will
+	 * return
 	 * 
 	 * @return the data type of the values found by this selector
 	 */
-	public URI getType()
+	@Override
+	public Datatype<Bag<AV>> getReturnType()
 	{
-		return type;
+		return this.returnType;
+	}
+
+	private void validateResult(Bag<AV> result) throws IndeterminateEvaluationException
+	{
+		if (mustBePresent && result.isEmpty())
+		{
+			throw new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, result.getReasonWhyEmpty());
+		}
 	}
 
 	/**
-	 * Returns the XPath query used to resolve attribute values.
-	 * 
-	 * @return the XPath query
-	 */
-	public String getContextPath()
-	{
-		return path;
-	}
-
-	/**
-	 * Returns whether or not a value is required to be resolved by this selector.
-	 * 
-	 * @return true if a value is required, false otherwise
-	 */
-	public boolean mustBePresent()
-	{
-		return mustBePresent;
-	}
-
-	/**
-	 * Always returns true, since a selector always returns a bag of attribute values.
-	 * 
-	 * @return true
-	 */
-	public boolean returnsBag()
-	{
-		return true;
-	}
-
-	/**
-	 * Always returns true, since a selector always returns a bag of attribute values.
-	 * 
-	 * @deprecated As of 2.0, you should use the <code>returnsBag</code> method from the
-	 *             super-interface <code>Expression</code>.
-	 * 
-	 * @return true
-	 */
-	public boolean evaluatesToBag()
-	{
-		return true;
-	}
-
-	/**
-	 * Always returns an empty list since selectors never have children.
-	 * 
-	 * @return an empty <code>List</code>
-	 */
-	public List getChildren()
-	{
-		return Collections.EMPTY_LIST;
-	}
-
-	/**
-	 * Returns the XPath version this selector is supposed to use. This is typically provided by the
-	 * defaults section of the policy containing this selector.
-	 * 
-	 * @return the XPath version
-	 */
-	public String getXPathVersion()
-	{
-		return xpathVersion;
-	}
-
-	/**
-	 * Invokes the <code>AttributeFinder</code> used by the given <code>EvaluationCtx</code> to try
-	 * to resolve an attribute value. If the selector is defined with MustBePresent as true, then
-	 * failure to find a matching value will result in Indeterminate, otherwise it will result in an
-	 * empty bag. To support the basic selector functionality defined in the XACML specification,
-	 * use a finder that has only the <code>SelectorModule</code> as a module that supports selector
-	 * finding.
+	 * Invokes the <code>AttributeFinder</code> used by the given <code>EvaluationContext</code> to
+	 * try to resolve an attribute value. If the selector is defined with MustBePresent as true,
+	 * then failure to find a matching value will result in Indeterminate, otherwise it will result
+	 * in an empty bag. To support the com.thalesgroup.authzforce.core.test.basic selector
+	 * functionality defined in the XACML specification, use a finder that has only the
+	 * <code>SelectorModule</code> as a module that supports selector finding.
 	 * 
 	 * @param context
 	 *            representation of the request to search
@@ -342,80 +383,194 @@ public class AttributeSelector extends AttributeSelectorType implements Evaluata
 	 * @return a result containing a bag either empty because no values were found or containing at
 	 *         least one value, or status associated with an Indeterminate result
 	 */
-	public EvaluationResult evaluate(EvaluationCtx context)
+	@Override
+	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		// query the context
-		EvaluationResult result = context.getAttribute(path, policyRoot, type, xpathVersion);
-
-		// see if we got anything
-		if (!result.indeterminate())
+		if (context == null)
 		{
-			BagAttribute bag = (BagAttribute) (result.getAttributeValue());
+			throw missingAttributeBecauseNullContextException;
+		}
 
-			// see if it's an empty bag
-			if (bag.isEmpty())
+		final Bag<AV> ctxResult = context.getAttributeSelectorResult(id, returnType);
+		// IF AttributeSelector already resolved in context
+		if (ctxResult != null)
+		{
+			validateResult(ctxResult);
+			return ctxResult;
+		}
+
+		// ELSE AttributeSelector not yet resolved in context, we have to do it now
+		// get the DOM root of the request document
+		final XdmNode contentNode = context.getAttributesContent(category);
+		try
+		{
+			if (contentNode == null)
 			{
-				// see if this is an error or not
-				if (mustBePresent)
-				{
-					// this is an error
-					LOGGER.info("AttributeSelector failed to resolve a value for a required attribute: {} ", path);
+				throw this.missingAttributesContentException;
+			}
 
-					ArrayList code = new ArrayList();
-					code.add(Status.STATUS_MISSING_ATTRIBUTE);
-					String message = "couldn't resolve XPath expression " + path + " for type " + type.toString();
-					return new EvaluationResult(new Status(code, message));
-				} else
-				{
-					// return the empty bag
-					return result;
-				}
+			final XdmItem contextNode;
+			if (contextSelectorGUID == null)
+			{
+				contextNode = contentNode;
 			} else
 			{
-				// return the values
-				return result;
+				final Bag<XPathAttributeValue> bag = attrFinder.findAttribute(contextSelectorGUID, context, DatatypeConstants.XPATH.BAG_TYPE);
+				if (bag == null)
+				{
+					throw this.missingAttributeForUnknownReasonException;
+				}
+
+				if (bag.isEmpty())
+				{
+					throw new IndeterminateEvaluationException(missingContextSelectorAttributeExceptionMessage, Status.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
+				}
+
+				final String contextSelectorPath = bag.one().getUnderlyingValue();
+				try
+				{
+					contextNode = xpathCompiler.evaluateSingle(contextSelectorPath, contentNode);
+				} catch (SaxonApiException e)
+				{
+					throw new IndeterminateEvaluationException(this + ": Error evaluating XPath='" + contextSelectorPath + "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR, e);
+				}
+
+				if (contextNode == null)
+				{
+					throw new IndeterminateEvaluationException(this + ": No node returned by evaluation of XPath='" + contextSelectorPath + "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
+				}
 			}
-		} else
+
+			/*
+			 * An XPathExecutable is immutable, and therefore thread-safe. It is simpler to load a
+			 * new XPathSelector each time the expression is to be evaluated. However, the
+			 * XPathSelector is serially reusable within a single thread. See Saxon Javadoc.
+			 */
+			final XPathSelector xpathSelector = xpathEvaluator.load();
+			final XdmValue xpathEvalResult;
+			try
+			{
+				xpathSelector.setContextItem(contextNode);
+				xpathEvalResult = xpathSelector.evaluate();
+			} catch (SaxonApiException e)
+			{
+				throw new IndeterminateEvaluationException(this.xpathEvalExceptionMessage, Status.STATUS_SYNTAX_ERROR, e);
+			}
+
+			// preserve order of results
+			final Queue<AV> resultBag = new ArrayDeque<>();
+			int xpathEvalResultItemIndex = 0;
+			for (final XdmItem xpathEvalResultItem : xpathEvalResult)
+			{
+				final AttributeValueType jaxbAttrVal;
+				if (xpathEvalResultItem instanceof XdmAtomicValue)
+				{
+					final String strVal = xpathEvalResultItem.getStringValue();
+					jaxbAttrVal = new AttributeValueType(Collections.<Serializable> singletonList(strVal), dataType, null);
+				} else if (xpathEvalResultItem instanceof XdmNode)
+				{
+					try
+					{
+						jaxbAttrVal = xdmToJaxbAttributeValue(dataType, (XdmNode) xpathEvalResultItem);
+					} catch (ParsingException e)
+					{
+						throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + dataType + "' from result #" + xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category
+								+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, Status.STATUS_SYNTAX_ERROR, e);
+					}
+				} else
+				{
+					throw new IndeterminateEvaluationException(this + ": Invalid type of result #" + xpathEvalResultItemIndex + " from evaluating XPath against XML node from Content of Attributes Category='" + category
+							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + xpathEvalResultItem.getClass().getName(), Status.STATUS_SYNTAX_ERROR);
+				}
+
+				final XPathCompiler defXPathCompiler = context.getDefaultXPathCompiler();
+				final AttributeValue<?> attrVal;
+				try
+				{
+					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), defXPathCompiler == null ? this.xpathCompiler : defXPathCompiler);
+				} catch (IllegalArgumentException e)
+				{
+					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + dataType + "' from result #" + xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category
+							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, Status.STATUS_SYNTAX_ERROR, e);
+				}
+
+				resultBag.add(returnType.getElementType().cast(attrVal));
+				xpathEvalResultItemIndex++;
+			}
+
+			final Bag<AV> result = Bags.getInstance(returnType, resultBag);
+			context.putAttributeSelectorResultIfAbsent(id, result);
+			validateResult(result);
+			return result;
+		} catch (IndeterminateEvaluationException e)
 		{
-			// return the error
+			/**
+			 * If error occurred, we put the empty value to prevent retry in the same context, which
+			 * may succeed at another time in the same context, resulting in different value of the
+			 * same attribute at different times during evaluation within the same context,
+			 * therefore inconsistencies. The value(s) must remain constant during the evaluation
+			 * context, as explained in section 7.3.5 Attribute Retrieval of XACML core spec:
+			 * <p>
+			 * Regardless of any dynamic modifications of the request context during policy
+			 * evaluation, the PDP SHALL behave as if each bag of attribute values is fully
+			 * populated in the context before it is first tested, and is thereafter immutable
+			 * during evaluation. (That is, every subsequent test of that attribute shall use 3313
+			 * the same bag of values that was initially tested.)
+			 * </p>
+			 * Therefore, if no value found, we keep it that way until evaluation is done for the
+			 * current request context.
+			 * <p>
+			 * We could put the null value to indicate the evaluation error, instead of an empty
+			 * Bag, but it would make the result of the code used at the start of this method
+			 * ambiguous/confusing:
+			 * <p>
+			 * <code>
+			 * final Bag<T> contextBag = context.getAttributeSelectorResult(id,...)
+			 * </code>
+			 * </p>
+			 * <p>
+			 * Indeed, contextBag could be null for one of these two reasons:
+			 * <ol>
+			 * <li>The attribute selector has never been requested in this context;
+			 * <li>It has been requested before in this context but could not be found: error
+			 * occurred (IndeterminateEvaluationException)</li>
+			 * </ol>
+			 * To avoid this confusion, we put an empty Bag (with some error info saying why this is
+			 * empty).
+			 * </p>
+			 */
+			final Bag<AV> result = Bags.empty(returnType, e);
+			context.putAttributeSelectorResultIfAbsent(id, result);
+			validateResult(result);
 			return result;
 		}
 	}
 
-	/**
-	 * Encodes this selector into its XML representation and writes this encoding to the given
-	 * <code>OutputStream</code> with no indentation.
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
+	 * @see java.lang.Object#toString()
 	 */
-	public void encode(OutputStream output)
+	@Override
+	public String toString()
 	{
-		encode(output, new Indenter(0));
+		/*
+		 * Because this class is immutable (excluding toString which is derived from others), we can
+		 * do caching (and lazy init) of this method result.
+		 */
+		if (toString == null)
+		{
+			toString = "AttributeSelector [" + (category != null ? "category=" + category + ", " : "") + (contextSelectorId != null ? "contextSelectorId=" + contextSelectorId + ", " : "") + (path != null ? "path=" + path + ", " : "") + (dataType != null ? "dataType=" + dataType + ", " : "")
+					+ "mustBePresent=" + mustBePresent + "]";
+		}
+
+		return toString;
 	}
 
-	/**
-	 * Encodes this selector into its XML representation and writes this encoding to the given
-	 * <code>OutputStream</code> with indentation.
-	 * 
-	 * @param output
-	 *            a stream into which the XML-encoded data is written
-	 * @param indenter
-	 *            an object that creates indentation strings
-	 */
-	public void encode(OutputStream output, Indenter indenter)
+	@Override
+	public JAXBElement<AttributeSelectorType> getJAXBElement()
 	{
-		PrintStream out = new PrintStream(output);
-		String indent = indenter.makeString();
-
-		String tag = "<AttributeSelector RequestContextPath=\"" + path + "\" DataType=\"" + type.toString() + "\"";
-
-		if (mustBePresent)
-			tag += " MustBePresent=\"true\"";
-
-		tag += "/>";
-
-		out.println(indent + tag);
+		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeSelector(this);
 	}
 
 }
