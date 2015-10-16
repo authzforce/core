@@ -161,21 +161,9 @@
 								<exclude>**/*.gitignore</exclude>
 							</excludes>
 							<includes>
-								<include>src/main/java/com/sun/xacml/xacmlv3/**</include>
-								<include>src/main/java/com/sun/xacml/cond/xacmlv3/**</include>
-								<include>src/main/java/com/sun/xacml/ctx/xacmlv3/**</include>
-								<include>src/main/java/com/sun/xacml/CacheManager.java</include>
-								<include>src/main/java/com/sun/xacml/ObligationExpressions.java</include>
-								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</include>
-								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</include>
-								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
-								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
-								<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
 								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
 								<!-- Include test files also -->
 								<include>src/test/java/**</include>
-								<!-- Include aspectj files also -->
-								<include>src/main/aspect/**</include>
 							</includes>
 						</configuration>
 						<goals>
