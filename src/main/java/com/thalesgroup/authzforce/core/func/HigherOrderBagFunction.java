@@ -686,7 +686,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 
 		protected abstract BooleanAttributeValue evaluate(FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall, Bag<?> bag0Vals, Bag<?> bag1Vals, EvaluationContext context) throws IndeterminateEvaluationException;
 
-		protected final BooleanAttributeValue evaluate(FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall, Expression<Bag<?>> inputBag0, Expression<Bag<?>> inputBag1, EvaluationContext context) throws IndeterminateEvaluationException
+		protected final BooleanAttributeValue evaluate(FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall, Expression<? extends Bag<?>> inputBag0, Expression<? extends Bag<?>> inputBag1, EvaluationContext context) throws IndeterminateEvaluationException
 		{
 			final Bag<?> bag0Vals;
 			try
@@ -727,10 +727,10 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 		private class TwoBagFunctionCall implements FunctionCall<BooleanAttributeValue>
 		{
 			private final FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall;
-			private final Expression<Bag<?>> input0;
-			private final Expression<Bag<?>> input1;
+			private final Expression<? extends Bag<?>> input0;
+			private final Expression<? extends Bag<?>> input1;
 
-			protected TwoBagFunctionCall(FirstOrderFunction<BooleanAttributeValue> subFunc, Expression<Bag<?>> input0, Expression<Bag<?>> input1)
+			protected TwoBagFunctionCall(FirstOrderFunction<BooleanAttributeValue> subFunc, Expression<? extends Bag<?>> input0, Expression<? extends Bag<?>> input1)
 			{
 				final Datatype<?>[] subFuncArgTypes = { input0.getReturnType().getTypeParameter(), input1.getReturnType().getTypeParameter() };
 				this.subFuncCall = subFunc.newCall(Collections.EMPTY_LIST, subFuncArgTypes);
@@ -767,8 +767,8 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 				}
 			}
 
-			final Expression<Bag<?>> input0 = (Expression<Bag<?>>) inputsAfterSubFunc.get(0);
-			final Expression<Bag<?>> input1 = (Expression<Bag<?>>) inputsAfterSubFunc.get(1);
+			final Expression<? extends Bag<?>> input0 = (Expression<? extends Bag<?>>) inputsAfterSubFunc.get(0);
+			final Expression<? extends Bag<?>> input1 = (Expression<? extends Bag<?>>) inputsAfterSubFunc.get(1);
 			return new TwoBagFunctionCall(subFunc, input0, input1);
 		}
 	}
