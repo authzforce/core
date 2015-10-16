@@ -21,6 +21,9 @@ package com.thalesgroup.authzforce.core.attr;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an X.500 Directory Name.
  * 
@@ -104,12 +107,6 @@ public class X500NameAttributeValue extends SimpleAttributeValue<String, X500Nam
 		return other.ldapName.startsWith(this.ldapName.getRdns());
 	}
 
-	@Override
-	public X500NameAttributeValue one()
-	{
-		return this;
-	}
-
 	private int hashCode = 0;
 
 	@Override
@@ -140,6 +137,12 @@ public class X500NameAttributeValue extends SimpleAttributeValue<String, X500Nam
 		 * This equals() has the same effect as the algorithm described in the spec
 		 */
 		return ldapName.equals(other.ldapName);
+	}
+
+	@Override
+	public X500NameAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	{
+		return this;
 	}
 
 	// For quick testing

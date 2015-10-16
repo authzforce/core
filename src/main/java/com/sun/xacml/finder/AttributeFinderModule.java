@@ -44,7 +44,6 @@ import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
@@ -70,10 +69,8 @@ public abstract class AttributeFinderModule implements Closeable
 	 * created module's job of finding its own supported attribute values based on other attributes
 	 * in the evaluation context.
 	 * 
-	 * @param <CONF_U>
-	 *            module configuration type (JAXB-generated)
 	 */
-	public static interface DependencyAwareFactory<CONF_U>
+	public interface DependencyAwareFactory
 	{
 
 		/**
@@ -133,7 +130,7 @@ public abstract class AttributeFinderModule implements Closeable
 		 * @return a factory aware of dependencies (required attributes) possibly inferred from
 		 *         input {@code conf}
 		 */
-		public abstract DependencyAwareFactory<CONF_T> parseDependencies(CONF_T conf);
+		public abstract DependencyAwareFactory parseDependencies(CONF_T conf);
 	}
 
 	protected static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_CATEGORY_EXCEPTION = new UnsupportedOperationException("Unsupported attribute category");
@@ -216,5 +213,5 @@ public abstract class AttributeFinderModule implements Closeable
 	 * @throws IndeterminateEvaluationException
 	 *             if some error occurs, esp. error retrieving the attribute values
 	 */
-	public abstract <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> returnDatatype) throws IndeterminateEvaluationException;
+	public abstract <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, Bag.Datatype<AV> returnDatatype) throws IndeterminateEvaluationException;
 }

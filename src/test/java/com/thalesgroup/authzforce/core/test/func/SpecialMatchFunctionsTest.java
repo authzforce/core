@@ -40,7 +40,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class SpecialMatchFunctionsTest extends GeneralFunctionTest
 {
 
-	public SpecialMatchFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public SpecialMatchFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

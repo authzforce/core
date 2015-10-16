@@ -19,7 +19,6 @@
 package com.thalesgroup.authzforce.core.attr;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +36,7 @@ import org.w3c.dom.Element;
 import com.thalesgroup.authzforce.core.PdpExtension;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
-import com.thalesgroup.authzforce.core.eval.Bags;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression.Value;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * The base type for all attribute value datatypes used in a policy or request/response, this
@@ -57,11 +52,11 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  * 
  * 
  * 
- * @param <V>
+ * @param <AV>
  *            concrete type subclass
  * 
  */
-public abstract class AttributeValue<V extends AttributeValue<V>> extends AttributeValueType implements Serializable, Value<V, V>
+public abstract class AttributeValue<AV extends AttributeValue<AV>> extends AttributeValueType implements Serializable, Value<AV>
 {
 	/**
 	 * XML datatype factory for parsing XML-Schema-compliant date/time/duration values into Java
@@ -86,22 +81,23 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 	/**
 	 * Datatype-specific Attribute Value Factory.
 	 * 
-	 * @param <AV>
-	 *            type of attribute values created by this factory
+	 * @param <INSTANCE_AV>
+	 *            type of instance (attribute values) created by this factory
 	 */
-	public static abstract class Factory<AV extends AttributeValue<AV>> implements PdpExtension
+	public static abstract class Factory<INSTANCE_AV extends AttributeValue<INSTANCE_AV>> implements PdpExtension
 	{
 		private static final IllegalArgumentException NULL_DATATYPE_CLASS_EXCEPTION = new IllegalArgumentException("Undefined instanceClass argument");
 		private static final IllegalArgumentException NULL_DATATYPE_ID_EXCEPTION = new IllegalArgumentException("Undefined datatypeId argument");
 
-		protected final Datatype<AV> instanceDatatype;
-		private final Bag<AV> emptyBag;
+		protected final Datatype<INSTANCE_AV> instanceDatatype;
+		private final Bag<INSTANCE_AV> emptyBag;
+		private final Bag.Datatype<INSTANCE_AV> bagDatatype;
 
 		// cached method result
 		private int hashCode = 0;
 		private String toString = null;
 
-		protected Factory(Class<AV> instanceClass, String datatypeId)
+		protected Factory(Class<INSTANCE_AV> instanceClass, String datatypeId)
 		{
 			if (instanceClass == null)
 			{
@@ -114,7 +110,8 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 			}
 
 			this.instanceDatatype = new Datatype<>(instanceClass, datatypeId);
-			this.emptyBag = Bags.empty(instanceDatatype);
+			this.bagDatatype = Bag.Datatype.getInstance(instanceDatatype);
+			this.emptyBag = Bag.empty(bagDatatype, null);
 		}
 
 		@Override
@@ -128,7 +125,7 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 		 * 
 		 * @return supported attribute value datatype
 		 */
-		public final Datatype<AV> getDatatype()
+		public final Datatype<INSTANCE_AV> getDatatype()
 		{
 			return instanceDatatype;
 		}
@@ -138,7 +135,7 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 		 * 
 		 * @return empty bag
 		 */
-		public Bag<AV> getEmptyBag()
+		public Bag<INSTANCE_AV> getEmptyBag()
 		{
 			return emptyBag;
 		}
@@ -148,9 +145,9 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 		 * 
 		 * @return empty bag
 		 */
-		public BagDatatype<AV> getBagDatatype()
+		public Bag.Datatype<INSTANCE_AV> getBagDatatype()
 		{
-			return emptyBag.getDatatype();
+			return bagDatatype;
 		}
 
 		/**
@@ -169,7 +166,7 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 		 *             if content/otherAttributes are not valid for the datatype handled by this
 		 *             factory
 		 */
-		public abstract AV getInstance(List<Serializable> content, Map<QName, String> otherAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException;
+		public abstract INSTANCE_AV getInstance(List<Serializable> content, Map<QName, String> otherAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException;
 
 		/*
 		 * (non-Javadoc)
@@ -233,14 +230,11 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 		}
 	}
 
-	private static IllegalArgumentException UNDEF_ATTR_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute datatype");
+	private static final IllegalArgumentException UNDEF_ATTR_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute datatype");
 
 	private static final UnsupportedOperationException UNSUPPORTED_SET_DATATYPE_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeValue.setDataType() not allowed");
 
-	private final Datatype<V> datatype;
-
-	// cached method result(s)
-	private V[] all = null;
+	private final Datatype<AV> datatype;
 
 	/*
 	 * (non-Javadoc)
@@ -268,7 +262,7 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 	 * @throws IllegalArgumentException
 	 *             if {@code datatype == null}
 	 */
-	protected AttributeValue(Datatype<V> datatype, List<Serializable> content, Map<QName, String> otherAttributes) throws IllegalArgumentException
+	protected AttributeValue(Datatype<AV> datatype, List<Serializable> content, Map<QName, String> otherAttributes) throws IllegalArgumentException
 	{
 		// assert datatype != null;
 		// assert content != null;
@@ -294,7 +288,7 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 	}
 
 	@Override
-	public Datatype<V> getReturnType()
+	public Datatype<AV> getReturnType()
 	{
 		return this.datatype;
 	}
@@ -303,24 +297,6 @@ public abstract class AttributeValue<V extends AttributeValue<V>> extends Attrib
 	public JAXBElement<AttributeValueType> getJAXBElement()
 	{
 		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeValue(this);
-	}
-
-	@Override
-	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
-	{
-		return one();
-	}
-
-	@Override
-	public V[] all()
-	{
-		if (all == null)
-		{
-			all = (V[]) Array.newInstance(datatype.getValueClass(), 1);
-			all[0] = one();
-		}
-
-		return all;
 	}
 
 }

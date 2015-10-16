@@ -65,8 +65,8 @@
 			<version>9.6.0-5</version>
 		</dependency>
 		<!-- Authzforce dependencies -->
-		<!-- xml-ns-model and xacml-model dependencies are declared here only to work around maven-jaxb2-plugin bug: cannot resolve 
-			episodes from indirect dependencies with useDependenciesAsEpisodes option. -->
+		<!-- xml-ns-model and xacml-model dependencies are declared here only to work around maven-jaxb2-plugin 
+			bug: cannot resolve episodes from indirect dependencies with useDependenciesAsEpisodes option. -->
 		<dependency>
 			<groupId>com.thalesgroup.authzforce</groupId>
 			<artifactId>authzforce-xml-ns-model</artifactId>
@@ -115,19 +115,20 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- TO BE UNCOMMENTED BEFORE RELEASE TO CHECK POSSIBLE BUGS -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.codehaus.mojo</groupId> -->
+<!-- 				<artifactId>findbugs-maven-plugin</artifactId> -->
+<!-- 				<version>3.0.1</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<phase>verify</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>check</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 			<plugin>
 				<!-- Apache license Headers -->
 				<groupId>com.mycila</groupId>
@@ -164,8 +165,6 @@
 								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
 								<!-- Include test files also -->
 								<include>src/test/java/**</include>
-								<!-- Include aspectj files also -->
-								<include>src/main/aspect/**</include>
 							</includes>
 						</configuration>
 						<goals>
@@ -213,8 +212,8 @@
 					<extension>true</extension>
 					<useDependenciesAsEpisodes>true</useDependenciesAsEpisodes>
 					<strict>false</strict>
-					<catalog>src/main/jaxb/catalog.xml</catalog>
 					<removeOldOutput>true</removeOldOutput>
+					<catalog>src/main/jaxb/catalog.xml</catalog>
 					<bindingDirectory>src/main/jaxb</bindingDirectory>
 					<bindingIncludes>
 						<include>bindings.xjb</include>

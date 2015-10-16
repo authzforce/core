@@ -33,6 +33,7 @@
  */
 package com.sun.xacml.cond;
 
+import java.util.Deque;
 import java.util.List;
 
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
@@ -71,12 +72,12 @@ public class NotFunction extends FirstOrderFunction<BooleanAttributeValue>
 	@Override
 	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, BooleanAttributeValue>(signature, BooleanAttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, BooleanAttributeValue>(signature, DatatypeConstants.BOOLEAN.TYPE, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected BooleanAttributeValue evaluate(BooleanAttributeValue[] args) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(Deque<BooleanAttributeValue> args) throws IndeterminateEvaluationException
 			{
-				return eval(args[0]);
+				return eval(args.getFirst());
 			}
 
 		};

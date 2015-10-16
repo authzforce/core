@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 
@@ -34,7 +33,7 @@ import com.thalesgroup.authzforce.core.eval.Expression;
  * @param <RETURN>
  *            function return type
  */
-public abstract class FirstOrderFunction<RETURN extends Expression.Value<?, RETURN>> extends Function<RETURN>
+public abstract class FirstOrderFunction<RETURN extends Expression.Value<RETURN>> extends Function<RETURN>
 {
 	protected final FunctionSignature<RETURN> signature;
 
@@ -86,7 +85,7 @@ public abstract class FirstOrderFunction<RETURN extends Expression.Value<?, RETU
 	 *            <code>inputExpressions</code> because only the type is known. Therefore, only
 	 *            their type is checked, and the actual expression may be specified later as last
 	 *            parameter when calling
-	 *            {@link FirstOrderFunctionCall#evaluate(EvaluationContext, boolean, AttributeValue...)}
+	 *            {@link FirstOrderFunctionCall#evaluate(EvaluationContext, boolean, com.thalesgroup.authzforce.core.AttributeValue...)}
 	 *            at evaluation time, via the returned <code>FunctionCall</code>.
 	 * @return Function call handle for calling this function which such inputs (with possible
 	 *         changes from original inputs due to optimizations for instance)

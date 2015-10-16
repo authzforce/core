@@ -20,6 +20,9 @@ package com.thalesgroup.authzforce.core.attr;
 
 import javax.xml.datatype.Duration;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an xs:dayTimeDuration value. This class supports parsing xs:dayTimeDuration
  * values. All objects of this class are immutable and thread-safe.
@@ -66,7 +69,7 @@ public class DayTimeDurationAttributeValue extends DurationAttributeValue<DayTim
 	}
 
 	@Override
-	public DayTimeDurationAttributeValue one()
+	public DayTimeDurationAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

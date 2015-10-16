@@ -22,6 +22,9 @@ import java.util.Locale;
 
 import javax.xml.bind.DatatypeConverter;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an xs:string value. This class supports parsing xs:string values. All objects
  * of this class are immutable and all methods of the class are thread-safe.
@@ -123,7 +126,7 @@ public class StringAttributeValue extends SimpleAttributeValue<String, StringAtt
 	}
 
 	@Override
-	public StringAttributeValue one()
+	public StringAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

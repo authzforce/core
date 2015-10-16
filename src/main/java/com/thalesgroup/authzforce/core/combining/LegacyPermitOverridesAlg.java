@@ -35,7 +35,7 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
  * evaluation, this class also supports the Ordered Permit Overrides algorithm.
  * 
  */
-public class LegacyPermitOverridesAlg extends CombiningAlgorithm<Decidable>
+public final class LegacyPermitOverridesAlg extends CombiningAlgorithm<Decidable>
 {
 	/**
 	 * The standard URIs used to identify this algorithm

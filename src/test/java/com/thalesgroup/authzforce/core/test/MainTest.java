@@ -18,10 +18,6 @@
  */
 package com.thalesgroup.authzforce.core.test;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -30,8 +26,6 @@ import org.junit.runners.Suite.SuiteClasses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.test.attr.AnyURIAttributeTest;
 import com.thalesgroup.authzforce.core.test.conformance.ConformanceV3FromV2;
 import com.thalesgroup.authzforce.core.test.conformance.ConformanceV3Others;
@@ -81,15 +75,6 @@ public class MainTest
 	public static void tearDownClass()
 	{
 		LOGGER.info("Finishing Tests");
-	}
-
-	public static void main(String[] args)
-	{
-		Collection<? extends AttributeValue<?>> values = Collections.unmodifiableCollection(Arrays.asList(BooleanAttributeValue.TRUE, BooleanAttributeValue.FALSE));
-		// values.add(BooleanAttributeValue.TRUE);
-		// values.add(BooleanAttributeValue.FALSE);
-		Collection<BooleanAttributeValue> boolValues = (Collection) values;
-		System.out.println(boolValues);
 	}
 
 }

@@ -20,6 +20,7 @@ package com.thalesgroup.authzforce.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -43,7 +44,7 @@ import com.thalesgroup.authzforce.core.func.FunctionCall;
  * @param <V>
  *            evaluation's return type
  */
-public class Apply<V extends Expression.Value<?, V>> extends ApplyType implements Expression<V>
+public final class Apply<V extends Expression.Value<V>> extends ApplyType implements Expression<V>
 {
 	private final FunctionCall<V> functionCall;
 
@@ -61,7 +62,7 @@ public class Apply<V extends Expression.Value<?, V>> extends ApplyType implement
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType#setFunctionId(java.lang.String)
 	 */
 	@Override
-	public final void setFunctionId(String value)
+	public void setFunctionId(String value)
 	{
 		// Make it read-only to avoid being de-synchronized with functionCall field derived from it
 		throw UNSUPPORTED_FUNCTION_ID_CHANGE_EXCEPTION;
@@ -92,7 +93,7 @@ public class Apply<V extends Expression.Value<?, V>> extends ApplyType implement
 	 *             for this function; or if all {@code xprs} are static but calling the function
 	 *             statically (with these static arguments) failed
 	 */
-	public static Apply<?> getInstance(ApplyType xacmlApply, XPathCompiler xPathCompiler, Expression.Factory expFactory, List<String> longestVarRefChain) throws ParsingException
+	public static Apply<?> getInstance(ApplyType xacmlApply, XPathCompiler xPathCompiler, Expression.Factory expFactory, Deque<String> longestVarRefChain) throws ParsingException
 	{
 		if (xacmlApply == null)
 		{

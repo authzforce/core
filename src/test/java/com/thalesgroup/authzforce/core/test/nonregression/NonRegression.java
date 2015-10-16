@@ -176,7 +176,7 @@ public class NonRegression
 		final URL reqFileURL = ResourceUtils.getURL(testResourceLocationPrefix + REQUEST_FILENAME);
 		final Unmarshaller xacmlUnmarshaller = XACMLBindingUtils.createXacml3Unmarshaller();
 		final Request request = (Request) xacmlUnmarshaller.unmarshal(reqFileURL);
-		LOGGER.debug("XACML Request that is sent to the PDP: {}", TestUtils.printRequest(request));
+		LOGGER.debug("XACML Request that is sent to the PDP: {}", request);
 		final Response response = pdp.evaluate(request);
 		LOGGER.debug("XACML Response that is received from the PDP: {}", response);
 		final URL expectedRespFileURL = ResourceUtils.getURL(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);

@@ -19,8 +19,12 @@
 package com.thalesgroup.authzforce.core.attr;
 
 import java.math.BigInteger;
+import java.util.Deque;
 
 import javax.xml.bind.DatatypeConverter;
+
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * Representation of an xs:integer value. This class supports parsing xs:integer values. All objects
@@ -113,28 +117,24 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	}
 
 	@Override
-	public IntegerAttributeValue add(IntegerAttributeValue[] others, int offset)
+	public IntegerAttributeValue add(Deque<IntegerAttributeValue> others)
 	{
-		checkOffset(others, offset);
-
 		BigInteger sum = value;
-		for (int i = offset; i < others.length; i++)
+		while (!others.isEmpty())
 		{
-			sum = sum.add(others[i].value);
+			sum = sum.add(others.poll().value);
 		}
 
 		return new IntegerAttributeValue(sum);
 	}
 
 	@Override
-	public IntegerAttributeValue multiply(IntegerAttributeValue[] others, int offset)
+	public IntegerAttributeValue multiply(Deque<IntegerAttributeValue> others)
 	{
-		checkOffset(others, offset);
-
 		BigInteger product = value;
-		for (int i = offset; i < others.length; i++)
+		while (!others.isEmpty())
 		{
-			product = product.multiply(others[i].value);
+			product = product.multiply(others.poll().value);
 		}
 
 		return new IntegerAttributeValue(product);
@@ -216,7 +216,7 @@ public class IntegerAttributeValue extends NumericAttributeValue<BigInteger, Int
 	}
 
 	@Override
-	public IntegerAttributeValue one()
+	public IntegerAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

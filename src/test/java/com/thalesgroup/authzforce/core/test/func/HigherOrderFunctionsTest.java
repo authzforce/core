@@ -34,7 +34,7 @@ import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bags;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Value;
 import com.thalesgroup.authzforce.core.test.utils.TestUtils;
@@ -42,7 +42,7 @@ import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 @RunWith(Parameterized.class)
 public class HigherOrderFunctionsTest extends GeneralFunctionTest
 {
-	public HigherOrderFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public HigherOrderFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}
@@ -66,89 +66,89 @@ public class HigherOrderFunctionsTest extends GeneralFunctionTest
 				new Object[] { NAME_ANY_OF,//
 						Arrays.asList(stringEqualFunc,//
 								new StringAttributeValue("Paul"), //
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George"), new StringAttributeValue("Ringo") })),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George"), new StringAttributeValue("Ringo")))),//
 						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ANY_OF,//
 						Arrays.asList(stringEqualFunc,//
 								new StringAttributeValue("Paul"), //
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("George"), new StringAttributeValue("Ringo") })),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("John"), new StringAttributeValue("George"), new StringAttributeValue("Ringo")))),//
 						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:all-of
 				new Object[] { NAME_ALL_OF,//
 						Arrays.asList(integerEqualFunc,//
 								new IntegerAttributeValue("10"), //
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("9"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4"), new IntegerAttributeValue("2") })),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("9"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4"), new IntegerAttributeValue("2")))),//
 						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ALL_OF,//
 						Arrays.asList(integerEqualFunc,//
 								new IntegerAttributeValue("10"), //
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("9"), new IntegerAttributeValue("3"), new IntegerAttributeValue("14"), new IntegerAttributeValue("2") })),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("9"), new IntegerAttributeValue("3"), new IntegerAttributeValue("14"), new IntegerAttributeValue("2")))),//
 						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:any-of-any
 				new Object[] { NAME_ANY_OF_ANY,//
 						Arrays.asList(stringEqualFunc,//
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("Ringo"), new StringAttributeValue("Mary") }),//
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George"), new StringAttributeValue("Ringo") })),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("Ringo"), new StringAttributeValue("Mary"))),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George"), new StringAttributeValue("Ringo")))),//
 						BooleanAttributeValue.TRUE },//
 				// Example with matching string in last position in first bag
 				new Object[] { NAME_ANY_OF_ANY,//
 						Arrays.asList(stringEqualFunc,//
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("Ringo"), new StringAttributeValue("Mary") }),//
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("Mary"), new StringAttributeValue("Ringo") })),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("Ringo"), new StringAttributeValue("Mary"))),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("Mary"), new StringAttributeValue("Ringo")))),//
 						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ANY_OF_ANY,//
 						Arrays.asList(stringEqualFunc,//
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("Ringo"), new StringAttributeValue("Mary") }),//
-								Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George") })),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("Ringo"), new StringAttributeValue("Mary"))),//
+								Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("John"), new StringAttributeValue("Paul"), new StringAttributeValue("George")))),//
 						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:all-of-any
 				new Object[] { NAME_ALL_OF_ANY,//
 						Arrays.asList(integerEqualFunc,//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("10"), new IntegerAttributeValue("20") }),//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("3") })),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("10"), new IntegerAttributeValue("20"))),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("3")))),//
 						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ALL_OF_ANY,//
 						Arrays.asList(integerEqualFunc,//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("10"), new IntegerAttributeValue("20") }),//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("11"), new IntegerAttributeValue("13"), new IntegerAttributeValue("15"), new IntegerAttributeValue("19") })),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("10"), new IntegerAttributeValue("20"))),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("11"), new IntegerAttributeValue("13"), new IntegerAttributeValue("15"), new IntegerAttributeValue("19")))),//
 						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:any-of-all
 				new Object[] { NAME_ANY_OF_ALL,//
 						Arrays.asList(integerEqualFunc,//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("3"), new IntegerAttributeValue("5") }),//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") })),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("3"), new IntegerAttributeValue("5"))),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4")))),//
 						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ANY_OF_ALL,//
 						Arrays.asList(integerEqualFunc,//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("3"), new IntegerAttributeValue("4") }),//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") })),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("3"), new IntegerAttributeValue("4"))),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4")))),//
 						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:all-of-all
 				new Object[] { NAME_ALL_OF_ALL,//
 						Arrays.asList(integerEqualFunc,//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("6"), new IntegerAttributeValue("5") }),//
-								Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") })),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("6"), new IntegerAttributeValue("5"))),//
+								Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4")))),//
 						BooleanAttributeValue.TRUE },
 
 				new Object[] { NAME_ALL_OF_ALL, Arrays.asList(integerEqualFunc,//
-						Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("3"), new IntegerAttributeValue("5") }),//
-						Bags.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, new IntegerAttributeValue[] { new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4") })),//
+						Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("3"), new IntegerAttributeValue("5"))),//
+						Bag.getInstance(DatatypeConstants.INTEGER.BAG_TYPE, Arrays.asList(new IntegerAttributeValue("1"), new IntegerAttributeValue("2"), new IntegerAttributeValue("3"), new IntegerAttributeValue("4")))),//
 						BooleanAttributeValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:map
 				new Object[] { NAME_MAP, Arrays.asList(TestUtils.STD_EXPRESSION_FACTORY.getFunction("urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case"),//
-						Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("Hello"), new StringAttributeValue("World") })),//
-						Bags.getInstance(DatatypeConstants.STRING.BAG_TYPE, new StringAttributeValue[] { new StringAttributeValue("hello"), new StringAttributeValue("world") }) }//
+						Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("Hello"), new StringAttributeValue("World")))),//
+						Bag.getInstance(DatatypeConstants.STRING.BAG_TYPE, Arrays.asList(new StringAttributeValue("hello"), new StringAttributeValue("world"))) }//
 				);
 	}
 

@@ -42,11 +42,10 @@ import com.sun.xacml.finder.AttributeFinder;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * AttributeDesignator
@@ -83,7 +82,7 @@ public class AttributeDesignator<AV extends AttributeValue<AV>> extends Attribut
 	private final AttributeGUID attrGUID;
 	private final AttributeFinder attrFinder;
 	// private final Class<T> returnType;
-	private final BagDatatype<AV> returnType;
+	private final Bag.Datatype<AV> returnType;
 	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
 
@@ -172,7 +171,7 @@ public class AttributeDesignator<AV extends AttributeValue<AV>> extends Attribut
 	 *            Attribute Finder responsible for finding the attribute designated by this in a
 	 *            given evaluation context at runtime
 	 */
-	public AttributeDesignator(AttributeDesignatorType attrDesignator, BagDatatype<AV> resultDatatype, AttributeFinder attrFinder)
+	public AttributeDesignator(AttributeDesignatorType attrDesignator, Bag.Datatype<AV> resultDatatype, AttributeFinder attrFinder)
 	{
 		final String categoryURI = attrDesignator.getCategory();
 		if (categoryURI == null)

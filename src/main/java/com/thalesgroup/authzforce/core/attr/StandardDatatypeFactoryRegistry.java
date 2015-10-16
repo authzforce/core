@@ -39,7 +39,7 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue.Factory;
  * <code>DatatypeFactoryRegistry</code>) and pass this to
  * {@link BaseDatatypeFactoryRegistry#BaseDatatypeFactoryRegistry(BaseDatatypeFactoryRegistry)}.
  */
-public class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
+public final class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 {
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(StandardDatatypeFactoryRegistry.class);
@@ -84,7 +84,7 @@ public class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 	/**
 	 * Singleton instance of standard datatype factory.
 	 */
-	public static StandardDatatypeFactoryRegistry INSTANCE;
+	public static final StandardDatatypeFactoryRegistry INSTANCE;
 
 	static
 	{
@@ -95,7 +95,7 @@ public class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 		}
 
 		INSTANCE = new StandardDatatypeFactoryRegistry(attrDatatypeUriToFactoryMap);
-		LOGGER.info("Loaded XACML standard datatypes: {}", attrDatatypeUriToFactoryMap.keySet());
+		LOGGER.debug("Loaded XACML standard datatypes: {}", attrDatatypeUriToFactoryMap.keySet());
 	}
 
 	/**

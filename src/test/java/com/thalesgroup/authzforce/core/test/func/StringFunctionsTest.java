@@ -49,7 +49,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 @RunWith(Parameterized.class)
 public class StringFunctionsTest extends GeneralFunctionTest
 {
-	public StringFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public StringFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

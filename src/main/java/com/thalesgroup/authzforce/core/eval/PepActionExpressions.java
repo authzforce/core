@@ -48,7 +48,7 @@ public interface PepActionExpressions
 	 * allowed to be added to the list.
 	 * 
 	 */
-	public static class EffectSpecific
+	class EffectSpecific
 	{
 		// effect to which obligation and advice below apply
 		private final EffectType effect;

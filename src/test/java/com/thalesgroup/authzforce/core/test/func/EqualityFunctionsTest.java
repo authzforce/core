@@ -52,7 +52,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class EqualityFunctionsTest extends GeneralFunctionTest
 {
 
-	public EqualityFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public EqualityFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

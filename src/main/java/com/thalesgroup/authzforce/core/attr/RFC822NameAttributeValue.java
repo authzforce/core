@@ -23,6 +23,9 @@ import java.util.Objects;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an RFC 822 email address. The valid syntax for such a name is described in IETF
  * RFC 2821, Section 4.1.2, 4019 Command Argument Syntax, under the term "Mailbox". Mailbox =
@@ -224,35 +227,39 @@ public class RFC822NameAttributeValue extends SimpleAttributeValue<String, RFC82
 	 * 
 	 * @param args
 	 */
-	public static void main(String[] args)
-	{
-		String[] testVals = { "", "@", ".", "x@sun.com", "y@z", ".EAST.sun.com", "SUN", "Sun.com", "@Sun", "@Sun.com", "anderson@", "Anderson@", "Anderson@SUN.COM", "anderson@sun.COM", "anderson@issrg.east.SUN.COM", "anderson@issrg.sun.COM", "Anderson@issrg.northeast.SUN.com" };
-		for (String val : testVals)
-		{
-			try
-			{
-				RFC822NameAttributeValue attrVal = new RFC822NameAttributeValue(val);
-				System.out.println(val + " -> OK: local-part=" + attrVal.getLocalPart() + ", domain-part=" + attrVal.getDomainPartLowerCase());
-				for (String arg0 : testVals)
-				{
-					try
-					{
-						boolean isMatched = attrVal.match(arg0);
-						System.out.println("x500Name-match(" + arg0 + ", " + attrVal.value + ") -> " + isMatched);
-					} catch (Exception e)
-					{
-						System.out.println("x500Name-match(" + arg0 + ", " + attrVal.value + ") -> " + e);
-					}
-				}
-			} catch (Exception e)
-			{
-				System.out.println(val + " -> KO: " + e);
-			}
-		}
-	}
+	// public static void main(String[] args)
+	// {
+	// String[] testVals = { "", "@", ".", "x@sun.com", "y@z", ".EAST.sun.com", "SUN", "Sun.com",
+	// "@Sun", "@Sun.com", "anderson@", "Anderson@", "Anderson@SUN.COM", "anderson@sun.COM",
+	// "anderson@issrg.east.SUN.COM", "anderson@issrg.sun.COM", "Anderson@issrg.northeast.SUN.com"
+	// };
+	// for (String val : testVals)
+	// {
+	// try
+	// {
+	// RFC822NameAttributeValue attrVal = new RFC822NameAttributeValue(val);
+	// System.out.println(val + " -> OK: local-part=" + attrVal.getLocalPart() + ", domain-part=" +
+	// attrVal.getDomainPartLowerCase());
+	// for (String arg0 : testVals)
+	// {
+	// try
+	// {
+	// boolean isMatched = attrVal.match(arg0);
+	// System.out.println("x500Name-match(" + arg0 + ", " + attrVal.value + ") -> " + isMatched);
+	// } catch (Exception e)
+	// {
+	// System.out.println("x500Name-match(" + arg0 + ", " + attrVal.value + ") -> " + e);
+	// }
+	// }
+	// } catch (Exception e)
+	// {
+	// System.out.println(val + " -> KO: " + e);
+	// }
+	// }
+	// }
 
 	@Override
-	public RFC822NameAttributeValue one()
+	public RFC822NameAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

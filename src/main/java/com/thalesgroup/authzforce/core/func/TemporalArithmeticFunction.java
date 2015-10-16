@@ -18,6 +18,7 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
+import java.util.Deque;
 import java.util.List;
 
 import com.sun.xacml.ctx.Status;
@@ -101,18 +102,20 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 		{
 
 			@Override
-			protected T evaluate(AttributeValue<?>[] args) throws IndeterminateEvaluationException
+			protected T evaluate(Deque<AttributeValue<?>> args) throws IndeterminateEvaluationException
 			{
+				final AttributeValue<?> rawArg0 = args.poll();
+				final AttributeValue<?> rawArg1 = args.poll();
 
 				final T arg0;
 				final D arg1;
 				try
 				{
-					arg0 = firstParamClass.cast(args[0]);
-					arg1 = secondParamClass.cast(args[1]);
+					arg0 = firstParamClass.cast(rawArg0);
+					arg1 = secondParamClass.cast(rawArg1);
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + args[0].getClass().getSimpleName() + "," + args[1].getClass().getSimpleName(), Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getReturnType() + "," + rawArg1.getReturnType(), Status.STATUS_PROCESSING_ERROR, e);
 				}
 
 				return eval(arg0, arg1);

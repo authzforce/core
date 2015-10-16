@@ -40,13 +40,13 @@ import com.thalesgroup.authzforce.core.eval.Decidable;
  * {@link BaseCombiningAlgRegistry#BaseCombiningAlgRegistry(com.thalesgroup.authzforce.core.BasePdpExtensionRegistry)}.
  * 
  */
-public class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
+public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StandardCombiningAlgRegistry.class);
 	/**
 	 * Singleton function registry instance for standard functions
 	 */
-	public static StandardCombiningAlgRegistry INSTANCE;
+	public static final StandardCombiningAlgRegistry INSTANCE;
 	static
 	{
 		final Set<CombiningAlgorithm<? extends Decidable>> standardExtensions = new HashSet<>();

@@ -18,6 +18,7 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
+import java.util.Deque;
 import java.util.List;
 
 import com.sun.xacml.attr.DNSNameAttributeValue;
@@ -257,7 +258,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 			//
 			new DnsNameToString());
 
-	protected final Class<PARAM_T[]> parameterArrayClass;
+	protected final Datatype<PARAM_T> paramType;
 
 	/**
 	 * Creates a new <code>DatatypeConversionFunction</code> object.
@@ -276,7 +277,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 	protected DatatypeConversionFunction(String funcURI, DatatypeConstants<PARAM_T> paramTypeDef, Datatype<RETURN_T> returnType)
 	{
 		super(funcURI, returnType, false, paramTypeDef.TYPE);
-		this.parameterArrayClass = paramTypeDef.ARRAY_CLASS;
+		this.paramType = paramTypeDef.TYPE;
 
 	}
 
@@ -285,12 +286,12 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 	@Override
 	protected final FirstOrderFunctionCall<RETURN_T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerSinglePrimitiveTypeEval<RETURN_T, PARAM_T>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<RETURN_T, PARAM_T>(signature, paramType, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected RETURN_T evaluate(PARAM_T[] args) throws IndeterminateEvaluationException
+			protected RETURN_T evaluate(Deque<PARAM_T> args) throws IndeterminateEvaluationException
 			{
-				return convert(args[0]);
+				return convert(args.getFirst());
 			}
 
 		};

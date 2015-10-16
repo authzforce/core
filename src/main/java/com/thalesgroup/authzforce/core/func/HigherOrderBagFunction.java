@@ -46,7 +46,7 @@ import com.thalesgroup.authzforce.core.eval.VariableReference;
  *            sub-function's return (primitive) type. Only functions returning primitive type of
  *            result are compatible with higher-order functions here.
  */
-public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?, RETURN_T>, SUB_RETURN_PRIMITIVE_T extends AttributeValue<SUB_RETURN_PRIMITIVE_T>> extends Function<RETURN_T>
+public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<RETURN_T>, SUB_RETURN_PRIMITIVE_T extends AttributeValue<SUB_RETURN_PRIMITIVE_T>> extends Function<RETURN_T>
 {
 
 	/**
@@ -202,7 +202,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 	 * on-bag-only functions (only last arg is bag): any-of, all-of
 	 * 
 	 */
-	static abstract class OneBagOnlyFunction<RETURN_T extends Value<?, RETURN_T>, SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> extends HigherOrderBagFunction<RETURN_T, SUB_RETURN_T>
+	static abstract class OneBagOnlyFunction<RETURN_T extends Value<RETURN_T>, SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> extends HigherOrderBagFunction<RETURN_T, SUB_RETURN_T>
 	{
 		/**
 		 * Combines the results of evaluations of a sub-function with the following combination of
@@ -213,7 +213,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 		 *            the sub-function to be called with the various combination of arguments
 		 * @param subFuncArgsBeforeLast
 		 *            the (arg_0,... arg_n-1) constant list
-		 * @param lastArgBag
+		 * @param lastArgBagExpr
 		 *            the bag of which each value is used as the last argument in a combination with
 		 *            <code>subFuncArgsBeforeLast</code>
 		 * @param context
@@ -221,35 +221,43 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 		 * @return final result
 		 * @throws IndeterminateEvaluationException
 		 */
-		protected abstract RETURN_T evaluate(FirstOrderFunctionCall<SUB_RETURN_T> subFuncCall, AttributeValue<?>[] lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException;
+		protected abstract RETURN_T evaluate(FirstOrderFunctionCall<SUB_RETURN_T> subFuncCall, Bag<?> lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException;
 
 		private final String errorEvalLastArgMsg = "Function " + this + ": Error evaluating last arg (bag)";
 
-		public final RETURN_T evaluate(FirstOrderFunctionCall<SUB_RETURN_T> subFuncCall, Expression<?> lastArgBagExp, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
+		public final RETURN_T evaluate(FirstOrderFunctionCall<SUB_RETURN_T> subFuncCall, Expression<?> lastArgBagExpr, Bag.Datatype<?> lastArgBagDatatype, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			final AttributeValue<?>[] lastArgBagVals;
+			final Bag<?> lastArgBag;
 			try
 			{
-				lastArgBagVals = lastArgBagExp.evaluate(context).all();
+				lastArgBag = Utils.evalBagArg(lastArgBagExpr, context, lastArgBagDatatype);
 			} catch (IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(errorEvalLastArgMsg, e.getStatusCode(), e);
 			}
 
-			return evaluate(subFuncCall, lastArgBagVals, lastArgIndex, context);
+			return evaluate(subFuncCall, lastArgBag, lastArgIndex, context);
 		}
 
 		private class OneBagOnlyFunctionCall implements FunctionCall<RETURN_T>
 		{
 
 			private final FirstOrderFunctionCall<SUB_RETURN_T> subFuncCall;
-			private final Expression<?> lastArgBag;
+			private final Expression<?> lastArgBagExpr;
 			private final int lastArgIndex;
+			private final Bag.Datatype<?> lastArgBagDatatype;
 
 			protected OneBagOnlyFunctionCall(FirstOrderFunction<SUB_RETURN_T> subFunction, List<Expression<?>> primitiveInputs, Expression<?> lastInputBag)
 			{
-				assert lastInputBag.getReturnType().isBag();
-				// primitiveInputs types are validated by subFunction.newCall(...);
+				final Datatype<?> lastArgExpDatatype = lastInputBag.getReturnType();
+				if (!lastArgExpDatatype.isBag())
+				{
+					throw new IllegalArgumentException("Function " + this + ": last argument expression's return type (" + lastArgExpDatatype + ") is not a Bag datatype as expected");
+				}
+
+				lastArgBagExpr = lastInputBag;
+				// Bag.Datatype is the only Datatype implementation for Datatype<Bag<?>>
+				lastArgBagDatatype = (Bag.Datatype<?>) lastArgExpDatatype;
 
 				/*
 				 * The actual expression passed as last argument to the sub-function is not yet
@@ -257,8 +265,8 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 				 * lastInputBag's evaluation result bag, therefore the element datatype, i.e. type
 				 * parameter to the returned bag datatype
 				 */
+
 				this.subFuncCall = subFunction.newCall(primitiveInputs, lastInputBag.getReturnType().getTypeParameter());
-				this.lastArgBag = lastInputBag;
 				/*
 				 * Total number of args to the higher-order function (including sub-function and
 				 * last bag arg) = primitiveInputs.size() + 2 Last arg (bag) index = total number of
@@ -270,7 +278,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 			@Override
 			public final RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 			{
-				return OneBagOnlyFunction.this.evaluate(subFuncCall, lastArgBag, lastArgIndex, context);
+				return OneBagOnlyFunction.this.evaluate(subFuncCall, lastArgBagExpr, lastArgBagDatatype, lastArgIndex, context);
 			}
 
 			@Override
@@ -366,9 +374,9 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 		}
 
 		@Override
-		protected final BooleanAttributeValue evaluate(FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall, AttributeValue<?>[] lastArgBagVals, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
+		protected final BooleanAttributeValue evaluate(FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall, Bag<?> lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			for (final AttributeValue<?> attrVal : lastArgBagVals)
+			for (final AttributeValue<?> attrVal : lastArgBag)
 			{
 				final BooleanAttributeValue subResult;
 				try
@@ -406,9 +414,9 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 		}
 
 		@Override
-		protected final BooleanAttributeValue evaluate(FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall, AttributeValue<?>[] lastArgBagVals, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
+		protected final BooleanAttributeValue evaluate(FirstOrderFunctionCall<BooleanAttributeValue> subFuncCall, Bag<?> lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			for (final AttributeValue<?> attrVal : lastArgBagVals)
+			for (final AttributeValue<?> attrVal : lastArgBag)
 			{
 				final BooleanAttributeValue subResult;
 				try
@@ -444,7 +452,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 	private static class AnyOfAny extends BooleanHigherOrderBagFunction
 	{
 
-		private static final String errorEvalArgAfterFirst = "Function " + NAME_ANY_OF_ANY + ": Error evaluating one of the arguments after sub-function (first arg)";
+		private static final String SUB_FUNC_EVAL_ERROR_MSG = "Function " + NAME_ANY_OF_ANY + ": Error evaluating one of the arguments after sub-function (first arg)";
 
 		/**
 		 * Default constructor
@@ -502,33 +510,23 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 				this.inputsAfterSubFunc = inputsAfterSubFunc;
 			}
 
-			private final BooleanAttributeValue eval(Iterator<Expression<?>> argExpressionsAfterSubFuncIterator, ListIterator<AttributeValue<?>[]> argValuesAfterSubFuncIterator, Deque<AttributeValue<?>> subFuncArgsStack, EvaluationContext context) throws IndeterminateEvaluationException
+			private final BooleanAttributeValue eval(Iterator<Expression<?>> argExpressionsAfterSubFuncIterator, ListIterator<Value<?>> argValuesAfterSubFuncIterator, Deque<AttributeValue<?>> subFuncArgsStack, EvaluationContext context) throws IndeterminateEvaluationException
 			{
-				final AttributeValue<?>[] argVals;
+				final Value<?> argVal;
 				if (argExpressionsAfterSubFuncIterator.hasNext())
 				{
 					// we are still evaluating argument expressions for the first time
 					try
 					{
-						argVals = argExpressionsAfterSubFuncIterator.next().evaluate(context).all();
-						/*
-						 * If result bag empty, returns False as there will be no possibility for a
-						 * Predicate that is "True", in particular if
-						 * AttributeDesignator/AttributeSelector with MustBePresent=False evaluates
-						 * to empty bag.
-						 */
-						if (argVals.length == 0)
-						{
-							return BooleanAttributeValue.FALSE;
-						}
+						argVal = argExpressionsAfterSubFuncIterator.next().evaluate(context);
 
 					} catch (IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(errorEvalArgAfterFirst, e.getStatusCode(), e);
+						throw new IndeterminateEvaluationException(SUB_FUNC_EVAL_ERROR_MSG, e.getStatusCode(), e);
 					}
 					// save the result for reuse when building the next list of sub-function
 					// arguments to avoid re-evaluation
-					argValuesAfterSubFuncIterator.add(argVals);
+					argValuesAfterSubFuncIterator.add(argVal);
 				} else
 				{
 					/*
@@ -539,15 +537,15 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 					 */
 					if (argValuesAfterSubFuncIterator.hasNext())
 					{
-						argVals = argValuesAfterSubFuncIterator.next();
+						argVal = argValuesAfterSubFuncIterator.next();
 					} else
 					{
 						// no more argument to add to the list of sub-function arguments
-						argVals = null;
+						argVal = null;
 					}
 				}
 
-				if (argVals == null)
+				if (argVal == null)
 				{
 					// we finished a list of sub-function arguments, so we can call the sub-function
 					// with it
@@ -561,13 +559,47 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 					}
 				}
 
-				/*
-				 * For each value in the arg bag, add this extra value to the sub-function argument
-				 * stack and call eval()
-				 */
-				for (final AttributeValue<?> argVal : argVals)
+				// argVal != null
+				if (argVal.getReturnType().isBag())
 				{
-					subFuncArgsStack.add(argVal);
+					// arg value is a bag
+					/*
+					 * If bag empty, returns False as there will be no possibility for a predicate
+					 * to be "True"; in particular if AttributeDesignator/AttributeSelector with
+					 * MustBePresent=False evaluates to empty bag.
+					 */
+					final Bag<?> argBag = (Bag<?>) argVal;
+					if (argBag.isEmpty())
+					{
+						return BooleanAttributeValue.FALSE;
+					}
+					/*
+					 * For each value in the arg bag, add it to the sub-function argument stack and
+					 * call eval()
+					 */
+
+					for (final AttributeValue<?> argBagVal : argBag)
+					{
+						subFuncArgsStack.add(argBagVal);
+						final BooleanAttributeValue subResult = eval(argExpressionsAfterSubFuncIterator, argValuesAfterSubFuncIterator, subFuncArgsStack, context);
+						if (subResult.getUnderlyingValue())
+						{
+							return BooleanAttributeValue.TRUE;
+						}
+
+						/*
+						 * Remove the arg we just added at the start of the iteration, to leave the
+						 * place for the new arg in the next iteration
+						 */
+						subFuncArgsStack.removeLast();
+					}
+
+				} else
+				{
+					// arg value is primitive
+					// add it to the sub-function call's argument stack
+					subFuncArgsStack.add((AttributeValue<?>) argVal);
+					// evaluate with the new arg stack
 					final BooleanAttributeValue subResult = eval(argExpressionsAfterSubFuncIterator, argValuesAfterSubFuncIterator, subFuncArgsStack, context);
 					if (subResult.getUnderlyingValue())
 					{
@@ -582,12 +614,13 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 				}
 
 				/*
-				 * If we get here, argVals != null and either argValuesAfterSubFuncIterator.next()
-				 * or argValuesAfterSubFuncIterator.add(...) was called so we need to go backwards
-				 * now to prepare next eval().
+				 * argVal != null and either argValuesAfterSubFuncIterator.next() or
+				 * argValuesAfterSubFuncIterator.add(...) was called so we need to go backwards now
+				 * to prepare next eval().
 				 */
 				argValuesAfterSubFuncIterator.previous();
 				return BooleanAttributeValue.FALSE;
+
 			}
 
 			@Override
@@ -598,14 +631,14 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 				 * will be added to the following list, to avoid evaluating the same expression
 				 * again as each one will be reused in multiple combination of arguments:
 				 */
-				final List<AttributeValue<?>[]> inputsAfterSubFuncEvalResults = new ArrayList<>();
+				final List<Value<?>> inputsAfterSubFuncEvalResults = new ArrayList<>();
 
 				/*
-				 * We build the list of sub-function argument values (extracted progressively from
-				 * inputsAfterSubFuncEvalResults) in a Stack. Stack is convenient for managing the
-				 * sub-function arguments because we will be pushing/popping for each value in each
-				 * bag argument, to make the list of the sub-function's arguments before we can make
-				 * each sub-function call.
+				 * We build the stack (Deque) of sub-function argument values (extracted
+				 * progressively from inputsAfterSubFuncEvalResults). Deque provides LIFO stack
+				 * which is convenient for managing the sub-function arguments because we will be
+				 * pushing/popping for each value in each bag argument, to make the list of the
+				 * sub-function's arguments before we can make each sub-function call.
 				 */
 				final Deque<AttributeValue<?>> subFuncArgsStack = new ArrayDeque<>(subFuncArity);
 
@@ -767,11 +800,11 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 
 		{
 			final Deque<Expression<?>> subFuncArgStack = new ArrayDeque<>(2);
-			for (final AttributeValue<?> bag0Val : bag0.all())
+			for (final AttributeValue<?> bag0Val : bag0)
 			{
 				subFuncArgStack.add(bag0Val);
 				boolean isAnyTrue = false;
-				for (final AttributeValue<?> bag1Val : bag1.all())
+				for (final AttributeValue<?> bag1Val : bag1)
 				{
 					subFuncArgStack.add(bag1Val);
 					final AttributeValue<?>[] subFuncArgValues = subFuncArgStack.toArray(new AttributeValue[2]);
@@ -833,10 +866,10 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 			final Deque<Expression<?>> subFuncArgStack = new ArrayDeque<>(2);
 
 			// same as all-of-any but in reverse order of bag0 and bag1
-			for (final AttributeValue<?> bag1Val : bag1.all())
+			for (final AttributeValue<?> bag1Val : bag1)
 			{
 				boolean isAnyTrue = false;
-				for (final AttributeValue<?> bag0Val : bag0.all())
+				for (final AttributeValue<?> bag0Val : bag0)
 				{
 					subFuncArgStack.add(bag0Val);
 					subFuncArgStack.add(bag1Val);
@@ -896,11 +929,11 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<?
 
 		{
 			final Deque<Expression<?>> subFuncArgStack = new ArrayDeque<>(2);
-			for (final AttributeValue<?> bag0Val : bag0.all())
+			for (final AttributeValue<?> bag0Val : bag0)
 			{
 				subFuncArgStack.add(bag0Val);
 				boolean areAllTrue = true;
-				for (final AttributeValue<?> bag1Val : bag1.all())
+				for (final AttributeValue<?> bag1Val : bag1)
 				{
 					subFuncArgStack.add(bag1Val);
 					final AttributeValue<?>[] subFuncArgValues = subFuncArgStack.toArray(new AttributeValue[2]);

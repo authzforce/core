@@ -19,9 +19,9 @@
 package com.thalesgroup.authzforce.core.eval;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -44,7 +44,6 @@ import com.sun.xacml.cond.Function;
 import com.thalesgroup.authzforce.core.Apply;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
-import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
@@ -140,7 +139,7 @@ public class ExpressionFactoryImpl implements Expression.Factory
 	 * @throws ParsingException
 	 *             error parsing expression in <code>var</code>, in particular if reference depth
 	 *             exceeded (as fixed by max parameter to
-	 *             {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean)}
+	 *             {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinder, int, boolean)}
 	 *             )
 	 */
 	@Override
@@ -162,7 +161,7 @@ public class ExpressionFactoryImpl implements Expression.Factory
 		 * does not exceed a specific value (need to call contains() method repeatedly and preserve
 		 * the order).
 		 */
-		final List<String> longestVarRefChain = new ArrayList<>();
+		final Deque<String> longestVarRefChain = new ArrayDeque<>();
 		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), xPathCompiler, longestVarRefChain);
 		final VariableReference<?> var = new VariableReference<>(varId, varExpr, longestVarRefChain);
 		return idToVariableMap.put(varId, var);
@@ -212,7 +211,7 @@ public class ExpressionFactoryImpl implements Expression.Factory
 	 * @throws UnknownIdentifierException
 	 *             if VariableReference's VariableId is unknown by this factory
 	 */
-	private VariableReference<?> getVariable(VariableReferenceType jaxbVarRef, List<String> longestVarRefChain) throws UnknownIdentifierException, ParsingException
+	private VariableReference<?> getVariable(VariableReferenceType jaxbVarRef, Deque<String> longestVarRefChain) throws UnknownIdentifierException, ParsingException
 	{
 		final String varId = jaxbVarRef.getVariableId();
 		final VariableReference<?> var = idToVariableMap.get(varId);
@@ -223,7 +222,7 @@ public class ExpressionFactoryImpl implements Expression.Factory
 
 		if (longestVarRefChain != null)
 		{
-			final List<String> referencedVarLongestRefChain = var.getLongestVariableReferenceChain();
+			final Deque<String> referencedVarLongestRefChain = var.getLongestVariableReferenceChain();
 			if (referencedVarLongestRefChain.size() + 1 > longestVarRefChain.size())
 			{
 				// current longest is no longer the longest, so replace with new longest's content
@@ -244,7 +243,7 @@ public class ExpressionFactoryImpl implements Expression.Factory
 
 	/**
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean)}
+	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinder, int, boolean)}
 	 * .
 	 * 
 	 * @param functionId
@@ -259,7 +258,7 @@ public class ExpressionFactoryImpl implements Expression.Factory
 
 	/**
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinderImpl, int, boolean)}
+	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, CloseableAttributeFinder, int, boolean)}
 	 * .
 	 * 
 	 * @param functionId
@@ -303,7 +302,7 @@ public class ExpressionFactoryImpl implements Expression.Factory
 	 * java.util.List)
 	 */
 	@Override
-	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, List<String> longestVarRefChain) throws ParsingException
+	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws ParsingException
 	{
 		final Expression<?> expression;
 		/*

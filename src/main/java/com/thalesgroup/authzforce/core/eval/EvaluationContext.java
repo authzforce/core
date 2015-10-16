@@ -45,7 +45,7 @@ public interface EvaluationContext
 	 * 
 	 * @return default XPath compiler
 	 */
-	public XPathCompiler getDefaultXPathCompiler();
+	XPathCompiler getDefaultXPathCompiler();
 
 	/**
 	 * Returns available context evaluation result for given AttributeDesignator.
@@ -159,7 +159,7 @@ public interface EvaluationContext
 	 *             if actual datatype of variable value in context does not match expected
 	 *             {@code datatype}
 	 */
-	<V extends Value<?, ?>> V getVariableValue(String variableId, Datatype<V> datatype) throws IndeterminateEvaluationException;
+	<V extends Value<?>> V getVariableValue(String variableId, Datatype<V> datatype) throws IndeterminateEvaluationException;
 
 	/**
 	 * Caches the value of a VariableDefinition's expression evaluated in this context only if
@@ -180,7 +180,7 @@ public interface EvaluationContext
 	 * @return false iff there is already a value for this variable in context (this operation could
 	 *         NOT succeed).
 	 */
-	boolean putVariableIfAbsent(String variableId, Value<?, ?> value);
+	boolean putVariableIfAbsent(String variableId, Value<?> value);
 
 	/**
 	 * Removes a variable (defined by VariableDefinition) from this context.
@@ -190,7 +190,7 @@ public interface EvaluationContext
 	 * @return the value of the variable before removal, or null if there was no such variable set
 	 *         in this context.
 	 */
-	Value<?, ?> removeVariable(String variableId);
+	Value<?> removeVariable(String variableId);
 
 	/**
 	 * Get custom property

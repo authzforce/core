@@ -21,6 +21,7 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
+import java.util.Deque;
 import java.util.List;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
@@ -38,9 +39,9 @@ import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePr
  */
 public abstract class BaseComparisonFunction<AV extends AttributeValue<AV>> extends FirstOrderFunction<BooleanAttributeValue>
 {
-	private static interface PostConditionChecker
+	private interface PostConditionChecker
 	{
-		public boolean check(int comparisonResult);
+		boolean check(int comparisonResult);
 	}
 
 	protected static enum PostCondition
@@ -105,7 +106,7 @@ public abstract class BaseComparisonFunction<AV extends AttributeValue<AV>> exte
 		}
 	}
 
-	private final Class<AV[]> paramArrayClass;
+	private final Datatype<AV> paramType;
 	private final PostCondition postCondition;
 
 	/**
@@ -123,7 +124,7 @@ public abstract class BaseComparisonFunction<AV extends AttributeValue<AV>> exte
 	public BaseComparisonFunction(DatatypeConstants<AV> paramTypeDef, PostCondition condition)
 	{
 		super(paramTypeDef.FUNCTION_ID_PREFIX + condition.functionSuffix, DatatypeConstants.BOOLEAN.TYPE, false, paramTypeDef.TYPE, paramTypeDef.TYPE);
-		this.paramArrayClass = paramTypeDef.ARRAY_CLASS;
+		this.paramType = paramTypeDef.TYPE;
 		this.postCondition = condition;
 	}
 
@@ -136,12 +137,12 @@ public abstract class BaseComparisonFunction<AV extends AttributeValue<AV>> exte
 	@Override
 	protected final FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, AV>(signature, paramType, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected BooleanAttributeValue evaluate(AV[] args) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(Deque<AV> args) throws IndeterminateEvaluationException
 			{
-				return BooleanAttributeValue.valueOf(eval(args[0], args[1]));
+				return BooleanAttributeValue.valueOf(eval(args.poll(), args.poll()));
 			}
 
 		};

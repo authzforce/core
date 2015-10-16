@@ -18,7 +18,7 @@
  */
 package com.thalesgroup.authzforce.core.eval;
 
-import java.util.List;
+import java.util.Deque;
 
 import javax.xml.bind.JAXBElement;
 
@@ -35,7 +35,7 @@ import com.thalesgroup.authzforce.core.XACMLBindingUtils;
  * @param <V>
  *            evaluation's return type
  */
-public class VariableReference<V extends Expression.Value<?, V>> extends VariableReferenceType implements Expression<V>
+public class VariableReference<V extends Expression.Value<V>> extends VariableReferenceType implements Expression<V>
 {
 	private static final UnsupportedOperationException UNSUPPORTED_SET_VARIABLE_OPERATION_EXCEPTION = new UnsupportedOperationException("VariableReference.setVariableId() not allowed");
 	private final Expression<V> expression;
@@ -77,7 +77,7 @@ public class VariableReference<V extends Expression.Value<?, V>> extends Variabl
 		return expression;
 	}
 
-	private final List<String> longestVariableReferenceChain;
+	private final Deque<String> longestVariableReferenceChain;
 
 	/**
 	 * Constructor that takes a variable identifier
@@ -91,7 +91,7 @@ public class VariableReference<V extends Expression.Value<?, V>> extends Variabl
 	 *            -> Vn, where "V1 -> V2" means VariableReference V1's expression contains one or
 	 *            more VariableReferences to V2)
 	 */
-	public VariableReference(String varId, Expression<V> varExpr, List<String> longestVarRefChain)
+	public VariableReference(String varId, Expression<V> varExpr, Deque<String> longestVarRefChain)
 	{
 		this.variableId = varId;
 		this.expression = varExpr;
@@ -148,7 +148,7 @@ public class VariableReference<V extends Expression.Value<?, V>> extends Variabl
 	/**
 	 * @return the longestVariableReferenceChain
 	 */
-	public List<String> getLongestVariableReferenceChain()
+	public Deque<String> getLongestVariableReferenceChain()
 	{
 		return longestVariableReferenceChain;
 	}

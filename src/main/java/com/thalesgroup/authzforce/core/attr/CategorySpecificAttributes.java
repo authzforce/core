@@ -18,8 +18,7 @@
  */
 package com.thalesgroup.authzforce.core.attr;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
@@ -67,11 +65,7 @@ public class CategorySpecificAttributes
 	{
 		private final AttributeValue.Factory<AV> elementDatatypeFactory;
 
-		/*
-		 * ArrayDeque as the most basic subclass of Collection since we only need very minimal
-		 * features
-		 */
-		final Collection<AV> vals = new ArrayDeque<>();
+		final List<AV> vals = new ArrayList<>();
 
 		/**
 		 * @param elementDatatypeFactory
@@ -131,7 +125,7 @@ public class CategorySpecificAttributes
 		 */
 		public Bag<AV> toImmutable()
 		{
-			return Bags.getInstance(this.elementDatatypeFactory.getBagDatatype(), vals);
+			return Bag.getInstance(this.elementDatatypeFactory.getBagDatatype(), vals);
 		}
 
 	}

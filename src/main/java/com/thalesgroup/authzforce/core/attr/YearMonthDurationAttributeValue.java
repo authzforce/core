@@ -20,6 +20,9 @@ package com.thalesgroup.authzforce.core.attr;
 
 import javax.xml.datatype.Duration;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an xs:yearMonthDuration value. This class supports parsing xs:yearMonthDuration
  * values. All objects of this class are immutable and thread-safe. The choice of the Java type
@@ -80,8 +83,9 @@ public class YearMonthDurationAttributeValue extends DurationAttributeValue<Year
 	}
 
 	@Override
-	public YearMonthDurationAttributeValue one()
+	public YearMonthDurationAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}
+
 }

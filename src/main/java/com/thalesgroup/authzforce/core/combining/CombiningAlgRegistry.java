@@ -50,6 +50,6 @@ public interface CombiningAlgRegistry extends PdpExtensionRegistry<CombiningAlgo
 	 * @throws UnknownIdentifierException
 	 *             algId is unknown
 	 */
-	public abstract <T extends Decidable> CombiningAlgorithm<T> getAlgorithm(String algId, Class<T> combinedElementType) throws UnknownIdentifierException;
+	<T extends Decidable> CombiningAlgorithm<T> getAlgorithm(String algId, Class<T> combinedElementType) throws UnknownIdentifierException;
 
 }

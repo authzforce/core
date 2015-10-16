@@ -79,7 +79,7 @@ public class LogicalAndFunction extends FirstOrderFunction<BooleanAttributeValue
 			final BooleanAttributeValue attrVal;
 			try
 			{
-				attrVal = Utils.evalSingle(arg, context, BooleanAttributeValue.class);
+				attrVal = Utils.evalSingle(arg, context, DatatypeConstants.BOOLEAN.TYPE);
 				if (!attrVal.getUnderlyingValue())
 				{
 					return BooleanAttributeValue.FALSE;

@@ -22,6 +22,9 @@ import javax.xml.bind.DatatypeConverter;
 
 import net.sf.saxon.value.BooleanValue;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an xs:boolean value. This class supports parsing xs:boolean values. All objects
  * of this class are immutable and all methods of the class are thread-safe. The choice of the Java
@@ -29,7 +32,7 @@ import net.sf.saxon.value.BooleanValue;
  * https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  * 
  */
-public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, BooleanAttributeValue>
+public final class BooleanAttributeValue extends SimpleAttributeValue<Boolean, BooleanAttributeValue>
 {
 
 	private final int hashCode;
@@ -57,13 +60,13 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 	 * Single instance of BooleanAttributeValue that represents true. Initialized by the static
 	 * initializer below.
 	 */
-	public static BooleanAttributeValue TRUE = new BooleanAttributeValue(true);
+	public static final BooleanAttributeValue TRUE = new BooleanAttributeValue(true);
 
 	/**
 	 * Single instance of BooleanAttributeValue that represents false. Initialized by the static
 	 * initializer below.
 	 */
-	public static BooleanAttributeValue FALSE = new BooleanAttributeValue(false);
+	public static final BooleanAttributeValue FALSE = new BooleanAttributeValue(false);
 
 	/**
 	 * Convert a boolean value from string, according to the XML Schema definition. Adapted from
@@ -84,32 +87,40 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 	public static BooleanAttributeValue fromString(String s) throws IllegalArgumentException
 	{
 		// implementation designed to avoid creating new objects
-		// contrary to Saxon's original code, we don't allow whispaces to apply the XML schema spec
+		// contrary to Saxon's original code, we don't allow whitespaces to apply the XML schema
+		// spec
 		// strictly
 		// s = Whitespace.trimWhitespace(s);
-		int len = s.length();
-		if (len == 1)
+		switch (s.length())
 		{
-			char c = s.charAt(0);
-			if (c == '1')
-			{
-				return TRUE;
-			} else if (c == '0')
-			{
-				return FALSE;
-			}
-		} else if (len == 4)
-		{
-			if (s.charAt(0) == 't' && s.charAt(1) == 'r' && s.charAt(2) == 'u' && s.charAt(3) == 'e')
-			{
-				return TRUE;
-			}
-		} else if (len == 5)
-		{
-			if (s.charAt(0) == 'f' && s.charAt(1) == 'a' && s.charAt(2) == 'l' && s.charAt(3) == 's' && s.charAt(4) == 'e')
-			{
-				return FALSE;
-			}
+			case 1:
+				char c = s.charAt(0);
+				if (c == '1')
+				{
+					return TRUE;
+				}
+
+				if (c == '0')
+				{
+					return FALSE;
+				}
+				break;
+
+			case 4:
+				if (s.charAt(0) == 't' && s.charAt(1) == 'r' && s.charAt(2) == 'u' && s.charAt(3) == 'e')
+				{
+					return TRUE;
+				}
+				break;
+
+			case 5:
+				if (s.charAt(0) == 'f' && s.charAt(1) == 'a' && s.charAt(2) == 'l' && s.charAt(3) == 's' && s.charAt(4) == 'e')
+				{
+					return FALSE;
+				}
+				break;
+
+			default:
 		}
 
 		throw new IllegalArgumentException("The string '" + (s.length() > 5 ? (s.substring(0, 5) + "... (content omitted)") : s) + "' is not a valid xs:boolean value.");
@@ -149,12 +160,6 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 	public BooleanAttributeValue not()
 	{
 		return value ? FALSE : TRUE;
-	}
-
-	@Override
-	public BooleanAttributeValue one()
-	{
-		return this;
 	}
 
 	@Override
@@ -208,5 +213,11 @@ public class BooleanAttributeValue extends SimpleAttributeValue<Boolean, Boolean
 		 * V is an array type.
 		 */
 		return value == other.value.booleanValue();
+	}
+
+	@Override
+	public BooleanAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	{
+		return this;
 	}
 }

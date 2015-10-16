@@ -32,7 +32,7 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
  * Deny-unless-permit combining algorithm
  * 
  */
-public class DenyUnlessPermitAlg extends CombiningAlgorithm<Decidable>
+public final class DenyUnlessPermitAlg extends CombiningAlgorithm<Decidable>
 {
 
 	/**

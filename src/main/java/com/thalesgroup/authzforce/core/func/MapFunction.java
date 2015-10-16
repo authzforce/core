@@ -18,14 +18,13 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
-import java.lang.reflect.Array;
+import java.util.ArrayDeque;
+import java.util.Collection;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
-import com.thalesgroup.authzforce.core.eval.Bags;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * 
@@ -64,8 +63,7 @@ public class MapFunction<SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> exte
 
 	}
 
-	private final Class<SUB_RETURN_T> subFuncReturnClass;
-	private final BagDatatype<SUB_RETURN_T> returnBagType;
+	private final Bag.Datatype<SUB_RETURN_T> returnBagType;
 
 	/**
 	 * Creates Map function for specific sub-function's return type
@@ -76,7 +74,7 @@ public class MapFunction<SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> exte
 	 */
 	public static <SUB_RETURN extends AttributeValue<SUB_RETURN>> MapFunction<SUB_RETURN> getInstance(Datatype<SUB_RETURN> subFunctionReturnType)
 	{
-		final BagDatatype<SUB_RETURN> returnBagDatatype = Bags.empty(subFunctionReturnType).getDatatype();
+		final Bag.Datatype<SUB_RETURN> returnBagDatatype = Bag.Datatype.getInstance(subFunctionReturnType);
 		return new MapFunction<>(returnBagDatatype);
 	}
 
@@ -86,26 +84,25 @@ public class MapFunction<SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> exte
 	 * @param subFunctionReturnType
 	 *            sub-function return type
 	 */
-	private MapFunction(BagDatatype<SUB_RETURN_T> returnType)
+	private MapFunction(Bag.Datatype<SUB_RETURN_T> returnType)
 	{
 		super(NAME_MAP, returnType, returnType.getElementType());
 		this.returnBagType = returnType;
-		this.subFuncReturnClass = returnType.getElementType().getValueClass();
 	}
 
 	@Override
-	protected final Bag<SUB_RETURN_T> evaluate(FirstOrderFunctionCall<SUB_RETURN_T> subFuncCall, AttributeValue<?>[] lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
+	protected final Bag<SUB_RETURN_T> evaluate(FirstOrderFunctionCall<SUB_RETURN_T> subFuncCall, Bag<?> lastArgBag, int lastArgIndex, EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		final SUB_RETURN_T[] results = (SUB_RETURN_T[]) Array.newInstance(subFuncReturnClass, lastArgBag.length);
-		for (int valIndex = 0; valIndex < lastArgBag.length; valIndex++)
+		final Collection<SUB_RETURN_T> results = new ArrayDeque<>(lastArgBag.size());
+		for (final AttributeValue<?> lastArgBagVal : lastArgBag)
 		{
 			final SUB_RETURN_T subResult;
 			try
 			{
-				subResult = subFuncCall.evaluate(context, lastArgBag[valIndex]);
+				subResult = subFuncCall.evaluate(context, lastArgBagVal);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(this + ": Error calling sub-function (specified as first argument) with last arg=" + lastArgBag[valIndex], e.getStatusCode(), e);
+				throw new IndeterminateEvaluationException(this + ": Error calling sub-function (specified as first argument) with last arg=" + lastArgBagVal, e.getStatusCode(), e);
 			}
 
 			if (subResult == null)
@@ -113,10 +110,10 @@ public class MapFunction<SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> exte
 				throw getIndeterminateArgException(lastArgIndex);
 			}
 
-			results[valIndex] = subResult;
+			results.add(subResult);
 		}
 
-		return Bags.getInstance(returnBagType, results);
+		return Bag.getInstance(returnBagType, results);
 	}
 
 }

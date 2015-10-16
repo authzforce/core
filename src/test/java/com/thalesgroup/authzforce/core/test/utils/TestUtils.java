@@ -143,21 +143,6 @@ public class TestUtils
 		return response;
 	}
 
-	public static String printRequest(Request request)
-	{
-		StringWriter writer = new StringWriter();
-		try
-		{
-			Marshaller u = XACMLBindingUtils.createXacml3Marshaller();
-			u.marshal(request, writer);
-		} catch (Exception e)
-		{
-			LOGGER.error("Error marshalling Request", e);
-		}
-
-		return writer.toString();
-	}
-
 	public static String printResponse(Response response)
 	{
 		StringWriter writer = new StringWriter();

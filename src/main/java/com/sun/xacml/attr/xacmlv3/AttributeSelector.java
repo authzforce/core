@@ -36,7 +36,7 @@ package com.sun.xacml.attr.xacmlv3;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.Queue;
+import java.util.Deque;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -62,8 +62,6 @@ import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.XPathAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
-import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Utils.XPathEvaluator;
@@ -191,7 +189,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 
 	private final AttributeSelectorId id;
 
-	private final BagDatatype<AV> returnType;
+	private final Bag.Datatype<AV> returnType;
 
 	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
@@ -426,7 +424,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 					throw new IndeterminateEvaluationException(missingContextSelectorAttributeExceptionMessage, Status.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
 				}
 
-				final String contextSelectorPath = bag.one().getUnderlyingValue();
+				final String contextSelectorPath = bag.getSingleValue().getUnderlyingValue();
 				try
 				{
 					contextNode = xpathCompiler.evaluateSingle(contextSelectorPath, contentNode);
@@ -457,8 +455,9 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 				throw new IndeterminateEvaluationException(this.xpathEvalExceptionMessage, Status.STATUS_SYNTAX_ERROR, e);
 			}
 
-			// preserve order of results
-			final Queue<AV> resultBag = new ArrayDeque<>();
+			// The values in a bag are not ordered (§7.3.2 of XACML core spec) but may contain
+			// duplicates
+			final Deque<AV> resultBag = new ArrayDeque<>();
 			int xpathEvalResultItemIndex = 0;
 			for (final XdmItem xpathEvalResultItem : xpathEvalResult)
 			{
@@ -498,7 +497,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 				xpathEvalResultItemIndex++;
 			}
 
-			final Bag<AV> result = Bags.getInstance(returnType, resultBag);
+			final Bag<AV> result = Bag.getInstance(returnType, resultBag);
 			context.putAttributeSelectorResultIfAbsent(id, result);
 			validateResult(result);
 			return result;
@@ -539,7 +538,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 			 * empty).
 			 * </p>
 			 */
-			final Bag<AV> result = Bags.empty(returnType, e);
+			final Bag<AV> result = Bag.empty(returnType, e);
 			context.putAttributeSelectorResultIfAbsent(id, result);
 			validateResult(result);
 			return result;

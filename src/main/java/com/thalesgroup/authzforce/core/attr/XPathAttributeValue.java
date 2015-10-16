@@ -146,12 +146,6 @@ public class XPathAttributeValue extends SimpleAttributeValue<String, XPathAttri
 	}
 
 	@Override
-	public XPathAttributeValue one()
-	{
-		return this;
-	}
-
-	@Override
 	public boolean isStatic()
 	{
 		/*

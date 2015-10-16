@@ -49,11 +49,11 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(IndividualDecisionRequestContext.class);
 
-	private static IndeterminateEvaluationException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IndeterminateEvaluationException("Unsupported XACML feature (optional): <AttributeSelector>", Status.STATUS_SYNTAX_ERROR);
+	private static final IndeterminateEvaluationException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IndeterminateEvaluationException("Unsupported XACML feature (optional): <AttributeSelector>", Status.STATUS_SYNTAX_ERROR);
 
 	private final Map<AttributeGUID, Bag<?>> attributes;
 
-	private final Map<String, Value<?, ?>> varValsById = new HashMap<>();
+	private final Map<String, Value<?>> varValsById = new HashMap<>();
 
 	/*
 	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for
@@ -160,9 +160,9 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	}
 
 	@Override
-	public <V extends Value<?, ?>> V getVariableValue(String variableId, Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
+	public <V extends Value<?>> V getVariableValue(String variableId, Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
 	{
-		final Value<?, ?> val = varValsById.get(variableId);
+		final Value<?> val = varValsById.get(variableId);
 		if (val == null)
 		{
 			return null;
@@ -178,7 +178,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	}
 
 	@Override
-	public boolean putVariableIfAbsent(String variableId, Value<?, ?> value)
+	public boolean putVariableIfAbsent(String variableId, Value<?> value)
 	{
 		if (varValsById.containsKey(variableId))
 		{
@@ -190,7 +190,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	}
 
 	@Override
-	public Value<?, ?> removeVariable(String variableId)
+	public Value<?> removeVariable(String variableId)
 	{
 		return varValsById.remove(variableId);
 	}

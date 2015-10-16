@@ -78,7 +78,7 @@ public final class MultiDecisionRequestFilter extends RequestFilter
 	}
 
 	@Override
-	public final List<IndividualDecisionRequest> filter(Request request) throws IndeterminateEvaluationException
+	public List<IndividualDecisionRequest> filter(Request request) throws IndeterminateEvaluationException
 	{
 		/*
 		 * No support for MultiRequests (§2.4 of Multiple Decision Profile). We only support §2.3

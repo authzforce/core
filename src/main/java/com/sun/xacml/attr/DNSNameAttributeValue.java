@@ -41,6 +41,8 @@ import java.util.regex.Pattern;
 
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * Represents the DNSName datatype introduced in XACML 2.0. All objects of this class are immutable
@@ -251,7 +253,7 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 	}
 
 	@Override
-	public DNSNameAttributeValue one()
+	public DNSNameAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

@@ -31,7 +31,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
  * @param <RETURN_T>
  *            function's return type
  */
-public class FunctionSignature<RETURN_T extends Value<?, RETURN_T>>
+public class FunctionSignature<RETURN_T extends Value<RETURN_T>>
 {
 	private static final IllegalArgumentException NULL_NAME_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined function name arg");
 	private static final IllegalArgumentException NULL_RETURN_TYPE_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined function return type arg");

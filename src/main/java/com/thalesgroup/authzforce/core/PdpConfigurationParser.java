@@ -275,7 +275,7 @@ public class PdpConfigurationParser
 		for (final AbstractAttributeFinder jaxbAttrFinder : pdpJaxbConf.getAttributeFinders())
 		{
 			final AttributeFinderModule.Factory<AbstractAttributeFinder> attrFinderModBuilder = PdpExtensionLoader.getJaxbBoundExtension(AttributeFinderModule.Factory.class, jaxbAttrFinder.getClass());
-			final AttributeFinderModule.DependencyAwareFactory<AbstractAttributeFinder> depAwareAttrFinderModBuilder = attrFinderModBuilder.parseDependencies(jaxbAttrFinder);
+			final AttributeFinderModule.DependencyAwareFactory depAwareAttrFinderModBuilder = attrFinderModBuilder.parseDependencies(jaxbAttrFinder);
 			final Set<AttributeDesignatorType> requiredAttrs = depAwareAttrFinderModBuilder.getDependencies();
 			final Map<AttributeGUID, AttributeFinderModule> requiredAttrFinderModsByAttrId = new HashMap<>();
 			if (requiredAttrs != null)
@@ -409,4 +409,5 @@ public class PdpConfigurationParser
 
 		return false;
 	}
+
 }

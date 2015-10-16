@@ -44,7 +44,7 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 public class LogicalFunctionsTest extends GeneralFunctionTest
 {
 
-	public LogicalFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public LogicalFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}
@@ -54,7 +54,7 @@ public class LogicalFunctionsTest extends GeneralFunctionTest
 	private static final String NAME_N_OF = "urn:oasis:names:tc:xacml:1.0:function:n-of";
 	private static final String NAME_NOT = "urn:oasis:names:tc:xacml:1.0:function:not";
 
-	private static Expression<BooleanAttributeValue> INDETERMINATE_BOOLEAN_EXPRESSION = new Expression<BooleanAttributeValue>()
+	private static final Expression<BooleanAttributeValue> INDETERMINATE_BOOLEAN_EXPRESSION = new Expression<BooleanAttributeValue>()
 	{
 
 		@Override

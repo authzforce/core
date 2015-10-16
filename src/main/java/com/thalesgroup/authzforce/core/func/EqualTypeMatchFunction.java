@@ -18,27 +18,15 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
+import java.util.Deque;
 import java.util.List;
 
-import com.sun.xacml.attr.DNSNameAttributeValue;
-import com.sun.xacml.attr.IPAddressAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.Base64BinaryAttributeValue;
 import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.HexBinaryAttributeValue;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
 import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
@@ -144,54 +132,33 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 	 */
 	public static final String NAME_X500NAME_MATCH = FUNCTION_NS_1 + "x500Name-match";
 
+	/**
+	 * Standard identifier for the string-starts-with function.
+	 */
+	public static final String NAME_STRING_STARTS_WITH = FUNCTION_NS_3 + "string-starts-with";
+
+	/**
+	 * Standard identifier for the string-ends-with function.
+	 */
+	public static final String NAME_STRING_ENDS_WITH = FUNCTION_NS_3 + "string-ends-with";
+
+	/**
+	 * Standard identifier for the string-contains-with function.
+	 */
+	public static final String NAME_STRING_CONTAINS = FUNCTION_NS_3 + "string-contains";
+
+	/**
+	 * Standard identifier for the string-regexp-match function.
+	 */
+	public static final String NAME_STRING_REGEXP_MATCH = FUNCTION_NS_1 + "string-regexp-match";
+
 	// /**
 	// * Logger used for all classes
 	// */
 	// private static final Logger LOGGER = LoggerFactory
 	// .getLogger(EqualTypeMatchFunction.class);
 
-	private final Class<PARAM[]> parameterArrayClass;
-
-	/**
-	 * Function cluster
-	 */
-	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "equal-type-match",
-	//
-			new Equal<>(NAME_STRING_EQUAL, DatatypeConstants.STRING.TYPE, StringAttributeValue[].class),
-			//
-			new Equal<>(NAME_BOOLEAN_EQUAL, DatatypeConstants.BOOLEAN.TYPE, BooleanAttributeValue[].class),
-			//
-			new Equal<>(NAME_INTEGER_EQUAL, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class),
-			//
-			new Equal<>(NAME_DOUBLE_EQUAL, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class),
-			//
-			new Equal<>(NAME_DATE_EQUAL, DatatypeConstants.DATE.TYPE, DateAttributeValue[].class),
-			//
-			new Equal<>(NAME_TIME_EQUAL, DatatypeConstants.TIME.TYPE, TimeAttributeValue[].class),
-			//
-			new Equal<>(NAME_DATETIME_EQUAL, DatatypeConstants.DATETIME.TYPE, DateTimeAttributeValue[].class),
-			//
-			new Equal<>(NAME_DAYTIME_DURATION_EQUAL, DatatypeConstants.DAYTIMEDURATION.TYPE, DayTimeDurationAttributeValue[].class),
-			//
-			new Equal<>(NAME_YEARMONTH_DURATION_EQUAL, DatatypeConstants.YEARMONTHDURATION.TYPE, YearMonthDurationAttributeValue[].class),
-			//
-			new Equal<>(NAME_ANYURI_EQUAL, DatatypeConstants.ANYURI.TYPE, AnyURIAttributeValue[].class),
-			//
-			new Equal<>(NAME_X500NAME_EQUAL, DatatypeConstants.X500NAME.TYPE, X500NameAttributeValue[].class),
-			//
-			new Equal<>(NAME_RFC822NAME_EQUAL, DatatypeConstants.RFC822NAME.TYPE, RFC822NameAttributeValue[].class),
-			//
-			new Equal<>(NAME_HEXBINARY_EQUAL, DatatypeConstants.HEXBINARY.TYPE, HexBinaryAttributeValue[].class),
-			//
-			new Equal<>(NAME_BASE64BINARY_EQUAL, DatatypeConstants.BASE64BINARY.TYPE, Base64BinaryAttributeValue[].class),
-			//
-			new Equal<>(NAME_IPADDRESS_EQUAL, DatatypeConstants.IPADDRESS.TYPE, IPAddressAttributeValue[].class),
-			//
-			new Equal<>(NAME_DNSNAME_EQUAL, DatatypeConstants.DNSNAME.TYPE, DNSNameAttributeValue[].class),
-			//
-			new EqualIgnoreCase<>(NAME_STRING_EQUAL_IGNORE_CASE, DatatypeConstants.STRING.TYPE, StringAttributeValue[].class),
-			//
-			new X500NameMatch());
+	private final Datatype<PARAM> paramType;
 
 	/**
 	 * Creates a new <code>EqualTypeMatchFunction</code> object.
@@ -201,13 +168,11 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 	 *            the full namespace
 	 * @param paramType
 	 *            parameter type
-	 * @param paramArrayType
-	 *            parameter array type
 	 */
-	public EqualTypeMatchFunction(String functionName, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
+	public EqualTypeMatchFunction(String functionName, Datatype<PARAM> paramType)
 	{
 		super(functionName, DatatypeConstants.BOOLEAN.TYPE, false, paramType, paramType);
-		this.parameterArrayClass = paramArrayType;
+		this.paramType = paramType;
 	}
 
 	/*
@@ -219,12 +184,12 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 	@Override
 	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, PARAM>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, PARAM>(signature, paramType, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected final BooleanAttributeValue evaluate(PARAM[] args) throws IndeterminateEvaluationException
+			protected final BooleanAttributeValue evaluate(Deque<PARAM> args) throws IndeterminateEvaluationException
 			{
-				return BooleanAttributeValue.valueOf(match(args[0], args[1]));
+				return BooleanAttributeValue.valueOf(match(args.poll(), args.poll()));
 			}
 
 		};
@@ -248,12 +213,10 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 		 *            function ID
 		 * @param paramType
 		 *            datatype of parameters
-		 * @param paramArrayType
-		 *            parameter array type
 		 */
-		public Equal(String functionName, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
+		public Equal(String functionName, Datatype<PARAM> paramType)
 		{
-			super(functionName, paramType, paramArrayType);
+			super(functionName, paramType);
 		}
 
 		@Override
@@ -279,12 +242,10 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 		 *            function ID
 		 * @param paramType
 		 *            datatype of parameters
-		 * @param paramArrayType
-		 *            parameter class
 		 */
-		public EqualIgnoreCase(String functionName, Datatype<PARAM> paramType, Class<PARAM[]> paramArrayType)
+		public EqualIgnoreCase(String functionName, Datatype<PARAM> paramType)
 		{
-			super(functionName, paramType, paramArrayType);
+			super(functionName, paramType);
 		}
 
 		@Override
@@ -306,7 +267,7 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 		 */
 		public X500NameMatch()
 		{
-			super(NAME_X500NAME_MATCH, DatatypeConstants.X500NAME.TYPE, X500NameAttributeValue[].class);
+			super(NAME_X500NAME_MATCH, DatatypeConstants.X500NAME.TYPE);
 		}
 
 		@Override
@@ -315,5 +276,170 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 			return arg0.match(arg1);
 		}
 	}
+
+	/**
+	 * string-starts-with function. For other *-starts-with functions, see
+	 * {@link NonEqualTypeMatchFunction} class.
+	 */
+	private static class StringStartsWith extends EqualTypeMatchFunction<StringAttributeValue>
+	{
+		/**
+		 * Instantiates the function
+		 * 
+		 */
+		public StringStartsWith()
+		{
+			super(NAME_STRING_STARTS_WITH, DatatypeConstants.STRING.TYPE);
+		}
+
+		/**
+		 * WARNING: the XACML spec defines the first argument as the prefix
+		 */
+		@Override
+		public final boolean match(StringAttributeValue prefix, StringAttributeValue arg1)
+		{
+			return arg1.getUnderlyingValue().startsWith(prefix.getUnderlyingValue());
+		}
+	}
+
+	/**
+	 * string-ends-with function
+	 */
+	private static class StringEndsWith extends EqualTypeMatchFunction<StringAttributeValue>
+	{
+		/**
+		 * Instantiates the function
+		 * 
+		 */
+		public StringEndsWith()
+		{
+			super(NAME_STRING_ENDS_WITH, DatatypeConstants.STRING.TYPE);
+		}
+
+		/**
+		 * WARNING: the XACML spec defines the first argument as the suffix
+		 */
+		@Override
+		public final boolean match(StringAttributeValue suffix, StringAttributeValue arg1)
+		{
+			return arg1.getUnderlyingValue().endsWith(suffix.getUnderlyingValue());
+		}
+	}
+
+	/**
+	 * string-contains function
+	 * 
+	 */
+	private static class StringContains extends EqualTypeMatchFunction<StringAttributeValue>
+	{
+
+		/**
+		 * Instantiates the function
+		 * 
+		 */
+		public StringContains()
+		{
+			super(NAME_STRING_CONTAINS, DatatypeConstants.STRING.TYPE);
+		}
+
+		/**
+		 * WARNING: the XACML spec defines the second argument as the string that must contain the
+		 * other
+		 */
+		@Override
+		public final boolean match(StringAttributeValue contained, StringAttributeValue arg1)
+		{
+			return arg1.getUnderlyingValue().contains(contained.getUnderlyingValue());
+		}
+	}
+
+	/**
+	 * string-regexp-match function
+	 * 
+	 */
+	private static class StringRegexpMatch extends EqualTypeMatchFunction<StringAttributeValue>
+	{
+
+		public StringRegexpMatch()
+		{
+			super(NAME_STRING_REGEXP_MATCH, DatatypeConstants.STRING.TYPE);
+		}
+
+		@Override
+		protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+		{
+			final RegexpMatchFunctionHelper regexFuncHelper = new RegexpMatchFunctionHelper(signature, DatatypeConstants.STRING.TYPE);
+			final FirstOrderFunctionCall<BooleanAttributeValue> compiledRegexFuncCall = regexFuncHelper.getCompiledRegexMatchCall(argExpressions, remainingArgTypes);
+			/*
+			 * compiledRegexFuncCall == null means no optimization using a pre-compiled regex could
+			 * be done; in this case, use super.newCall() as usual, which will call match() down
+			 * below, compiling the regex on-the-fly for each evaluation.
+			 */
+			return compiledRegexFuncCall == null ? super.newCall(argExpressions, remainingArgTypes) : compiledRegexFuncCall;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * com.thalesgroup.authzforce.core.func.EqualTypeMatchFunction#match(com.thalesgroup.authzforce
+		 * .core.attr.AttributeValue, com.thalesgroup.authzforce.core.attr.AttributeValue)
+		 */
+		@Override
+		protected boolean match(StringAttributeValue regex, StringAttributeValue arg1)
+		{
+			return RegexpMatchFunctionHelper.match(regex, arg1);
+		}
+
+	}
+
+	/**
+	 * Function cluster
+	 */
+	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "equal-type-match",
+	//
+			new Equal<>(NAME_STRING_EQUAL, DatatypeConstants.STRING.TYPE),
+			//
+			new Equal<>(NAME_BOOLEAN_EQUAL, DatatypeConstants.BOOLEAN.TYPE),
+			//
+			new Equal<>(NAME_INTEGER_EQUAL, DatatypeConstants.INTEGER.TYPE),
+			//
+			new Equal<>(NAME_DOUBLE_EQUAL, DatatypeConstants.DOUBLE.TYPE),
+			//
+			new Equal<>(NAME_DATE_EQUAL, DatatypeConstants.DATE.TYPE),
+			//
+			new Equal<>(NAME_TIME_EQUAL, DatatypeConstants.TIME.TYPE),
+			//
+			new Equal<>(NAME_DATETIME_EQUAL, DatatypeConstants.DATETIME.TYPE),
+			//
+			new Equal<>(NAME_DAYTIME_DURATION_EQUAL, DatatypeConstants.DAYTIMEDURATION.TYPE),
+			//
+			new Equal<>(NAME_YEARMONTH_DURATION_EQUAL, DatatypeConstants.YEARMONTHDURATION.TYPE),
+			//
+			new Equal<>(NAME_ANYURI_EQUAL, DatatypeConstants.ANYURI.TYPE),
+			//
+			new Equal<>(NAME_X500NAME_EQUAL, DatatypeConstants.X500NAME.TYPE),
+			//
+			new Equal<>(NAME_RFC822NAME_EQUAL, DatatypeConstants.RFC822NAME.TYPE),
+			//
+			new Equal<>(NAME_HEXBINARY_EQUAL, DatatypeConstants.HEXBINARY.TYPE),
+			//
+			new Equal<>(NAME_BASE64BINARY_EQUAL, DatatypeConstants.BASE64BINARY.TYPE),
+			//
+			new Equal<>(NAME_IPADDRESS_EQUAL, DatatypeConstants.IPADDRESS.TYPE),
+			//
+			new Equal<>(NAME_DNSNAME_EQUAL, DatatypeConstants.DNSNAME.TYPE),
+			//
+			new EqualIgnoreCase<>(NAME_STRING_EQUAL_IGNORE_CASE, DatatypeConstants.STRING.TYPE),
+			//
+			new X500NameMatch(),
+			//
+			new StringStartsWith(),
+			//
+			new StringEndsWith(),
+			//
+			new StringContains(),
+			//
+			new StringRegexpMatch());
 
 }

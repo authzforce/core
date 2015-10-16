@@ -20,6 +20,9 @@ package com.thalesgroup.authzforce.core.attr;
 
 import net.sf.saxon.lib.StandardURIChecker;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Represent the URI value that this class represents
  * <p>
@@ -98,7 +101,7 @@ public class AnyURIAttributeValue extends SimpleAttributeValue<String, AnyURIAtt
 	}
 
 	@Override
-	public AnyURIAttributeValue one()
+	public AnyURIAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

@@ -96,8 +96,10 @@ class PortRange
 		int upperBound = UNBOUND;
 
 		// first off, make sure there's actually content here
-		if ((value.length() == 0) || (value.equals("-")))
+		if (value.length() == 0 || value.equals("-"))
+		{
 			return new PortRange();
+		}
 
 		// there's content, so figure where the '-' is, if at all
 		int dashPos = value.indexOf('-');
@@ -117,7 +119,7 @@ class PortRange
 			int len = value.length();
 
 			// ... and see if there is a second port number
-			if (dashPos != (len - 1))
+			if (dashPos != len - 1)
 			{
 				// the dash wasn't at the end, so there's an upper-bound
 				upperBound = Integer.parseInt(value.substring(dashPos + 1, len));
@@ -158,7 +160,7 @@ class PortRange
 	 */
 	public boolean isLowerBounded()
 	{
-		return (lowerBound != UNBOUND);
+		return lowerBound != UNBOUND;
 	}
 
 	/**
@@ -168,7 +170,7 @@ class PortRange
 	 */
 	public boolean isUpperBounded()
 	{
-		return (upperBound != UNBOUND);
+		return upperBound != UNBOUND;
 	}
 
 	/**
@@ -178,7 +180,7 @@ class PortRange
 	 */
 	public boolean isSinglePort()
 	{
-		return ((lowerBound == upperBound) && (lowerBound != UNBOUND));
+		return lowerBound == upperBound && lowerBound != UNBOUND;
 	}
 
 	/**
@@ -189,7 +191,7 @@ class PortRange
 	 */
 	public boolean isUnbound()
 	{
-		return ((lowerBound == UNBOUND) && (upperBound == UNBOUND));
+		return lowerBound == UNBOUND && upperBound == UNBOUND;
 	}
 
 	private int hashCode = 0;
@@ -218,7 +220,9 @@ class PortRange
 	public boolean equals(Object o)
 	{
 		if (!(o instanceof PortRange))
+		{
 			return false;
+		}
 
 		final PortRange other = (PortRange) o;
 		return lowerBound == other.lowerBound && upperBound == other.upperBound;

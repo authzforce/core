@@ -34,6 +34,7 @@
 package com.sun.xacml.cond;
 
 import java.util.Calendar;
+import java.util.Deque;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -192,13 +193,17 @@ public class TimeInRangeFunction extends FirstOrderFunction<BooleanAttributeValu
 	@Override
 	protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, TimeAttributeValue>(signature, TimeAttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<BooleanAttributeValue, TimeAttributeValue>(signature, DatatypeConstants.TIME.TYPE, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected BooleanAttributeValue evaluate(TimeAttributeValue[] args) throws IndeterminateEvaluationException
+			protected BooleanAttributeValue evaluate(Deque<TimeAttributeValue> args) throws IndeterminateEvaluationException
 			{
-				return BooleanAttributeValue.valueOf(eval(args[0], args[1], args[2]));
+				/*
+				 * args.poll() returns the first element and remove it from the stack, so that next
+				 * poll() returns the next element (and removes it from the stack), etc.
+				 */
+				return BooleanAttributeValue.valueOf(eval(args.poll(), args.poll(), args.poll()));
 			}
 		};
 	}

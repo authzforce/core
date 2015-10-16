@@ -18,6 +18,7 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
+import java.util.Deque;
 import java.util.List;
 
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
@@ -41,7 +42,7 @@ public class StringConcatenateFunction<AV extends SimpleAttributeValue<String, A
 	 * Standard identifier for the string-concatenate function.
 	 */
 	public static final String NAME_STRING_CONCATENATE = FUNCTION_NS_2 + "string-concatenate";
-	private final Class<AV[]> paramArrayClass;
+	private final Datatype<AV> paramType;
 
 	/**
 	 * Instantiates function. Takes two or more arguments, i.e. third is varargs
@@ -52,7 +53,7 @@ public class StringConcatenateFunction<AV extends SimpleAttributeValue<String, A
 	public StringConcatenateFunction(DatatypeConstants<AV> typeParameter)
 	{
 		super(NAME_STRING_CONCATENATE, DatatypeConstants.STRING.TYPE, true, typeParameter.TYPE, typeParameter.TYPE, typeParameter.TYPE);
-		this.paramArrayClass = typeParameter.ARRAY_CLASS;
+		this.paramType = typeParameter.TYPE;
 	}
 
 	/*
@@ -65,11 +66,11 @@ public class StringConcatenateFunction<AV extends SimpleAttributeValue<String, A
 	protected FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
 
-		return new EagerSinglePrimitiveTypeEval<StringAttributeValue, AV>(signature, paramArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<StringAttributeValue, AV>(signature, paramType, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected StringAttributeValue evaluate(AV[] args) throws IndeterminateEvaluationException
+			protected StringAttributeValue evaluate(Deque<AV> args) throws IndeterminateEvaluationException
 			{
 				return eval(args);
 			}
@@ -84,13 +85,14 @@ public class StringConcatenateFunction<AV extends SimpleAttributeValue<String, A
 	 *            strings to concatenate
 	 * @return concatenation of all args
 	 */
-	public static <AV extends SimpleAttributeValue<String, AV>> StringAttributeValue eval(AV[] args)
+	public static <AV extends SimpleAttributeValue<String, AV>> StringAttributeValue eval(Deque<AV> args)
 	{
 		final StringBuilder strBuilder = new StringBuilder();
-		for (int i = 0; i < args.length; i++)
+		while (!args.isEmpty())
 		{
-			strBuilder.append(args[i].getUnderlyingValue());
+			strBuilder.append(args.poll().getUnderlyingValue());
 		}
+
 		return new StringAttributeValue(strBuilder.toString());
 	}
 

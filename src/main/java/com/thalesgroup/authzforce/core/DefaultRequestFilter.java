@@ -93,7 +93,7 @@ public final class DefaultRequestFilter extends RequestFilter
 	}
 
 	@Override
-	public final List<IndividualDecisionRequest> filter(Request jaxbRequest) throws IndeterminateEvaluationException
+	public List<IndividualDecisionRequest> filter(Request jaxbRequest) throws IndeterminateEvaluationException
 	{
 		// MultiRequests element not supported (optional XACML feature)
 		if (jaxbRequest.getMultiRequests() != null)

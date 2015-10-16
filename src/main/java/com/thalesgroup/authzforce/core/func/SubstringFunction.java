@@ -18,6 +18,7 @@
  */
 package com.thalesgroup.authzforce.core.func;
 
+import java.util.Deque;
 import java.util.List;
 
 import com.sun.xacml.ctx.Status;
@@ -82,19 +83,23 @@ public class SubstringFunction<AV extends SimpleAttributeValue<String, AV>> exte
 		{
 
 			@Override
-			protected StringAttributeValue evaluate(AttributeValue<?>[] args) throws IndeterminateEvaluationException
+			protected StringAttributeValue evaluate(Deque<AttributeValue<?>> args) throws IndeterminateEvaluationException
 			{
+				final AttributeValue<?> rawArg0 = args.poll();
+				final AttributeValue<?> rawArg1 = args.poll();
+				final AttributeValue<?> rawArg2 = args.poll();
+
 				final AV arg0;
 				final IntegerAttributeValue beginIndex;
 				final IntegerAttributeValue endIndex;
 				try
 				{
-					arg0 = firstParamClass.cast(args[0]);
-					beginIndex = (IntegerAttributeValue) args[1];
-					endIndex = (IntegerAttributeValue) args[2];
+					arg0 = firstParamClass.cast(rawArg0);
+					beginIndex = (IntegerAttributeValue) rawArg1;
+					endIndex = (IntegerAttributeValue) rawArg2;
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + args[0].getClass().getSimpleName() + "," + args[1].getClass().getSimpleName() + "," + args[2].getClass().getSimpleName(), Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getReturnType() + "," + rawArg1.getReturnType() + "," + rawArg2.getReturnType(), Status.STATUS_PROCESSING_ERROR, e);
 				}
 
 				return eval(arg0, beginIndex, endIndex);

@@ -22,6 +22,9 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an xs:date value. This class supports parsing xs:date values. All objects of
  * this class are immutable and thread-safe.
@@ -114,7 +117,7 @@ public class DateAttributeValue extends BaseTimeAttributeValue<DateAttributeValu
 	}
 
 	@Override
-	public DateAttributeValue one()
+	public DateAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

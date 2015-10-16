@@ -38,5 +38,5 @@ public interface GenericHigherOrderFunctionFactory extends PdpExtension
 	 *            sub-function's return class
 	 * @return higher-order function instance
 	 */
-	public <SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> HigherOrderBagFunction<?, SUB_RETURN_T> getInstance(Datatype<SUB_RETURN_T> subFunctionReturnType);
+	<SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> HigherOrderBagFunction<?, SUB_RETURN_T> getInstance(Datatype<SUB_RETURN_T> subFunctionReturnType);
 }

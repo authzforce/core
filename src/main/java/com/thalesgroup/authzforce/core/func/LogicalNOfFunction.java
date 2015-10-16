@@ -106,7 +106,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 		final IntegerAttributeValue intAttrVal;
 		try
 		{
-			intAttrVal = Utils.evalSingle(input0, context, IntegerAttributeValue.class);
+			intAttrVal = Utils.evalSingle(input0, context, DatatypeConstants.INTEGER.TYPE);
 		} catch (IndeterminateEvaluationException e)
 		{
 			throw new IndeterminateEvaluationException(getIndeterminateArgMessage(0), Status.STATUS_PROCESSING_ERROR, e);
@@ -150,7 +150,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 			final BooleanAttributeValue attrVal;
 			try
 			{
-				attrVal = Utils.evalSingle(input, context, BooleanAttributeValue.class);
+				attrVal = Utils.evalSingle(input, context, DatatypeConstants.BOOLEAN.TYPE);
 				if (attrVal.getUnderlyingValue())
 				{
 					// we're one closer to our goal...see if we met it

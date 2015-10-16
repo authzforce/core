@@ -34,7 +34,7 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
  * results. Note that since this implementation does an ordered evaluation, this class also supports
  * the Ordered-Deny-Overrides-algorithm.
  */
-public class DenyOverridesAlg extends CombiningAlgorithm<Decidable>
+public final class DenyOverridesAlg extends CombiningAlgorithm<Decidable>
 {
 
 	/**

@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import javax.xml.bind.DatatypeConverter;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an xs:hexBinary value. This class supports parsing xs:hexBinary values. All
  * objects of this class are immutable and all methods of the class are thread-safe. The choice of
@@ -82,12 +85,6 @@ public class HexBinaryAttributeValue extends SimpleAttributeValue<byte[], HexBin
 		return DatatypeConverter.parseHexBinary(stringForm);
 	}
 
-	@Override
-	public HexBinaryAttributeValue one()
-	{
-		return this;
-	}
-
 	private int hashCode = 0;
 
 	@Override
@@ -120,6 +117,12 @@ public class HexBinaryAttributeValue extends SimpleAttributeValue<byte[], HexBin
 		 * if (value == null) { if (other.value != null) { return false; } } else
 		 */
 		return Arrays.equals(value, other.value);
+	}
+
+	@Override
+	public HexBinaryAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	{
+		return this;
 	}
 
 }

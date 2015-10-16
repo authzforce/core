@@ -36,10 +36,9 @@ package com.sun.xacml.finder;
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * AttributeFinder used to resolve {@link AttributeDesignator}s.
@@ -69,6 +68,6 @@ public interface AttributeFinder
 	 * @throws IndeterminateEvaluationException
 	 *             if any error finding attribute value
 	 */
-	<AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> resultDatatype) throws IndeterminateEvaluationException;
+	<AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, Bag.Datatype<AV> resultDatatype) throws IndeterminateEvaluationException;
 
 }

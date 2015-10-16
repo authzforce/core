@@ -153,7 +153,7 @@ public class SchemaHandler
 								}
 							} catch (IOException e)
 							{
-								// ignore
+								LOGGER.warn("Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}", e);
 							}
 						}
 						return s;
@@ -182,13 +182,13 @@ public class SchemaHandler
 						}
 					} catch (URISyntaxException e)
 					{
-						// just process as is
+						LOGGER.warn("Error resolving XML catalog URL ({}) to a file", catalogURL, e);
 					}
 				}
 
 				if (catalog == null)
 				{
-					LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found." + "  Check the classpatch for an xmlresolver jar.", catalogURL);
+					LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.", catalogURL);
 				} else
 				{
 					catalog.parseCatalog(catalogURL);

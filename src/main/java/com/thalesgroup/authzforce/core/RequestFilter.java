@@ -72,7 +72,7 @@ public abstract class RequestFilter
 	 * Factory of RequestFilters
 	 * 
 	 */
-	public static interface Factory extends PdpExtension
+	public interface Factory extends PdpExtension
 	{
 		/**
 		 * Create instance of RequestFilter
@@ -101,7 +101,7 @@ public abstract class RequestFilter
 		RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean requireContentForXPath, JAXBContext attributesContentJaxbCtx, Processor xmlProcessor);
 	}
 
-	protected static interface XACMLAttributesParser
+	protected interface XACMLAttributesParser
 	{
 
 		/**
@@ -395,7 +395,7 @@ public abstract class RequestFilter
 		}
 	}
 
-	protected static AttributeGUID RESOURCE_SCOPE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value(), null, XACMLAttributeId.XACML_RESOURCE_SCOPE.value());
+	protected static final AttributeGUID RESOURCE_SCOPE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value(), null, XACMLAttributeId.XACML_RESOURCE_SCOPE.value());
 
 	protected static final IndeterminateEvaluationException UNSUPPORTED_MULTIPLE_SCOPE_EXCEPTION = new IndeterminateEvaluationException("Unsupported resource scope. Expected scope: none or " + XACMLResourceScope.IMMEDIATE.value()
 			+ ". (Profile 'urn:oasis:names:tc:xacml:3.0:profile:multiple:scope' not supported.)", Status.STATUS_SYNTAX_ERROR);

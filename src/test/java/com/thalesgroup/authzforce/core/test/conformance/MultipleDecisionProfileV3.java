@@ -63,7 +63,6 @@ public class MultipleDecisionProfileV3
 	@AfterClass
 	public static void tearDown() throws Exception
 	{
-		showResults();
 	}
 
 	@Test
@@ -91,21 +90,13 @@ public class MultipleDecisionProfileV3
 			}
 
 			request = TestUtils.createRequest(ROOT_DIRECTORY + "request_0014_" + reqResNo + ".xml");
-			LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
+			LOGGER.debug("Request that is sent to the PDP :  {}", request);
 			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY + policyFilename).evaluate(request);
-			LOGGER.info("Response that is received from the PDP :  " + response);
+			LOGGER.debug("Response that is received from the PDP :  {}", response);
 			expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY + "response_0014_" + reqResNo + ".xml");
-			LOGGER.info("Response expected:  " + TestUtils.printResponse(expectedResponse));
+			LOGGER.debug("Response expected:  {}", expectedResponse);
 			TestUtils.assertNormalizedEquals("Response to " + ROOT_DIRECTORY + "request_0014_" + reqResNo + ".xml", expectedResponse, response);
-			LOGGER.info("Basic Test 0014 is finished");
-		}
-	}
-
-	private static void showResults() throws Exception
-	{
-		for (String key : results.keySet())
-		{
-			LOGGER.info(key + ":" + results.get(key));
+			LOGGER.debug("Basic Test 0014 is finished");
 		}
 	}
 }

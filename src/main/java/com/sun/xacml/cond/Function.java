@@ -55,7 +55,7 @@ import com.thalesgroup.authzforce.core.func.FunctionCall;
  * @param <RETURN_T>
  *            return type of this function, i.e. single-valued V or bag of Vs
  */
-public abstract class Function<RETURN_T extends Expression.Value<?, RETURN_T>> extends FunctionType implements Expression<RETURN_T>, PdpExtension
+public abstract class Function<RETURN_T extends Expression.Value<RETURN_T>> extends FunctionType implements Expression<RETURN_T>, PdpExtension
 {
 	// cached hashcode result
 	private int hashCode = 0;
@@ -121,7 +121,7 @@ public abstract class Function<RETURN_T extends Expression.Value<?, RETURN_T>> e
 	}
 
 	@Override
-	public final RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public final RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException // NOPMD by Cyril DANGERVILLE on 10/12/15 11:19 PM
 	{
 		// Expression#evaluate()
 		/*

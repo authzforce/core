@@ -41,7 +41,7 @@ public interface DecisionCache extends Closeable
 	 * @param <CONF_T>
 	 *            type of extension configuration (initialization parameters)
 	 */
-	public static abstract class Factory<CONF_T extends AbstractDecisionCache> extends JaxbBoundPdpExtension<CONF_T>
+	abstract class Factory<CONF_T extends AbstractDecisionCache> extends JaxbBoundPdpExtension<CONF_T>
 	{
 
 		/**

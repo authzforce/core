@@ -41,7 +41,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class NonNumericComparisonFunctionsTest extends GeneralFunctionTest
 {
 
-	public NonNumericComparisonFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public NonNumericComparisonFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

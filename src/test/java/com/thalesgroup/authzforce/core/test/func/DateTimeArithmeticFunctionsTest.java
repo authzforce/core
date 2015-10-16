@@ -40,7 +40,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class DateTimeArithmeticFunctionsTest extends GeneralFunctionTest
 {
 
-	public DateTimeArithmeticFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public DateTimeArithmeticFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

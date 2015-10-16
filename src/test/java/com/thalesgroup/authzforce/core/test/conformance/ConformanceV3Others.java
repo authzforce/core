@@ -132,11 +132,11 @@ public class ConformanceV3Others
 		final String testResourceLocationPrefix = testDirPath + "/";
 		LOGGER.debug("Starting conformance test of directory '{}'", testResourceLocationPrefix);
 		Request request = TestUtils.createRequest(testResourceLocationPrefix + REQUEST_FILENAME);
-		LOGGER.debug("Request that is sent to the PDP :  " + TestUtils.printRequest(request));
+		LOGGER.debug("Request that is sent to the PDP :  {}", request);
 		PDP pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME);
 		Response response = pdp.evaluate(request);
 		Response expectedResponse = TestUtils.createResponse(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
-		LOGGER.debug("Response that is received from the PDP :  " + response);
+		LOGGER.debug("Response that is received from the PDP :  {}", response);
 		TestUtils.assertNormalizedEquals(testResourceLocationPrefix, expectedResponse, response);
 		LOGGER.debug("Finished conformance test of directory '{}", testResourceLocationPrefix);
 	}

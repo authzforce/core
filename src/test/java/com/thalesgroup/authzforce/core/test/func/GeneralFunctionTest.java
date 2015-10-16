@@ -21,7 +21,6 @@
  */
 package com.thalesgroup.authzforce.core.test.func;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +30,7 @@ import org.junit.Test;
 
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
+import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
@@ -50,7 +50,7 @@ public abstract class GeneralFunctionTest
 	// private static final Logger LOGGER = LoggerFactory.getLogger(GeneralFunctionTest.class);
 
 	private final FunctionCall<?> funcCall;
-	private final Value<?, ?> expectedResult;
+	private final Value<?> expectedResult;
 	private final String toString;
 	private final boolean areBagsComparedAsSets;
 
@@ -66,7 +66,7 @@ public abstract class GeneralFunctionTest
 	 *            evaluation expected to throw an error (IndeterminateEvaluationException)
 	 * @throws UnknownIdentifierException
 	 */
-	protected GeneralFunctionTest(final String functionName, final List<Expression<?>> inputs, final Value<?, ?> expectedResult)
+	protected GeneralFunctionTest(final String functionName, final List<Expression<?>> inputs, final Value<?> expectedResult)
 	{
 		this(functionName, inputs, expectedResult, false);
 	}
@@ -85,7 +85,7 @@ public abstract class GeneralFunctionTest
 	 *            true iff result bags should be compared as sets for equality check
 	 * @throws UnknownIdentifierException
 	 */
-	protected GeneralFunctionTest(final String functionName, final List<Expression<?>> inputs, final Value<?, ?> expectedResult, boolean compareBagsAsSets)
+	protected GeneralFunctionTest(final String functionName, final List<Expression<?>> inputs, final Value<?> expectedResult, boolean compareBagsAsSets)
 	{
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
 		final Datatype<?> subFuncReturnType;
@@ -126,8 +126,19 @@ public abstract class GeneralFunctionTest
 	// org.junit.Assume.assumeTrue(function == null);
 	// }
 
+	private static final Set<AttributeValue<?>> bagToSet(Bag<?> bag)
+	{
+		final Set<AttributeValue<?>> set = new HashSet<>();
+		for (AttributeValue<?> val : bag)
+		{
+			set.add(val);
+		}
+
+		return set;
+	}
+
 	@Test
-	public void testEvaluate()
+	public void testEvaluate() throws IndeterminateEvaluationException
 	{
 		// Validate inputs and create function call
 		/*
@@ -136,21 +147,23 @@ public abstract class GeneralFunctionTest
 		 */
 		try
 		{
-			Value<?, ?> actualResult = funcCall.evaluate(null);
+			Value<?> actualResult = funcCall.evaluate(null);
 			if (expectedResult instanceof Bag && actualResult instanceof Bag && areBagsComparedAsSets)
 			{
-				Set<?> expectedSet = new HashSet(Arrays.asList(((Bag) expectedResult).all()));
-				Set<?> actualSet = new HashSet(Arrays.asList(((Bag) actualResult).all()));
+				Set<?> expectedSet = bagToSet((Bag<?>) expectedResult);
+				Set<?> actualSet = bagToSet((Bag<?>) actualResult);
 				Assert.assertEquals(toString, expectedSet, actualSet);
-			} else
+			} else if (expectedResult != null)
 			{
 				Assert.assertEquals(toString, expectedResult, actualResult);
 			}
 		} catch (IndeterminateEvaluationException e)
 		{
-			// expectedResult must be null to indicate we expect an evaluation error
-			Assert.assertNull("Expected evaluation error: ", expectedResult);
-
+			if (expectedResult != null)
+			{
+				// unexpected error
+				throw e;
+			}
 		}
 	}
 }

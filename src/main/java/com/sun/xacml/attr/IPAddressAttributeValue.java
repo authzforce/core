@@ -41,6 +41,8 @@ import javax.xml.ws.Holder;
 import com.google.common.net.InetAddresses;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * Represents the IPAddress datatype introduced in XACML 2.0. All objects of this class are
@@ -164,7 +166,7 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 		address = InetAddresses.forString(val.substring(1, endIndex));
 
 		// see if there's anything left in the string
-		if (endIndex != (len - 1))
+		if (endIndex != len - 1)
 		{
 			// if there's a mask, it's also an IPv6 address
 			if (val.charAt(endIndex + 1) == '/')
@@ -178,7 +180,7 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 			}
 
 			// finally, see if there's a port range, if we're not finished
-			if ((endIndex != (len - 1)) && (val.charAt(endIndex + 1) == ':'))
+			if (endIndex != len - 1 && val.charAt(endIndex + 1) == ':')
 			{
 				range = PortRange.getInstance(val.substring(endIndex + 2, len));
 			} else
@@ -320,7 +322,7 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 	}
 
 	@Override
-	public IPAddressAttributeValue one()
+	public IPAddressAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

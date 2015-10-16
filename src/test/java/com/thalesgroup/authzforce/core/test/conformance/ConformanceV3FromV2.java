@@ -152,11 +152,7 @@ public class ConformanceV3FromV2
 			} else
 			{
 				// this is an evaluation test with request/response (not a policy syntax check)
-				if (LOGGER.isDebugEnabled())
-				{
-					LOGGER.debug("Request that is sent to the PDP: {}", TestUtils.printRequest(request));
-				}
-
+				LOGGER.debug("Request that is sent to the PDP: {}", request);
 				Response response = pdp.evaluate(request);
 				Response expectedResponse = TestUtils.createResponse(testFilePathPrefix + "Response.xml");
 				LOGGER.debug("Response that is received from the PDP :  {}", response);

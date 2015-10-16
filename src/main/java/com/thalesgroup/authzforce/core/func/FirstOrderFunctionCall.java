@@ -19,10 +19,13 @@
 package com.thalesgroup.authzforce.core.func;
 
 import java.lang.reflect.Array;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
@@ -50,9 +53,9 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  * 
  * 
  */
-public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, RETURN>> implements FunctionCall<RETURN>
+public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RETURN>> implements FunctionCall<RETURN>
 {
-	private static final IllegalArgumentException EVAL_ARGS_NULL_INPUT_ARRAY_EXCEPTION = new IllegalArgumentException("Input array to store evaluation results is NULL");
+	private static final IllegalArgumentException EVAL_ARGS_NULL_INPUT_STACK_EXCEPTION = new IllegalArgumentException("Input stack to store evaluation results is NULL");
 
 	/**
 	 * Evaluates primitive argument expressions in the given context, and stores all result values
@@ -62,33 +65,24 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 	 *            function arguments
 	 * @param context
 	 *            evaluation context
-	 * @param results
-	 *            an array expected to be of greater or equal size to <code>args</code> that will,
-	 *            on return, contain the attribute values generated from evaluating all
-	 *            <code>args</code> in <code>context</code>; the specified type <code>T</code> of
-	 *            array elements must be a supertype of any expected arg evalution result datatype.
-	 * @return results containing all evaluation results. If its size is bigger than
-	 *         <code>args</code>, extra elements are not modified by this method.
+	 * @param argReturnType
+	 *            return type of argument expression evaluation
+	 * @param resultsToUpdate
+	 *            attribute values to be updated with results from evaluating all <code>args</code>
+	 *            in <code>context</code>; the specified type <code>AV</code> of array elements must
+	 *            be a supertype of any expected arg evalution result datatype. Used as the method
+	 *            result if not null; If null, a new instance is created.
+	 * @return results containing all evaluation results.
 	 * @throws IndeterminateEvaluationException
 	 *             if evaluation of one of the arg failed, or <code>T</code> is not a supertype of
 	 *             the result value datatype
 	 * @throws IllegalArgumentException
-	 *             if <code>results == null || results.length < args.size()</code>
+	 *             if {@code results == null || results.length < args.size()}
 	 */
-	private final static <AV extends AttributeValue<?>> AV[] evalPrimitiveArgs(List<? extends Expression<?>> args, EvaluationContext context, AV[] results) throws IndeterminateEvaluationException
+	private final static <AV extends AttributeValue<?>> Deque<AV> evalPrimitiveArgs(List<? extends Expression<?>> args, EvaluationContext context, Datatype<AV> argReturnType, Deque<AV> resultsToUpdate) throws IndeterminateEvaluationException
 	{
-		if (results == null)
-		{
-			throw EVAL_ARGS_NULL_INPUT_ARRAY_EXCEPTION;
-		}
+		final Deque<AV> results = resultsToUpdate == null ? new ArrayDeque<AV>() : resultsToUpdate;
 
-		if (results.length < args.size())
-		{
-			throw new IllegalArgumentException("Invalid size of input array to store Expression evaluation results: " + results.length + ". Required (>= number of input Expressions): >= " + args.size());
-		}
-
-		final Class<AV> expectedResultType = (Class<AV>) results.getClass().getComponentType();
-		int resultIndex = 0;
 		for (final Expression<?> arg : args)
 		{
 			// get and evaluate the next parameter
@@ -99,57 +93,67 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 			final AV argVal;
 			try
 			{
-				argVal = Utils.evalSingle(arg, context, expectedResultType);
+				argVal = Utils.evalSingle(arg, context, argReturnType);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException("Indeterminate arg #" + resultIndex, Status.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException("Indeterminate arg #" + results.size(), Status.STATUS_PROCESSING_ERROR, e);
 			}
 
-			results[resultIndex] = argVal;
-			resultIndex++;
+			results.add(argVal);
 		}
 
 		return results;
 	}
 
 	/**
-	 * Same as {@link #evalPrimitiveArgs(List, EvaluationContext)}, except all result values (must)
-	 * have a specific (data)type
+	 * Evaluates primitive argument expressions in the given context, and stores all result values
+	 * in a given array.
 	 * 
 	 * @param args
 	 *            function arguments
 	 * @param context
 	 *            evaluation context
-	 * @param returnType
-	 *            the one type that all result values must have
-	 * @return values resulting from evaluation of each input
+	 * @param resultsToUpdate
+	 *            attribute values to be updated with results from evaluating all <code>args</code>
+	 *            in <code>context</code>e. Used as the method result if not null; If null, a new
+	 *            instance is created.
+	 * @return results containing all evaluation results.
 	 * @throws IndeterminateEvaluationException
-	 *             if evaluation of one of the arg failed or <code>returnType</code> is not a
-	 *             supertype of the result value datatype
+	 *             if evaluation of one of the arg failed
+	 * @throws IllegalArgumentException
+	 *             if <code>results == null || results.length < args.size()</code>
 	 */
-	private final static <T extends AttributeValue<T>> T[] evalPrimitiveArgs(List<? extends Expression<?>> args, EvaluationContext context, Class<T> returnType) throws IndeterminateEvaluationException
+	private final static Deque<AttributeValue<?>> evalPrimitiveArgs(List<? extends Expression<?>> args, EvaluationContext context, Deque<AttributeValue<?>> resultsToUpdate) throws IndeterminateEvaluationException
 	{
-		final T[] results = (T[]) Array.newInstance(returnType, args.size());
-		return evalPrimitiveArgs(args, context, results);
-	}
+		final Deque<AttributeValue<?>> results = resultsToUpdate == null ? new ArrayDeque<AttributeValue<?>>() : resultsToUpdate;
 
-	private final static <T extends AttributeValue<T>> T[] evalBagArg(Expression<?> arg, EvaluationContext context, Class<T[]> resultArrayType) throws IndeterminateEvaluationException
-	{
-		final AttributeValue<?>[] attrVals = arg.evaluate(context).all();
-		try
+		for (final Expression<?> arg : args)
 		{
-			return resultArrayType.cast(attrVals);
-		} catch (ClassCastException e)
-		{
-			throw new IndeterminateEvaluationException("Invalid arg evaluation result's bag value datatype: " + attrVals.getClass().getComponentType().getName() + ". Expected: " + resultArrayType.getClass().getComponentType().getName(), Status.STATUS_PROCESSING_ERROR, e);
+			// get and evaluate the next parameter
+			/*
+			 * The types of arguments have already been checked with checkInputs(), so casting to
+			 * returnType should work.
+			 */
+			final AttributeValue<?> argVal;
+			try
+			{
+				argVal = Utils.evalSingle(arg, context);
+			} catch (IndeterminateEvaluationException e)
+			{
+				throw new IndeterminateEvaluationException("Indeterminate arg #" + results.size(), Status.STATUS_PROCESSING_ERROR, e);
+			}
+
+			results.add(argVal);
 		}
+
+		return results;
 	}
 
-	private final static <T extends AttributeValue<T>> T[][] evalBagArgs(List<Expression<?>> args, EvaluationContext context, T[][] results, Class<T[]> resultArrayType) throws IndeterminateEvaluationException
+	private final static <AV extends AttributeValue<AV>> Bag<AV>[] evalBagArgs(List<Expression<?>> args, EvaluationContext context, Bag.Datatype<AV> argReturnType, Bag<AV>[] results) throws IndeterminateEvaluationException
 	{
 		if (results == null)
 		{
-			throw EVAL_ARGS_NULL_INPUT_ARRAY_EXCEPTION;
+			throw EVAL_ARGS_NULL_INPUT_STACK_EXCEPTION;
 		}
 
 		if (results.length < args.size())
@@ -165,26 +169,26 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 			 * The types of arguments have already been checked with checkInputs(), so casting to
 			 * returnType should work.
 			 */
-			final T[] argVals;
+			final Bag<AV> argResult;
 			try
 			{
-				argVals = evalBagArg(arg, context, resultArrayType);
+				argResult = Utils.evalBagArg(arg, context, argReturnType);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException("Indeterminate arg #" + resultIndex, Status.STATUS_PROCESSING_ERROR);
+				throw new IndeterminateEvaluationException("Indeterminate arg #" + resultIndex, Status.STATUS_PROCESSING_ERROR, e);
 			}
 
-			results[resultIndex] = argVals;
+			results[resultIndex] = argResult;
 			resultIndex++;
 		}
 
 		return results;
 	}
 
-	private final static <T extends AttributeValue<T>> T[][] evalBagArgs(List<Expression<?>> args, EvaluationContext context, Class<T[]> resultArrayType) throws IndeterminateEvaluationException
+	private final static <AV extends AttributeValue<AV>> Bag<AV>[] evalBagArgs(List<Expression<?>> args, EvaluationContext context, Bag.Datatype<AV> argReturnType) throws IndeterminateEvaluationException
 	{
-		final T[][] results = (T[][]) Array.newInstance(resultArrayType, args.size());
-		return evalBagArgs(args, context, results, resultArrayType);
+		final Bag<AV>[] results = (Bag<AV>[]) Array.newInstance(argReturnType.getValueClass(), args.size());
+		return evalBagArgs(args, context, argReturnType, results);
 	}
 
 	private final void checkArgType(Datatype<?> argType, int argIndex, Datatype<?> expectedType) throws IllegalArgumentException
@@ -418,7 +422,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 	 * @param <RETURN_T>
 	 *            function return type
 	 */
-	public static abstract class EagerEval<RETURN_T extends Expression.Value<?, RETURN_T>> extends FirstOrderFunctionCall<RETURN_T>
+	public static abstract class EagerEval<RETURN_T extends Expression.Value<RETURN_T>> extends FirstOrderFunctionCall<RETURN_T>
 	{
 		protected final List<Expression<?>> argExpressions;
 		protected final String indeterminateArgMessage;
@@ -497,11 +501,6 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 						throw new IllegalArgumentException("Invalid type of function call used for function '" + funcId + "': " + this.getClass() + ". Use " + EagerSinglePrimitiveTypeEval.class + " or any subclass instead when all parameters are primitive and with same datatype.");
 					}
 				}
-
-				if (!EagerSinglePrimitiveTypeEval.class.isAssignableFrom(this.getClass()))
-				{
-					throw new IllegalArgumentException("Invalid type of function call used for function '" + funcId + "': " + this.getClass() + ". Use " + EagerSinglePrimitiveTypeEval.class + " or any subclass instead when all parameters are primitive.");
-				}
 			} else if (primParamCount == 0)
 			{
 				// no primitive parameters -> all parameters are bag -> use EagerBagEval.class
@@ -538,7 +537,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 	 * @param <RETURN_T>
 	 *            function return type
 	 */
-	public static abstract class EagerMultiPrimitiveTypeEval<RETURN_T extends Expression.Value<?, RETURN_T>> extends EagerEval<RETURN_T>
+	public static abstract class EagerMultiPrimitiveTypeEval<RETURN_T extends Expression.Value<RETURN_T>> extends EagerEval<RETURN_T>
 	{
 		/**
 		 * Instantiates Function call
@@ -572,7 +571,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		 * @throws IndeterminateEvaluationException
 		 *             if any error evaluating the function
 		 */
-		protected abstract RETURN_T evaluate(AttributeValue<?>[] args) throws IndeterminateEvaluationException;
+		protected abstract RETURN_T evaluate(Deque<AttributeValue<?>> args) throws IndeterminateEvaluationException;
 
 		/*
 		 * (non-Javadoc)
@@ -585,7 +584,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		@Override
 		protected final RETURN_T evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
 		{
-			final AttributeValue<?>[] finalArgs = new AttributeValue<?>[totalArgCount];
+			final Deque<AttributeValue<?>> finalArgs = new ArrayDeque<>(totalArgCount);
 			if (argExpressions != null)
 			{
 				try
@@ -603,9 +602,9 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 				 * remainingArgs (following the initial args, therefore starting at index =
 				 * initialArgCount)
 				 */
-				for (int i = 0; i < remainingArgs.length; i++)
+				for (final AttributeValue<?> remainingArg : remainingArgs)
 				{
-					finalArgs[initialArgCount + i] = remainingArgs[i];
+					finalArgs.add(remainingArg);
 				}
 			}
 
@@ -628,9 +627,9 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 	 * 
 	 * 
 	 */
-	public static abstract class EagerSinglePrimitiveTypeEval<RETURN_T extends Expression.Value<?, RETURN_T>, PARAM_T extends AttributeValue<?>> extends EagerEval<RETURN_T>
+	public static abstract class EagerSinglePrimitiveTypeEval<RETURN_T extends Expression.Value<RETURN_T>, PARAM_T extends AttributeValue<?>> extends EagerEval<RETURN_T>
 	{
-		private final Class<PARAM_T[]> parameterArrayClass;
+		private final Datatype<PARAM_T> parameterType;
 		private final Class<PARAM_T> parameterClass;
 
 		/**
@@ -639,10 +638,8 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		 * @param functionSig
 		 *            function signature
 		 * 
-		 * @param argArrayType
-		 *            array class of which element type is <code>PARAM_T</code> (arg value
-		 *            super-datatype). If argument expressions return different datatypes, the
-		 *            supertype of all - {@link AttributeValue} - may be specified.
+		 * @param parameterType
+		 *            parameter type (primitive)
 		 * @param args
 		 *            arguments' Expressions
 		 * @param remainingArgTypes
@@ -654,29 +651,29 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		 * @throws IllegalArgumentException
 		 *             if one of <code>remainingArgTypes</code> is a bag type.
 		 */
-		protected EagerSinglePrimitiveTypeEval(FunctionSignature<RETURN_T> functionSig, Class<PARAM_T[]> argArrayType, List<Expression<?>> args, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+		protected EagerSinglePrimitiveTypeEval(FunctionSignature<RETURN_T> functionSig, Datatype<PARAM_T> parameterType, List<Expression<?>> args, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			if (argArrayType == null)
+			if (parameterType == null)
 			{
-				throw new IllegalArgumentException("Function " + functionSig.getName() + ": Undefined parameter array type for eager-evaluation function call");
+				throw new IllegalArgumentException("Function " + functionSig.getName() + ": Undefined parameter type for eager-evaluation function call");
 			}
 
-			this.parameterArrayClass = argArrayType;
-			this.parameterClass = (Class<PARAM_T>) parameterArrayClass.getComponentType();
+			this.parameterType = parameterType;
+			this.parameterClass = parameterType.getValueClass();
 		}
 
 		/**
 		 * Make the call with attribute values as arguments. (The pre-evaluation of argument
 		 * expressions in the evaluation context is already handled internally by this class.)
 		 * 
-		 * @param args
+		 * @param argStack
 		 *            function arguments
 		 * @return result of the call
 		 * @throws IndeterminateEvaluationException
 		 *             if any error evaluating the function
 		 */
-		protected abstract RETURN_T evaluate(PARAM_T[] args) throws IndeterminateEvaluationException;
+		protected abstract RETURN_T evaluate(Deque<PARAM_T> argStack) throws IndeterminateEvaluationException;
 
 		/*
 		 * (non-Javadoc)
@@ -689,12 +686,12 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		@Override
 		protected final RETURN_T evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
 		{
-			final PARAM_T[] finalArgs = parameterArrayClass.cast(Array.newInstance(parameterClass, totalArgCount));
+			final Deque<PARAM_T> finalArgs = new ArrayDeque<>(totalArgCount);
 			if (argExpressions != null)
 			{
 				try
 				{
-					evalPrimitiveArgs(argExpressions, context, finalArgs);
+					evalPrimitiveArgs(argExpressions, context, parameterType, finalArgs);
 				} catch (IndeterminateEvaluationException e)
 				{
 					throw new IndeterminateEvaluationException(this.indeterminateArgMessage, Status.STATUS_PROCESSING_ERROR, e);
@@ -707,14 +704,14 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 				 * remainingArgs (following the initial args, therefore starting at index =
 				 * initialArgCount)
 				 */
-				for (int i = 0; i < remainingArgs.length; i++)
+				for (final AttributeValue<?> remainingArg : remainingArgs)
 				{
 					try
 					{
-						finalArgs[initialArgCount + i] = parameterClass.cast(remainingArgs[i]);
+						finalArgs.add(parameterClass.cast(remainingArg));
 					} catch (ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException("Function " + this.funcSig.getName() + ": Type of arg #" + (initialArgCount + i) + " not valid: " + remainingArgs[i].getClass() + ". Required: " + parameterClass + ".", Status.STATUS_PROCESSING_ERROR);
+						throw new IndeterminateEvaluationException("Function " + this.funcSig.getName() + ": Type of arg #" + finalArgs.size() + " not valid: " + remainingArg.getDataType() + ". Required: " + parameterType + ".", Status.STATUS_PROCESSING_ERROR);
 					}
 				}
 			}
@@ -742,9 +739,9 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 	 * 
 	 * 
 	 */
-	public static abstract class EagerBagEval<RETURN_T extends Expression.Value<?, RETURN_T>, PARAM_BAG_ELEMENT_T extends AttributeValue<PARAM_BAG_ELEMENT_T>> extends EagerEval<RETURN_T>
+	public static abstract class EagerBagEval<RETURN_T extends Expression.Value<RETURN_T>, PARAM_BAG_ELEMENT_T extends AttributeValue<PARAM_BAG_ELEMENT_T>> extends EagerEval<RETURN_T>
 	{
-		private final Class<PARAM_BAG_ELEMENT_T[]> paramBagAsArrayClass;
+		private final Bag.Datatype<PARAM_BAG_ELEMENT_T> paramBagType;
 
 		/**
 		 * Instantiates Function call
@@ -752,14 +749,13 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		 * @param functionSig
 		 *            function signature
 		 * 
-		 * @param argArrayType
-		 *            array class of which element type is <code>PARAM_T</code> (arg value
-		 *            super-datatype). If argument expressions return different datatypes, the
-		 *            supertype of all - {@link AttributeValue} - may be specified.
+		 * @param argBagType
+		 *            parameter bag datatype. If argument expressions return different datatypes,
+		 *            the supertype of all - {@link AttributeValue} - may be specified.
 		 * @param args
 		 *            arguments' Expressions
 		 */
-		protected EagerBagEval(FunctionSignature<RETURN_T> functionSig, Class<PARAM_BAG_ELEMENT_T[]> argArrayType, List<Expression<?>> args) throws IllegalArgumentException
+		protected EagerBagEval(FunctionSignature<RETURN_T> functionSig, Bag.Datatype<PARAM_BAG_ELEMENT_T> argBagType, List<Expression<?>> args) throws IllegalArgumentException
 		{
 			super(functionSig, args);
 			if (argExpressions == null)
@@ -771,12 +767,12 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 				throw new IllegalArgumentException("Function " + functionSig.getName() + ": no bag expression in arguments. At least one bag expression is required to use this type of FunctionCall: " + this.getClass());
 			}
 
-			if (argArrayType == null)
+			if (argBagType == null)
 			{
 				throw new IllegalArgumentException("Function " + functionSig.getName() + ": Undefined parameter array type for eager-evaluation function call");
 			}
 
-			this.paramBagAsArrayClass = argArrayType;
+			this.paramBagType = argBagType;
 
 		}
 
@@ -790,7 +786,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		 * @throws IndeterminateEvaluationException
 		 *             if any error evaluating the function
 		 */
-		protected abstract RETURN_T evaluate(PARAM_BAG_ELEMENT_T[][] bagArgs) throws IndeterminateEvaluationException;
+		protected abstract RETURN_T evaluate(Bag<PARAM_BAG_ELEMENT_T>[] bagArgs) throws IndeterminateEvaluationException;
 
 		@Override
 		protected RETURN_T evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
@@ -805,10 +801,10 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 			/*
 			 * We checked in constructor that argExpressions != null
 			 */
-			final PARAM_BAG_ELEMENT_T[][] bagArgs;
+			final Bag<PARAM_BAG_ELEMENT_T>[] bagArgs;
 			try
 			{
-				bagArgs = evalBagArgs(argExpressions, context, paramBagAsArrayClass);
+				bagArgs = evalBagArgs(argExpressions, context, paramBagType);
 
 			} catch (IndeterminateEvaluationException e)
 			{
@@ -836,13 +832,14 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 	 * 
 	 * 
 	 */
-	public static abstract class EagerPartlyBagEval<RETURN_T extends Expression.Value<?, RETURN_T>, PRIMITIVE_PARAM_T extends AttributeValue<PRIMITIVE_PARAM_T>> extends EagerEval<RETURN_T>
+	public static abstract class EagerPartlyBagEval<RETURN_T extends Expression.Value<RETURN_T>, PRIMITIVE_PARAM_T extends AttributeValue<PRIMITIVE_PARAM_T>> extends EagerEval<RETURN_T>
 	{
 		private final int numOfArgExpressions;
+		private final Bag.Datatype<PRIMITIVE_PARAM_T> bagParamType;
+		private final Datatype<PRIMITIVE_PARAM_T> primitiveParamType;
 		private final Class<PRIMITIVE_PARAM_T[]> primitiveParamArrayClass;
-		private final Class<PRIMITIVE_PARAM_T> primitiveParamClass;
 
-		protected EagerPartlyBagEval(FunctionSignature<RETURN_T> functionSig, Class<PRIMITIVE_PARAM_T[]> primitiveArgArrayType, List<Expression<?>> args, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		protected EagerPartlyBagEval(FunctionSignature<RETURN_T> functionSig, Bag.Datatype<PRIMITIVE_PARAM_T> bagParamType, Class<PRIMITIVE_PARAM_T[]> primitiveArrayClass, List<Expression<?>> args, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
 			if (argExpressions == null || (numOfArgExpressions = argExpressions.size()) <= numOfSameTypePrimitiveParamsBeforeBag)
@@ -851,8 +848,9 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 				throw new IllegalArgumentException("Function " + funcSig.getName() + ": no bag expression in arguments. At least one bag expression is required to use this type of FunctionCall: " + this.getClass());
 			}
 
-			this.primitiveParamArrayClass = primitiveArgArrayType;
-			this.primitiveParamClass = (Class<PRIMITIVE_PARAM_T>) primitiveParamArrayClass.getComponentType();
+			this.bagParamType = bagParamType;
+			this.primitiveParamType = bagParamType.getElementType();
+			this.primitiveParamArrayClass = primitiveArrayClass;
 		}
 
 		/**
@@ -865,7 +863,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 		 * @throws IndeterminateEvaluationException
 		 *             if any error evaluating the function
 		 */
-		protected abstract RETURN_T evaluate(PRIMITIVE_PARAM_T[] primArgsBeforeBag, PRIMITIVE_PARAM_T[][] bagArgs, PRIMITIVE_PARAM_T[] remainingArgs) throws IndeterminateEvaluationException;
+		protected abstract RETURN_T evaluate(Deque<PRIMITIVE_PARAM_T> primArgsBeforeBag, Bag<PRIMITIVE_PARAM_T>[] bagArgs, PRIMITIVE_PARAM_T[] remainingArgs) throws IndeterminateEvaluationException;
 
 		@Override
 		protected final RETURN_T evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
@@ -874,12 +872,12 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 			 * We checked in constructor that argExpressions.size >
 			 * numOfSameTypePrimitiveParamsBeforeBag
 			 */
-			final PRIMITIVE_PARAM_T[] primArgsBeforeBag;
-			final PRIMITIVE_PARAM_T[][] bagArgs;
+			final Deque<PRIMITIVE_PARAM_T> primArgsBeforeBag;
+			final Bag<PRIMITIVE_PARAM_T>[] bagArgs;
 			try
 			{
-				primArgsBeforeBag = evalPrimitiveArgs(argExpressions.subList(0, numOfSameTypePrimitiveParamsBeforeBag), context, primitiveParamClass);
-				bagArgs = evalBagArgs(argExpressions.subList(numOfSameTypePrimitiveParamsBeforeBag, numOfArgExpressions), context, primitiveParamArrayClass);
+				primArgsBeforeBag = evalPrimitiveArgs(argExpressions.subList(0, numOfSameTypePrimitiveParamsBeforeBag), context, primitiveParamType, null);
+				bagArgs = evalBagArgs(argExpressions.subList(numOfSameTypePrimitiveParamsBeforeBag, numOfArgExpressions), context, bagParamType);
 			} catch (IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(this.indeterminateArgMessage, Status.STATUS_PROCESSING_ERROR, e);
@@ -896,7 +894,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<?, 
 					castRemainingArgs = primitiveParamArrayClass.cast(remainingArgs);
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException("Function " + funcSig.getName() + ": Type of remaining args (# >= " + initialArgCount + ") not valid: " + remainingArgs.getClass().getComponentType() + ". Required: " + primitiveParamClass + ".", Status.STATUS_PROCESSING_ERROR);
+					throw new IndeterminateEvaluationException("Function " + funcSig.getName() + ": Type of remaining args (# >= " + initialArgCount + ") not valid: " + remainingArgs.getClass().getComponentType() + ". Required: " + primitiveParamType + ".", Status.STATUS_PROCESSING_ERROR);
 				}
 			}
 

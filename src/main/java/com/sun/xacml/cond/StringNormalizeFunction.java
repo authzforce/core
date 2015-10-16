@@ -33,6 +33,7 @@
  */
 package com.sun.xacml.cond;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
@@ -91,12 +92,12 @@ public abstract class StringNormalizeFunction extends FirstOrderFunction<StringA
 	@Override
 	protected final FirstOrderFunctionCall<StringAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new EagerSinglePrimitiveTypeEval<StringAttributeValue, StringAttributeValue>(signature, StringAttributeValue[].class, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<StringAttributeValue, StringAttributeValue>(signature, DatatypeConstants.STRING.TYPE, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected StringAttributeValue evaluate(StringAttributeValue[] args) throws IndeterminateEvaluationException
+			protected StringAttributeValue evaluate(Deque<StringAttributeValue> args) throws IndeterminateEvaluationException
 			{
-				return eval(args[0]);
+				return eval(args.getFirst());
 			}
 
 		};

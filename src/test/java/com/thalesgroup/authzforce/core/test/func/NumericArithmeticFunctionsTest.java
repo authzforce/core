@@ -38,7 +38,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class NumericArithmeticFunctionsTest extends GeneralFunctionTest
 {
 
-	public NumericArithmeticFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public NumericArithmeticFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

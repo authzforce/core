@@ -27,11 +27,9 @@ import org.slf4j.LoggerFactory;
 import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.AttributeFinderModule;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
-import com.thalesgroup.authzforce.core.eval.Bags;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 
 /**
  * Implementation of CloseAttributeFinder initialized with sub-modules, each responsible of finding
@@ -97,7 +95,7 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 	 * com.thalesgroup.authzforce.core.eval.EvaluationContext, java.lang.Class)
 	 */
 	@Override
-	public final <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> bagDatatype) throws IndeterminateEvaluationException
+	public final <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, Bag.Datatype<AV> bagDatatype) throws IndeterminateEvaluationException
 	{
 		try
 		{
@@ -173,11 +171,11 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 			 * <li>It has been requested before in this context but could not be found: error
 			 * occurred (IndeterminateEvaluationException)</li>
 			 * </ol>
-			 * To avoid this confusion, we put an empty Bag (with some error info saying why
-			 * this is empty).
+			 * To avoid this confusion, we put an empty Bag (with some error info saying why this is
+			 * empty).
 			 * </p>
 			 */
-			final Bag<AV> result = Bags.empty(bagDatatype, e);
+			final Bag<AV> result = Bag.empty(bagDatatype, e);
 			context.putAttributeDesignatorResultIfAbsent(attributeGUID, result);
 			return result;
 		}
@@ -197,7 +195,7 @@ public class CloseableAttributeFinderImpl implements CloseableAttributeFinder
 	{
 
 		@Override
-		public final <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> resultDatatype) throws IndeterminateEvaluationException
+		public final <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, Bag.Datatype<AV> resultDatatype) throws IndeterminateEvaluationException
 		{
 			return CloseableAttributeFinderImpl.this.findAttribute(attributeGUID, context, resultDatatype);
 		}

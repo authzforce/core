@@ -27,7 +27,6 @@ import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
 import com.sun.xacml.cond.Function;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
 import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
 
 /**
@@ -127,7 +126,7 @@ public final class DatatypeConstants<AV extends AttributeValue<AV>>
 	/**
 	 * Standard datatype constants
 	 */
-	public static Set<DatatypeConstants<? extends SimpleAttributeValue<?, ?>>> SET = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(STRING, BOOLEAN, INTEGER, DOUBLE, TIME, DATE, DATETIME, ANYURI, HEXBINARY, BASE64BINARY, X500NAME, RFC822NAME, IPADDRESS, DNSNAME, DAYTIMEDURATION,
+	public static final Set<DatatypeConstants<? extends SimpleAttributeValue<?, ?>>> SET = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(STRING, BOOLEAN, INTEGER, DOUBLE, TIME, DATE, DATETIME, ANYURI, HEXBINARY, BASE64BINARY, X500NAME, RFC822NAME, IPADDRESS, DNSNAME, DAYTIMEDURATION,
 			YEARMONTHDURATION, XPATH)));
 
 	/**
@@ -143,7 +142,7 @@ public final class DatatypeConstants<AV extends AttributeValue<AV>>
 	/**
 	 * Bag datatype based on the primitive datatype {@link #TYPE}
 	 */
-	public final BagDatatype<AV> BAG_TYPE;
+	public final Bag.Datatype<AV> BAG_TYPE;
 
 	/**
 	 * class of array of instances of this datatype

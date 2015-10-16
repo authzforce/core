@@ -34,7 +34,7 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
  * permit-unless-deny policy algorithm
  * 
  */
-public class PermitUnlessDenyAlg extends CombiningAlgorithm<Decidable>
+public final class PermitUnlessDenyAlg extends CombiningAlgorithm<Decidable>
 {
 
 	/**

@@ -21,10 +21,10 @@
  */
 package com.thalesgroup.authzforce.core.test.func;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.runner.RunWith;
@@ -50,7 +50,6 @@ import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Value;
 
@@ -58,7 +57,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class BagFunctionsTest extends GeneralFunctionTest
 {
 
-	public BagFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public BagFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}
@@ -146,20 +145,18 @@ public class BagFunctionsTest extends GeneralFunctionTest
 		// one-and-only({}) -> Indeterminate
 		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(typeParam.EMPTY_BAG), null });
 
-		// one-and-only({val}) -> val
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.singleton(typeParam.BAG_TYPE, primitiveValue)), primitiveValue });
+		// one-and-only({primitiveValue}) -> primitiveValue
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bag.singleton(typeParam.BAG_TYPE, primitiveValue)), primitiveValue });
 
-		// one-and-only({val, val}) -> Indeterminate
-		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
-		Arrays.fill(twoValArray, primitiveValue);
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.getInstance(typeParam.BAG_TYPE, twoValArray)), null });
+		// one-and-only({primitiveValue, primitiveValue}) -> Indeterminate
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bag.getInstance(typeParam.BAG_TYPE, Collections.nCopies(2, primitiveValue))), null });
 
 		return params;
 	}
 
-	private static final IntegerAttributeValue zeroIntValue = new IntegerAttributeValue("0");
-	private static final IntegerAttributeValue oneIntValue = new IntegerAttributeValue("1");
-	private static final IntegerAttributeValue twoIntValue = new IntegerAttributeValue("2");
+	private static final IntegerAttributeValue ZERO_AS_INT = new IntegerAttributeValue("0");
+	private static final IntegerAttributeValue ONE_AS_INT = new IntegerAttributeValue("1");
+	private static final IntegerAttributeValue TWO_AS_INT = new IntegerAttributeValue("2");
 
 	/**
 	 * *-bag-size function test parameters. For each, we test with an empty bag parameter, then with
@@ -170,15 +167,13 @@ public class BagFunctionsTest extends GeneralFunctionTest
 		Collection<Object[]> params = new ArrayList<>();
 
 		// bag-size({}) -> 0
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(typeParam.EMPTY_BAG), zeroIntValue });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(typeParam.EMPTY_BAG), ZERO_AS_INT });
 
-		// bag-size({val}) -> 1
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.singleton(typeParam.BAG_TYPE, primitiveValue)), oneIntValue });
+		// bag-size({primitiveValue}) -> 1
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bag.singleton(typeParam.BAG_TYPE, primitiveValue)), ONE_AS_INT });
 
-		// bag-size({val, val}) -> 2
-		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
-		Arrays.fill(twoValArray, primitiveValue);
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.getInstance(typeParam.BAG_TYPE, twoValArray)), twoIntValue });
+		// bag-size({primitiveValue, primitiveValue}) -> 2
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bag.getInstance(typeParam.BAG_TYPE, Collections.nCopies(2, primitiveValue))), TWO_AS_INT });
 		return params;
 	}
 
@@ -196,18 +191,12 @@ public class BagFunctionsTest extends GeneralFunctionTest
 		// is-in(val, {}) -> false
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, typeParam.EMPTY_BAG), BooleanAttributeValue.FALSE });
 
-		// is-in(val2, {val1, val2}) -> true
-		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
-		twoValArray[0] = primitiveValue1;
-		twoValArray[1] = primitiveValue2;
-		Bag<AV> twoValBag = Bags.getInstance(typeParam.BAG_TYPE, twoValArray);
+		// is-in(primitiveValue2, {primitiveValue1, primitiveValue2}) -> true
+		Bag<AV> twoValBag = Bag.getInstance(typeParam.BAG_TYPE, Arrays.asList(primitiveValue1, primitiveValue2));
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag), BooleanAttributeValue.TRUE });
 
-		// is-in(val2, {val1, val1}) -> false
-		// clone previous array but replace second value with same as first one
-		AV[] twoValArray2 = twoValArray.clone();
-		twoValArray2[1] = primitiveValue1;
-		Bag<AV> twoValBag2 = Bags.getInstance(typeParam.BAG_TYPE, twoValArray2);
+		// is-in(primitiveValue2, {primitiveValue1, primitiveValue1}) -> false
+		Bag<AV> twoValBag2 = Bag.getInstance(typeParam.BAG_TYPE, Collections.nCopies(2, primitiveValue1));
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag2), BooleanAttributeValue.FALSE });
 		return params;
 	}
@@ -219,11 +208,8 @@ public class BagFunctionsTest extends GeneralFunctionTest
 	{
 		Collection<Object[]> params = new ArrayList<>();
 
-		// is-in(val2, {val1, val2}) -> true
-		AV[] twoValArray = (AV[]) Array.newInstance(typeParam.TYPE.getValueClass(), 2);
-		twoValArray[0] = primitiveValue1;
-		twoValArray[1] = primitiveValue2;
-		Bag<AV> twoValBag = Bags.getInstance(typeParam.BAG_TYPE, twoValArray);
+		// bag(primitiveValue1, primitiveValue2) -> {primitiveValue1, primitiveValue2}
+		Bag<AV> twoValBag = Bag.getInstance(typeParam.BAG_TYPE, Arrays.asList(primitiveValue1, primitiveValue2));
 		params.add(new Object[] { bagOfFunctionId, Arrays.asList(primitiveValue1, primitiveValue2), twoValBag });
 		return params;
 	}

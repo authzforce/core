@@ -33,7 +33,6 @@
  */
 package com.sun.xacml.ctx;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -199,12 +198,12 @@ public class Status extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Status
 	 * 
 	 * @param args
 	 */
-	public static void main(String[] args)
-	{
-		final String[] codes = { "XXX", "YYY", "ZZZ" };
-		final List<String> codeList = Arrays.asList(codes);
-		final Status status = new Status(codeList, "OK", null);
-		System.out.println(status);
-	}
+	// public static void main(String[] args)
+	// {
+	// final String[] codes = { "XXX", "YYY", "ZZZ" };
+	// final List<String> codeList = Arrays.asList(codes);
+	// final Status status = new Status(codeList, "OK", null);
+	// System.out.println(status);
+	// }
 
 }

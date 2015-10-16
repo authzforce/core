@@ -119,17 +119,29 @@ public class AttributeAssignmentExpression extends oasis.names.tc.xacml._3_0.cor
 	 */
 	public List<AttributeAssignment> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		final Expression.Value<?, ?> result = this.evaluatableExpression.evaluate(context);
-		final AttributeValue<?>[] attrVals = result.all();
-		LOGGER.debug("AttributeAssignmentExpression[Category={},Issuer={},Id={}]/Expression -> {}", this.category, this.issuer, this.attributeId, attrVals);
-		if (attrVals == null || attrVals.length == 0)
-		{
-			return null;
-		}
+		final Expression.Value<?> result = this.evaluatableExpression.evaluate(context);
+		LOGGER.debug("AttributeAssignmentExpression[Category={},Issuer={},Id={}]/Expression -> {}", this.category, this.issuer, this.attributeId, result);
 
 		final List<AttributeAssignment> attrAssignList = new ArrayList<>();
-		for (final AttributeValue<?> attrVal : attrVals)
+		if (result.getReturnType().isBag())
 		{
+			// result is a bag
+			final Bag<?> bag = (Bag<?>) result;
+			/*
+			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with
+			 * MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of XACML core spec
+			 * says:
+			 * "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
+			 */
+			for (final AttributeValue<?> attrVal : bag)
+			{
+				final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category, this.issuer);
+				attrAssignList.add(attrAssignment);
+			}
+		} else
+		{
+			// atomic (see spec §5.30, 5.40) / primitive attribute value
+			final AttributeValue<?> attrVal = (AttributeValue<?>) result;
 			final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category, this.issuer);
 			attrAssignList.add(attrAssignment);
 		}

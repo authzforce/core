@@ -19,6 +19,7 @@
 package com.thalesgroup.authzforce.core.func;
 
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 
 import com.sun.xacml.ctx.Status;
@@ -105,10 +106,6 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	 */
 	public static final String NAME_FLOOR = FUNCTION_NS_1 + "floor";
 
-	protected final IndeterminateEvaluationException divideByZeroIndeterminateException = new IndeterminateEvaluationException("Function " + functionId + " : divisor is zero", Status.STATUS_PROCESSING_ERROR);
-
-	private final Class<AV[]> parameterArrayClass;
-
 	private static final Datatype<?>[] createGenericTypeArray(Datatype<?> paramType, int numOfRepetitions)
 	{
 		final Datatype<?>[] generics = new Datatype<?>[numOfRepetitions];
@@ -116,14 +113,16 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 		return generics;
 	}
 
+	protected final IndeterminateEvaluationException divideByZeroIndeterminateException = new IndeterminateEvaluationException("Function " + functionId + " : divisor is zero", Status.STATUS_PROCESSING_ERROR);
+
+	private final Datatype<AV> paramType;
+
 	/**
 	 * Creates a new Numeric Arithmetic function.
 	 * 
 	 * @param funcURI
 	 *            function URI
 	 * 
-	 * @param paramArrayType
-	 *            function parameter array type
 	 * @param paramType
 	 *            parameter/return type
 	 * @param arity
@@ -136,13 +135,13 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	 *            variable-length
 	 * 
 	 */
-	public NumericArithmeticFunction(String funcURI, Datatype<AV> paramType, int arity, boolean varArgs, Class<AV[]> paramArrayType)
+	public NumericArithmeticFunction(String funcURI, Datatype<AV> paramType, int arity, boolean varArgs)
 	{
 		super(funcURI, paramType, varArgs, createGenericTypeArray(paramType, arity));
-		this.parameterArrayClass = paramArrayType;
+		this.paramType = paramType;
 	}
 
-	abstract protected AV eval(AV[] args) throws IndeterminateEvaluationException;
+	abstract protected AV eval(Deque<AV> args) throws IndeterminateEvaluationException;
 
 	@Override
 	protected final FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
@@ -157,11 +156,11 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 		 * 
 		 */
 
-		return new EagerSinglePrimitiveTypeEval<AV, AV>(signature, parameterArrayClass, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<AV, AV>(signature, paramType, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected final AV evaluate(AV[] args) throws IndeterminateEvaluationException
+			protected final AV evaluate(Deque<AV> args) throws IndeterminateEvaluationException
 			{
 				return eval(args);
 			}
@@ -172,15 +171,15 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	private static class Abs<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
 	{
 
-		private Abs(String funcURI, Datatype<NAV> paramType, Class<NAV[]> paramArrayType)
+		private Abs(String funcURI, Datatype<NAV> paramType)
 		{
-			super(funcURI, paramType, 1, false, paramArrayType);
+			super(funcURI, paramType, 1, false);
 		}
 
 		@Override
-		protected final NAV eval(NAV[] args)
+		protected final NAV eval(Deque<NAV> args)
 		{
-			return args[0].abs();
+			return args.getFirst().abs();
 		}
 
 	}
@@ -188,15 +187,16 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	private static class Add<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
 	{
 
-		private Add(String funcURI, Datatype<NAV> paramType, Class<NAV[]> paramArrayType)
+		private Add(String funcURI, Datatype<NAV> paramType)
 		{
-			super(funcURI, paramType, 3, true, paramArrayType);
+			super(funcURI, paramType, 3, true);
 		}
 
 		@Override
-		protected final NAV eval(NAV[] args)
+		protected final NAV eval(Deque<NAV> args)
 		{
-			return args[0].add(args, 1);
+			final NAV arg0 = args.poll();
+			return arg0.add(args);
 		}
 
 	}
@@ -204,15 +204,16 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	private static class Multiply<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
 	{
 
-		private Multiply(String funcURI, Datatype<NAV> paramType, Class<NAV[]> paramArrayType)
+		private Multiply(String funcURI, Datatype<NAV> paramType)
 		{
-			super(funcURI, paramType, 3, true, paramArrayType);
+			super(funcURI, paramType, 3, true);
 		}
 
 		@Override
-		protected final NAV eval(NAV[] args)
+		protected final NAV eval(Deque<NAV> args)
 		{
-			return args[0].multiply(args, 1);
+			final NAV arg0 = args.poll();
+			return arg0.multiply(args);
 		}
 
 	}
@@ -220,15 +221,17 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	private static class Subtract<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
 	{
 
-		private Subtract(String funcURI, Datatype<NAV> paramType, Class<NAV[]> paramArrayType)
+		private Subtract(String funcURI, Datatype<NAV> paramType)
 		{
-			super(funcURI, paramType, 2, false, paramArrayType);
+			super(funcURI, paramType, 2, false);
 		}
 
 		@Override
-		protected final NAV eval(NAV[] args)
+		protected final NAV eval(Deque<NAV> args)
 		{
-			return args[0].subtract(args[1]);
+			final NAV arg0 = args.poll();
+			final NAV arg1 = args.poll();
+			return arg0.subtract(arg1);
 		}
 
 	}
@@ -236,17 +239,19 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	private static class Divide<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
 	{
 
-		private Divide(String funcURI, Datatype<NAV> paramType, Class<NAV[]> paramArrayType)
+		private Divide(String funcURI, Datatype<NAV> paramType)
 		{
-			super(funcURI, paramType, 2, false, paramArrayType);
+			super(funcURI, paramType, 2, false);
 		}
 
 		@Override
-		protected final NAV eval(NAV[] args) throws IndeterminateEvaluationException
+		protected final NAV eval(Deque<NAV> args) throws IndeterminateEvaluationException
 		{
+			final NAV arg0 = args.poll();
+			final NAV arg1 = args.poll();
 			try
 			{
-				return args[0].divide(args[1]);
+				return arg0.divide(arg1);
 			} catch (ArithmeticException e)
 			{
 				throw divideByZeroIndeterminateException;
@@ -260,16 +265,18 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 
 		public IntegerMod()
 		{
-			super(NAME_INTEGER_MOD, DatatypeConstants.INTEGER.TYPE, 2, false, IntegerAttributeValue[].class);
+			super(NAME_INTEGER_MOD, DatatypeConstants.INTEGER.TYPE, 2, false);
 		}
 
 		@Override
-		protected final IntegerAttributeValue eval(IntegerAttributeValue[] args) throws IndeterminateEvaluationException
+		protected final IntegerAttributeValue eval(Deque<IntegerAttributeValue> args) throws IndeterminateEvaluationException
 		{
+			final IntegerAttributeValue arg0 = args.poll();
+			final IntegerAttributeValue arg1 = args.poll();
 			final IntegerAttributeValue remainder;
 			try
 			{
-				remainder = args[0].remainder(args[1]);
+				remainder = arg0.remainder(arg1);
 			} catch (ArithmeticException e)
 			{
 				throw divideByZeroIndeterminateException;
@@ -284,13 +291,13 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 
 		private Floor()
 		{
-			super(NAME_FLOOR, DatatypeConstants.DOUBLE.TYPE, 1, false, DoubleAttributeValue[].class);
+			super(NAME_FLOOR, DatatypeConstants.DOUBLE.TYPE, 1, false);
 		}
 
 		@Override
-		protected final DoubleAttributeValue eval(DoubleAttributeValue[] args)
+		protected final DoubleAttributeValue eval(Deque<DoubleAttributeValue> args)
 		{
-			return args[0].floor();
+			return args.getFirst().floor();
 		}
 
 	}
@@ -299,13 +306,13 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	{
 		private Round()
 		{
-			super(NAME_ROUND, DatatypeConstants.DOUBLE.TYPE, 1, false, DoubleAttributeValue[].class);
+			super(NAME_ROUND, DatatypeConstants.DOUBLE.TYPE, 1, false);
 		}
 
 		@Override
-		protected final DoubleAttributeValue eval(DoubleAttributeValue[] args) throws IndeterminateEvaluationException
+		protected final DoubleAttributeValue eval(Deque<DoubleAttributeValue> args) throws IndeterminateEvaluationException
 		{
-			return args[0].roundIEEE754Default();
+			return args.getFirst().roundIEEE754Default();
 		}
 	}
 
@@ -314,25 +321,25 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	 */
 	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "numeric-arithmetic",
 	//
-			new Abs<>(NAME_INTEGER_ABS, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class),
+			new Abs<>(NAME_INTEGER_ABS, DatatypeConstants.INTEGER.TYPE),
 			//
-			new Abs<>(NAME_DOUBLE_ABS, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class),
+			new Abs<>(NAME_DOUBLE_ABS, DatatypeConstants.DOUBLE.TYPE),
 			//
-			new Add<>(NAME_INTEGER_ADD, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class),
+			new Add<>(NAME_INTEGER_ADD, DatatypeConstants.INTEGER.TYPE),
 			//
-			new Add<>(NAME_DOUBLE_ADD, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class),
+			new Add<>(NAME_DOUBLE_ADD, DatatypeConstants.DOUBLE.TYPE),
 			//
-			new Multiply<>(NAME_INTEGER_MULTIPLY, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class),
+			new Multiply<>(NAME_INTEGER_MULTIPLY, DatatypeConstants.INTEGER.TYPE),
 			//
-			new Multiply<>(NAME_DOUBLE_MULTIPLY, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class),
+			new Multiply<>(NAME_DOUBLE_MULTIPLY, DatatypeConstants.DOUBLE.TYPE),
 			//
-			new Subtract<>(NAME_INTEGER_SUBTRACT, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class),
+			new Subtract<>(NAME_INTEGER_SUBTRACT, DatatypeConstants.INTEGER.TYPE),
 			//
-			new Subtract<>(NAME_DOUBLE_SUBTRACT, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class),
+			new Subtract<>(NAME_DOUBLE_SUBTRACT, DatatypeConstants.DOUBLE.TYPE),
 			//
-			new Divide<>(NAME_INTEGER_DIVIDE, DatatypeConstants.INTEGER.TYPE, IntegerAttributeValue[].class),
+			new Divide<>(NAME_INTEGER_DIVIDE, DatatypeConstants.INTEGER.TYPE),
 			//
-			new Divide<>(NAME_DOUBLE_DIVIDE, DatatypeConstants.DOUBLE.TYPE, DoubleAttributeValue[].class),
+			new Divide<>(NAME_DOUBLE_DIVIDE, DatatypeConstants.DOUBLE.TYPE),
 			//
 			new IntegerMod(),
 			//

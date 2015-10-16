@@ -32,11 +32,9 @@ import com.sun.xacml.finder.AttributeFinderModule;
 import com.thalesgroup.authzforce.core.attr.AttributeGUID;
 import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
-import com.thalesgroup.authzforce.core.eval.Bags;
+import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.Bag;
 import com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder;
 
 /**
@@ -61,9 +59,9 @@ public class TestAttributeFinderModule extends AttributeFinderModule
 		}
 
 		@Override
-		public DependencyAwareFactory<TestAttributeFinder> parseDependencies(final TestAttributeFinder conf)
+		public DependencyAwareFactory parseDependencies(final TestAttributeFinder conf)
 		{
-			return new DependencyAwareFactory<TestAttributeFinder>()
+			return new DependencyAwareFactory()
 			{
 
 				@Override
@@ -108,11 +106,11 @@ public class TestAttributeFinderModule extends AttributeFinderModule
 	}
 
 	@Override
-	public <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, BagDatatype<AV> returnDatatype) throws IndeterminateEvaluationException
+	public <AV extends AttributeValue<AV>> Bag<AV> findAttribute(AttributeGUID attributeGUID, EvaluationContext context, Bag.Datatype<AV> returnDatatype) throws IndeterminateEvaluationException
 	{
 		if (supportedAttrIds.contains(attributeGUID))
 		{
-			return Bags.empty(returnDatatype, null);
+			return Bag.empty(returnDatatype, null);
 		}
 
 		return null;

@@ -18,9 +18,12 @@
  */
 package com.thalesgroup.authzforce.core.attr;
 
-import java.math.RoundingMode;
+import java.util.Deque;
 
 import javax.xml.bind.DatatypeConverter;
+
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * Representation of an xs:double value. This class supports parsing xs:double values. All objects
@@ -90,28 +93,25 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	}
 
 	@Override
-	public DoubleAttributeValue add(DoubleAttributeValue[] others, int offset)
+	public DoubleAttributeValue add(Deque<DoubleAttributeValue> others)
 	{
-		checkOffset(others, offset);
 
 		double sum = value;
-		for (int i = offset; i < others.length; i++)
+		while (!others.isEmpty())
 		{
-			sum += others[i].value;
+			sum += others.poll().value;
 		}
 
 		return new DoubleAttributeValue(sum);
 	}
 
 	@Override
-	public DoubleAttributeValue multiply(DoubleAttributeValue[] others, int offset)
+	public DoubleAttributeValue multiply(Deque<DoubleAttributeValue> others)
 	{
-		checkOffset(others, offset);
-
 		double product = value;
-		for (int i = offset; i < others.length; i++)
+		while (!others.isEmpty())
 		{
-			product *= others[i].value;
+			product *= others.poll().value;
 		}
 
 		return new DoubleAttributeValue(product);
@@ -162,8 +162,8 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	/**
 	 * Rounds the double using default IEEE754 rounding mode . According to XACML core spec, §7.5
 	 * Arithmetic evaluation, "rounding - is set to round-half-even (IEEE 854 §4.1)" (
-	 * {@link RoundingMode#HALF_EVEN}). This method uses {@link Math#rint(double)} that does the
-	 * equivalent of the {@link RoundingMode#HALF_EVEN}.
+	 * {@link java.math.RoundingMode#HALF_EVEN}). This method uses {@link Math#rint(double)} that
+	 * does the equivalent of the {@link java.math.RoundingMode#HALF_EVEN}.
 	 * 
 	 * @return result of Math#rint(double) as AttributeValue
 	 * 
@@ -206,7 +206,7 @@ public class DoubleAttributeValue extends NumericAttributeValue<Double, DoubleAt
 	}
 
 	@Override
-	public DoubleAttributeValue one()
+	public DoubleAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		return this;
 	}

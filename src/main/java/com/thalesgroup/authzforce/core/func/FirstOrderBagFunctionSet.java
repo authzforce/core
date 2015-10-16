@@ -19,6 +19,8 @@
 package com.thalesgroup.authzforce.core.func;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,8 +32,6 @@ import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
 import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.BagDatatype;
-import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.core.eval.Expression.Value;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
@@ -80,38 +80,39 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		 */
 		private static final String NAME_SUFFIX_ONE_AND_ONLY = "-one-and-only";
 
-		private final Class<AV[]> arrayClass;
 		private final IndeterminateEvaluationException invalidArgEmptyException;
+
+		private final Bag.Datatype<AV> bagType;
 
 		private SingletonBagToPrimitive(DatatypeConstants<AV> typeParameter)
 		{
 			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_ONE_AND_ONLY, typeParameter.TYPE, false, typeParameter.BAG_TYPE);
-			this.arrayClass = typeParameter.ARRAY_CLASS;
+			this.bagType = typeParameter.BAG_TYPE;
 			this.invalidArgEmptyException = new IndeterminateEvaluationException("Function " + functionId + ": Invalid arg #0: empty bag or bag size > 1. Required: one and only one value in bag.", Status.STATUS_PROCESSING_ERROR);
 		}
 
 		@Override
 		protected final FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerBagEval<AV, AV>(signature, arrayClass, argExpressions)
+			return new EagerBagEval<AV, AV>(signature, bagType, argExpressions)
 			{
 
 				@Override
-				protected final AV evaluate(AV[][] bagArgs) throws IndeterminateEvaluationException
+				protected final AV evaluate(Bag<AV>[] bagArgs) throws IndeterminateEvaluationException
 				{
 					return eval(bagArgs[0]);
 				}
 			};
 		}
 
-		private final AV eval(AV[] bag) throws IndeterminateEvaluationException
+		private final AV eval(Bag<AV> bag) throws IndeterminateEvaluationException
 		{
-			if (bag.length != 1)
+			if (bag.size() != 1)
 			{
 				throw invalidArgEmptyException;
 			}
 
-			return bag[0];
+			return bag.getSingleValue();
 		}
 	}
 
@@ -122,22 +123,22 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		 */
 		private static final String NAME_SUFFIX_BAG_SIZE = "-bag-size";
 
-		private final Class<AV[]> arrayClass;
+		private final Bag.Datatype<AV> bagType;
 
 		private BagSize(DatatypeConstants<AV> typeParameter)
 		{
 			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_BAG_SIZE, DatatypeConstants.INTEGER.TYPE, false, typeParameter.BAG_TYPE);
-			this.arrayClass = typeParameter.ARRAY_CLASS;
+			this.bagType = typeParameter.BAG_TYPE;
 		}
 
 		@Override
 		protected final FirstOrderFunctionCall<IntegerAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerBagEval<IntegerAttributeValue, AV>(signature, arrayClass, argExpressions)
+			return new EagerBagEval<IntegerAttributeValue, AV>(signature, bagType, argExpressions)
 			{
 
 				@Override
-				protected final IntegerAttributeValue evaluate(AV[][] bagArgs) throws IndeterminateEvaluationException
+				protected final IntegerAttributeValue evaluate(Bag<AV>[] bagArgs) throws IndeterminateEvaluationException
 				{
 					return eval(bagArgs[0]);
 				}
@@ -145,9 +146,9 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 			};
 		}
 
-		private final static IntegerAttributeValue eval(AttributeValue<?>[] bag)
+		private final static IntegerAttributeValue eval(Bag<?> bag)
 		{
-			return new IntegerAttributeValue(bag.length);
+			return new IntegerAttributeValue(bag.size());
 		}
 
 	}
@@ -161,38 +162,33 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 
 		private final Class<AV[]> arrayClass;
 
+		private final Bag.Datatype<AV> bagType;
+
 		private BagContains(DatatypeConstants<AV> typeParameter)
 		{
 			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_IS_IN, DatatypeConstants.BOOLEAN.TYPE, false, typeParameter.TYPE, typeParameter.BAG_TYPE);
 			this.arrayClass = typeParameter.ARRAY_CLASS;
+			this.bagType = typeParameter.BAG_TYPE;
 		}
 
 		@Override
 		protected FirstOrderFunctionCall<BooleanAttributeValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerPartlyBagEval<BooleanAttributeValue, AV>(signature, arrayClass, argExpressions, remainingArgTypes)
+			return new EagerPartlyBagEval<BooleanAttributeValue, AV>(signature, bagType, arrayClass, argExpressions, remainingArgTypes)
 			{
 
 				@Override
-				protected final BooleanAttributeValue evaluate(AV[] primArgsBeforeBag, AV[][] bagArgs, AV[] remainingArgs) throws IndeterminateEvaluationException
+				protected final BooleanAttributeValue evaluate(Deque<AV> primArgsBeforeBag, Bag<AV>[] bagArgs, AV[] remainingArgs) throws IndeterminateEvaluationException
 				{
-					return BooleanAttributeValue.valueOf(eval(primArgsBeforeBag[0], bagArgs[0]));
+					return BooleanAttributeValue.valueOf(eval(primArgsBeforeBag.getFirst(), bagArgs[0]));
 				}
 
 			};
 		}
 
-		public static <V extends AttributeValue<V>> boolean eval(V arg0, V[] bag)
+		public static <V extends AttributeValue<V>> boolean eval(V arg0, Bag<V> bag)
 		{
-			for (final V bagVal : bag)
-			{
-				if (arg0.equals(bagVal))
-				{
-					return true;
-				}
-			}
-
-			return false;
+			return bag.contains(arg0);
 		}
 	}
 
@@ -203,26 +199,26 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		 */
 		private static final String NAME_SUFFIX_BAG = "-bag";
 
-		private final Class<AV[]> arrayClass;
-		private final BagDatatype<AV> bagReturnType;
+		private final Datatype<AV> paramType;
+		private final Bag.Datatype<AV> bagReturnType;
 
 		private PrimitiveToBag(DatatypeConstants<AV> typeParameter)
 		{
 			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_BAG, typeParameter.BAG_TYPE, true, typeParameter.TYPE);
 			this.bagReturnType = typeParameter.BAG_TYPE;
-			this.arrayClass = typeParameter.ARRAY_CLASS;
+			this.paramType = typeParameter.TYPE;
 		}
 
 		@Override
 		protected final FirstOrderFunctionCall<Bag<AV>> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerSinglePrimitiveTypeEval<Bag<AV>, AV>(signature, arrayClass, argExpressions, remainingArgTypes)
+			return new EagerSinglePrimitiveTypeEval<Bag<AV>, AV>(signature, paramType, argExpressions, remainingArgTypes)
 			{
 
 				@Override
-				protected Bag<AV> evaluate(AV[] args) throws IndeterminateEvaluationException
+				protected Bag<AV> evaluate(Deque<AV> args) throws IndeterminateEvaluationException
 				{
-					return Bags.getInstance(bagReturnType, args);
+					return Bag.getInstance(bagReturnType, args);
 				}
 			};
 		}
@@ -262,35 +258,48 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 	 * @param <RETURN>
 	 *            return type
 	 */
-	private static abstract class SetFunction<AV extends AttributeValue<AV>, RETURN extends Value<?, RETURN>> extends FirstOrderFunction<RETURN>
+	private static abstract class SetFunction<AV extends AttributeValue<AV>, RETURN extends Value<RETURN>> extends FirstOrderFunction<RETURN>
 	{
 
-		private final Class<AV[]> arrayClass;
+		private final Bag.Datatype<AV> bagType;
 
-		// protected final Class<AV> datatypeClass;
-
-		protected SetFunction(String functionId, Class<AV[]> typeValArrayClass, Datatype<RETURN> returnType, boolean varArgs, List<Datatype<Bag<AV>>> bagParamTypes)
+		/**
+		 * Creates instance
+		 * 
+		 * @param functionId
+		 *            function ID
+		 * @param returnType
+		 *            return type
+		 * @param varArgs
+		 *            variable-length parameter (the number of parameters to set function is
+		 *            variable)
+		 * @param parameterType
+		 *            parameter (bag/set) type
+		 * @param minNumOfParameters
+		 *            total number of (bag) parameters if {@code varArgs == false}; or minimum
+		 *            number of parameters if {@code varArgs == true}
+		 */
+		public SetFunction(String functionId, Datatype<RETURN> returnType, boolean varArgs, Bag.Datatype<AV> parameterType, int minNumOfParameters)
 		{
-			super(functionId, returnType, varArgs, (Datatype<Bag<AV>>[]) bagParamTypes.toArray());
-			this.arrayClass = typeValArrayClass;
-			// this.datatypeClass = (Class<AV>) arrayClass.getComponentType();
+			super(functionId, returnType, varArgs, Collections.nCopies(varArgs ? minNumOfParameters + 1 : minNumOfParameters, parameterType).toArray(new Datatype<?>[minNumOfParameters]));
+			this.bagType = parameterType;
 		}
 
 		@Override
 		protected final FirstOrderFunctionCall<RETURN> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerBagEval<RETURN, AV>(signature, arrayClass, argExpressions)
+			return new EagerBagEval<RETURN, AV>(signature, bagType, argExpressions)
 			{
 
 				@Override
-				protected RETURN evaluate(AV[][] bagArgs) throws IndeterminateEvaluationException
+				protected RETURN evaluate(Bag<AV>[] bagArgs) throws IndeterminateEvaluationException
 				{
 					return eval(bagArgs);
 				}
 			};
 		}
 
-		abstract protected RETURN eval(AV[][] bagArgs);
+		abstract protected RETURN eval(Bag<AV>[] bagArgs);
 	}
 
 	private static class Intersection<AV extends AttributeValue<AV>> extends SetFunction<AV, Bag<AV>>
@@ -300,26 +309,49 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		 */
 		private static final String NAME_SUFFIX_INTERSECTION = "-intersection";
 
-		private final BagDatatype<AV> bagReturnType;
+		private final Bag.Datatype<AV> bagReturnType;
 
 		private Intersection(DatatypeConstants<AV> typeParam)
 		{
-			super(typeParam.FUNCTION_ID_PREFIX + NAME_SUFFIX_INTERSECTION, typeParam.ARRAY_CLASS, typeParam.BAG_TYPE, false, Arrays.<Datatype<Bag<AV>>> asList(typeParam.BAG_TYPE, typeParam.BAG_TYPE));
+			super(typeParam.FUNCTION_ID_PREFIX + NAME_SUFFIX_INTERSECTION, typeParam.BAG_TYPE, false, typeParam.BAG_TYPE, 2);
 			this.bagReturnType = typeParam.BAG_TYPE;
 		}
 
 		@Override
-		protected final Bag<AV> eval(AV[][] bagArgs)
+		protected final Bag<AV> eval(Bag<AV>[] bagArgs)
 		{
-			return Bags.getInstance(bagReturnType, eval(bagArgs[0], bagArgs[1]));
+			return Bag.getInstance(bagReturnType, eval(bagArgs[0], bagArgs[1]));
 		}
 
-		private final static <V extends AttributeValue<V>> Set<V> eval(V[] bag0, V[] bag1)
+		private final static <V extends AttributeValue<V>> Set<V> eval(Bag<V> bag0, Bag<V> bag1)
 		{
-			// TODO: compare performances with the solution using arrays directly (not Sets)
-			final Set<V> result = new HashSet<>(Arrays.asList(bag0));
-			result.retainAll(Arrays.asList(bag1));
-			return result;
+			// http://tekmarathon.com/2012/11/26/find-intersection-of-elements-in-two-arrays/
+			// We use a Set because no duplicate shall exist in the result
+			final Set<V> intersection = new HashSet<>();
+			final Bag<V> smallerBag;
+			final Bag<V> biggerBag;
+			final int bag0size = bag0.size();
+			final int bag1size = bag1.size();
+			if (bag0size < bag1size)
+			{
+				smallerBag = bag0;
+				biggerBag = bag1;
+			} else
+			{
+				smallerBag = bag1;
+				biggerBag = bag0;
+			}
+
+			// for each value in biggest bag, check whether it is in the smaller bag
+			for (final V v : biggerBag)
+			{
+				if (smallerBag.contains(v))
+				{
+					intersection.add(v);
+				}
+			}
+
+			return intersection;
 		}
 
 	}
@@ -333,20 +365,20 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 
 		private AtLeastOneMemberOf(DatatypeConstants<AV> typeParam)
 		{
-			super(typeParam.FUNCTION_ID_PREFIX + NAME_SUFFIX_AT_LEAST_ONE_MEMBER_OF, typeParam.ARRAY_CLASS, DatatypeConstants.BOOLEAN.TYPE, false, Arrays.<Datatype<Bag<AV>>> asList(typeParam.BAG_TYPE, typeParam.BAG_TYPE));
+			super(typeParam.FUNCTION_ID_PREFIX + NAME_SUFFIX_AT_LEAST_ONE_MEMBER_OF, DatatypeConstants.BOOLEAN.TYPE, false, typeParam.BAG_TYPE, 2);
 		}
 
 		@Override
-		protected final BooleanAttributeValue eval(AV[][] bagArgs)
+		protected final BooleanAttributeValue eval(Bag<AV>[] bagArgs)
 		{
 			return BooleanAttributeValue.valueOf(eval(bagArgs[0], bagArgs[1]));
 		}
 
-		private final static <V extends AttributeValue<V>> boolean eval(V[] bag0, V[] bag1)
+		private final static <V extends AttributeValue<V>> boolean eval(Bag<V> bag0, Bag<V> bag1)
 		{
 			for (final V bag0Val : bag0)
 			{
-				if (BagContains.eval(bag0Val, bag1))
+				if (bag1.contains(bag0Val))
 				{
 					return true;
 				}
@@ -364,7 +396,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		 */
 		private static final String NAME_SUFFIX_UNION = "-union";
 
-		private final BagDatatype<AV> bagReturnType;
+		private final Bag.Datatype<AV> bagReturnType;
 
 		private Union(DatatypeConstants<AV> typeParameter)
 		{
@@ -372,16 +404,15 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 			 * Union function takes two or more parameters, i.e. two parameters of a specific bag
 			 * type and a variable-length (zero-to-any) parameter of the same bag type
 			 */
-			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_UNION, typeParameter.ARRAY_CLASS, typeParameter.BAG_TYPE, true, Arrays.<Datatype<Bag<AV>>> asList(typeParameter.BAG_TYPE, typeParameter.BAG_TYPE, typeParameter.BAG_TYPE));
+			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_UNION, typeParameter.BAG_TYPE, true, typeParameter.BAG_TYPE, 2);
 			this.bagReturnType = typeParameter.BAG_TYPE;
 		}
 
 		@Override
-		protected final Bag<AV> eval(AV[][] bags)
+		protected final Bag<AV> eval(Bag<AV>[] bags)
 		{
-			// TODO: compare performances with the solution using arrays directly (not Set)
-			final Set<AV> result = new HashSet<>(Arrays.asList(bags[0]));
-			for (final AV[] bag : bags)
+			final Set<AV> result = new HashSet<>();
+			for (final Bag<AV> bag : bags)
 			{
 				for (final AV bagVal : bag)
 				{
@@ -389,7 +420,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 				}
 			}
 
-			return Bags.getInstance(bagReturnType, result);
+			return Bag.getInstance(bagReturnType, result);
 		}
 	}
 
@@ -402,20 +433,26 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 
 		private Subset(DatatypeConstants<AV> typeParameter)
 		{
-			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_SUBSET, typeParameter.ARRAY_CLASS, DatatypeConstants.BOOLEAN.TYPE, false, Arrays.<Datatype<Bag<AV>>> asList(typeParameter.BAG_TYPE, typeParameter.BAG_TYPE));
+			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_SUBSET, DatatypeConstants.BOOLEAN.TYPE, false, typeParameter.BAG_TYPE, 2);
 		}
 
 		@Override
-		protected final BooleanAttributeValue eval(AV[][] bagArgs)
+		protected final BooleanAttributeValue eval(Bag<AV>[] bagArgs)
 		{
 			return BooleanAttributeValue.valueOf(eval(bagArgs[0], bagArgs[1]));
 		}
 
-		private final static <V extends AttributeValue<V>> boolean eval(V[] bag0, V[] bag1)
+		private final static <V extends AttributeValue<V>> boolean eval(Bag<V> bag0, Bag<V> bag1)
 		{
-			// TODO: compare performances with the solution using arrays directly (not Set)
-			final Set<V> set1 = new HashSet<>(Arrays.asList(bag1));
-			return set1.containsAll(Arrays.asList(bag0));
+			for (final V v : bag0)
+			{
+				if (!bag1.contains(v))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 	}
@@ -429,20 +466,29 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 
 		private SetEquals(DatatypeConstants<AV> typeParameter)
 		{
-			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_SET_EQUALS, typeParameter.ARRAY_CLASS, DatatypeConstants.BOOLEAN.TYPE, false, Arrays.<Datatype<Bag<AV>>> asList(typeParameter.BAG_TYPE, typeParameter.BAG_TYPE));
+			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_SET_EQUALS, DatatypeConstants.BOOLEAN.TYPE, false, typeParameter.BAG_TYPE, 2);
 		}
 
 		@Override
-		protected final BooleanAttributeValue eval(AV[][] bagArgs)
+		protected final BooleanAttributeValue eval(Bag<AV>[] bagArgs)
 		{
 			return BooleanAttributeValue.valueOf(eval(bagArgs[0], bagArgs[1]));
 		}
 
-		private final static <V extends AttributeValue<V>> boolean eval(V[] bag0, V[] bag1)
+		private final static <V extends AttributeValue<V>> boolean eval(Bag<V> bag0, Bag<V> bag1)
 		{
+			final Set<V> set0 = new HashSet<>();
+			for (final V v : bag0)
+			{
+				set0.add(v);
+			}
 
-			final Set<V> set0 = new HashSet<>(Arrays.asList(bag0));
-			final Set<V> set1 = new HashSet<>(Arrays.asList(bag1));
+			final Set<V> set1 = new HashSet<>();
+			for (final V v : bag1)
+			{
+				set1.add(v);
+			}
+
 			return set0.equals(set1);
 		}
 

@@ -21,8 +21,6 @@ package com.thalesgroup.authzforce.core.policy;
 import java.io.Closeable;
 import java.util.Deque;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
-
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
 import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
@@ -51,7 +49,7 @@ public interface RefPolicyFinderModule extends Closeable
 	 * 
 	 * 
 	 */
-	public abstract class Factory<CONF_T extends AbstractPolicyFinder> extends JaxbBoundPdpExtension<CONF_T>
+	abstract class Factory<CONF_T extends AbstractPolicyFinder> extends JaxbBoundPdpExtension<CONF_T>
 	{
 		/**
 		 * Create RefPolicyFinderModule instance
@@ -113,7 +111,7 @@ public interface RefPolicyFinderModule extends Closeable
 	 *            detect loops, i.e. circular references, and validate reference depth); therefore
 	 *            it is the responsibility of the implementation to pass this parameter as the last
 	 *            one to
-	 *            {@link PolicySet#PolicySet(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet, DefaultsType, Expression.Factory, CombiningAlgRegistry, RefPolicyFinder, Deque)}
+	 *            {@link PolicySet#PolicySet(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet, net.sf.saxon.s9api.XPathCompiler, com.thalesgroup.authzforce.core.eval.Expression.Factory, CombiningAlgRegistry, RefPolicyFinder, Deque)}
 	 *            henever it instantiates a {@link PolicySet}.
 	 * 
 	 * @return the result of looking for a matching policy, or null if no policy found with PolicyId

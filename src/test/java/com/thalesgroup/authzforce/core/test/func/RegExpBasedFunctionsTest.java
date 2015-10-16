@@ -43,7 +43,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class RegExpBasedFunctionsTest extends GeneralFunctionTest
 {
 
-	public RegExpBasedFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public RegExpBasedFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

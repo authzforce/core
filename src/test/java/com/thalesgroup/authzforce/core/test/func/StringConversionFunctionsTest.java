@@ -37,7 +37,7 @@ import com.thalesgroup.authzforce.core.eval.Expression.Value;
 public class StringConversionFunctionsTest extends GeneralFunctionTest
 {
 
-	public StringConversionFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?, ?> expectedResult)
+	public StringConversionFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
 	{
 		super(functionName, inputs, expectedResult);
 	}

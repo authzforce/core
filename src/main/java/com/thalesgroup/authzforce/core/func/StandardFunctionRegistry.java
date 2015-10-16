@@ -45,7 +45,7 @@ import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
  * <code>PdpExtensionRegistry</code>) populated with the standard functions from
  * {@code this#getSupportedFunctions()}
  */
-public class StandardFunctionRegistry extends FunctionRegistry
+public final class StandardFunctionRegistry extends FunctionRegistry
 {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StandardFunctionRegistry.class);
@@ -53,7 +53,7 @@ public class StandardFunctionRegistry extends FunctionRegistry
 	/**
 	 * Singleton function registry instance for standard functions
 	 */
-	public static StandardFunctionRegistry INSTANCE;
+	public static final StandardFunctionRegistry INSTANCE;
 	static
 	{
 		final Set<Function<?>> standardExtensions = new HashSet<>();

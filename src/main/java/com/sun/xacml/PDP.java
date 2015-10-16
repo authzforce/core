@@ -63,7 +63,6 @@ import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
 import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
 import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.Bags;
 import com.thalesgroup.authzforce.core.eval.DecisionResult;
 import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
@@ -328,11 +327,11 @@ public class PDP implements Closeable
 		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>();
 		// current datetime
 		final DateTimeAttributeValue currentDateTimeValue = new DateTimeAttributeValue(new GregorianCalendar());
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATETIME.BAG_TYPE, currentDateTimeValue));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bag.singleton(DatatypeConstants.DATETIME.BAG_TYPE, currentDateTimeValue));
 		// current date
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATE.BAG_TYPE, DateAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, Bag.singleton(DatatypeConstants.DATE.BAG_TYPE, DateAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 		// current time
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.TIME.BAG_TYPE, TimeAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, Bag.singleton(DatatypeConstants.TIME.BAG_TYPE, TimeAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 
 		// evaluate the individual decision requests with the extra common attributes set previously
 		final List<Result> results = individualReqEvaluator.evaluate(individualDecisionRequests, pdpIssuedAttributes);

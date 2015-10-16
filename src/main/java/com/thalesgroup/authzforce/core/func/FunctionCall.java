@@ -41,7 +41,7 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  *            call's return type (typically the same as the internal function's)
  * 
  */
-public interface FunctionCall<RETURN_T extends Expression.Value<?, RETURN_T>>
+public interface FunctionCall<RETURN_T extends Expression.Value<RETURN_T>>
 {
 
 	/**

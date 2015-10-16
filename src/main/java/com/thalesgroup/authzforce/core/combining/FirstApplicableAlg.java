@@ -33,7 +33,7 @@ import com.thalesgroup.authzforce.core.eval.EvaluationContext;
  * of policies/rules, finds the first one that applies, and returns that evaluation result.
  * 
  */
-public class FirstApplicableAlg extends CombiningAlgorithm<Decidable>
+public final class FirstApplicableAlg extends CombiningAlgorithm<Decidable>
 {
 
 	/**

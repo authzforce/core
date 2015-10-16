@@ -179,7 +179,7 @@ public abstract class SimpleAttributeValue<V, AV extends SimpleAttributeValue<V,
 		public abstract SCOF_AV getInstance(String val);
 	}
 
-	private static IllegalArgumentException UNDEF_ATTR_CONTENT_EXCEPTION = new IllegalArgumentException("Undefined attribute value");
+	private static final IllegalArgumentException UNDEF_ATTR_CONTENT_EXCEPTION = new IllegalArgumentException("Undefined attribute value");
 
 	private static final IllegalArgumentException MORE_THAN_ONE_ELEMENT_IN_XACML_ATTRIBUTE_VALUE_CONTENT_EXCEPTION = new IllegalArgumentException("Invalid primitive AttributeValueType: content has more than one element. Expected: empty or single String element ");
 	/*

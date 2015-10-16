@@ -22,11 +22,11 @@
 package com.thalesgroup.authzforce.core.eval;
 
 import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -45,9 +45,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
@@ -74,60 +72,24 @@ import com.thalesgroup.authzforce.xacml._3_0.identifiers.XPATHVersion;
  * @param <V>
  *            type of result from evaluating the expression
  */
-public interface Expression<V extends Expression.Value<?, V>>
+public interface Expression<V extends Expression.Value<V>>
 {
 	/**
 	 * Expression evaluation result value. A Value may be itself used as an input {@link Expression}
 	 * of a function for instance, therefore itself extends {@link Expression}. Not used for
 	 * returning evaluation errors, i.e. "Indeterminate" results, in which case,
 	 * {@link IndeterminateEvaluationException} should be used instead.
+	 * <p>
+	 * In most cases, the implementation of {@link #evaluate(EvaluationContext)} will consist to
+	 * return the Value instance (this) itself, except in very spacial cases like
+	 * {@link XPathAttributeValue} whose actual value depends on the context (Content XML element).
+	 * </p>
 	 * 
-	 * @param <AV>
-	 *            concrete type subclass of:
-	 *            <ul>
-	 *            <li>the value itself if single-valued,</li>
-	 *            <li>every element value if multi-valued (collection of values).</li>
-	 *            </ul>
 	 * @param <V>
 	 *            concrete type subclass, same as V iff single-valued type, else multi-valued type
 	 */
-	public interface Value<AV extends AttributeValue<AV>, V extends Value<AV, V>> extends Expression<V>
+	interface Value<V extends Value<V>> extends Expression<V>
 	{
-		/**
-		 * Returns the (first) attribute value or null if no value found
-		 * 
-		 * @return the first attribute value if this is multi-valed (bag), the one and only
-		 *         attribute value if this is single-valued (not a bag); or null in both cases if no
-		 *         value
-		 */
-		AV one();
-
-		/**
-		 * Returns attribute value(s) in the result
-		 * 
-		 * @return all attribute value(s); may be empty if no value, but never null. It is the
-		 *         responsability of the implementation to ensure empty (zero-length) array is
-		 *         returned instead of null, according to "Effective Java (2nd Edition)" by J.
-		 *         Bloch, "Item 43: Return empty arrays or collections, not nulls"
-		 *         <p>
-		 *         Although it is usally recommended to use Collection instead of array in API, we
-		 *         use here array as return type to allow for type-safe generic cast, e.g. see
-		 *         FirstOrderFunctionCall#evalBagArg(). In general, if we are expecting a bag of
-		 *         type V (extends AttributeValue<V>) from a given input bag (of type originally
-		 *         unknown), we want to be able to cast the input bag values simply and safely. In
-		 *         this case, when using an array for the bag values returned by this method, we can
-		 *         use the class of the array of V, e.g. some variable {@code Class<V[]> vClass} to
-		 *         cast the input bag values to what we want as bag type:
-		 *         {@code vClass.cast(inputBag.all())}. This would be more difficult with Collection
-		 *         (requires to iterate over all collection items for type-safety). Indeed,
-		 *         {@code vClass} is easy to instantiate for array {@code V[]} (e.g. for V =
-		 *         StringAttributeValue, {@code vClass = StringAttributeValue[].class}, but not for
-		 *         {@code Collection<V>} ({@code vClass = Collection<V>.class} is not valid for
-		 *         instance).
-		 *         </p>
-		 */
-		public AV[] all();
-
 	}
 
 	/**
@@ -136,7 +98,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 	 * @param <V>
 	 *            Java value type, which is one of the following:
 	 */
-	public static class Datatype<V extends Value<?, ?>>
+	class Datatype<V extends Value<?>>
 	{
 
 		private static final IllegalArgumentException NULL_VALUE_CLASS_EXCEPTION = new IllegalArgumentException("Undefined value (datatype implementation) class arg");
@@ -249,7 +211,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 		 * @throws ClassCastException
 		 *             if the value is not null and is not assignable to the type V.
 		 */
-		public V cast(Value<?, ?> val) throws ClassCastException
+		public V cast(Value<?> val) throws ClassCastException
 		{
 			return this.valueClass.cast(val);
 		}
@@ -309,7 +271,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 			{
 				return false;
 			}
-			// there should be one-to-one mapping between valueClass and id, so hashing
+			// there should be a one-to-one mapping between valueClass and id, so hashing
 			// only one of these two is necessary
 			// if (!this.id.equals(other.id))
 			// {
@@ -384,7 +346,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 	 * needs to be closed by calling {@link #close()} (in order to call
 	 * {@link CloseableAttributeFinder#close()}) when it is no longer needed.
 	 */
-	public static interface Factory extends Closeable
+	interface Factory extends Closeable
 	{
 
 		/**
@@ -411,7 +373,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 		 * @throws ParsingException
 		 *             error parsing instance of ExpressionType
 		 */
-		Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, List<String> longestVarRefChain) throws ParsingException;
+		Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws ParsingException;
 
 		/**
 		 * Parse/create an attribute value from XACML-schema-derived JAXB model
@@ -486,7 +448,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 	 * Utility class that provide functions to help evaluate Expressions
 	 * 
 	 */
-	public static class Utils
+	class Utils
 	{
 		/**
 		 * Saxon configuration file for Attributes/Content XML parsing (into XDM data model) and
@@ -499,32 +461,25 @@ public interface Expression<V extends Expression.Value<?, V>>
 		public static final Processor SAXON_PROCESSOR;
 		static
 		{
-			final ResourceLoader resLoader = new DefaultResourceLoader();
-			final Resource saxonConfRes = resLoader.getResource(SAXON_CONFIGURATION_PATH);
-			if (!saxonConfRes.exists())
-			{
-				throw new RuntimeException("No Saxon configuration file exists at default location: " + SAXON_CONFIGURATION_PATH);
-			}
-
-			final File saxonConfFile;
+			final URL saxonConfURL;
 			try
 			{
-				saxonConfFile = saxonConfRes.getFile();
-			} catch (IOException e)
+				saxonConfURL = ResourceUtils.getURL(SAXON_CONFIGURATION_PATH);
+			} catch (FileNotFoundException e)
 			{
 				throw new RuntimeException("No Saxon configuration file exists at default location: " + SAXON_CONFIGURATION_PATH, e);
 			}
 
 			try
 			{
-				SAXON_PROCESSOR = new Processor(new StreamSource(saxonConfFile));
+				SAXON_PROCESSOR = new Processor(new StreamSource(saxonConfURL.toString()));
 			} catch (SaxonApiException e)
 			{
 				throw new RuntimeException("Error loading Saxon processor from configuration file at this location: " + SAXON_CONFIGURATION_PATH, e);
 			}
 		}
 
-		private static XPathCompiler newXPathCompiler(XPATHVersion xpathVersion)
+		private static final XPathCompiler newXPathCompiler(XPATHVersion xpathVersion)
 		{
 			final XPathCompiler xpathCompiler = Utils.SAXON_PROCESSOR.newXPathCompiler();
 			final String versionString;
@@ -572,7 +527,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 		 * XPathExecutable was compiled, via toString() method. To be used for XPath-based
 		 * Expression evaluations, e.g. {@link AttributeSelector}, {@link XPathAttributeValue}, etc.
 		 */
-		public static class XPathEvaluator
+		public static final class XPathEvaluator
 		{
 			private final XPathExecutable exec;
 			private final String expr;
@@ -617,7 +572,7 @@ public interface Expression<V extends Expression.Value<?, V>>
 			}
 		}
 
-		private static Logger LOGGER = LoggerFactory.getLogger(Utils.class);
+		private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
 		private static final IndeterminateEvaluationException NULL_ARG_EVAL_RESULT_INDETERMINATE_EXCEPTION = new IndeterminateEvaluationException("No value returned by arg evaluation in the current context", Status.STATUS_PROCESSING_ERROR);
 
 		/**
@@ -634,9 +589,9 @@ public interface Expression<V extends Expression.Value<?, V>>
 		 *             if no value returned from evaluation, or <code>returnType</code> is not a
 		 *             supertype of the result value datatype
 		 */
-		public static <AV extends AttributeValue<?>> AV evalSingle(Expression<?> arg, EvaluationContext context, Class<AV> returnType) throws IndeterminateEvaluationException
+		public static final <AV extends AttributeValue<?>> AV evalSingle(Expression<?> arg, EvaluationContext context, Datatype<AV> returnType) throws IndeterminateEvaluationException
 		{
-			final AttributeValue<?> val = arg.evaluate(context).one();
+			final Value<?> val = arg.evaluate(context);
 			LOGGER.debug("evalSingle( arg = <{}>, <context>, expectedType = <{}> ) -> <{}>", arg, returnType, val);
 			if (val == null)
 			{
@@ -648,7 +603,63 @@ public interface Expression<V extends Expression.Value<?, V>>
 				return returnType.cast(val);
 			} catch (ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException("Invalid expresion evaluation result type: " + val.getClass().getName() + ". Expected: " + returnType.getName(), Status.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException("Invalid expression evaluation result type: " + val.getReturnType() + ". Expected: " + (returnType == null ? "any primitive type" : returnType), Status.STATUS_PROCESSING_ERROR, e);
+			}
+		}
+
+		/**
+		 * Evaluate single-valued (primitive) argument expression
+		 * 
+		 * @param arg
+		 *            argument expression
+		 * @param context
+		 *            context in which argument expression is evaluated
+		 * @return result of evaluation
+		 * @throws IndeterminateEvaluationException
+		 *             if no value returned from evaluation, or <code>returnType</code> is not a
+		 *             supertype of the result value datatype
+		 */
+		public static final AttributeValue<?> evalSingle(Expression<?> arg, EvaluationContext context) throws IndeterminateEvaluationException
+		{
+			final Value<?> val = arg.evaluate(context);
+			LOGGER.debug("evalSingle( arg = <{}>, <context>) -> <{}>", arg, val);
+			if (val == null)
+			{
+				throw NULL_ARG_EVAL_RESULT_INDETERMINATE_EXCEPTION;
+			}
+
+			try
+			{
+				return (AttributeValue<?>) val;
+			} catch (ClassCastException e)
+			{
+				throw new IndeterminateEvaluationException("Invalid expression evaluation result type: " + val.getReturnType() + ". Expected: any primitive type", Status.STATUS_PROCESSING_ERROR, e);
+			}
+		}
+
+		/**
+		 * Evaluate multi-valued argument expression, i.e. expected to return a bag
+		 * 
+		 * @param arg
+		 *            argument expression
+		 * @param context
+		 *            context in which argument expression is evaluated
+		 * @param returnType
+		 *            type of returned attribute value
+		 * @return result of evaluation
+		 * @throws IndeterminateEvaluationException
+		 *             if no value returned from evaluation, or <code>returnType</code> is not a
+		 *             supertype of the result value datatype
+		 */
+		public final static <AV extends AttributeValue<AV>> Bag<AV> evalBagArg(Expression<?> arg, EvaluationContext context, Bag.Datatype<AV> returnType) throws IndeterminateEvaluationException
+		{
+			final Value<?> val = arg.evaluate(context);
+			try
+			{
+				return returnType.cast(val);
+			} catch (ClassCastException e)
+			{
+				throw new IndeterminateEvaluationException("Invalid arg evaluation result's bag value datatype: " + val.getReturnType() + ". Expected: " + returnType, Status.STATUS_PROCESSING_ERROR, e);
 			}
 		}
 	}

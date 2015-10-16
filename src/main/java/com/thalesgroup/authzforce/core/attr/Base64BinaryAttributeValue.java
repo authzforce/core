@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import javax.xml.bind.DatatypeConverter;
 
+import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+
 /**
  * Representation of an xs:base64Binary value. This class supports parsing xs:base64Binary values.
  * All objects of this class are immutable and all methods of the class are thread-safe. The choice
@@ -68,12 +71,6 @@ public class Base64BinaryAttributeValue extends SimpleAttributeValue<byte[], Bas
 		return DatatypeConverter.parseBase64Binary(stringForm);
 	}
 
-	@Override
-	public Base64BinaryAttributeValue one()
-	{
-		return this;
-	}
-
 	private int hashCode = 0;
 
 	@Override
@@ -105,6 +102,12 @@ public class Base64BinaryAttributeValue extends SimpleAttributeValue<byte[], Bas
 		 * if (value == null) { if (other.value != null) { return false; } } else
 		 */
 		return Arrays.equals(value, other.value);
+	}
+
+	@Override
+	public Base64BinaryAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	{
+		return this;
 	}
 
 }
