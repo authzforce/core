@@ -20,10 +20,8 @@ package com.thalesgroup.authzforce.core;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,25 +30,33 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 
+import net.sf.ehcache.Cache;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
+import org.apache.commons.jxpath.Functions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.xml.transform.ResourceSource;
 
+import com.sun.xacml.PDP;
 import com.sun.xacml.PDPConfig;
 import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.attr.AttributeFactory;
 import com.sun.xacml.attr.AttributeProxy;
 import com.sun.xacml.attr.BaseAttributeFactory;
 import com.sun.xacml.attr.StandardAttributeFactory;
 import com.sun.xacml.combine.BaseCombiningAlgFactory;
+import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.StandardCombiningAlgFactory;
 import com.sun.xacml.cond.BaseFunctionFactory;
 import com.sun.xacml.cond.BasicFunctionFactoryProxy;
+import com.sun.xacml.cond.Function;
+import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionFactoryProxy;
 import com.sun.xacml.cond.StandardFunctionFactory;
+import com.sun.xacml.cond.cluster.FunctionCluster;
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.AttributeFinderModule;
 import com.sun.xacml.finder.PolicyFinder;
@@ -63,23 +69,7 @@ import com.sun.xacml.support.finder.StaticPolicyFinderModule;
 import com.sun.xacml.support.finder.StaticRefPolicyFinderModule;
 import com.thalesgroup.authz.model.ext._3.AbstractAttributeFinder;
 import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
-import com.thalesgroup.authz.model.ext._3.AbstractResourceFinder;
-import com.thalesgroup.authz.model.ext._3.Cache;
 import com.thalesgroup.authz.model.ext._3.CacheMemoryStoreEvictionPolicy;
-import com.thalesgroup.authzforce.pdp.model._2014._12.AttributeFactory;
-import com.thalesgroup.authzforce.pdp.model._2014._12.AttributeSelectorXPathFinder;
-import com.thalesgroup.authzforce.pdp.model._2014._12.CombiningAlgFactory;
-import com.thalesgroup.authzforce.pdp.model._2014._12.CombiningAlgFactory.Algorithm;
-import com.thalesgroup.authzforce.pdp.model._2014._12.CurrentDateTimeFinder;
-import com.thalesgroup.authzforce.pdp.model._2014._12.FunctionFactory;
-import com.thalesgroup.authzforce.pdp.model._2014._12.Functions;
-import com.thalesgroup.authzforce.pdp.model._2014._12.Functions.Function;
-import com.thalesgroup.authzforce.pdp.model._2014._12.Functions.FunctionCluster;
-import com.thalesgroup.authzforce.pdp.model._2014._12.PDP;
-import com.thalesgroup.authzforce.pdp.model._2014._12.Pdps;
-import com.thalesgroup.authzforce.pdp.model._2014._12.StaticPolicyFinder;
-import com.thalesgroup.authzforce.pdp.model._2014._12.StaticRefPolicyFinder;
-import com.thalesgroup.authzforce.pdp.model._2014._12.XacmlFeatureIdToImplementation;
 
 /**
  * XML-based Configuration manager using XML schema and JAXB to load PDP configurations

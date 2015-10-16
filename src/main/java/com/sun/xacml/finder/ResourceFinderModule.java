@@ -35,7 +35,6 @@ package com.sun.xacml.finder;
 
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.xacmlv3.AttributeValue;
-import com.thalesgroup.authz.model.ext._3.AbstractResourceFinder;
 import com.thalesgroup.authzforce.core.IPdpExtension;
 
 

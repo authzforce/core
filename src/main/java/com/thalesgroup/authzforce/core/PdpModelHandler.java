@@ -52,11 +52,6 @@ import org.w3c.dom.NodeList;
 
 import com.blogspot.illegalargumentexception.NamespaceContextMap;
 import com.thalesgroup.appsec.util.Utils;
-import com.thalesgroup.authzforce.pdp.model._2014._12.AttributeSelectorXPathFinder;
-import com.thalesgroup.authzforce.pdp.model._2014._12.CurrentDateTimeFinder;
-import com.thalesgroup.authzforce.pdp.model._2014._12.Pdps;
-import com.thalesgroup.authzforce.pdp.model._2014._12.StaticPolicyFinder;
-import com.thalesgroup.authzforce.pdp.model._2014._12.StaticRefPolicyFinder;
 
 /**
  * PDP Engine XML configuration handler

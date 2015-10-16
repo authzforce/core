@@ -39,7 +39,7 @@ import com.sun.xacml.combine.CombiningAlgFactory;
 import com.sun.xacml.combine.CombiningAlgFactoryProxy;
 import com.sun.xacml.cond.FunctionFactory;
 import com.sun.xacml.cond.FunctionFactoryProxy;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLVersion;
 
 
 /**

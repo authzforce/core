@@ -60,7 +60,7 @@ import com.sun.xacml.finder.PolicyFinderResult;
 import com.sun.xacml.finder.ResourceFinder;
 import com.sun.xacml.finder.ResourceFinderResult;
 import com.thalesgroup.appsec.util.Utils;
-import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
 
 /**
  * This is the core class for the XACML engine, providing the starting point for request evaluation.

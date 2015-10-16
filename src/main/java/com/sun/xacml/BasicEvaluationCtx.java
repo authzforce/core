@@ -67,7 +67,7 @@ import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.finder.AttributeFinder;
 import com.thalesgroup.appsec.util.Utils;
 import com.thalesgroup.authzforce.core.PdpModelHandler;
-import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
 
 /**
  * A basic implementation of <code>EvaluationCtx</code> that is created from an XACML Request and

@@ -57,7 +57,7 @@ import com.sun.xacml.cond.Evaluatable;
 import com.sun.xacml.cond.xacmlv3.EvaluationResult;
 import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.PdpModelHandler;
-import com.thalesgroup.authzforce.xacml.schema.XACMLCategory;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
 
 public class AttributeDesignator extends AttributeDesignatorType implements Evaluatable
 {

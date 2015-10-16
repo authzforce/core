@@ -33,8 +33,7 @@ import com.sun.xacml.Indenter;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.PolicyMetaData;
 import com.sun.xacml.ctx.Attribute;
-import com.thalesgroup.authzforce.xacml.schema.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml.schema.XACMLVersion;
+import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLAttributeId;
 
 /**
  * Represents the AttributesType XML type found in the context schema.

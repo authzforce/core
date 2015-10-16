@@ -22,12 +22,6 @@
 		<!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
 		<url>${scm.baseUrl}/core</url>
 	</scm>
-	<properties>
-		<!-- JDK versions for AspectJ -->
-		<jdk.source>1.7</jdk.source>
-		<jdk.target>1.7</jdk.target>
-		<debug>false</debug>
-	</properties>
 	<dependencies>
 		<dependency>
 			<!-- Used only to do Strings.join() in StandardFactory's init debug messages -->
@@ -58,8 +52,28 @@
 			<version>1.2</version>
 		</dependency>
 		<dependency>
+			<!-- For validation of XACML RFC822Name (email address) -->
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.5.4</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
+			<!-- For validating IP addresses (XACML IPAdress datatype), Domain names (XACML DNSName datatype), 
+				etc. without any DNS resolution -->
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
+		<dependency>
+			<!-- For XACML AttributeSelector evaluation and XPath-based functions (making reference to [XF]) -->
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>Saxon-HE</artifactId>
+			<version>9.6.0-5</version>
 		</dependency>
 		<dependency>
 			<!-- Used for DOM parsing / XPath evaluation -->
@@ -67,10 +81,23 @@
 			<artifactId>thales-appsec-common-utils</artifactId>
 		</dependency>
 		<!-- Authzforce dependencies -->
+		<!-- xml-ns-model and xacml-model dependencies are declared here only to work around maven-jaxb2-plugin bug: cannot resolve 
+			episodes from indirect dependencies with useDependenciesAsEpisodes option. -->
 		<dependency>
 			<groupId>com.thalesgroup.authzforce</groupId>
-			<artifactId>authzforce-core-model</artifactId>
+			<artifactId>authzforce-xml-ns-model</artifactId>
+			<version>1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-xacml-model</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thalesgroup.authzforce</groupId>
+			<artifactId>authzforce-pdp-ext-model</artifactId>
+			<version>3.2.7</version>
+		</dependency>		
 		<!-- /Authzforce dependencies -->
 
 		<!-- Test dependencies -->
@@ -90,6 +117,39 @@
 	</dependencies>
 	<build>
 		<plugins>
+		<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.5</version>
+				<configuration>
+					<targetJdk>1.7</targetJdk>
+					<excludeRoots>
+						<excludeRoot>target/generated-sources</excludeRoot>
+						<excludeRoot>target/generated-test-sources</excludeRoot>
+					</excludeRoots>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<!-- Apache license Headers -->
 				<groupId>com.mycila</groupId>
@@ -121,19 +181,8 @@
 								<exclude>**/*.md</exclude>
 								<exclude>**/*.properties</exclude>
 								<exclude>**/*.gitignore</exclude>
-								<exclude>src/main/java/com/sun/xacml/cond/xacmlv3/Apply.java</exclude>
 							</excludes>
 							<includes>
-								<include>src/main/java/com/sun/xacml/xacmlv3/**</include>
-								<include>src/main/java/com/sun/xacml/cond/xacmlv3/**</include>
-								<include>src/main/java/com/sun/xacml/ctx/xacmlv3/**</include>
-								<include>src/main/java/com/sun/xacml/CacheManager.java</include>
-								<include>src/main/java/com/sun/xacml/ObligationExpressions.java</include>
-								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyPolicyAlg</include>
-								<include>src/main/java/com/sun/xacml/combine/PermitUnlessDenyRuleAlg</include>
-								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitPolicyAlg</include>
-								<include>src/main/java/com/sun/xacml/combine/DenyUnlessPermitRuleAlg</include>
-								<include>src/main/java/com/sun/xacml/finder/impl/MultipleResourceFinder.java</include>
 								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
 								<!-- Include test files also -->
 								<include>src/test/java/**</include>
@@ -186,21 +235,6 @@
 					<extension>true</extension>
 					<useDependenciesAsEpisodes>true</useDependenciesAsEpisodes>
 					<strict>false</strict>
-					<!-- Episodes: Only episodes for schemas referenced (imported/included) by schema(s) in schemaDirectory 
-						can be listed here. If not possible, just create an empty schema in schemaDirectory which imports all 
-						the episode elements but does nothing with them. -->
-					<!-- <episodes> -->
-					<!-- </episodes> -->
-<!-- 					<plugins> -->
-<!-- 						<plugin> -->
-<!-- 							<groupId>com.thalesgroup.ktd.scis</groupId> -->
-<!-- 							<artifactId>oasis-xacml-model</artifactId> -->
-<!-- 						</plugin> -->
-<!-- 						<plugin> -->
-<!-- 							<groupId>com.thalesgroup.authzforce</groupId> -->
-<!-- 							<artifactId>authzforce-core-model</artifactId> -->
-<!-- 						</plugin> -->
-<!-- 					</plugins> -->
 					<catalog>src/main/jaxb/catalog.xml</catalog>
 					<removeOldOutput>true</removeOldOutput>
 					<bindingDirectory>src/main/jaxb</bindingDirectory>
@@ -234,42 +268,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<!-- Maven compiler configuration -->
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<verbose>${debug}</verbose>
-							<showWeaveInfo>${debug}</showWeaveInfo>
-							<outxml>${debug}</outxml>
-							<source>${jdk.source}</source>
-							<target>${jdk.target}</target>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-compile</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-						<configuration>
-							<source>${jdk.source}</source>
-							<target>${jdk.target}</target>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<source>${jdk.source}</source>
-					<target>${jdk.target}</target>
-				</configuration>
-			</plugin>
+			</plugin>			
 			<!-- Test configuration -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
