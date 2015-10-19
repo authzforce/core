@@ -22,10 +22,10 @@
 package com.thalesgroup.authzforce.core.func;
 
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression.Datatype;
 
 /**
  * Function call. This is the recommended way of calling any {@link Function}. This is quite similar

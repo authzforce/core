@@ -29,7 +29,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -415,11 +414,11 @@ public class SchemaHandler
 	 * Creates schema from locations to XML schema files and catalog file
 	 * 
 	 * 
-	 * @param locations
+	 * @param schemaLocations
 	 * @param catalogLocation
 	 * @return XML validation schema
 	 */
-	public static Schema createSchema(List<String> locations, final String catalogLocation)
+	public static Schema createSchema(List<String> schemaLocations, final String catalogLocation)
 	{
 		/*
 		 * This is mostly similar to
@@ -448,32 +447,16 @@ public class SchemaHandler
 		final Schema s;
 		try
 		{
-			final List<Source> sources = new ArrayList<>();
-			for (String loc : locations)
+			final List<Source> sources = new ArrayList<>(schemaLocations.size());
+			for (String schemaLocation : schemaLocations)
 			{
-				final List<URL> schemaURLs = new LinkedList<>();
-
-				// if (loc.lastIndexOf(".") == -1 || loc.lastIndexOf('*') != -1) {
-				// schemaURLs = ClasspathScanner.findResources(loc, "xsd");
-				// } else {
-				final URL url = ResourceUtils.getURL(loc);
-				if (url != null)
-				{
-					schemaURLs.add(url);
-				}
-				// }
-				if (schemaURLs.isEmpty())
-				{
-					throw new IllegalArgumentException("Cannot find XML schema location: " + loc);
-				}
-				for (URL schemaURL : schemaURLs)
-				{
-					final Reader r = new BufferedReader(new InputStreamReader(schemaURL.openStream(), "UTF-8"));
-					final StreamSource source = new StreamSource(r);
-					source.setSystemId(schemaURL.toString());
-					sources.add(source);
-				}
+				final URL schemaURL = ResourceUtils.getURL(schemaLocation);
+				final Reader r = new BufferedReader(new InputStreamReader(schemaURL.openStream(), "UTF-8"));
+				final StreamSource source = new StreamSource(r);
+				source.setSystemId(schemaURL.toString());
+				sources.add(source);
 			}
+
 			if (sources.isEmpty())
 			{
 				return null;
@@ -536,7 +519,7 @@ public class SchemaHandler
 			s = factory.newSchema(sources.toArray(new Source[sources.size()]));
 		} catch (Exception ex)
 		{
-			throw new IllegalArgumentException("Failed to load XML schemas: " + locations, ex);
+			throw new IllegalArgumentException("Failed to load XML schemas: " + schemaLocations, ex);
 		}
 		return s;
 

@@ -37,10 +37,10 @@ package com.sun.xacml.combine;
 
 import java.util.List;
 
+import com.thalesgroup.authzforce.core.Decidable;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
 import com.thalesgroup.authzforce.core.PdpExtension;
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
 
 /**
  * The base type for all combining algorithms. It provides one method that must be implemented. In
@@ -63,7 +63,7 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 	// the identifier for the algorithm
 	private final String id;
 
-	private final String toString;
+	private transient volatile String toString = null;
 
 	protected final UnsupportedOperationException unsupportedLegacyAlgorithmException;
 

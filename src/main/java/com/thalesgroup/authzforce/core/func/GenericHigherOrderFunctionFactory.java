@@ -19,8 +19,8 @@
 package com.thalesgroup.authzforce.core.func;
 
 import com.thalesgroup.authzforce.core.PdpExtension;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
+import com.thalesgroup.authzforce.core.Expression.Datatype;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
 
 /**
  * Interface for generic higher-order function factories, e.g. {@link MapFunction}. A generic

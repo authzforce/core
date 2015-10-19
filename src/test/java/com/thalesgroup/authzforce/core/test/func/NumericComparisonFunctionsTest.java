@@ -26,11 +26,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Value;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.Expression.Value;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DoubleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
 
 @RunWith(Parameterized.class)
 public class NumericComparisonFunctionsTest extends GeneralFunctionTest

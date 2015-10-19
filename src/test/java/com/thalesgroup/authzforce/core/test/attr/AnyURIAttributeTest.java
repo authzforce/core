@@ -21,13 +21,13 @@ package com.thalesgroup.authzforce.core.test.attr;
 import java.util.Arrays;
 import java.util.Collection;
 
+import net.sf.saxon.lib.StandardURIChecker;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
 
 @RunWith(value = Parameterized.class)
 public class AnyURIAttributeTest
@@ -55,15 +55,7 @@ public class AnyURIAttributeTest
 	@Test
 	public void test()
 	{
-		boolean actualIsValidResult = false;
-		try
-		{
-			final AnyURIAttributeValue val = new AnyURIAttributeValue(this.value);
-			actualIsValidResult = true;
-		} catch (IllegalArgumentException e)
-		{
-		}
-
+		final boolean actualIsValidResult = StandardURIChecker.getInstance().isValidURI(this.value);
 		Assert.assertEquals("Test failed on: '" + this.value + "' (" + this.comment + ")", isValid, actualIsValidResult);
 	}
 

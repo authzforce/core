@@ -22,8 +22,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
 
 /**
  * Superclass of "first-order" functions, "first-order" as opposed to "higher-order". (Higher-order
@@ -69,7 +69,7 @@ public abstract class FirstOrderFunction<RETURN extends Expression.Value<RETURN>
 	 * 
 	 * @return parameter types
 	 */
-	public final Datatype<?>[] getParameterTypes()
+	public final List<Datatype<?>> getParameterTypes()
 	{
 		return signature.getParameterTypes();
 	}

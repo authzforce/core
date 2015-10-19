@@ -33,8 +33,8 @@
  */
 package com.sun.xacml;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.StatusHelper;
 
 /**
  * Exception that gets thrown if any general parsing error occurs.
@@ -89,7 +89,7 @@ public class ParsingException extends Exception
 	 */
 	public DecisionResult getIndeterminateResult()
 	{
-		return new DecisionResult(new Status(Status.STATUS_SYNTAX_ERROR, this.getMessage()));
+		return new DecisionResult(new StatusHelper(StatusHelper.STATUS_SYNTAX_ERROR, this.getMessage()));
 	}
 
 }

@@ -29,13 +29,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Value;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.Expression.Value;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DateAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DateTimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.TimeAttributeValue;
 
 @RunWith(Parameterized.class)
 public class NonNumericComparisonFunctionsTest extends GeneralFunctionTest

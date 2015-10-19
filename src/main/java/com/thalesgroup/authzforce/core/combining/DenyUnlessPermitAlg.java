@@ -24,9 +24,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import com.sun.xacml.combine.CombinerElement;
 import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.Decidable;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
 
 /**
  * Deny-unless-permit combining algorithm
@@ -38,7 +38,7 @@ public final class DenyUnlessPermitAlg extends CombiningAlgorithm<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	public static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
 
 	/**
 	 * Supported algorithms

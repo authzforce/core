@@ -27,15 +27,15 @@ import java.util.List;
 import java.util.ListIterator;
 
 import com.sun.xacml.cond.Function;
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.VariableReference;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.VariableReference;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
 
 /**
  * Implements all of the higher-order bag functions.
@@ -694,7 +694,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 				bag0Vals = inputBag0.evaluate(context);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(errorEvalArg1Message, Status.STATUS_PROCESSING_ERROR);
+				throw new IndeterminateEvaluationException(errorEvalArg1Message, StatusHelper.STATUS_PROCESSING_ERROR);
 			}
 
 			/*
@@ -713,7 +713,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 				bag1Vals = inputBag1.evaluate(context);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(errorEvalArg2Message, Status.STATUS_PROCESSING_ERROR);
+				throw new IndeterminateEvaluationException(errorEvalArg2Message, StatusHelper.STATUS_PROCESSING_ERROR);
 			}
 
 			if (bag1Vals.isEmpty())
@@ -814,7 +814,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 						subResult = subFuncCall.evaluate(context, subFuncArgValues);
 					} catch (IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(subFunctionCallErrMsgPrefix + subFuncArgStack, Status.STATUS_PROCESSING_ERROR);
+						throw new IndeterminateEvaluationException(subFunctionCallErrMsgPrefix + subFuncArgStack, StatusHelper.STATUS_PROCESSING_ERROR);
 					}
 
 					subFuncArgStack.removeLast();
@@ -880,7 +880,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 						subResult = subFuncCall.evaluate(context, subFuncArgValues);
 					} catch (IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(subFunctionCallErrMsgPrefix + subFuncArgStack, Status.STATUS_PROCESSING_ERROR);
+						throw new IndeterminateEvaluationException(subFunctionCallErrMsgPrefix + subFuncArgStack, StatusHelper.STATUS_PROCESSING_ERROR);
 					}
 
 					subFuncArgStack.removeLast();// remove bag1val
@@ -943,7 +943,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Expression.Value<R
 						subResult = subFuncCall.evaluate(context, subFuncArgValues);
 					} catch (IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(subFunctionCallErrMsgPrefix + subFuncArgStack, Status.STATUS_PROCESSING_ERROR);
+						throw new IndeterminateEvaluationException(subFunctionCallErrMsgPrefix + subFuncArgStack, StatusHelper.STATUS_PROCESSING_ERROR);
 					}
 
 					subFuncArgStack.removeLast();

@@ -31,20 +31,20 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Value;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.Expression.Value;
+import com.thalesgroup.authzforce.core.datatypes.AnyURIAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DateAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DateTimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DayTimeDurationAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DoubleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.RFC822NameAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.TimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.X500NameAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.YearMonthDurationAttributeValue;
 
 @RunWith(Parameterized.class)
 public class StringFunctionsTest extends GeneralFunctionTest

@@ -37,10 +37,10 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;

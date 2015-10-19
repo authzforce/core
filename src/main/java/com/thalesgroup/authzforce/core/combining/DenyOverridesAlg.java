@@ -24,9 +24,9 @@ import java.util.Set;
 
 import com.sun.xacml.combine.CombinerElement;
 import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.Decidable;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
 
 /**
  * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single
@@ -40,7 +40,7 @@ public final class DenyOverridesAlg extends CombiningAlgorithm<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	public static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
 			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
 
 	/**
@@ -98,6 +98,7 @@ public final class DenyOverridesAlg extends CombiningAlgorithm<Decidable>
 					firstIndeterminateResult = result;
 					break;
 				default:
+					break;
 			}
 		}
 

@@ -30,12 +30,12 @@ import org.junit.Test;
 
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
-import com.thalesgroup.authzforce.core.eval.Expression.Value;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression.Datatype;
+import com.thalesgroup.authzforce.core.Expression.Value;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 

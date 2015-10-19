@@ -25,9 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 
 /**
  * This class is used by the PDP to find the root (aka top-level) policy matching a given request

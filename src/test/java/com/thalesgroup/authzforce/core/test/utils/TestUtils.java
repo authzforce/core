@@ -38,18 +38,18 @@ import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.PDP;
 import com.thalesgroup.authzforce.core.DefaultRequestFilter;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.ExpressionFactoryImpl;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.IndividualDecisionRequest;
+import com.thalesgroup.authzforce.core.IndividualDecisionRequestContext;
 import com.thalesgroup.authzforce.core.PdpConfigurationParser;
 import com.thalesgroup.authzforce.core.RequestFilter;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
-import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
-import com.thalesgroup.authzforce.core.attr.StandardDatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactoryImpl;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
+import com.thalesgroup.authzforce.core.datatypes.CloseableAttributeFinder;
+import com.thalesgroup.authzforce.core.datatypes.CloseableAttributeFinderImpl;
+import com.thalesgroup.authzforce.core.datatypes.StandardDatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.func.StandardFunctionRegistry;
 import com.thalesgroup.authzforce.pdp.model._2015._06.BaseStaticPolicyFinder;
 import com.thalesgroup.authzforce.pdp.model._2015._06.Pdp;
@@ -183,53 +183,6 @@ public class TestUtils
 			result.setStatus(null);
 		}
 	}
-
-	// Replaced by Response#equals()
-	// TODO: remove it once Response#equals() checks OK.
-	// public static boolean match(Response normalizedActualResponse, Response
-	// normalizedExpectedResponse)
-	// {
-	// if (normalizedActualResponse.getResults().size() !=
-	// normalizedExpectedResponse.getResults().size())
-	// {
-	// LOGGER.debug("Number of results in tested response  (={}) differs from expected (={})",
-	// normalizedActualResponse.getResults().size(),
-	// normalizedExpectedResponse.getResults().size());
-	// return false;
-	// }
-	//
-	// /*
-	// * We iterate over all results, because for each results, we don't compare everything. In
-	// * particular, we choose to ignore the Status. Indeed, a PDP implementation might return a
-	// * perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would
-	// * not expect.
-	// */
-	// Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> expectedResultsIterator =
-	// normalizedExpectedResponse.getResults().iterator();
-	// Iterator<oasis.names.tc.xacml._3_0.core.schema.wd_17.Result> testedResultsIterator =
-	// normalizedActualResponse.getResults().iterator();
-	// int i = 0;
-	// while (expectedResultsIterator.hasNext())
-	// {
-	// Result expectedResult = expectedResultsIterator.next();
-	// Result testedResult = testedResultsIterator.next();
-	// // We ignore the status, so set it to null in both expected and tested response to avoid
-	// // Status comparison
-	// expectedResult.setStatus(null);
-	// testedResult.setStatus(null);
-	// if (!testedResult.equals(expectedResult))
-	// {
-	// LOGGER.debug("Result #" + i +
-	// " in tested response ( {} ) does not match (Status ignored) the expected one ( {} )",
-	// testedResult, expectedResult);
-	// return false;
-	// }
-	//
-	// i++;
-	// }
-	//
-	// return true;
-	// }
 
 	/**
 	 * Creates PDP from root policy file

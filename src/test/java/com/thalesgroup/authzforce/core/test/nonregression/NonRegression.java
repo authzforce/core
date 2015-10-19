@@ -135,9 +135,16 @@ public class NonRegression
 			{
 				if (Files.isDirectory(path))
 				{
+					final Path lastPathElement = path.getFileName();
+					if (lastPathElement == null)
+					{
+						// skip
+						continue;
+					}
+
 					// add the test directory path used as arg to constructor NonRegression(String
 					// testDir)
-					testParams.add(new Object[] { path.getFileName().toString() });
+					testParams.add(new Object[] { lastPathElement.toString() });
 				}
 			}
 		} catch (DirectoryIteratorException ex)

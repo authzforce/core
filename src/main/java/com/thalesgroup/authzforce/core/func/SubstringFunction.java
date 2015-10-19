@@ -21,14 +21,14 @@ package com.thalesgroup.authzforce.core.func;
 import java.util.Deque;
 import java.util.List;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 
 /**
@@ -99,7 +99,7 @@ public class SubstringFunction<AV extends SimpleAttributeValue<String, AV>> exte
 					endIndex = (IntegerAttributeValue) rawArg2;
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getReturnType() + "," + rawArg1.getReturnType() + "," + rawArg2.getReturnType(), Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getReturnType() + "," + rawArg1.getReturnType() + "," + rawArg2.getReturnType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 
 				return eval(arg0, beginIndex, endIndex);
@@ -140,7 +140,7 @@ public class SubstringFunction<AV extends SimpleAttributeValue<String, AV>> exte
 			substring = endIndexInt == -1 ? arg0.getUnderlyingValue().substring(beginIndexInt) : arg0.getUnderlyingValue().substring(beginIndexInt, endIndexInt);
 		} catch (ArithmeticException | IndexOutOfBoundsException e)
 		{
-			throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, Status.STATUS_PROCESSING_ERROR, e);
+			throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
 		}
 
 		return new StringAttributeValue(substring);

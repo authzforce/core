@@ -33,6 +33,10 @@
  */
 package com.sun.xacml;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.thalesgroup.authzforce.core.policy.PolicyVersion;
 
 /**
@@ -58,7 +62,7 @@ public class VersionConstraints
 		private static final int PLUS = -2;
 
 		private final String xacmlVersionMatch;
-		private final int[] matchNumbers;
+		private final List<Integer> matchNumbers;
 
 		private PolicyVersionPattern(String xacmlVersionMatch)
 		{
@@ -69,17 +73,17 @@ public class VersionConstraints
 			}
 
 			final String[] tokens = xacmlVersionMatch.split("\\.");
-			matchNumbers = new int[tokens.length];
+			matchNumbers = new ArrayList<>(tokens.length);
 			for (int i = 0; i < tokens.length; i++)
 			{
 				final String token = tokens[i];
 				switch (token)
 				{
 					case "*":
-						matchNumbers[i] = WILDCARD;
+						matchNumbers.add(WILDCARD);
 						break;
 					case "+":
-						matchNumbers[i] = PLUS;
+						matchNumbers.add(PLUS);
 						break;
 					default:
 						final int number;
@@ -96,7 +100,7 @@ public class VersionConstraints
 							throw new IllegalArgumentException("Invalid VersionMatch expression: '" + xacmlVersionMatch + "'. Number #" + i + " (=" + number + ") is not a positive integer");
 						}
 
-						matchNumbers[i] = number;
+						matchNumbers.add(number);
 						break;
 				}
 			}
@@ -112,11 +116,12 @@ public class VersionConstraints
 
 		private boolean matches(PolicyVersion version)
 		{
-			final int[] versionNumbers = version.getNumberSequence();
-			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
-			for (int i = 0; i < lowestLen; i++)
+			final Iterator<Integer> versionNumsIterator = version.getNumberSequence().iterator();
+			final Iterator<Integer> matchNumsIterator = this.matchNumbers.iterator();
+			while (matchNumsIterator.hasNext() && versionNumsIterator.hasNext())
 			{
-				final int matchNum = matchNumbers[i];
+				final int matchNum = matchNumsIterator.next();
+				final int versionNum = versionNumsIterator.next();
 				switch (matchNum)
 				{
 					case PLUS:
@@ -126,7 +131,7 @@ public class VersionConstraints
 						// always matches any versionNumbers[i], so go on
 						break;
 					default:
-						if (matchNum != versionNumbers[i])
+						if (matchNum != versionNum)
 						{
 							return false;
 						}
@@ -138,19 +143,19 @@ public class VersionConstraints
 
 			/*
 			 * At this point, last matchNum is either a wildcard or integer. Version matches iff
-			 * there is no extra number in either matchNumbers of versionNumbers, i.e. they have
-			 * same length
+			 * there is no extra number in either matchNumbers or versionNumbers.
 			 */
-			return matchNumbers.length == versionNumbers.length;
+			return !matchNumsIterator.hasNext() && !versionNumsIterator.hasNext();
 		}
 
 		public boolean isLaterOrMatches(PolicyVersion version)
 		{
-			final int[] versionNumbers = version.getNumberSequence();
-			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
-			for (int i = 0; i < lowestLen; i++)
+			final Iterator<Integer> versionNumsIterator = version.getNumberSequence().iterator();
+			final Iterator<Integer> matchNumsIterator = this.matchNumbers.iterator();
+			while (matchNumsIterator.hasNext() && versionNumsIterator.hasNext())
 			{
-				final int matchNum = matchNumbers[i];
+				final int matchNum = matchNumsIterator.next();
+				final int versionNum = versionNumsIterator.next();
 				switch (matchNum)
 				{
 					case PLUS:
@@ -166,7 +171,6 @@ public class VersionConstraints
 						 */
 						return true;
 					default:
-						final int versionNum = versionNumbers[i];
 						if (matchNum < versionNum)
 						{
 							return false;
@@ -184,26 +188,26 @@ public class VersionConstraints
 
 			/*
 			 * At this point, we know matchNumbers is a sequence of numbers (no wildcard/plus
-			 * symbol). It is later than or matches versionNumbers iff same size or longer.
+			 * symbol). It is later than or matches versionNumbers iff there is no extra number in
+			 * versionNums.
 			 */
-			return matchNumbers.length >= versionNumbers.length;
+			return !versionNumsIterator.hasNext();
 		}
 
 		public boolean isEarlierOrMatches(PolicyVersion version)
 		{
-			final int[] versionNumbers = version.getNumberSequence();
-			final int lowestLen = Math.min(matchNumbers.length, versionNumbers.length);
-			for (int i = 0; i < lowestLen; i++)
+			final Iterator<Integer> versionNumsIterator = version.getNumberSequence().iterator();
+			final Iterator<Integer> matchNumsIterator = this.matchNumbers.iterator();
+			while (matchNumsIterator.hasNext() && versionNumsIterator.hasNext())
 			{
-				final int matchNum = matchNumbers[i];
-				final int versionNum;
+				final int matchNum = matchNumsIterator.next();
+				final int versionNum = versionNumsIterator.next();
 				switch (matchNum)
 				{
 					case PLUS:
 						// always matches everything from here
 						return true;
 					case WILDCARD:
-						versionNum = versionNumbers[i];
 						if (versionNum != 0)
 						{
 							/*
@@ -216,7 +220,6 @@ public class VersionConstraints
 						// versionNum = 0. Result depends on the next numbers.
 						break;
 					default:
-						versionNum = versionNumbers[i];
 						if (matchNum < versionNum)
 						{
 							return true;
@@ -233,9 +236,10 @@ public class VersionConstraints
 			}
 
 			/*
-			 * if matchNumbers.length <= versionNumbers.length -> true
+			 * If there is no extra numbers in matchNumbers.length, it is earlier or matches
+			 * versionNums
 			 */
-			return matchNumbers.length <= versionNumbers.length;
+			return !matchNumsIterator.hasNext();
 		}
 
 	}
@@ -258,21 +262,6 @@ public class VersionConstraints
 		this.earliestVersionPattern = earliestMatch == null ? null : new PolicyVersionPattern(earliestMatch);
 		this.latestVersionPattern = latestMatch == null ? null : new PolicyVersionPattern(latestMatch);
 	}
-
-	// /**
-	// * Checks if the given version string meets all three constraints.
-	// *
-	// * @param otherVersion
-	// * the version to compare, which is formatted as a VersionType XACML type
-	// *
-	// * @return true if the given version meets all the constraints
-	// */
-	// public boolean match(PolicyVersion otherVersion)
-	// {
-	// return (versionPattern == null || versionPattern.matches(otherVersion)) &&
-	// (latestVersionPattern == null || latestVersionPattern.isLaterOrMatches(otherVersion)) &&
-	// (earliestVersionPattern == null || earliestVersionPattern.isEarlierOrMatches(otherVersion));
-	// }
 
 	/*
 	 * (non-Javadoc)
@@ -353,7 +342,7 @@ public class VersionConstraints
 
 	// public static void main(String... args)
 	// {
-	// PolicyVersionPattern vp = new PolicyVersionPattern("1.*.4.5");
+	// PolicyVersionPattern vp = new PolicyVersionPattern("0.+");
 	// PolicyVersion v = new PolicyVersion("1.2.4.5");
 	// System.out.println(vp.isLaterOrMatches(v));
 	// }

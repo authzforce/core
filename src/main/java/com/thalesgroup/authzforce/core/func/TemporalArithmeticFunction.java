@@ -21,13 +21,13 @@ package com.thalesgroup.authzforce.core.func;
 import java.util.Deque;
 import java.util.List;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BaseTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.DurationAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BaseTimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.DurationAttributeValue;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 
 /**
@@ -115,7 +115,7 @@ public abstract class TemporalArithmeticFunction<T extends BaseTimeAttributeValu
 					arg1 = secondParamClass.cast(rawArg1);
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getReturnType() + "," + rawArg1.getReturnType(), Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getReturnType() + "," + rawArg1.getReturnType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 
 				return eval(arg0, arg1);

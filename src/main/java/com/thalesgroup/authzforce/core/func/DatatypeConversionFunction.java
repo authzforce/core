@@ -23,25 +23,25 @@ import java.util.List;
 
 import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DayTimeDurationAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue.StringContentOnlyFactory;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.YearMonthDurationAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AnyURIAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.DateAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DateTimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DayTimeDurationAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DoubleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.RFC822NameAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.TimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.X500NameAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.YearMonthDurationAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue.StringContentOnlyFactory;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
@@ -321,7 +321,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 			super(NAME_INTEGER_TO_DOUBLE, DatatypeConstants.INTEGER, DatatypeConstants.DOUBLE.TYPE);
 		}
 
-		private static final IndeterminateEvaluationException INTEGER_OUT_OF_RANGE_EXCEPTION = new IndeterminateEvaluationException("Function " + NAME_INTEGER_TO_DOUBLE + ": integer argument is outside the range which can be represented by a double", Status.STATUS_PROCESSING_ERROR);
+		private static final IndeterminateEvaluationException INTEGER_OUT_OF_RANGE_EXCEPTION = new IndeterminateEvaluationException("Function " + NAME_INTEGER_TO_DOUBLE + ": integer argument is outside the range which can be represented by a double", StatusHelper.STATUS_PROCESSING_ERROR);
 
 		@Override
 		protected final DoubleAttributeValue convert(IntegerAttributeValue arg) throws IndeterminateEvaluationException
@@ -364,7 +364,7 @@ public abstract class DatatypeConversionFunction<PARAM_T extends SimpleAttribute
 				return returnTypeFactory.getInstance(arg.getUnderlyingValue());
 			} catch (IllegalArgumentException e)
 			{
-				throw new IndeterminateEvaluationException(invalidStringArgErrMessage + arg, Status.STATUS_SYNTAX_ERROR);
+				throw new IndeterminateEvaluationException(invalidStringArgErrMessage + arg, StatusHelper.STATUS_SYNTAX_ERROR);
 			}
 
 		}

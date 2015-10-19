@@ -33,7 +33,7 @@ import com.sun.xacml.cond.NotFunction;
 import com.sun.xacml.cond.StringNormalizeFunction;
 import com.sun.xacml.cond.TimeInRangeFunction;
 import com.thalesgroup.authzforce.core.BasePdpExtensionRegistry;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
 
 /**
  * This factory supports the standard set of functions specified in XACML 1.x and 2.0 and 3.0.

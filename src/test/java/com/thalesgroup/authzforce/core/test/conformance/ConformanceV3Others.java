@@ -114,7 +114,14 @@ public class ConformanceV3Others
 					// add the test directory path used as arg to constructor
 					// ConformanceV3Others(String
 					// testDir)
-					testParams.add(new Object[] { TEST_RESOURCES_ROOT_DIRECTORY_LOCATION + "/" + path.getFileName().toString() });
+					final Path lastPathElement = path.getFileName();
+					if (lastPathElement == null)
+					{
+						// skip
+						continue;
+					}
+
+					testParams.add(new Object[] { TEST_RESOURCES_ROOT_DIRECTORY_LOCATION + "/" + lastPathElement });
 				}
 			}
 		} catch (DirectoryIteratorException ex)

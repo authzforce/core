@@ -25,6 +25,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -49,20 +50,18 @@ import com.sun.xacml.finder.AttributeFinderModule;
 import com.thalesgroup.authz.model.ext._3.AbstractAttributeFinder;
 import com.thalesgroup.authz.model.ext._3.AbstractDecisionCache;
 import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BaseDatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinder;
-import com.thalesgroup.authzforce.core.attr.CloseableAttributeFinderImpl;
-import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.attr.StandardDatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.Expression.Datatype;
+import com.thalesgroup.authzforce.core.Expression.Utils;
 import com.thalesgroup.authzforce.core.combining.BaseCombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
 import com.thalesgroup.authzforce.core.combining.StandardCombiningAlgRegistry;
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
-import com.thalesgroup.authzforce.core.eval.Expression.Utils;
-import com.thalesgroup.authzforce.core.eval.ExpressionFactoryImpl;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BaseDatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.datatypes.CloseableAttributeFinder;
+import com.thalesgroup.authzforce.core.datatypes.CloseableAttributeFinderImpl;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.datatypes.StandardDatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunction;
 import com.thalesgroup.authzforce.core.func.FunctionRegistry;
 import com.thalesgroup.authzforce.core.func.FunctionSet;
@@ -397,7 +396,7 @@ public class PdpConfigurationParser
 		 */
 		if (function instanceof FirstOrderFunction)
 		{
-			final Datatype<?>[] paramTypes = ((FirstOrderFunction<?>) function).getParameterTypes();
+			final List<Datatype<?>> paramTypes = ((FirstOrderFunction<?>) function).getParameterTypes();
 			for (final Datatype<?> paramType : paramTypes)
 			{
 				if (paramType.getId().equals(XACMLDatatypeId.XPATH_EXPRESSION.value()))

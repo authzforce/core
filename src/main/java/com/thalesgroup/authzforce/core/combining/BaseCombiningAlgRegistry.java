@@ -23,7 +23,7 @@ import java.util.Map;
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.thalesgroup.authzforce.core.BasePdpExtensionRegistry;
-import com.thalesgroup.authzforce.core.eval.Decidable;
+import com.thalesgroup.authzforce.core.Decidable;
 
 /**
  * This is a com.thalesgroup.authzforce.core.test.basic implementation of

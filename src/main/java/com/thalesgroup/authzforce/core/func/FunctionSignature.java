@@ -20,10 +20,12 @@ package com.thalesgroup.authzforce.core.func;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
-import com.thalesgroup.authzforce.core.eval.Expression.Value;
+import com.thalesgroup.authzforce.core.Expression.Datatype;
+import com.thalesgroup.authzforce.core.Expression.Value;
 
 /**
  * First-order function signature (name, return type, arity, parameter types)
@@ -43,7 +45,7 @@ public class FunctionSignature<RETURN_T extends Value<RETURN_T>>
 	private final Datatype<RETURN_T> returnType;
 
 	// parameter types
-	private final Datatype<?>[] paramTypes;
+	private final List<Datatype<?>> paramTypes;
 
 	/**
 	 * Is the last parameter specified in <code>paramTypes</code> considered as variable-length
@@ -76,8 +78,8 @@ public class FunctionSignature<RETURN_T extends Value<RETURN_T>>
 	private final boolean isVarArgs;
 
 	// cached method results
-	private int hashCode = 0;
-	private String toString = null;
+	private transient volatile int hashCode = 0; // Effective Java - Item 9
+	private transient volatile String toString = null; // Effective Java - Item 71
 
 	/**
 	 * Creates function signature
@@ -131,7 +133,7 @@ public class FunctionSignature<RETURN_T extends Value<RETURN_T>>
 
 		this.name = name;
 		this.returnType = returnType;
-		this.paramTypes = parameterTypes;
+		this.paramTypes = Collections.unmodifiableList(Arrays.asList(parameterTypes));
 		this.isVarArgs = varArgs;
 	}
 
@@ -160,7 +162,7 @@ public class FunctionSignature<RETURN_T extends Value<RETURN_T>>
 	 * 
 	 * @return function parameter types
 	 */
-	public Datatype<?>[] getParameterTypes()
+	public List<Datatype<?>> getParameterTypes()
 	{
 		return paramTypes;
 	}
@@ -191,20 +193,19 @@ public class FunctionSignature<RETURN_T extends Value<RETURN_T>>
 	@Override
 	public boolean equals(Object obj)
 	{
+		// Effective Java - Item 8
 		if (this == obj)
 		{
 			return true;
 		}
-		if (obj == null)
+
+		if (!(obj instanceof FunctionSignature))
 		{
 			return false;
 		}
-		if (getClass() != obj.getClass())
-		{
-			return false;
-		}
+
 		final FunctionSignature<?> other = (FunctionSignature<?>) obj;
-		return isVarArgs == other.isVarArgs && name.equals(other.name) && Arrays.equals(paramTypes, other.paramTypes) && returnType.equals(other.returnType);
+		return isVarArgs == other.isVarArgs && name.equals(other.name) && this.paramTypes.equals(other.paramTypes) && returnType.equals(other.returnType);
 	}
 
 	@Override
@@ -213,7 +214,7 @@ public class FunctionSignature<RETURN_T extends Value<RETURN_T>>
 		// immutable class -> cache result
 		if (toString == null)
 		{
-			toString = "FunctionSignature [name=" + name + ", returnType=" + returnType + ", isVarArgs=" + isVarArgs + ", paramTypes=" + Arrays.toString(paramTypes) + "]";
+			toString = "FunctionSignature [name=" + name + ", returnType=" + returnType + ", isVarArgs=" + isVarArgs + ", paramTypes=" + paramTypes + "]";
 		}
 
 		return toString;

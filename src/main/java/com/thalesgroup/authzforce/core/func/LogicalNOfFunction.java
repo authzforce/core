@@ -23,14 +23,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
 
 /**
  * A class that implements the n-of function. From the XACML spec
@@ -109,7 +109,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 			intAttrVal = Utils.evalSingle(input0, context, DatatypeConstants.INTEGER.TYPE);
 		} catch (IndeterminateEvaluationException e)
 		{
-			throw new IndeterminateEvaluationException(getIndeterminateArgMessage(0), Status.STATUS_PROCESSING_ERROR, e);
+			throw new IndeterminateEvaluationException(getIndeterminateArgMessage(0), StatusHelper.STATUS_PROCESSING_ERROR, e);
 		}
 
 		// intAttrVal is 'n' (number of Trues to reach)
@@ -121,7 +121,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 		// If the number of trues needed is less than zero, report an error.
 		if (nOfRequiredTrues < 0)
 		{
-			throw new IndeterminateEvaluationException("Function " + NAME_N_OF + ": Invalid arg #0: " + nOfRequiredTrues + ". Expected: (integer) >= 0", Status.STATUS_PROCESSING_ERROR);
+			throw new IndeterminateEvaluationException("Function " + NAME_N_OF + ": Invalid arg #0: " + nOfRequiredTrues + ". Expected: (integer) >= 0", StatusHelper.STATUS_PROCESSING_ERROR);
 		}
 
 		// If the number of trues needed is zero, return true.
@@ -136,7 +136,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 		if (nOfRequiredTrues > nOfRemainingArgs)
 		{
 			throw new IndeterminateEvaluationException("Function " + NAME_N_OF + ": Invalid arguments to n-of function: value of arg #0 (i.e. number of required Trues = " + nOfRequiredTrues + ") > value of arg #1 (i.e. number of remaining args = " + nOfRemainingArgs + ")",
-					Status.STATUS_PROCESSING_ERROR);
+					StatusHelper.STATUS_PROCESSING_ERROR);
 		}
 
 		IndeterminateEvaluationException lastIndeterminateException = null;
@@ -170,7 +170,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 						{
 							// this should not happen in theory as lastIndeterminateException !=
 							// null when nOfIndeterminateArgs != 0
-							throw new IndeterminateEvaluationException(this + ": evaluation failed because of indeterminate arg", Status.STATUS_PROCESSING_ERROR);
+							throw new IndeterminateEvaluationException(this + ": evaluation failed because of indeterminate arg", StatusHelper.STATUS_PROCESSING_ERROR);
 						}
 
 						throw lastIndeterminateException;
@@ -187,7 +187,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 			{
 				// keep the indeterminate arg error to throw later, in case there was not enough
 				// TRUEs in the remaining args
-				lastIndeterminateException = new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), Status.STATUS_PROCESSING_ERROR, e);
+				lastIndeterminateException = new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), StatusHelper.STATUS_PROCESSING_ERROR, e);
 				nOfIndeterminateArgs++;
 			}
 
@@ -206,7 +206,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 					attrVal = BooleanAttributeValue.class.cast(arg);
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 
 				if (attrVal.getUnderlyingValue())
@@ -241,7 +241,7 @@ public class LogicalNOfFunction extends FirstOrderFunction<BooleanAttributeValue
 			{
 				// this should not happen in theory as lastIndeterminateException !=
 				// null when nOfIndeterminateArgs != 0
-				throw new IndeterminateEvaluationException(this + ": evaluation failed because of indeterminate arg", Status.STATUS_PROCESSING_ERROR);
+				throw new IndeterminateEvaluationException(this + ": evaluation failed because of indeterminate arg", StatusHelper.STATUS_PROCESSING_ERROR);
 			}
 
 			throw lastIndeterminateException;

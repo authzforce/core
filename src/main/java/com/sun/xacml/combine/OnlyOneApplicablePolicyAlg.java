@@ -38,10 +38,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
 import com.thalesgroup.authzforce.core.policy.IPolicy;
 
 /**
@@ -60,7 +60,7 @@ public class OnlyOneApplicablePolicyAlg extends CombiningAlgorithm<IPolicy>
 	 */
 	public static final String ID = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable";
 
-	private static final DecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new DecisionResult(new Status(Status.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
+	private static final DecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new DecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
 
 	/**
 	 * Standard constructor.

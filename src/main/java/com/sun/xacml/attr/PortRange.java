@@ -43,7 +43,7 @@ import java.util.Objects;
  * @since 2.0
  * @author Seth Proctor
  */
-class PortRange
+final class PortRange
 {
 
 	/**
@@ -194,7 +194,7 @@ class PortRange
 		return lowerBound == UNBOUND && upperBound == UNBOUND;
 	}
 
-	private int hashCode = 0;
+	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
 	@Override
 	public int hashCode()
@@ -219,6 +219,11 @@ class PortRange
 	@Override
 	public boolean equals(Object o)
 	{
+		if (this == o)
+		{
+			return true;
+		}
+
 		if (!(o instanceof PortRange))
 		{
 			return false;

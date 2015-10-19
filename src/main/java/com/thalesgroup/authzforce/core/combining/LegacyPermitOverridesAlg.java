@@ -24,9 +24,9 @@ import java.util.Set;
 
 import com.sun.xacml.combine.CombinerElement;
 import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.Decidable;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
 
 /**
  * This implements the standard Permit-Overrides and Ordered-Permit-Overrides policy/rule combining
@@ -40,7 +40,7 @@ public final class LegacyPermitOverridesAlg extends CombiningAlgorithm<Decidable
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	public static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:ordered-permit-overrides",
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:ordered-permit-overrides",
 			"urn:oasis:names:tc:xacml:1.1:rule-combining-algorithm:ordered-permit-overrides" };
 
 	/**
@@ -69,7 +69,7 @@ public final class LegacyPermitOverridesAlg extends CombiningAlgorithm<Decidable
 		throw this.unsupportedLegacyAlgorithmException;
 		/*
 		 * boolean atLeastOneError = false; boolean atLeastOneDeny = false; Obligations
-		 * combinedDenyObligations = null; AssociatedAdvice combinedDenyAdvice = null; Status
+		 * combinedDenyObligations = null; AssociatedAdvice combinedDenyAdvice = null; StatusHelper
 		 * firstIndeterminateStatus = null;
 		 * 
 		 * // List<MatchPolicies> policiesList = new ArrayList<MatchPolicies>(); for (final IPolicy

@@ -23,11 +23,11 @@ import java.io.IOException;
 
 import com.sun.xacml.ParsingException;
 import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.JaxbBoundPdpExtension;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * This is the interface that all modules responsible for finding the root/top-level policy to

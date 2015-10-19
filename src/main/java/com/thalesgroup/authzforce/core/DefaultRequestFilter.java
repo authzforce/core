@@ -31,11 +31,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
-import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.Expression.Utils;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression.Utils;
+import com.thalesgroup.authzforce.core.datatypes.CategorySpecificAttributes;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeFactoryRegistry;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision
@@ -116,7 +114,7 @@ public final class DefaultRequestFilter extends RequestFilter
 			reqDefXPathCompiler = Utils.XPATH_COMPILERS_BY_VERSION.get(reqDefs.getXPathVersion());
 			if (reqDefXPathCompiler == null)
 			{
-				throw new IndeterminateEvaluationException("Invalid <RequestDefaults>/XPathVersion: " + reqDefs.getXPathVersion(), Status.STATUS_SYNTAX_ERROR);
+				throw new IndeterminateEvaluationException("Invalid <RequestDefaults>/XPathVersion: " + reqDefs.getXPathVersion(), StatusHelper.STATUS_SYNTAX_ERROR);
 			}
 		}
 
@@ -133,7 +131,7 @@ public final class DefaultRequestFilter extends RequestFilter
 			individualDecisionRequest = new IndividualDecisionRequest(jaxbRequest.isReturnPolicyIdList(), reqDefXPathCompiler);
 		} catch (IllegalArgumentException e)
 		{
-			throw new IndeterminateEvaluationException("Invalid RequestDefaults/XPathVersion", Status.STATUS_SYNTAX_ERROR, e);
+			throw new IndeterminateEvaluationException("Invalid RequestDefaults/XPathVersion", StatusHelper.STATUS_SYNTAX_ERROR, e);
 		}
 
 		for (final Attributes jaxbAttributes : jaxbRequest.getAttributes())
@@ -141,7 +139,7 @@ public final class DefaultRequestFilter extends RequestFilter
 			final String categoryName = jaxbAttributes.getCategory();
 			if (!attrCategoryNames.add(categoryName))
 			{
-				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName + "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", Status.STATUS_SYNTAX_ERROR);
+				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName + "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
 			}
 
 			final CategorySpecificAttributes categorySpecificAttributes = xacmlAttrsParser.parse(jaxbAttributes, reqDefXPathCompiler);

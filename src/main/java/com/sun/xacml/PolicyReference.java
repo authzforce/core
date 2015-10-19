@@ -40,12 +40,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
 import com.thalesgroup.authzforce.core.policy.IPolicy;
-import com.thalesgroup.authzforce.core.policy.Policy;
+import com.thalesgroup.authzforce.core.policy.PolicyEvaluator;
 import com.thalesgroup.authzforce.core.policy.RefPolicyFinder;
 
 /**
@@ -71,7 +71,7 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 
 	protected final Class<T> referredPolicyClass;
 
-	private final String toString;
+	private transient volatile String toString = null;
 
 	private PolicyReference(String idRef, VersionConstraints versionConstraints, Class<T> policyReferenceType)
 	{
@@ -82,7 +82,7 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 
 	private static String toString(Class<? extends IPolicy> policyReferenceType, String policyRefId, VersionConstraints versionConstraints)
 	{
-		return (policyReferenceType == Policy.class ? "PolicyIdReference" : "PolicySetIdReference") + "[Id=" + policyRefId + ", " + versionConstraints + "]";
+		return (policyReferenceType == PolicyEvaluator.class ? "PolicyIdReference" : "PolicySetIdReference") + "[Id=" + policyRefId + ", " + versionConstraints + "]";
 	}
 
 	// Make all super fields final
@@ -154,7 +154,7 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 	private static class Static<T extends IPolicy> extends PolicyReference<T>
 	{
 
-		private final T referredPolicy;
+		private final transient T referredPolicy;
 
 		private Static(String policyIdRef, VersionConstraints versionConstraints, T referredPolicy)
 		{
@@ -186,13 +186,13 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 	{
 
 		// this policyFinder to use in finding the referenced policy
-		private final RefPolicyFinder refPolicyFinder;
+		private final transient RefPolicyFinder refPolicyFinder;
 
 		/*
 		 * (Do not use a Queue as it is FIFO, and we need LIFO and iteration in order of insertion,
 		 * so different from Collections.asLifoQueue(Deque) as well.)
 		 */
-		private final Deque<String> policySetRefChain;
+		private final transient Deque<String> policySetRefChain;
 
 		private Dynamic(String policyIdRef, VersionConstraints versionConstraints, Class<T> policyReferenceType, RefPolicyFinder refPolicyFinder, Deque<String> policyRefChain)
 		{
@@ -248,7 +248,7 @@ public abstract class PolicyReference<T extends IPolicy> extends IdReferenceType
 				return resolve().isApplicable(context);
 			} catch (ParsingException e)
 			{
-				throw new IndeterminateEvaluationException("Error resolving " + this + " to check whether the referenced policy is applicable to the request context", Status.STATUS_SYNTAX_ERROR, e);
+				throw new IndeterminateEvaluationException("Error resolving " + this + " to check whether the referenced policy is applicable to the request context", StatusHelper.STATUS_SYNTAX_ERROR, e);
 			}
 		}
 	}

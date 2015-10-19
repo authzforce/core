@@ -21,13 +21,15 @@ package com.thalesgroup.authzforce.core.policy;
 import java.io.Closeable;
 import java.util.Deque;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
 import com.thalesgroup.authz.model.ext._3.AbstractPolicyFinder;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.JaxbBoundPdpExtension;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 
 /**
  * This is the interface for all modules responsible for finding Policy(Set)s by their
@@ -111,8 +113,8 @@ public interface RefPolicyFinderModule extends Closeable
 	 *            detect loops, i.e. circular references, and validate reference depth); therefore
 	 *            it is the responsibility of the implementation to pass this parameter as the last
 	 *            one to
-	 *            {@link PolicySet#PolicySet(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet, net.sf.saxon.s9api.XPathCompiler, com.thalesgroup.authzforce.core.eval.Expression.Factory, CombiningAlgRegistry, RefPolicyFinder, Deque)}
-	 *            henever it instantiates a {@link PolicySet}.
+	 *            {@link PolicySetEvaluator#PolicySetEvaluator(PolicySet, net.sf.saxon.s9api.XPathCompiler, com.thalesgroup.authzforce.core.Expression.Factory, CombiningAlgRegistry, RefPolicyFinder, Deque)}
+	 *            whenever it instantiates a {@link PolicySetEvaluator}.
 	 * 
 	 * @return the result of looking for a matching policy, or null if no policy found with PolicyId
 	 *         matching {@code idReference} and Version meeting the {@code constraints}

@@ -21,10 +21,10 @@
  */
 package com.thalesgroup.authzforce.core.policy;
 
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Decidable;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 
 /**
  * Policy Element handler interface, "Policy Element" referring to all Policy* element: Policy,

@@ -29,10 +29,10 @@ import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
-import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes.MutableBag;
-import com.thalesgroup.authzforce.core.eval.Bag;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
+import com.thalesgroup.authzforce.core.datatypes.CategorySpecificAttributes;
+import com.thalesgroup.authzforce.core.datatypes.CategorySpecificAttributes.MutableBag;
 
 /**
  * Individual Decision Request, i.e. conceptual request context that corresponds to one XACML Result
@@ -57,6 +57,7 @@ public class IndividualDecisionRequest
 	 */
 	public IndividualDecisionRequest(boolean returnPolicyIdList, XPathCompiler defaultXPathCompiler)
 	{
+		// these maps/lists may be updated later by put(...) method defined in this class
 		attributes = new HashMap<>();
 		extraContentsByCategory = new HashMap<>();
 		attributesToIncludeInResult = new ArrayList<>();
@@ -73,6 +74,7 @@ public class IndividualDecisionRequest
 	 */
 	public IndividualDecisionRequest(IndividualDecisionRequest baseRequest)
 	{
+		// these maps/lists may be updated later by put(...) method defined in this class
 		attributes = new HashMap<>(baseRequest.attributes);
 		extraContentsByCategory = new HashMap<>(baseRequest.extraContentsByCategory);
 		attributesToIncludeInResult = new ArrayList<>(baseRequest.attributesToIncludeInResult);

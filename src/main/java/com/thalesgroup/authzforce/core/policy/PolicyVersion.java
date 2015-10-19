@@ -18,7 +18,10 @@
  */
 package com.thalesgroup.authzforce.core.policy;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Representation of XACML VersionType:
@@ -36,15 +39,16 @@ import java.util.Arrays;
  * 
  * 
  */
-public class PolicyVersion implements Comparable<PolicyVersion>
+public final class PolicyVersion implements Comparable<PolicyVersion>
 {
 	private static final IllegalArgumentException UNDEFINED_VERSION_EXCEPTION = new IllegalArgumentException("Policy(Set) Version undefined");
+	private static final IllegalArgumentException UNDEFINED_COMPARED_VERSION_EXCEPTION = new IllegalArgumentException("Other Policy(Set) Version for comparison is undefined");
 
 	private final String version;
-	private final int[] numbers;
+	private final List<Integer> numbers;
 
 	// cached hashCode() result
-	private int hashCode = 0;
+	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
 	/**
 	 * Creates instance from version in text form
@@ -68,7 +72,7 @@ public class PolicyVersion implements Comparable<PolicyVersion>
 		}
 
 		final String[] tokens = version.split("\\.");
-		numbers = new int[tokens.length];
+		final List<Integer> intTokens = new ArrayList<>(tokens.length);
 		for (int i = 0; i < tokens.length; i++)
 		{
 			final int number;
@@ -85,9 +89,10 @@ public class PolicyVersion implements Comparable<PolicyVersion>
 				throw new IllegalArgumentException("Invalid Policy(Set) Version: '" + version + "'. Number #" + i + " (=" + number + ") is not a positive integer");
 			}
 
-			numbers[i] = number;
+			intTokens.add(number);
 		}
 
+		this.numbers = Collections.unmodifiableList(intTokens);
 		this.version = version;
 	}
 
@@ -96,7 +101,7 @@ public class PolicyVersion implements Comparable<PolicyVersion>
 	{
 		if (hashCode == 0)
 		{
-			hashCode = Arrays.hashCode(numbers);
+			hashCode = numbers.hashCode();
 		}
 
 		return hashCode;
@@ -105,41 +110,48 @@ public class PolicyVersion implements Comparable<PolicyVersion>
 	@Override
 	public boolean equals(Object obj)
 	{
+		// Effective Java - Item 8
 		if (this == obj)
+		{
 			return true;
-		if (obj == null)
+		}
+
+		if (!(obj instanceof PolicyVersion))
+		{
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
+
 		final PolicyVersion other = (PolicyVersion) obj;
-		return Arrays.equals(numbers, other.numbers);
+		return this.numbers.equals(other.numbers);
 	}
 
 	@Override
 	public int compareTo(PolicyVersion other)
 	{
-		final int lowestLen = Math.min(numbers.length, other.numbers.length);
-		for (int i = 0; i < lowestLen; i++)
+		if (other == null)
 		{
-			final int comparResult = Integer.compare(numbers[i], other.numbers[i]);
+			throw UNDEFINED_COMPARED_VERSION_EXCEPTION;
+		}
+
+		final Iterator<Integer> thisIterator = this.numbers.iterator();
+		final Iterator<Integer> otherIterator = other.numbers.iterator();
+		while (thisIterator.hasNext() && otherIterator.hasNext())
+		{
+			final int comparResult = thisIterator.next().compareTo(otherIterator.next());
 			// if not equal number, we're done
 			if (comparResult != 0)
 			{
 				return comparResult;
 			}
-
-			// equal number in both versions, so go on with next number
 		}
 
-		// all numbers are the same up to index lowestLen-1
-		// the longest sequence is greater so, compare lengths
-		return Integer.compare(numbers.length, other.numbers.length);
+		return thisIterator.hasNext() ? 1 : otherIterator.hasNext() ? -1 : 0;
 	}
 
 	// public static void main(String[] args)
 	// {
-	// final PolicyVersion v1 = new PolicyVersion("1.3.4");
-	// final PolicyVersion v2 = new PolicyVersion("1.2.4");
+	// final PolicyVersion v1 = new PolicyVersion("1.0.0");
+	// final PolicyVersion v2 = new PolicyVersion("1.0.1");
 	// System.out.println(v1.compareTo(v2));
 	// }
 
@@ -154,7 +166,7 @@ public class PolicyVersion implements Comparable<PolicyVersion>
 	 * 
 	 * @return sequence of positive integers from version
 	 */
-	public int[] getNumberSequence()
+	public List<Integer> getNumberSequence()
 	{
 		return numbers;
 	}

@@ -24,9 +24,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import com.sun.xacml.combine.CombinerElement;
 import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
+import com.thalesgroup.authzforce.core.Decidable;
+import com.thalesgroup.authzforce.core.DecisionResult;
+import com.thalesgroup.authzforce.core.EvaluationContext;
 
 /**
  * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set
@@ -39,7 +39,7 @@ public final class FirstApplicableAlg extends CombiningAlgorithm<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	public static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable", "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable" };
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable", "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable" };
 
 	/**
 	 * Supported algorithms

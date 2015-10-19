@@ -39,13 +39,11 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Content;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes;
-import com.thalesgroup.authzforce.core.attr.CategorySpecificAttributes.MutableBag;
-import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.CategorySpecificAttributes;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeFactoryRegistry;
+import com.thalesgroup.authzforce.core.datatypes.CategorySpecificAttributes.MutableBag;
 import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
 import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLResourceScope;
@@ -192,7 +190,7 @@ public abstract class RequestFilter
 					final List<AttributeValueType> jaxbAttrValues = jaxbAttr.getAttributeValues();
 					if (jaxbAttrValues.isEmpty())
 					{
-						throw new IndeterminateEvaluationException("Missing AttributeValue(s) for Attribute " + attrGUID + " (cf. XACML 3.0 schema)", Status.STATUS_SYNTAX_ERROR);
+						throw new IndeterminateEvaluationException("Missing AttributeValue(s) for Attribute " + attrGUID + " (cf. XACML 3.0 schema)", StatusHelper.STATUS_SYNTAX_ERROR);
 					}
 
 					/**
@@ -209,7 +207,7 @@ public abstract class RequestFilter
 					final AttributeValue.Factory<?> bagElementDatatypeFactory = datatypeFactoryRegistry.getExtension(bagDatatypeURI);
 					if (bagElementDatatypeFactory == null)
 					{
-						throw new IndeterminateEvaluationException("Unsupported AttributeValue DataType in Attribute" + attrGUID + ": " + bagDatatypeURI, Status.STATUS_SYNTAX_ERROR);
+						throw new IndeterminateEvaluationException("Unsupported AttributeValue DataType in Attribute" + attrGUID + ": " + bagDatatypeURI, StatusHelper.STATUS_SYNTAX_ERROR);
 					}
 
 					/*
@@ -369,7 +367,7 @@ public abstract class RequestFilter
 					return xmlDocBuilder.build(jaxbSrc);
 				} catch (JAXBException | SaxonApiException e)
 				{
-					throw new IndeterminateEvaluationException("Error parsing Content of Attributes[@Category=" + categoryName + "] for XPath evaluation", Status.STATUS_SYNTAX_ERROR, e);
+					throw new IndeterminateEvaluationException("Error parsing Content of Attributes[@Category=" + categoryName + "] for XPath evaluation", StatusHelper.STATUS_SYNTAX_ERROR, e);
 				}
 
 			}
@@ -398,19 +396,19 @@ public abstract class RequestFilter
 	protected static final AttributeGUID RESOURCE_SCOPE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_RESOURCE_CATEGORY_RESOURCE.value(), null, XACMLAttributeId.XACML_RESOURCE_SCOPE.value());
 
 	protected static final IndeterminateEvaluationException UNSUPPORTED_MULTIPLE_SCOPE_EXCEPTION = new IndeterminateEvaluationException("Unsupported resource scope. Expected scope: none or " + XACMLResourceScope.IMMEDIATE.value()
-			+ ". (Profile 'urn:oasis:names:tc:xacml:3.0:profile:multiple:scope' not supported.)", Status.STATUS_SYNTAX_ERROR);
+			+ ". (Profile 'urn:oasis:names:tc:xacml:3.0:profile:multiple:scope' not supported.)", StatusHelper.STATUS_SYNTAX_ERROR);
 
 	/**
 	 * Indeterminate exception to be thrown iff RequestDefaults element not supported by the request
 	 * preprocessor
 	 */
-	protected static final IndeterminateEvaluationException UNSUPPORTED_REQUEST_DEFAULTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported feature: <RequestDefaults>", Status.STATUS_SYNTAX_ERROR);
+	protected static final IndeterminateEvaluationException UNSUPPORTED_REQUEST_DEFAULTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported feature: <RequestDefaults>", StatusHelper.STATUS_SYNTAX_ERROR);
 
 	/**
 	 * Indeterminate exception to be thrown iff MultiRequests element not supported by the request
 	 * preprocessor
 	 */
-	protected static final IndeterminateEvaluationException UNSUPPORTED_MULTI_REQUESTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported feature: <MultiRequests>", Status.STATUS_SYNTAX_ERROR);
+	protected static final IndeterminateEvaluationException UNSUPPORTED_MULTI_REQUESTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported feature: <MultiRequests>", StatusHelper.STATUS_SYNTAX_ERROR);
 
 	private final XACMLAttributesParserFactory xacmlAttrsParserFactory;
 

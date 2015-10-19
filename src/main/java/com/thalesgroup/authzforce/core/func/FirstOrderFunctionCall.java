@@ -23,14 +23,14 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
-import com.thalesgroup.authzforce.core.eval.Expression.Utils;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.Expression.Datatype;
+import com.thalesgroup.authzforce.core.Expression.Utils;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
 
 /**
  * Function call, made of a function definition and given arguments to be passed to the function. It
@@ -96,7 +96,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 				argVal = Utils.evalSingle(arg, context, argReturnType);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException("Indeterminate arg #" + results.size(), Status.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException("Indeterminate arg #" + results.size(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			results.add(argVal);
@@ -140,7 +140,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 				argVal = Utils.evalSingle(arg, context);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException("Indeterminate arg #" + results.size(), Status.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException("Indeterminate arg #" + results.size(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			results.add(argVal);
@@ -175,7 +175,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 				argResult = Utils.evalBagArg(arg, context, argReturnType);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException("Indeterminate arg #" + resultIndex, Status.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException("Indeterminate arg #" + resultIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			results[resultIndex] = argResult;
@@ -215,8 +215,9 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 	 */
 	private final void validateArgs(Datatype<?>[] inputTypes, int offset) throws IllegalArgumentException
 	{
-		final Datatype<?>[] paramTypes = funcSig.getParameterTypes();
-		assert 0 <= offset && offset < paramTypes.length;
+		final List<Datatype<?>> paramTypes = funcSig.getParameterTypes();
+		final int numOfParams = paramTypes.size();
+		assert 0 <= offset && offset < numOfParams;
 
 		final int numOfInputs = inputTypes.length;
 		if (funcSig.isVarArgs())
@@ -226,7 +227,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 			 * or more times in arguments, so total number of function arguments (arity) can be
 			 * (paramTypes.length - 1) or more.
 			 */
-			final int varArgIndex = paramTypes.length - 1; // = minimum arity
+			final int varArgIndex = numOfParams - 1; // = minimum arity
 			if (offset + numOfInputs < varArgIndex)
 			{
 				throw new IllegalArgumentException("Wrong number of args for varargs function: " + numOfInputs + ". Required: >= " + varArgIndex);
@@ -238,22 +239,14 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 				final Datatype<?> expectedType;
 				// if number of inputs exceeds size of paramTypes, input types must be of type of
 				// vararg parameter
-				if (paramIndex < paramTypes.length)
-				{
-					expectedType = paramTypes[paramIndex];
-				} else
-				{
-					expectedType = paramTypes[varArgIndex];
-
-				}
-
+				expectedType = paramTypes.get(paramIndex < numOfParams ? paramIndex : varArgIndex);
 				checkArgType(input, paramIndex, expectedType);
 				paramIndex++;
 			}
 		} else
 		{
 			// Fixed number of arguments
-			final int expectedNumOfInputs = paramTypes.length - offset;
+			final int expectedNumOfInputs = numOfParams - offset;
 			if (numOfInputs != expectedNumOfInputs)
 			{
 				throw new IllegalArgumentException("Wrong number of " + (offset > 0 ? "remaining args (starting at #" + offset + "): " : "args: ") + numOfInputs + ". Required: " + expectedNumOfInputs);
@@ -263,7 +256,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 			int paramIndex = offset;
 			for (final Datatype<?> input : inputTypes)
 			{
-				checkArgType(input, paramIndex, paramTypes[paramIndex]);
+				checkArgType(input, paramIndex, paramTypes.get(paramIndex));
 				paramIndex++;
 			}
 		}
@@ -449,7 +442,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 		protected EagerEval(FunctionSignature<RETURN_T> functionSignature, List<Expression<?>> args, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSignature, args, remainingArgTypes);
-			final Datatype<?>[] paramTypes = functionSignature.getParameterTypes();
+			final List<Datatype<?>> paramTypes = functionSignature.getParameterTypes();
 			final String funcId = functionSignature.getName();
 
 			/*
@@ -483,7 +476,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 			}
 
 			// parameters have same primitive datatype
-			if (primParamCount == paramTypes.length)
+			if (primParamCount == paramTypes.size())
 			{
 				// All parameters are primitive
 				if (commonPrimitiveType == null)
@@ -579,7 +572,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 		 * @see
 		 * com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall#evaluate(com.thalesgroup.
 		 * authzforce .core.test.EvaluationCtx ,
-		 * com.thalesgroup.authzforce.core.attr.AttributeValue[])
+		 * com.thalesgroup.authzforce.core.datatypes.AttributeValue[])
 		 */
 		@Override
 		protected final RETURN_T evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
@@ -592,7 +585,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 					evalPrimitiveArgs(argExpressions, context, finalArgs);
 				} catch (IndeterminateEvaluationException e)
 				{
-					throw new IndeterminateEvaluationException(this.indeterminateArgMessage, Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(this.indeterminateArgMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 			}
 
@@ -681,7 +674,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 		 * @see
 		 * com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall#evaluate(com.thalesgroup.
 		 * authzforce .core.test.EvaluationCtx ,
-		 * com.thalesgroup.authzforce.core.attr.AttributeValue[])
+		 * com.thalesgroup.authzforce.core.datatypes.AttributeValue[])
 		 */
 		@Override
 		protected final RETURN_T evaluate(EvaluationContext context, AttributeValue<?>... remainingArgs) throws IndeterminateEvaluationException
@@ -694,7 +687,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 					evalPrimitiveArgs(argExpressions, context, parameterType, finalArgs);
 				} catch (IndeterminateEvaluationException e)
 				{
-					throw new IndeterminateEvaluationException(this.indeterminateArgMessage, Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(this.indeterminateArgMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 			}
 
@@ -711,7 +704,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 						finalArgs.add(parameterClass.cast(remainingArg));
 					} catch (ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException("Function " + this.funcSig.getName() + ": Type of arg #" + finalArgs.size() + " not valid: " + remainingArg.getDataType() + ". Required: " + parameterType + ".", Status.STATUS_PROCESSING_ERROR);
+						throw new IndeterminateEvaluationException("Function " + this.funcSig.getName() + ": Type of arg #" + finalArgs.size() + " not valid: " + remainingArg.getDataType() + ". Required: " + parameterType + ".", StatusHelper.STATUS_PROCESSING_ERROR);
 					}
 				}
 			}
@@ -808,7 +801,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(this.indeterminateArgMessage, Status.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(this.indeterminateArgMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			return evaluate(bagArgs);
@@ -880,7 +873,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 				bagArgs = evalBagArgs(argExpressions.subList(numOfSameTypePrimitiveParamsBeforeBag, numOfArgExpressions), context, bagParamType);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(this.indeterminateArgMessage, Status.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(this.indeterminateArgMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			final PRIMITIVE_PARAM_T[] castRemainingArgs;
@@ -894,7 +887,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Expression.Value<RET
 					castRemainingArgs = primitiveParamArrayClass.cast(remainingArgs);
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException("Function " + funcSig.getName() + ": Type of remaining args (# >= " + initialArgCount + ") not valid: " + remainingArgs.getClass().getComponentType() + ". Required: " + primitiveParamType + ".", Status.STATUS_PROCESSING_ERROR);
+					throw new IndeterminateEvaluationException("Function " + funcSig.getName() + ": Type of remaining args (# >= " + initialArgCount + ") not valid: " + remainingArgs.getClass().getComponentType() + ". Required: " + primitiveParamType + ".", StatusHelper.STATUS_PROCESSING_ERROR);
 				}
 			}
 

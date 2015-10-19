@@ -25,17 +25,17 @@ import net.sf.saxon.Configuration;
 import net.sf.saxon.regex.RegularExpression;
 import net.sf.saxon.trans.XPathException;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Datatype;
-import com.thalesgroup.authzforce.core.eval.Expression.Utils;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.Expression.Datatype;
+import com.thalesgroup.authzforce.core.Expression.Utils;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
 
 /**
  * *-regexp-match function helper
@@ -161,7 +161,7 @@ final class RegexpMatchFunctionHelper
 						arg1 = matchedValueClass.cast(remainingArgs[0]);
 					} catch (ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException(indeterminateArg1TypeMessage, Status.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException(indeterminateArg1TypeMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 				} else
 				{
@@ -170,7 +170,7 @@ final class RegexpMatchFunctionHelper
 						arg1 = Utils.evalSingle(argExpressionsAfterRegex.get(0), context, matchedValueType);
 					} catch (IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException("Function " + funcSig.getName() + ": Indeterminate arg #1", Status.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException("Function " + funcSig.getName() + ": Indeterminate arg #1", StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 				}
 

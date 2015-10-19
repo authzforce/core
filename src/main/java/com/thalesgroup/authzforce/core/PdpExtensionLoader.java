@@ -29,8 +29,8 @@ import java.util.Set;
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.cond.Function;
 import com.thalesgroup.authz.model.ext._3.AbstractPdpExtension;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgorithmSet;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
 import com.thalesgroup.authzforce.core.func.FunctionSet;
 
 /**
@@ -139,7 +139,7 @@ public class PdpExtensionLoader
 	 * 
 	 * @param extensionType
 	 *            type of extension:
-	 *            {@link com.thalesgroup.authzforce.core.attr.AttributeValue.Factory },
+	 *            {@link com.thalesgroup.authzforce.core.datatypes.AttributeValue.Factory },
 	 *            {@link Function}, {@link CombiningAlgorithmSet}, etc.
 	 * @param id
 	 *            extension ID

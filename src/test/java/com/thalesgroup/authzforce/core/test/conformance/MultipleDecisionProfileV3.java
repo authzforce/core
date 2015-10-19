@@ -42,7 +42,7 @@ public class MultipleDecisionProfileV3
 	/**
 	 * directory name that states the test type
 	 */
-	private final static String ROOT_DIRECTORY = "conformance/experimental/MultipleDecisionProfile/";
+	private final static String ROOT_DIRECTORY = "classpath:conformance/experimental/MultipleDecisionProfile/";
 
 	/**
 	 * the logger we'll use for all messages
@@ -81,14 +81,7 @@ public class MultipleDecisionProfileV3
 		// succeeds so far)
 		for (int i = 1; i < 3; i++)
 		{
-			if (i < 10)
-			{
-				reqResNo = "0" + i;
-			} else
-			{
-				reqResNo = Integer.toString(i);
-			}
-
+			reqResNo = "0" + i;
 			request = TestUtils.createRequest(ROOT_DIRECTORY + "request_0014_" + reqResNo + ".xml");
 			LOGGER.debug("Request that is sent to the PDP :  {}", request);
 			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY + policyFilename).evaluate(request);

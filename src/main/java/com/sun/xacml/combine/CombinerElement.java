@@ -33,16 +33,17 @@
  */
 package com.sun.xacml.combine;
 
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
 
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.eval.Decidable;
-import com.thalesgroup.authzforce.core.eval.Expression;
+import com.thalesgroup.authzforce.core.Decidable;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.combining.CombinerParameterEvaluator;
 
 /**
  * Represents a set of CombinerParameters to a combining algorithm that may or may not be associated
@@ -61,18 +62,18 @@ public class CombinerElement<T extends Decidable>
 	private final T element;
 
 	// the parameters used with this element
-	private final CombinerParameter[] parameters;
+	private final List<CombinerParameterEvaluator> parameters;
 
 	/**
 	 * Constructor that takes both the element to combine and its associated combiner parameters.
 	 * 
 	 * @param element
-	 *            combined element
+	 *            combined element; null if
 	 * 
 	 * @param jaxbCombinerParameters
 	 *            a (possibly empty) non-null <code>List</code> of
 	 *            <code>CombinerParameter<code>s provided for general
-	 *                   use (for all pre-2.0 policies this must be empty)
+	 *                   use
 	 * @param xPathCompiler
 	 *            Policy(Set) default XPath compiler, corresponding to the Policy(Set)'s default
 	 *            XPath version specified in {@link DefaultsType} element; null if none specified
@@ -84,16 +85,18 @@ public class CombinerElement<T extends Decidable>
 	public CombinerElement(T element, List<oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter> jaxbCombinerParameters, Expression.Factory expFactory, XPathCompiler xPathCompiler) throws ParsingException
 	{
 		this.element = element;
-
-		final Queue<CombinerParameter> modifiableParamList = new ArrayDeque<>();
-		if (jaxbCombinerParameters != null)
+		if (jaxbCombinerParameters == null)
 		{
+			this.parameters = Collections.EMPTY_LIST;
+		} else
+		{
+			final List<CombinerParameterEvaluator> modifiableParamList = new ArrayList<>();
 			int paramIndex = 0;
 			for (oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter jaxbCombinerParam : jaxbCombinerParameters)
 			{
 				try
 				{
-					final CombinerParameter combinerParam = new CombinerParameter(jaxbCombinerParam, expFactory, xPathCompiler);
+					final CombinerParameterEvaluator combinerParam = new CombinerParameterEvaluator(jaxbCombinerParam, expFactory, xPathCompiler);
 					modifiableParamList.add(combinerParam);
 				} catch (ParsingException e)
 				{
@@ -102,9 +105,9 @@ public class CombinerElement<T extends Decidable>
 
 				paramIndex++;
 			}
-		}
 
-		this.parameters = modifiableParamList.toArray(new CombinerParameter[0]);
+			this.parameters = Collections.unmodifiableList(modifiableParamList);
+		}
 	}
 
 	/**
@@ -119,11 +122,11 @@ public class CombinerElement<T extends Decidable>
 	}
 
 	/**
-	 * Returns the <code>CombinerParameter</code>s associated with this element.
+	 * Returns the <code>CombinerParameterEvaluator</code>s associated with this element.
 	 * 
-	 * @return a <code>List</code> of <code>CombinerParameter</code>s
+	 * @return a <code>List</code> of <code>CombinerParameterEvaluator</code>s
 	 */
-	public CombinerParameter[] getParameters()
+	public List<CombinerParameterEvaluator> getParameters()
 	{
 		return parameters;
 	}

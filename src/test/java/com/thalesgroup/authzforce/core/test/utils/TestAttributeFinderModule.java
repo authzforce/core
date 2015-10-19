@@ -29,12 +29,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
 import com.sun.xacml.finder.AttributeFinder;
 import com.sun.xacml.finder.AttributeFinderModule;
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeFactoryRegistry;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeFactoryRegistry;
 import com.thalesgroup.authzforce.model._3_0.finder.attribute.test.TestAttributeFinder;
 
 /**

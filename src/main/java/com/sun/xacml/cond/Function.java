@@ -39,12 +39,12 @@ import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 
-import com.sun.xacml.ctx.Status;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.PdpExtension;
+import com.thalesgroup.authzforce.core.StatusHelper;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.func.FunctionCall;
 
 /**
@@ -58,7 +58,7 @@ import com.thalesgroup.authzforce.core.func.FunctionCall;
 public abstract class Function<RETURN_T extends Expression.Value<RETURN_T>> extends FunctionType implements Expression<RETURN_T>, PdpExtension
 {
 	// cached hashcode result
-	private int hashCode = 0;
+	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
 	/**
 	 * Returns the function ID (as PDP extension ID)
@@ -121,7 +121,14 @@ public abstract class Function<RETURN_T extends Expression.Value<RETURN_T>> exte
 	}
 
 	@Override
-	public final RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException // NOPMD by Cyril DANGERVILLE on 10/12/15 11:19 PM
+	public final RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException // NOPMD
+																										// by
+																										// Cyril
+																										// DANGERVILLE
+																										// on
+																										// 10/12/15
+																										// 11:19
+																										// PM
 	{
 		// Expression#evaluate()
 		/*
@@ -151,9 +158,15 @@ public abstract class Function<RETURN_T extends Expression.Value<RETURN_T>> exte
 	public final boolean equals(Object obj)
 	{
 		if (this == obj)
+		{
 			return true;
-		if (getClass() != obj.getClass())
+		}
+
+		if (!(obj instanceof Function))
+		{
 			return false;
+		}
+
 		final Function<?> other = (Function<?>) obj;
 		// functionId never null
 		return functionId.equals(other.functionId);
@@ -194,7 +207,7 @@ public abstract class Function<RETURN_T extends Expression.Value<RETURN_T>> exte
 	 */
 	public final IndeterminateEvaluationException getIndeterminateArgException(int argIndex)
 	{
-		return new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), Status.STATUS_PROCESSING_ERROR);
+		return new IndeterminateEvaluationException(getIndeterminateArgMessage(argIndex), StatusHelper.STATUS_PROCESSING_ERROR);
 	}
 
 	/*

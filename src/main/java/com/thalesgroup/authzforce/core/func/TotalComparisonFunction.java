@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
 
 /**
  * A class implementing comparison of {@link Comparable} attribute values, i.e. imposing total

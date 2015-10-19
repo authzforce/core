@@ -34,11 +34,11 @@
 package com.sun.xacml.finder;
 
 import com.sun.xacml.attr.xacmlv3.AttributeDesignator;
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
 
 /**
  * AttributeFinder used to resolve {@link AttributeDesignator}s.

@@ -38,10 +38,10 @@ import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.pdp.model._2015._06.BaseStaticRefPolicyFinder;
 
 /**
@@ -277,11 +277,11 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		private final int maxPolicySetRefDepth;
 		private final Expression.Factory expressionFactory;
 		private final CombiningAlgRegistry combiningAlgRegistry;
-		private final PolicyMap<Policy> policyMap;
-		private final PolicyMap<PolicySet> policySetMapToUpdate;
+		private final PolicyMap<PolicyEvaluator> policyMap;
+		private final PolicyMap<PolicySetEvaluator> policySetMapToUpdate;
 		private final PolicyMap<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetMap;
 
-		private InitOnlyRefPolicyFinderModule(PolicyMap<Policy> policyMap, PolicyMap<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetMap, PolicyMap<PolicySet> policySetMapToUpdate, int maxPolicySetRefDepth, Expression.Factory expressionFactory,
+		private InitOnlyRefPolicyFinderModule(PolicyMap<PolicyEvaluator> policyMap, PolicyMap<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetMap, PolicyMap<PolicySetEvaluator> policySetMapToUpdate, int maxPolicySetRefDepth, Expression.Factory expressionFactory,
 				CombiningAlgRegistry combiningAlgRegistry)
 		{
 			this.policyMap = policyMap;
@@ -307,9 +307,9 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		public <POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Deque<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException
 		{
 			// If this is a request for Policy (from PolicyIdReference)
-			if (policyType == Policy.class)
+			if (policyType == PolicyEvaluator.class)
 			{
-				final Entry<PolicyVersion, Policy> policyEntry = policyMap.get(id, constraints);
+				final Entry<PolicyVersion, PolicyEvaluator> policyEntry = policyMap.get(id, constraints);
 				return policyEntry == null ? null : policyType.cast(policyEntry.getValue());
 			}
 
@@ -323,14 +323,14 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 
 			final PolicyVersion jaxbPolicySetVersion = jaxbPolicySetEntry.getKey();
 			// Check whether already parsed
-			final PolicyVersions<PolicySet> policySetVersions = policySetMapToUpdate.get(id);
-			final PolicyVersions<PolicySet> newPolicySetVersions;
+			final PolicyVersions<PolicySetEvaluator> policySetVersions = policySetMapToUpdate.get(id);
+			final PolicyVersions<PolicySetEvaluator> newPolicySetVersions;
 			if (policySetVersions != null)
 			{
-				final PolicySet policySet = policySetVersions.get(jaxbPolicySetVersion);
-				if (policySet != null)
+				final PolicySetEvaluator policySetEvaluator = policySetVersions.get(jaxbPolicySetVersion);
+				if (policySetEvaluator != null)
 				{
-					return policyType.cast(policySet);
+					return policyType.cast(policySetEvaluator);
 				}
 
 				/*
@@ -351,79 +351,76 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			// Create the PolicySet
 			final oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet jaxbPolicySet = jaxbPolicySetEntry.getValue();
 			final RefPolicyFinder refPolicyFinder = new RefPolicyFinder(InitOnlyRefPolicyFinderModule.this, maxPolicySetRefDepth);
-			final PolicySet policySet;
+			final PolicySetEvaluator policySetEvaluator;
 			try
 			{
-				policySet = new PolicySet(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyFinder, policySetRefChain);
+				policySetEvaluator = new PolicySetEvaluator(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyFinder, policySetRefChain);
 			} catch (ParsingException e)
 			{
 				throw new IllegalArgumentException("Error parsing PolicySet with PolicySetId=" + id + ", Version=" + jaxbPolicySetVersion, e);
 			}
 
-			newPolicySetVersions.put(jaxbPolicySetVersion, policySet);
-			return policyType.cast(policySet);
+			newPolicySetVersions.put(jaxbPolicySetVersion, policySetEvaluator);
+			return policyType.cast(policySetEvaluator);
 		}
 	}
 
-	private final PolicyMap<Policy> policyMap;
-	private final PolicyMap<PolicySet> policySetMap;
+	private final PolicyMap<PolicyEvaluator> policyMap;
+	private final PolicyMap<PolicySetEvaluator> policySetMap;
 
-	private BaseStaticRefPolicyFinderModule(PolicyMap<Policy> policyMap, PolicyMap<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetMap, int maxPolicySetRefDepth, final Expression.Factory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
+	private BaseStaticRefPolicyFinderModule(PolicyMap<PolicyEvaluator> policyMap, PolicyMap<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetMap, int maxPolicySetRefDepth, final Expression.Factory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
 			throws IllegalArgumentException
 	{
 		assert policyMap != null && jaxbPolicySetMap != null && expressionFactory != null && combiningAlgRegistry != null;
 
 		this.policyMap = policyMap;
 		this.policySetMap = new PolicyMap<>();
-		if (jaxbPolicySetMap != null)
+		/*
+		 * Ref policy finder module used only for initialization, more particularly for parsing the
+		 * PolicySets when they are referred to by others (in PolicySetIdReferences)
+		 */
+		final RefPolicyFinderModule initOnlyRefPolicyFinderMod = new InitOnlyRefPolicyFinderModule(policyMap, jaxbPolicySetMap, policySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
+		for (final Entry<String, PolicyVersions<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet>> jaxbPolicySet : jaxbPolicySetMap.entrySet())
 		{
-			/*
-			 * Ref policy finder module used only for initialization, more particularly for parsing
-			 * the PolicySets when they are referred to by others (in PolicySetIdReferences)
-			 */
-			final RefPolicyFinderModule initOnlyRefPolicyFinderMod = new InitOnlyRefPolicyFinderModule(policyMap, jaxbPolicySetMap, policySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
-			for (final Entry<String, PolicyVersions<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet>> jaxbPolicySet : jaxbPolicySetMap.entrySet())
+			final String policySetId = jaxbPolicySet.getKey();
+			// Get corresponding PolicySet (versions) in policySetMap to check whether it is not
+			// already there, i.e. already parsed
+			final PolicyVersions<PolicySetEvaluator> oldPolicySetVersions = policySetMap.get(policySetId);
+			final PolicyVersions<PolicySetEvaluator> newPolicySetVersions;
+			if (oldPolicySetVersions == null)
 			{
-				final String policySetId = jaxbPolicySet.getKey();
-				// Get corresponding PolicySet (versions) in policySetMap to check whether it is not
-				// already there, i.e. already parsed
-				final PolicyVersions<PolicySet> oldPolicySetVersions = policySetMap.get(policySetId);
-				final PolicyVersions<PolicySet> newPolicySetVersions;
-				if (oldPolicySetVersions == null)
+				// no corresponding PolicySet already in policySetMap, so prepare to add one
+				newPolicySetVersions = new PolicyVersions<>();
+				policySetMap.put(policySetId, newPolicySetVersions);
+			} else
+			{
+				newPolicySetVersions = oldPolicySetVersions;
+			}
+
+			final PolicyVersions<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetVersions = jaxbPolicySet.getValue();
+			for (final Entry<PolicyVersion, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetEntry : jaxbPolicySetVersions)
+			{
+				final PolicyVersion policySetVersion = jaxbPolicySetEntry.getKey();
+				// check whether not already parsed
+				final PolicySetEvaluator policySetEvaluator = newPolicySetVersions.get(policySetVersion);
+				if (policySetEvaluator != null)
 				{
-					// no corresponding PolicySet already in policySetMap, so prepare to add one
-					newPolicySetVersions = new PolicyVersions<>();
-					policySetMap.put(policySetId, newPolicySetVersions);
-				} else
-				{
-					newPolicySetVersions = oldPolicySetVersions;
+					// we're done, next!
+					continue;
 				}
 
-				final PolicyVersions<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetVersions = jaxbPolicySet.getValue();
-				for (final Entry<PolicyVersion, oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetEntry : jaxbPolicySetVersions)
+				// not already parsed, parse now
+				final RefPolicyFinder refPolicyFinder = new RefPolicyFinder(initOnlyRefPolicyFinderMod, maxPolicySetRefDepth);
+				final PolicySetEvaluator newPolicySet;
+				try
 				{
-					final PolicyVersion policySetVersion = jaxbPolicySetEntry.getKey();
-					// check whether not already parsed
-					final PolicySet policySet = newPolicySetVersions.get(policySetVersion);
-					if (policySet != null)
-					{
-						// we're done, next!
-						continue;
-					}
-
-					// not already parsed, parse now
-					final RefPolicyFinder refPolicyFinder = new RefPolicyFinder(initOnlyRefPolicyFinderMod, maxPolicySetRefDepth);
-					final PolicySet newPolicySet;
-					try
-					{
-						newPolicySet = new PolicySet(jaxbPolicySetEntry.getValue(), null, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
-					} catch (ParsingException e)
-					{
-						throw new IllegalArgumentException("Error parsing PolicySet with PolicySetId=" + policySetId + ", Version=" + policySetVersion, e);
-					}
-
-					newPolicySetVersions.put(policySetVersion, newPolicySet);
+					newPolicySet = new PolicySetEvaluator(jaxbPolicySetEntry.getValue(), null, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
+				} catch (ParsingException e)
+				{
+					throw new IllegalArgumentException("Error parsing PolicySet with PolicySetId=" + policySetId + ", Version=" + policySetVersion, e);
 				}
+
+				newPolicySetVersions.put(policySetVersion, newPolicySet);
 			}
 		}
 	}
@@ -468,23 +465,23 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			throw new IllegalArgumentException("Undefined CombiningAlgorithm registry");
 		}
 
-		final PolicyMap<Policy> policyMap = new PolicyMap<>();
+		final PolicyMap<PolicyEvaluator> policyMap = new PolicyMap<>();
 		if (jaxbPolicies != null)
 		{
 			for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy jaxbPolicy : jaxbPolicies)
 			{
 				final String policyId = jaxbPolicy.getPolicyId();
 				final String policyVersion = jaxbPolicy.getVersion();
-				final Policy policy;
+				final PolicyEvaluator policyEvaluator;
 				try
 				{
-					policy = new Policy(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
+					policyEvaluator = new PolicyEvaluator(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
 				} catch (ParsingException e)
 				{
 					throw new IllegalArgumentException("Error parsing Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
 				}
 
-				final Policy previousValue = policyMap.put(policyId, policyVersion, policy);
+				final PolicyEvaluator previousValue = policyMap.put(policyId, policyVersion, policyEvaluator);
 				if (previousValue != null)
 				{
 					throw new IllegalArgumentException("Policy conflict: two <Policy>s with same PolicyId=" + policyId + ", Version=" + policyVersion);
@@ -554,7 +551,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			throw new IllegalArgumentException("Undefined CombiningAlgorithm registry");
 		}
 
-		final PolicyMap<Policy> policyMap = new PolicyMap<>();
+		final PolicyMap<PolicyEvaluator> policyMap = new PolicyMap<>();
 		final PolicyMap<oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet> jaxbPolicySetMap = new PolicyMap<>();
 		for (int i = 0; i < policyURLs.length; i++)
 		{
@@ -587,16 +584,16 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 				final oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy jaxbPolicy = (oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbPolicyOrPolicySetObj;
 				final String policyId = jaxbPolicy.getPolicyId();
 				final String policyVersion = jaxbPolicy.getVersion();
-				final Policy policy;
+				final PolicyEvaluator policyEvaluator;
 				try
 				{
-					policy = new Policy(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
+					policyEvaluator = new PolicyEvaluator(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
 				} catch (ParsingException e)
 				{
 					throw new IllegalArgumentException("Error parsing Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
 				}
 
-				final Policy previousValue = policyMap.put(policyId, policyVersion, policy);
+				final PolicyEvaluator previousValue = policyMap.put(policyId, policyVersion, policyEvaluator);
 				if (previousValue != null)
 				{
 					throw new IllegalArgumentException("Policy conflict: two policies with same PolicyId=" + policyId + ", Version=" + policyVersion);
@@ -636,7 +633,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 	public <POLICY_T extends IPolicy> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Deque<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException
 	{
 		final Entry<PolicyVersion, ? extends IPolicy> policyEntry;
-		if (policyType == Policy.class)
+		if (policyType == PolicyEvaluator.class)
 		{
 			// Request for Policy (from PolicyIdReference)
 			policyEntry = policyMap.get(id, constraints);

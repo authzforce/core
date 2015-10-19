@@ -35,8 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.Apply;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
+import com.thalesgroup.authzforce.core.rule.Apply;
 import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 public class TestApply

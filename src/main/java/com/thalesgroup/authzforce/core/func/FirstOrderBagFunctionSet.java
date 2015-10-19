@@ -26,15 +26,15 @@ import java.util.List;
 import java.util.Set;
 
 import com.sun.xacml.cond.Function;
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Value;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.Expression.Value;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerBagEval;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerPartlyBagEval;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
@@ -88,7 +88,7 @@ public abstract class FirstOrderBagFunctionSet extends FunctionSet
 		{
 			super(typeParameter.FUNCTION_ID_PREFIX + NAME_SUFFIX_ONE_AND_ONLY, typeParameter.TYPE, false, typeParameter.BAG_TYPE);
 			this.bagType = typeParameter.BAG_TYPE;
-			this.invalidArgEmptyException = new IndeterminateEvaluationException("Function " + functionId + ": Invalid arg #0: empty bag or bag size > 1. Required: one and only one value in bag.", Status.STATUS_PROCESSING_ERROR);
+			this.invalidArgEmptyException = new IndeterminateEvaluationException("Function " + functionId + ": Invalid arg #0: empty bag or bag size > 1. Required: one and only one value in bag.", StatusHelper.STATUS_PROCESSING_ERROR);
 		}
 
 		@Override

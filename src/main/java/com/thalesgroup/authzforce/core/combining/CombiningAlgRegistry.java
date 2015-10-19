@@ -20,8 +20,8 @@ package com.thalesgroup.authzforce.core.combining;
 
 import com.sun.xacml.UnknownIdentifierException;
 import com.sun.xacml.combine.CombiningAlgorithm;
+import com.thalesgroup.authzforce.core.Decidable;
 import com.thalesgroup.authzforce.core.PdpExtensionRegistry;
-import com.thalesgroup.authzforce.core.eval.Decidable;
 
 /**
  * Provides a registry mechanism for adding and retrieving combining algorithms.

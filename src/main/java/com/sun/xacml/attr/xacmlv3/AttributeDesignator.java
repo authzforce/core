@@ -37,15 +37,15 @@ import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinder;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
 
 /**
  * AttributeDesignator
@@ -77,14 +77,14 @@ public class AttributeDesignator<AV extends AttributeValue<AV>> extends Attribut
 	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_EXCEPTION = new IllegalArgumentException("Undefined attribute finder");
 
-	private final String missingAttributeMessage;
+	private final transient String missingAttributeMessage;
 	// private final DatatypeDef returnType;
 	private final AttributeGUID attrGUID;
-	private final AttributeFinder attrFinder;
+	private final transient AttributeFinder attrFinder;
 	// private final Class<T> returnType;
-	private final Bag.Datatype<AV> returnType;
-	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
-	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
+	private final transient Bag.Datatype<AV> returnType;
+	private final transient IndeterminateEvaluationException missingAttributeForUnknownReasonException;
+	private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
 
 	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("DataType field is read-only");
 	private static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeId field is read-only");
@@ -211,8 +211,8 @@ public class AttributeDesignator<AV extends AttributeValue<AV>> extends Attribut
 
 		// error messages/exceptions
 		this.missingAttributeMessage = this + " not found in context";
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
-		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
 	/**
@@ -241,7 +241,7 @@ public class AttributeDesignator<AV extends AttributeValue<AV>> extends Attribut
 
 		if (mustBePresent && bag.isEmpty())
 		{
-			throw new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, bag.getReasonWhyEmpty());
+			throw new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, bag.getReasonWhyEmpty());
 		}
 
 		// if we got here the bag wasn't empty, or mustBePresent was false,
@@ -255,6 +255,16 @@ public class AttributeDesignator<AV extends AttributeValue<AV>> extends Attribut
 		return this.returnType;
 	}
 
+	@Override
+	public JAXBElement<AttributeDesignatorType> getJAXBElement()
+	{
+		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator(this);
+	}
+
+	// lazy initialization
+	private transient volatile String toString = null;
+	private transient volatile int hashCode = 0;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -263,13 +273,40 @@ public class AttributeDesignator<AV extends AttributeValue<AV>> extends Attribut
 	@Override
 	public String toString()
 	{
-		return "AttributeDesignator [category=" + category + ", attributeId=" + attributeId + ", dataType=" + dataType + ", issuer=" + issuer + ", mustBePresent=" + mustBePresent + "]";
+		if (toString == null)
+		{
+			toString = "AttributeDesignator [category=" + category + ", attributeId=" + attributeId + ", dataType=" + dataType + ", issuer=" + issuer + ", mustBePresent=" + mustBePresent + "]";
+		}
+
+		return toString;
 	}
 
 	@Override
-	public JAXBElement<AttributeDesignatorType> getJAXBElement()
+	public int hashCode()
 	{
-		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator(this);
+		if (hashCode == 0)
+		{
+			hashCode = this.attrGUID.hashCode();
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (!(obj instanceof AttributeDesignator))
+		{
+			return false;
+		}
+
+		final AttributeDesignator<?> other = (AttributeDesignator<?>) obj;
+		return this.attrGUID.equals(other.attrGUID);
 	}
 
 }

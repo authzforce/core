@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.eval.Decidable;
+import com.thalesgroup.authzforce.core.Decidable;
 
 /**
  * Combining algorithm set. Allows to group combining algorithms, especially when it is actually the

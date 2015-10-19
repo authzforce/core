@@ -21,14 +21,14 @@ package com.thalesgroup.authzforce.core.func;
 import java.util.Deque;
 import java.util.List;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.X500NameAttributeValue;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
@@ -383,7 +383,7 @@ public abstract class EqualTypeMatchFunction<PARAM extends AttributeValue<PARAM>
 		 * 
 		 * @see
 		 * com.thalesgroup.authzforce.core.func.EqualTypeMatchFunction#match(com.thalesgroup.authzforce
-		 * .core.attr.AttributeValue, com.thalesgroup.authzforce.core.attr.AttributeValue)
+		 * .core.attr.AttributeValue, com.thalesgroup.authzforce.core.datatypes.AttributeValue)
 		 */
 		@Override
 		protected boolean match(StringAttributeValue regex, StringAttributeValue arg1)

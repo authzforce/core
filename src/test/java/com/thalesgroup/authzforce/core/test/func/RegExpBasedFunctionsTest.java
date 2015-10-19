@@ -31,13 +31,13 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.sun.xacml.attr.DNSNameAttributeValue;
 import com.sun.xacml.attr.IPAddressAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.attr.X500NameAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Value;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.Expression.Value;
+import com.thalesgroup.authzforce.core.datatypes.AnyURIAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.RFC822NameAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.X500NameAttributeValue;
 
 @RunWith(Parameterized.class)
 public class RegExpBasedFunctionsTest extends GeneralFunctionTest

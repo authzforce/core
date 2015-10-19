@@ -27,9 +27,9 @@ import javax.xml.bind.Unmarshaller;
 import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.ParsingException;
+import com.thalesgroup.authzforce.core.Expression;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
 import com.thalesgroup.authzforce.core.combining.CombiningAlgRegistry;
-import com.thalesgroup.authzforce.core.eval.Expression;
 import com.thalesgroup.authzforce.pdp.model._2015._06.BaseStaticPolicyFinder;
 
 /**
@@ -112,7 +112,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 
 		try
 		{
-			rootPolicy = new Policy(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
+			rootPolicy = new PolicyEvaluator(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing Policy: " + jaxbPolicy.getPolicyId(), e);
@@ -148,7 +148,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 
 		try
 		{
-			rootPolicy = new PolicySet(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
+			rootPolicy = new PolicySetEvaluator(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing PolicySet: " + jaxbPolicySet.getPolicySetId(), e);

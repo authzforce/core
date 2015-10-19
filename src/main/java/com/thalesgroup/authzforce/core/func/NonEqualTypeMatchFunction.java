@@ -22,16 +22,16 @@ import java.util.Deque;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AnyURIAttributeValue;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.RFC822NameAttributeValue;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.StringAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AnyURIAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.RFC822NameAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 
 /**
@@ -156,7 +156,7 @@ public abstract class NonEqualTypeMatchFunction<T0 extends AttributeValue<T0>, T
 					arg1 = paramClass1.cast(rawArg1);
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 
 				final boolean isMatched;
@@ -165,7 +165,7 @@ public abstract class NonEqualTypeMatchFunction<T0 extends AttributeValue<T0>, T
 					isMatched = match(arg0, arg1);
 				} catch (PatternSyntaxException e)
 				{
-					throw new IndeterminateEvaluationException(invalidRegexErrorMsg, Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(invalidRegexErrorMsg, StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 
 				return BooleanAttributeValue.valueOf(isMatched);

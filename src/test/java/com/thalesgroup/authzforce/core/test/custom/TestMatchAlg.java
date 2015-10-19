@@ -37,8 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 public class TestMatchAlg
@@ -86,8 +86,8 @@ public class TestMatchAlg
 	public final void testNoMatchAllOfWithOneMatch() throws ParsingException, IndeterminateEvaluationException
 	{
 		AnyOf jaxbAnyOf = ruleWithNotMatchedAnyOf.getTarget().getAnyOves().get(INDEX_OF_ANYOF_WITH_ONE_ALLOF_ONE_MATCH);
-		com.thalesgroup.authzforce.core.AnyOf anyOf = new com.thalesgroup.authzforce.core.AnyOf(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
-		boolean isMatched = anyOf.match(context);
+		com.thalesgroup.authzforce.core.AnyOfEvaluator anyOfEvaluator = new com.thalesgroup.authzforce.core.AnyOfEvaluator(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
+		boolean isMatched = anyOfEvaluator.match(context);
 		Assert.assertFalse("AllOf (with 1 <Match>) evaluation algorithm -> MATCH (expected: NO_MATCH)", isMatched);
 	}
 
@@ -101,8 +101,8 @@ public class TestMatchAlg
 	public final void testMatchAllOfWithOneMatch() throws ParsingException, IndeterminateEvaluationException
 	{
 		AnyOf jaxbAnyOf = ruleWithMatchedAnyOf.getTarget().getAnyOves().get(INDEX_OF_ANYOF_WITH_ONE_ALLOF_ONE_MATCH);
-		com.thalesgroup.authzforce.core.AnyOf anyOf = new com.thalesgroup.authzforce.core.AnyOf(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
-		boolean isMatched = anyOf.match(context);
+		com.thalesgroup.authzforce.core.AnyOfEvaluator anyOfEvaluator = new com.thalesgroup.authzforce.core.AnyOfEvaluator(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
+		boolean isMatched = anyOfEvaluator.match(context);
 		Assert.assertTrue("AllOf (with 1 <Match>) evaluation algorithm -> NO_MATCH (expected: MATCH)", isMatched);
 	}
 
@@ -117,8 +117,8 @@ public class TestMatchAlg
 	public final void testNoMatchAllOfWithMultiMatch() throws ParsingException, IndeterminateEvaluationException
 	{
 		AnyOf jaxbAnyOf = ruleWithNotMatchedAnyOf.getTarget().getAnyOves().get(INDEX_OF_ANYOF_WITH_ONE_ALLOF_MULTI_MATCH);
-		com.thalesgroup.authzforce.core.AnyOf anyOf = new com.thalesgroup.authzforce.core.AnyOf(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
-		boolean isMatched = anyOf.match(context);
+		com.thalesgroup.authzforce.core.AnyOfEvaluator anyOfEvaluator = new com.thalesgroup.authzforce.core.AnyOfEvaluator(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
+		boolean isMatched = anyOfEvaluator.match(context);
 		Assert.assertFalse("AllOf with multiple <Match>es evaluation -> MATCH (expected: NO_MATCH)", isMatched);
 	}
 
@@ -133,8 +133,8 @@ public class TestMatchAlg
 	public final void testMatchAllOfWithMultiMatch() throws ParsingException, IndeterminateEvaluationException
 	{
 		AnyOf jaxbAnyOf = ruleWithMatchedAnyOf.getTarget().getAnyOves().get(INDEX_OF_ANYOF_WITH_ONE_ALLOF_MULTI_MATCH);
-		com.thalesgroup.authzforce.core.AnyOf anyOf = new com.thalesgroup.authzforce.core.AnyOf(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
-		boolean isMatched = anyOf.match(context);
+		com.thalesgroup.authzforce.core.AnyOfEvaluator anyOfEvaluator = new com.thalesgroup.authzforce.core.AnyOfEvaluator(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
+		boolean isMatched = anyOfEvaluator.match(context);
 		Assert.assertTrue("AllOf with multiple <Match>es evaluation -> NO_MATCH (expected: MATCH)", isMatched);
 	}
 
@@ -148,8 +148,8 @@ public class TestMatchAlg
 	public final void testNoMatchAnyOf() throws ParsingException, IndeterminateEvaluationException
 	{
 		AnyOf jaxbAnyOf = ruleWithNotMatchedAnyOf.getTarget().getAnyOves().get(INDEX_OF_ANYOF_WITH_MULTI_ALLOF_ONE_MATCH);
-		com.thalesgroup.authzforce.core.AnyOf anyOf = new com.thalesgroup.authzforce.core.AnyOf(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
-		boolean isMatched = anyOf.match(context);
+		com.thalesgroup.authzforce.core.AnyOfEvaluator anyOfEvaluator = new com.thalesgroup.authzforce.core.AnyOfEvaluator(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
+		boolean isMatched = anyOfEvaluator.match(context);
 		Assert.assertFalse("AnyOf with multiple <AllOf>es evaluation -> MATCH (expected: NO_MATCH)", isMatched);
 	}
 
@@ -163,8 +163,8 @@ public class TestMatchAlg
 	public final void testMatchAnyOf() throws ParsingException, IndeterminateEvaluationException
 	{
 		AnyOf jaxbAnyOf = ruleWithMatchedAnyOf.getTarget().getAnyOves().get(INDEX_OF_ANYOF_WITH_MULTI_ALLOF_ONE_MATCH);
-		com.thalesgroup.authzforce.core.AnyOf anyOf = new com.thalesgroup.authzforce.core.AnyOf(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
-		boolean isMatched = anyOf.match(context);
+		com.thalesgroup.authzforce.core.AnyOfEvaluator anyOfEvaluator = new com.thalesgroup.authzforce.core.AnyOfEvaluator(jaxbAnyOf, null, TestUtils.STD_EXPRESSION_FACTORY);
+		boolean isMatched = anyOfEvaluator.match(context);
 		Assert.assertTrue("AnyOf with multiple <Allof>es evaluation -> NO_MATCH (expected: MATCH)", isMatched);
 	}
 }

@@ -39,10 +39,10 @@ import java.util.Objects;
 import javax.xml.ws.Holder;
 
 import com.google.common.net.InetAddresses;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
 
 /**
  * Represents the IPAddress datatype introduced in XACML 2.0. All objects of this class are
@@ -51,8 +51,10 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  * @since 2.0
  * @author Seth Proctor
  */
-public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddressAttributeValue>
+public final class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddressAttributeValue>
 {
+	private static final long serialVersionUID = 1L;
+
 	/*
 	 * These fields are not actually needed in the XACML core specification since no function uses
 	 * them, but it might be useful for new XACML profile or custom functions dealing with network
@@ -60,7 +62,7 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 	 */
 	private final InetAddress address;
 	private final InetAddress mask;
-	private final PortRange portRange;
+	private final transient PortRange portRange;
 
 	private static void parseIPAddress(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
 	{
@@ -276,7 +278,7 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 		return portRange;
 	}
 
-	private int hashCode = 0;
+	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
 	@Override
 	public int hashCode()
@@ -299,26 +301,23 @@ public class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddr
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
+		{
 			return true;
-		if (getClass() != obj.getClass())
+		}
+
+		if (!(obj instanceof IPAddressAttributeValue))
+		{
 			return false;
+		}
+
 		final IPAddressAttributeValue other = (IPAddressAttributeValue) obj;
 		// address and range non-null
-		/*
-		 * if (address == null) { if (other.address != null) return false; } else
-		 */
-		if (!address.equals(other.address))
-			return false;
-		if (mask == null)
+		if (!this.address.equals(other.address) || !this.portRange.equals(other.portRange))
 		{
-			if (other.mask != null)
-				return false;
-		} else if (!mask.equals(other.mask))
 			return false;
-		/*
-		 * if (portRange == null) { if (other.portRange != null) return false; } else
-		 */
-		return portRange.equals(other.portRange);
+		}
+
+		return this.mask == null ? other.mask == null : this.mask.equals(other.mask);
 	}
 
 	@Override

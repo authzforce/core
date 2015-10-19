@@ -22,13 +22,13 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.attr.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.attr.NumericAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.DoubleAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.NumericAttributeValue;
 import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 
 /**
@@ -113,7 +113,7 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 		return generics;
 	}
 
-	protected final IndeterminateEvaluationException divideByZeroIndeterminateException = new IndeterminateEvaluationException("Function " + functionId + " : divisor is zero", Status.STATUS_PROCESSING_ERROR);
+	protected final IndeterminateEvaluationException divideByZeroIndeterminateException = new IndeterminateEvaluationException("Function " + functionId + " : divisor is zero", StatusHelper.STATUS_PROCESSING_ERROR);
 
 	private final Datatype<AV> paramType;
 

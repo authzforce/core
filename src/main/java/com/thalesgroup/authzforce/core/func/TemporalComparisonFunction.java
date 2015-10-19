@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.attr.BaseTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.BaseTimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
 
 /**
  * A class implementing comparison of XML schema date/time attribute values, i.e. not imposing total

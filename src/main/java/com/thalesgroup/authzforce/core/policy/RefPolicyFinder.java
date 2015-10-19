@@ -25,8 +25,8 @@ import java.util.Deque;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
 
 /**
  * This class is used by the PDP to find policies referenced by Policy(Set)IdReference used in
@@ -132,11 +132,11 @@ public class RefPolicyFinder implements Closeable
 	{
 		if (refPolicyFinderMod == null)
 		{
-			throw new IndeterminateEvaluationException("No RefPolicyFinder defined to resolve any Policy(Set)IdReference", Status.STATUS_PROCESSING_ERROR);
+			throw new IndeterminateEvaluationException("No RefPolicyFinder defined to resolve any Policy(Set)IdReference", StatusHelper.STATUS_PROCESSING_ERROR);
 		}
 
 		final Deque<String> newPolicySetRefChain;
-		if (refPolicyType == PolicySet.class)
+		if (refPolicyType == PolicySetEvaluator.class)
 		{
 			if (policySetRefChain == null)
 			{

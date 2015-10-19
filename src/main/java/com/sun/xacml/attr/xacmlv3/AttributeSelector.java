@@ -53,19 +53,19 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.ctx.Status;
 import com.sun.xacml.finder.AttributeFinder;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.Expression.Utils.XPathEvaluator;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
 import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.AttributeSelectorId;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.XPathAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.Expression.Utils.XPathEvaluator;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.AttributeSelectorId;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.XPathAttributeValue;
 
 /**
  * Implements AttributeSelector support, which uses XPath expressions (using Saxon parser) to
@@ -176,29 +176,30 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 		return xacmlAttrVal;
 	}
 
-	private final String missingAttributeMessage;
+	private final transient String missingAttributeMessage;
 
-	private final AttributeFinder attrFinder;
+	private final transient AttributeFinder attrFinder;
 
-	private final AttributeGUID contextSelectorGUID;
+	private final transient AttributeGUID contextSelectorGUID;
 
-	private final XPathCompiler xpathCompiler;
-	private final Utils.XPathEvaluator xpathEvaluator;
+	private final transient XPathCompiler xpathCompiler;
+	private final transient Utils.XPathEvaluator xpathEvaluator;
 
-	private final AttributeValue.Factory<?> attrFactory;
+	private final transient AttributeValue.Factory<?> attrFactory;
 
 	private final AttributeSelectorId id;
 
-	private final Bag.Datatype<AV> returnType;
+	private final transient Bag.Datatype<AV> returnType;
 
-	private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
-	private final IndeterminateEvaluationException missingAttributeBecauseNullContextException;
-	private final IndeterminateEvaluationException missingAttributesContentException;
-	private final String missingContextSelectorAttributeExceptionMessage;
-	private final String xpathEvalExceptionMessage;
+	private final transient IndeterminateEvaluationException missingAttributeForUnknownReasonException;
+	private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
+	private final transient IndeterminateEvaluationException missingAttributesContentException;
+	private final transient String missingContextSelectorAttributeExceptionMessage;
+	private final transient String xpathEvalExceptionMessage;
 
 	// cached method results
-	private String toString;
+	private transient volatile String toString = null;
+	private transient volatile int hashCode = 0;
 
 	/*
 	 * (non-Javadoc)
@@ -341,10 +342,10 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 		this.xpathEvaluator = new XPathEvaluator(path, xPathCompiler);
 
 		// error messages/exceptions
-		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.id + "' because request context undefined", Status.STATUS_MISSING_ATTRIBUTE);
-		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.id + "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + category, StatusHelper.STATUS_SYNTAX_ERROR);
 		this.missingAttributeMessage = this + " not found in context";
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
 	}
 
 	/**
@@ -363,7 +364,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 	{
 		if (mustBePresent && result.isEmpty())
 		{
-			throw new IndeterminateEvaluationException(Status.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, result.getReasonWhyEmpty());
+			throw new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, result.getReasonWhyEmpty());
 		}
 	}
 
@@ -421,7 +422,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 
 				if (bag.isEmpty())
 				{
-					throw new IndeterminateEvaluationException(missingContextSelectorAttributeExceptionMessage, Status.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
+					throw new IndeterminateEvaluationException(missingContextSelectorAttributeExceptionMessage, StatusHelper.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
 				}
 
 				final String contextSelectorPath = bag.getSingleValue().getUnderlyingValue();
@@ -430,12 +431,12 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 					contextNode = xpathCompiler.evaluateSingle(contextSelectorPath, contentNode);
 				} catch (SaxonApiException e)
 				{
-					throw new IndeterminateEvaluationException(this + ": Error evaluating XPath='" + contextSelectorPath + "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR, e);
+					throw new IndeterminateEvaluationException(this + ": Error evaluating XPath='" + contextSelectorPath + "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + category, StatusHelper.STATUS_SYNTAX_ERROR, e);
 				}
 
 				if (contextNode == null)
 				{
-					throw new IndeterminateEvaluationException(this + ": No node returned by evaluation of XPath='" + contextSelectorPath + "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + category, Status.STATUS_SYNTAX_ERROR);
+					throw new IndeterminateEvaluationException(this + ": No node returned by evaluation of XPath='" + contextSelectorPath + "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + category, StatusHelper.STATUS_SYNTAX_ERROR);
 				}
 			}
 
@@ -452,7 +453,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 				xpathEvalResult = xpathSelector.evaluate();
 			} catch (SaxonApiException e)
 			{
-				throw new IndeterminateEvaluationException(this.xpathEvalExceptionMessage, Status.STATUS_SYNTAX_ERROR, e);
+				throw new IndeterminateEvaluationException(this.xpathEvalExceptionMessage, StatusHelper.STATUS_SYNTAX_ERROR, e);
 			}
 
 			// The values in a bag are not ordered (§7.3.2 of XACML core spec) but may contain
@@ -474,12 +475,12 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 					} catch (ParsingException e)
 					{
 						throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + dataType + "' from result #" + xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category
-								+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, Status.STATUS_SYNTAX_ERROR, e);
+								+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, StatusHelper.STATUS_SYNTAX_ERROR, e);
 					}
 				} else
 				{
 					throw new IndeterminateEvaluationException(this + ": Invalid type of result #" + xpathEvalResultItemIndex + " from evaluating XPath against XML node from Content of Attributes Category='" + category
-							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + xpathEvalResultItem.getClass().getName(), Status.STATUS_SYNTAX_ERROR);
+							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + xpathEvalResultItem.getClass().getName(), StatusHelper.STATUS_SYNTAX_ERROR);
 				}
 
 				final XPathCompiler defXPathCompiler = context.getDefaultXPathCompiler();
@@ -490,7 +491,7 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 				} catch (IllegalArgumentException e)
 				{
 					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + dataType + "' from result #" + xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category
-							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, Status.STATUS_SYNTAX_ERROR, e);
+							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, StatusHelper.STATUS_SYNTAX_ERROR, e);
 				}
 
 				resultBag.add(returnType.getElementType().cast(attrVal));
@@ -570,6 +571,34 @@ public class AttributeSelector<AV extends AttributeValue<AV>> extends AttributeS
 	public JAXBElement<AttributeSelectorType> getJAXBElement()
 	{
 		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeSelector(this);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = this.id.hashCode();
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (!(obj instanceof AttributeSelector))
+		{
+			return false;
+		}
+
+		final AttributeSelector<?> other = (AttributeSelector<?>) obj;
+		return this.id.equals(other.id);
 	}
 
 }

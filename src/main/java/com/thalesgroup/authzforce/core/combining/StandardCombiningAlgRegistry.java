@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.combine.CombiningAlgorithm;
 import com.sun.xacml.combine.OnlyOneApplicablePolicyAlg;
-import com.thalesgroup.authzforce.core.eval.Decidable;
+import com.thalesgroup.authzforce.core.Decidable;
 
 /**
  * This registry supports the standard set of algorithms specified in XACML.

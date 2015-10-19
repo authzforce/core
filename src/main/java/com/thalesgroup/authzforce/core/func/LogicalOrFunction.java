@@ -20,13 +20,13 @@ package com.thalesgroup.authzforce.core.func;
 
 import java.util.List;
 
-import com.sun.xacml.ctx.Status;
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
 
 /**
  * A class that implements the logical functions "or" and "and".
@@ -89,7 +89,7 @@ public class LogicalOrFunction extends FirstOrderFunction<BooleanAttributeValue>
 			{
 				// save the indeterminate to throw later only if there was not any TRUE in remaining
 				// args
-				indeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE_PREFIX + argIndex, Status.STATUS_PROCESSING_ERROR, e);
+				indeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE_PREFIX + argIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			argIndex++;
@@ -108,7 +108,7 @@ public class LogicalOrFunction extends FirstOrderFunction<BooleanAttributeValue>
 					attrVal = BooleanAttributeValue.class.cast(arg);
 				} catch (ClassCastException e)
 				{
-					throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), Status.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 
 				if (attrVal.getUnderlyingValue())

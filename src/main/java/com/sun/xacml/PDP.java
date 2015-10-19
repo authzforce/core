@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -52,21 +53,21 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.ctx.Status;
 import com.thalesgroup.authzforce.core.DecisionCache;
+import com.thalesgroup.authzforce.core.DecisionResult;
 import com.thalesgroup.authzforce.core.DecisionResultFilter;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 import com.thalesgroup.authzforce.core.IndividualDecisionRequest;
+import com.thalesgroup.authzforce.core.IndividualDecisionRequestContext;
 import com.thalesgroup.authzforce.core.RequestFilter;
-import com.thalesgroup.authzforce.core.attr.AttributeGUID;
-import com.thalesgroup.authzforce.core.attr.DatatypeConstants;
-import com.thalesgroup.authzforce.core.attr.DateAttributeValue;
-import com.thalesgroup.authzforce.core.attr.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.attr.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.eval.Bag;
-import com.thalesgroup.authzforce.core.eval.DecisionResult;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.IndividualDecisionRequestContext;
+import com.thalesgroup.authzforce.core.StatusHelper;
+import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
+import com.thalesgroup.authzforce.core.datatypes.Bag;
+import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
+import com.thalesgroup.authzforce.core.datatypes.DateAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.DateTimeAttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.TimeAttributeValue;
 import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
 import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLAttributeId;
 import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
@@ -96,15 +97,15 @@ public class PDP implements Closeable
 	/**
 	 * Indeterminate response if ReturnPolicyIdList not supported.
 	 */
-	private static final Response UNSUPPORTED_POLICY_ID_LIST_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new Status("Unsupported feature (XACML optional): <PolicyIdentifierList>, ReturnPolicyIdList='true'", Status.STATUS_SYNTAX_ERROR))));
+	private static final Response UNSUPPORTED_POLICY_ID_LIST_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new StatusHelper("Unsupported feature (XACML optional): <PolicyIdentifierList>, ReturnPolicyIdList='true'", StatusHelper.STATUS_SYNTAX_ERROR))));
 
-	private static final Result INVALID_DECISION_CACHE_RESULT = new DecisionResult(new Status(Status.STATUS_PROCESSING_ERROR, "Internal error"));
+	private static final Result INVALID_DECISION_CACHE_RESULT = new DecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Internal error"));
 
 	/**
 	 * Indeterminate response iff CombinedDecision element not supported because the request parser
 	 * does not support any scheme from MultipleDecisionProfile section 2.
 	 */
-	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new Status("Unsupported feature: CombinedDecision='true'", Status.STATUS_PROCESSING_ERROR))));
+	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new StatusHelper("Unsupported feature: CombinedDecision='true'", StatusHelper.STATUS_PROCESSING_ERROR))));
 
 	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
 
@@ -151,7 +152,7 @@ public class PDP implements Closeable
 
 		protected List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
-			final List<Result> results = new ArrayList<>();
+			final List<Result> results = new ArrayList<>(individualDecisionRequests.size());
 			for (final IndividualDecisionRequest request : individualDecisionRequests)
 			{
 				final Result result = evaluate(request, pdpIssuedAttributes);
@@ -179,14 +180,12 @@ public class PDP implements Closeable
 		@Override
 		protected final List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
-			final List<Result> results = new ArrayList<>();
 			final Map<IndividualDecisionRequest, Result> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
 				// error, return indeterminate result as only result
 				LOGGER.error("Invalid decision cache result: null");
-				results.add(INVALID_DECISION_CACHE_RESULT);
-				return results;
+				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
 			}
 
 			// At least check that we have as many results from cache as input requests
@@ -196,12 +195,13 @@ public class PDP implements Closeable
 			{
 				// error, return indeterminate result as only result
 				LOGGER.error("Invalid decision cache result: number of returned decision results ({}) != number of input (individual) decision requests ({})", cachedResultsByRequest.size(), individualDecisionRequests.size());
-				results.add(INVALID_DECISION_CACHE_RESULT);
-				return results;
+				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
 			}
 
+			final Set<Entry<IndividualDecisionRequest, Result>> cachedRequestResultEntries = cachedResultsByRequest.entrySet();
+			final List<Result> results = new ArrayList<>(cachedRequestResultEntries.size());
 			final Map<IndividualDecisionRequest, Result> newResultsByRequest = new HashMap<>();
-			for (final Entry<IndividualDecisionRequest, Result> cachedRequestResultPair : cachedResultsByRequest.entrySet())
+			for (final Entry<IndividualDecisionRequest, Result> cachedRequestResultPair : cachedRequestResultEntries)
 			{
 				final Result finalResult;
 				final Result cachedResult = cachedRequestResultPair.getValue();

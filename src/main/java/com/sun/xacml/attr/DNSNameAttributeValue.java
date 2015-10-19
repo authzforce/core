@@ -39,10 +39,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import com.thalesgroup.authzforce.core.attr.AttributeValue;
-import com.thalesgroup.authzforce.core.attr.SimpleAttributeValue;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
 
 /**
  * Represents the DNSName datatype introduced in XACML 2.0. All objects of this class are immutable
@@ -51,8 +51,10 @@ import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
  * @since 2.0
  * @author Seth Proctor
  */
-public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameAttributeValue>
+public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameAttributeValue>
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Official name of this type
 	 */
@@ -102,7 +104,7 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 	private final String hostname;
 
 	// the optional port portRange
-	private final PortRange portRange;
+	private final transient PortRange portRange;
 
 	/*
 	 * true if the hostname starts with a '*', therefore this field is derived from hostname
@@ -211,7 +213,7 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 		return isAnySubdomain;
 	}
 
-	private int hashCode = 0;
+	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
 	@Override
 	public int hashCode()
@@ -238,9 +240,14 @@ public class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameA
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
+		{
 			return true;
-		if (getClass() != obj.getClass())
+		}
+
+		if (!(obj instanceof DNSNameAttributeValue))
+		{
 			return false;
+		}
 
 		final DNSNameAttributeValue other = (DNSNameAttributeValue) obj;
 

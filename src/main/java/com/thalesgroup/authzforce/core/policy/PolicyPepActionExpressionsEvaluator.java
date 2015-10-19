@@ -29,14 +29,14 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
 import com.sun.xacml.ParsingException;
+import com.thalesgroup.authzforce.core.AdviceExpressionEvaluator;
+import com.thalesgroup.authzforce.core.EvaluationContext;
+import com.thalesgroup.authzforce.core.Expression;
+import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
+import com.thalesgroup.authzforce.core.ObligationExpressionEvaluator;
+import com.thalesgroup.authzforce.core.PepActionExpressions;
+import com.thalesgroup.authzforce.core.PepActionExpressionsEvaluator;
 import com.thalesgroup.authzforce.core.PepActions;
-import com.thalesgroup.authzforce.core.eval.AdviceExpression;
-import com.thalesgroup.authzforce.core.eval.EvaluationContext;
-import com.thalesgroup.authzforce.core.eval.Expression;
-import com.thalesgroup.authzforce.core.eval.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.eval.ObligationExpression;
-import com.thalesgroup.authzforce.core.eval.PepActionExpressions;
-import com.thalesgroup.authzforce.core.eval.PepActionExpressionsEvaluator;
 
 /**
  * Evaluator of a Policy(Set)'s PEP action (Obligation/Advice) expressions
@@ -75,7 +75,7 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 		@Override
 		public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression jaxbObligationExp) throws ParsingException
 		{
-			final ObligationExpression obligationExp = new ObligationExpression(jaxbObligationExp, xPathCompiler, expFactory);
+			final ObligationExpressionEvaluator obligationExp = new ObligationExpressionEvaluator(jaxbObligationExp, xPathCompiler, expFactory);
 			final PepActionExpressions.EffectSpecific effectSpecificActionExps = obligationExp.getFulfillOn() == EffectType.DENY ? denyActionExpressions : permitActionExpressions;
 			effectSpecificActionExps.add(obligationExp);
 		}
@@ -83,23 +83,23 @@ public class PolicyPepActionExpressionsEvaluator extends PepActionExpressionsEva
 		@Override
 		public void add(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression jaxbAdviceExp) throws ParsingException
 		{
-			final AdviceExpression adviceExp = new AdviceExpression(jaxbAdviceExp, xPathCompiler, expFactory);
+			final AdviceExpressionEvaluator adviceExp = new AdviceExpressionEvaluator(jaxbAdviceExp, xPathCompiler, expFactory);
 			final PepActionExpressions.EffectSpecific effectSpecificActionExps = adviceExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions : permitActionExpressions;
 			effectSpecificActionExps.add(adviceExp);
 		}
 
 		@Override
-		public List<ObligationExpression> getObligationExpressionList()
+		public List<ObligationExpressionEvaluator> getObligationExpressionList()
 		{
-			final List<ObligationExpression> resultList = new ArrayList<>(denyActionExpressions.getObligationExpressions());
+			final List<ObligationExpressionEvaluator> resultList = new ArrayList<>(denyActionExpressions.getObligationExpressions());
 			resultList.addAll(permitActionExpressions.getObligationExpressions());
 			return resultList;
 		}
 
 		@Override
-		public List<AdviceExpression> getAdviceExpressionList()
+		public List<AdviceExpressionEvaluator> getAdviceExpressionList()
 		{
-			final List<AdviceExpression> resultList = new ArrayList<>(denyActionExpressions.getAdviceExpressions());
+			final List<AdviceExpressionEvaluator> resultList = new ArrayList<>(denyActionExpressions.getAdviceExpressions());
 			resultList.addAll(permitActionExpressions.getAdviceExpressions());
 			return resultList;
 		}
