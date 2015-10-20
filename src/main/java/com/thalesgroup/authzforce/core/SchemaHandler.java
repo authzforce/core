@@ -61,7 +61,6 @@ public class SchemaHandler
 	private Schema schema;
 	private String catalogLocation;
 
-	
 	/**
 	 * Default empty constructor, needed for instanciation by Spring framework
 	 */
@@ -91,6 +90,7 @@ public class SchemaHandler
 
 	/**
 	 * Get schema used by this handler
+	 * 
 	 * @return XML schema
 	 */
 	public Schema getSchema()
@@ -99,7 +99,9 @@ public class SchemaHandler
 	}
 
 	/**
-	 * Creates schema from locations to XML schema files and catalog file
+	 * Creates schema from locations to XML schema files and catalog file. If logger of this class
+	 * is in debug level, property "xml.catalog.verbosity" of XML catalog resolver is set to '99'
+	 * (max verbosity).
 	 * 
 	 * @param locations
 	 * @param catalogLocation
@@ -107,6 +109,11 @@ public class SchemaHandler
 	 */
 	public static Schema createSchema(List<String> locations, final String catalogLocation)
 	{
+
+		if (LOGGER.isDebugEnabled())
+		{
+			System.setProperty("xml.catalog.verbosity", "99");
+		}
 
 		final SchemaFactory factory = SchemaFactory.newInstance(Constants.URI_2001_SCHEMA_XSD);
 		try
@@ -178,14 +185,20 @@ public class SchemaHandler
 									try
 									{
 										String resolvedLocation = catalogResolver.resolveSystem(systemId);
+										LOGGER.debug("resolveSystem(systemId = {}) -> {}", systemId, resolvedLocation);
 
 										if (resolvedLocation == null)
 										{
 											resolvedLocation = catalogResolver.resolveURI(namespaceURI);
+											LOGGER.debug("resolveURI(namespaceURI = {}) -> {}", namespaceURI, resolvedLocation);
 										}
 										if (resolvedLocation == null)
 										{
 											resolvedLocation = catalogResolver.resolvePublic(publicId, systemId);
+											if (LOGGER.isDebugEnabled())
+											{
+												LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}", new Object[] { publicId, systemId, resolvedLocation });
+											}
 										}
 										if (resolvedLocation != null)
 										{
@@ -197,8 +210,7 @@ public class SchemaHandler
 										}
 									} catch (Exception ex)
 									{
-										final String errMsg = String.format("Unable to resolve schema-required entity with XML catalog ('%s'): type=%s, namespaceURI=%s, publicId=%s, systemId=%, baseURI=%s", catalogLocation, type, namespaceURI, publicId, systemId, baseURI);
-										LOGGER.error(errMsg, ex);
+										final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='" + catalogLocation + "'): type=" + type + ", namespaceURI=" + namespaceURI + ", publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
 										throw new RuntimeException(errMsg, ex);
 									}
 									return null;
@@ -212,7 +224,7 @@ public class SchemaHandler
 					}
 				}
 			}
-			
+
 			s = factory.newSchema(sources.toArray(new Source[sources.size()]));
 		} catch (Exception ex)
 		{
