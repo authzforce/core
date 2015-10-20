@@ -482,14 +482,20 @@ public class SchemaHandler
 									try
 									{
 										String resolvedLocation = catalogResolver.resolveSystem(systemId);
+										LOGGER.debug("resolveSystem(systemId = {}) -> {}", systemId, resolvedLocation);
 
 										if (resolvedLocation == null)
 										{
 											resolvedLocation = catalogResolver.resolveURI(namespaceURI);
+											LOGGER.debug("resolveURI(namespaceURI = {}) -> {}", namespaceURI, resolvedLocation);
 										}
 										if (resolvedLocation == null)
 										{
 											resolvedLocation = catalogResolver.resolvePublic(publicId, systemId);
+											if (LOGGER.isDebugEnabled())
+											{
+												LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}", new Object[] { publicId, systemId, resolvedLocation });
+											}
 										}
 										if (resolvedLocation != null)
 										{
