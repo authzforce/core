@@ -108,7 +108,7 @@ public class ConformanceV3FromV2
 				if (testNum < 10)
 				{
 					paddedTestNumber = "00" + testNum;
-				} else if (9 < testNum && testNum < 100)
+				} else if (testNum < 100)
 				{
 					paddedTestNumber = "0" + testNum;
 				} else
