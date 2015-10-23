@@ -119,7 +119,7 @@ public class PdpModelHandler
 		 * list of the extra JAXB classes based on the new extension XSD. For instance, this is the
 		 * case for JAXB providers used by REST/SOAP frameworks: Apache CXF, Metro, etc. So we need
 		 * to add to the JAXBContext all the extensions' model (JAXB-generated) classes. These have
-		 * been collected by the PdpExtension.
+		 * been collected by the PdpExtensionLoader.
 		 */
 		final Set<Class<?>> jaxbBoundClassList = new HashSet<Class<?>>(PdpExtensionLoader.getExtensionJaxbClasses());
 		LOGGER.info("Final list of loaded extension models (JAXB classes): {}", jaxbBoundClassList);
