@@ -1,2 +1,2 @@
 # core
-AuthZForce Community Edition - Core Components
+XACML Core PDP implementation
