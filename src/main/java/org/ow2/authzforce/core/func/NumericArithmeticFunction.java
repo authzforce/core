@@ -3,119 +3,149 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.func;
+package org.ow2.authzforce.core.func;
 
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import com.thalesgroup.authzforce.core.Expression;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.StatusHelper;
-import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
-import com.thalesgroup.authzforce.core.datatypes.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.NumericAttributeValue;
-import com.thalesgroup.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.expression.Expression;
+import org.ow2.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.value.Datatype;
+import org.ow2.authzforce.core.value.DatatypeConstants;
+import org.ow2.authzforce.core.value.DoubleValue;
+import org.ow2.authzforce.core.value.IntegerValue;
+import org.ow2.authzforce.core.value.NumericValue;
+import org.ow2.authzforce.core.value.Value;
 
 /**
- * A class that implements all the numeric *-add functions (as opposed to date/time *-add-*
- * functions).
+ * A class that implements all the numeric *-add functions (as opposed to date/time *-add-* functions).
  * 
  * @param <AV>
  *            return and parameter type
  * 
  */
-public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue<?, AV>> extends FirstOrderFunction<AV>
+public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends FirstOrderFunction.SingleParameterTyped<AV, AV>
 {
 	/**
 	 * Standard integer-abs function URI
 	 */
-	public static final String NAME_INTEGER_ABS = FUNCTION_NS_1 + "integer-abs";
+	public static final String NAME_INTEGER_ABS = XACML_NS_1_0 + "integer-abs";
 
 	/**
 	 * Standard double-abs function URI
 	 */
-	public static final String NAME_DOUBLE_ABS = FUNCTION_NS_1 + "double-abs";
+	public static final String NAME_DOUBLE_ABS = XACML_NS_1_0 + "double-abs";
 
 	/**
 	 * Standard URI of function integer-add
 	 */
-	public static final String NAME_INTEGER_ADD = FUNCTION_NS_1 + "integer-add";
+	public static final String NAME_INTEGER_ADD = XACML_NS_1_0 + "integer-add";
 
 	/**
 	 * Standard URI of function double-add
 	 */
-	public static final String NAME_DOUBLE_ADD = FUNCTION_NS_1 + "double-add";
+	public static final String NAME_DOUBLE_ADD = XACML_NS_1_0 + "double-add";
 
 	/**
 	 * Standard URI for the integer-multiply function.
 	 */
-	public static final String NAME_INTEGER_MULTIPLY = FUNCTION_NS_1 + "integer-multiply";
+	public static final String NAME_INTEGER_MULTIPLY = XACML_NS_1_0 + "integer-multiply";
 
 	/**
 	 * Standard URI for the double-multiply function.
 	 */
-	public static final String NAME_DOUBLE_MULTIPLY = FUNCTION_NS_1 + "double-multiply";
+	public static final String NAME_DOUBLE_MULTIPLY = XACML_NS_1_0 + "double-multiply";
 
 	/**
 	 * Standard URI for the integer-subtract function.
 	 */
-	public static final String NAME_INTEGER_SUBTRACT = FUNCTION_NS_1 + "integer-subtract";
+	public static final String NAME_INTEGER_SUBTRACT = XACML_NS_1_0 + "integer-subtract";
 
 	/**
 	 * Standard URI for the integer-subtract function.
 	 */
-	public static final String NAME_DOUBLE_SUBTRACT = FUNCTION_NS_1 + "double-subtract";
+	public static final String NAME_DOUBLE_SUBTRACT = XACML_NS_1_0 + "double-subtract";
 
 	/**
 	 * Standard URI for the integer-divide function.
 	 */
-	public static final String NAME_INTEGER_DIVIDE = FUNCTION_NS_1 + "integer-divide";
+	public static final String NAME_INTEGER_DIVIDE = XACML_NS_1_0 + "integer-divide";
 
 	/**
 	 * Standard URI for the double-divide function.
 	 */
-	public static final String NAME_DOUBLE_DIVIDE = FUNCTION_NS_1 + "double-divide";
+	public static final String NAME_DOUBLE_DIVIDE = XACML_NS_1_0 + "double-divide";
 
 	/**
 	 * Standard URI for the integer-mod function.
 	 */
-	public static final String NAME_INTEGER_MOD = FUNCTION_NS_1 + "integer-mod";
+	public static final String NAME_INTEGER_MOD = XACML_NS_1_0 + "integer-mod";
 
 	/**
 	 * Standard URI for the round function.
 	 */
-	public static final String NAME_ROUND = FUNCTION_NS_1 + "round";
+	public static final String NAME_ROUND = XACML_NS_1_0 + "round";
 
 	/**
 	 * Standard URI for the floor function.
 	 */
-	public static final String NAME_FLOOR = FUNCTION_NS_1 + "floor";
+	public static final String NAME_FLOOR = XACML_NS_1_0 + "floor";
 
-	private static final Datatype<?>[] createGenericTypeArray(Datatype<?> paramType, int numOfRepetitions)
+	private static final IllegalArgumentException UNDEF_PARAMETER_TYPES_EXCEPTION = new IllegalArgumentException("Undefined function parameter types");
+
+	private static <AV extends Value> List<Datatype<AV>> validate(List<Datatype<AV>> paramTypes)
 	{
-		final Datatype<?>[] generics = new Datatype<?>[numOfRepetitions];
-		Arrays.fill(generics, paramType);
-		return generics;
+		if (paramTypes == null || paramTypes.isEmpty())
+		{
+			throw UNDEF_PARAMETER_TYPES_EXCEPTION;
+		}
+
+		return paramTypes;
 	}
 
-	protected final IndeterminateEvaluationException divideByZeroIndeterminateException = new IndeterminateEvaluationException("Function " + functionId + " : divisor is zero", StatusHelper.STATUS_PROCESSING_ERROR);
+	private interface StaticOperation<V extends NumericValue<?, V>>
+	{
+		V eval(Deque<V> args) throws IllegalArgumentException, ArithmeticException;
+	}
 
-	private final Datatype<AV> paramType;
+	private static final class Call<V extends NumericValue<?, V>> extends EagerSinglePrimitiveTypeEval<V, V>
+	{
+		private final String invalidArgsErrMsg;
+		private final StaticOperation<V> op;
+
+		private Call(FunctionSignature.SingleParameterTyped<V, V> functionSig, StaticOperation<V> op, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
+				throws IllegalArgumentException
+		{
+			super(functionSig, args, remainingArgTypes);
+			this.op = op;
+			this.invalidArgsErrMsg = "Function " + this.functionId + ": invalid argument(s)";
+		}
+
+		@Override
+		protected V evaluate(Deque<V> args) throws IndeterminateEvaluationException
+		{
+			try
+			{
+				return op.eval(args);
+			} catch (IllegalArgumentException | ArithmeticException e)
+			{
+				throw new IndeterminateEvaluationException(invalidArgsErrMsg, StatusHelper.STATUS_PROCESSING_ERROR, e);
+			}
+		}
+	}
+
+	private final StaticOperation<AV> op;
 
 	/**
 	 * Creates a new Numeric Arithmetic function.
@@ -123,77 +153,47 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	 * @param funcURI
 	 *            function URI
 	 * 
-	 * @param paramType
-	 *            parameter/return type
-	 * @param arity
-	 *            number of arguments including the variable-length argument if {@code varArgs}.
-	 *            Remember that to define a function that takes N or more args, you define a varargs
-	 *            function of N+1 args where the (N+1-arg) is the variable-length parameter, as it
-	 *            can have a length of 0 or more. Therefore, the arity is N+1 in this case.
+	 * @param paramTypes
+	 *            parameter/return types (all the same)
 	 * @param varArgs
-	 *            whether this is a varargs function (like Java varargs method), i.e. last arg has
-	 *            variable-length
+	 *            whether this is a varargs function (like Java varargs method), i.e. last arg has variable-length
 	 * 
 	 */
-	public NumericArithmeticFunction(String funcURI, Datatype<AV> paramType, int arity, boolean varArgs)
+	private NumericArithmeticFunction(String funcURI, boolean varArgs, List<Datatype<AV>> paramTypes, StaticOperation<AV> op) throws IllegalArgumentException
 	{
-		super(funcURI, paramType, varArgs, createGenericTypeArray(paramType, arity));
-		this.paramType = paramType;
+		super(funcURI, validate(paramTypes).get(0), varArgs, paramTypes);
+		this.op = op;
 	}
 
-	abstract protected AV eval(Deque<AV> args) throws IndeterminateEvaluationException;
-
 	@Override
-	protected final FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	protected FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		/**
-		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all
-		 * static/constant arguments and if there are more than one, pre-compute their sum (resp.
-		 * product) and replace these arguments with one argument that is this sum (resp. product)
-		 * in the function call. Indeed, 'add' function is commutative and (constant in upper case,
-		 * variables in lower case): add(C1, C2, x, y...) = add(C1+C2, x, y...). Similarly,
-		 * multiply(C1, C2, x, y...) = multiply(C1*C2, x, y...)
+		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all static/constant arguments and if there are more than one, pre-compute
+		 * their sum (resp. product) and replace these arguments with one argument that is this sum (resp. product) in the function call. Indeed, 'add' function
+		 * is commutative and (constant in upper case, variables in lower case): add(C1, C2, x, y...) = add(C1+C2, x, y...). Similarly, multiply(C1, C2, x,
+		 * y...) = multiply(C1*C2, x, y...)
 		 * 
 		 */
 
-		return new EagerSinglePrimitiveTypeEval<AV, AV>(signature, paramType, argExpressions, remainingArgTypes)
-		{
-
-			@Override
-			protected final AV evaluate(Deque<AV> args) throws IndeterminateEvaluationException
-			{
-				return eval(args);
-			}
-
-		};
+		return new Call<>(functionSignature, op, argExpressions, remainingArgTypes);
 	}
 
-	private static class Abs<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
+	private static final class AbsOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
 
-		private Abs(String funcURI, Datatype<NAV> paramType)
-		{
-			super(funcURI, paramType, 1, false);
-		}
-
 		@Override
-		protected final NAV eval(Deque<NAV> args)
+		public NAV eval(Deque<NAV> args)
 		{
 			return args.getFirst().abs();
 		}
 
 	}
 
-	private static class Add<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
+	private static final class AddOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
-
-		private Add(String funcURI, Datatype<NAV> paramType)
-		{
-			super(funcURI, paramType, 3, true);
-		}
-
 		@Override
-		protected final NAV eval(Deque<NAV> args)
+		public NAV eval(Deque<NAV> args)
 		{
 			final NAV arg0 = args.poll();
 			return arg0.add(args);
@@ -201,16 +201,11 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 
 	}
 
-	private static class Multiply<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
+	private static final class MultiplyOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
 
-		private Multiply(String funcURI, Datatype<NAV> paramType)
-		{
-			super(funcURI, paramType, 3, true);
-		}
-
 		@Override
-		protected final NAV eval(Deque<NAV> args)
+		public NAV eval(Deque<NAV> args)
 		{
 			final NAV arg0 = args.poll();
 			return arg0.multiply(args);
@@ -218,16 +213,10 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 
 	}
 
-	private static class Subtract<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
+	private static final class SubtractOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
-
-		private Subtract(String funcURI, Datatype<NAV> paramType)
-		{
-			super(funcURI, paramType, 2, false);
-		}
-
 		@Override
-		protected final NAV eval(Deque<NAV> args)
+		public NAV eval(Deque<NAV> args)
 		{
 			final NAV arg0 = args.poll();
 			final NAV arg1 = args.poll();
@@ -236,81 +225,44 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 
 	}
 
-	private static class Divide<NAV extends NumericAttributeValue<?, NAV>> extends NumericArithmeticFunction<NAV>
+	private static final class DivideOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
-
-		private Divide(String funcURI, Datatype<NAV> paramType)
-		{
-			super(funcURI, paramType, 2, false);
-		}
-
 		@Override
-		protected final NAV eval(Deque<NAV> args) throws IndeterminateEvaluationException
+		public NAV eval(Deque<NAV> args) throws ArithmeticException
 		{
 			final NAV arg0 = args.poll();
 			final NAV arg1 = args.poll();
-			try
-			{
-				return arg0.divide(arg1);
-			} catch (ArithmeticException e)
-			{
-				throw divideByZeroIndeterminateException;
-			}
+			return arg0.divide(arg1);
 		}
 
 	}
 
-	private static class IntegerMod extends NumericArithmeticFunction<IntegerAttributeValue>
+	private static final class IntegerModOperation implements StaticOperation<IntegerValue>
 	{
-
-		public IntegerMod()
-		{
-			super(NAME_INTEGER_MOD, DatatypeConstants.INTEGER.TYPE, 2, false);
-		}
-
 		@Override
-		protected final IntegerAttributeValue eval(Deque<IntegerAttributeValue> args) throws IndeterminateEvaluationException
+		public IntegerValue eval(Deque<IntegerValue> args) throws ArithmeticException
 		{
-			final IntegerAttributeValue arg0 = args.poll();
-			final IntegerAttributeValue arg1 = args.poll();
-			final IntegerAttributeValue remainder;
-			try
-			{
-				remainder = arg0.remainder(arg1);
-			} catch (ArithmeticException e)
-			{
-				throw divideByZeroIndeterminateException;
-			}
-
-			return remainder;
+			final IntegerValue arg0 = args.poll();
+			final IntegerValue arg1 = args.poll();
+			return arg0.remainder(arg1);
 		}
 	}
 
-	private static class Floor extends NumericArithmeticFunction<DoubleAttributeValue>
+	private static final class FloorOperation implements StaticOperation<DoubleValue>
 	{
 
-		private Floor()
-		{
-			super(NAME_FLOOR, DatatypeConstants.DOUBLE.TYPE, 1, false);
-		}
-
 		@Override
-		protected final DoubleAttributeValue eval(Deque<DoubleAttributeValue> args)
+		public DoubleValue eval(Deque<DoubleValue> args)
 		{
 			return args.getFirst().floor();
 		}
 
 	}
 
-	private static class Round extends NumericArithmeticFunction<DoubleAttributeValue>
+	private static class RoundOperation implements StaticOperation<DoubleValue>
 	{
-		private Round()
-		{
-			super(NAME_ROUND, DatatypeConstants.DOUBLE.TYPE, 1, false);
-		}
-
 		@Override
-		protected final DoubleAttributeValue eval(Deque<DoubleAttributeValue> args) throws IndeterminateEvaluationException
+		public DoubleValue eval(Deque<DoubleValue> args)
 		{
 			return args.getFirst().roundIEEE754Default();
 		}
@@ -321,30 +273,39 @@ public abstract class NumericArithmeticFunction<AV extends NumericAttributeValue
 	 */
 	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "numeric-arithmetic",
 	//
-			new Abs<>(NAME_INTEGER_ABS, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_ABS, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE), new AbsOperation<IntegerValue>()),
 			//
-			new Abs<>(NAME_DOUBLE_ABS, DatatypeConstants.DOUBLE.TYPE),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_ABS, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE), new AbsOperation<DoubleValue>()),
 			//
-			new Add<>(NAME_INTEGER_ADD, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_ADD, true, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE,
+					DatatypeConstants.INTEGER.TYPE), new AddOperation<IntegerValue>()),
 			//
-			new Add<>(NAME_DOUBLE_ADD, DatatypeConstants.DOUBLE.TYPE),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_ADD, true, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE,
+					DatatypeConstants.DOUBLE.TYPE), new AddOperation<DoubleValue>()),
 			//
-			new Multiply<>(NAME_INTEGER_MULTIPLY, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_MULTIPLY, true, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE,
+					DatatypeConstants.INTEGER.TYPE), new MultiplyOperation<IntegerValue>()),
 			//
-			new Multiply<>(NAME_DOUBLE_MULTIPLY, DatatypeConstants.DOUBLE.TYPE),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_MULTIPLY, true, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE,
+					DatatypeConstants.DOUBLE.TYPE), new MultiplyOperation<DoubleValue>()),
 			//
-			new Subtract<>(NAME_INTEGER_SUBTRACT, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_SUBTRACT, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE),
+					new SubtractOperation<IntegerValue>()),
 			//
-			new Subtract<>(NAME_DOUBLE_SUBTRACT, DatatypeConstants.DOUBLE.TYPE),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_SUBTRACT, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE),
+					new SubtractOperation<DoubleValue>()),
 			//
-			new Divide<>(NAME_INTEGER_DIVIDE, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_DIVIDE, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE),
+					new DivideOperation<IntegerValue>()),
 			//
-			new Divide<>(NAME_DOUBLE_DIVIDE, DatatypeConstants.DOUBLE.TYPE),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_DIVIDE, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE),
+					new DivideOperation<DoubleValue>()),
 			//
-			new IntegerMod(),
+			new NumericArithmeticFunction<>(NAME_INTEGER_MOD, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE),
+					new IntegerModOperation()),
 			//
-			new Floor(),
+			new NumericArithmeticFunction<>(NAME_FLOOR, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE), new FloorOperation()),
 			//
-			new Round());
+			new NumericArithmeticFunction<>(NAME_ROUND, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE), new RoundOperation()));
 
 }

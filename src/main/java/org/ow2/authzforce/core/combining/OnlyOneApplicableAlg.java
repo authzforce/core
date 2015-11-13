@@ -1,115 +1,97 @@
-/**
- *
- *  Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *
- *    1. Redistribution of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *    2. Redistribution in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of Sun Microsystems, Inc. or the names of contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
- *
- *  This software is provided "AS IS," without a warranty of any kind. ALL
- *  EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
- *  ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- *  OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
- *  AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
- *  AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
- *  DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
- *  REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
- *  INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
- *  OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
- *  EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- *  You acknowledge that this software is not designed or intended for use in
- *  the design, construction, operation or maintenance of any nuclear facility.
- */
-package com.sun.xacml.combine;
+package org.ow2.authzforce.core.combining;
 
 import java.util.List;
 
+import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.policy.IPolicyEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thalesgroup.authzforce.core.DecisionResult;
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.StatusHelper;
-import com.thalesgroup.authzforce.core.policy.IPolicy;
-
 /**
- * This is the standard Only One Applicable Policy combining algorithm. This is a special algorithm
- * used at the root of a policy/pdp to make sure that pdp only selects one policy per request.
+ * This is the standard only-one-applicable policy combining algorithm.
  * 
- * @since 1.0
- * @author Seth Proctor
  */
-public class OnlyOneApplicablePolicyAlg extends CombiningAlgorithm<IPolicy>
+public class OnlyOneApplicableAlg extends CombiningAlg<IPolicyEvaluator>
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(OnlyOneApplicablePolicyAlg.class);
+	private static class Evaluator implements CombiningAlg.Evaluator
+	{
+		private static final Logger LOGGER = LoggerFactory.getLogger(Evaluator.class);
+
+		private static final DecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new DecisionResult(new StatusHelper(
+				StatusHelper.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
+
+		private final List<? extends IPolicyEvaluator> policyElements;
+
+		private Evaluator(List<? extends IPolicyEvaluator> policyElements)
+		{
+			this.policyElements = policyElements;
+		}
+
+		@Override
+		public DecisionResult eval(EvaluationContext context)
+		{
+			// atLeastOne == true iff selectedPolicy != null
+			IPolicyEvaluator selectedPolicy = null;
+
+			for (final IPolicyEvaluator policy : policyElements)
+			{
+				// see if the policy applies to the context
+				final boolean isApplicable;
+				try
+				{
+					isApplicable = policy.isApplicable(context);
+				} catch (IndeterminateEvaluationException e)
+				{
+					LOGGER.info("Error checking whether {} is applicable", policy, e);
+					return new DecisionResult(e.getStatus());
+				}
+
+				if (isApplicable)
+				{
+					// if one selected (found applicable) already
+					if (selectedPolicy != null)
+					{
+						return TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT;
+					}
+
+					// if this was the first applicable policy in the set, then
+					// remember it for later
+					selectedPolicy = policy;
+				}
+			}
+
+			// if we got through the loop, it means we found at most one match, then
+			// we return the evaluation result of that policy if there is a match
+			if (selectedPolicy != null)
+			{
+				return selectedPolicy.evaluate(context, true);
+			}
+
+			return DecisionResult.NOT_APPLICABLE;
+		}
+
+	}
+
+	@Override
+	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends IPolicyEvaluator>> params, List<? extends IPolicyEvaluator> combinedElements)
+	{
+		return new Evaluator(combinedElements);
+	}
 
 	/**
 	 * The standard URI used to identify this algorithm
 	 */
 	public static final String ID = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable";
 
-	private static final DecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new DecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
-
 	/**
 	 * Standard constructor.
 	 */
-	public OnlyOneApplicablePolicyAlg()
+	public OnlyOneApplicableAlg()
 	{
-		super(ID, false, IPolicy.class);
+		super(ID, false, IPolicyEvaluator.class);
 	}
 
-	@Override
-	public DecisionResult combine(EvaluationContext context, List<CombinerElement<? extends IPolicy>> parameters, List<? extends IPolicy> policyElements)
-	{
-		// atLeastOne == true iff selectedPolicy != null
-		IPolicy selectedPolicy = null;
-
-		for (final IPolicy policy : policyElements)
-		{
-			// see if the policy applies to the context
-			final boolean isApplicable;
-			try
-			{
-				isApplicable = policy.isApplicable(context);
-			} catch (IndeterminateEvaluationException e)
-			{
-				LOGGER.info("Error checking whether {} is applicable", policy, e);
-				return new DecisionResult(e.getStatus());
-			}
-
-			if (isApplicable)
-			{
-				// if one selected (found applicable) already
-				if (selectedPolicy != null)
-				{
-					return TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT;
-				}
-
-				// if this was the first applicable policy in the set, then
-				// remember it for later
-				selectedPolicy = policy;
-			}
-		}
-
-		// if we got through the loop, it means we found at most one match, then
-		// we return the evaluation result of that policy if there is a match
-		if (selectedPolicy != null)
-		{
-			return selectedPolicy.evaluate(context, true);
-		}
-
-		return DecisionResult.NOT_APPLICABLE;
-	}
 }

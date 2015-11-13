@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.test.conformance;
+package org.ow2.authzforce.core.test.conformance;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -31,11 +26,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.ow2.authzforce.core.test.utils.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.PDP;
-import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 /**
  * XACML 3.0 conformance tests published by OASIS
@@ -53,7 +48,8 @@ public class ConformanceV3FromV2
 		// enum constant name gives the sub-directory with all test files
 		// first param is the file prefix (before number) if different from enum constant name, then
 		// the start number and end number corresponding to last files in the sub-folder
-		IIB001("IIB", 1, 53), IIB300("IIB", 300, 301), IIC001("IIC", 1, 22), IIC024("IIC", 24, 53), IIC056("IIC", 56, 87), IIC090("IIC", 90, 91), IIC094("IIC", 94, 97), IIC100("IIC", 100, 232), IIC300("IIC", 300, 303), IIC310("IIC", 310, 313), IIC320("IIC", 320, 323), IIC330("IIC", 330, 335), IIC340(
+		IIB001("IIB", 1, 53), IIB300("IIB", 300, 301), IIC001("IIC", 1, 22), IIC024("IIC", 24, 53), IIC056("IIC", 56, 87), IIC090("IIC", 90, 91), IIC094("IIC",
+				94, 97), IIC100("IIC", 100, 232), IIC300("IIC", 300, 303), IIC310("IIC", 310, 313), IIC320("IIC", 320, 323), IIC330("IIC", 330, 335), IIC340(
 				"IIC", 340, 359), IIIA001("IIIA", 1, 32), IIIA301("IIIA", 301, 329), IIIA340("IIIA", 340, 340);
 
 		private final String filenamePrefixBeforeNum;
@@ -93,10 +89,10 @@ public class ConformanceV3FromV2
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
-		LOGGER.info("Launching conformance tests in directory: {}", ROOT_DIRECTORY);
+		LOGGER.debug("Launching conformance tests in directory: {}", ROOT_DIRECTORY);
 	}
 
-	@Parameters
+	@Parameters(name = "{0}")
 	public static Collection<Object[]> data()
 	{
 		final Collection<Object[]> testData = new ArrayList<>();

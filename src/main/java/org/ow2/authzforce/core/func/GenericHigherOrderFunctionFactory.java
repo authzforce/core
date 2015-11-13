@@ -3,30 +3,24 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.func;
+package org.ow2.authzforce.core.func;
 
-import com.thalesgroup.authzforce.core.PdpExtension;
-import com.thalesgroup.authzforce.core.Expression.Datatype;
-import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import org.ow2.authzforce.core.PdpExtension;
+import org.ow2.authzforce.core.value.AttributeValue;
+import org.ow2.authzforce.core.value.DatatypeFactory;
 
 /**
- * Interface for generic higher-order function factories, e.g. {@link MapFunction}. A generic
- * function is a function class with a type parameter depending on the sub-function's return type,
- * e.g. {@link MapFunction.Factory}, therefore the function is instantiated for a specific
- * sub-function's return type.
+ * Interface for generic higher-order function factories, e.g. {@link MapFunctionFactory}. A generic function is a function class with a type parameter
+ * depending on the sub-function's return type, e.g. {@link MapFunctionFactory}, therefore the function is instantiated for a specific sub-function's return
+ * type.
  * 
  */
 public interface GenericHigherOrderFunctionFactory extends PdpExtension
@@ -34,9 +28,9 @@ public interface GenericHigherOrderFunctionFactory extends PdpExtension
 	/**
 	 * Returns instance of the Higher-order function
 	 * 
-	 * @param subFunctionReturnType
-	 *            sub-function's return class
+	 * @param subFunctionReturnTypeFactory
+	 *            sub-function's return datatype factory
 	 * @return higher-order function instance
 	 */
-	<SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> HigherOrderBagFunction<?, SUB_RETURN_T> getInstance(Datatype<SUB_RETURN_T> subFunctionReturnType);
+	<SUB_RETURN_T extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN_T> getInstance(DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory);
 }

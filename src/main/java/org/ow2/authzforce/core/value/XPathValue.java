@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.datatypes;
+package org.ow2.authzforce.core.value;
 
 import java.util.Map;
 import java.util.Objects;
@@ -30,22 +25,25 @@ import net.sf.saxon.s9api.XPathSelector;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XdmValue;
 
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.Expression.Utils.XPathEvaluator;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.expression.Expressions.XPathEvaluator;
 
 /**
- * Representation of XACML XPath expression datatype. This class supports parsing xs:string values.
- * All objects of this class are immutable and all methods of the class are thread-safe.
+ * Representation of XACML xpathExpression datatype. All objects of this class are immutable and all methods of the class are thread-safe.
+ * <p>
+ * XACML 3.0 Core spec, §A.3.15: "An XPath expression evaluates to a node-set, which is a set of XML nodes that match the expression. A node or node-set is not
+ * in the formal data-type system of XACML. All comparison or other operations on node-sets are performed in isolation of the particular [XPATH-based] function
+ * specified. The context nodes and namespace mappings of the XPath expressions are defined by the XPath data-type, see section B.3."
+ * <p>
+ * In short, the xpathExpression is evaluated in the context of calling XPath-based functions on a given evaluation context only. These functions typically use
+ * {@link #evaluate(EvaluationContext)} to get the matching node-set.
  */
-public final class XPathAttributeValue extends SimpleAttributeValue<String, XPathAttributeValue>
+public final class XPathValue extends SimpleValue<String>
 {
-	private static final long serialVersionUID = 1L;
-
 	/**
-	 * QName of XPathCategory attribute in xpathExpression. This is allowed by XACML schema as part
-	 * of:
+	 * QName of XPathCategory attribute in xpathExpression. This is allowed by XACML schema as part of:
 	 * 
 	 * <pre>
 	 * {@code
@@ -53,12 +51,10 @@ public final class XPathAttributeValue extends SimpleAttributeValue<String, XPat
 	 * }
 	 * </pre>
 	 * 
-	 * ... therefore namespace returned by JAXB is empty "". More info:
-	 * https://jaxb.java.net/tutorial/section_6_2_7_5
-	 * -Collecting-Unspecified-Attributes-XmlAnyAttribute
-	 * .html#Collecting%20Unspecified%20Attributes:%20XmlAnyAttribute
+	 * ... therefore namespace returned by JAXB is empty "". More info: https://jaxb.java.net/tutorial/section_6_2_7_5
+	 * -Collecting-Unspecified-Attributes-XmlAnyAttribute .html#Collecting%20Unspecified%20Attributes:%20XmlAnyAttribute
 	 */
-	private static final QName XPATH_CATEGORY_ATTRIBUTE_QNAME = new QName("", "XPathCategory");
+	public static final QName XPATH_CATEGORY_ATTRIBUTE_QNAME = new QName("", "XPathCategory");
 
 	private final String xpathCategory;
 
@@ -68,45 +64,32 @@ public final class XPathAttributeValue extends SimpleAttributeValue<String, XPat
 
 	private final String xpathEvalExceptionMessage;
 
-	// lasy eval: evaluated only when calling evaluate(EvaluationContext)
-	private transient XdmValue xpathEvalResult = null;
-
 	/**
 	 * Official name of this type
 	 */
 	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression";
 
-	/**
-	 * Datatype factory instance
-	 */
-	public static final AttributeValue.Factory<XPathAttributeValue> FACTORY = new SimpleAttributeValue.Factory<XPathAttributeValue>(XPathAttributeValue.class, TYPE_URI)
-	{
-		@Override
-		public XPathAttributeValue getInstance(String value, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException
-		{
-			return new XPathAttributeValue(value, otherXmlAttributes.get(XPATH_CATEGORY_ATTRIBUTE_QNAME), xPathCompiler);
-		}
-
-	};
-
-	private static final IllegalArgumentException NULL_XPATH_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined XPathCategory for XPath expression value");
-	private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException("Undefined XPath version/compiler (possibly missing RequestDefaults/PolicyDefaults element)");
+	private static final IllegalArgumentException NULL_XPATH_CATEGORY_EXCEPTION = new IllegalArgumentException(
+			"Undefined XPathCategory for XPath expression value");
+	private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException(
+			"Undefined XPath version/compiler (possibly missing RequestDefaults/PolicyDefaults element)");
 
 	/**
 	 * Instantiates from XPath expression.
 	 * 
 	 * @param xpath
 	 *            XPath
-	 * @param xpathCategory
-	 *            XPathCategory
+	 * @param otherXmlAttributes
+	 *            other XML attributes on the xpathExpression AttributeValue node, one of which is expected to be the {@value #XPATH_CATEGORY_ATTRIBUTE_QNAME }
 	 * @param xPathCompiler
 	 *            XPath compiler for compiling/evaluating {@code xpath}
 	 * @throws IllegalArgumentException
 	 *             if {@code value} is not a valid string representation for this value datatype
 	 */
-	public XPathAttributeValue(String xpath, String xpathCategory, XPathCompiler xPathCompiler) throws IllegalArgumentException
+	public XPathValue(String xpath, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
-		super(FACTORY.instanceDatatype, xpath);
+		super(TYPE_URI, xpath);
+		this.xpathCategory = otherXmlAttributes.get(XPATH_CATEGORY_ATTRIBUTE_QNAME);
 		if (xpathCategory == null)
 		{
 			throw NULL_XPATH_CATEGORY_EXCEPTION;
@@ -119,47 +102,36 @@ public final class XPathAttributeValue extends SimpleAttributeValue<String, XPat
 
 		this.xpathEvaluator = new XPathEvaluator(xpath, xPathCompiler);
 		/*
-		 * Please note that StandardURIChecker maintains a thread-local cache of validated URIs
-		 * (cache size is 50 and eviction policy is LRU)
+		 * Please note that StandardURIChecker maintains a thread-local cache of validated URIs (cache size is 50 and eviction policy is LRU)
 		 */
 		if (!StandardURIChecker.getInstance().isValidURI(xpathCategory))
 		{
 			throw new IllegalArgumentException("Invalid value for XPathCategory (xs:anyURI): " + xpathCategory);
 		}
 
-		this.xpathCategory = xpathCategory;
 		this.getOtherAttributes().put(XPATH_CATEGORY_ATTRIBUTE_QNAME, xpathCategory);
-		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + xpathCategory, StatusHelper.STATUS_SYNTAX_ERROR);
+		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category="
+				+ xpathCategory, StatusHelper.STATUS_SYNTAX_ERROR);
 		this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + xpathCategory + "'";
 	}
 
-	@Override
-	protected String parse(String str)
-	{
-		return str;
-	}
+	// /**
+	// * @return the xpathCategory
+	// */
+	// public String getXpathCategory()
+	// {
+	// return xpathCategory;
+	// }
 
 	/**
-	 * @return the xpathCategory
+	 * Convenient method to get the XML nodes ("node-set") matching the XPath expression. To be used by XPath-based functions defined in section A.3.15 of XACML
+	 * 3.0 Core specification.
+	 * 
+	 * @param context
+	 * @return node-set
+	 * @throws IndeterminateEvaluationException
 	 */
-	public String getXpathCategory()
-	{
-		return xpathCategory;
-	}
-
-	@Override
-	public boolean isStatic()
-	{
-		/*
-		 * XPathAttributeValue is an exception among attribute values, i.e. its evaluation is not
-		 * static, on the contrary to other AttributeValues, as it depends on the context to get the
-		 * matching nodes by XPath.
-		 */
-		return false;
-	}
-
-	@Override
-	public XPathAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public XdmValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final XdmNode contentNode = context.getAttributesContent(this.xpathCategory);
 		if (contentNode == null)
@@ -168,22 +140,18 @@ public final class XPathAttributeValue extends SimpleAttributeValue<String, XPat
 		}
 
 		/*
-		 * An XPathExecutable is immutable, and therefore thread-safe. It is simpler to load a new
-		 * XPathSelector each time the expression is to be evaluated. However, the XPathSelector is
-		 * serially reusable within a single thread. See Saxon Javadoc.
+		 * An XPathExecutable is immutable, and therefore thread-safe. It is simpler to load a new XPathSelector each time the expression is to be evaluated.
+		 * However, the XPathSelector is serially reusable within a single thread. See Saxon Javadoc.
 		 */
 		final XPathSelector xpathSelector = xpathEvaluator.load();
 		try
 		{
 			xpathSelector.setContextItem(contentNode);
-			this.xpathEvalResult = xpathSelector.evaluate();
+			return xpathSelector.evaluate();
 		} catch (SaxonApiException e)
 		{
 			throw new IndeterminateEvaluationException(this.xpathEvalExceptionMessage, StatusHelper.STATUS_SYNTAX_ERROR, e);
 		}
-
-		// return self as usual
-		return this;
 	}
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
@@ -214,24 +182,18 @@ public final class XPathAttributeValue extends SimpleAttributeValue<String, XPat
 			return true;
 		}
 
-		if (!(obj instanceof XPathAttributeValue))
+		if (!(obj instanceof XPathValue))
 		{
 			return false;
 		}
 
-		final XPathAttributeValue other = (XPathAttributeValue) obj;
+		final XPathValue other = (XPathValue) obj;
 		return this.xpathCategory.equals(other.xpathCategory) && this.value.equals(other.value);
 	}
 
-	/**
-	 * Get the node set resulting from XPath evaluation against the request (context)'s
-	 * Attributes/Content
-	 * 
-	 * @return the xpathEvalResult, requires to call {@link #evaluate(EvaluationContext)} first;
-	 *         otherwise null.
-	 */
-	public XdmValue getXpathEvaluationResult()
+	@Override
+	public String printXML()
 	{
-		return xpathEvalResult;
+		return this.value;
 	}
 }

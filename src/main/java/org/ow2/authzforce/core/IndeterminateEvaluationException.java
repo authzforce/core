@@ -19,27 +19,28 @@
 /**
  * 
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 
 /**
  * Exception wrapper for XACML Indeterminate/error caused by evaluation
  * <p>
- * TODO: although we consider Exceptions as a good solution (from a Java standpoint) to propagate
- * error information with a full traceable stacktrace, from a functional/logical point of view, we
- * could improve performance by using return codes instead, whenever possible, especially where we
- * don't lose any useful error info by doing so: cf.
- * http://java-performance.info/throwing-an-exception-in-java-is-very-slow/
+ * TODO: although we consider Exceptions as a good solution (from a Java standpoint) to propagate error information with a full traceable stacktrace, from a
+ * functional/logical point of view, we could improve performance by using return codes instead, whenever possible, especially where we don't lose any useful
+ * error info by doing so: cf. http://java-performance.info/throwing-an-exception-in-java-is-very-slow/
  * </p>
  */
 public class IndeterminateEvaluationException extends Exception
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private final String xacmlStatusCode;
 
 	/**
-	 * Creates exception with message and XACML StatusCode (e.g.
-	 * {@link StatusHelper#STATUS_PROCESSING_ERROR})
+	 * Creates exception with message and XACML StatusCode (e.g. {@link StatusHelper#STATUS_PROCESSING_ERROR})
 	 * 
 	 * @param message
 	 *            exception message
@@ -53,8 +54,7 @@ public class IndeterminateEvaluationException extends Exception
 	}
 
 	/**
-	 * Instantiates with error message and XACML StatusCode (e.g.
-	 * {@link StatusHelper#STATUS_PROCESSING_ERROR}), and internal cause for error
+	 * Instantiates with error message and XACML StatusCode (e.g. {@link StatusHelper#STATUS_PROCESSING_ERROR}), and internal cause for error
 	 * 
 	 * @param message
 	 *            exception message

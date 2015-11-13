@@ -3,72 +3,62 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.datatypes;
+package org.ow2.authzforce.core.value;
 
 import java.util.Locale;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-
 /**
- * Representation of an xs:string value. This class supports parsing xs:string values. All objects
- * of this class are immutable and all methods of the class are thread-safe.
+ * Representation of an xs:string value. This class supports parsing xs:string values. All objects of this class are immutable and all methods of the class are
+ * thread-safe.
  */
-public final class StringAttributeValue extends SimpleAttributeValue<String, StringAttributeValue> implements Comparable<StringAttributeValue>
+public final class StringValue extends SimpleValue<String> implements Comparable<StringValue>
 {
-
 	/**
 	 * Official name of this type
 	 */
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#string";
 
-	/**
-	 * Datatype factory instance
-	 */
-	public static final AttributeValue.Factory<StringAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<StringAttributeValue>(StringAttributeValue.class, TYPE_URI)
-	{
-
-		@Override
-		public StringAttributeValue getInstance(String val)
-		{
-			return new StringAttributeValue(val);
-		}
-
-	};
-
-	private static final StringAttributeValue TRUE = new StringAttributeValue("true");
-	private static final StringAttributeValue FALSE = new StringAttributeValue("false");
+	private static final StringValue TRUE = new StringValue("true");
+	private static final StringValue FALSE = new StringValue("false");
 
 	/**
-	 * Creates a new <code>StringAttributeValue</code> that represents the String value supplied.
+	 * Convert the lexical XSD string argument into a String value, using {@link javax.xml.bind.DatatypeConverter#parseString(String)}.
 	 * 
-	 * @param value
-	 *            the <code>String</code> value to be represented
+	 * @param val
+	 *            A string containing a lexical representation of xsd:string
+	 * @return instance
 	 * @throws IllegalArgumentException
-	 *             if {@code value} is not a valid string representation of xs:string
+	 *             if {@code value} is not a valid string representation of xsd:string
 	 */
-	public StringAttributeValue(String value) throws IllegalArgumentException
+	public static StringValue parse(String val) throws IllegalArgumentException
 	{
-		super(FACTORY.instanceDatatype, value);
+		return new StringValue(DatatypeConverter.parseString(val));
+	}
+
+	/**
+	 * Convert string argument - assumed a valid xsd:string into a String value. Use with caution as no xsd:string format validation is done here. For internal
+	 * purposes only. If you need proper input validation, use {@link #parse(String)} instead.
+	 * 
+	 * @param validXsdString
+	 *            A string containing a valid lexical representation of xsd:string
+	 */
+	public StringValue(String validXsdString)
+	{
+		super(TYPE_URI, validXsdString);
 	}
 
 	@Override
-	public int compareTo(StringAttributeValue o)
+	public int compareTo(StringValue o)
 	{
 		return this.value.compareTo(o.value);
 	}
@@ -77,29 +67,22 @@ public final class StringAttributeValue extends SimpleAttributeValue<String, Str
 	 * Same as {@link String#equalsIgnoreCase(String)} on attribute values
 	 * 
 	 * @param otherAttribute
-	 * @return true if the other attribute value is not null and it represents an equivalent String
-	 *         ignoring case; false otherwise
+	 * @return true if the other attribute value is not null and it represents an equivalent String ignoring case; false otherwise
 	 */
-	public boolean equalsIgnoreCase(StringAttributeValue otherAttribute)
+	public boolean equalsIgnoreCase(StringValue otherAttribute)
 	{
 		return this.value.equalsIgnoreCase(otherAttribute.value);
-	}
-
-	@Override
-	protected String parse(String stringForm)
-	{
-		return DatatypeConverter.parseString(stringForm);
 	}
 
 	/**
 	 * @see String#trim()
 	 * @return StringAttributeValue with value resulting from <code>value.trim()</code>
 	 */
-	public StringAttributeValue trim()
+	public StringValue trim()
 	{
 		final String result = value.trim();
 		// if the value is same as result, return itself, else return new value from result
-		return result.equals(value) ? this : new StringAttributeValue(result);
+		return result.equals(value) ? this : new StringValue(result);
 	}
 
 	/**
@@ -108,11 +91,11 @@ public final class StringAttributeValue extends SimpleAttributeValue<String, Str
 	 *            Locale
 	 * @return StringAttributeValue with value resulting from <code>value.toLowerCase(L)</code>
 	 */
-	public StringAttributeValue toLowerCase(Locale locale)
+	public StringValue toLowerCase(Locale locale)
 	{
 		final String result = value.toLowerCase(locale);
 		// if the value is same as result, return itself, else return new value from result
-		return result.equals(value) ? this : new StringAttributeValue(result);
+		return result.equals(value) ? this : new StringValue(result);
 	}
 
 	/**
@@ -122,15 +105,27 @@ public final class StringAttributeValue extends SimpleAttributeValue<String, Str
 	 *            boolean
 	 * @return string equivalent ("true" or "false")
 	 */
-	public static StringAttributeValue getInstance(Boolean value)
+	public static StringValue getInstance(Boolean value)
 	{
 		return value ? TRUE : FALSE;
 	}
 
-	@Override
-	public StringAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	/**
+	 * Converts BooleanAttributeValue to String
+	 * 
+	 * @param value
+	 *            boolean
+	 * @return string equivalent ("true" or "false")
+	 */
+	public static StringValue getInstance(BooleanValue value)
 	{
-		return this;
+		return value == BooleanValue.TRUE ? TRUE : FALSE;
+	}
+
+	@Override
+	public String printXML()
+	{
+		return this.value;
 	}
 
 }

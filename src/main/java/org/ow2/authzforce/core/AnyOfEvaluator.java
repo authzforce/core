@@ -19,7 +19,7 @@
 /**
  * 
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +27,7 @@ import java.util.List;
 
 import net.sf.saxon.s9api.XPathCompiler;
 
+import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	 * @throws ParsingException
 	 *             if AnyOf element is invalid
 	 */
-	public AnyOfEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
+	public AnyOfEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws ParsingException
 	{
 		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> jaxbAllOfList = jaxbAnyOf.getAllOves();
 		if (jaxbAllOfList.isEmpty())
@@ -91,13 +92,13 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	/**
 	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is
 	 * applicable). If all the AllOf values is No_Match so it's a No_Match. If all matches it's a
-	 * Match. If None matches and at least one “Indeterminate” it's Indeterminate
+	 * Match. If None matches and at least one “Indeterminate�? it's Indeterminate
 	 * 
 	 * <pre>
 	 * 		AllOf values 						AnyOf value 
-	 * 		At Least one "Match"	 			“Match” 
+	 * 		At Least one "Match"	 			“Match�? 
 	 * 		None matches and 
-	 * 		at least one Indeterminate 			“Indeterminate”
+	 * 		at least one Indeterminate 			“Indeterminate�?
 	 * 		All "No Match"						"No Match"
 	 * </pre>
 	 * 

@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://thalesgroup.com/authzforce/pdp/model/2015/06"
-	xmlns:tns="http://thalesgroup.com/authzforce/pdp/model/2015/06" elementFormDefault="qualified"
-	xmlns:authz-ext="http://thalesgroup.com/authz/model/ext/3.0">
-
-	<!-- XACML XSD import only necessary to fix bug in maven jaxb2 plugin used for generating Java class 
-		from this schema -->
-	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
-
-	<import namespace="http://thalesgroup.com/authz/model/ext/3.0" />
+<!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/pdp" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp" elementFormDefault="qualified"
+	xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext" version="3.5.9">
+	<import namespace="http://authzforce.github.io/xmlns/pdp/ext" />
 	<annotation>
 		<documentation xml:lang="en">
 			Data model of AuthZForce PDP configuration.
@@ -15,12 +10,14 @@
 				For any such configuration (XML) file (instance of this schema) loaded, AuthZForce PDP
 				configuration handler sets the
 				global variable 'PARENT_DIR' to the path to the parent directory
-				of this XML configuration file, so
+				of this XML
+				configuration file, so
 				that any placeholder ${PARENT_DIR} is replaced with this
 				value, and may be used in text nodes to
 				specify file paths relative to the configuration file for
 				instance.
-				If the location to the
+				If the
+				location to the
 				configuration file is not resolved to a file on the file system,
 				'PARENT_DIR' is undefined.
 				You
@@ -61,7 +58,8 @@
 							new
 							com.example.FooFunction().getId(). Whenever possible, extension implementers should
 							implement
-							sub-class 'com.sun.xacml.cond.BaseFunction' actually, instead of implementing
+							sub-class
+							'com.sun.xacml.cond.BaseFunction' actually, instead of implementing
 							'com.sun.xacml.cond.Function' directly.
 						</documentation>
 					</annotation>
@@ -84,7 +82,8 @@
 					<annotation>
 						<documentation>URI of a policy/rule-combining algorithm to be added to supported algorithms.
 							There must be one and only one Java class - say 'com.example.FooCombiningAlg' - on the
-							classpath implementing
+							classpath
+							implementing
 							interface
 							'com.sun.xacml.combine.CombiningAlgorithm' with zero-arg
 							constructor, such that this URI equals:
@@ -92,8 +91,7 @@
 						</documentation>
 					</annotation>
 				</element>
-				<element name="attributeFinder" type="authz-ext:AbstractAttributeFinder" maxOccurs="unbounded"
-					minOccurs="0">
+				<element name="attributeFinder" type="authz-ext:AbstractAttributeFinder" maxOccurs="unbounded" minOccurs="0">
 					<annotation>
 						<documentation>Attribute finder that provides attributes not already provided in the XACML
 							request by PEP, e.g. from external sources.
@@ -105,7 +103,8 @@
 							'com.sun.xacml.finder.AttributeFinderModule.Factory&lt;CONF_T&gt;'
 							with zero-arg
 							constructor,
-							where CONF_T is the JAXB type bound to this XML
+							where CONF_T is
+							the JAXB type bound to this XML
 							element type.
 							This
 							attribute finder
@@ -114,21 +113,22 @@
 							'attributeFinders', to find dependency
 							attributes, i.e.
 							attributes
-							that this finder does not support itself, but requires to find
+							that this finder does not
+							support itself, but requires to find
 							its
 							supported
 							attributes.
 							Therefore, if an 'attributeFinder' AFy requires/depends on an attribute A that is
 							not to be
-							provided by the PEP, another 'attributeFinder' AFx providing this attribute A must
+							provided by the PEP, another
+							'attributeFinder' AFx providing this attribute A must
 							be
 							declared
 							before X.
 						</documentation>
 					</annotation>
 				</element>
-				<element name="refPolicyFinder" type="authz-ext:AbstractPolicyFinder" minOccurs="0"
-					maxOccurs="1">
+				<element name="refPolicyFinder" type="authz-ext:AbstractPolicyFinder" minOccurs="0" maxOccurs="1">
 					<annotation>
 						<documentation>Referenced policy finder that resolves Policy(Set)IdReferences.
 							There must be
@@ -139,13 +139,15 @@
 							implementing
 							interface
 							'com.thalesgroup.authzforce.core.policy.ReferencedPolicyFinderModule.Factory&lt;CONF_T&gt;'
-							with zero-arg constructor, where CONF_T is the JAXB type bound to this XML element
+							with zero-arg constructor, where CONF_T is the JAXB type bound to this XML
+							element
 							type.
 							This
 							referenced policy finder may also use any of the 'refPolicyFinder' previously
 							defined, if any,
 							for Policy(Set)IdReference resolution; as some IdReferences may not be
-							supported by this
+							supported by
+							this
 							finder.
 							This element is not required if root policies found by the 'rootPolicyFinder' are
 							always Policy elements, and not PolicySet elements.
@@ -163,7 +165,8 @@
 							interface
 							'com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule.Factory&lt;CONF_T&gt;'
 							with
-							zero-arg constructor, where CONF_T is the JAXB type bound to this XML
+							zero-arg
+							constructor, where CONF_T is the JAXB type bound to this XML
 							element type.
 							This
 							class
@@ -179,14 +182,16 @@
 					<annotation>
 						<documentation>Decision Response cache that, for a given request, provides the XACML response
 							from a cache if there is a cached response for the given request. There must be one and only
-							one Java class -
+							one Java
+							class -
 							say
 							'com.example.FooDecisionCacheFactory' - on the classpath
 							implementing
 							interface
 							'com.thalesgroup.authzforce.core.DecisionCache.Factory&lt;CONF_T&gt;'
 							with zero-arg
-							constructor, where CONF_T is the JAXB type bound to this XML
+							constructor, where
+							CONF_T is the JAXB type bound to this XML
 							element type.
 						</documentation>
 					</annotation>
@@ -215,7 +220,8 @@
 					<documentation>Enable support for AttributeSelectors. This feature is experimental (not to be
 						used in production). Use with caution.
 						For your information, AttributeSelector support is
-						marked as optional in XACML 3.0 core specification.
+						marked as
+						optional in XACML 3.0 core specification.
 					</documentation>
 				</annotation>
 			</attribute>
@@ -253,11 +259,13 @@
 							extension
 							that
 							applies some processing of the request, such as validation and transformation, prior to the
-							policy evaluation.
+							policy
+							evaluation.
 							As an example of validation, a Request
 							filter may reject a request containing an
 							unsupported XACML element. As an example of transformation, it may support the
-							MultiRequests element, and more generally the
+							MultiRequests element,
+							and more generally the
 							Multiple
 							Decision
 							Profile by creating multiple
@@ -266,7 +274,8 @@
 							original
 							XACML
 							request, as defined in
-							XACML Multiple Decision Profile specification, section
+							XACML Multiple Decision Profile
+							specification, section
 							2; and
 							then
 							call
@@ -277,7 +286,8 @@
 							results
 							(one per Individual
 							Decision
-							Request) may be combined by a DecisionCombiner specified
+							Request) may be combined by a
+							DecisionCombiner specified
 							by next
 							attribute
 							'decisionCombiner'.
@@ -288,7 +298,8 @@
 							classpath implementing
 							interface 'com.thalesgroup.authzforce.core.RequestFilter' with
 							zero-arg
-							constructor, such
+							constructor,
+							such
 							that this URI equals: new
 							com.example.FooRequestFilter().getId().</p>
 					</documentation>
@@ -298,10 +309,12 @@
 				<annotation>
 					<documentation>URI of a XACML decision Result filter to be enabled. A decision Result filter is a PDP
 						extension
-						that process the result(s) from the policy evaluation before the final XACML Response is created (and returned back to the requester).
+						that process the result(s) from the policy evaluation before the final XACML Response
+						is created (and returned back to the requester).
 						For example, a typical Result filter may combine multiple individual decisions - produced by
 						the 'requestFilter' - to a single
-						decision Result if and only if the XACML Request's 'CombinedDecision' is set
+						decision Result if
+						and only if the XACML Request's 'CombinedDecision' is set
 						to true,
 						as defined in XACML
 						Multiple Decision Profile specification,
@@ -362,7 +375,8 @@
 							Location of a XML file that is expected to contain the root (aka top-level)
 							Policy or
 							PolicySet. Use the global property 'PARENT_DIR' for paths under the parent directory
-							to the XML file where this is used.
+							to the XML
+							file where this is used.
 						</documentation>
 					</annotation>
 				</attribute>
@@ -376,10 +390,12 @@
 				Any
 				PolicyIdReference used in a PolicySet here must refer to a Policy loaded here as well.
 				Besides, a
-				PolicySet P1 must be loaded before any other PolicySet P2 with a reference
+				PolicySet P1
+				must be loaded before any other PolicySet P2 with a reference
 				(PolicySetIdReference) to P1.
 				As PolicySets are loaded in the order of declaration of
-				policyLocations, the order matters for PolicySetIdReference resolution.
+				policyLocations, the order matters for
+				PolicySetIdReference resolution.
 			</documentation>
 		</annotation>
 		<complexContent>
@@ -391,7 +407,8 @@
 								Location of the XML file that is expected to contain the Policy or
 								PolicySet
 								element to be referenced by a Policy(Set)IdReference in the root PolicySet loaded by a root
-								policy finder. Use the global property 'PARENT_DIR' for defining - in a generic way - a path
+								policy
+								finder. Use the global property 'PARENT_DIR' for defining - in a generic way - a path
 								relative to the parent directory
 								to
 								the XML file where this is used.

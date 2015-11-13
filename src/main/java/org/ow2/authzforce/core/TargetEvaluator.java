@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +19,7 @@ import java.util.List;
 
 import net.sf.saxon.s9api.XPathCompiler;
 
+import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +51,8 @@ public class TargetEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 *            Expression factory
 	 * @throws ParsingException
 	 */
-	public TargetEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Target jaxbTarget, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
+	public TargetEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Target jaxbTarget, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
+			throws ParsingException
 	{
 		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf> jaxbAnyOfList = jaxbTarget.getAnyOves();
 		if (jaxbAnyOfList.isEmpty())
@@ -63,7 +60,7 @@ public class TargetEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 			evaluatableAnyOfList = null;
 			// make the super field anyOves unmodifiable to prevent inconsistency with
 			// evaluatableAnyOfList
-			this.anyOves = Collections.EMPTY_LIST;
+			this.anyOves = Collections.emptyList();
 			return;
 		}
 
@@ -88,13 +85,12 @@ public class TargetEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	}
 
 	/**
-	 * Determines whether this <code>Target</code> matches the input request (whether it is
-	 * applicable). If any of the AnyOf doesn't match the request context so it's a NO_MATCH result.
-	 * Here is the table shown in the specification: <code> 
+	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context
+	 * so it's a NO_MATCH result. Here is the table shown in the specification: <code> 
 	 * 		<AnyOf> values 				<Target> value
-	 * 		All “Match”					“Match”
-	 * 		At Least one "No Match"		“No Match”
-	 * 		Otherwise					“Indeterminate”
+	 * 		All “Match�?					“Match�?
+	 * 		At Least one "No Match"		“No Match�?
+	 * 		Otherwise					“Indeterminate�?
 	 * </code> Also if Target empty (no AnyOf), return "Match"
 	 * 
 	 * @param context
@@ -161,7 +157,8 @@ public class TargetEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 		}
 
 		// No False but at least one Indeterminate (lastIndeterminate != null)
-		throw new IndeterminateEvaluationException("Error evaluating <Target>'s <AnyOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
+				lastIndeterminate);
 	}
 
 }

@@ -19,7 +19,7 @@
 /**
  * 
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 /**
  * "Decidable" policy element, i.e. policy element that is evaluated to an access control decision:

@@ -1,64 +1,41 @@
-/**
- *
- *  Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *
- *    1. Redistribution of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *    2. Redistribution in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of Sun Microsystems, Inc. or the names of contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
- *
- *  This software is provided "AS IS," without a warranty of any kind. ALL
- *  EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
- *  ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- *  OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
- *  AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
- *  AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
- *  DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
- *  REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
- *  INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
- *  OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
- *  EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- *  You acknowledge that this software is not designed or intended for use in
- *  the design, construction, operation or maintenance of any nuclear facility.
- *  
- */
-
-package com.sun.xacml.combine;
+package org.ow2.authzforce.core.combining;
 
 import java.util.List;
 
-import com.thalesgroup.authzforce.core.Decidable;
-import com.thalesgroup.authzforce.core.DecisionResult;
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.PdpExtension;
+import org.ow2.authzforce.core.Decidable;
+import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.PdpExtension;
 
 /**
- * The base type for all combining algorithms. It provides one method that must be implemented. In
- * combining policies, obligations and advice must be handled correctly. Specifically, no
- * obligation/advice may be included in the <code>Result</code> that doesn't match the permit/deny
- * decision being returned. So, if INDETERMINATE or NOT_APPLICABLE is the returned decision, no
- * obligations/advice may be included in the result. If the decision of the combining algorithm is
- * PERMIT or DENY, then obligations/advice with a matching fulfillOn/AppliesTo effect are also
- * included in the result.
+ * The base type for all combining algorithms. In combining policies, obligations and advice must be handled correctly. Specifically, no obligation/advice may
+ * be included in the <code>Result</code> that doesn't match the permit/deny decision being returned. So, if INDETERMINATE or NOT_APPLICABLE is the returned
+ * decision, no obligations/advice may be included in the result. If the decision of the combining algorithm is PERMIT or DENY, then obligations/advice with a
+ * matching fulfillOn/AppliesTo effect are also included in the result.
  * 
- * @since 1.0
- * @author Seth Proctor
  * @param <T>
- *            type of Decidable element (Policy, Rule...)
+ *            type of combined element (Policy, Rule...)
  */
-public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExtension
+public abstract class CombiningAlg<T extends Decidable> implements PdpExtension
 {
 	private static final String LEGACY_ALG_WARNING = "%s is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
+
+	/**
+	 * Combining algorithm evaluator
+	 *
+	 */
+	public interface Evaluator
+	{
+		/**
+		 * Runs the combining algorithm in a specific evaluation context
+		 * 
+		 * @param context
+		 *            the request evaluation context
+		 * 
+		 * @return combined result
+		 */
+		DecisionResult eval(EvaluationContext context);
+	}
 
 	// the identifier for the algorithm
 	private final String id;
@@ -75,24 +52,18 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 	 * @param id
 	 *            the algorithm's id
 	 *            <p>
-	 *            WARNING: java.net.URI cannot be used here for XACML category and ID, because not
-	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
-	 *            java.net.URI for example. That's why we use String instead.
+	 *            WARNING: java.net.URI cannot be used here for XACML category and ID, because not equivalent to XML schema anyURI type. Spaces are allowed in
+	 *            XSD anyURI [1], not in java.net.URI for example. That's why we use String instead.
 	 *            </p>
 	 *            <p>
 	 *            [1] http://www.w3.org/TR/xmlschema-2/#anyURI
 	 *            </p>
 	 * @param isLegacy
-	 *            true iff the algorithm to instantiate is legacy ("legacy" as defined in XACML 3.0
-	 *            or any combining algorithm replaced with new one). Implementations not willing to
-	 *            support legacy algorithms can throw {@link #unsupportedLegacyAlgorithmException}
-	 *            that uses the message format below to produce the exception message:
-	 *            {@value #LEGACY_ALG_WARNING}. Else {@link #unsupportedLegacyAlgorithmException} is
-	 *            null.
+	 *            true iff the algorithm to instantiate is legacy ("legacy" as defined in XACML 3.0 or any combining algorithm replaced with new one).
 	 * @param combinedType
 	 *            combined element type
 	 */
-	public CombiningAlgorithm(String id, boolean isLegacy, Class<T> combinedType)
+	public CombiningAlg(String id, boolean isLegacy, Class<T> combinedType)
 	{
 		this.combinedElementType = combinedType;
 		this.id = id;
@@ -128,18 +99,19 @@ public abstract class CombiningAlgorithm<T extends Decidable> implements PdpExte
 	}
 
 	/**
-	 * Combines the child elements (rules for rule combining, policies for policy combining) based
-	 * on the context to produce some unified result. To be implemented by algorithm
-	 * implementations.
+	 * Creates instance of algorithm. To be implemented by algorithm implementations.
 	 * 
-	 * @param context
-	 *            the representation of the request
 	 * @param params
-	 *            list of CombinerParameters that may be associated with a particular child element
+	 *            list of combining algorithm parameters that may be associated with a particular child element
 	 * @param combinedElements
 	 *            combined child elements
 	 * 
-	 * @return a combined result based on the combining logic
+	 * @return an instance of algorithm evaluator
+	 * @throws UnsupportedOperationException
+	 *             if this is a legacy algorithm and legacy support is disabled
+	 * @throws IllegalArgumentException
+	 *             if {@code params} are invalid for this algorithm
 	 */
-	public abstract DecisionResult combine(EvaluationContext context, List<CombinerElement<? extends T>> params, List<? extends T> combinedElements);
+	public abstract Evaluator getInstance(List<CombiningAlgParameter<? extends T>> params, List<? extends T> combinedElements)
+			throws UnsupportedOperationException, IllegalArgumentException;
 }

@@ -3,86 +3,60 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.combining;
+package org.ow2.authzforce.core.combining;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.xacml.combine.CombinerElement;
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.Decidable;
-import com.thalesgroup.authzforce.core.DecisionResult;
-import com.thalesgroup.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.Decidable;
+import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.EvaluationContext;
 
 /**
- * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single
- * evaluation of Permit to take precedence over any number of deny, not applicable or indeterminate
- * results. Note that since this implementation does an ordered evaluation, this class also supports
- * the Ordered-Permit-Overrides algorithm.
+ * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take precedence over any number of deny,
+ * not applicable or indeterminate results. Note that since this implementation does an ordered evaluation, this class also supports the
+ * Ordered-Permit-Overrides algorithm.
  */
-public final class PermitOverridesAlg extends CombiningAlgorithm<Decidable>
+public final class PermitOverridesAlg extends CombiningAlg<Decidable>
 {
-	/**
-	 * The standard URN used to identify this algorithm
-	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides" };
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgorithmSet SET;
-	static
+	private static class Evaluator implements CombiningAlg.Evaluator
 	{
-		final Set<CombiningAlgorithm<?>> algSet = new HashSet<>();
-		for (final String algId : SUPPORTED_IDENTIFIERS)
+
+		private final List<? extends Decidable> combinedElements;
+
+		private Evaluator(List<? extends Decidable> combinedElements)
 		{
-			algSet.add(new PermitOverridesAlg(algId));
+			this.combinedElements = combinedElements;
 		}
 
-		SET = new CombiningAlgorithmSet(algSet);
-	}
-
-	private PermitOverridesAlg(String algId)
-	{
-		super(algId, false, Decidable.class);
-	}
-
-	@Override
-	public DecisionResult combine(EvaluationContext context, List<CombinerElement<? extends Decidable>> parameters, List<? extends Decidable> combinedElements)
-	{
-		/*
-		 * Replaces and enhances atLeastOneError from XACML spec. atLeastOneError == true <=>
-		 * firstIndeterminateResult != null
-		 */
-		DecisionResult firstIndeterminateResult = null;
-
-		/*
-		 * Replaces and enhances atLeastOneDeny from XACML spec. atLeastOneDeny == true <=>
-		 * combinedDenyResult != null
-		 */
-		DecisionResult combinedDenyResult = null;
-
-		for (final Decidable combinedElement : combinedElements)
+		@Override
+		public DecisionResult eval(EvaluationContext context)
 		{
-			// evaluate the policy
-			final DecisionResult result = combinedElement.evaluate(context);
-			switch (result.getDecision())
+			/*
+			 * Replaces and enhances atLeastOneError from XACML spec. atLeastOneError == true <=> firstIndeterminateResult != null
+			 */
+			DecisionResult firstIndeterminateResult = null;
+
+			/*
+			 * Replaces and enhances atLeastOneDeny from XACML spec. atLeastOneDeny == true <=> combinedDenyResult != null
+			 */
+			DecisionResult combinedDenyResult = null;
+
+			for (final Decidable combinedElement : combinedElements)
 			{
+				// evaluate the policy
+				final DecisionResult result = combinedElement.evaluate(context);
+				switch (result.getDecision())
+				{
 				case PERMIT:
 					return result;
 				case DENY:
@@ -91,32 +65,67 @@ public final class PermitOverridesAlg extends CombiningAlgorithm<Decidable>
 					break;
 				case INDETERMINATE:
 					/*
-					 * FIXME: implement extended Indeterminate decisions (result differs if
-					 * Indeterminate{P} or Indeterminate{D})
+					 * FIXME: implement extended Indeterminate decisions (result differs if Indeterminate{P} or Indeterminate{D})
 					 */
 					firstIndeterminateResult = result;
 					break;
 				default:
 					break;
+				}
 			}
+
+			/*
+			 * FIXME: implement extended Indeterminate decisions as the algorithm distinguishes them.
+			 */
+			if (firstIndeterminateResult != null)
+			{
+				return firstIndeterminateResult;
+			}
+
+			/*
+			 * atLeastOneDeny == true <=> combinedDenyResult != null
+			 */
+			if (combinedDenyResult != null)
+			{
+				return combinedDenyResult;
+			}
+
+			return DecisionResult.NOT_APPLICABLE;
 		}
 
-		/*
-		 * FIXME: implement extended Indeterminate decisions as the algorithm distinguishes them.
-		 */
-		if (firstIndeterminateResult != null)
+	}
+
+	@Override
+	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
+	{
+		return new Evaluator(combinedElements);
+	}
+
+	/**
+	 * The standard URN used to identify this algorithm
+	 */
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides",
+			"urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides" };
+
+	/**
+	 * Supported algorithms
+	 */
+	public static final CombiningAlgSet SET;
+	static
+	{
+		final Set<CombiningAlg<?>> algSet = new HashSet<>();
+		for (final String algId : SUPPORTED_IDENTIFIERS)
 		{
-			return firstIndeterminateResult;
+			algSet.add(new PermitOverridesAlg(algId));
 		}
 
-		/*
-		 * atLeastOneDeny == true <=> combinedDenyResult != null
-		 */
-		if (combinedDenyResult != null)
-		{
-			return combinedDenyResult;
-		}
+		SET = new CombiningAlgSet(algSet);
+	}
 
-		return DecisionResult.NOT_APPLICABLE;
+	private PermitOverridesAlg(String algId)
+	{
+		super(algId, false, Decidable.class);
 	}
 }

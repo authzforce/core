@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import java.util.Arrays;
 import java.util.List;
@@ -26,46 +21,48 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
+import org.ow2.authzforce.core.expression.Expression;
+import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.expression.PrimitiveValueExpression;
+import org.ow2.authzforce.core.func.FunctionCall;
+import org.ow2.authzforce.core.func.HigherOrderBagFunctionSet;
+import org.ow2.authzforce.core.value.BooleanValue;
+
+import com.sun.xacml.Function;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.func.FunctionCall;
-import com.thalesgroup.authzforce.core.func.HigherOrderBagFunction;
 
 /**
- * XACML Match evaluator. This is the part of the Target that actually evaluates whether the
- * specified attribute values in the Target match the corresponding attribute values in the request
- * context.
+ * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding
+ * attribute values in the request context.
  */
 public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Match
 {
-	private static final UnsupportedOperationException UNSUPPORTED_SET_MATCH_ID_SELECTOR_OPERATION = new UnsupportedOperationException("Match/AttributeSelector read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_VALUE_OPERATION = new UnsupportedOperationException("Match/AttributeValue read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_DESIGNATOR_OPERATION = new UnsupportedOperationException("Match/AttributeDesignator read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_SELECTOR_OPERATION = new UnsupportedOperationException("Match/AttributeSelector read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_MATCH_ID_SELECTOR_OPERATION = new UnsupportedOperationException(
+			"Match/AttributeSelector read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_VALUE_OPERATION = new UnsupportedOperationException(
+			"Match/AttributeValue read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_DESIGNATOR_OPERATION = new UnsupportedOperationException(
+			"Match/AttributeDesignator read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_ATTRIBUTE_SELECTOR_OPERATION = new UnsupportedOperationException(
+			"Match/AttributeSelector read-only");
 
 	/**
 	 * Any-of function call equivalent to this Match:
 	 * <p>
-	 * Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction, attributeValue,
-	 * bagExpression)
+	 * Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction, attributeValue, bagExpression)
 	 */
-	private final transient FunctionCall<BooleanAttributeValue> anyOfFuncCall;
+	private final transient FunctionCall<BooleanValue> anyOfFuncCall;
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Match#setAttributeValue(oasis.names.tc.xacml.
-	 * _3_0.core.schema.wd_17.AttributeValueType)
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.Match#setAttributeValue(oasis.names.tc.xacml. _3_0.core.schema.wd_17.AttributeValueType)
 	 */
 	@Override
 	public final void setAttributeValue(AttributeValueType value)
 	{
 		/*
-		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this
-		 * JAXB field
+		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this JAXB field
 		 */
 		throw UNSUPPORTED_SET_ATTRIBUTE_VALUE_OPERATION;
 	}
@@ -73,16 +70,13 @@ public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Match#setAttributeSelector(oasis.names.tc.xacml
-	 * ._3_0.core.schema.wd_17.AttributeSelectorType)
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.Match#setAttributeSelector(oasis.names.tc.xacml ._3_0.core.schema.wd_17.AttributeSelectorType)
 	 */
 	@Override
 	public final void setAttributeSelector(AttributeSelectorType value)
 	{
 		/*
-		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this
-		 * JAXB field
+		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this JAXB field
 		 */
 		throw UNSUPPORTED_SET_ATTRIBUTE_SELECTOR_OPERATION;
 	}
@@ -90,16 +84,13 @@ public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.Match#setAttributeDesignator(oasis.names.tc.xacml
-	 * ._3_0.core.schema.wd_17.AttributeDesignatorType)
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.Match#setAttributeDesignator(oasis.names.tc.xacml ._3_0.core.schema.wd_17.AttributeDesignatorType)
 	 */
 	@Override
 	public final void setAttributeDesignator(AttributeDesignatorType value)
 	{
 		/*
-		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this
-		 * JAXB field
+		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this JAXB field
 		 */
 		throw UNSUPPORTED_SET_ATTRIBUTE_DESIGNATOR_OPERATION;
 	}
@@ -113,8 +104,7 @@ public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	public final void setMatchId(String value)
 	{
 		/*
-		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this
-		 * JAXB field
+		 * Disable this method to avoid inconsistency with anyOfFuncCall which is derived from this JAXB field
 		 */
 		throw UNSUPPORTED_SET_MATCH_ID_SELECTOR_OPERATION;
 	}
@@ -131,7 +121,8 @@ public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	 * @throws ParsingException
 	 *             error parsing <code>jaxbMatch</code>
 	 */
-	public MatchEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Match jaxbMatch, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
+	public MatchEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Match jaxbMatch, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
+			throws ParsingException
 	{
 		// get the matchFunction type, making sure that it's really a correct
 		// Target matchFunction
@@ -149,10 +140,10 @@ public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 		final Expression<?> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, xPathCompiler, null);
 
 		this.attributeValue = jaxbMatch.getAttributeValue();
-		final AttributeValue<?> attrValueExpr;
+		final PrimitiveValueExpression<?> attrValueExpr;
 		try
 		{
-			attrValueExpr = expFactory.createAttributeValue(attributeValue, xPathCompiler);
+			attrValueExpr = expFactory.getInstance(attributeValue, xPathCompiler);
 		} catch (ParsingException e)
 		{
 			throw new ParsingException("Error parsing <Match>'s <AttributeValue>", e);
@@ -160,25 +151,25 @@ public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 
 		// Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction,
 		// attributeValue, bagExpression)
-		final Function<BooleanAttributeValue> anyOfFunc = (Function<BooleanAttributeValue>) expFactory.getFunction(HigherOrderBagFunction.NAME_ANY_OF);
+		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory.getFunction(HigherOrderBagFunctionSet.NAME_ANY_OF);
 		if (anyOfFunc == null)
 		{
-			throw new ParsingException("Unsupported function '" + HigherOrderBagFunction.NAME_ANY_OF + "' required for Match evaluation");
+			throw new ParsingException("Unsupported function '" + HigherOrderBagFunctionSet.NAME_ANY_OF + "' required for Match evaluation");
 		}
 
 		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr, bagExpression);
 		try
 		{
-			anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
+			this.anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
 		} catch (IllegalArgumentException e)
 		{
-			throw new ParsingException("Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): " + anyOfFuncInputs, e);
+			throw new ParsingException("Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): "
+					+ anyOfFuncInputs, e);
 		}
 	}
 
 	/**
-	 * Determines whether this <code>Match</code> matches the input request (whether it is
-	 * applicable)
+	 * Determines whether this <code>Match</code> matches the input request (whether it is applicable)
 	 * 
 	 * @param context
 	 *            the evaluation context
@@ -188,7 +179,7 @@ public class MatchEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		final BooleanAttributeValue anyOfFuncCallResult;
+		final BooleanValue anyOfFuncCallResult;
 		try
 		{
 			anyOfFuncCallResult = anyOfFuncCall.evaluate(context);

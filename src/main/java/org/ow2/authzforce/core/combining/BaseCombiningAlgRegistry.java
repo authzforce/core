@@ -3,37 +3,31 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.combining;
+package org.ow2.authzforce.core.combining;
 
-import java.util.Map;
+import java.util.Set;
+
+import org.ow2.authzforce.core.BasePdpExtensionRegistry;
+import org.ow2.authzforce.core.Decidable;
 
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.BasePdpExtensionRegistry;
-import com.thalesgroup.authzforce.core.Decidable;
 
 /**
- * This is a com.thalesgroup.authzforce.core.test.basic implementation of
- * <code>CombiningAlgRegistry</code>.
+ * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>CombiningAlgRegistry</code>.
  */
-public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<CombiningAlgorithm<?>> implements CombiningAlgRegistry
+public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<CombiningAlg<?>> implements CombiningAlgRegistry
 {
-	protected BaseCombiningAlgRegistry(Map<String, CombiningAlgorithm<?>> algorithmsById)
+	protected BaseCombiningAlgRegistry(Set<CombiningAlg<?>> algorithms)
 	{
-		super(CombiningAlgorithm.class, algorithmsById);
+		super(CombiningAlg.class, algorithms);
 	}
 
 	/**
@@ -41,9 +35,9 @@ public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<Combining
 	 *            parent registry from which this inherits all entries
 	 * @see BasePdpExtensionRegistry#BasePdpExtensionRegistry(Class, BasePdpExtensionRegistry)
 	 */
-	public BaseCombiningAlgRegistry(BasePdpExtensionRegistry<CombiningAlgorithm<?>> baseRegistry)
+	public BaseCombiningAlgRegistry(BasePdpExtensionRegistry<CombiningAlg<?>> baseRegistry)
 	{
-		super(CombiningAlgorithm.class, baseRegistry);
+		super(CombiningAlg.class, baseRegistry);
 	}
 
 	/**
@@ -51,21 +45,22 @@ public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<Combining
 	 */
 	public BaseCombiningAlgRegistry()
 	{
-		super(CombiningAlgorithm.class);
+		super(CombiningAlg.class);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Decidable> CombiningAlgorithm<T> getAlgorithm(String algId, Class<T> combinedEltType) throws UnknownIdentifierException
+	public <T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedEltType) throws UnknownIdentifierException
 	{
-		final CombiningAlgorithm<? extends Decidable> alg = this.getExtension(algId);
+		final CombiningAlg<? extends Decidable> alg = this.getExtension(algId);
 		if (alg.getCombinedElementType().isAssignableFrom(combinedEltType))
 		{
-			return (CombiningAlgorithm<T>) alg;
+			return (CombiningAlg<T>) alg;
 		}
 
 		// wrong type of alg
-		throw new IllegalArgumentException("Registered combining algorithm for ID=" + algId + " combines instances of type '" + alg.getCombinedElementType() + "' which is not compatible (not same or supertype) with requested type of combined elements : " + combinedEltType);
+		throw new IllegalArgumentException("Registered combining algorithm for ID=" + algId + " combines instances of type '" + alg.getCombinedElementType()
+				+ "' which is not compatible (not same or supertype) with requested type of combined elements : " + combinedEltType);
 	}
 
 }

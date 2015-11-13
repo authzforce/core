@@ -3,22 +3,18 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.test.custom;
+package org.ow2.authzforce.core.test.custom;
 
 import java.io.File;
+import java.io.StringWriter;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -31,13 +27,13 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.ow2.authzforce.core.XACMLBindingUtils;
+import org.ow2.authzforce.core.expression.Apply;
+import org.ow2.authzforce.core.test.utils.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.XACMLBindingUtils;
-import com.thalesgroup.authzforce.core.rule.Apply;
-import com.thalesgroup.authzforce.core.test.utils.TestUtils;
 
 public class TestApply
 {
@@ -50,7 +46,7 @@ public class TestApply
 	@BeforeClass
 	public static void setUp()
 	{
-		LOGGER.info("Testing Applies objects");
+		LOGGER.debug("Testing Applies objects");
 	}
 
 	/**
@@ -59,7 +55,7 @@ public class TestApply
 	@Test
 	public final void testMarshallApply()
 	{
-		LOGGER.info("Testing the marshalling of Apply objects");
+		LOGGER.debug("Testing the marshalling of Apply objects");
 		Marshaller marshaller = null;
 		Unmarshaller u = null;
 		final JAXBElement<ApplyType> applyElt;
@@ -73,7 +69,10 @@ public class TestApply
 			applyType = applyElt.getValue();
 			apply = Apply.getInstance(applyType, null, TestUtils.STD_EXPRESSION_FACTORY, null);
 			marshaller = XACMLBindingUtils.createXacml3Marshaller();
-			marshaller.marshal(new ObjectFactory().createApply(apply), System.out);
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			final StringWriter strWriter = new StringWriter();
+			marshaller.marshal(new ObjectFactory().createApply(apply), strWriter);
+			LOGGER.debug("Marshalling result: {}", strWriter);
 		} catch (JAXBException | ParsingException e)
 		{
 			LOGGER.error("XACML Apply (un)marshalling test error", e);

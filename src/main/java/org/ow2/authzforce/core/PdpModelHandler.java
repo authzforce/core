@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import java.beans.ConstructorProperties;
 import java.io.OutputStream;
@@ -34,10 +29,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 
+import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.thalesgroup.authzforce.pdp.model._2015._06.Pdp;
 
 /**
  * PDP Engine XML configuration handler
@@ -51,8 +45,7 @@ public class PdpModelHandler
 	public final static String CORE_XSD_LOCATION = "classpath:pdp.xsd";
 
 	/**
-	 * Default location of XML catalog to resolve imported XML schemas in
-	 * {@value PdpModelHandler#CORE_XSD_LOCATION}
+	 * Default location of XML catalog to resolve imported XML schemas in {@value PdpModelHandler#CORE_XSD_LOCATION}
 	 */
 	public final static String DEFAULT_CATALOG_LOCATION = "classpath:catalog.xml";
 
@@ -61,25 +54,22 @@ public class PdpModelHandler
 	/**
 	 * Supported JAXB type for root elements of XML configuration documents (e.g. files)
 	 */
-	private final static Class<?> SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE = Pdp.class;
+	public final static Class<?> SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE = Pdp.class;
 
 	private final Schema confSchema;
 	private final JAXBContext confJaxbCtx;
 
 	/**
-	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can
-	 * be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
+	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can be any resource string supported by Spring ResourceLoader.
+	 * More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
 	 * 
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
 	 * 
 	 * 
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if
-	 *            exists; in such XSD, there must be a XSD import for each extension schema. Only
-	 *            import the namespace, do not define the actual schema location here. Use the
-	 *            catalog specified by the <code>catalogLocation</code> parameter to specify the
-	 *            schema location. For example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD import for each
+	 *            extension schema. Only import the namespace, do not define the actual schema location here. Use the catalog specified by the
+	 *            <code>catalogLocation</code> parameter to specify the schema location. For example:
 	 * 
 	 *            <pre>
 	 * {@literal
@@ -95,9 +85,8 @@ public class PdpModelHandler
 	 * </pre>
 	 * 
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP
-	 *            configuration schema) and the extensions XSD specified as 'extensionXsdLocation'
-	 *            argument (may be null)
+	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extensions XSD specified as
+	 *            'extensionXsdLocation' argument (may be null)
 	 * 
 	 */
 	@ConstructorProperties({ "catalogLocation", "extensionXsdLocation" })
@@ -113,16 +102,13 @@ public class PdpModelHandler
 		}
 
 		/*
-		 * JAXB classes of extensions are generated separately from the extension base type XSD.
-		 * Therefore no @XmlSeeAlso to link to the base type. Therefore any JAXB provider cannot
-		 * (un)marshall documents using the extension base type XSD, unless it is provided with the
-		 * list of the extra JAXB classes based on the new extension XSD. For instance, this is the
-		 * case for JAXB providers used by REST/SOAP frameworks: Apache CXF, Metro, etc. So we need
-		 * to add to the JAXBContext all the extensions' model (JAXB-generated) classes. These have
-		 * been collected by the PdpExtensionLoader.
+		 * JAXB classes of extensions are generated separately from the extension base type XSD. Therefore no @XmlSeeAlso to link to the base type. Therefore
+		 * any JAXB provider cannot (un)marshall documents using the extension base type XSD, unless it is provided with the list of the extra JAXB classes
+		 * based on the new extension XSD. For instance, this is the case for JAXB providers used by REST/SOAP frameworks: Apache CXF, Metro, etc. So we need to
+		 * add to the JAXBContext all the extensions' model (JAXB-generated) classes. These have been collected by the PdpExtensionLoader.
 		 */
 		final Set<Class<?>> jaxbBoundClassList = new HashSet<Class<?>>(PdpExtensionLoader.getExtensionJaxbClasses());
-		LOGGER.info("Final list of loaded extension models (JAXB classes): {}", jaxbBoundClassList);
+		LOGGER.debug("Final list of loaded extension models (JAXB classes): {}", jaxbBoundClassList);
 
 		// Classes to be bound when creating new instance of JAXB context
 		jaxbBoundClassList.add(SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE);
@@ -139,11 +125,11 @@ public class PdpModelHandler
 		final String schemaHandlerCatalogLocation;
 		if (catalogLocation == null)
 		{
-			LOGGER.info("No XML catalog location specified for PDP schema handler, using default: {}", DEFAULT_CATALOG_LOCATION);
+			LOGGER.debug("No XML catalog location specified for PDP schema handler, using default: {}", DEFAULT_CATALOG_LOCATION);
 			schemaHandlerCatalogLocation = DEFAULT_CATALOG_LOCATION;
 		} else
 		{
-			LOGGER.info("XML catalog location specified for PDP schema handler: {}", catalogLocation);
+			LOGGER.debug("XML catalog location specified for PDP schema handler: {}", catalogLocation);
 			schemaHandlerCatalogLocation = catalogLocation;
 		}
 
@@ -156,8 +142,7 @@ public class PdpModelHandler
 	 * @param src
 	 *            XML source
 	 * @param clazz
-	 *            Class of object to be unmarshalled, must be a subclass (or the class itself) of
-	 *            {@value #SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE}
+	 *            Class of object to be unmarshalled, must be a subclass (or the class itself) of {@value #SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE}
 	 * @return object of class clazz
 	 * @throws JAXBException
 	 */
@@ -165,7 +150,8 @@ public class PdpModelHandler
 	{
 		if (!SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE.isAssignableFrom(clazz))
 		{
-			throw new UnsupportedOperationException("XML configuration unmarshalling is not supported for " + clazz + "; supported JAXB type for root configuration elements is: " + SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE);
+			throw new UnsupportedOperationException("XML configuration unmarshalling is not supported for " + clazz
+					+ "; supported JAXB type for root configuration elements is: " + SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE);
 		}
 
 		final Unmarshaller unmarshaller = confJaxbCtx.createUnmarshaller();

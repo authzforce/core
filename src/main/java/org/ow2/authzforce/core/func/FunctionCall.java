@@ -3,45 +3,38 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
  */
-package com.thalesgroup.authzforce.core.func;
+package org.ow2.authzforce.core.func;
 
-import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.Expression;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.Expression.Datatype;
+import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.value.Datatype;
+import org.ow2.authzforce.core.value.Value;
+
+import com.sun.xacml.Function;
 
 /**
- * Function call. This is the recommended way of calling any {@link Function}. This is quite similar
- * to XACML Apply except it does not include the Description field; and arguments are optimized
- * specifically for each function by extending this class accordinly, therefore they might be quite
- * different from original input Expressions of the Apply. In particular, if some expressions are
- * actually static values (e.g. AttributeValue, VariableReference to AttributeValue, function
- * applied to static values...), these expressions might be pre-compiled/pre-evaluated. For
- * instance, a static regex parameter to regexp-match function may be pre-compiled to a regex for
- * re-use.
+ * Function call. This is the recommended way of calling any {@link Function}. This is quite similar to XACML Apply except it does not include the Description
+ * field; and arguments are optimized specifically for each function by extending this class accordinly, therefore they might be quite different from original
+ * input Expressions of the Apply. In particular, if some expressions are actually static values (e.g. AttributeValue, VariableReference to AttributeValue,
+ * function applied to static values...), these expressions might be pre-compiled/pre-evaluated. For instance, a static regex parameter to regexp-match function
+ * may be pre-compiled to a regex for re-use.
  * 
  * @param <RETURN_T>
  *            call's return type (typically the same as the internal function's)
  * 
  */
-public interface FunctionCall<RETURN_T extends Expression.Value<RETURN_T>>
+public interface FunctionCall<RETURN_T extends Value>
 {
 
 	/**
@@ -56,8 +49,7 @@ public interface FunctionCall<RETURN_T extends Expression.Value<RETURN_T>>
 	RETURN_T evaluate(EvaluationContext context) throws IndeterminateEvaluationException;
 
 	/**
-	 * Get the actual return type of this call (same as the internal function's return type), used
-	 * as return type for XACML Apply in PDP.
+	 * Get the actual return type of this call (same as the internal function's return type), used as return type for XACML Apply in PDP.
 	 * 
 	 * @return return type
 	 */

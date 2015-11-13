@@ -17,7 +17,7 @@
 <!-- 	<logger name="com.sun.xacml" additivity="false" level="DEBUG"> -->
 <!-- 		<appender-ref ref="stdout" /> -->
 <!-- 	</logger> -->
-<!-- 	<logger name="com.thalesgroup.authzforce" additivity="false" level="DEBUG"> -->
+<!-- 	<logger name="org.ow2.authzforce" additivity="false" level="DEBUG"> -->
 <!-- 		<appender-ref ref="stdout" /> -->
 <!-- 	</logger> -->
 	<root level="INFO">

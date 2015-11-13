@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.test.attr;
+package org.ow2.authzforce.core.test.value;
 
 import java.util.Arrays;
 import java.util.Collection;

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,7 @@ import java.util.List;
 
 import net.sf.saxon.s9api.XPathCompiler;
 
+import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +55,7 @@ public class AllOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	 *            Expression factory
 	 * @throws ParsingException
 	 */
-	public AllOfEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws ParsingException
+	public AllOfEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws ParsingException
 	{
 		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.Match> jaxbMatches = jaxbAllOf.getMatches();
 		if (jaxbMatches.isEmpty())
@@ -86,9 +87,9 @@ public class AllOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	 * Determines whether this <code>AllOf</code> matches the input request (whether it is
 	 * applicable).Here is the table shown in the specification: <code>
 	 * 		<Match> values 						<AllOf> value 
-	 * 		All True				 			“Match” 
+	 * 		All True				 			“Match�? 
 	 * 		No False and at least 
-	 * 		one "Indeterminate" 				“Indeterminate”
+	 * 		one "Indeterminate" 				“Indeterminate�?
 	 * 		At least one False					"No Match"
 	 * </code>
 	 * 

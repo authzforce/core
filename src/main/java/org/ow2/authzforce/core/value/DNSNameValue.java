@@ -1,37 +1,4 @@
-/**
- *
- *  Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *
- *    1. Redistribution of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *    2. Redistribution in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of Sun Microsystems, Inc. or the names of contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
- *
- *  This software is provided "AS IS," without a warranty of any kind. ALL
- *  EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
- *  ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- *  OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
- *  AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
- *  AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
- *  DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
- *  REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
- *  INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
- *  OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
- *  EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- *  You acknowledge that this software is not designed or intended for use in
- *  the design, construction, operation or maintenance of any nuclear facility.
- */
-package com.sun.xacml.attr;
+package org.ow2.authzforce.core.value;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Locale;
@@ -39,40 +6,18 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
+import com.sun.xacml.PortRange;
 
 /**
- * Represents the DNSName datatype introduced in XACML 2.0. All objects of this class are immutable
- * and all methods of the class are thread-safe.
+ * Represents the DNSName datatype introduced in XACML 2.0.
  * 
- * @since 2.0
- * @author Seth Proctor
  */
-public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DNSNameAttributeValue>
+public final class DNSNameValue extends SimpleValue<String>
 {
-	private static final long serialVersionUID = 1L;
-
 	/**
 	 * Official name of this type
 	 */
 	public static final String TYPE_URI = "urn:oasis:names:tc:xacml:2.0:data-type:dnsName";
-
-	/**
-	 * Datatype factory instance
-	 */
-	public static final AttributeValue.Factory<DNSNameAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<DNSNameAttributeValue>(DNSNameAttributeValue.class, TYPE_URI)
-	{
-
-		@Override
-		public DNSNameAttributeValue getInstance(String value)
-		{
-			return new DNSNameAttributeValue(value);
-		}
-
-	};
 
 	/**
 	 * <p>
@@ -96,9 +41,8 @@ public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DN
 	}
 
 	/*
-	 * These fields are not actually needed in the XACML core specification since no function uses
-	 * them, but it might be useful for new XACML profile or custom functions dealing with network
-	 * access control for instance.
+	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom
+	 * functions dealing with network access control for instance.
 	 */
 	// the required hostname
 	private final String hostname;
@@ -109,13 +53,12 @@ public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DN
 	/*
 	 * true if the hostname starts with a '*', therefore this field is derived from hostname
 	 */
-	private final boolean isAnySubdomain;
+	// private final boolean isAnySubdomain;
 
 	/**
 	 * Private helper that tests whether the given string is valid.
 	 * 
-	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator
-	 * instead
+	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead
 	 */
 	private static boolean isValidHostName(String hostname)
 	{
@@ -123,7 +66,7 @@ public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DN
 		return HOSTNAME_PATTERN.matcher(hostname).matches();
 	}
 
-	private static Entry<String, PortRange> parseDnsName(String dnsName)
+	private static Entry<String, PortRange> parseDnsName(String dnsName) throws IllegalArgumentException
 	{
 		assert dnsName != null;
 
@@ -153,65 +96,53 @@ public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DN
 	}
 
 	/**
-	 * Returns a new <code>DNSNameAttributeValue</code> that represents the name indicated by the
-	 * <code>String</code> provided.
+	 * Returns a new <code>DNSNameAttributeValue</code> that represents the name indicated by the <code>String</code> provided.
 	 * 
 	 * @param val
 	 *            a string representing the name
+	 * @throws IllegalArgumentException
+	 *             if format of {@code val} does not comply with the dnsName datatype definition
 	 */
-	public DNSNameAttributeValue(String val)
+	public DNSNameValue(String val) throws IllegalArgumentException
 	{
-		super(FACTORY.getDatatype(), val);
+		super(TYPE_URI, val);
 		final Entry<String, PortRange> hostAndPortRange = parseDnsName(this.value);
 		this.hostname = hostAndPortRange.getKey();
 		this.portRange = hostAndPortRange.getValue();
 
 		// see if hostname started with a '*' character
-		this.isAnySubdomain = hostname.charAt(0) == '*' ? true : false;
+		// this.isAnySubdomain = hostname.charAt(0) == '*' ? true : false;
 	}
 
-	@Override
-	protected String parse(String val)
-	{
-		/*
-		 * The result value SHALL be the
-		 * "string in the form it was originally represented in XML form" to make sure the
-		 * string-from-dnsName function works as specified in the spec.
-		 */
-		return val;
-	}
+	// /**
+	// * Returns the host name represented by this object.
+	// *
+	// * @return the host name
+	// */
+	// public String getHostName()
+	// {
+	// return hostname;
+	// }
 
-	/**
-	 * Returns the host name represented by this object.
-	 * 
-	 * @return the host name
-	 */
-	public String getHostName()
-	{
-		return hostname;
-	}
+	// /**
+	// * Returns the port portRange represented by this object which will be unbound if no portRange was specified.
+	// *
+	// * @return the port portRange
+	// */
+	// public PortRange getPortRange()
+	// {
+	// return portRange;
+	// }
 
-	/**
-	 * Returns the port portRange represented by this object which will be unbound if no portRange
-	 * was specified.
-	 * 
-	 * @return the port portRange
-	 */
-	public PortRange getPortRange()
-	{
-		return portRange;
-	}
-
-	/**
-	 * Returns true if the leading character in the hostname is a '*', and therefore represents a
-	 * matching subdomain, or false otherwise.
-	 * 
-	 * @return true if the name represents a subdomain, false otherwise
-	 */
-	public boolean isAnySubdomain()
-	{
-		return isAnySubdomain;
-	}
+	// /**
+	// * Returns true if the leading character in the hostname is a '*', and therefore represents a matching subdomain, or false otherwise.
+	// *
+	// * @return true if the name represents a subdomain, false otherwise
+	// */
+	// public boolean isAnySubdomain()
+	// {
+	// return isAnySubdomain;
+	// }
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
@@ -232,9 +163,8 @@ public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DN
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 * 
-	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of
-	 * equals() to compare, and PortRange.equals() for the portRange attribute (more optimal than
-	 * String equals)
+	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange
+	 * attribute (more optimal than String equals)
 	 */
 	@Override
 	public boolean equals(Object obj)
@@ -244,12 +174,12 @@ public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DN
 			return true;
 		}
 
-		if (!(obj instanceof DNSNameAttributeValue))
+		if (!(obj instanceof DNSNameValue))
 		{
 			return false;
 		}
 
-		final DNSNameAttributeValue other = (DNSNameAttributeValue) obj;
+		final DNSNameValue other = (DNSNameValue) obj;
 
 		// hostname and portRange are not null
 		/*
@@ -260,9 +190,9 @@ public final class DNSNameAttributeValue extends SimpleAttributeValue<String, DN
 	}
 
 	@Override
-	public DNSNameAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public String printXML()
 	{
-		return this;
+		return this.value.toString();
 	}
 
 }

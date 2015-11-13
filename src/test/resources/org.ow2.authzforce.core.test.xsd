@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (C) 2013-2015 Thales Services. All rights reserved. No warranty, explicit or implicit, 
-	provided. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test"
-	xmlns="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/test" xmlns:authz-ext="http://thalesgroup.com/authz/model/ext/3.0"
-	xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" elementFormDefault="qualified"
-	attributeFormDefault="unqualified">
+<!-- Copyright (C) 2013-2015 Thales Services. All rights reserved. No warranty, explicit or implicit, provided. -->
+<!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/test" xmlns="http://authzforce.github.io/core/xmlns/test"
+	xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext" xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" elementFormDefault="qualified" attributeFormDefault="unqualified"
+	version="3.5.9">
 	<xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
-	<xs:import namespace="http://thalesgroup.com/authz/model/ext/3.0" />
+	<xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext" />
 	<xs:annotation>
 		<xs:documentation xml:lang="en">
 			Data Model for Test Attribute Finder
@@ -22,8 +21,7 @@
 		<xs:complexContent>
 			<xs:extension base="authz-ext:AbstractAttributeFinder">
 				<xs:sequence>
-					<xs:element name="providedAttribute" type="xacml:AttributeDesignatorType"
-						minOccurs="1" maxOccurs="10">
+					<xs:element name="providedAttribute" type="xacml:AttributeDesignatorType" minOccurs="1" maxOccurs="10">
 						<xs:annotation>
 							<xs:documentation>Provided XACML attribute</xs:documentation>
 						</xs:annotation>

@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core.expression;
 
 import java.util.Deque;
 
@@ -24,26 +19,29 @@ import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
+import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.XACMLBindingUtils;
+import org.ow2.authzforce.core.value.Datatype;
+import org.ow2.authzforce.core.value.Value;
+
 /**
- * This class defines a VariableReference built from VariableReference after the referenced
- * VariableDefinition has been resolved and therefore its expression. As a result, Variables are
- * simply Expressions identified by an ID (VariableId) and replace original XACML VariableReferences
- * for actual evaluation.
+ * This class defines a VariableReference built from VariableReference after the referenced VariableDefinition has been resolved and therefore its expression.
+ * As a result, Variables are simply Expressions identified by an ID (VariableId) and replace original XACML VariableReferences for actual evaluation.
  * 
  * @param <V>
  *            evaluation's return type
  */
-public class VariableReference<V extends Expression.Value<V>> extends VariableReferenceType implements Expression<V>
+public class VariableReference<V extends Value> extends VariableReferenceType implements Expression<V>
 {
-	private static final UnsupportedOperationException UNSUPPORTED_SET_VARIABLE_OPERATION_EXCEPTION = new UnsupportedOperationException("VariableReference.setVariableId() not allowed");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_VARIABLE_OPERATION_EXCEPTION = new UnsupportedOperationException(
+			"VariableReference.setVariableId() not allowed");
 	private final transient Expression<V> expression;
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType#setVariableId(java.lang
-	 * .String)
+	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType#setVariableId(java.lang .String)
 	 */
 	@Override
 	public final void setVariableId(String value)
@@ -64,9 +62,8 @@ public class VariableReference<V extends Expression.Value<V>> extends VariableRe
 	}
 
 	/**
-	 * Get the referenced VariableDefinition's Expression. For example, used to check whether the
-	 * actual expression type behind a VariableReference is a Function in Higher-order function's
-	 * arguments
+	 * Get the referenced VariableDefinition's Expression. For example, used to check whether the actual expression type behind a VariableReference is a
+	 * Function in Higher-order function's arguments
 	 * 
 	 * @return the expression
 	 */
@@ -85,9 +82,8 @@ public class VariableReference<V extends Expression.Value<V>> extends VariableRe
 	 * @param varExpr
 	 *            Expression of referenced VariableDefinition
 	 * @param longestVarRefChain
-	 *            longest chain of VariableReference Reference in <code>expr</code> (V1 -> V2 -> ...
-	 *            -> Vn, where "V1 -> V2" means VariableReference V1's expression contains one or
-	 *            more VariableReferences to V2)
+	 *            longest chain of VariableReference Reference in <code>expr</code> (V1 -> V2 -> ... -> Vn, where "V1 -> V2" means VariableReference V1's
+	 *            expression contains one or more VariableReferences to V2)
 	 */
 	public VariableReference(String varId, Expression<V> varExpr, Deque<String> longestVarRefChain)
 	{
@@ -97,9 +93,8 @@ public class VariableReference<V extends Expression.Value<V>> extends VariableRe
 	}
 
 	/**
-	 * Evaluates the referenced expression using the given context, and either returns an error or a
-	 * resulting value. If this doesn't reference an evaluatable expression (eg, a single Function)
-	 * then this will throw an exception.
+	 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable
+	 * expression (eg, a single Function) then this will throw an exception.
 	 * 
 	 * @param context
 	 *            the representation of the request
@@ -110,9 +105,8 @@ public class VariableReference<V extends Expression.Value<V>> extends VariableRe
 	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		/*
-		 * Even if context == null, evaluation may work because expression may be static/constant
-		 * (e.g. AttributeValue or Apply on AttributeValues). This is called static evaluation and
-		 * is used for pre-evaluating/optimizing certain function calls.
+		 * Even if context == null, evaluation may work because expression may be static/constant (e.g. AttributeValue or Apply on AttributeValues). This is
+		 * called static evaluation and is used for pre-evaluating/optimizing certain function calls.
 		 */
 		if (context == null)
 		{

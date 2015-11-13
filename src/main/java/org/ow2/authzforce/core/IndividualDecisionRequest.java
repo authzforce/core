@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,15 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.ow2.authzforce.core.CategorySpecificAttributes.MutableBag;
+import org.ow2.authzforce.core.expression.AttributeGUID;
+import org.ow2.authzforce.core.value.Bag;
+
 import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
-
-import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
-import com.thalesgroup.authzforce.core.datatypes.Bag;
-import com.thalesgroup.authzforce.core.datatypes.CategorySpecificAttributes;
-import com.thalesgroup.authzforce.core.datatypes.CategorySpecificAttributes.MutableBag;
 
 /**
  * Individual Decision Request, i.e. conceptual request context that corresponds to one XACML Result

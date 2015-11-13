@@ -3,59 +3,51 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.datatypes;
+package org.ow2.authzforce.core.value;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.StatusHelper;
 
 /**
- * Superclass of duration attribute values, i.e. XML schema dayTime/yearMonthDuration values. The
- * choice of the Java type Duration is based on JAXB schema-to-Java mapping spec:
- * https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html and documentation of
- * javax.xml.datatype package.
+ * Superclass of duration attribute values, i.e. XML schema dayTime/yearMonthDuration values. The choice of the Java type Duration is based on JAXB
+ * schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html and documentation of javax.xml.datatype package.
  * 
  * @param <DAV>
  *            Concrete DurationAttributeValue type subclass
  * 
  * 
  */
-public abstract class DurationAttributeValue<DAV extends DurationAttributeValue<DAV>> extends SimpleAttributeValue<Duration, DAV>
+public abstract class DurationValue<DAV extends DurationValue<DAV>> extends SimpleValue<Duration>
 {
 
 	/**
 	 * Instantiates duration attribute value from string representation
 	 * 
-	 * @param datatype
-	 *            duration datatype
-	 * @param val
-	 *            string representation of the XML duration
+	 * @param datatypeId
+	 *            duration datatype ID
+	 * @param duration
+	 *            duration
 	 * @throws IllegalArgumentException
 	 *             if {@code val} is not a valid string representation for this datatype
 	 */
-	protected DurationAttributeValue(Datatype<DAV> datatype, String val) throws IllegalArgumentException
+	public DurationValue(String datatypeId, Duration duration) throws IllegalArgumentException
 	{
-		super(datatype, val);
+		super(datatypeId, duration);
 	}
 
 	/**
-	 * Compares internal duration value ({@link Duration}) to another, using
-	 * {@link Duration#compare(Duration)}
+	 * Compares internal duration value ({@link Duration}) to another, using {@link Duration#compare(Duration)}
 	 * 
 	 * @param o
 	 *            compared duration value
@@ -68,9 +60,16 @@ public abstract class DurationAttributeValue<DAV extends DurationAttributeValue<
 		final int result = this.value.compare(o.value);
 		if (result == DatatypeConstants.INDETERMINATE)
 		{
-			throw new IndeterminateEvaluationException(StatusHelper.STATUS_PROCESSING_ERROR, "Comparison of XML schema duration '" + this.value + "' to '" + o.value + "' is indeterminate");
+			throw new IndeterminateEvaluationException(StatusHelper.STATUS_PROCESSING_ERROR, "Comparison of XML schema duration '" + this.value + "' to '"
+					+ o.value + "' is indeterminate");
 		}
 
 		return result;
+	}
+
+	@Override
+	public final String printXML()
+	{
+		return this.value.toString();
 	}
 }

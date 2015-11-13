@@ -1,37 +1,4 @@
-/**
- *
- *  Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *
- *    1. Redistribution of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- *
- *    2. Redistribution in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *
- *  Neither the name of Sun Microsystems, Inc. or the names of contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
- *
- *  This software is provided "AS IS," without a warranty of any kind. ALL
- *  EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
- *  ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- *  OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
- *  AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
- *  AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
- *  DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
- *  REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
- *  INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
- *  OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
- *  EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
- *
- *  You acknowledge that this software is not designed or intended for use in
- *  the design, construction, operation or maintenance of any nuclear facility.
- */
-package com.sun.xacml.attr;
+package org.ow2.authzforce.core.value;
 
 import java.net.InetAddress;
 import java.util.Objects;
@@ -39,32 +6,24 @@ import java.util.Objects;
 import javax.xml.ws.Holder;
 
 import com.google.common.net.InetAddresses;
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.SimpleAttributeValue;
+import com.sun.xacml.PortRange;
 
 /**
- * Represents the IPAddress datatype introduced in XACML 2.0. All objects of this class are
- * immutable and all methods of the class are thread-safe.
+ * Represents the IPAddress datatype introduced in XACML 2.0. All objects of this class are immutable and all methods of the class are thread-safe.
  * 
- * @since 2.0
- * @author Seth Proctor
  */
-public final class IPAddressAttributeValue extends SimpleAttributeValue<String, IPAddressAttributeValue>
+public final class IPAddressValue extends SimpleValue<String>
 {
-	private static final long serialVersionUID = 1L;
-
 	/*
-	 * These fields are not actually needed in the XACML core specification since no function uses
-	 * them, but it might be useful for new XACML profile or custom functions dealing with network
-	 * access control for instance.
+	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom
+	 * functions dealing with network access control for instance.
 	 */
 	private final InetAddress address;
 	private final InetAddress mask;
 	private final transient PortRange portRange;
 
 	private static void parseIPAddress(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
+			throws IllegalArgumentException
 	{
 		// an IPv6 address starts with a '['
 		if (val.indexOf('[') == 0)
@@ -77,10 +36,11 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 	}
 
 	/*
-	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to
-	 * the JDK InetAddress.getByName(). Therefore no UnknownHostException to handle.
+	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName(). Therefore no
+	 * UnknownHostException to handle.
 	 */
 	private static void parseIPv4Address(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
+			throws IllegalArgumentException
 	{
 		assert val != null;
 
@@ -96,8 +56,8 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 		if (maskPos == rangePos)
 		{
 			/*
-			 * the string is just an address InetAddresses deliberately avoids all nameservice
-			 * lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName().
+			 * the string is just an address InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK
+			 * InetAddress.getByName().
 			 */
 			address = InetAddresses.forString(val);
 			mask = null;
@@ -106,16 +66,14 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 		{
 			// there is also a mask (and maybe a range)
 			/*
-			 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
-			 * contrary to the JDK InetAddress.getByName().
+			 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName().
 			 */
 			address = InetAddresses.forString(val.substring(0, maskPos));
 			if (rangePos != -1)
 			{
 				// there's a range too, so get it and the mask
 				/*
-				 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
-				 * contrary to the JDK InetAddress.getByName().
+				 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName().
 				 */
 				mask = InetAddresses.forString(val.substring(maskPos + 1, rangePos));
 				range = PortRange.getInstance(val.substring(rangePos + 1, val.length()));
@@ -123,8 +81,7 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 			{
 				// there's no range, so just get the mask
 				/*
-				 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
-				 * contrary to the JDK InetAddress.getByName().
+				 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName().
 				 */
 				mask = InetAddresses.forString(val.substring(maskPos + 1, val.length()));
 				// if the range is null, then create it as unbound
@@ -134,8 +91,7 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 		{
 			// there is a range, but no mask
 			/*
-			 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the
-			 * contrary to the JDK InetAddress.getByName().
+			 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName().
 			 */
 			address = InetAddresses.forString(val.substring(0, rangePos));
 			mask = null;
@@ -148,10 +104,11 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 	}
 
 	/*
-	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to
-	 * the JDK InetAddress.getByName(). Therefore no UnknownHostException to handle.
+	 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName(). Therefore no
+	 * UnknownHostException to handle.
 	 */
 	private static void parseIPv6Address(String val, Holder<InetAddress> returnedAddress, Holder<InetAddress> returnedMask, Holder<PortRange> returnedRange)
+			throws IllegalArgumentException
 	{
 		// Let's validate
 		final InetAddress address;
@@ -162,8 +119,7 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 		// get the required address component
 		int endIndex = val.indexOf(']');
 		/*
-		 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary
-		 * to the JDK InetAddress.getByName().
+		 * InetAddresses deliberately avoids all nameservice lookups (e.g. no DNS) on the contrary to the JDK InetAddress.getByName().
 		 */
 		address = InetAddresses.forString(val.substring(1, endIndex));
 
@@ -210,10 +166,12 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 	 * 
 	 * @param val
 	 *            string form of IP address
+	 * @throws IllegalArgumentException
+	 *             if {@code val} is not a valid XACML IPAddress string
 	 */
-	public IPAddressAttributeValue(String val)
+	public IPAddressValue(String val) throws IllegalArgumentException
 	{
-		super(FACTORY.getDatatype(), val);
+		super(TYPE_URI, val);
 		final Holder<InetAddress> addressHolder = new Holder<>();
 		final Holder<InetAddress> maskHolder = new Holder<>();
 		final Holder<PortRange> rangeHolder = new Holder<>();
@@ -223,60 +181,35 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 		portRange = rangeHolder.value;
 	}
 
-	/**
-	 * Datatype factory instance
-	 */
-	public static final AttributeValue.Factory<IPAddressAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<IPAddressAttributeValue>(IPAddressAttributeValue.class, TYPE_URI)
-	{
-		@Override
-		public IPAddressAttributeValue getInstance(String value)
-		{
-			return new IPAddressAttributeValue(value);
-		}
-
-	};
-
-	@Override
-	protected String parse(String stringForm)
-	{
-		/*
-		 * The result value SHALL be the
-		 * "string in the form it was originally represented in XML form" to make sure the
-		 * string-from-ipAddress function works as specified in the spec.
-		 */
-		return stringForm;
-	}
-
-	/**
-	 * Returns the address represented by this object.
-	 * 
-	 * @return the address
-	 */
-	public InetAddress getAddress()
-	{
-		return address;
-	}
-
-	/**
-	 * Returns the mask represented by this object, or null if there is no mask.
-	 * 
-	 * @return the mask or null
-	 */
-	public InetAddress getMask()
-	{
-		return mask;
-	}
-
-	/**
-	 * Returns the port range represented by this object which will be unbound if no range was
-	 * specified.
-	 * 
-	 * @return the range
-	 */
-	public PortRange getRange()
-	{
-		return portRange;
-	}
+	// /**
+	// * Returns the address represented by this object.
+	// *
+	// * @return the address
+	// */
+	// public InetAddress getAddress()
+	// {
+	// return address;
+	// }
+	//
+	// /**
+	// * Returns the mask represented by this object, or null if there is no mask.
+	// *
+	// * @return the mask or null
+	// */
+	// public InetAddress getMask()
+	// {
+	// return mask;
+	// }
+	//
+	// /**
+	// * Returns the port range represented by this object which will be unbound if no range was specified.
+	// *
+	// * @return the range
+	// */
+	// public PortRange getRange()
+	// {
+	// return portRange;
+	// }
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
@@ -305,12 +238,12 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 			return true;
 		}
 
-		if (!(obj instanceof IPAddressAttributeValue))
+		if (!(obj instanceof IPAddressValue))
 		{
 			return false;
 		}
 
-		final IPAddressAttributeValue other = (IPAddressAttributeValue) obj;
+		final IPAddressValue other = (IPAddressValue) obj;
 		// address and range non-null
 		if (!this.address.equals(other.address) || !this.portRange.equals(other.portRange))
 		{
@@ -321,9 +254,9 @@ public final class IPAddressAttributeValue extends SimpleAttributeValue<String, 
 	}
 
 	@Override
-	public IPAddressAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public String printXML()
 	{
-		return this;
+		return this.value;
 	}
 
 }

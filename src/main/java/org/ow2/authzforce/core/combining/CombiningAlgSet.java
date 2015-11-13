@@ -16,15 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.combining;
+package org.ow2.authzforce.core.combining;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.Decidable;
+import org.ow2.authzforce.core.Decidable;
 
 /**
  * Combining algorithm set. Allows to group combining algorithms, especially when it is actually the
@@ -33,7 +32,7 @@ import com.thalesgroup.authzforce.core.Decidable;
  * 
  * TODO: consider making it a PdpExtension like FunctionSet, or generic PdpExtensionSet
  */
-public class CombiningAlgorithmSet // implements PdpExtension
+public class CombiningAlgSet
 {
 //	/**
 //	 * Namespace to be used as default prefix for internal algorithm set IDs
@@ -42,14 +41,14 @@ public class CombiningAlgorithmSet // implements PdpExtension
 
 //	private final String id;
 
-	private final Set<CombiningAlgorithm<?>> algs;
+	private final Set<CombiningAlg<?>> algs;
 
 	/**
 //	 * @param id
 //	 *            globally unique ID of this function set, to be used as PDP extension ID
 	 * @param algorithms
 	 */
-	public CombiningAlgorithmSet(/*String id,*/ CombiningAlgorithm<?>... algorithms)
+	public CombiningAlgSet(/*String id,*/ CombiningAlg<?>... algorithms)
 	{
 		this(/*id,*/ new HashSet<>(Arrays.asList(algorithms)));
 	}
@@ -58,7 +57,7 @@ public class CombiningAlgorithmSet // implements PdpExtension
 //	 * @param id
 	 * @param algorithms
 	 */
-	public CombiningAlgorithmSet(/*String id,*/ Set<CombiningAlgorithm<?>> algorithms)
+	public CombiningAlgSet(/*String id,*/ Set<CombiningAlg<?>> algorithms)
 	{
 //		this.id = id;
 		this.algs = Collections.unmodifiableSet(algorithms);
@@ -71,7 +70,7 @@ public class CombiningAlgorithmSet // implements PdpExtension
 	 * 
 	 * @return the functions members of this group
 	 */
-	public Set<CombiningAlgorithm<? extends Decidable>> getSupportedAlgorithms()
+	public Set<CombiningAlg<? extends Decidable>> getSupportedAlgorithms()
 	{
 		return algs;
 	}

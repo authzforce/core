@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.combining;
+package org.ow2.authzforce.core.combining;
+
+import org.ow2.authzforce.core.Decidable;
+import org.ow2.authzforce.core.PdpExtensionRegistry;
 
 import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.Decidable;
-import com.thalesgroup.authzforce.core.PdpExtensionRegistry;
 
 /**
  * Provides a registry mechanism for adding and retrieving combining algorithms.
  */
-public interface CombiningAlgRegistry extends PdpExtensionRegistry<CombiningAlgorithm<?>>
+public interface CombiningAlgRegistry extends PdpExtensionRegistry<CombiningAlg<?>>
 {
 
 	/**
@@ -50,6 +50,6 @@ public interface CombiningAlgRegistry extends PdpExtensionRegistry<CombiningAlgo
 	 * @throws UnknownIdentifierException
 	 *             algId is unknown
 	 */
-	<T extends Decidable> CombiningAlgorithm<T> getAlgorithm(String algId, Class<T> combinedElementType) throws UnknownIdentifierException;
+	<T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedElementType) throws UnknownIdentifierException;
 
 }

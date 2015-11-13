@@ -10,3 +10,4 @@
 /.settings/org.sonar.ide.eclipse.core.prefs
 *.log
 /.pmd
+/.eclipse-pmd

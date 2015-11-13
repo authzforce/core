@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,16 +21,16 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.sun.xacml.cond.Function;
-import com.thalesgroup.authz.model.ext._3.AbstractPdpExtension;
-import com.thalesgroup.authzforce.core.combining.CombiningAlgorithmSet;
-import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
-import com.thalesgroup.authzforce.core.func.FunctionSet;
+import org.ow2.authzforce.core.combining.CombiningAlg;
+import org.ow2.authzforce.core.combining.CombiningAlgSet;
+import org.ow2.authzforce.core.func.FunctionSet;
+import org.ow2.authzforce.core.value.DatatypeFactory;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
+
+import com.sun.xacml.Function;
 
 /**
- * Loads PDP extensions (implementing {@link PdpExtension}) from classpath using
- * {@link ServiceLoader}.
+ * Loads PDP extensions (implementing {@link PdpExtension}) from classpath using {@link ServiceLoader}.
  * 
  * 
  */
@@ -44,35 +39,32 @@ public class PdpExtensionLoader
 	// private static final Logger LOGGER = LoggerFactory.getLogger(PdpExtensionLoader.class);
 
 	/*
-	 * For each type of extension, we build the maps allowing to get the compatible/supporting
-	 * extension class, using {@link ServiceLoader} API, to discover these classes from files
-	 * 'META-INF/services/com.thalesgroup.authzforce.core.PdpExtension' on the classpath, in the
-	 * format described by {@link ServiceLoader} API documentation.
+	 * For each type of extension, we build the maps allowing to get the compatible/supporting extension class, using {@link ServiceLoader} API, to discover
+	 * these classes from files 'META-INF/services/com.thalesgroup.authzforce.core.PdpExtension' on the classpath, in the format described by {@link
+	 * ServiceLoader} API documentation.
 	 */
 
 	/*
-	 * For each type of XML/JAXB-bound extension, map XML/JAXB conf class to corresponding extension
-	 * (we assume a one-to-one relationship between the XML/JAXB type and the extension class)
+	 * For each type of XML/JAXB-bound extension, map XML/JAXB conf class to corresponding extension (we assume a one-to-one relationship between the XML/JAXB
+	 * type and the extension class)
 	 */
 	private final static Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS = new HashMap<>();
 
 	/*
 	 * Types of zero-conf (non-JAXB-bound) extesnsion
 	 */
-	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = new HashSet<>(Arrays.asList(AttributeValue.Factory.class, Function.class, FunctionSet.class, CombiningAlgorithm.class, RequestFilter.Factory.class, DecisionResultFilter.class));
+	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = new HashSet<>(Arrays.asList(DatatypeFactory.class,
+			Function.class, FunctionSet.class, CombiningAlg.class, RequestFilter.Factory.class, DecisionResultFilter.class));
 	/*
-	 * For each type of zero-conf (non-JAXB-bound) extension, have a map (extension ID -> extension
-	 * instance), so that the extension ID is scoped to the extension type among the ones listed in
-	 * NON_JAXB_BOUND_EXTENSION_CLASSES (you can have same ID but for different types of
-	 * extensions).
+	 * For each type of zero-conf (non-JAXB-bound) extension, have a map (extension ID -> extension instance), so that the extension ID is scoped to the
+	 * extension type among the ones listed in NON_JAXB_BOUND_EXTENSION_CLASSES (you can have same ID but for different types of extensions).
 	 */
 	private final static Map<Class<? extends PdpExtension>, Map<String, PdpExtension>> NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID = new HashMap<>();
 
 	static
 	{
 		/*
-		 * REMINDER: every service provider (implementation class) loaded by ServiceLoader MUST HAVE
-		 * a ZERO-ARGUMENT CONSTRUCTOR.
+		 * REMINDER: every service provider (implementation class) loaded by ServiceLoader MUST HAVE a ZERO-ARGUMENT CONSTRUCTOR.
 		 */
 		final ServiceLoader<PdpExtension> extensionLoader = ServiceLoader.load(PdpExtension.class);
 		for (final PdpExtension extension : extensionLoader)
@@ -84,7 +76,8 @@ public class PdpExtensionLoader
 				final JaxbBoundPdpExtension<?> conflictingExt = JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.put(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
 				if (conflictingExt != null)
 				{
-					throw new IllegalArgumentException("Extension " + jaxbBoundExt + " (" + jaxbBoundExt.getClass() + ") is conflicting with " + conflictingExt + "(" + conflictingExt.getClass() + ") for the same XML/JAXB configuration class: " + jaxbBoundExt.getJaxbClass());
+					throw new IllegalArgumentException("Extension " + jaxbBoundExt + " (" + jaxbBoundExt.getClass() + ") is conflicting with " + conflictingExt
+							+ "(" + conflictingExt.getClass() + ") for the same XML/JAXB configuration class: " + jaxbBoundExt.getJaxbClass());
 				}
 
 				isValidExt = true;
@@ -108,7 +101,8 @@ public class PdpExtensionLoader
 						final PdpExtension conflictingExt = newMap.put(extension.getId(), extension);
 						if (conflictingExt != null)
 						{
-							throw new IllegalArgumentException("Extension " + extension + " is conflicting with " + conflictingExt + " registered with same ID: " + extension.getId());
+							throw new IllegalArgumentException("Extension " + extension + " is conflicting with " + conflictingExt
+									+ " registered with same ID: " + extension.getId());
 						}
 
 						isValidExt = true;
@@ -119,7 +113,8 @@ public class PdpExtensionLoader
 
 			if (!isValidExt)
 			{
-				throw new UnsupportedOperationException("Unsupported/invalid type of PDP extension: " + extension.getClass() + " (extension ID = " + extension.getId() + ")");
+				throw new UnsupportedOperationException("Unsupported/invalid type of PDP extension: " + extension.getClass() + " (extension ID = "
+						+ extension.getId() + ")");
 			}
 		}
 	}
@@ -138,29 +133,27 @@ public class PdpExtensionLoader
 	 * Get non-JAXB-bound (aka zero-configuration) extension
 	 * 
 	 * @param extensionType
-	 *            type of extension:
-	 *            {@link com.thalesgroup.authzforce.core.datatypes.AttributeValue.Factory },
-	 *            {@link Function}, {@link CombiningAlgorithmSet}, etc.
+	 *            type of extension: {@link org.ow2.authzforce.core.value.DatatypeFactory }, {@link Function}, {@link CombiningAlgSet}, etc.
 	 * @param id
 	 *            extension ID
-	 * @return PDP extension instance of class {@code extensionType} and such that its method
-	 *         {@link PdpExtension#getId()} returns {@code id}
+	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link PdpExtension#getId()} returns {@code id}
 	 * @throws IllegalArgumentException
-	 *             if there is not any extension found for type {@code extensionType} with ID
-	 *             {@code id}
+	 *             if there is not any extension found for type {@code extensionType} with ID {@code id}
 	 */
 	public static <T extends PdpExtension> T getExtension(Class<T> extensionType, String id) throws IllegalArgumentException
 	{
 		final Map<String, PdpExtension> typeSpecificExtsById = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.get(extensionType);
 		if (typeSpecificExtsById == null)
 		{
-			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: " + NON_JAXB_BOUND_EXTENSION_CLASSES);
+			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: "
+					+ NON_JAXB_BOUND_EXTENSION_CLASSES);
 		}
 
 		final PdpExtension ext = typeSpecificExtsById.get(id);
 		if (ext == null)
 		{
-			throw new IllegalArgumentException("No PDP extension of type '" + extensionType + "' found with ID: " + id + ". Expected IDs: " + typeSpecificExtsById.keySet());
+			throw new IllegalArgumentException("No PDP extension of type '" + extensionType + "' found with ID: " + id + ". Expected IDs: "
+					+ typeSpecificExtsById.keySet());
 		}
 
 		return extensionType.cast(ext);
@@ -170,42 +163,36 @@ public class PdpExtensionLoader
 	 * Get XML/JAXB-bound extension
 	 * 
 	 * @param extensionType
-	 *            type of extension, e.g.
-	 *            {@link com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule.Factory},
-	 *            etc.
+	 *            type of extension, e.g. {@link org.ow2.authzforce.core.policy.RootPolicyFinderModule.Factory}, etc.
 	 * @param jaxbPdpExtensionClass
 	 *            JAXB class representing XML configuration type that the extension must support
-	 * @return PDP extension instance of class {@code extensionType} and such that its method
-	 *         {@link JaxbBoundPdpExtension#getClass()} returns {@code jaxbPdpExtensionClass}
+	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link JaxbBoundPdpExtension#getClass()} returns
+	 *         {@code jaxbPdpExtensionClass}
 	 * @throws IllegalArgumentException
 	 *             if there is no extension supporting {@code jaxbPdpExtensionClass}
 	 */
-	public static <JAXB_T extends AbstractPdpExtension, T extends JaxbBoundPdpExtension<?>> T getJaxbBoundExtension(Class<T> extensionType, Class<? extends JAXB_T> jaxbPdpExtensionClass) throws IllegalArgumentException
+	public static <JAXB_T extends AbstractPdpExtension, T extends JaxbBoundPdpExtension<JAXB_T>> T getJaxbBoundExtension(Class<T> extensionType,
+			Class<JAXB_T> jaxbPdpExtensionClass) throws IllegalArgumentException
 	{
 		final JaxbBoundPdpExtension<?> ext = JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbPdpExtensionClass);
 		if (ext == null)
 		{
-			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: " + jaxbPdpExtensionClass + ". Expected types: " + JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
+			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: " + jaxbPdpExtensionClass + ". Expected types: "
+					+ JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
 		}
 
 		return extensionType.cast(ext);
 	}
 
 	/**
-	 * Create instance of PDP extension (AttributeFinder, ReferencedPolicyFinder...) with input
-	 * configuration. The extension implementation class has been discovered by
-	 * {@link ServiceLoader} from files
-	 * 'META-INF/services/com.thalesgroup.authzforce.core.IPdpExtensionFactory' on the classpath, in
-	 * the format described by {@link ServiceLoader} API documentation. Such class must have a
-	 * constructor matching {@code constructorArgs} that is called to instantiate the extension, or
-	 * a default constructor that is called instead if none matching such parameters; and it must
-	 * implement {@code IPdpExtensionFactory} and therefore have a
-	 * {@code IPdpExtensionFactory#init(EXTENSION_CONF_CLASS conf)} method to initialize the
-	 * instance.
+	 * Create instance of PDP extension (AttributeFinder, ReferencedPolicyFinder...) with input configuration. The extension implementation class has been
+	 * discovered by {@link ServiceLoader} from files 'META-INF/services/com.thalesgroup.authzforce.core.IPdpExtensionFactory' on the classpath, in the format
+	 * described by {@link ServiceLoader} API documentation. Such class must have a constructor matching {@code constructorArgs} that is called to instantiate
+	 * the extension, or a default constructor that is called instead if none matching such parameters; and it must implement {@code IPdpExtensionFactory} and
+	 * therefore have a {@code IPdpExtensionFactory#init(EXTENSION_CONF_CLASS conf)} method to initialize the instance.
 	 * 
 	 * @param extensionConf
-	 *            extension configuration (instance of custom type of PDP extension defined in XML
-	 *            schema)
+	 *            extension configuration (instance of custom type of PDP extension defined in XML schema)
 	 * @param constructorArgs
 	 *            optional Constructor arguments
 	 * @return extension instance

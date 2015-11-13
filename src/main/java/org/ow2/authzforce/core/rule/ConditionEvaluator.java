@@ -16,19 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.rule;
+package org.ow2.authzforce.core.rule;
 
 import javax.xml.bind.JAXBElement;
+
+import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.expression.Expression;
+import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.value.BooleanValue;
+import org.ow2.authzforce.core.value.DatatypeConstants;
 
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import com.sun.xacml.ParsingException;
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.Expression;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
 
 /**
  * Evaluates a XACML ConditionEvaluator. It contains exactly one child expression that is boolean
@@ -38,7 +40,7 @@ import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
 public class ConditionEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition
 {
 	// the condition's evaluatable expression
-	private transient final Expression<BooleanAttributeValue> evaluatableExpression;
+	private transient final Expression<BooleanValue> evaluatableExpression;
 
 	/**
 	 * Logger used for all classes
@@ -86,7 +88,7 @@ public class ConditionEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd
 	 * @throws ParsingException
 	 *             error parsing the expression in condition
 	 */
-	public ConditionEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition, XPathCompiler xPathCompiler, Expression.Factory expFactory) throws IllegalArgumentException, ParsingException
+	public ConditionEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condition, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException, ParsingException
 	{
 		final ExpressionType exprElt = condition.getExpression().getValue();
 		final Expression<?> expr = expFactory.getInstance(exprElt, xPathCompiler, null);
@@ -97,7 +99,7 @@ public class ConditionEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd
 			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}
 
-		this.evaluatableExpression = (Expression<BooleanAttributeValue>) expr;
+		this.evaluatableExpression = (Expression<BooleanValue>) expr;
 
 		/*
 		 * Set JAXB expression field to null, getExpression() overridden instead to make sure
@@ -119,7 +121,7 @@ public class ConditionEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd
 	 */
 	public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		final BooleanAttributeValue boolVal = evaluatableExpression.evaluate(context);
+		final BooleanValue boolVal = evaluatableExpression.evaluate(context);
 		return boolVal.getUnderlyingValue();
 	}
 

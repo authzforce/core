@@ -3,23 +3,18 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
  */
-package com.thalesgroup.authzforce.core.test.func;
+package org.ow2.authzforce.core.test.func;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,33 +23,30 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.thalesgroup.authzforce.core.Expression;
-import com.thalesgroup.authzforce.core.Expression.Value;
-import com.thalesgroup.authzforce.core.datatypes.AnyURIAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.Base64BinaryAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.BooleanAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.DateAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.DayTimeDurationAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.DoubleAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.HexBinaryAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.IntegerAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.RFC822NameAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.StringAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.X500NameAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.YearMonthDurationAttributeValue;
+import org.ow2.authzforce.core.test.utils.FunctionTest;
+import org.ow2.authzforce.core.value.AnyURIValue;
+import org.ow2.authzforce.core.value.Base64BinaryValue;
+import org.ow2.authzforce.core.value.BooleanValue;
+import org.ow2.authzforce.core.value.DateTimeValue;
+import org.ow2.authzforce.core.value.DateValue;
+import org.ow2.authzforce.core.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.value.DoubleValue;
+import org.ow2.authzforce.core.value.HexBinaryValue;
+import org.ow2.authzforce.core.value.IntegerValue;
+import org.ow2.authzforce.core.value.RFC822NameValue;
+import org.ow2.authzforce.core.value.StringValue;
+import org.ow2.authzforce.core.value.TimeValue;
+import org.ow2.authzforce.core.value.Value;
+import org.ow2.authzforce.core.value.X500NameValue;
+import org.ow2.authzforce.core.value.YearMonthDurationValue;
 
 @RunWith(Parameterized.class)
-public class EqualityFunctionsTest extends GeneralFunctionTest
+public class EqualityFunctionsTest extends FunctionTest
 {
 
-	public EqualityFunctionsTest(String functionName, List<Expression<?>> inputs, Value<?> expectedResult)
+	public EqualityFunctionsTest(String functionName, List<Value> inputs, Value expectedResult)
 	{
-		super(functionName, inputs, expectedResult);
+		super(functionName, null, inputs, expectedResult);
 	}
 
 	private static final String NAME_STRING_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:string-equal";
@@ -72,80 +64,101 @@ public class EqualityFunctionsTest extends GeneralFunctionTest
 	private static final String NAME_RFC822NAME_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal";
 	private static final String NAME_HEXBINARY_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:hexBinary-equal";
 	private static final String NAME_BASE64BINARY_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:base64Binary-equal";
-	private static final Logger LOGGER = LoggerFactory.getLogger(EqualityFunctionsTest.class);
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() throws Exception
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:string-equal
-				new Object[] { NAME_STRING_EQUAL, Arrays.asList(new StringAttributeValue("Test"), new StringAttributeValue("Test")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_STRING_EQUAL, Arrays.asList(new StringAttributeValue("Test"), new StringAttributeValue("Toast")), BooleanAttributeValue.FALSE },
-				new Object[] { NAME_STRING_EQUAL, Arrays.asList(new StringAttributeValue("Test"), new StringAttributeValue("TEST")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_STRING_EQUAL, Arrays.asList(new StringValue("Test"), new StringValue("Test")), BooleanValue.TRUE },
+				new Object[] { NAME_STRING_EQUAL, Arrays.asList(new StringValue("Test"), new StringValue("Toast")), BooleanValue.FALSE },
+				new Object[] { NAME_STRING_EQUAL, Arrays.asList(new StringValue("Test"), new StringValue("TEST")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-equal-ignore-case
-				new Object[] { NAME_STRING_EQUAL_IGNORE_CASE, Arrays.asList(new StringAttributeValue("Test"), new StringAttributeValue("Test")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_STRING_EQUAL_IGNORE_CASE, Arrays.asList(new StringAttributeValue("Test"), new StringAttributeValue("Toast")), BooleanAttributeValue.FALSE },
-				new Object[] { NAME_STRING_EQUAL_IGNORE_CASE, Arrays.asList(new StringAttributeValue("Test"), new StringAttributeValue("TEST")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_STRING_EQUAL_IGNORE_CASE, Arrays.asList(new StringValue("Test"), new StringValue("Test")), BooleanValue.TRUE },
+				new Object[] { NAME_STRING_EQUAL_IGNORE_CASE, Arrays.asList(new StringValue("Test"), new StringValue("Toast")), BooleanValue.FALSE },
+				new Object[] { NAME_STRING_EQUAL_IGNORE_CASE, Arrays.asList(new StringValue("Test"), new StringValue("TEST")), BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:boolean-equal
-				new Object[] { NAME_BOOLEAN_EQUAL, Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.FALSE), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_BOOLEAN_EQUAL, Arrays.asList(BooleanAttributeValue.FALSE, BooleanAttributeValue.TRUE), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_BOOLEAN_EQUAL, Arrays.asList(BooleanValue.FALSE, BooleanValue.FALSE), BooleanValue.TRUE },
+				new Object[] { NAME_BOOLEAN_EQUAL, Arrays.asList(BooleanValue.FALSE, BooleanValue.TRUE), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-equal
-				new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(new IntegerAttributeValue("42"), new IntegerAttributeValue("42")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(new IntegerAttributeValue("42"), new IntegerAttributeValue("24")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(new IntegerValue("42"), new IntegerValue("42")), BooleanValue.TRUE },
+				new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(new IntegerValue("42"), new IntegerValue("24")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-equal
-				new Object[] { NAME_DOUBLE_EQUAL, Arrays.asList(new DoubleAttributeValue("42.543"), new DoubleAttributeValue("42.543")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_DOUBLE_EQUAL, Arrays.asList(new DoubleAttributeValue("42.543"), new DoubleAttributeValue("24.2")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DOUBLE_EQUAL, Arrays.asList(new DoubleValue("42.543"), new DoubleValue("42.543")), BooleanValue.TRUE },
+				new Object[] { NAME_DOUBLE_EQUAL, Arrays.asList(new DoubleValue("42.543"), new DoubleValue("24.2")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:date-equal
-				new Object[] { NAME_DATE_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-09-24")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_DATE_EQUAL, Arrays.asList(new DateAttributeValue("2002-09-24"), new DateAttributeValue("2002-04-29")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATE_EQUAL, Arrays.asList(new DateValue("2002-09-24"), new DateValue("2002-09-24")), BooleanValue.TRUE },
+				new Object[] { NAME_DATE_EQUAL, Arrays.asList(new DateValue("2002-09-24"), new DateValue("2002-04-29")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:time-equal
-				new Object[] { NAME_TIME_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:15")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_TIME_EQUAL, Arrays.asList(new TimeAttributeValue("09:30:15"), new TimeAttributeValue("09:30:19")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_TIME_EQUAL, Arrays.asList(new TimeValue("09:30:15"), new TimeValue("09:30:15")), BooleanValue.TRUE },
+				new Object[] { NAME_TIME_EQUAL, Arrays.asList(new TimeValue("09:30:15"), new TimeValue("09:30:19")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:dateTime-equal
-				new Object[] { NAME_DATETIME_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:15")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_DATETIME_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-04-29T09:30:15")), BooleanAttributeValue.FALSE },
-				new Object[] { NAME_DATETIME_EQUAL, Arrays.asList(new DateTimeAttributeValue("2002-09-24T09:30:15"), new DateTimeAttributeValue("2002-09-24T09:30:19")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_DATETIME_EQUAL, Arrays.asList(new DateTimeValue("2002-09-24T09:30:15"), new DateTimeValue("2002-09-24T09:30:15")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_DATETIME_EQUAL, Arrays.asList(new DateTimeValue("2002-09-24T09:30:15"), new DateTimeValue("2002-04-29T09:30:15")),
+						BooleanValue.FALSE },
+				new Object[] { NAME_DATETIME_EQUAL, Arrays.asList(new DateTimeValue("2002-09-24T09:30:15"), new DateTimeValue("2002-09-24T09:30:19")),
+						BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-equal
-				new Object[] { NAME_DAYTIME_DURATION_EQUAL, Arrays.asList(new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT2H")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_DAYTIME_DURATION_EQUAL, Arrays.asList(new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("P1DT3H")), BooleanAttributeValue.FALSE },
-				new Object[] { NAME_DAYTIME_DURATION_EQUAL, Arrays.asList(new DayTimeDurationAttributeValue("P1DT2H"), new DayTimeDurationAttributeValue("PT26H")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_DAYTIME_DURATION_EQUAL, Arrays.asList(new DayTimeDurationValue("P1DT2H"), new DayTimeDurationValue("P1DT2H")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_DAYTIME_DURATION_EQUAL, Arrays.asList(new DayTimeDurationValue("P1DT2H"), new DayTimeDurationValue("P1DT3H")),
+						BooleanValue.FALSE },
+				new Object[] { NAME_DAYTIME_DURATION_EQUAL, Arrays.asList(new DayTimeDurationValue("P1DT2H"), new DayTimeDurationValue("PT26H")),
+						BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:yearMonthDuration-equal
-				new Object[] { NAME_YEARMONTH_DURATION_EQUAL, Arrays.asList(new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y2M")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_YEARMONTH_DURATION_EQUAL, Arrays.asList(new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P1Y3M")), BooleanAttributeValue.FALSE },
-				new Object[] { NAME_YEARMONTH_DURATION_EQUAL, Arrays.asList(new YearMonthDurationAttributeValue("P1Y2M"), new YearMonthDurationAttributeValue("P14M")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_YEARMONTH_DURATION_EQUAL, Arrays.asList(new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("P1Y2M")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_YEARMONTH_DURATION_EQUAL, Arrays.asList(new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("P1Y3M")),
+						BooleanValue.FALSE },
+				new Object[] { NAME_YEARMONTH_DURATION_EQUAL, Arrays.asList(new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("P14M")),
+						BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:anyURI-equal
-				new Object[] { NAME_ANYURI_EQUAL, Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("http://www.example.com")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_ANYURI_EQUAL, Arrays.asList(new AnyURIAttributeValue("http://www.example.com"), new AnyURIAttributeValue("https://www.example.com")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_ANYURI_EQUAL, Arrays.asList(new AnyURIValue("http://www.example.com"), new AnyURIValue("http://www.example.com")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_ANYURI_EQUAL, Arrays.asList(new AnyURIValue("http://www.example.com"), new AnyURIValue("https://www.example.com")),
+						BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:x500Name-equal
-				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn= John Smith,o =Medico Corp, C=US")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameAttributeValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameAttributeValue("cn=John Smith, o=Other Corp, c=US")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_X500NAME_EQUAL,
+						Arrays.asList(new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue("cn= John Smith,o =Medico Corp, C=US")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_X500NAME_EQUAL,
+						Arrays.asList(new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue("cn=John Smith, o=Other Corp, c=US")),
+						BooleanValue.FALSE },
 				// If RDN contains multiple attributeTypeAndValue pairs
-				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameAttributeValue("cn=John+o=Medico, c=US"), new X500NameAttributeValue("o=Medico+cn=John, c=US")), BooleanAttributeValue.TRUE },
+				new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameValue("cn=John+o=Medico, c=US"), new X500NameValue("o=Medico+cn=John, c=US")),
+						BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal
-				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@sun.com")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Smith@sun.com")), BooleanAttributeValue.FALSE },
-				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("Anderson@SUN.COM")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameAttributeValue("Anderson@sun.com"), new RFC822NameAttributeValue("ANDERSON@SUN.COM")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Anderson@sun.com")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Smith@sun.com")),
+						BooleanValue.FALSE },
+				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Anderson@SUN.COM")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("ANDERSON@SUN.COM")),
+						BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:hexBinary-equal
-				new Object[] { NAME_HEXBINARY_EQUAL, Arrays.asList(new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB7")), BooleanAttributeValue.TRUE },//
-				new Object[] { NAME_HEXBINARY_EQUAL, Arrays.asList(new HexBinaryAttributeValue("0FB7"), new HexBinaryAttributeValue("0FB8")), BooleanAttributeValue.FALSE },
+				new Object[] { NAME_HEXBINARY_EQUAL, Arrays.asList(new HexBinaryValue("0FB7"), new HexBinaryValue("0FB7")), BooleanValue.TRUE },//
+				new Object[] { NAME_HEXBINARY_EQUAL, Arrays.asList(new HexBinaryValue("0FB7"), new HexBinaryValue("0FB8")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:base64Binary-equal
-				new Object[] { NAME_BASE64BINARY_EQUAL, Arrays.asList(new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("RXhhbXBsZQ==")), BooleanAttributeValue.TRUE },
-				new Object[] { NAME_BASE64BINARY_EQUAL, Arrays.asList(new Base64BinaryAttributeValue("RXhhbXBsZQ=="), new Base64BinaryAttributeValue("T3RoZXI=")), BooleanAttributeValue.FALSE });
+				new Object[] { NAME_BASE64BINARY_EQUAL, Arrays.asList(new Base64BinaryValue("RXhhbXBsZQ=="), new Base64BinaryValue("RXhhbXBsZQ==")),
+						BooleanValue.TRUE },
+				new Object[] { NAME_BASE64BINARY_EQUAL, Arrays.asList(new Base64BinaryValue("RXhhbXBsZQ=="), new Base64BinaryValue("T3RoZXI=")),
+						BooleanValue.FALSE });
 	}
 
 }

@@ -1,28 +1,50 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.thalesgroup.authzforce</groupId>
-		<artifactId>authzforce-parent</artifactId>
-		<version>3.0.10</version>
+		<groupId>org.ow2.authzforce</groupId>
+		<artifactId>authzforce-ce-parent</artifactId>
+		<version>3.3.3-SNAPSHOT</version>
 	</parent>
-	<artifactId>authzforce-core</artifactId>
+	<artifactId>authzforce-ce-core</artifactId>
 	<version>3.5.9-SNAPSHOT</version>
-	<name>AuthZForce :: Core :: XACML Core Implementation</name>
-	<organization>
-		<name>Thales Services SAS</name>
-	</organization>
-	<description>XACML-compliant Authorization PDP Core Engine</description>
-	<inceptionYear>2011</inceptionYear>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>AuthZForce Community Edition - XACML-compliant Core Engine</description>
+	<url>https://tuleap.ow2.org/projects/authzforce</url>
 	<scm>
 		<!-- Used by Jenkins - Maven release plugin -->
-		<connection>scm:git:${scm.baseUrl}/core.git</connection>
-		<developerConnection>scm:git:${scm.baseUrl}/core.git</developerConnection>
+		<connection>scm:git:${git.url.base}/core.git</connection>
+		<developerConnection>scm:git:${git.url.base}/core.git</developerConnection>
 		<tag>HEAD</tag>
 		<!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
-		<url>${scm.baseUrl}/core</url>
+		<url>${git.url.base}/core</url>
 	</scm>
+	<!-- distributionManagement defined in parent POM already -->
+	<dependencyManagement>
+		<dependencies>
+			<!-- Setting dependency versions for episode used by maven jaxb2 plugin -->
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>${artifactId.prefix}-xmlns-model</artifactId>
+				<version>${project.parent.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>${artifactId.prefix}-xacml-model</artifactId>
+				<version>${project.parent.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
+				<version>${project.parent.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
+		<!-- Third-party dependencies -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
@@ -44,12 +66,7 @@
 			<version>1.5.4</version>
 		</dependency>
 		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
-		<dependency>
-			<!-- For validating IP addresses (XACML IPAdress datatype), Domain names (XACML DNSName datatype), 
-				etc. without any DNS resolution -->
+			<!-- For validating IP addresses (XACML IPAdress datatype), Domain names (XACML DNSName datatype), etc. without any DNS resolution -->
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
@@ -60,22 +77,12 @@
 			<artifactId>Saxon-HE</artifactId>
 			<version>9.6.0-5</version>
 		</dependency>
+		<!-- /Third-party dependencies -->
+
 		<!-- Authzforce dependencies -->
-		<!-- In theory, no need to declare xml-ns-model and xacml-model dependencies since they are dragged 
-			by authzforce-pdp-ext-model down below already. In practive, they are declared here only to work around 
-			maven-jaxb2-plugin bug: cannot resolve episodes from indirect dependencies with useDependenciesAsEpisodes 
-			option. -->
 		<dependency>
-			<groupId>com.thalesgroup.authzforce</groupId>
-			<artifactId>authzforce-xml-ns-model</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce</groupId>
-			<artifactId>authzforce-xacml-model</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.thalesgroup.authzforce</groupId>
-			<artifactId>authzforce-pdp-ext-model</artifactId>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
 		</dependency>
 		<!-- /Authzforce dependencies -->
 
@@ -94,8 +101,9 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<version>3.5</version>
+				<!-- target JDK already set by parent project's maven.compiler.target property -->
 				<configuration>
-					<targetJdk>1.7</targetJdk>
+					<verbose>true</verbose>
 					<excludeRoots>
 						<excludeRoot>target/generated-sources</excludeRoot>
 						<excludeRoot>target/generated-test-sources</excludeRoot>
@@ -106,6 +114,7 @@
 						<phase>verify</phase>
 						<goals>
 							<goal>check</goal>
+							<goal>cpd-check</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -113,7 +122,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.0.2</version>
 				<executions>
 					<execution>
 						<phase>verify</phase>
@@ -124,77 +133,29 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- Apache license Headers -->
+				<!-- Override license-maven-plugin configuration to exclude Sunxacml files from adding GPL license headers (different license) -->
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>add-gplv3-license</id>
-						<phase>process-sources</phase>
-						<configuration>
-							<!-- Template location -->
-							<header>license/thales-gpl.txt</header>
-							<properties>
-								<!-- Values to be substituted in template -->
-								<inceptionYear>${project.inceptionYear}</inceptionYear>
-								<currentYear>${currentYear}</currentYear>
-								<copyrightOwner>${project.organization.name}</copyrightOwner>
-								<projectName>AuthZForce</projectName>
-							</properties>
-							<strictCheck>true</strictCheck>
-							<excludes>
-								<exclude>**/*.html</exclude>
-								<exclude>**/*.xml</exclude>
-								<exclude>**/*.txt</exclude>
-								<exclude>**/*.ec</exclude>
-								<exclude>**/*.log</exclude>
-								<exclude>**/*.css</exclude>
-								<exclude>**/*.js</exclude>
-								<exclude>**/*.jsp</exclude>
-								<exclude>**/*.md</exclude>
-								<exclude>**/*.properties</exclude>
-								<exclude>**/*.gitignore</exclude>
-							</excludes>
-							<includes>
-								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
-								<!-- Include test files also -->
-								<include>src/test/java/**</include>
-							</includes>
-						</configuration>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>add-gpl-license</id>
-						<phase>process-sources</phase>
-						<configuration>
-							<!-- Template location -->
-							<header>license/thales-gpl.txt</header>
-							<properties>
-								<!-- Values to be substituted in template -->
-								<inceptionYear>${project.inceptionYear}</inceptionYear>
-								<currentYear>${currentYear}</currentYear>
-								<copyrightOwner>${project.organization.name}</copyrightOwner>
-								<projectName>AuthZForce</projectName>
-							</properties>
-							<strictCheck>true</strictCheck>
-							<includes>
-								<include>src/main/java/com/thalesgroup/authzforce/core/**</include>
-							</includes>
-						</configuration>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>check-license</id>
-						<goals>
-							<!-- attached to verify phase -->
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
+				<configuration>
+					<excludes>
+						<exclude>**/*.html</exclude>
+						<exclude>**/*.xml</exclude>
+						<exclude>**/*.txt</exclude>
+						<exclude>**/*.ec</exclude>
+						<exclude>**/*.log</exclude>
+						<exclude>**/*.css</exclude>
+						<exclude>**/*.js</exclude>
+						<exclude>**/*.jsp</exclude>
+						<exclude>**/*.md</exclude>
+						<exclude>**/*.properties</exclude>
+						<exclude>**/*.gitignore</exclude>
+					</excludes>
+					<includes>
+						<include>src/main/java/org/ow2/authzforce/core/**</include>
+						<!-- Include test files also -->
+						<include>src/test/java/**</include>
+					</includes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
@@ -202,11 +163,35 @@
 				<configuration>
 					<!-- debug=true will generate JAXBDebug class. More info: https://github.com/highsource/maven-jaxb2-plugin/wiki/Miscellaneous -->
 					<debug>false</debug>
-					<verbose>true</verbose>
-					<extension>true</extension>
-					<useDependenciesAsEpisodes>true</useDependenciesAsEpisodes>
 					<strict>false</strict>
+					<verbose>false</verbose>
 					<removeOldOutput>true</removeOldOutput>
+					<extension>true</extension>
+					<args>
+						<arg>-Xvalue-constructor</arg>
+					</args>
+					<plugins>
+						<plugin>
+							<groupId>org.jvnet.jaxb2_commons</groupId>
+							<artifactId>jaxb2-value-constructor</artifactId>
+							<version>${jaxb2-value-constructor.version}</version>
+						</plugin>
+					</plugins>
+					<useDependenciesAsEpisodes>false</useDependenciesAsEpisodes>
+					<episodes>
+						<episode>
+							<groupId>${project.groupId}</groupId>
+							<artifactId>${artifactId.prefix}-xmlns-model</artifactId>
+						</episode>
+						<episode>
+							<groupId>${project.groupId}</groupId>
+							<artifactId>${artifactId.prefix}-xacml-model</artifactId>
+						</episode>
+						<episode>
+							<groupId>${project.groupId}</groupId>
+							<artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
+						</episode>
+					</episodes>
 					<catalog>src/main/jaxb/catalog.xml</catalog>
 					<bindingDirectory>src/main/jaxb</bindingDirectory>
 					<bindingIncludes>
@@ -221,7 +206,11 @@
 						</goals>
 						<configuration>
 							<schemaDirectory>src/main/resources</schemaDirectory>
+							<schemaIncludes>
+								<include>pdp.xsd</include>
+							</schemaIncludes>
 							<generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
+							<generatePackage>${project.groupId}.core.xmlns.pdp</generatePackage>
 							<addCompileSourceRoot>true</addCompileSourceRoot>
 							<addTestCompileSourceRoot>false</addTestCompileSourceRoot>
 						</configuration>
@@ -234,6 +223,7 @@
 						<configuration>
 							<schemaDirectory>src/test/resources</schemaDirectory>
 							<generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+							<generatePackage>${project.groupId}.core.xmlns.test</generatePackage>
 							<addCompileSourceRoot>false</addCompileSourceRoot>
 							<addTestCompileSourceRoot>true</addTestCompileSourceRoot>
 						</configuration>
@@ -243,39 +233,31 @@
 			<!-- Test configuration -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.16</version>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<phase>test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<systemPropertyVariables>
-								<!-- Use random address instead of the host MAC address to generate UUIDs as this test may be 
-									run on host disconnected from the network. -->
-								<com.thalesgroup.theresis.useRandomAddressBasedUUID>true</com.thalesgroup.theresis.useRandomAddressBasedUUID>
-							</systemPropertyVariables>
-							<failIfNoTests>false</failIfNoTests>
-							<skipTests>false</skipTests>
-							<includes>
-								<include>**/MainTest.java</include>
-							</includes>
-						</configuration>
-					</execution>
-				</executions>
+				<version>2.12.4</version>
+				<configuration>
+					<skipTests>false</skipTests>
+					<includes>
+						<include>**/MainTest.java</include>
+					</includes>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.6</version>
 				<executions>
 					<execution>
-						<id>attach-sources</id>
-						<phase>verify</phase>
 						<goals>
-							<goal>jar-no-fork</goal>
+							<goal>test-jar</goal>
 						</goals>
+						<configuration>
+							<includes>
+								<include>org.ow2.authzforce.core.test.xsd</include>
+								<include>org/ow2/authzforce/core/xmlns/test/**</include>
+								<include>org/ow2/authzforce/core/test/utils/**</include>
+								<include>META-INF/**</include>
+							</includes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

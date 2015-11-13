@@ -3,31 +3,23 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.datatypes;
+package org.ow2.authzforce.core.value;
 
 import net.sf.saxon.lib.StandardURIChecker;
-
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
 
 /**
  * Represent the URI value that this class represents
  * <p>
- * WARNING: java.net.URI cannot be used here for this XACML datatype, because not equivalent to XML
- * schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
+ * WARNING: java.net.URI cannot be used here for this XACML datatype, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1],
+ * not in java.net.URI.
  * </p>
  * <p>
  * [1] http://www.w3.org/TR/xmlschema-2/#anyURI That's why we use String instead.
@@ -39,12 +31,11 @@ import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
  * https://java.net/projects/jaxb/lists/users/archive/2011-07/message/16
  * </p>
  * <p>
- * From the JAXB spec: "xs:anyURI is not bound to java.net.URI by default since not all possible
- * values of xs:anyURI can be passed to the java.net.URI constructor. Using a global JAXB
- * customization described in Section 7.9".
+ * From the JAXB spec: "xs:anyURI is not bound to java.net.URI by default since not all possible values of xs:anyURI can be passed to the java.net.URI
+ * constructor. Using a global JAXB customization described in Section 7.9".
  * </p>
  */
-public class AnyURIAttributeValue extends SimpleAttributeValue<String, AnyURIAttributeValue>
+public final class AnyURIValue extends SimpleValue<String>
 {
 
 	/**
@@ -53,57 +44,39 @@ public class AnyURIAttributeValue extends SimpleAttributeValue<String, AnyURIAtt
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#anyURI";
 
 	/**
-	 * Datatype factory instance
-	 */
-	public static final AttributeValue.Factory<AnyURIAttributeValue> FACTORY = new SimpleAttributeValue.StringContentOnlyFactory<AnyURIAttributeValue>(AnyURIAttributeValue.class, TYPE_URI)
-	{
-
-		@Override
-		public AnyURIAttributeValue getInstance(String val)
-		{
-			return new AnyURIAttributeValue(val);
-		}
-
-	};
-
-	/**
 	 * Creates a new <code>AnyURIAttributeValue</code> that represents the URI value supplied.
 	 * 
 	 * @param value
 	 *            the URI to be represented
 	 *            <p>
-	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not
-	 *            equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
-	 *            java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI So we use String
-	 *            instead.
+	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD
+	 *            anyURI [1], not in java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI So we use String instead.
 	 *            </p>
 	 * @throws IllegalArgumentException
 	 *             if {@code value} is not a valid string representation for xs:anyURI
 	 */
-	public AnyURIAttributeValue(String value) throws IllegalArgumentException
+	public AnyURIValue(String value) throws IllegalArgumentException
 	{
-		super(FACTORY.instanceDatatype, value);
+		super(TYPE_URI, validate(value));
 	}
 
-	@Override
-	protected String parse(String stringForm) throws IllegalArgumentException
+	private static String validate(String anyURI) throws IllegalArgumentException
 	{
 		/*
-		 * Please note that StandardURIChecker maintains a thread-local cache of validated URIs
-		 * (cache size is 50 and eviction policy is LRU)
+		 * Please note that StandardURIChecker maintains a thread-local cache of validated URIs (cache size is 50 and eviction policy is LRU)
 		 */
-		if (!StandardURIChecker.getInstance().isValidURI(stringForm))
+		if (!StandardURIChecker.getInstance().isValidURI(anyURI))
 		{
-			throw new IllegalArgumentException("Invalid value for xs:anyURI: " + stringForm);
+			throw new IllegalArgumentException("Invalid value for xs:anyURI: " + anyURI);
 		}
 
-		return stringForm;
+		return anyURI;
 	}
 
 	@Override
-	public AnyURIAttributeValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public String printXML()
 	{
-		return this;
+		return this.value;
 	}
 
 	// /**

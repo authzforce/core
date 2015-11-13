@@ -3,28 +3,24 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
  */
-package com.thalesgroup.authzforce.core.func;
+package org.ow2.authzforce.core.func;
 
-import com.sun.xacml.cond.Function;
-import com.thalesgroup.authzforce.core.BasePdpExtensionRegistry;
-import com.thalesgroup.authzforce.core.Expression.Datatype;
-import com.thalesgroup.authzforce.core.datatypes.AttributeValue;
+import org.ow2.authzforce.core.BasePdpExtensionRegistry;
+import org.ow2.authzforce.core.value.AttributeValue;
+import org.ow2.authzforce.core.value.DatatypeFactory;
+
+import com.sun.xacml.Function;
 
 /**
  * 
@@ -36,23 +32,24 @@ public class FunctionRegistry
 	private final BasePdpExtensionRegistry<Function<?>> nonGenericFunctionRegistry;
 	private final BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericHigherOrderFunctionFactoryRegistry;
 
-	protected FunctionRegistry(BasePdpExtensionRegistry<Function<?>> nonGenericFunctionRegistry, BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFunctionFactoryRegistry)
+	protected FunctionRegistry(BasePdpExtensionRegistry<Function<?>> nonGenericFunctionRegistry,
+			BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFunctionFactoryRegistry)
 	{
 		this.nonGenericFunctionRegistry = new BasePdpExtensionRegistry<>(Function.class, nonGenericFunctionRegistry);
 		this.genericHigherOrderFunctionFactoryRegistry = new BasePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class, genericFunctionFactoryRegistry);
 	}
 
 	/**
-	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for
-	 * instance to build a new registry based on a standard one (e.g.
-	 * {@link StandardFunctionRegistry} for standard functions).
+	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for instance to build a new registry based on a standard one
+	 * (e.g. {@link StandardFunctionRegistry} for standard functions).
 	 * 
 	 * @param baseRegistry
 	 *            the base/parent registry on which this one is based or null
 	 */
 	public FunctionRegistry(FunctionRegistry baseRegistry)
 	{
-		this(baseRegistry == null ? new BasePdpExtensionRegistry<Function<?>>(Function.class) : new BasePdpExtensionRegistry<>(Function.class, baseRegistry.nonGenericFunctionRegistry), baseRegistry == null ? new BasePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class)
+		this(baseRegistry == null ? new BasePdpExtensionRegistry<Function<?>>(Function.class) : new BasePdpExtensionRegistry<>(Function.class,
+				baseRegistry.nonGenericFunctionRegistry), baseRegistry == null ? new BasePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class)
 				: new BasePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class, baseRegistry.genericHigherOrderFunctionFactoryRegistry));
 	}
 
@@ -68,16 +65,14 @@ public class FunctionRegistry
 	}
 
 	/**
-	 * Get a (non-generic) function by ID. 'Non-generic' here means the function is either
-	 * first-order, or higher-order but does not need the specific sub-function parameter to be
-	 * instantiated.
+	 * Get a (non-generic) function by ID. 'Non-generic' here means the function is either first-order, or higher-order but does not need the specific
+	 * sub-function parameter to be instantiated.
 	 * 
 	 * @param functionId
 	 *            ID of function to loop up
 	 * 
-	 * @return function instance, null if none with such ID in the registry of non-generic
-	 *         functions, in which case it may be a generic function and you should try
-	 *         {@link #getFunction(String, Datatype)} instead.
+	 * @return function instance, null if none with such ID in the registry of non-generic functions, in which case it may be a generic function and you should
+	 *         try {@link #getFunction(String, DatatypeFactory)} instead.
 	 */
 	public Function<?> getFunction(String functionId)
 	{
@@ -85,19 +80,17 @@ public class FunctionRegistry
 	}
 
 	/**
-	 * Get any function including generic ones. 'Generic' here means the function is a higher-order
-	 * function that is instantiated for a specific sub-function. For instance, the
-	 * {@link MapFunction} function class takes the sub-function's return type as type parameter and
-	 * therefore it needs this sub-function's return type to be instantiated (this is done via the
-	 * {@link MapFunction}).
+	 * Get any function including generic ones. 'Generic' here means the function is a higher-order function that is instantiated for a specific sub-function.
+	 * For instance, the {@link MapFunction} function class takes the sub-function's return type as type parameter and therefore it needs this sub-function's
+	 * return type to be instantiated (this is done via the {@link MapFunction}).
 	 * 
 	 * @param functionId
 	 *            function ID
-	 * @param subFunctionReturnType
-	 *            sub-function return class
+	 * @param subFunctionReturnTypeFactory
+	 *            sub-function return datatype factory
 	 * @return function instance
 	 */
-	public <SUB_RETURN_T extends AttributeValue<SUB_RETURN_T>> Function<?> getFunction(String functionId, Datatype<SUB_RETURN_T> subFunctionReturnType)
+	public <SUB_RETURN_T extends AttributeValue> Function<?> getFunction(String functionId, DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory)
 	{
 		final Function<?> nonGenericFunc = nonGenericFunctionRegistry.getExtension(functionId);
 		if (nonGenericFunc != null)
@@ -106,7 +99,7 @@ public class FunctionRegistry
 		}
 
 		final GenericHigherOrderFunctionFactory funcFactory = genericHigherOrderFunctionFactoryRegistry.getExtension(functionId);
-		return funcFactory.getInstance(subFunctionReturnType);
+		return funcFactory.getInstance(subFunctionReturnTypeFactory);
 	}
 
 }

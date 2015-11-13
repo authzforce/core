@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core.combining;
+package org.ow2.authzforce.core.combining;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,55 +19,37 @@ import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
-import com.sun.xacml.combine.CombinerElement;
-import com.sun.xacml.combine.CombiningAlgorithm;
-import com.thalesgroup.authzforce.core.Decidable;
-import com.thalesgroup.authzforce.core.DecisionResult;
-import com.thalesgroup.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.Decidable;
+import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.EvaluationContext;
 
 /**
  * permit-unless-deny policy algorithm
  * 
  */
-public final class PermitUnlessDenyAlg extends CombiningAlgorithm<Decidable>
+public final class PermitUnlessDenyAlg extends CombiningAlg<Decidable>
 {
-
-	/**
-	 * The standard URN used to identify this algorithm
-	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny" };
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgorithmSet SET;
-	static
+	private static class Evaluator implements CombiningAlg.Evaluator
 	{
-		final Set<CombiningAlgorithm<?>> algSet = new HashSet<>();
-		for (final String algId : SUPPORTED_IDENTIFIERS)
+
+		private final List<? extends Decidable> combinedElements;
+
+		private Evaluator(List<? extends Decidable> combinedElements)
 		{
-			algSet.add(new PermitUnlessDenyAlg(algId));
+			this.combinedElements = combinedElements;
 		}
 
-		SET = new CombiningAlgorithmSet(algSet);
-	}
-
-	private PermitUnlessDenyAlg(String algId)
-	{
-		super(algId, false, Decidable.class);
-	}
-
-	@Override
-	public DecisionResult combine(EvaluationContext context, List<CombinerElement<? extends Decidable>> parameters, List<? extends Decidable> combinedElements)
-	{
-		DecisionResult combinedPermitResult = null;
-
-		for (Decidable combinedElement : combinedElements)
+		@Override
+		public DecisionResult eval(EvaluationContext context)
 		{
-			final DecisionResult result = combinedElement.evaluate(context);
-			final DecisionType decision = result.getDecision();
-			switch (decision)
+			DecisionResult combinedPermitResult = null;
+
+			for (Decidable combinedElement : combinedElements)
 			{
+				final DecisionResult result = combinedElement.evaluate(context);
+				final DecisionType decision = result.getDecision();
+				switch (decision)
+				{
 				case DENY:
 					return result;
 				case PERMIT:
@@ -81,10 +58,44 @@ public final class PermitUnlessDenyAlg extends CombiningAlgorithm<Decidable>
 					break;
 				default:
 					continue;
+				}
 			}
+
+			return combinedPermitResult == null ? DecisionResult.PERMIT : combinedPermitResult;
 		}
 
-		return combinedPermitResult == null ? DecisionResult.PERMIT : combinedPermitResult;
+	}
+
+	@Override
+	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
+	{
+		return new Evaluator(combinedElements);
+	}
+
+	/**
+	 * The standard URN used to identify this algorithm
+	 */
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny" };
+
+	/**
+	 * Supported algorithms
+	 */
+	public static final CombiningAlgSet SET;
+	static
+	{
+		final Set<CombiningAlg<?>> algSet = new HashSet<>();
+		for (final String algId : SUPPORTED_IDENTIFIERS)
+		{
+			algSet.add(new PermitUnlessDenyAlg(algId));
+		}
+
+		SET = new CombiningAlgSet(algSet);
+	}
+
+	private PermitUnlessDenyAlg(String algId)
+	{
+		super(algId, false, Decidable.class);
 	}
 
 }

@@ -1,35 +1,25 @@
 /**
  *
- *  Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
+ * Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  *
- *    1. Redistribution of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
+ * 1. Redistribution of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
  *
- *    2. Redistribution in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
+ * 2. Redistribution in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
  *
- *  Neither the name of Sun Microsystems, Inc. or the names of contributors may
- *  be used to endorse or promote products derived from this software without
- *  specific prior written permission.
+ * Neither the name of Sun Microsystems, Inc. or the names of contributors may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
  *
- *  This software is provided "AS IS," without a warranty of any kind. ALL
- *  EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING
- *  ANY IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE
- *  OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN")
- *  AND ITS LICENSORS SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE
- *  AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS
- *  DERIVATIVES. IN NO EVENT WILL SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST
- *  REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL,
- *  INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY
- *  OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE,
- *  EVEN IF SUN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+ * This software is provided "AS IS," without a warranty of any kind. ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED
+ * WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN") AND ITS LICENSORS
+ * SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES. IN NO EVENT WILL
+ * SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER
+ * CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGES.
  *
- *  You acknowledge that this software is not designed or intended for use in
- *  the design, construction, operation or maintenance of any nuclear facility.
+ * You acknowledge that this software is not designed or intended for use in the design, construction, operation or maintenance of any nuclear facility.
  */
 package com.sun.xacml;
 
@@ -50,40 +40,43 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
+import org.ow2.authzforce.core.DecisionCache;
+import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.DecisionResultFilter;
+import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.IndividualDecisionRequest;
+import org.ow2.authzforce.core.IndividualDecisionRequestEvaluator;
+import org.ow2.authzforce.core.PdpExtensionLoader;
+import org.ow2.authzforce.core.RequestFilter;
+import org.ow2.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
+import org.ow2.authzforce.core.expression.AttributeGUID;
+import org.ow2.authzforce.core.func.FunctionRegistry;
+import org.ow2.authzforce.core.policy.RootPolicyEvaluator;
+import org.ow2.authzforce.core.value.Bag;
+import org.ow2.authzforce.core.value.Bags;
+import org.ow2.authzforce.core.value.DatatypeConstants;
+import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.value.DateTimeValue;
+import org.ow2.authzforce.core.value.DateValue;
+import org.ow2.authzforce.core.value.TimeValue;
+import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
+import org.ow2.authzforce.xacml.identifiers.XACMLCategory;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeFinder;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thalesgroup.authzforce.core.DecisionCache;
-import com.thalesgroup.authzforce.core.DecisionResult;
-import com.thalesgroup.authzforce.core.DecisionResultFilter;
-import com.thalesgroup.authzforce.core.EvaluationContext;
-import com.thalesgroup.authzforce.core.IndeterminateEvaluationException;
-import com.thalesgroup.authzforce.core.IndividualDecisionRequest;
-import com.thalesgroup.authzforce.core.IndividualDecisionRequestContext;
-import com.thalesgroup.authzforce.core.RequestFilter;
-import com.thalesgroup.authzforce.core.StatusHelper;
-import com.thalesgroup.authzforce.core.datatypes.AttributeGUID;
-import com.thalesgroup.authzforce.core.datatypes.Bag;
-import com.thalesgroup.authzforce.core.datatypes.DatatypeConstants;
-import com.thalesgroup.authzforce.core.datatypes.DateAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.DateTimeAttributeValue;
-import com.thalesgroup.authzforce.core.datatypes.TimeAttributeValue;
-import com.thalesgroup.authzforce.core.policy.RootPolicyFinder;
-import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLAttributeId;
-import com.thalesgroup.authzforce.xacml._3_0.identifiers.XACMLCategory;
-
 /**
- * This is the core class for the XACML engine, providing the starting point for request evaluation.
- * To build an XACML policy engine, you start by instantiating this object.
+ * This is the core class for the XACML engine, providing the starting point for request evaluation. To build an XACML policy engine, you start by instantiating
+ * this object.
  * <p>
- * This class implements {@link Closeable} because it depends on various modules - e.g. the root
- * policy finder, an optional decision cache - that may very likely hold resources such as network
- * resources and caches to get: the root policy or policies referenced by the root policy; or to get
- * attributes used in the policies from remote sources when not provided in the Request; or to get
- * cached decisions for requests already evaluated in the past, etc. Therefore, you are required to
- * call {@link #close()} when you no longer need an instance - especially before replacing with a
- * new instance - in order to make sure these resources are released properly by each underlying
- * module (e.g. invalidate the attribute caches and/or network resources).
+ * This class implements {@link Closeable} because it depends on various modules - e.g. the root policy finder, an optional decision cache - that may very
+ * likely hold resources such as network resources and caches to get: the root policy or policies referenced by the root policy; or to get attributes used in
+ * the policies from remote sources when not provided in the Request; or to get cached decisions for requests already evaluated in the past, etc. Therefore, you
+ * are required to call {@link #close()} when you no longer need an instance - especially before replacing with a new instance - in order to make sure these
+ * resources are released properly by each underlying module (e.g. invalidate the attribute caches and/or network resources).
  * 
  * @since 1.0
  * @author Seth Proctor
@@ -97,21 +90,24 @@ public class PDP implements Closeable
 	/**
 	 * Indeterminate response if ReturnPolicyIdList not supported.
 	 */
-	private static final Response UNSUPPORTED_POLICY_ID_LIST_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new StatusHelper("Unsupported feature (XACML optional): <PolicyIdentifierList>, ReturnPolicyIdList='true'", StatusHelper.STATUS_SYNTAX_ERROR))));
-
-	private static final Result INVALID_DECISION_CACHE_RESULT = new DecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Internal error"));
+	private static final Response UNSUPPORTED_POLICY_ID_LIST_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new StatusHelper(
+			"Unsupported feature (XACML optional): <PolicyIdentifierList>, ReturnPolicyIdList='true'", StatusHelper.STATUS_SYNTAX_ERROR))));
 
 	/**
-	 * Indeterminate response iff CombinedDecision element not supported because the request parser
-	 * does not support any scheme from MultipleDecisionProfile section 2.
+	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any scheme from MultipleDecisionProfile
+	 * section 2.
 	 */
-	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new StatusHelper("Unsupported feature: CombinedDecision='true'", StatusHelper.STATUS_PROCESSING_ERROR))));
+	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new DecisionResult(new StatusHelper(
+			"Unsupported feature: CombinedDecision='true'", StatusHelper.STATUS_PROCESSING_ERROR))));
 
-	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
+	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(
+			XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
 
-	private static final AttributeGUID ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value());
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID = new AttributeGUID(
+			XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value());
 
-	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(
+			XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
 
 	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
 	{
@@ -137,54 +133,36 @@ public class PDP implements Closeable
 
 	};
 
-	private class IndividualDecisionRequestEvaluator
-	{
-		protected final Result evaluate(IndividualDecisionRequest request, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
-		{
-			// convert to EvaluationContext
-			final Map<AttributeGUID, Bag<?>> namedAttributes = request.getNamedAttributes();
-			namedAttributes.putAll(pdpIssuedAttributes);
-			final EvaluationContext ctx = new IndividualDecisionRequestContext(namedAttributes, request.getExtraContentsByCategory(), request.getDefaultXPathCompiler());
-			final DecisionResult result = rootPolicyFinder.findAndEvaluate(ctx);
-			result.setAttributes(request.getAttributesIncludedInResult());
-			return result;
-		}
-
-		protected List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
-		{
-			final List<Result> results = new ArrayList<>(individualDecisionRequests.size());
-			for (final IndividualDecisionRequest request : individualDecisionRequests)
-			{
-				final Result result = evaluate(request, pdpIssuedAttributes);
-				results.add(result);
-			}
-
-			return results;
-		}
-	}
-
-	private final RootPolicyFinder rootPolicyFinder;
+	private final RootPolicyEvaluator rootPolicyFinder;
 	private final DecisionCache decisionCache;
 	private final RequestFilter reqFilter;
 	private final IndividualDecisionRequestEvaluator individualReqEvaluator;
 	private final DecisionResultFilter resultFilter;
 
-	private class CachingIndividualRequestEvaluator extends IndividualDecisionRequestEvaluator
+	private static class CachingIndividualRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
+		// the logger we'll use for all messages
+		private static final Logger _LOGGER = LoggerFactory.getLogger(CachingIndividualRequestEvaluator.class);
 
-		private CachingIndividualRequestEvaluator()
+		private static final Result INVALID_DECISION_CACHE_RESULT = new DecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Internal error"));
+
+		private final DecisionCache decisionCache;
+
+		private CachingIndividualRequestEvaluator(RootPolicyEvaluator rootPolicyEvaluator, DecisionCache decisionCache)
 		{
+			super(rootPolicyEvaluator);
 			assert decisionCache != null;
+			this.decisionCache = decisionCache;
 		}
 
 		@Override
-		protected final List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		public final List<Result> evaluate(List<IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
 			final Map<IndividualDecisionRequest, Result> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
 				// error, return indeterminate result as only result
-				LOGGER.error("Invalid decision cache result: null");
+				_LOGGER.error("Invalid decision cache result: null");
 				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
 			}
 
@@ -194,7 +172,8 @@ public class PDP implements Closeable
 			if (cachedResultsByRequest.size() != individualDecisionRequests.size())
 			{
 				// error, return indeterminate result as only result
-				LOGGER.error("Invalid decision cache result: number of returned decision results ({}) != number of input (individual) decision requests ({})", cachedResultsByRequest.size(), individualDecisionRequests.size());
+				_LOGGER.error("Invalid decision cache result: number of returned decision results ({}) != number of input (individual) decision requests ({})",
+						cachedResultsByRequest.size(), individualDecisionRequests.size());
 				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
 			}
 
@@ -227,46 +206,87 @@ public class PDP implements Closeable
 	/**
 	 * Constructs a new <code>PDP</code> object with the given configuration information.
 	 * 
-	 * @param rootPolicyFinder
-	 *            root policy finder (mandatory/not null)
+	 * @param attributeFactory
+	 *            attribute value factory - mandatory
+	 * @param functionRegistry
+	 *            function registry - mandatory
+	 * @param jaxbAttributeFinderConfs
+	 *            XML/JAXB configurations of Attribute Finders for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
+	 *            evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
+	 * @param maxVariableReferenceDepth
+	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference)
+	 * @param allowAttributeSelectors
+	 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
 	 * @param requestFilter
-	 *            request filter (XACML Request processing prior to policy evaluation)
+	 *            request filter (XACML Request processing prior to policy evaluation) - mandatory
 	 * @param decisionResultFilter
-	 *            decision result filter (XACML Result processing after policy evaluation, before
-	 *            creating/returning final XACML Response)
-	 * @param decisionCache
-	 *            decision response cache
+	 *            decision result filter (XACML Result processing after policy evaluation, before creating/returning final XACML Response)
+	 * @param jaxbDecisionCacheConf
+	 *            decision response cache XML/JAXB configuration
+	 * @param jaxbRootPolicyFinderConf
+	 *            root policy finder's XML/JAXB configuration - mandatory
+	 * @param combiningAlgRegistry
+	 *            XACML policy/rule combining algorithm registry - mandatory
+	 * @param jaxbRefPolicyFinderConf
+	 *            policy-by-reference finder's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies found by root
+	 *            policy finder
+	 * @param maxPolicySetRefDepth
+	 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...
 	 * @throws IllegalArgumentException
-	 *             if rootPolicyFinder or requestParser is null
+	 *             if one of the mandatory arguments is null
+	 * @throws IOException
+	 *             error closing the root policy finder when static resolution is to be used; or error closing the attribute finder modules created from
+	 *             {@code jaxbAttributeFinderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 * 
 	 */
-	public PDP(RootPolicyFinder rootPolicyFinder, RequestFilter requestFilter, DecisionResultFilter decisionResultFilter, DecisionCache decisionCache) throws IllegalArgumentException
+	public PDP(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeFinder> jaxbAttributeFinderConfs,
+			int maxVariableReferenceDepth, boolean allowAttributeSelectors, CombiningAlgRegistry combiningAlgRegistry,
+			AbstractPolicyFinder jaxbRootPolicyFinderConf, AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth, RequestFilter requestFilter,
+			DecisionResultFilter decisionResultFilter, AbstractDecisionCache jaxbDecisionCacheConf) throws IllegalArgumentException, IOException
 	{
-		if (rootPolicyFinder == null)
-		{
-			throw new IllegalArgumentException("Undefined root/top-level PolicyFinder for PDP");
-		}
-
 		if (requestFilter == null)
 		{
 			throw new IllegalArgumentException("Undefined RequestFilter for PDP");
 		}
 
-		this.rootPolicyFinder = rootPolicyFinder;
+		final RootPolicyEvaluator.Base candidateRootPolicyFinder = new RootPolicyEvaluator.Base(attributeFactory, functionRegistry, jaxbAttributeFinderConfs,
+				maxVariableReferenceDepth, allowAttributeSelectors, combiningAlgRegistry, jaxbRootPolicyFinderConf, jaxbRefPolicyFinderConf,
+				maxPolicySetRefDepth);
+		// Use static resolution if possible
+		final RootPolicyEvaluator staticRootPolicyFinder = candidateRootPolicyFinder.toStatic();
+		if (staticRootPolicyFinder == null)
+		{
+			this.rootPolicyFinder = candidateRootPolicyFinder;
+		} else
+		{
+			this.rootPolicyFinder = staticRootPolicyFinder;
+		}
+
 		this.reqFilter = requestFilter;
-		this.decisionCache = decisionCache == null || decisionCache.isDisabled() ? null : decisionCache;
-		this.individualReqEvaluator = this.decisionCache == null ? new IndividualDecisionRequestEvaluator() : new CachingIndividualRequestEvaluator();
+
+		// decision cache
+		if (jaxbDecisionCacheConf == null)
+		{
+			this.decisionCache = null;
+		} else
+		{
+			final DecisionCache.Factory<AbstractDecisionCache> responseCacheStoreFactory = PdpExtensionLoader.getJaxbBoundExtension(
+					DecisionCache.Factory.class, jaxbDecisionCacheConf.getClass());
+			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
+		}
+
+		this.individualReqEvaluator = this.decisionCache == null ? new IndividualDecisionRequestEvaluator(rootPolicyFinder)
+				: new CachingIndividualRequestEvaluator(rootPolicyFinder, this.decisionCache);
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
 	/**
-	 * Attempts to evaluate the request against the policies known to this PDP. This is really the
-	 * core method of the entire XACML specification, and for most people will provide what you
-	 * want. If you need any special handling, you should look at the version of this method that
-	 * takes an <code>EvaluationContext</code>.
+	 * Attempts to evaluate the request against the policies known to this PDP. This is really the core method of the entire XACML specification, and for most
+	 * people will provide what you want. If you need any special handling, you should look at the version of this method that takes an
+	 * <code>EvaluationContext</code>.
 	 * <p>
-	 * Note that if the request is somehow invalid (it was missing a required attribute, it was
-	 * using an unsupported scope, etc), then the result will be a decision of INDETERMINATE.
+	 * Note that if the request is somehow invalid (it was missing a required attribute, it was using an unsupported scope, etc), then the result will be a
+	 * decision of INDETERMINATE.
 	 * 
 	 * @param request
 	 *            the request to evaluate
@@ -275,38 +295,33 @@ public class PDP implements Closeable
 	public Response evaluate(Request request)
 	{
 		/*
-		 * We do not support <PolicyIdentifierList> (optional feature of XACML spec), therefore not
-		 * ReturnPolicyIdentifierList = true either.
+		 * We do not support <PolicyIdentifierList> (optional feature of XACML spec), therefore not ReturnPolicyIdentifierList = true either.
 		 */
 		if (request.isReturnPolicyIdList())
 		{
 			/*
-			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error
-			 * code for unsupported element
+			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error code for unsupported element
 			 */
 			return UNSUPPORTED_POLICY_ID_LIST_RESPONSE;
 		}
 
 		/*
-		 * No support for CombinedDecision = true if no decisionCombiner defined. (The use of the
-		 * CombinedDecision attribute is specified in Multiple Decision Profile.)
+		 * No support for CombinedDecision = true if no decisionCombiner defined. (The use of the CombinedDecision attribute is specified in Multiple Decision
+		 * Profile.)
 		 */
 		if (request.isCombinedDecision() && !resultFilter.supportsMultipleDecisionCombining())
 		{
 			/*
-			 * According to XACML core spec, 5.42, "If the PDP does not implement the relevant
-			 * functionality in [Multiple Decision Profile], then the PDP must return an
-			 * Indeterminate with a status code of
-			 * urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with
-			 * this attribute set to “true”.
+			 * According to XACML core spec, 5.42, "If the PDP does not implement the relevant functionality in [Multiple Decision Profile], then the PDP must
+			 * return an Indeterminate with a status code of urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute
+			 * set to �true�.
 			 */
 			return UNSUPPORTED_COMBINED_DECISION_RESPONSE;
 		}
 
 		/*
-		 * The request parser may return multiple individual decision requests from a single
-		 * Request, e.g. if the request parser implements the Multiple Decision profile or
-		 * Hierarchical Resource profile
+		 * The request parser may return multiple individual decision requests from a single Request, e.g. if the request parser implements the Multiple
+		 * Decision profile or Hierarchical Resource profile
 		 */
 		final List<IndividualDecisionRequest> individualDecisionRequests;
 		try
@@ -318,20 +333,20 @@ public class PDP implements Closeable
 			return new Response(Collections.<Result> singletonList(new DecisionResult(e.getStatus())));
 		}
 		/*
-		 * Every request context (named attributes) is completed with common current date/time
-		 * attribute (same values) set/"issued" locally (here by the PDP engine) according to XACML
-		 * core spec:
-		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created."
-		 * (§ B.7).
+		 * Every request context (named attributes) is completed with common current date/time attribute (same values) set/"issued" locally (here by the PDP
+		 * engine) according to XACML core spec:
+		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (� B.7).
 		 */
 		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>();
 		// current datetime
-		final DateTimeAttributeValue currentDateTimeValue = new DateTimeAttributeValue(new GregorianCalendar());
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bag.singleton(DatatypeConstants.DATETIME.BAG_TYPE, currentDateTimeValue));
+		final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATETIME.TYPE, currentDateTimeValue));
 		// current date
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, Bag.singleton(DatatypeConstants.DATE.BAG_TYPE, DateAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID,
+				Bags.singleton(DatatypeConstants.DATE.TYPE, DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 		// current time
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, Bag.singleton(DatatypeConstants.TIME.BAG_TYPE, TimeAttributeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID,
+				Bags.singleton(DatatypeConstants.TIME.TYPE, TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 
 		// evaluate the individual decision requests with the extra common attributes set previously
 		final List<Result> results = individualReqEvaluator.evaluate(individualDecisionRequests, pdpIssuedAttributes);
@@ -342,8 +357,11 @@ public class PDP implements Closeable
 	@Override
 	public void close() throws IOException
 	{
-		decisionCache.close();
 		rootPolicyFinder.close();
+		if (decisionCache != null)
+		{
+			decisionCache.close();
+		}
 	}
 
 }

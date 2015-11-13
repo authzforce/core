@@ -3,30 +3,26 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.thalesgroup.authzforce.core;
+package org.ow2.authzforce.core;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is a com.thalesgroup.authzforce.core.test.basic implementation of
- * <code>PdpExtensionRegistry</code>.
+ * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>PdpExtensionRegistry</code>.
  * 
  * @param <T>
  *            type of extension in this registry
@@ -52,7 +48,7 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 	 * @param extensionsById
 	 *            extensions indexed by ID
 	 */
-	public BasePdpExtensionRegistry(Class<? super T> extensionClass, Map<String, T> extensionsById)
+	private BasePdpExtensionRegistry(Class<? super T> extensionClass, Map<String, T> extensionsById)
 	{
 		if (extensionClass == null)
 		{
@@ -69,6 +65,40 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 	}
 
 	/**
+	 * Instantiates immutable registry from a set of extensions
+	 * 
+	 * @param extensionClass
+	 *            extension class
+	 * 
+	 * @param extensions
+	 *            extensions
+	 */
+	public BasePdpExtensionRegistry(Class<? super T> extensionClass, Set<T> extensions)
+	{
+		if (extensionClass == null)
+		{
+			throw NULL_EXTENSION_CLASS_EXCEPTION;
+		}
+
+		if (extensions == null)
+		{
+			throw NULL_EXTENSIONS_EXCEPTION;
+		}
+
+		this.extClass = extensionClass;
+
+		final Map<String, T> mutableMap = new HashMap<>();
+		for (final T extension : extensions)
+		{
+			final String id = extension.getId();
+
+			mutableMap.put(id, extension);
+		}
+
+		this.extensionsById = Collections.unmodifiableMap(mutableMap);
+	}
+
+	/**
 	 * Default constructor. No superset factory is used.
 	 * 
 	 * @param extensionClass
@@ -80,9 +110,8 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 	}
 
 	/**
-	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for
-	 * instance to build a new registry based on a standard one like the StandardFunctionRegistry
-	 * for standard functions).
+	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for instance to build a new registry based on a standard one
+	 * like the StandardFunctionRegistry for standard functions).
 	 * 
 	 * @param baseRegistry
 	 *            the base/parent registry on which this one is based or null
