@@ -66,8 +66,8 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
 	private static final IllegalArgumentException NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException(
 			"AttributeSelector's input XACML/JAXB AttributeSelector element undefined");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION = new IllegalArgumentException(
-			"Attribute finder undefined but required for non-null ContextSelectorId in AttributeSelector");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_Provider_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION = new IllegalArgumentException(
+			"Attribute Provider undefined but required for non-null ContextSelectorId in AttributeSelector");
 	private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException(
 			"XPath version/compiler undefined but required for AttributeSelector evaluation");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_FACTORY_EXCEPTION = new IllegalArgumentException(
@@ -148,7 +148,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 
 	private final transient String missingAttributeMessage;
 
-	private final transient AttributeProvider attrFinder;
+	private final transient AttributeProvider attrProvider;
 
 	private final transient AttributeGUID contextSelectorGUID;
 
@@ -240,18 +240,18 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * @param xPathCompiler
 	 *            XPATH compiler used for compiling {@code attrSelectorElement.getPath()} and XPath given by {@code attrSelectorElement.getContextSelectorId()}
 	 *            if not null
-	 * @param attrFinder
-	 *            AttributeFinder for finding value of the attribute identified by ContextSelectorId in {@code attrSelectorElement}; may be null if
+	 * @param attrProvider
+	 *            AttributeProvider for finding value of the attribute identified by ContextSelectorId in {@code attrSelectorElement}; may be null if
 	 *            ContextSelectorId not specified
 	 * @param attrFactory
 	 *            attribute factory to create the AttributeValue(s) from the XML node(s) resolved by XPath
 	 * @throws XPathExpressionException
 	 *             if the Path could not be compiled to an XPath expression (using <code>namespaceContextNode</code> if non-null)
 	 * @throws IllegalArgumentException
-	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is null; or ContextSelectorId is not null but {@code attrFinder}
+	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is null; or ContextSelectorId is not null but {@code attrProvider}
 	 *             is null
 	 */
-	public AttributeSelectorExpression(AttributeSelectorType attrSelectorElement, XPathCompiler xPathCompiler, AttributeProvider attrFinder,
+	public AttributeSelectorExpression(AttributeSelectorType attrSelectorElement, XPathCompiler xPathCompiler, AttributeProvider attrProvider,
 			DatatypeFactory<AV> attrFactory) throws XPathExpressionException, IllegalArgumentException
 	{
 		if (attrSelectorElement == null)
@@ -280,19 +280,19 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 		if (contextSelectorId == null)
 		{
 			this.contextSelectorGUID = null;
-			this.attrFinder = null;
+			this.attrProvider = null;
 			this.missingContextSelectorAttributeExceptionMessage = null;
 			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category + "'";
 			this.xpathCompiler = null;
 		} else
 		{
-			if (attrFinder == null)
+			if (attrProvider == null)
 			{
-				throw NULL_ATTRIBUTE_FINDER_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION;
+				throw NULL_ATTRIBUTE_Provider_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION;
 			}
 
 			this.contextSelectorGUID = new AttributeGUID(category, null, contextSelectorId);
-			this.attrFinder = attrFinder;
+			this.attrProvider = attrProvider;
 			this.missingContextSelectorAttributeExceptionMessage = this + ": No value found for attribute designated by Category=" + category
 					+ " and ContextSelectorId=" + contextSelectorId;
 			this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + category
@@ -337,9 +337,9 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	}
 
 	/**
-	 * Invokes the <code>AttributeFinder</code> used by the given <code>EvaluationContext</code> to try to resolve an attribute value. If the selector is
+	 * Invokes the <code>AttributeProvider</code> used by the given <code>EvaluationContext</code> to try to resolve an attribute value. If the selector is
 	 * defined with MustBePresent as true, then failure to find a matching value will result in Indeterminate, otherwise it will result in an empty bag. To
-	 * support the com.thalesgroup.authzforce.core.test.basic selector functionality defined in the XACML specification, use a finder that has only the
+	 * support the com.thalesgroup.authzforce.core.test.basic selector functionality defined in the XACML specification, use a Provider that has only the
 	 * <code>SelectorModule</code> as a module that supports selector finding.
 	 * 
 	 * @param context
@@ -380,7 +380,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 				contextNode = contentNode;
 			} else
 			{
-				final Bag<XPathValue> bag = attrFinder.get(contextSelectorGUID, DatatypeConstants.XPATH.TYPE, context);
+				final Bag<XPathValue> bag = attrProvider.get(contextSelectorGUID, DatatypeConstants.XPATH.TYPE, context);
 				if (bag == null)
 				{
 					throw this.missingAttributeForUnknownReasonException;

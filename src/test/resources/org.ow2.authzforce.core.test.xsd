@@ -8,18 +8,18 @@
 	<xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext" />
 	<xs:annotation>
 		<xs:documentation xml:lang="en">
-			Data Model for Test Attribute Finder
+			Data Model for Test Attribute Provider
 		</xs:documentation>
 	</xs:annotation>
-	<xs:complexType name="TestAttributeFinder">
+	<xs:complexType name="TestAttributeProvider">
 		<xs:annotation>
 			<xs:documentation>
-				Test Attribute Finder. This finder is used for test purposes only. It can be
+				Test Attribute Provider. This Provider is used for test purposes only. It can be
 				configured to support any attribute but returns always an empty bag as attribute value.
 			</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
-			<xs:extension base="authz-ext:AbstractAttributeFinder">
+			<xs:extension base="authz-ext:AbstractAttributeProvider">
 				<xs:sequence>
 					<xs:element name="providedAttribute" type="xacml:AttributeDesignatorType" minOccurs="1" maxOccurs="10">
 						<xs:annotation>

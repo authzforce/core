@@ -8,12 +8,23 @@ import com.sun.xacml.VersionConstraints;
 
 class StaticPolicyRefEvaluator<P extends IPolicyEvaluator> extends PolicyReferenceEvaluator<P>
 {
+	private static final IllegalArgumentException UNDEF_POLICY_EXCEPTION = new IllegalArgumentException("undefined policy as target of static policy reference");
 	private final transient P referredPolicy;
 
 	StaticPolicyRefEvaluator(String policyIdRef, VersionConstraints versionConstraints, P referredPolicy)
 	{
-		super(policyIdRef, versionConstraints, (Class<P>) referredPolicy.getClass());
+		super(policyIdRef, versionConstraints, (Class<P>) validate(referredPolicy).getClass());
 		this.referredPolicy = referredPolicy;
+	}
+
+	private static <P extends IPolicyEvaluator> P validate(P referredPolicy)
+	{
+		if (referredPolicy == null)
+		{
+			throw UNDEF_POLICY_EXCEPTION;
+		}
+
+		return referredPolicy;
 	}
 
 	@Override

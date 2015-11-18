@@ -25,7 +25,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 /**
  * Attribute's Globally unique identifier, as opposed to AttributeId which is local to a specific category and/or issuer. Why not use AttributeDesignator?
  * Because we don't care about MustBePresent or Datatype for lookup here. This is used for example as key in a map to retrieve corresponding AttributeValue or
- * AttributeFinder module.
+ * AttributeProvider module.
  * <p>
  * WARNING: java.net.URI cannot be used here for XACML category and ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1],
  * not in java.net.URI.

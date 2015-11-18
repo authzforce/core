@@ -20,8 +20,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 import org.ow2.authzforce.core.test.conformance.ConformanceV3FromV2;
 import org.ow2.authzforce.core.test.conformance.ConformanceV3Others;
-import org.ow2.authzforce.core.test.custom.TestApply;
-import org.ow2.authzforce.core.test.custom.TestMatchAlg;
+import org.ow2.authzforce.core.test.custom.TestApplyMarshalling;
 import org.ow2.authzforce.core.test.func.BagFunctionsTest;
 import org.ow2.authzforce.core.test.func.DateTimeArithmeticFunctionsTest;
 import org.ow2.authzforce.core.test.func.EqualityFunctionsTest;
@@ -49,8 +48,8 @@ import org.slf4j.LoggerFactory;
 @SuiteClasses(value = { AnyURIAttributeTest.class, EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class,
 		NumericConversionFunctionsTest.class, LogicalFunctionsTest.class, NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class,
 		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class, SetFunctionsTest.class, HigherOrderFunctionsTest.class,
-		RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, TestMatchAlg.class, ConformanceV3FromV2.class, ConformanceV3Others.class,
-		TestApply.class, NonRegression.class })
+		RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, ConformanceV3FromV2.class, ConformanceV3Others.class, TestApplyMarshalling.class,
+		NonRegression.class })
 public class MainTest
 {
 	/**

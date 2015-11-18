@@ -26,8 +26,8 @@ import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
 import org.ow2.authzforce.core.func.FunctionRegistry;
 import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeFinder;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyFinder;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +56,7 @@ public interface RootPolicyEvaluator extends Closeable
 
 	/**
 	 * 
-	 * Static view of policy finder. The root policy is resolved once and for all at initialization time, and is then used for all evaluation requests.
+	 * Static view of policy Provider. The root policy is resolved once and for all at initialization time, and is then used for all evaluation requests.
 	 *
 	 */
 	class StaticView implements RootPolicyEvaluator
@@ -64,12 +64,12 @@ public interface RootPolicyEvaluator extends Closeable
 		private final IPolicyEvaluator staticRootPolicyEvaluator;
 		private final ExpressionFactory expressionFactory;
 
-		private StaticView(RootPolicyFinderModule.Static staticFinderModule, ExpressionFactory expressionFactoryForClosing) throws IOException
+		private StaticView(RootPolicyProviderModule.Static staticProviderModule, ExpressionFactory expressionFactoryForClosing) throws IOException
 		{
-			assert staticFinderModule != null && expressionFactoryForClosing != null;
+			assert staticProviderModule != null && expressionFactoryForClosing != null;
 			this.expressionFactory = expressionFactoryForClosing;
-			this.staticRootPolicyEvaluator = staticFinderModule.getRootPolicy();
-			staticFinderModule.close();
+			this.staticRootPolicyEvaluator = staticProviderModule.getRootPolicy();
+			staticProviderModule.close();
 		}
 
 		@Override
@@ -86,66 +86,66 @@ public interface RootPolicyEvaluator extends Closeable
 	}
 
 	/**
-	 * Root Policy Finder base implementation.
+	 * Root Policy Provider base implementation.
 	 */
 	class Base implements RootPolicyEvaluator
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(Base.class);
 
-		private final RootPolicyFinderModule rootPolicyFinderMod;
+		private final RootPolicyProviderModule rootPolicyProviderMod;
 
 		private final ExpressionFactory expressionFactory;
 
 		/**
-		 * Creates a root policy finder. If you want static resolution, i.e. use the same constant root policy (resolved at initialization time) for all
-		 * evaluations, use the static root policy finder provided by {@link #toStatic()} after calling this constructor; then {@link #close()} this instance.
+		 * Creates a root policy Provider. If you want static resolution, i.e. use the same constant root policy (resolved at initialization time) for all
+		 * evaluations, use the static root policy Provider provided by {@link #toStatic()} after calling this constructor; then {@link #close()} this instance.
 		 * 
 		 * @param attributeFactory
 		 *            attribute value factory - mandatory
 		 * @param functionRegistry
 		 *            function registry - mandatory
-		 * @param jaxbAttributeFinderConfs
-		 *            XML/JAXB configurations of Attribute Finders for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
+		 * @param jaxbAttributeProviderConfs
+		 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
 		 *            evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
 		 * @param maxVariableReferenceDepth
 		 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference)
 		 * @param allowAttributeSelectors
 		 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
 		 * 
-		 * @param jaxbRootPolicyFinderConf
-		 *            (mandatory) root policy finder's XML/JAXB configuration
+		 * @param jaxbRootPolicyProviderConf
+		 *            (mandatory) root policy Provider's XML/JAXB configuration
 		 * @param combiningAlgRegistry
 		 *            (mandatory) XACML policy/rule combining algorithm registry
-		 * @param jaxbRefPolicyFinderConf
-		 *            (optional) policy-by-reference finder's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies
-		 *            found by root policy finder
+		 * @param jaxbRefPolicyProviderConf
+		 *            (optional) policy-by-reference Provider's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies
+		 *            found by root policy Provider
 		 * @param maxPolicySetRefDepth
 		 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...
 		 * @throws IllegalArgumentException
-		 *             if one of the mandatory arguments is null; or if any of attribute finder modules created from {@code jaxbAttributeFinderConfs} does not
+		 *             if one of the mandatory arguments is null; or if any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not
 		 *             provide any attribute; or it is in conflict with another one already registered to provide the same or part of the same attributes.
 		 * @throws IOException
 		 */
-		public Base(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeFinder> jaxbAttributeFinderConfs,
+		public Base(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
 				int maxVariableReferenceDepth, boolean allowAttributeSelectors, CombiningAlgRegistry combiningAlgRegistry,
-				AbstractPolicyFinder jaxbRootPolicyFinderConf, AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth)
+				AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
 				throws IllegalArgumentException, IOException
 		{
-			if (jaxbRootPolicyFinderConf == null || combiningAlgRegistry == null)
+			if (jaxbRootPolicyProviderConf == null || combiningAlgRegistry == null)
 			{
 				throw new IllegalArgumentException(
-						"Invalid arguments to root policy finder creation: missing one of these args: root policy finder's XML/JAXB configuration (jaxbRootPolicyFinderConf), XACML Expression parser/factory (expressionFactory), combining algorithm registry (combiningAlgRegistry)");
+						"Invalid arguments to root policy Provider creation: missing one of these args: root policy Provider's XML/JAXB configuration (jaxbRootPolicyProviderConf), XACML Expression parser/factory (expressionFactory), combining algorithm registry (combiningAlgRegistry)");
 			}
 
 			// Initialize ExpressionFactory
-			this.expressionFactory = new ExpressionFactoryImpl(attributeFactory, functionRegistry, jaxbAttributeFinderConfs, maxVariableReferenceDepth,
+			this.expressionFactory = new ExpressionFactoryImpl(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth,
 					allowAttributeSelectors);
 
-			final RootPolicyFinderModule.Factory<AbstractPolicyFinder> rootPolicyFinderModFactory = PdpExtensionLoader.getJaxbBoundExtension(
-					RootPolicyFinderModule.Factory.class, jaxbRootPolicyFinderConf.getClass());
+			final RootPolicyProviderModule.Factory<AbstractPolicyProvider> rootPolicyProviderModFactory = PdpExtensionLoader.getJaxbBoundExtension(
+					RootPolicyProviderModule.Factory.class, jaxbRootPolicyProviderConf.getClass());
 
-			rootPolicyFinderMod = rootPolicyFinderModFactory.getInstance(jaxbRootPolicyFinderConf, this.expressionFactory, combiningAlgRegistry,
-					jaxbRefPolicyFinderConf, maxPolicySetRefDepth);
+			rootPolicyProviderMod = rootPolicyProviderModFactory.getInstance(jaxbRootPolicyProviderConf, this.expressionFactory, combiningAlgRegistry,
+					jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
 		}
 
 		@Override
@@ -154,14 +154,14 @@ public interface RootPolicyEvaluator extends Closeable
 			final IPolicyEvaluator policy;
 			try
 			{
-				policy = rootPolicyFinderMod.findPolicy(context);
+				policy = rootPolicyProviderMod.findPolicy(context);
 			} catch (IndeterminateEvaluationException e)
 			{
-				LOGGER.info("Error finding applicable root policy to evaluate with root policy finder module {}", rootPolicyFinderMod, e);
+				LOGGER.info("Error finding applicable root policy to evaluate with root policy Provider module {}", rootPolicyProviderMod, e);
 				return new DecisionResult(e.getStatus());
 			} catch (ParsingException e)
 			{
-				LOGGER.warn("Error parsing one of the possible root policies (handled by root policy finder module {})", rootPolicyFinderMod, e);
+				LOGGER.warn("Error parsing one of the possible root policies (handled by root policy Provider module {})", rootPolicyProviderMod, e);
 				return e.getIndeterminateResult();
 			}
 
@@ -177,26 +177,26 @@ public interface RootPolicyEvaluator extends Closeable
 		public void close() throws IOException
 		{
 			this.expressionFactory.close();
-			this.rootPolicyFinderMod.close();
+			this.rootPolicyProviderMod.close();
 		}
 
 		/**
-		 * Gets the static version of this policy finder, i.e. a policy finder using the same constant root policy resolved by this finder (once and for all)
-		 * when calling this method. This root policy will be used for all evaluations. This is possible only for finders independent from the evaluation
+		 * Gets the static version of this policy Provider, i.e. a policy Provider using the same constant root policy resolved by this Provider (once and for all)
+		 * when calling this method. This root policy will be used for all evaluations. This is possible only for Providers independent from the evaluation
 		 * context (static resolution).
 		 * 
-		 * @return static view of this policy finder; or null if none could be created because the finder depends on the evaluation context to find the root
-		 *         policy (no static resolution is possible). If not null, this finder's sub-module responsible for finding the policy in
-		 *         {@link #findAndEvaluate(EvaluationContext)} is closed (calling {@link RootPolicyFinderModule#close()} and therefore not useable anymore. The
-		 *         resulting static view must be used instead.
+		 * @return static view of this policy Provider; or null if none could be created because the Provider depends on the evaluation context to find the root
+		 *         policy (no static resolution is possible). If not null, this Provider's sub-module responsible for finding the policy in
+		 *         {@link #findAndEvaluate(EvaluationContext)} is closed (calling {@link RootPolicyProviderModule#close()} and therefore not useable anymore.
+		 *         The resulting static view must be used instead.
 		 * @throws IOException
-		 *             error closing the finder's sub-module responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext)}
+		 *             error closing the Provider's sub-module responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext)}
 		 */
 		public RootPolicyEvaluator toStatic() throws IOException
 		{
-			if (rootPolicyFinderMod instanceof RootPolicyFinderModule.Static)
+			if (rootPolicyProviderMod instanceof RootPolicyProviderModule.Static)
 			{
-				return new StaticView((RootPolicyFinderModule.Static) rootPolicyFinderMod, this.expressionFactory);
+				return new StaticView((RootPolicyProviderModule.Static) rootPolicyProviderMod, this.expressionFactory);
 			}
 
 			return null;

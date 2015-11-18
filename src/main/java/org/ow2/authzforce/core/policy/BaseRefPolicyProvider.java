@@ -21,8 +21,8 @@ import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.StatusHelper;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.policy.RefPolicyFinderModule.Factory;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyFinder;
+import org.ow2.authzforce.core.policy.RefPolicyProviderModule.Factory;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
@@ -33,28 +33,28 @@ import com.sun.xacml.VersionConstraints;
  * Implements {@link Closeable} because it may may use resources external to the JVM such as a cache, a disk, a connection to a remote server, etc. for
  * retrieving policies. Therefore, these resources must be released by calling {@link #close()} when it is no longer needed.
  */
-public class BaseRefPolicyFinder implements Closeable, RefPolicyFinder
+public class BaseRefPolicyProvider implements Closeable, RefPolicyProvider
 {
 	/*
-	 * Max PolicySet Reference depth. As there might be a need to use multiple ref policy finder modules in the future, we need to keep this global max as the
-	 * global RefPolicyFinder's field.
+	 * Max PolicySet Reference depth. As there might be a need to use multiple ref policy Provider modules in the future, we need to keep this global max as the
+	 * global RefPolicyProvider's field.
 	 */
 	private final int maxPolicySetRefDepth;
 
-	private final RefPolicyFinderModule refPolicyFinderMod;
+	private final RefPolicyProviderModule refPolicyProviderMod;
 
 	/**
-	 * Creates RefPolicyFinder instance
+	 * Creates RefPolicyProvider instance
 	 * 
-	 * @param refPolicyFinderMod
-	 *            referenced Policy finder module (supports Policy(Set)IdReferences)
+	 * @param refPolicyProviderMod
+	 *            referenced Policy Provider module (supports Policy(Set)IdReferences)
 	 * @param maxPolicySetRefDepth
 	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference: PolicySet1 -> PolicySet2 -> ...
 	 * 
 	 */
-	private BaseRefPolicyFinder(RefPolicyFinderModule refPolicyFinderMod, int maxPolicySetRefDepth)
+	private BaseRefPolicyProvider(RefPolicyProviderModule refPolicyProviderMod, int maxPolicySetRefDepth)
 	{
-		this.refPolicyFinderMod = refPolicyFinderMod;
+		this.refPolicyProviderMod = refPolicyProviderMod;
 		if (maxPolicySetRefDepth < 0)
 		{
 			throw new IllegalArgumentException("Invalid max PolicySet Reference depth: " + maxPolicySetRefDepth + ". Required: >= 0");
@@ -64,12 +64,12 @@ public class BaseRefPolicyFinder implements Closeable, RefPolicyFinder
 	}
 
 	/**
-	 * Creates RefPolicyFinder instance
+	 * Creates RefPolicyProvider instance
 	 * 
-	 * @param refPolicyFinderModFactory
-	 *            refPolicyFinder module factory for creating a module instance from configuration defined by {@code jaxbRefPolicyFinder}
-	 * @param jaxbRefPolicyFinder
-	 *            XML/JAXB configuration of RefPolicyFinder module
+	 * @param refPolicyProviderModFactory
+	 *            refPolicyProvider module factory for creating a module instance from configuration defined by {@code jaxbRefPolicyProvider}
+	 * @param jaxbRefPolicyProvider
+	 *            XML/JAXB configuration of RefPolicyProvider module
 	 * @param maxPolicySetRefDepth
 	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference: PolicySet1 -> PolicySet2 -> ...
 	 * @param expressionFactory
@@ -77,35 +77,35 @@ public class BaseRefPolicyFinder implements Closeable, RefPolicyFinder
 	 * @param combiningAlgRegistry
 	 *            Combining algorithm registry for getting implementations of algorithms used in the policies
 	 */
-	public BaseRefPolicyFinder(AbstractPolicyFinder jaxbRefPolicyFinder, Factory<AbstractPolicyFinder> refPolicyFinderModFactory,
+	public BaseRefPolicyProvider(AbstractPolicyProvider jaxbRefPolicyProvider, Factory<AbstractPolicyProvider> refPolicyProviderModFactory,
 			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, int maxPolicySetRefDepth)
 	{
-		this(refPolicyFinderModFactory.getInstance(jaxbRefPolicyFinder, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry), maxPolicySetRefDepth);
+		this(refPolicyProviderModFactory.getInstance(jaxbRefPolicyProvider, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry), maxPolicySetRefDepth);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.ow2.authzforce.core.policy.RefPolicyFinder#isStatic()
+	 * @see org.ow2.authzforce.core.policy.RefPolicyProvider#isStatic()
 	 */
 	@Override
 	public boolean isStatic()
 	{
-		return refPolicyFinderMod.isStatic();
+		return refPolicyProviderMod.isStatic();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.ow2.authzforce.core.policy.RefPolicyFinder#findPolicy(java.lang.String, com.sun.xacml.VersionConstraints, java.lang.Class, java.util.Deque)
+	 * @see org.ow2.authzforce.core.policy.RefPolicyProvider#findPolicy(java.lang.String, com.sun.xacml.VersionConstraints, java.lang.Class, java.util.Deque)
 	 */
 	@Override
-	public <T extends IPolicyEvaluator> T findPolicy(String idRef, VersionConstraints constraints, Class<T> refPolicyType, Deque<String> policySetRefChain)
+	public <T extends IPolicyEvaluator> T get(String idRef, VersionConstraints constraints, Class<T> refPolicyType, Deque<String> policySetRefChain)
 			throws ParsingException, IndeterminateEvaluationException
 	{
-		if (refPolicyFinderMod == null)
+		if (refPolicyProviderMod == null)
 		{
-			throw new IndeterminateEvaluationException("No RefPolicyFinder defined to resolve any Policy(Set)IdReference", StatusHelper.STATUS_PROCESSING_ERROR);
+			throw new IndeterminateEvaluationException("No RefPolicyProvider defined to resolve any Policy(Set)IdReference", StatusHelper.STATUS_PROCESSING_ERROR);
 		}
 
 		final Deque<String> newPolicySetRefChain;
@@ -118,12 +118,12 @@ public class BaseRefPolicyFinder implements Closeable, RefPolicyFinder
 			newPolicySetRefChain = policySetRefChain;
 		}
 
-		return refPolicyFinderMod.findPolicy(idRef, refPolicyType, constraints, newPolicySetRefChain);
+		return refPolicyProviderMod.findPolicy(idRef, refPolicyType, constraints, newPolicySetRefChain);
 	}
 
 	@Override
 	public void close() throws IOException
 	{
-		this.refPolicyFinderMod.close();
+		this.refPolicyProviderMod.close();
 	}
 }

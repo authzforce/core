@@ -22,12 +22,12 @@ import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
 
 /**
- * Policy-by-reference finder, used by the PDP to find policies referenced by Policy(Set)IdReference in PolicySets.
+ * Policy-by-reference provider, used by the PDP to get policies referenced by Policy(Set)IdReference in PolicySets.
  */
-public interface RefPolicyFinder
+public interface RefPolicyProvider
 {
 	/**
-	 * Utilities for RefPolicyFinders
+	 * Utilities for RefPolicyProvider sub-modules
 	 *
 	 */
 	class Utils
@@ -79,7 +79,7 @@ public interface RefPolicyFinder
 	/**
 	 * Finds a policy based on an id reference. This may involve using the reference as indexing data to lookup a policy.
 	 * 
-	 * @param idRef
+	 * @param policyIdRef
 	 *            the identifier used to resolve the policy by its Policy(Set)Id
 	 *            <p>
 	 *            WARNING: java.net.URI cannot be used here, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in
@@ -110,14 +110,14 @@ public interface RefPolicyFinder
 	 *            Collections.asLifoQueue(Deque) as well.)
 	 *            </p>
 	 * 
-	 * @return the policy matching the policy reference
+	 * @return the policy matching the policy reference; or null if no match
 	 * @throws ParsingException
-	 *             Error parsing found policy. The policy finder module may parse policies lazily or on the fly, i.e. only when the policy is requested/looked
+	 *             Error parsing found policy. The policy Provider module may parse policies lazily or on the fly, i.e. only when the policy is requested/looked
 	 *             for.
 	 * @throws IndeterminateEvaluationException
 	 *             if error determining a matching policy of type {@code policyType}
 	 */
-	<T extends IPolicyEvaluator> T findPolicy(String idRef, VersionConstraints constraints, Class<T> refPolicyType, Deque<String> policySetRefChain)
+	<T extends IPolicyEvaluator> T get(String policyIdRef, VersionConstraints constraints, Class<T> refPolicyType, Deque<String> policySetRefChain)
 			throws ParsingException, IndeterminateEvaluationException;
 
 }

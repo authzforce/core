@@ -62,9 +62,9 @@ import org.ow2.authzforce.core.value.DateValue;
 import org.ow2.authzforce.core.value.TimeValue;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
 import org.ow2.authzforce.xacml.identifiers.XACMLCategory;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeFinder;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyFinder;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +72,7 @@ import org.slf4j.LoggerFactory;
  * This is the core class for the XACML engine, providing the starting point for request evaluation. To build an XACML policy engine, you start by instantiating
  * this object.
  * <p>
- * This class implements {@link Closeable} because it depends on various modules - e.g. the root policy finder, an optional decision cache - that may very
+ * This class implements {@link Closeable} because it depends on various modules - e.g. the root policy Provider, an optional decision cache - that may very
  * likely hold resources such as network resources and caches to get: the root policy or policies referenced by the root policy; or to get attributes used in
  * the policies from remote sources when not provided in the Request; or to get cached decisions for requests already evaluated in the past, etc. Therefore, you
  * are required to call {@link #close()} when you no longer need an instance - especially before replacing with a new instance - in order to make sure these
@@ -133,7 +133,7 @@ public class PDP implements Closeable
 
 	};
 
-	private final RootPolicyEvaluator rootPolicyFinder;
+	private final RootPolicyEvaluator rootPolicyProvider;
 	private final DecisionCache decisionCache;
 	private final RequestFilter reqFilter;
 	private final IndividualDecisionRequestEvaluator individualReqEvaluator;
@@ -210,8 +210,8 @@ public class PDP implements Closeable
 	 *            attribute value factory - mandatory
 	 * @param functionRegistry
 	 *            function registry - mandatory
-	 * @param jaxbAttributeFinderConfs
-	 *            XML/JAXB configurations of Attribute Finders for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
+	 * @param jaxbAttributeProviderConfs
+	 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
 	 *            evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
 	 * @param maxVariableReferenceDepth
 	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference)
@@ -223,43 +223,44 @@ public class PDP implements Closeable
 	 *            decision result filter (XACML Result processing after policy evaluation, before creating/returning final XACML Response)
 	 * @param jaxbDecisionCacheConf
 	 *            decision response cache XML/JAXB configuration
-	 * @param jaxbRootPolicyFinderConf
-	 *            root policy finder's XML/JAXB configuration - mandatory
+	 * @param jaxbRootPolicyProviderConf
+	 *            root policy Provider's XML/JAXB configuration - mandatory
 	 * @param combiningAlgRegistry
 	 *            XACML policy/rule combining algorithm registry - mandatory
-	 * @param jaxbRefPolicyFinderConf
-	 *            policy-by-reference finder's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies found by root
-	 *            policy finder
+	 * @param jaxbRefPolicyProviderConf
+	 *            policy-by-reference Provider's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies found by root
+	 *            policy Provider
 	 * @param maxPolicySetRefDepth
 	 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...
 	 * @throws IllegalArgumentException
 	 *             if one of the mandatory arguments is null
 	 * @throws IOException
-	 *             error closing the root policy finder when static resolution is to be used; or error closing the attribute finder modules created from
-	 *             {@code jaxbAttributeFinderConfs}, when and before an {@link IllegalArgumentException} is raised
+	 *             error closing the root policy Provider when static resolution is to be used; or error closing the attribute Provider modules created from
+	 *             {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 * 
 	 */
-	public PDP(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeFinder> jaxbAttributeFinderConfs,
+	public PDP(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
 			int maxVariableReferenceDepth, boolean allowAttributeSelectors, CombiningAlgRegistry combiningAlgRegistry,
-			AbstractPolicyFinder jaxbRootPolicyFinderConf, AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth, RequestFilter requestFilter,
-			DecisionResultFilter decisionResultFilter, AbstractDecisionCache jaxbDecisionCacheConf) throws IllegalArgumentException, IOException
+			AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth,
+			RequestFilter requestFilter, DecisionResultFilter decisionResultFilter, AbstractDecisionCache jaxbDecisionCacheConf)
+			throws IllegalArgumentException, IOException
 	{
 		if (requestFilter == null)
 		{
 			throw new IllegalArgumentException("Undefined RequestFilter for PDP");
 		}
 
-		final RootPolicyEvaluator.Base candidateRootPolicyFinder = new RootPolicyEvaluator.Base(attributeFactory, functionRegistry, jaxbAttributeFinderConfs,
-				maxVariableReferenceDepth, allowAttributeSelectors, combiningAlgRegistry, jaxbRootPolicyFinderConf, jaxbRefPolicyFinderConf,
+		final RootPolicyEvaluator.Base candidateRootPolicyProvider = new RootPolicyEvaluator.Base(attributeFactory, functionRegistry, jaxbAttributeProviderConfs,
+				maxVariableReferenceDepth, allowAttributeSelectors, combiningAlgRegistry, jaxbRootPolicyProviderConf, jaxbRefPolicyProviderConf,
 				maxPolicySetRefDepth);
 		// Use static resolution if possible
-		final RootPolicyEvaluator staticRootPolicyFinder = candidateRootPolicyFinder.toStatic();
-		if (staticRootPolicyFinder == null)
+		final RootPolicyEvaluator staticRootPolicyProvider = candidateRootPolicyProvider.toStatic();
+		if (staticRootPolicyProvider == null)
 		{
-			this.rootPolicyFinder = candidateRootPolicyFinder;
+			this.rootPolicyProvider = candidateRootPolicyProvider;
 		} else
 		{
-			this.rootPolicyFinder = staticRootPolicyFinder;
+			this.rootPolicyProvider = staticRootPolicyProvider;
 		}
 
 		this.reqFilter = requestFilter;
@@ -275,8 +276,8 @@ public class PDP implements Closeable
 			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
 		}
 
-		this.individualReqEvaluator = this.decisionCache == null ? new IndividualDecisionRequestEvaluator(rootPolicyFinder)
-				: new CachingIndividualRequestEvaluator(rootPolicyFinder, this.decisionCache);
+		this.individualReqEvaluator = this.decisionCache == null ? new IndividualDecisionRequestEvaluator(rootPolicyProvider)
+				: new CachingIndividualRequestEvaluator(rootPolicyProvider, this.decisionCache);
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
@@ -357,7 +358,7 @@ public class PDP implements Closeable
 	@Override
 	public void close() throws IOException
 	{
-		rootPolicyFinder.close();
+		rootPolicyProvider.close();
 		if (decisionCache != null)
 		{
 			decisionCache.close();

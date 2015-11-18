@@ -163,7 +163,7 @@ public class PdpExtensionLoader
 	 * Get XML/JAXB-bound extension
 	 * 
 	 * @param extensionType
-	 *            type of extension, e.g. {@link org.ow2.authzforce.core.policy.RootPolicyFinderModule.Factory}, etc.
+	 *            type of extension, e.g. {@link org.ow2.authzforce.core.policy.RootPolicyProviderModule.Factory}, etc.
 	 * @param jaxbPdpExtensionClass
 	 *            JAXB class representing XML configuration type that the extension must support
 	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link JaxbBoundPdpExtension#getClass()} returns
@@ -185,7 +185,7 @@ public class PdpExtensionLoader
 	}
 
 	/**
-	 * Create instance of PDP extension (AttributeFinder, ReferencedPolicyFinder...) with input configuration. The extension implementation class has been
+	 * Create instance of PDP extension (AttributeProvider, ReferencedPolicyProvider...) with input configuration. The extension implementation class has been
 	 * discovered by {@link ServiceLoader} from files 'META-INF/services/com.thalesgroup.authzforce.core.IPdpExtensionFactory' on the classpath, in the format
 	 * described by {@link ServiceLoader} API documentation. Such class must have a constructor matching {@code constructorArgs} that is called to instantiate
 	 * the extension, or a default constructor that is called instead if none matching such parameters; and it must implement {@code IPdpExtensionFactory} and

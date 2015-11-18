@@ -12,7 +12,7 @@ Version | Date | Comment           |
 *  [Prerequisites](#prerequisites)
  *  [Sun Java JDK](#sun-java-jdk)
  *  [Tomcat Installation](#tomcat-installation)
-*  [Installing the Authorization Server](#installing-the-authorisation-server)
+*  [Installing the Authorization Server](#installing-the-authorization-server)
  *  [Unitary Tests](#unitary-tests)
  *  [Conformance Tests](#conformance-tests)
  *  [Installation](#installation)
@@ -33,13 +33,17 @@ Version | Date | Comment           |
 # Prerequisites
 ## Sun Java JDK
 The authorization server run on Java, so it is prerequisite to have java running on the server. For compatibility reasons, it is highly recommended to use Sun java instead of the Open Java that is now default for some Linux distributions. 
+
 ## Tomcat Installation 
 To run the Policy decision Point, you also need a Tomcat Server to deploy the AuthZForce-REST-[VERSION].war (Tomcat 6/0 was our testing version but tomcat 7 can be used too).
+
 # Installing the Authorization Server
 ## Unitary Tests
 TODO
+
 ## Conformance Tests
 TODO
+
 ## Installation
 * /etc/AuthZForce/conf	Configuration files
 *	log4j.properties: PDP log4j configuration file
@@ -50,6 +54,7 @@ TODO
 *	pdp-audit.log: Authorization decision audit logs
 
 ### Copy the default configuration file in this directory: 
+
 ## Installation Checking
 
 Start the server by running this command: 
@@ -132,6 +137,7 @@ Once you have created your own policy, you will need to change this path to poin
 
 ## Attribute Finder Configuration File
 During an evaluation, the PDP may require other attributes that are not provided as part of the XACML request. To get those the PDP will ask the attribute finder(s) (configured below) to provide missing information. In this version, we provided two generic attribute finders that allow you to retrieve information from a LDAP directory and from a database.
+
 ### JDBC
 ```xml
 <attributeFinderModule class="com.sun.xacml.finder.impl.AttributeDBFinder">
@@ -173,6 +179,7 @@ overflowToDisk|if cache can write on the disk if the memory is full, true or fal
 eternal|do we store eternally the elements, true or false|
 timeToLiveSeconds|time to live of the stored elements, integer, (Optional)|
 timeToIdleSeconds|time to idle for the stored elements, integer, (Optional) |
+
 ### LDAP
 ```xml
 <attributeFinderModule class="com.sun.xacml.finder.impl.LdapAttributeFinder">

@@ -22,38 +22,38 @@ import javax.xml.bind.Unmarshaller;
 import org.ow2.authzforce.core.XACMLBindingUtils;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyFinder;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyFinder;
+import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyProvider;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.ParsingException;
 
 /**
- * This is a simple implementation of <code>RootPolicyFinderModule</code> that supports static retrieval of the root policy. Its constructor accepts a location
- * that represent a Spring-compatible resource URL, and it is resolved to the actual policy when the module is initialized. Beyond this, there is no modifying
- * or re-loading the policy represented by this class.
+ * This is a simple implementation of <code>RootPolicyProviderModule</code> that supports static retrieval of the root policy. Its constructor accepts a
+ * location that represent a Spring-compatible resource URL, and it is resolved to the actual policy when the module is initialized. Beyond this, there is no
+ * modifying or re-loading the policy represented by this class.
  * <p>
- * Note that this class is designed to complement <code>BaseStaticRefPolicyFinderModule</code>. The reason is that when you define a configuration for your PDP,
- * it's easier to specify the two sets of policies by using two different finder modules.
+ * Note that this class is designed to complement <code>BaseStaticRefPolicyProviderModule</code>. The reason is that when you define a configuration for your
+ * PDP, it's easier to specify the two sets of policies by using two different Provider modules.
  */
-public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Static
+public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule.Static
 {
 	/**
 	 * Module factory
 	 * 
 	 */
-	public static class Factory extends RootPolicyFinderModule.Factory<BaseStaticPolicyFinder>
+	public static class Factory extends RootPolicyProviderModule.Factory<BaseStaticPolicyProvider>
 	{
 
 		@Override
-		public Class<BaseStaticPolicyFinder> getJaxbClass()
+		public Class<BaseStaticPolicyProvider> getJaxbClass()
 		{
-			return BaseStaticPolicyFinder.class;
+			return BaseStaticPolicyProvider.class;
 		}
 
 		@Override
-		public RootPolicyFinderModule getInstance(BaseStaticPolicyFinder conf, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
-				AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth)
+		public RootPolicyProviderModule getInstance(BaseStaticPolicyProvider conf, ExpressionFactory expressionFactory,
+				CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
 		{
 			final URL rootPolicyURL;
 			try
@@ -70,19 +70,19 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 				throw new IllegalArgumentException("No root policy file found at the specified location: " + conf.getPolicyLocation());
 			}
 
-			return BaseStaticRootPolicyFinderModule.getInstance(rootPolicyURL, expressionFactory, combiningAlgRegistry, jaxbRefPolicyFinderConf,
+			return BaseStaticRootPolicyProviderModule.getInstance(rootPolicyURL, expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf,
 					maxPolicySetRefDepth);
 		}
 	}
 
 	// the LOGGER we'll use for all messages
 	// private static final Logger LOGGER =
-	// LoggerFactory.getLogger(BaseStaticRootPolicyFinderModule.class);
+	// LoggerFactory.getLogger(BaseStaticRootPolicyProviderModule.class);
 
 	private final IPolicyEvaluator rootPolicy;
 
 	/**
-	 * Creates a <code>BaseStaticRootPolicyFinderModule</code> with the root Policy already resolved once and for all
+	 * Creates a <code>BaseStaticRootPolicyProviderModule</code> with the root Policy already resolved once and for all
 	 * 
 	 * @param jaxbPolicy
 	 *            root Policy (JAXB) to be parsed
@@ -91,7 +91,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
 	 */
-	public BaseStaticRootPolicyFinderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy jaxbPolicy, ExpressionFactory expressionFactory,
+	public BaseStaticRootPolicyProviderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy jaxbPolicy, ExpressionFactory expressionFactory,
 			CombiningAlgRegistry combiningAlgRegistry)
 	{
 		super(expressionFactory, combiningAlgRegistry, null, 0);
@@ -106,7 +106,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	}
 
 	/**
-	 * Creates a <code>BaseStaticRootPolicyFinderModule</code> with the root PolicySet already resolved once and for all
+	 * Creates a <code>BaseStaticRootPolicyProviderModule</code> with the root PolicySet already resolved once and for all
 	 * 
 	 * @param jaxbPolicySet
 	 *            root PolicySet (JAXB) to be parsed
@@ -114,21 +114,21 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
-	 * @param jaxbRefPolicyFinderConf
-	 *            XML/JAXB configuration of RefPolicyFinder module used for resolving Policy(Set)(Id)References in {@code jaxbPolicySet}; may be null if support
-	 *            of PolicyReferences is disabled or this RootPolicyFinder module already supports these.
+	 * @param jaxbRefPolicyProviderConf
+	 *            XML/JAXB configuration of RefPolicyProvider module used for resolving Policy(Set)(Id)References in {@code jaxbPolicySet}; may be null if
+	 *            support of PolicyReferences is disabled or this RootPolicyProvider module already supports these.
 	 * @param maxPolicySetRefDepth
-	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyFinder derived from
-	 *            {@code jaxbRefPolicyFinderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyFinderConf == null}, this parameter is ignored.
+	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
+	 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
 	 */
-	public BaseStaticRootPolicyFinderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet jaxbPolicySet, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth)
+	public BaseStaticRootPolicyProviderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet jaxbPolicySet, ExpressionFactory expressionFactory,
+			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
 	{
-		super(expressionFactory, combiningAlgRegistry, jaxbRefPolicyFinderConf, maxPolicySetRefDepth);
+		super(expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
 
 		try
 		{
-			rootPolicy = PolicySetEvaluator.getInstance(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyFinder, null);
+			rootPolicy = PolicySetEvaluator.getInstance(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyProvider, null);
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
@@ -136,7 +136,7 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	}
 
 	/**
-	 * Creates a <code>BaseStaticRootPolicyFinderModule</code> with the root Policy already resolved once and for all
+	 * Creates a <code>BaseStaticRootPolicyProviderModule</code> with the root Policy already resolved once and for all
 	 * 
 	 * @param rootPolicyURL
 	 *            location of root Policy(Set) (JAXB) to be parsed
@@ -144,18 +144,18 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
-	 * @param jaxbRefPolicyFinderConf
-	 *            XML/JAXB configuration of RefPolicyFinder module used for resolving Policy(Set)(Id)References in policy located at {@code rootPolicyURL}; may
-	 *            be null if support of PolicyReferences is disabled or this RootPolicyFinder module already supports these.
+	 * @param jaxbRefPolicyProviderConf
+	 *            XML/JAXB configuration of RefPolicyProvider module used for resolving Policy(Set)(Id)References in policy located at {@code rootPolicyURL};
+	 *            may be null if support of PolicyReferences is disabled or this RootPolicyProvider module already supports these.
 	 * @param maxPolicySetRefDepth
-	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyFinder derived from
-	 *            {@code jaxbRefPolicyFinderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyFinderConf == null}, this parameter is ignored.
+	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
+	 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
 	 *
 	 * @return instance of this class
 	 * 
 	 */
-	public static BaseStaticRootPolicyFinderModule getInstance(URL rootPolicyURL, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth)
+	public static BaseStaticRootPolicyProviderModule getInstance(URL rootPolicyURL, ExpressionFactory expressionFactory,
+			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
 	{
 		if (rootPolicyURL == null)
 		{
@@ -182,12 +182,12 @@ public class BaseStaticRootPolicyFinderModule extends RootPolicyFinderModule.Sta
 
 		if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
 		{
-			return new BaseStaticRootPolicyFinderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbPolicyOrPolicySetObj, expressionFactory,
+			return new BaseStaticRootPolicyProviderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbPolicyOrPolicySetObj, expressionFactory,
 					combiningAlgRegistry);
 		} else if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
 		{
-			return new BaseStaticRootPolicyFinderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbPolicyOrPolicySetObj, expressionFactory,
-					combiningAlgRegistry, jaxbRefPolicyFinderConf, maxPolicySetRefDepth);
+			return new BaseStaticRootPolicyProviderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbPolicyOrPolicySetObj, expressionFactory,
+					combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
 		} else
 		{
 			throw new IllegalArgumentException("Unexpected element found as root of the policy document: "

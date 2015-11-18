@@ -42,11 +42,11 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	private static final IllegalArgumentException NULL_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute designator category");
 	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute designator datatype");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_FINDER_EXCEPTION = new IllegalArgumentException("Undefined attribute finder");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_Provider_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
 
 	private final transient String missingAttributeMessage;
 	private final AttributeGUID attrGUID;
-	private final transient AttributeProvider attrFinder;
+	private final transient AttributeProvider attrProvider;
 	private final transient BagDatatype<AV> returnType;
 	private final transient IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
@@ -128,10 +128,10 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 *            the AttributeDesignatorType we want to convert
 	 * @param resultDatatype
 	 *            expected datatype of the result of evaluating this AttributeDesignator ( {@code AV is the expected type of every element in the bag})
-	 * @param attrFinder
-	 *            Attribute Finder responsible for finding the attribute designated by this in a given evaluation context at runtime
+	 * @param attrProvider
+	 *            Attribute Provider responsible for finding the attribute designated by this in a given evaluation context at runtime
 	 */
-	public AttributeDesignator(AttributeDesignatorType attrDesignator, BagDatatype<AV> resultDatatype, AttributeProvider attrFinder)
+	public AttributeDesignator(AttributeDesignatorType attrDesignator, BagDatatype<AV> resultDatatype, AttributeProvider attrProvider)
 	{
 		final String categoryURI = attrDesignator.getCategory();
 		if (categoryURI == null)
@@ -151,9 +151,9 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 			throw NULL_ATTRIBUTE_ID_EXCEPTION;
 		}
 
-		if (attrFinder == null)
+		if (attrProvider == null)
 		{
-			throw NULL_ATTRIBUTE_FINDER_EXCEPTION;
+			throw NULL_ATTRIBUTE_Provider_EXCEPTION;
 		}
 
 		// JAXB attributes
@@ -167,7 +167,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		this.attrGUID = new AttributeGUID(category, issuer, id);
 		this.returnType = resultDatatype;
 		this.attributeType = resultDatatype.getElementType();
-		this.attrFinder = attrFinder;
+		this.attrProvider = attrProvider;
 
 		// error messages/exceptions
 		this.missingAttributeMessage = this + " not found in context";
@@ -194,7 +194,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 			throw missingAttributeBecauseNullContextException;
 		}
 
-		final Bag<AV> bag = attrFinder.get(attrGUID, attributeType, context);
+		final Bag<AV> bag = attrProvider.get(attrGUID, attributeType, context);
 		if (bag == null)
 		{
 			throw this.missingAttributeForUnknownReasonException;

@@ -49,7 +49,7 @@ import org.ow2.authzforce.xacml.identifiers.XACMLResourceScope;
  * Individual Decision Request. At the end, the results (one per Individual Decision Request) may be combined by a {@link DecisionResultFilter}.
  * 
  * <p>
- * This replaces and supersedes the former, now obsolete, ResourceFinder, which used to correspond to one mode of the Multiple Decision Profile for requesting
+ * This replaces and supersedes the former, now obsolete, ResourceProvider, which used to correspond to one mode of the Multiple Decision Profile for requesting
  * multiple decisions.
  * </p>
  * 

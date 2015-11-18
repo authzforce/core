@@ -103,17 +103,17 @@ public class PdpConfigurationParser
 	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
 	 * 
 	 *            <xs:import
-	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/rest"
+	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest"
 	 *            schemaLocation=
-	 *            "com.thalesgroup.authzforce.model._3_0.finder.attribute.rest.RESTfulAttributeFinder.xsd"
+	 *            "com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeProvider.xsd"
 	 *            />
 	 * 
 	 *            </xs:schema>
 	 * 			}
 	 * </pre>
 	 * 
-	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.finder.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
-	 *            XML type 'RESTfulAttributeFinder'. We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeFinder'
+	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
+	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider'
 	 *            (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
 	 * 
 	 * @param catalogLocation
@@ -153,17 +153,17 @@ public class PdpConfigurationParser
 	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
 	 * 
 	 *            <xs:import
-	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/rest"
+	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest"
 	 *            schemaLocation=
-	 *            "com.thalesgroup.authzforce.model._3_0.finder.attribute.rest.RESTfulAttributeFinder.xsd"
+	 *            "com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeProvider.xsd"
 	 *            />
 	 * 
 	 *            </xs:schema>
 	 * 			}
 	 * </pre>
 	 * 
-	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.finder.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
-	 *            XML type 'RESTfulAttributeFinder'. We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeFinder'
+	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
+	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider'
 	 *            (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
 	 * 
 	 * @param catalogLocation
@@ -269,7 +269,7 @@ public class PdpConfigurationParser
 	 * @throws IllegalArgumentException
 	 *             invalid PDP configuration
 	 * @throws IOException
-	 *             if any error occurred closing already created {@link Closeable} modules (policy finders, attribute finders, decision cache)
+	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
 	 */
 	public static PDP getPDP(Pdp pdpJaxbConf) throws IllegalArgumentException, IOException
 	{
@@ -339,8 +339,8 @@ public class PdpConfigurationParser
 		// decision cache
 		final AbstractDecisionCache jaxbDecisionCache = pdpJaxbConf.getDecisionCache();
 
-		return new PDP(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeFinders(), pdpJaxbConf.getMaxVariableRefDepth(),
-				pdpJaxbConf.isEnableAttributeSelectors(), combiningAlgRegistry, pdpJaxbConf.getRootPolicyFinder(), pdpJaxbConf.getRefPolicyFinder(),
+		return new PDP(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), pdpJaxbConf.getMaxVariableRefDepth(),
+				pdpJaxbConf.isEnableAttributeSelectors(), combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(),
 				pdpJaxbConf.getMaxPolicySetRefDepth(), requestFilter, decisionResultFilter, jaxbDecisionCache);
 	}
 

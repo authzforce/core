@@ -35,18 +35,18 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
 
-public class TestApply
+public class TestApplyMarshalling
 {
 
 	/*
 	 * LOGGER used for all class
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(TestApply.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(TestApplyMarshalling.class);
 
 	@BeforeClass
 	public static void setUp()
 	{
-		LOGGER.debug("Testing Applies objects");
+		LOGGER.debug("Testing Apply marshalling");
 	}
 
 	/**

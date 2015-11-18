@@ -8,7 +8,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
-import org.ow2.authzforce.core.CloseableAttributeFinder;
+import org.ow2.authzforce.core.CloseableAttributeProvider;
 import org.ow2.authzforce.core.value.Datatype;
 
 import com.sun.xacml.Function;
@@ -18,8 +18,8 @@ import com.sun.xacml.UnknownIdentifierException;
 /**
  * Expression factory for parsing XACML {@link ExpressionType}s: AttributeDesignator, AttributeSelector, Apply, etc.
  * <p>
- * Extends {@link Closeable} because it may use an {@link CloseableAttributeFinder} to resolve AttributeDesignators for attributes not provided in the request;
- * and that attribute finder needs to be closed by calling {@link #close()} (in order to call {@link CloseableAttributeFinder#close()}) when it is no longer
+ * Extends {@link Closeable} because it may use an {@link CloseableAttributeProvider} to resolve AttributeDesignators for attributes not provided in the request;
+ * and that attribute Provider needs to be closed by calling {@link #close()} (in order to call {@link CloseableAttributeProvider#close()}) when it is no longer
  * needed.
  */
 public interface ExpressionFactory extends Closeable

@@ -24,7 +24,7 @@ public interface AttributeProviderModule
 	 * anyURI [1], not in java.net.URI. [1] http://www.w3.org/TR/xmlschema-2/#anyURI
 	 * </p>
 	 * 
-	 * If this is an AttributeSelector-only finder module, always return null.
+	 * If this is an AttributeSelector-only Provider module, always return null.
 	 * 
 	 * @param attributeGUID
 	 *            the global identifier (Category,Issuer,AttributeId) of the attribute to find

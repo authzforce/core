@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicySetId="PPS:Employee" Version="1.0" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
+	<Description>Permissions specific to the Employee role</Description>
+	<Target />
+	<Policy PolicyId="PP:Employee" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Target />
+		<Rule RuleId="Permission_to_create_issue_ticket" Effect="Permit">
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">https://acme.com/ticketmanagementservice/tickets</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" DataType="http://www.w3.org/2001/XMLSchema#string"
+								MustBePresent="true" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">POST</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string"
+								MustBePresent="true" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+		</Rule>
+	</Policy>
+	<!-- Invalid reference to Manager role to introduce an unexpected circular reference (Manager role references back Employee) that should be detected. -->
+	<PolicySetIdReference>PPS:Manager</PolicySetIdReference>
+	<ObligationExpressions>
+		<!-- Obligation to confirm that this PolicySet was used/evaluated via PolicySetReference in root PolicySet -->
+		<ObligationExpression FulfillOn="Permit" ObligationId="PPS:Employee:obligation" />
+	</ObligationExpressions>
+</PolicySet>

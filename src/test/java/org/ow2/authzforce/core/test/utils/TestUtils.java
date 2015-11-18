@@ -18,7 +18,14 @@ import static org.junit.Assert.assertEquals;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -40,7 +47,8 @@ import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
 import org.ow2.authzforce.core.func.StandardFunctionRegistry;
 import org.ow2.authzforce.core.value.StandardDatatypeFactoryRegistry;
-import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyFinder;
+import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyProvider;
+import org.ow2.authzforce.core.xmlns.pdp.BaseStaticRefPolicyProvider;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,34 +184,82 @@ public class TestUtils
 	/**
 	 * Creates PDP from root policy file
 	 * 
-	 * @param policyLocation
-	 *            XACML policy location (with Spring-supported URL prefixes: 'classpath:', etc.)
+	 * @param rootPolicyLocation
+	 *            root XACML policy location (with Spring-supported URL prefixes: 'classpath:', etc.)
+	 * @param refPoliciesDirectoryLocation
+	 *            (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy at {@code policyLocation} via
+	 *            Policy(Set)IdReference; required only if there is any Policy(Set)IdReference in {@code rootPolicyLocation} to resolve. If file not found,
+	 *            support for Policy(Set)IdReference is disabled, i.e. any presence of such reference is considered invalid.
 	 * @return PDP instance
 	 * @throws IllegalArgumentException
 	 *             invalid XACML policy located at {@code policyLocation}
 	 * @throws IOException
 	 *             if error closing some resources used by the PDP after {@link IllegalArgumentException} occurred
+	 * @throws URISyntaxException
 	 */
-	public static PDP getPDPNewInstance(String policyLocation) throws IllegalArgumentException, IOException
+	public static PDP getPDPNewInstance(String rootPolicyLocation, String refPoliciesDirectoryLocation) throws IllegalArgumentException, IOException,
+			URISyntaxException
 	{
+		Pdp jaxbPDP = new Pdp();
+
 		/**
-		 * Get absolute path/URL to policy file in a portable way, using current class loader. As per javadoc, the name of the resource passed to
-		 * ClassLoader.getResource() is a '/'-separated path name that identifies the resource. So let's build it. Note: do not use File.separator as path
-		 * separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c) by the getResource() method (not considered path
-		 * separator by this method), and file will not be found as a result.
+		 * Get absolute path/URL to PolicySet file and, if any, the directory of referenceable sub-PolicySets, in a portable way, using current class loader. As
+		 * per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path name that identifies the resource. So let's build
+		 * it. Note: do not use File.separator as path separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c) by the
+		 * getResource() method (not considered path separator by this method), and file will not be found as a result.
 		 */
-		URL policyFileURL = ResourceUtils.getURL(policyLocation);
-		if (policyFileURL == null)
+		if (refPoliciesDirectoryLocation != null)
 		{
-			throw new FileNotFoundException("No such file: " + policyLocation);
+			URL refPoliciesDirectoryURL = null;
+			try
+			{
+				refPoliciesDirectoryURL = ResourceUtils.getURL(refPoliciesDirectoryLocation);
+			} catch (FileNotFoundException e)
+			{
+				LOGGER.warn("No refPolicies directory: {} -> Policy(Set)IdReference(s) not supported for this test.", refPoliciesDirectoryLocation);
+			}
+
+			if (refPoliciesDirectoryURL != null)
+			{
+				BaseStaticRefPolicyProvider jaxbRefPolicyProvider = new BaseStaticRefPolicyProvider();
+				jaxbRefPolicyProvider.setId("refPolicyProvider");
+				List<String> jaxbRefPolicyProviderPolicyLocations = jaxbRefPolicyProvider.getPolicyLocations();
+				final Path refPoliciesDirectoryPath = Paths.get(refPoliciesDirectoryURL.toURI());
+				try (DirectoryStream<Path> stream = Files.newDirectoryStream(refPoliciesDirectoryPath))
+				{
+					for (Path path : stream)
+					{
+						if (Files.isRegularFile(path))
+						{
+							jaxbRefPolicyProviderPolicyLocations.add(path.toString());
+						}
+					}
+				} catch (DirectoryIteratorException ex)
+				{
+					// I/O error encounted during the iteration, the cause is an IOException
+					throw ex.getCause();
+				}
+
+				// set max PolicySet reference depth to max possible depth automatically
+				if (!jaxbRefPolicyProviderPolicyLocations.isEmpty())
+				{
+					jaxbPDP.setMaxPolicySetRefDepth(jaxbRefPolicyProviderPolicyLocations.size());
+					jaxbPDP.setRefPolicyProvider(jaxbRefPolicyProvider);
+				}
+			}
 		}
 
-		BaseStaticPolicyFinder jaxbRootPolicyFinder = new BaseStaticPolicyFinder();
-		jaxbRootPolicyFinder.setId("root");
-		jaxbRootPolicyFinder.setPolicyLocation(policyFileURL.toString());
+		URL policyFileURL = ResourceUtils.getURL(rootPolicyLocation);
+		if (policyFileURL == null)
+		{
+			throw new FileNotFoundException("No such file: " + rootPolicyLocation);
+		}
 
-		Pdp jaxbPDP = new Pdp();
-		jaxbPDP.setRootPolicyFinder(jaxbRootPolicyFinder);
+		BaseStaticPolicyProvider jaxbRootPolicyProvider = new BaseStaticPolicyProvider();
+		jaxbRootPolicyProvider.setId("rootPolicyProvider");
+		jaxbRootPolicyProvider.setPolicyLocation(policyFileURL.toString());
+		jaxbPDP.setRootPolicyProvider(jaxbRootPolicyProvider);
+
 		final PDP pdp = PdpConfigurationParser.getPDP(jaxbPDP);
 		return pdp;
 	}

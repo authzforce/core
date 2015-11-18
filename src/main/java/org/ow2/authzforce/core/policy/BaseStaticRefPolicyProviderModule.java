@@ -36,39 +36,39 @@ import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.XACMLBindingUtils;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.xmlns.pdp.BaseStaticRefPolicyFinder;
+import org.ow2.authzforce.core.xmlns.pdp.BaseStaticRefPolicyProvider;
 import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
 
 /**
- * This is a simple implementation of <code>RefPolicyFinderModule</code> that supports static retrieval of the policies referenced by Policy(Set)IdReference.
+ * This is a simple implementation of <code>RefPolicyProviderModule</code> that supports static retrieval of the policies referenced by Policy(Set)IdReference.
  * Its constructor accepts locations that represent Spring-compatible resource URLs, and they are resolved to the actual policies when the module is
  * initialized. Beyond this, there is no modifying or re-loading the policies handled by this class.
  * <p>
- * Note that this class is designed to complement <code>BaseStaticPolicyFinderModule</code>. The reason is that when you define a configuration for your PDP,
- * it's easier to specify the two sets of policies by using two different finder modules.
+ * Note that this class is designed to complement <code>BaseStaticPolicyProviderModule</code>. The reason is that when you define a configuration for your PDP,
+ * it's easier to specify the two sets of policies by using two different Provider modules.
  */
-public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
+public class BaseStaticRefPolicyProviderModule implements RefPolicyProviderModule
 {
-	// private static final Logger LOGGER = LoggerFactory.getLogger(BaseStaticRefPolicyFinderModule.class);
+	// private static final Logger LOGGER = LoggerFactory.getLogger(BaseStaticRefPolicyProviderModule.class);
 
 	/**
 	 * Module factory
 	 * 
 	 */
-	public static class Factory extends RefPolicyFinderModule.Factory<BaseStaticRefPolicyFinder>
+	public static class Factory extends RefPolicyProviderModule.Factory<BaseStaticRefPolicyProvider>
 	{
 
 		@Override
-		public Class<BaseStaticRefPolicyFinder> getJaxbClass()
+		public Class<BaseStaticRefPolicyProvider> getJaxbClass()
 		{
-			return BaseStaticRefPolicyFinder.class;
+			return BaseStaticRefPolicyProvider.class;
 		}
 
 		@Override
-		public RefPolicyFinderModule getInstance(BaseStaticRefPolicyFinder conf, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
+		public RefPolicyProviderModule getInstance(BaseStaticRefPolicyProvider conf, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
 				CombiningAlgRegistry combiningAlgRegistry)
 		{
 			final URL[] policyURLs = new URL[conf.getPolicyLocations().size()];
@@ -94,7 +94,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 				i++;
 			}
 
-			return BaseStaticRefPolicyFinderModule.getInstance(policyURLs, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
+			return BaseStaticRefPolicyProviderModule.getInstance(policyURLs, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 		}
 	}
 
@@ -259,10 +259,10 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 	}
 
 	/*
-	 * Ref policy finder used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in
+	 * Ref policy Provider used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in
 	 * PolicySetIdReferences) at initialization time
 	 */
-	private static class InitOnlyRefPolicyFinder implements RefPolicyFinder
+	private static class InitOnlyRefPolicyProvider implements RefPolicyProvider
 	{
 
 		private final int maxPolicySetRefDepth;
@@ -272,7 +272,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		private final PolicyMap<PolicySetEvaluator> policySetMapToUpdate;
 		private final PolicyMap<PolicySet> jaxbPolicySetMap;
 
-		private InitOnlyRefPolicyFinder(PolicyMap<PolicyEvaluator> policyMap, PolicyMap<PolicySet> jaxbPolicySetMap,
+		private InitOnlyRefPolicyProvider(PolicyMap<PolicyEvaluator> policyMap, PolicyMap<PolicySet> jaxbPolicySetMap,
 				PolicyMap<PolicySetEvaluator> policySetMapToUpdate, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
 				CombiningAlgRegistry combiningAlgRegistry)
 		{
@@ -291,7 +291,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		}
 
 		@Override
-		public <POLICY_T extends IPolicyEvaluator> POLICY_T findPolicy(String id, VersionConstraints constraints, Class<POLICY_T> policyType,
+		public <POLICY_T extends IPolicyEvaluator> POLICY_T get(String id, VersionConstraints constraints, Class<POLICY_T> policyType,
 				Deque<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException
 		{
 			// If this is a request for Policy (from PolicyIdReference)
@@ -355,7 +355,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 	private final PolicyMap<PolicyEvaluator> policyMap;
 	private final PolicyMap<PolicySetEvaluator> policySetMap;
 
-	private BaseStaticRefPolicyFinderModule(PolicyMap<PolicyEvaluator> policyMap, PolicyMap<PolicySet> jaxbPolicySetMap, int maxPolicySetRefDepth,
+	private BaseStaticRefPolicyProviderModule(PolicyMap<PolicyEvaluator> policyMap, PolicyMap<PolicySet> jaxbPolicySetMap, int maxPolicySetRefDepth,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		assert policyMap != null && jaxbPolicySetMap != null && expressionFactory != null && combiningAlgRegistry != null;
@@ -363,11 +363,11 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 		this.policyMap = policyMap;
 		this.policySetMap = new PolicyMap<>();
 		/*
-		 * Ref policy finder module used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in
+		 * Ref policy Provider module used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in
 		 * PolicySetIdReferences)
 		 */
-		final RefPolicyFinder refPolicyFinder = new InitOnlyRefPolicyFinder(policyMap, jaxbPolicySetMap, policySetMap, maxPolicySetRefDepth, expressionFactory,
-				combiningAlgRegistry);
+		final RefPolicyProvider refPolicyProvider = new InitOnlyRefPolicyProvider(policyMap, jaxbPolicySetMap, policySetMap, maxPolicySetRefDepth,
+				expressionFactory, combiningAlgRegistry);
 
 		for (final Entry<String, PolicyVersions<PolicySet>> jaxbPolicySet : jaxbPolicySetMap.entrySet())
 		{
@@ -403,7 +403,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 				try
 				{
 					newPolicySet = PolicySetEvaluator.getInstance(jaxbPolicySetEntry.getValue(), null, expressionFactory, combiningAlgRegistry,
-							refPolicyFinder, null);
+							refPolicyProvider, null);
 				} catch (ParsingException e)
 				{
 					throw new IllegalArgumentException("Error parsing PolicySet with PolicySetId=" + policySetId + ", Version=" + policySetVersion, e);
@@ -432,7 +432,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 	 *             if both {@code jaxbPoliciesByIdAndVersion} and {@code jaxbPolicySetsByIdAndVersion} are null/empty, or expressionFactory/combiningAlgRegistry
 	 *             undefined; or one of the Policy(Set)s is not valid or conflicts with another because it has same Policy(Set)Id and Version.
 	 */
-	public static BaseStaticRefPolicyFinderModule getInstance(List<Policy> jaxbPolicies, List<PolicySet> jaxbPolicySets, int maxPolicySetRefDepth,
+	public static BaseStaticRefPolicyProviderModule getInstance(List<Policy> jaxbPolicies, List<PolicySet> jaxbPolicySets, int maxPolicySetRefDepth,
 			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		if ((jaxbPolicies == null || jaxbPolicies.isEmpty()) && (jaxbPolicySets == null || jaxbPolicySets.isEmpty()))
@@ -493,7 +493,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			}
 		}
 
-		return new BaseStaticRefPolicyFinderModule(policyMap, jaxbPolicySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
+		return new BaseStaticRefPolicyProviderModule(policyMap, jaxbPolicySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 	}
 
 	/**
@@ -514,7 +514,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 	 *             Policy(Set)Issuer is ignored from this check!
 	 * 
 	 */
-	public static BaseStaticRefPolicyFinderModule getInstance(URL[] policyURLs, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
+	public static BaseStaticRefPolicyProviderModule getInstance(URL[] policyURLs, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
 			CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		if (policyURLs == null || policyURLs.length == 0)
@@ -601,7 +601,7 @@ public class BaseStaticRefPolicyFinderModule implements RefPolicyFinderModule
 			}
 		}
 
-		return new BaseStaticRefPolicyFinderModule(policyMap, jaxbPolicySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
+		return new BaseStaticRefPolicyProviderModule(policyMap, jaxbPolicySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 	}
 
 	@Override

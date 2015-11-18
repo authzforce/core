@@ -22,40 +22,40 @@ import org.ow2.authzforce.core.JaxbBoundPdpExtension;
 import org.ow2.authzforce.core.PdpExtensionLoader;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyFinder;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 
 import com.sun.xacml.ParsingException;
 
 /**
- * This is the interface that all modules responsible for finding the root/top-level policy to evaluate.
+ * This is the interface that all modules responsible for providing the root/top-level policy to evaluate.
  * <p>
  * Implements {@link Closeable} because it may may use resources external to the JVM such as a cache, a disk, a connection to a remote server, etc. for
  * retrieving the root policy and any policy referenced by it. Therefore, these resources must be released by calling {@link #close()} when it is no longer
  * needed.
  * 
  */
-public abstract class RootPolicyFinderModule implements Closeable
+public abstract class RootPolicyProviderModule implements Closeable
 {
-	protected final BaseRefPolicyFinder refPolicyFinder;
+	protected final BaseRefPolicyProvider refPolicyProvider;
 
 	/**
 	 * Creates instance
 	 * 
 	 * @param expressionFactory
 	 *            (mandatory) Expression factory
-	 * @param refPolicyFinder
-	 *            referenced policy finder; null iff Policy references not supported
+	 * @param refPolicyProvider
+	 *            referenced policy Provider; null iff Policy references not supported
 	 * @param combiningAlgRegistry
 	 *            (mandatory) registry of policy/rule combining algorithms
-	 * @param jaxbRefPolicyFinderConf
-	 *            (optional) XML/JAXB configuration of RefPolicyFinder module used for resolving Policy(Set)(Id)References in root policy; may be null if
-	 *            support of PolicyReferences is disabled or this RootPolicyFinder module already supports these.
+	 * @param jaxbRefPolicyProviderConf
+	 *            (optional) XML/JAXB configuration of RefPolicyProvider module used for resolving Policy(Set)(Id)References in root policy; may be null if
+	 *            support of PolicyReferences is disabled or this RootPolicyProvider module already supports these.
 	 * @param maxPolicySetRefDepth
-	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyFinder derived from
-	 *            {@code jaxbRefPolicyFinderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyFinderConf == null}, this parameter is ignored.
+	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
+	 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
 	 */
-	protected RootPolicyFinderModule(ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
-			AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth)
+	protected RootPolicyProviderModule(ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
+			AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
 	{
 		if (expressionFactory == null)
 		{
@@ -67,30 +67,30 @@ public abstract class RootPolicyFinderModule implements Closeable
 			throw new IllegalArgumentException("Undefined CombiningAlgorithm registry");
 		}
 
-		// create ref-policy finder
-		if (jaxbRefPolicyFinderConf == null)
+		// create ref-policy Provider
+		if (jaxbRefPolicyProviderConf == null)
 		{
-			this.refPolicyFinder = null;
+			this.refPolicyProvider = null;
 		} else
 		{
-			final RefPolicyFinderModule.Factory<AbstractPolicyFinder> refPolicyFinderModFactory = PdpExtensionLoader.getJaxbBoundExtension(
-					RefPolicyFinderModule.Factory.class, jaxbRefPolicyFinderConf.getClass());
-			this.refPolicyFinder = new BaseRefPolicyFinder(jaxbRefPolicyFinderConf, refPolicyFinderModFactory, expressionFactory, combiningAlgRegistry,
+			final RefPolicyProviderModule.Factory<AbstractPolicyProvider> refPolicyProviderModFactory = PdpExtensionLoader.getJaxbBoundExtension(
+					RefPolicyProviderModule.Factory.class, jaxbRefPolicyProviderConf.getClass());
+			this.refPolicyProvider = new BaseRefPolicyProvider(jaxbRefPolicyProviderConf, refPolicyProviderModFactory, expressionFactory, combiningAlgRegistry,
 					maxPolicySetRefDepth);
 		}
 	}
 
 	/**
-	 * RootPolicyFinderModule factory
+	 * RootPolicyProviderModule factory
 	 * 
 	 * @param <CONF_T>
 	 *            type of configuration (XML-schema-derived) of the module (initialization parameter)
 	 * 
 	 */
-	public static abstract class Factory<CONF_T extends AbstractPolicyFinder> extends JaxbBoundPdpExtension<CONF_T>
+	public static abstract class Factory<CONF_T extends AbstractPolicyProvider> extends JaxbBoundPdpExtension<CONF_T>
 	{
 		/**
-		 * Create RootPolicyFinderModule instance
+		 * Create RootPolicyProviderModule instance
 		 * 
 		 * @param conf
 		 *            module configuration
@@ -98,17 +98,17 @@ public abstract class RootPolicyFinderModule implements Closeable
 		 *            Expression factory for parsing Expressions in the root policy(set)
 		 * @param combiningAlgRegistry
 		 *            registry of combining algorithms for instantiating algorithms used in the root policy(set) *
-		 * @param jaxbRefPolicyFinderConf
-		 *            XML/JAXB configuration of RefPolicyFinder module used for resolving Policy(Set)(Id)References in root policy; may be null if support of
-		 *            PolicyReferences is disabled or this RootPolicyFinder module already supports these.
+		 * @param jaxbRefPolicyProviderConf
+		 *            XML/JAXB configuration of RefPolicyProvider module used for resolving Policy(Set)(Id)References in root policy; may be null if support of
+		 *            PolicyReferences is disabled or this RootPolicyProvider module already supports these.
 		 * @param maxPolicySetRefDepth
-		 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyFinder derived from
-		 *            {@code jaxbRefPolicyFinderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyFinderConf == null}, this parameter is ignored.
+		 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
+		 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
 		 * 
 		 * @return the module instance
 		 */
-		public abstract RootPolicyFinderModule getInstance(CONF_T conf, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
-				AbstractPolicyFinder jaxbRefPolicyFinderConf, int maxPolicySetRefDepth);
+		public abstract RootPolicyProviderModule getInstance(CONF_T conf, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
+				AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public abstract class RootPolicyFinderModule implements Closeable
 	 * 
 	 * @return the result of looking for a matching policy, null if none found matching the request
 	 * @throws ParsingException
-	 *             Error parsing a policy before matching. The policy finder module may parse policies lazily or on the fly, i.e. only when the policies are
+	 *             Error parsing a policy before matching. The policy Provider module may parse policies lazily or on the fly, i.e. only when the policies are
 	 *             requested/looked for.
 	 * @throws IndeterminateEvaluationException
 	 *             if error determining the one policy matching the {@code context}, e.g. if more than one policy is found
@@ -129,31 +129,31 @@ public abstract class RootPolicyFinderModule implements Closeable
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule#invalidateCache()
+	 * @see com.thalesgroup.authzforce.core.policy.RootPolicyProviderModule#invalidateCache()
 	 */
 	@Override
 	public void close() throws IOException
 	{
-		if (refPolicyFinder != null)
+		if (refPolicyProvider != null)
 		{
-			refPolicyFinder.close();
+			refPolicyProvider.close();
 		}
 	}
 
 	/**
-	 * Root policy finder module that resolves statically the root policy when it is initialized, i.e. it is context-independent. Concretely, this means for any
+	 * Root policy Provider module that resolves statically the root policy when it is initialized, i.e. it is context-independent. Concretely, this means for any
 	 * given context:
 	 * 
 	 * <pre>
 	 * this.findPolicy(context) == this.findPolicy(null)
 	 * </pre>
 	 */
-	public static abstract class Static extends RootPolicyFinderModule
+	public static abstract class Static extends RootPolicyProviderModule
 	{
-		protected Static(ExpressionFactory defaultExpressionFactory, CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyFinder jaxbRefPolicyFinderConf,
+		protected Static(ExpressionFactory defaultExpressionFactory, CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf,
 				int maxPolicySetRefDepth)
 		{
-			super(defaultExpressionFactory, combiningAlgRegistry, jaxbRefPolicyFinderConf, maxPolicySetRefDepth);
+			super(defaultExpressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
 		}
 
 		/**
@@ -166,7 +166,7 @@ public abstract class RootPolicyFinderModule implements Closeable
 		/*
 		 * (non-Javadoc)
 		 * 
-		 * @see com.thalesgroup.authzforce.core.policy.RootPolicyFinderModule#findPolicy(com.thalesgroup .authzforce.core.test .EvaluationCtx)
+		 * @see com.thalesgroup.authzforce.core.policy.RootPolicyProviderModule#findPolicy(com.thalesgroup .authzforce.core.test .EvaluationCtx)
 		 */
 		@Override
 		public final IPolicyEvaluator findPolicy(EvaluationContext context) throws IndeterminateEvaluationException, ParsingException

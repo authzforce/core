@@ -16,24 +16,24 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 	private static final UnsupportedOperationException UNSUPPORTED_DYNAMIC_GET_COMBINING_ALG_ID = new UnsupportedOperationException(
 			"Unable to get Combining algorithm ID out of context for a dynamic PolicyReference");
 
-	// this policyFinder to use in finding the referenced policy
-	private final transient RefPolicyFinder refPolicyFinder;
+	// this policyProvider to use in finding the referenced policy
+	private final transient RefPolicyProvider refPolicyProvider;
 
 	/*
 	 * (Do not use a Queue as it is FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as well.)
 	 */
 	private final transient Deque<String> policySetRefChain;
 
-	DynamicPolicyRefEvaluator(String policyIdRef, VersionConstraints versionConstraints, Class<T> policyReferenceType, RefPolicyFinder refPolicyFinder,
+	DynamicPolicyRefEvaluator(String policyIdRef, VersionConstraints versionConstraints, Class<T> policyReferenceType, RefPolicyProvider refPolicyProvider,
 			Deque<String> policyRefChain)
 	{
 		super(policyIdRef, versionConstraints, policyReferenceType);
-		if (refPolicyFinder == null)
+		if (refPolicyProvider == null)
 		{
-			throw new IllegalArgumentException("Undefined policy policyFinder");
+			throw new IllegalArgumentException("Undefined policy policyProvider");
 		}
 
-		this.refPolicyFinder = refPolicyFinder;
+		this.refPolicyProvider = refPolicyProvider;
 		this.policySetRefChain = policyRefChain;
 	}
 
@@ -48,7 +48,7 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 	private T resolve() throws ParsingException, IndeterminateEvaluationException
 	{
 
-		return refPolicyFinder.findPolicy(this.value, this.versionConstraints, this.referredPolicyClass, policySetRefChain);
+		return refPolicyProvider.get(this.value, this.versionConstraints, this.referredPolicyClass, policySetRefChain);
 	}
 
 	@Override

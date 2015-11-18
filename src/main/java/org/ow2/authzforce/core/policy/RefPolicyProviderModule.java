@@ -22,7 +22,7 @@ import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.JaxbBoundPdpExtension;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyFinder;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
@@ -34,20 +34,20 @@ import com.sun.xacml.VersionConstraints;
  * retrieving the policies. Therefore, these resources must be release by calling {@link #close()} when it is no longer needed.
  * 
  */
-public interface RefPolicyFinderModule extends Closeable
+public interface RefPolicyProviderModule extends Closeable
 {
 	/**
-	 * RefPolicyFinderModule factory
+	 * RefPolicyProviderModule factory
 	 * 
 	 * @param <CONF_T>
 	 *            type of configuration (XML-schema-derived) of the module (initialization parameter)
 	 * 
 	 * 
 	 */
-	abstract class Factory<CONF_T extends AbstractPolicyFinder> extends JaxbBoundPdpExtension<CONF_T>
+	abstract class Factory<CONF_T extends AbstractPolicyProvider> extends JaxbBoundPdpExtension<CONF_T>
 	{
 		/**
-		 * Create RefPolicyFinderModule instance
+		 * Create RefPolicyProviderModule instance
 		 * 
 		 * @param conf
 		 *            module configuration
@@ -61,7 +61,7 @@ public interface RefPolicyFinderModule extends Closeable
 		 * 
 		 * @return the module instance
 		 */
-		public abstract RefPolicyFinderModule getInstance(CONF_T conf, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
+		public abstract RefPolicyProviderModule getInstance(CONF_T conf, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
 				CombiningAlgRegistry combiningAlgRegistry);
 	}
 
@@ -101,13 +101,13 @@ public interface RefPolicyFinderModule extends Closeable
 	 *            chain of PolicySetIdReference leading to the policy to be found here. This chain is used to control all PolicySetIdReferences found within the
 	 *            result policy (to detect loops, i.e. circular references, and validate reference depth); therefore it is the responsibility of the
 	 *            implementation to pass this parameter as the last one to
-	 *            {@link PolicySetEvaluator#PolicySetEvaluator(PolicySet, net.sf.saxon.s9api.XPathCompiler, org.ow2.authzforce.core.expression.ExpressionFactory, CombiningAlgRegistry, RefPolicyFinder, Deque)}
+	 *            {@link PolicySetEvaluator#getInstance(PolicySet, net.sf.saxon.s9api.XPathCompiler, ExpressionFactory, CombiningAlgRegistry, RefPolicyProvider, Deque)}
 	 *            whenever it instantiates a {@link PolicySetEvaluator}.
 	 * 
 	 * @return the result of looking for a matching policy, or null if no policy found with PolicyId matching {@code idReference} and Version meeting the
 	 *         {@code constraints}
 	 * @throws ParsingException
-	 *             Error parsing found policy. The policy finder module may parse policies lazily or on the fly, i.e. only when the policy is requested/looked
+	 *             Error parsing found policy. The policy Provider module may parse policies lazily or on the fly, i.e. only when the policy is requested/looked
 	 *             for.
 	 * @throws IndeterminateEvaluationException
 	 *             if error determining the one matching policy of type {@code policyType}, e.g. if more than one policy is found

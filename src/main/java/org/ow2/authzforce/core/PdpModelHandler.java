@@ -79,7 +79,7 @@ public class PdpModelHandler
 	 *            xmlns:tns="http://thalesgroup.com/authzforce/model/3.0"
 	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
 	 *            <xs:import
-	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/finder/attribute/rest" />
+	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest" />
 	 *            </xs:schema>
 	 * 			}
 	 * </pre>

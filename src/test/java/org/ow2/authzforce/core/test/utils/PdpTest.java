@@ -27,14 +27,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.ow2.authzforce.core.PdpConfigurationParser;
-import org.ow2.authzforce.core.XACMLBindingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
@@ -42,7 +41,34 @@ import org.springframework.util.ResourceUtils;
 import com.sun.xacml.PDP;
 
 /**
- * PDP test class. There should be a folder for test data of each issue in folder: src/test/resources/NonRegression.
+ * PDP test class. There should be a folder for test data of each issue. Each test folder is expected to be in one of these two configurations:
+ * <p>
+ * Configuration 1 for minimal/basic PDP configuration:
+ * <ul>
+ * <li>{@value #POLICY_FILENAME}: root policy filename used by the PDP</li>
+ * <li>{@value #REF_POLICIES_DIR_NAME}: (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy
+ * {@value #POLICY_FILENAME} via Policy(Set)IdReference; required only if there is any Policy(Set)IdReference in {@value #POLICY_FILENAME} to resolve.</li>
+ * <li>{@value #REQUEST_FILENAME}: (optional) XACML request file sent to the PDP for evaluation. If not present, the test is considered as a static policy test,
+ * i.e. test for invalid policy detection, such as invalid syntax, circular reference, etc.</li>
+ * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the actual response. Required only if
+ * {@value #REQUEST_FILENAME} is present.</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Configuration 2 for advanced/custom PDP configuration:
+ * <ul>
+ * <li>{@value #PDP_CONF_FILENAME}: PDP configuration file</li>
+ * <li>{@value #PDP_EXTENSION_XSD}: (optional) PDP extensions schema, required iff custom PDP extensions are required</li>
+ * <li>{@value #REQUEST_FILENAME}: (optional) XACML request file sent to the PDP for evaluation. If not present, the test is considered as a static policy test,
+ * i.e. test for invalid policy detection, such as invalid syntax, circular reference, etc.</li>
+ * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the actual response. Required only if
+ * {@value #REQUEST_FILENAME} is present.</li>
+ * <li>{@value #REF_POLICIES_DIR_NAME}: (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy
+ * {@value #POLICY_FILENAME} via Policy(Set)IdReference; required only if there is any Policy(Set)IdReference in {@value #POLICY_FILENAME} to resolve.</li>
+ * <li>Policy files matching locations defined in {@value #PDP_CONF_FILENAME}.</li>
+ * </ul>
+ * </p>
+ * 
  */
 public abstract class PdpTest
 {
@@ -61,6 +87,11 @@ public abstract class PdpTest
 	 * XACML policy filename used by default when no PDP configuration file found, i.e. no file named {@value #PDP_CONF_FILENAME} exists in the test directory
 	 */
 	public final static String POLICY_FILENAME = "policy.xml";
+
+	/**
+	 * Name of directory containing files of XACML Policy(Set) that can be referred to from root policy {@value #POLICY_FILENAME} via Policy(Set)IdReference
+	 */
+	public final static String REF_POLICIES_DIR_NAME = "refPolicies";
 
 	/**
 	 * XACML request filename
@@ -139,11 +170,27 @@ public abstract class PdpTest
 	}
 
 	@Test
-	public void test() throws IllegalArgumentException, IOException, JAXBException
+	public void test() throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
 		LOGGER.debug("Starting PDP test of directory '{}'", testDirPath);
 		final String testResourceLocationPrefix = testDirPath + "/";
-		final PDP pdp;
+		// Parse request
+		Request request = null;
+		// if no Request file, it is just a static policy syntax error check
+		String expectedReqFilepath = testResourceLocationPrefix + REQUEST_FILENAME;
+		try
+		{
+			request = TestUtils.createRequest(expectedReqFilepath);
+		} catch (FileNotFoundException notFoundErr)
+		{
+			// do nothing except logging -> request = null
+			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", expectedReqFilepath);
+		}
+
+		LOGGER.debug("XACML Request sent to the PDP: {}", request);
+
+		// Create PDP
+		PDP pdp = null;
 		final String pdpConfLocation = testResourceLocationPrefix + PDP_CONF_FILENAME;
 		File pdpConfFile = null;
 		try
@@ -155,41 +202,71 @@ public abstract class PdpTest
 					pdpConfLocation);
 		}
 
-		if (pdpConfFile == null)
+		try
 		{
-			// PDP configuration filename NOT found in test directory -> create minimal PDP using TestUtils.getPDPNewInstance(policy)
-			pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME);
-		} else
+			if (pdpConfFile == null)
+			{
+				// PDP configuration filename NOT found in test directory -> create minimal PDP using TestUtils.getPDPNewInstance(policy)
+
+				pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME, testResourceLocationPrefix + REF_POLICIES_DIR_NAME);
+
+			} else
+			{
+				// PDP configuration filename found in test directory -> create PDP from it
+				final String pdpExtXsdLocation = testResourceLocationPrefix + PDP_EXTENSION_XSD;
+				final File pdpExtXsdFile = ResourceUtils.getFile(pdpExtXsdLocation);
+				try
+				{
+					/*
+					 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this file exists, and the XML catalog
+					 * required to resolve these extension XSDs
+					 */
+					pdp = pdpExtXsdFile.exists() ? PdpConfigurationParser.getPDP(pdpConfFile, XML_CATALOG_LOCATION, pdpExtXsdLocation) : PdpConfigurationParser
+							.getPDP(pdpConfLocation);
+				} catch (IOException | JAXBException e)
+				{
+					throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfLocation + "' with extension XSD '" + pdpExtXsdLocation
+							+ "' and XML catalog file '" + XML_CATALOG_LOCATION + "'", e);
+				}
+			}
+
+			if (request == null)
+			{
+				// this is a policy syntax error check and we didn't found the syntax error as
+				// expected
+				Assert.fail("Failed to find syntax error as expected in policy(ies) located in directory: " + testDirPath);
+			} else
+			{
+				// Parse expected response
+				final Response expectedResponse = TestUtils.createResponse(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
+
+				final Response response = pdp.evaluate(request);
+				if (LOGGER.isDebugEnabled())
+				{
+					LOGGER.debug("XACML Response received from the PDP: {}", TestUtils.printResponse(response));
+				}
+				TestUtils.assertNormalizedEquals(testResourceLocationPrefix, expectedResponse, response);
+				LOGGER.debug("Finished PDP test of directory '{}'", testDirPath);
+			}
+		} catch (IllegalArgumentException e)
 		{
-			// PDP configuration filename found in test directory -> create PDP from it
-			final String pdpExtXsdLocation = testResourceLocationPrefix + PDP_EXTENSION_XSD;
-			final File pdpExtXsdFile = ResourceUtils.getFile(pdpExtXsdLocation);
-			try
+			// we found syntax error in policy
+			if (request == null)
 			{
-				/*
-				 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this file exists, and the XML catalog required to
-				 * resolve these extension XSDs
-				 */
-				pdp = pdpExtXsdFile.exists() ? PdpConfigurationParser.getPDP(pdpConfFile, XML_CATALOG_LOCATION, pdpExtXsdLocation) : PdpConfigurationParser
-						.getPDP(pdpConfLocation);
-			} catch (IOException | JAXBException e)
+				// this is a policy syntax error check and we found the syntax error as
+				// expected -> success
+				LOGGER.debug("Successfully found syntax error as expected in policy(ies) located in directory: {}", testDirPath, e);
+			} else
 			{
-				throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfLocation + "' with extension XSD '" + pdpExtXsdLocation
-						+ "' and XML catalog file '" + XML_CATALOG_LOCATION + "'", e);
+				throw e;
+			}
+		} finally
+		{
+			if (pdp != null)
+			{
+				pdp.close();
 			}
 		}
 
-		// Create request
-		final URL reqFileURL = ResourceUtils.getURL(testResourceLocationPrefix + REQUEST_FILENAME);
-		final Unmarshaller xacmlUnmarshaller = XACMLBindingUtils.createXacml3Unmarshaller();
-		final Request request = (Request) xacmlUnmarshaller.unmarshal(reqFileURL);
-		LOGGER.debug("XACML Request sent to the PDP: {}", request);
-		final Response response = pdp.evaluate(request);
-		pdp.close();
-		LOGGER.debug("XACML Response received from the PDP: {}", response);
-		final URL expectedRespFileURL = ResourceUtils.getURL(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
-		final Response expectedResponse = (Response) xacmlUnmarshaller.unmarshal(expectedRespFileURL);
-		TestUtils.assertNormalizedEquals(testResourceLocationPrefix, expectedResponse, response);
-		LOGGER.debug("Finished PDP test of directory '{}'", testDirPath);
 	}
 }

@@ -32,31 +32,31 @@ import org.ow2.authzforce.core.value.Bag;
 import org.ow2.authzforce.core.value.Bags;
 import org.ow2.authzforce.core.value.Datatype;
 import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
-import org.ow2.authzforce.core.xmlns.test.TestAttributeFinder;
+import org.ow2.authzforce.core.xmlns.test.TestAttributeProvider;
 
 /**
  * 
- * Fake AttributeFinderModule for test purposes only that can be configured to support a specific set of attribute finders, but always return an empty bag as
+ * Fake AttributeProviderModule for test purposes only that can be configured to support a specific set of attribute Providers, but always return an empty bag as
  * attribute value.
  * 
  */
-public class TestAttributeFinderModule extends BaseAttributeProviderModule
+public class TestAttributeProviderModule extends BaseAttributeProviderModule
 {
 	/**
 	 * module factory
 	 * 
 	 */
-	public static class Factory extends BaseAttributeProviderModule.Factory<TestAttributeFinder>
+	public static class Factory extends BaseAttributeProviderModule.Factory<TestAttributeProvider>
 	{
 
 		@Override
-		public Class<TestAttributeFinder> getJaxbClass()
+		public Class<TestAttributeProvider> getJaxbClass()
 		{
-			return TestAttributeFinder.class;
+			return TestAttributeProvider.class;
 		}
 
 		@Override
-		public DependencyAwareFactory parseDependencies(final TestAttributeFinder conf)
+		public DependencyAwareFactory parseDependencies(final TestAttributeProvider conf)
 		{
 			return new DependencyAwareFactory()
 			{
@@ -69,9 +69,9 @@ public class TestAttributeFinderModule extends BaseAttributeProviderModule
 				}
 
 				@Override
-				public BaseAttributeProviderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeProvider depAttrFinder)
+				public BaseAttributeProviderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeProvider depAttrProvider)
 				{
-					return new TestAttributeFinderModule(conf);
+					return new TestAttributeProviderModule(conf);
 				}
 			};
 		}
@@ -81,7 +81,7 @@ public class TestAttributeFinderModule extends BaseAttributeProviderModule
 	private final Set<AttributeDesignatorType> supportedDesignatorTypes;
 	private final Set<AttributeGUID> supportedAttrIds = new HashSet<>();
 
-	private TestAttributeFinderModule(TestAttributeFinder conf)
+	private TestAttributeProviderModule(TestAttributeProvider conf)
 	{
 		super(conf.getId(), null, null);
 		supportedDesignatorTypes = new HashSet<>(conf.getProvidedAttributes());

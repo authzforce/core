@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * AttributeFinder working with sub-modules, each responsible of finding specific attributes in a specific way from a specific source. This attribute finder
+ * AttributeProvider working with sub-modules, each responsible of finding specific attributes in a specific way from a specific source. This attribute Provider
  * tries to resolve attribute values in current evaluation context first, then if not there, query the sub-modules.
  */
 public abstract class BaseAttributeProvider implements AttributeProvider
@@ -48,24 +48,24 @@ public abstract class BaseAttributeProvider implements AttributeProvider
 				return contextBag;
 			}
 
-			// else attribute not found in context, ask the finder modules, if any
-			final AttributeProviderModule finderModule = getProvider(attributeGUID);
-			if (finderModule == null)
+			// else attribute not found in context, ask the Provider modules, if any
+			final AttributeProviderModule ProviderModule = getProvider(attributeGUID);
+			if (ProviderModule == null)
 			{
-				LOGGER.debug("No value found for required attribute {}, type={} in evaluation context and not supported by any attribute finder module",
+				LOGGER.debug("No value found for required attribute {}, type={} in evaluation context and not supported by any attribute Provider module",
 						attributeGUID, attributeDatatype);
-				throw new IndeterminateEvaluationException("Not in context and no attribute finder module supporting attribute: " + attributeGUID,
+				throw new IndeterminateEvaluationException("Not in context and no attribute Provider module supporting attribute: " + attributeGUID,
 						StatusHelper.STATUS_MISSING_ATTRIBUTE);
 			}
 
-			final Bag<AV> result = finderModule.get(attributeGUID, attributeDatatype, context);
+			final Bag<AV> result = ProviderModule.get(attributeGUID, attributeDatatype, context);
 
 			/*
 			 * Cache the attribute value(s) in context to avoid waste of time querying the module twice for same attribute
 			 */
 			context.putAttributeDesignatorResultIfAbsent(attributeGUID, result);
-			LOGGER.debug("Values of attribute {}, type={} returned by attribute finder module #{} (cached in context): {}", attributeGUID, attributeDatatype,
-					finderModule, result);
+			LOGGER.debug("Values of attribute {}, type={} returned by attribute Provider module #{} (cached in context): {}", attributeGUID, attributeDatatype,
+					ProviderModule, result);
 			return result;
 		} catch (IndeterminateEvaluationException e)
 		{
@@ -117,62 +117,62 @@ public abstract class BaseAttributeProvider implements AttributeProvider
 	protected abstract AttributeProviderModule getProvider(AttributeGUID attributeGUID);
 
 	/**
-	 * Default implementation of AttributeFinder; non-closeable, as opposed to {@link CloseableAttributeFinder}
+	 * Default implementation of AttributeProvider; non-closeable, as opposed to {@link CloseableAttributeProvider}
 	 *
 	 */
 	public static class DefaultImpl extends BaseAttributeProvider
 	{
-		// AttributeDesignator finder modules by supported/provided attribute ID (global ID: category, issuer,
+		// AttributeDesignator Provider modules by supported/provided attribute ID (global ID: category, issuer,
 		// AttributeId)
 		protected final Map<AttributeGUID, AttributeProviderModule> designatorModsByAttrId;
 
 		/**
-		 * Instantiates attribute finder that tries to find attribute values in evaluation context, then, if not there, query sub-modules providing the
+		 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query sub-modules providing the
 		 * requested attribute ID, if any.
 		 *
-		 * @param attributeFinderModulesByAttributeId
-		 *            attribute finder modules sorted by supported attribute ID; may be null if none
+		 * @param attributeProviderModulesByAttributeId
+		 *            attribute Provider modules sorted by supported attribute ID; may be null if none
 		 */
-		public DefaultImpl(Map<AttributeGUID, AttributeProviderModule> attributeFinderModulesByAttributeId)
+		public DefaultImpl(Map<AttributeGUID, AttributeProviderModule> attributeProviderModulesByAttributeId)
 		{
-			this(attributeFinderModulesByAttributeId, null);
+			this(attributeProviderModulesByAttributeId, null);
 		}
 
 		/**
-		 * Instantiates attribute finder that tries to find attribute values in evaluation context, then, if not there, query sub-modules providing the
+		 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query sub-modules providing the
 		 * requested attribute ID, if any.
 		 * 
-		 * @param attributeFinderModulesByAttributeId
-		 *            attribute finder modules sorted by supported attribute ID; may be null if none
+		 * @param attributeProviderModulesByAttributeId
+		 *            attribute Provider modules sorted by supported attribute ID; may be null if none
 		 * @param selectedAttributeSupport
-		 *            selection of attributes to be supported, i.e. only attributes from this set may be supported/resolved by this attribute finder; therefore,
-		 *            only the part of {@code attributeFinderModulesByAttributeId} matching these attributes are to be used by this finder.
+		 *            selection of attributes to be supported, i.e. only attributes from this set may be supported/resolved by this attribute Provider; therefore,
+		 *            only the part of {@code attributeProviderModulesByAttributeId} matching these attributes are to be used by this Provider.
 		 */
-		public DefaultImpl(Map<AttributeGUID, AttributeProviderModule> attributeFinderModulesByAttributeId,
+		public DefaultImpl(Map<AttributeGUID, AttributeProviderModule> attributeProviderModulesByAttributeId,
 				Set<AttributeDesignatorType> selectedAttributeSupport)
 		{
-			if (attributeFinderModulesByAttributeId == null || selectedAttributeSupport == null)
+			if (attributeProviderModulesByAttributeId == null || selectedAttributeSupport == null)
 			{
-				designatorModsByAttrId = attributeFinderModulesByAttributeId;
+				designatorModsByAttrId = attributeProviderModulesByAttributeId;
 			} else
 			{
 				designatorModsByAttrId = new HashMap<>(selectedAttributeSupport.size());
 				for (final AttributeDesignatorType requiredAttr : selectedAttributeSupport)
 				{
 					final AttributeGUID requiredAttrGUID = new AttributeGUID(requiredAttr);
-					final AttributeProviderModule requiredAttrFinderMod = attributeFinderModulesByAttributeId.get(requiredAttrGUID);
-					// requiredAttrFinderMod = null means it should be provided by the request
+					final AttributeProviderModule requiredAttrProviderMod = attributeProviderModulesByAttributeId.get(requiredAttrGUID);
+					// requiredAttrProviderMod = null means it should be provided by the request
 					// context (in the initial request from PEP)
-					if (requiredAttrFinderMod != null)
+					if (requiredAttrProviderMod != null)
 					{
-						designatorModsByAttrId.put(requiredAttrGUID, requiredAttrFinderMod);
+						designatorModsByAttrId.put(requiredAttrGUID, requiredAttrProviderMod);
 					}
 				}
 			}
 		}
 
 		/**
-		 * Instantiates attribute finder that tries to find attribute values in evaluation context only (no sub-modules). Equivalent to
+		 * Instantiates attribute Provider that tries to find attribute values in evaluation context only (no sub-modules). Equivalent to
 		 * {@link #DefaultImpl(Map)} with null argument.
 		 *
 		 */
@@ -184,7 +184,7 @@ public abstract class BaseAttributeProvider implements AttributeProvider
 		@Override
 		protected AttributeProviderModule getProvider(AttributeGUID attributeGUID)
 		{
-			LOGGER.debug("Requesting attribute {} from finder modules (by provided attribute ID): {}", attributeGUID, designatorModsByAttrId);
+			LOGGER.debug("Requesting attribute {} from Provider modules (by provided attribute ID): {}", attributeGUID, designatorModsByAttrId);
 			return designatorModsByAttrId == null ? null : designatorModsByAttrId.get(attributeGUID);
 		}
 	}

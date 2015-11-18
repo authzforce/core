@@ -139,7 +139,7 @@ public class ConformanceV3FromV2
 		final PDP pdp;
 		try
 		{
-			pdp = TestUtils.getPDPNewInstance(policyFilepath);
+			pdp = TestUtils.getPDPNewInstance(policyFilepath, null);
 			if (request == null)
 			{
 				// this is a policy syntax error check and we didn't found the syntax error as

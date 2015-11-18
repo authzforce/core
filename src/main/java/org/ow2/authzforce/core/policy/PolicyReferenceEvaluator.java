@@ -46,6 +46,9 @@ public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> exten
 	private static final UnsupportedOperationException UNSUPPORTED_SET_LATEST_VERSION_EXCEPTION = new UnsupportedOperationException(
 			"LatestVersion in Policy(Set)IdReference is read-only");
 
+	private static final IllegalArgumentException UNDEF_REF_POLICY_PROVIDER_EXCEPTION = new IllegalArgumentException(
+			"Policy(Set)IdReference resolver/Provider undefined");
+
 	// and version constraints on this reference
 	protected final VersionConstraints versionConstraints;
 
@@ -140,51 +143,57 @@ public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> exten
 	 * 
 	 * @param idRef
 	 *            Policy(Set)IdReference
-	 * @param refPolicyFinder
-	 *            Policy(Set)IdReference resolver/finder
+	 * @param refPolicyProvider
+	 *            Policy(Set)IdReference resolver/Provider
 	 * @param refPolicyType
 	 *            type of policy referenced, i.e. whether it refers to Policy or PolicySet
 	 * @param parentPolicySetRefChain
 	 *            chain of ancestor PolicySetIdReferences leading to the reference identified here by {@code idRef} (exclusive): PolicySet Ref 1 -> PolicySet
 	 *            Ref 2 -> ... -> Ref n -> {@code idRef}. This allows to detect circular references and validate the size of the chain against the max depth
-	 *            enforced by {@code policyFinder}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level PolicySet. Beware that we only
+	 *            enforced by {@code policyProvider}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level PolicySet. Beware that we only
 	 *            keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what
 	 *            the version is.
 	 * @return instance instance of PolicyReference
 	 * @throws ParsingException
-	 *             if PolicySetIdReference loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyFinder}
+	 *             if PolicySetIdReference loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
 	 * @throws IllegalArgumentException
-	 *             if {@code refPolicyFinder} undefined
+	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by
+	 *             {@code refPolicyProvider}
 	 */
-	public static <T extends IPolicyEvaluator> PolicyReferenceEvaluator<T> getInstance(IdReferenceType idRef, RefPolicyFinder refPolicyFinder,
+	public static <T extends IPolicyEvaluator> PolicyReferenceEvaluator<T> getInstance(IdReferenceType idRef, RefPolicyProvider refPolicyProvider,
 			Class<T> refPolicyType, Deque<String> parentPolicySetRefChain) throws ParsingException, IllegalArgumentException
 	{
-		if (refPolicyFinder == null)
+		if (refPolicyProvider == null)
 		{
-			throw new IllegalArgumentException("Policy(Set)IdReference resolver/finder undefined");
+			throw UNDEF_REF_POLICY_PROVIDER_EXCEPTION;
 		}
 
 		final VersionConstraints versionConstraints = new VersionConstraints(idRef.getVersion(), idRef.getEarliestVersion(), idRef.getLatestVersion());
 		/*
-		 * REMINDER: parentPolicySetRefChain is handled/updated by the refPolicyFinder. So do not modify it here, just pass the parameter. modify it here.
+		 * REMINDER: parentPolicySetRefChain is handled/updated by the refPolicyProvider. So do not modify it here, just pass the parameter. modify it here.
 		 */
-		if (refPolicyFinder.isStatic())
+		if (refPolicyProvider.isStatic())
 		{
 			final T policy;
 			try
 			{
-				policy = refPolicyFinder.findPolicy(idRef.getValue(), versionConstraints, refPolicyType, parentPolicySetRefChain);
+				policy = refPolicyProvider.get(idRef.getValue(), versionConstraints, refPolicyType, parentPolicySetRefChain);
 			} catch (IndeterminateEvaluationException e)
 			{
 				throw new ParsingException("Error resolving statically or parsing " + toString(refPolicyType, idRef.getValue(), versionConstraints)
-						+ " into its referenced policy (via static policy finder)", e);
+						+ " into its referenced policy (via static policy Provider)", e);
+			}
+
+			if (policy == null)
+			{
+				throw new IllegalArgumentException("No " + (refPolicyType == PolicyEvaluator.class ? "Policy" : "PolicySet") + " matching reference: " + idRef);
 			}
 
 			return new StaticPolicyRefEvaluator<>(idRef.getValue(), versionConstraints, policy);
 		}
 
 		// dynamic reference resolution
-		return new DynamicPolicyRefEvaluator<>(idRef.getValue(), versionConstraints, refPolicyType, refPolicyFinder, parentPolicySetRefChain);
+		return new DynamicPolicyRefEvaluator<>(idRef.getValue(), versionConstraints, refPolicyType, refPolicyProvider, parentPolicySetRefChain);
 	}
 
 }

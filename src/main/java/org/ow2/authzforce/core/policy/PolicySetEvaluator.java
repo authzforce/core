@@ -74,11 +74,11 @@ public final class PolicySetEvaluator extends GenericPolicyEvaluator<IPolicyEval
 	 *            Expression factory/parser
 	 * @param combiningAlgorithmRegistry
 	 *            policy/rule combining algorithm registry
-	 * @param refPolicyFinder
-	 *            policy-by-reference (Policy(Set)IdReference) finder to find references used in this policyset
+	 * @param refPolicyProvider
+	 *            policy-by-reference (Policy(Set)IdReference) Provider to find references used in this policyset
 	 * @param policySetRefChain
 	 *            chain of ancestor PolicySetIdReferences leading to this PolicySet, if any: PolicySet Ref 1 -> PolicySet Ref 2 -> ... -> Ref n -> this. This
-	 *            allows to detect circular references and validate the size of the chain against the max depth enforced by {@code refPolicyFinder}. This may be
+	 *            allows to detect circular references and validate the size of the chain against the max depth enforced by {@code refPolicyProvider}. This may be
 	 *            null if no ancestor, e.g. a PolicySetIdReference in a top-level PolicySet. Beware that we only keep the IDs in the chain, and not the version,
 	 *            because we consider that a reference loop on the same policy ID is not allowed, no matter what the version is.
 	 * @return instance
@@ -86,7 +86,7 @@ public final class PolicySetEvaluator extends GenericPolicyEvaluator<IPolicyEval
 	 *             if PolicyElement is invalid
 	 */
 	public static PolicySetEvaluator getInstance(PolicySet policyElement, XPathCompiler parentDefaultXPathCompiler, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgorithmRegistry, RefPolicyFinder refPolicyFinder, Deque<String> policySetRefChain) throws ParsingException
+			CombiningAlgRegistry combiningAlgorithmRegistry, RefPolicyProvider refPolicyProvider, Deque<String> policySetRefChain) throws ParsingException
 	{
 		final String policyId = policyElement.getPolicySetId();
 		final String policyVersion = policyElement.getVersion();
@@ -177,24 +177,24 @@ public final class PolicySetEvaluator extends GenericPolicyEvaluator<IPolicyEval
 				final String eltNameLocalPart = jaxbElt.getName().getLocalPart();
 				if (eltNameLocalPart.equals(XACMLNodeName.POLICY_ID_REFERENCE.value()))
 				{
-					if (refPolicyFinder == null)
+					if (refPolicyProvider == null)
 					{
 						throw new ParsingException(policyFriendlyId + ": Error parsing child #" + childIndex
-								+ " (PolicyIdReference): no refPolicyFinder (module responsible for resolving Policy(Set)IdReferences) defined to support it.");
+								+ " (PolicyIdReference): no refPolicyProvider (module responsible for resolving Policy(Set)IdReferences) defined to support it.");
 					}
 
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
-					combinedChildElements.add(PolicyReferenceEvaluator.getInstance(idRef, refPolicyFinder, PolicyEvaluator.class, null));
+					combinedChildElements.add(PolicyReferenceEvaluator.getInstance(idRef, refPolicyProvider, PolicyEvaluator.class, null));
 				} else if (eltNameLocalPart.equals(XACMLNodeName.POLICYSET_ID_REFERENCE.value()))
 				{
-					if (refPolicyFinder == null)
+					if (refPolicyProvider == null)
 					{
 						throw new ParsingException(policyFriendlyId + ": Error parsing child #" + childIndex
-								+ " (PolicyIdReference): no refPolicyFinder (module responsible for resolving Policy(Set)IdReferences) defined to support it.");
+								+ " (PolicyIdReference): no refPolicyProvider (module responsible for resolving Policy(Set)IdReferences) defined to support it.");
 					}
 
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
-					combinedChildElements.add(PolicyReferenceEvaluator.getInstance(idRef, refPolicyFinder, PolicySetEvaluator.class, policySetRefChain));
+					combinedChildElements.add(PolicyReferenceEvaluator.getInstance(idRef, refPolicyProvider, PolicySetEvaluator.class, policySetRefChain));
 				} else if (eltNameLocalPart.equals(XACMLNodeName.COMBINER_PARAMETERS.value()))
 				{
 					// CombinerParameters that is not Policy(Set)CombinerParameters already tested
@@ -217,7 +217,7 @@ public final class PolicySetEvaluator extends GenericPolicyEvaluator<IPolicyEval
 				try
 				{
 					childPolicySet = PolicySetEvaluator.getInstance((PolicySet) policySetChildElt, defaultXPathCompiler, expressionFactory,
-							combiningAlgorithmRegistry, refPolicyFinder, policySetRefChain);
+							combiningAlgorithmRegistry, refPolicyProvider, policySetRefChain);
 				} catch (ParsingException e)
 				{
 					throw new ParsingException(policyFriendlyId + ": Error parsing child #" + childIndex + " (PolicySet)", e);

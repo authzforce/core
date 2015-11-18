@@ -14,7 +14,7 @@
 package org.ow2.authzforce.core;
 
 /**
- * Marker Interface for all kinds of PDP extension (Attribute datatypes, functions, combining algorithms, AttributeFinderModule, RootPolicyFinderModule...)
+ * Marker Interface for all kinds of PDP extension (Attribute datatypes, functions, combining algorithms, AttributeProviderModule, RootPolicyProviderModule...)
  * 
  * 
  */

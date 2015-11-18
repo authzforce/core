@@ -5,7 +5,7 @@
 	xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os access_control-xacml-2.0-policy-schema-os.xsd">
 	<Description>
         Policy based on Conformance Test IIIA001.
-        Purpose: Test VariableDefinition/VariableReference, Case: Permit: RuleCombiningAlgorithm DenyOverrides
+        Purpose: Test Invalid VariableReference refering to unknown/undefined VariableDefinition, Case: Permit: RuleCombiningAlgorithm DenyOverrides
     </Description>
 	<Target />
 	<Rule Effect="Deny" RuleId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA001:rule1">
@@ -46,7 +46,7 @@
 							Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" DataType="http://www.w3.org/2001/XMLSchema#integer"
 							MustBePresent="false" />
 					</Apply>
-					<VariableReference VariableId="bartSimpsonAge" />
+					<VariableReference VariableId="someOtherDudeAge" />
 				</Apply>
 				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">5</AttributeValue>
 			</Apply>

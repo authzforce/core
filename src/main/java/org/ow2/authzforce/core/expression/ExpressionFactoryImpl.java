@@ -32,12 +32,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
-import org.ow2.authzforce.core.CloseableAttributeFinder;
+import org.ow2.authzforce.core.CloseableAttributeProvider;
 import org.ow2.authzforce.core.func.FunctionRegistry;
 import org.ow2.authzforce.core.value.Datatype;
 import org.ow2.authzforce.core.value.DatatypeFactory;
 import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeFinder;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 
 import com.sun.xacml.Function;
 import com.sun.xacml.ParsingException;
@@ -61,12 +61,12 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	private static final IllegalArgumentException NULL_ATTRIBUTE_DATATYPE_REGISTRY_EXCEPTION = new IllegalArgumentException(
 			"Undefined attribute datatype registry");
 
-	private static final ParsingException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_FINDER_EXCEPTION = new ParsingException(
-			"Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute finder defined");
+	private static final ParsingException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_Provider_EXCEPTION = new ParsingException(
+			"Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute Provider defined");
 
 	private final DatatypeFactoryRegistry datatypeFactoryRegistry;
 	private final FunctionRegistry functionRegistry;
-	private final CloseableAttributeFinder attributeFinder;
+	private final CloseableAttributeProvider attributeProvider;
 	private final int maxVariableReferenceDepth;
 	// the map from identifiers to internal data
 	private final Map<String, VariableReference<?>> idToVariableMap = new HashMap<>();
@@ -86,22 +86,22 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 *            attribute value factory (not null)
 	 * @param functionRegistry
 	 *            function registry (not null)
-	 * @param jaxbAttributeFinderConfs
-	 *            XML/JAXB configurations of Attribute Finders for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
+	 * @param jaxbAttributeProviderConfs
+	 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
 	 *            evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
 	 * @param maxVarRefDepth
 	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference)
 	 * @param allowAttributeSelectors
 	 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
 	 * @throws IllegalArgumentException
-	 *             If any of attribute finder modules created from {@code jaxbAttributeFinderConfs} does not provide any attribute; or it is in conflict with
+	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with
 	 *             another one already registered to provide the same or part of the same attributes.
 	 * @throws IOException
-	 *             error closing the attribute finder modules created from {@code jaxbAttributeFinderConfs}, when and before an {@link IllegalArgumentException}
+	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException}
 	 *             is raised
 	 */
 	public ExpressionFactoryImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry,
-			List<AbstractAttributeFinder> jaxbAttributeFinderConfs, int maxVarRefDepth, boolean allowAttributeSelectors) throws IllegalArgumentException,
+			List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVarRefDepth, boolean allowAttributeSelectors) throws IllegalArgumentException,
 			IOException
 	{
 		if (attributeFactory == null)
@@ -122,8 +122,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		this.datatypeFactoryRegistry = attributeFactory;
 		this.functionRegistry = functionRegistry;
 		this.maxVariableReferenceDepth = maxVarRefDepth;
-		// finally create the global attribute finder used to resolve AttributeDesignators
-		this.attributeFinder = new CloseableAttributeFinder(jaxbAttributeFinderConfs, attributeFactory);
+		// finally create the global attribute Provider used to resolve AttributeDesignators
+		this.attributeProvider = new CloseableAttributeProvider(jaxbAttributeProviderConfs, attributeFactory);
 		this.allowAttributeSelectors = allowAttributeSelectors;
 	}
 
@@ -295,9 +295,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 			expression = Apply.getInstance((ApplyType) expr, xPathCompiler, this, longestVarRefChain);
 		} else if (expr instanceof AttributeDesignatorType)
 		{
-			if (this.attributeFinder == null)
+			if (this.attributeProvider == null)
 			{
-				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_FINDER_EXCEPTION;
+				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_Provider_EXCEPTION;
 			}
 
 			final AttributeDesignatorType jaxbAttrDes = (AttributeDesignatorType) expr;
@@ -307,7 +307,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				throw new ParsingException("Unsupported Datatype used in AttributeDesignator: " + jaxbAttrDes.getDataType());
 			}
 
-			expression = new AttributeDesignator<>(jaxbAttrDes, attrFactory.getBagDatatype(), attributeFinder);
+			expression = new AttributeDesignator<>(jaxbAttrDes, attrFactory.getBagDatatype(), attributeProvider);
 		} else if (expr instanceof AttributeSelectorType)
 		{
 			if (!allowAttributeSelectors)
@@ -315,9 +315,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				throw UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION;
 			}
 
-			if (this.attributeFinder == null)
+			if (this.attributeProvider == null)
 			{
-				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_FINDER_EXCEPTION;
+				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_Provider_EXCEPTION;
 			}
 
 			final AttributeSelectorType jaxbAttrSelector = (AttributeSelectorType) expr;
@@ -336,7 +336,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 			try
 			{
-				expression = new AttributeSelectorExpression<>(jaxbAttrSelector, xPathCompiler, attributeFinder, attrFactory);
+				expression = new AttributeSelectorExpression<>(jaxbAttrSelector, xPathCompiler, attributeProvider, attrFactory);
 			} catch (XPathExpressionException e)
 			{
 				throw new ParsingException("Error parsing AttributeSelector's Path='" + jaxbAttrSelector.getPath() + "' into a XPath expression", e);
@@ -398,9 +398,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	@Override
 	public void close() throws IOException
 	{
-		if (attributeFinder != null)
+		if (attributeProvider != null)
 		{
-			attributeFinder.close();
+			attributeProvider.close();
 		}
 	}
 

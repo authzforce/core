@@ -3,18 +3,13 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.test.conformance;
 
@@ -74,7 +69,7 @@ public class MultipleDecisionProfileV3
 			reqResNo = "0" + i;
 			request = TestUtils.createRequest(ROOT_DIRECTORY + "request_0014_" + reqResNo + ".xml");
 			LOGGER.debug("Request that is sent to the PDP :  {}", request);
-			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY + policyFilename).evaluate(request);
+			response = TestUtils.getPDPNewInstance(ROOT_DIRECTORY + policyFilename, null).evaluate(request);
 			LOGGER.debug("Response that is received from the PDP :  {}", response);
 			expectedResponse = TestUtils.createResponse(ROOT_DIRECTORY + "response_0014_" + reqResNo + ".xml");
 			LOGGER.debug("Response expected:  {}", expectedResponse);
