@@ -44,10 +44,8 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 	private static final PdpExtensionComparator<Function<?>> FUNCTION_COMPARATOR = new PdpExtensionComparator<>();
 	private static final PdpExtensionComparator<GenericHigherOrderFunctionFactory> FUNCTION_FACTORY_COMPARATOR = new PdpExtensionComparator<>();
 
-	/**
-	 * Singleton function registry instance for standard functions
-	 */
-	public static final StandardFunctionRegistry INSTANCE;
+	private static final StandardFunctionRegistry NON_XPATH_FUNCTIONS;
+	private static final StandardFunctionRegistry ALL_FUNCTIONS;
 
 	static
 	{
@@ -80,10 +78,10 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 		/*
 		 * Logical functions (A.3.5)
 		 */
-		nonGenericFunctions.add(new LogicalOrFunction());
-		nonGenericFunctions.add(new LogicalAndFunction());
-		nonGenericFunctions.add(new LogicalNOfFunction());
-		nonGenericFunctions.add(new NotFunction());
+		nonGenericFunctions.add(LogicalOrFunction.INSTANCE);
+		nonGenericFunctions.add(LogicalAndFunction.INSTANCE);
+		nonGenericFunctions.add(LogicalNOfFunction.INSTANCE);
+		nonGenericFunctions.add(NotFunction.INSTANCE);
 
 		/*
 		 * Total-ordering comparison functions (all elements of a given type can be compared to each other), i.e. numeric (A.3.6) and string comparison
@@ -131,32 +129,44 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 		 */
 		nonGenericFunctions.addAll(HigherOrderBagFunctionSet.INSTANCE.getSupportedFunctions());
 
-		/**
+		/*
 		 * A.3.13 already addressed above by NonEqualTypeMatchFunction
-		 * <p>
-		 * A.3.14 already addressed above by EqualTypeMatchFunction and NonEqualTypeMatchFunction
-		 * <p>
-		 * A.3.15 and A.3.16 (optional) not supported
 		 */
-
-		final BasePdpExtensionRegistry<Function<?>> nonGenericFuncRegistry = new BasePdpExtensionRegistry<>(Function.class, nonGenericFunctions);
+		/*
+		 * A.3.14 already addressed above by EqualTypeMatchFunction and NonEqualTypeMatchFunction
+		 */
+		final BasePdpExtensionRegistry<Function<?>> nonGenericFuncRegistry = new BasePdpExtensionRegistry<>(Function.class,
+				Collections.unmodifiableSet(nonGenericFunctions));
 
 		// Generic functions, e.g. map function
 		final Set<GenericHigherOrderFunctionFactory> genericFuncFactories = Collections.singleton(MapFunctionFactory.INSTANCE);
 		final BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFuncFactoryRegistry = new BasePdpExtensionRegistry<>(
 				GenericHigherOrderFunctionFactory.class, genericFuncFactories);
 
-		INSTANCE = new StandardFunctionRegistry(nonGenericFuncRegistry, genericFuncFactoryRegistry);
+		NON_XPATH_FUNCTIONS = new StandardFunctionRegistry(nonGenericFuncRegistry, genericFuncFactoryRegistry);
+
+		/*
+		 * Optional functions
+		 */
+		/*
+		 * A.3.15 functions only xpath-node-count supported
+		 */
+		nonGenericFuncRegistry.addExtension(XPathNodeCountFunction.INSTANCE);
+		ALL_FUNCTIONS = new StandardFunctionRegistry(nonGenericFuncRegistry, genericFuncFactoryRegistry);
+
+		/*
+		 * A.3.16 not supported
+		 */
 		if (LOGGER.isDebugEnabled())
 		{
 			// TreeSet for sorting functions, easier to read
 			final TreeSet<Function<?>> sortedFunctions = new TreeSet<>(FUNCTION_COMPARATOR);
 			sortedFunctions.addAll(nonGenericFunctions);
-			LOGGER.debug("Loaded XACML standard first-order functions: {}", sortedFunctions);
+			LOGGER.debug("Loaded XACML standard non-generic functions: {}", sortedFunctions);
 
 			final TreeSet<GenericHigherOrderFunctionFactory> sortedFunctionFactories = new TreeSet<>(FUNCTION_FACTORY_COMPARATOR);
 			sortedFunctionFactories.addAll(genericFuncFactories);
-			LOGGER.debug("Loaded XACML standard higher-order function factories: {}", sortedFunctionFactories);
+			LOGGER.debug("Loaded XACML standard generic functions: {}", sortedFunctionFactories);
 		}
 	}
 
@@ -186,6 +196,18 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 	public void addFunction(Function<?> function) throws IllegalArgumentException
 	{
 		throw new UnsupportedOperationException("a standard factory cannot be modified");
+	}
+
+	/**
+	 * Get standard function registry
+	 * 
+	 * @param enableXPath
+	 *            true iff XPath-based function(s) support enabled
+	 * @return standard function registry
+	 */
+	public static FunctionRegistry getInstance(boolean enableXPath)
+	{
+		return enableXPath ? ALL_FUNCTIONS : NON_XPATH_FUNCTIONS;
 	}
 
 }

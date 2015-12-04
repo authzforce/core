@@ -45,7 +45,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 
 	private static final class Call extends FirstOrderFunctionCall<BooleanValue>
 	{
-		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_N_OF + ": Invalid type (expected = " + BooleanValue.class.getName()
+		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_N_OF + ": Invalid type (expected = " + DatatypeConstants.BOOLEAN.TYPE
 				+ ") of arg#";
 		private static final String INDETERMINATE_ARG_MSG_PREFIX = "Function " + NAME_N_OF + ": Indeterminate arg #";
 		private static final String INVALID_ARG0_MSG_PREFIX = "Function " + NAME_N_OF
@@ -56,10 +56,10 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 				+ ": evaluation failed because of indeterminate arg", StatusHelper.STATUS_PROCESSING_ERROR);
 		private final List<Expression<?>> checkedArgExpressions;
 
-		private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes,
-				List<Expression<?>> checkedArgExpressions) throws IllegalArgumentException
+		private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> checkedArgExpressions, Datatype<?>[] remainingArgTypes)
+				throws IllegalArgumentException
 		{
-			super(functionSig, argExpressions, remainingArgTypes);
+			super(functionSig, checkedArgExpressions, remainingArgTypes);
 			this.checkedArgExpressions = checkedArgExpressions;
 		}
 
@@ -246,12 +246,11 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 	public static final String NAME_N_OF = XACML_NS_1_0 + "n-of";
 
 	/**
-	 * Creates a new <code>LogicalNOfFunction</code> object.
-	 * 
-	 * @throws IllegalArgumentException
-	 *             if the function is unknown
+	 * Singleton instance of "n-of" logical function
 	 */
-	public LogicalNOfFunction()
+	public static final LogicalNOfFunction INSTANCE = new LogicalNOfFunction();
+
+	private LogicalNOfFunction()
 	{
 		super(NAME_N_OF, DatatypeConstants.BOOLEAN.TYPE, true, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.BOOLEAN.TYPE));
 	}
@@ -265,7 +264,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 	protected FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException
 	{
-		return new Call(functionSignature, checkedArgExpressions, remainingArgTypes, checkedArgExpressions);
+		return new Call(functionSignature, checkedArgExpressions, remainingArgTypes);
 	}
 
 }

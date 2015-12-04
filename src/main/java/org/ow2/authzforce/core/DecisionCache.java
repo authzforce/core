@@ -14,7 +14,7 @@
 package org.ow2.authzforce.core;
 
 import java.io.Closeable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
@@ -52,12 +52,12 @@ public interface DecisionCache extends Closeable
 	 * Gets the decision result(s) from the cache for the given decision request(s). The ability to get multiple cached results at once allows the Cache
 	 * implementation to optimize the retrieval by requesting all in the same request, e.g. if the cache is in a remote storage/server.
 	 * 
-	 * @param requests
+	 * @param individualDecisionRequests
 	 *            decision request(s)
 	 * @return a map where each entry key is a request from {@code requests}, and the value is the corresponding result from cache, or null if no such result
 	 *         found in cache. Each request in {@code requests} but be a key in the Map returned, and the Map size must be equal to {@code requests.size()}.
 	 */
-	Map<IndividualDecisionRequest, Result> getAll(Collection<IndividualDecisionRequest> requests);
+	Map<IndividualDecisionRequest, Result> getAll(List<? extends IndividualDecisionRequest> individualDecisionRequests);
 
 	/**
 	 * Puts a XACML decision requests and corresponding results in cache. The ability to put multiple cache entries at once allows the Cache implementation to

@@ -323,6 +323,13 @@ public final class DatatypeConstants<AV extends AttributeValue>
 			return new XPathValue(value, otherXmlAttributes, xPathCompiler);
 		}
 
+		@Override
+		protected boolean isExpressionStatic()
+		{
+			// xpathExpression evaluation result depends on the context (request Content node)
+			return false;
+		}
+
 	};
 
 	/**
@@ -331,11 +338,11 @@ public final class DatatypeConstants<AV extends AttributeValue>
 	public static final DatatypeConstants<XPathValue> XPATH = new DatatypeConstants<>(XPATH_FACTORY, XPathValue[].class, Function.XACML_NS_3_0 + "xpath");
 
 	/**
-	 * Standard datatype constants
+	 * Constants for standard mandatory datatype (xpathExpression is optional, therefore excluded)
 	 */
-	public static final Set<DatatypeConstants<? extends SimpleValue<? extends Object>>> SET = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(STRING,
-			BOOLEAN, INTEGER, DOUBLE, TIME, DATE, DATETIME, ANYURI, HEXBINARY, BASE64BINARY, X500NAME, RFC822NAME, IPADDRESS, DNSNAME, DAYTIMEDURATION,
-			YEARMONTHDURATION, XPATH)));
+	public static final Set<DatatypeConstants<? extends SimpleValue<? extends Object>>> MANDATORY_DATATYPE_SET = Collections.unmodifiableSet(new HashSet<>(
+			Arrays.asList(STRING, BOOLEAN, INTEGER, DOUBLE, TIME, DATE, DATETIME, ANYURI, HEXBINARY, BASE64BINARY, X500NAME, RFC822NAME, IPADDRESS, DNSNAME,
+					DAYTIMEDURATION, YEARMONTHDURATION)));
 
 	/**
 	 * (Primitive) Datatype

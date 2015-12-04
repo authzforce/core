@@ -1,15 +1,23 @@
+/**
+ * Copyright (C) 2012-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce CE.
+ *
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.ow2.authzforce.core.expression;
 
-import java.io.FileNotFoundException;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import javax.xml.transform.stream.StreamSource;
-
-import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XPathExecutable;
@@ -19,6 +27,7 @@ import net.sf.saxon.s9api.XdmItem;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.XACMLParsers;
 import org.ow2.authzforce.core.value.AttributeValue;
 import org.ow2.authzforce.core.value.Datatype;
 import org.ow2.authzforce.core.value.Value;
@@ -26,7 +35,6 @@ import org.ow2.authzforce.core.value.XPathValue;
 import org.ow2.authzforce.xacml.identifiers.XPATHVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
 
 /**
  * This class consists exclusively of constants and static methods to operate on {@link Expression}s.
@@ -38,69 +46,21 @@ public final class Expressions
 	{
 	}
 
-	/**
-	 * Saxon configuration file for Attributes/Content XML parsing (into XDM data model) and AttributeSelector's XPath evaluation
-	 */
-	public static final String SAXON_CONFIGURATION_PATH = "classpath:saxon.xml";
-	/**
-	 * SAXON XML/XPath Processor
-	 */
-	public static final Processor SAXON_PROCESSOR;
-	static
+	private static XPathCompiler newXPathCompiler(XPATHVersion xpathVersion) throws IllegalArgumentException
 	{
-		final URL saxonConfURL;
-		try
-		{
-			saxonConfURL = ResourceUtils.getURL(SAXON_CONFIGURATION_PATH);
-		} catch (FileNotFoundException e)
-		{
-			throw new RuntimeException("No Saxon configuration file exists at default location: " + SAXON_CONFIGURATION_PATH, e);
-		}
-
-		try
-		{
-			SAXON_PROCESSOR = new Processor(new StreamSource(saxonConfURL.toString()));
-		} catch (SaxonApiException e)
-		{
-			throw new RuntimeException("Error loading Saxon processor from configuration file at this location: " + SAXON_CONFIGURATION_PATH, e);
-		}
-	}
-
-	private static XPathCompiler newXPathCompiler(XPATHVersion xpathVersion)
-	{
-		final XPathCompiler xpathCompiler = Expressions.SAXON_PROCESSOR.newXPathCompiler();
-		final String versionString;
-		switch (xpathVersion)
-		{
-		case V1_0:
-			versionString = "1.0";
-			break;
-		case V2_0:
-			versionString = "2.0";
-			break;
-		default:
-			throw new UnsupportedOperationException("Unsupported XPath version: " + xpathVersion + ". Versions supported: "
-					+ Arrays.asList(XPATHVersion.values()));
-
-		}
-
-		xpathCompiler.setLanguageVersion(versionString);
-		xpathCompiler.setSchemaAware(false);
-
+		final XPathCompiler xpathCompiler = XACMLParsers.SAXON_PROCESSOR.newXPathCompiler();
+		xpathCompiler.setLanguageVersion(xpathVersion.getVersionNumber());
 		/*
-		 * TODO: we could enable caching of XPATH compiled queries but only once we have implemented a way to clear the cache periodically, otherwise it grows
-		 * indefinitely.
+		 * No need for caching since we are only using this for XPaths in Policy/PolicySet (AttributeSelector and xpathExpression), not in the Request (not
+		 * supported)
 		 */
-		// xpathCompiler.setCaching(true);
+		xpathCompiler.setCaching(false);
+		xpathCompiler.setSchemaAware(false);
 		return xpathCompiler;
 	}
 
-	/**
-	 * XPath compilers by XPath version, for single evaluation of a given XPath with {@link XPathCompiler#evaluateSingle(String, XdmItem)}. For repeated
-	 * evaluation of the same XPath, use {@link XPathEvaluator} instead. What we receive in XACML Request is the version URI so we need this map to map the URI
-	 * to the XPath compiler
-	 */
-	public static final Map<String, XPathCompiler> XPATH_COMPILERS_BY_VERSION;
+	// Default XPath compilers by XPathVersion outside any namespace context
+	private static final Map<String, XPathCompiler> XPATH_COMPILERS_BY_VERSION;
 	static
 	{
 		final Map<String, XPathCompiler> mutableMap = new HashMap<>();
@@ -109,6 +69,60 @@ public final class Expressions
 		// XPATH 2.0 compiler
 		mutableMap.put(XPATHVersion.V2_0.getURI(), newXPathCompiler(XPATHVersion.V2_0));
 		XPATH_COMPILERS_BY_VERSION = Collections.unmodifiableMap(mutableMap);
+	}
+
+	private static final IllegalArgumentException NULL_NAMESPACE_PREFIX_EXCEPTION = new IllegalArgumentException(
+			"Invalid XPath compiler input: null namespace prefix in namespace prefix-URI mappings");
+	private static final IllegalArgumentException NULL_NAMESPACE_URI_EXCEPTION = new IllegalArgumentException(
+			"Invalid XPath compiler input: null namespace URI in namespace prefix-URI mappings");
+
+	/**
+	 * Create XPath compiler for given XPath version and namespace context. For single evaluation of a given XPath with
+	 * {@link XPathCompiler#evaluateSingle(String, XdmItem)}. For repeated evaluation of the same XPath, use {@link XPathEvaluator} instead. What we have in
+	 * XACML Policy/PolicySetDefaults is the version URI so we need this map to map the URI to the XPath compiler
+	 * 
+	 * @param xpathVersionURI
+	 *            XPath version URI, e.g. "http://www.w3.org/TR/1999/REC-xpath-19991116"
+	 * @param namespaceURIsByPrefix
+	 *            namespace prefix-URI mapping to be part of the static context for XPath expressions compiled using the created XPathCompiler
+	 * @return XPath compiler instance
+	 * @throws IllegalArgumentException
+	 *             if {@code xpathVersionURI} is invalid or unsupported XPath version or one of the namespace prefixes/URIs in {@code namespaceURIsByPrefix} is
+	 *             null
+	 */
+	public static XPathCompiler newXPathCompiler(String xpathVersionURI, Map<String, String> namespaceURIsByPrefix) throws IllegalArgumentException
+	{
+		if (namespaceURIsByPrefix == null || namespaceURIsByPrefix.isEmpty())
+		{
+			final XPathCompiler xpathCompiler = XPATH_COMPILERS_BY_VERSION.get(xpathVersionURI);
+			if (xpathCompiler == null)
+			{
+				throw new IllegalArgumentException("Invalid or unsupported XPathVersion: " + xpathVersionURI);
+			}
+
+			return xpathCompiler;
+		}
+
+		final XPATHVersion xpathVersion = XPATHVersion.fromURI(xpathVersionURI);
+		final XPathCompiler xpathCompiler = newXPathCompiler(xpathVersion);
+		for (final Entry<String, String> nsPrefixToURI : namespaceURIsByPrefix.entrySet())
+		{
+			final String prefix = nsPrefixToURI.getKey();
+			final String uri = nsPrefixToURI.getValue();
+			if (prefix == null)
+			{
+				throw NULL_NAMESPACE_PREFIX_EXCEPTION;
+			}
+
+			if (uri == null)
+			{
+				throw NULL_NAMESPACE_URI_EXCEPTION;
+			}
+
+			xpathCompiler.declareNamespace(prefix, uri);
+		}
+
+		return xpathCompiler;
 	}
 
 	/**

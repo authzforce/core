@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 
 /**
  * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take precedence over any number of deny,
@@ -39,29 +39,35 @@ public final class PermitOverridesAlg extends CombiningAlg<Decidable>
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public PolicyDecisionResult eval(EvaluationContext context)
 		{
 			/*
 			 * Replaces and enhances atLeastOneError from XACML spec. atLeastOneError == true <=> firstIndeterminateResult != null
 			 */
-			DecisionResult firstIndeterminateResult = null;
+			PolicyDecisionResult firstIndeterminateResult = null;
 
 			/*
 			 * Replaces and enhances atLeastOneDeny from XACML spec. atLeastOneDeny == true <=> combinedDenyResult != null
 			 */
-			DecisionResult combinedDenyResult = null;
+			PolicyDecisionResult combinedDenyResult = null;
 
 			for (final Decidable combinedElement : combinedElements)
 			{
 				// evaluate the policy
-				final DecisionResult result = combinedElement.evaluate(context);
+				final PolicyDecisionResult result = combinedElement.evaluate(context);
 				switch (result.getDecision())
 				{
 				case PERMIT:
 					return result;
 				case DENY:
-					// merge the obligations/advice in case the final result is Deny
-					combinedDenyResult = result.merge(combinedDenyResult);
+					// merge the obligations, etc. in case the final result is Deny
+					if (combinedDenyResult == null)
+					{
+						combinedDenyResult = result;
+					} else
+					{
+						combinedDenyResult.merge(result.getPepActions(), result.getApplicablePolicyIdList());
+					}
 					break;
 				case INDETERMINATE:
 					/*
@@ -90,7 +96,7 @@ public final class PermitOverridesAlg extends CombiningAlg<Decidable>
 				return combinedDenyResult;
 			}
 
-			return DecisionResult.NOT_APPLICABLE;
+			return PolicyDecisionResult.NOT_APPLICABLE;
 		}
 
 	}

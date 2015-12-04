@@ -1,236 +1,126 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/pdp" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp" elementFormDefault="qualified"
+<?xml version="1.0" encoding="UTF-8"?><!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/xmlns/pdp" xmlns:tns="http://authzforce.github.io/xmlns/pdp" elementFormDefault="qualified"
 	xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext" version="3.5.9">
 	<import namespace="http://authzforce.github.io/xmlns/pdp/ext" />
 	<annotation>
 		<documentation xml:lang="en">
 			Data model of AuthZForce PDP configuration.
-			<p>
-				For any such configuration (XML) file (instance of this schema) loaded, AuthZForce PDP
-				configuration handler sets the
-				global variable 'PARENT_DIR' to the path to the parent directory
-				of this XML
-				configuration file, so
-				that any placeholder ${PARENT_DIR} is replaced with this
-				value, and may be used in text nodes to
-				specify file paths relative to the configuration file for
-				instance.
-				If the
-				location to the
-				configuration file is not resolved to a file on the file system,
-				'PARENT_DIR' is undefined.
-				You
-				may use the colon ':' as a separating character between the
-				placeholder variable and an
-				associated default value, if PARENT_DIR is initially undefined.
-				E.g.
-				${PARENT_DIR:/home/foo/conf}
-				will be replaced with '/home/foo/conf' if PARENT_DIR is undefined.
+			<p> For any such configuration (XML) file (instance of this schema) loaded, AuthZForce PDP configuration handler sets the global variable 'PARENT_DIR' to the path to the parent directory of this
+				XML configuration file, so that any placeholder ${PARENT_DIR} is replaced with this value, and may be used in text nodes to specify file paths relative to the configuration file for instance. If
+				the location to the configuration file is not resolved to a file on the file system, 'PARENT_DIR' is undefined. You may use the colon ':' as a separating character between the placeholder variable
+				and an associated default value, if PARENT_DIR is initially undefined. E.g. ${PARENT_DIR:/home/foo/conf} will be replaced with '/home/foo/conf' if PARENT_DIR is undefined.
 			</p>
 		</documentation>
 	</annotation>
+	<element name="attributeProvider" type="authz-ext:AbstractAttributeProvider">
+		<annotation>
+			<documentation>Attribute Provider that provides attributes not already provided in the XACML request by PEP, e.g. from external sources. There must be one and only one Java class - say
+				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.AttributeProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where
+				CONF_T is the JAXB type bound to this XML element type. This attribute Provider may also depend on previously defined 'attributeProviders', to find dependency attributes, i.e. attributes that this
+				Provider does not support itself, but requires to find its supported attributes. Therefore, if an 'attributeProvider' AFy requires/depends on an attribute A that is not to be provided by the PEP,
+				another 'attributeProvider' AFx providing this attribute A must be declared before X.
+			</documentation>
+		</annotation>
+	</element>
 	<element name="pdp">
 		<complexType>
 			<sequence>
 				<element name="attributeDatatype" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of an attribute datatype to be added to supported datatypes. There must be
-							one and only one
-							Java class - say 'com.example.FooValueFactory' - on the classpath
-							implementing
-							interface
-							'com.thalesgroup.authzforce.core.attr.AttributeValue.Factory' with
-							zero-arg constructor,
-							such that this URI equals:
-							new com.example.FooValueFactory().getId().
+						<documentation>URI of an attribute datatype to be added to supported datatypes. There must be one and only one Java class - say 'com.example.FooValueFactory' - on the classpath implementing
+							interface 'org.ow2.authzforce.core.value.DatatypeFactory' with zero-arg constructor, such that this URI equals: new com.example.FooValueFactory().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="function" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of a function to be added to supported functions.
-							There must be one and only
-							one
-							Java class - say 'com.example.FooFunction' - on the classpath implementing
-							interface
-							'com.sun.xacml.cond.Function' with zero-arg constructor, such that this URI equals:
-							new
-							com.example.FooFunction().getId(). Whenever possible, extension implementers should
-							implement
-							sub-class
-							'com.sun.xacml.cond.BaseFunction' actually, instead of implementing
-							'com.sun.xacml.cond.Function' directly.
+						<documentation>URI of a function to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunction' - on the classpath implementing interface
+							'com.sun.xacml.Function' with zero-arg constructor, such that this URI equals: new com.example.FooFunction().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="functionSet" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of a set of functions to be added to supported functions.
-							There must be one
-							and only one
-							Java class - say 'com.example.FooFunctionSet' - on the classpath implementing
-							interface
-							'com.thalesgroup.authzforce.core.func.FunctionSet' with zero-arg constructor, such
-							that this
-							URI equals:
-							new com.example.FooFunctionSet().getId().
+						<documentation>URI of a set of functions to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunctionSet' - on the classpath implementing
+							interface 'org.ow2.authzforce.core.func.FunctionSet' with zero-arg constructor, such that this URI equals: new com.example.FooFunctionSet().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="combiningAlgorithm" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of a policy/rule-combining algorithm to be added to supported algorithms.
-							There must be one and only one Java class - say 'com.example.FooCombiningAlg' - on the
-							classpath
-							implementing
-							interface
-							'com.sun.xacml.combine.CombiningAlgorithm' with zero-arg
-							constructor, such that this URI equals:
-							new com.example.FooCombiningAlg().getId().
+						<documentation>URI of a policy/rule-combining algorithm to be added to supported algorithms. There must be one and only one Java class - say 'com.example.FooCombiningAlg' - on the classpath
+							implementing interface 'org.ow2.authzforce.core.combining.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
 						</documentation>
 					</annotation>
 				</element>
-				<element name="attributeProvider" type="authz-ext:AbstractAttributeProvider" maxOccurs="unbounded" minOccurs="0">
-					<annotation>
-						<documentation>Attribute Provider that provides attributes not already provided in the XACML
-							request by PEP, e.g. from external sources.
-							There must be one and only
-							one Java class - say
-							'com.example.FooAttributeProviderModuleFactory' - on the classpath
-							implementing
-							interface
-							'org.ow2.authzforce.core.AttributeProviderModule.Factory&lt;CONF_T&gt;'
-							with zero-arg
-							constructor,
-							where CONF_T is
-							the JAXB type bound to this XML
-							element type.
-							This
-							attribute Provider
-							may also
-							depend on previously defined
-							'attributeProviders', to find dependency
-							attributes, i.e.
-							attributes
-							that this Provider does not
-							support itself, but requires to find
-							its
-							supported
-							attributes.
-							Therefore, if an 'attributeProvider' AFy requires/depends on an attribute A that is
-							not to be
-							provided by the PEP, another
-							'attributeProvider' AFx providing this attribute A must
-							be
-							declared
-							before X.
-						</documentation>
-					</annotation>
-				</element>
+				<element ref="tns:attributeProvider" maxOccurs="unbounded" minOccurs="0" />
 				<element name="refPolicyProvider" type="authz-ext:AbstractPolicyProvider" minOccurs="0" maxOccurs="1">
 					<annotation>
-						<documentation>Referenced policy Provider that resolves Policy(Set)IdReferences.
-							There must be
-							one
-							and only
-							one Java class - say 'com.example.FooRefPolicyProviderModuleFactory' - on the
-							classpath
-							implementing
-							interface
-							'com.thalesgroup.authzforce.core.policy.ReferencedPolicyProviderModule.Factory&lt;CONF_T&gt;'
-							with zero-arg constructor, where CONF_T is the JAXB type bound to this XML
-							element
-							type.
-							This
-							referenced policy Provider may also use any of the 'refPolicyProvider' previously
-							defined, if any,
-							for Policy(Set)IdReference resolution; as some IdReferences may not be
-							supported by
-							this
-							Provider.
-							This element is not required if root policies found by the 'rootPolicyProvider' are
-							always Policy elements, and not PolicySet elements.
+						<documentation>Referenced policy Provider that resolves Policy(Set)IdReferences. There must be one and only one Java class - say 'com.example.FooRefPolicyProviderModuleFactory' - on the
+							classpath implementing interface 'org.ow2.authzforce.core.policy.ReferencedPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
+							this XML
+							element type. This referenced policy Provider may also use any of the 'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution; as some IdReferences may
+							not be
+							supported by this Provider. This element is not required if root policies found by the 'rootPolicyProvider' are always Policy elements, and not PolicySet elements.
 						</documentation>
 					</annotation>
 				</element>
 				<element name="rootPolicyProvider" type="authz-ext:AbstractPolicyProvider">
 					<annotation>
-						<documentation>Root/top-level policy Provider that provides the root/top-level Policy(Set) to
-							PDP for evaluation.
-							There must be one and only
-							one Java class - say
-							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath
-							implementing
-							interface
-							'com.thalesgroup.authzforce.core.policy.RootPolicyProviderModule.Factory&lt;CONF_T&gt;'
-							with
-							zero-arg
-							constructor, where CONF_T is the JAXB type bound to this XML
-							element type.
-							This
-							class
-							may also implement
-							'com.thalesgroup.authzforce.core.policy.ReferencedPolicyProviderModule.Factory&lt;CONF_T&gt;'
-							to be used as 'refPolicyProvider' as well.
-							This policy Provider may also use any of the
+						<documentation>Root/top-level policy Provider that provides the root/top-level Policy(Set) to PDP for evaluation. There must be one and only one Java class - say
+							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.policy.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
+							constructor, where CONF_T is the JAXB type bound to this XML element type. This class may also implement
+							'org.ow2.authzforce.core.policy.ReferencedPolicyProviderModule.Factory&lt;CONF_T&gt;' to
+							be used as 'refPolicyProvider' as well. This policy Provider may also use any of the
 							'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution.
 						</documentation>
 					</annotation>
 				</element>
 				<element name="decisionCache" minOccurs="0" maxOccurs="1" type="authz-ext:AbstractDecisionCache">
 					<annotation>
-						<documentation>Decision Response cache that, for a given request, provides the XACML response
-							from a cache if there is a cached response for the given request. There must be one and only
-							one Java
-							class -
-							say
-							'com.example.FooDecisionCacheFactory' - on the classpath
-							implementing
-							interface
-							'com.thalesgroup.authzforce.core.DecisionCache.Factory&lt;CONF_T&gt;'
-							with zero-arg
-							constructor, where
-							CONF_T is the JAXB type bound to this XML
-							element type.
+						<documentation>Decision Response cache that, for a given request, provides the XACML response from a cache if there is a cached response for the given request. There must be one and only one
+							Java class - say 'com.example.FooDecisionCacheFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.DecisionCache.Factory&lt;CONF_T&gt;' with zero-arg constructor,
+							where
+							CONF_T is the JAXB type bound to this XML element type.
 						</documentation>
 					</annotation>
 				</element>
 			</sequence>
 			<attribute name="useStandardDatatypes" type="boolean" use="optional" default="true">
 				<annotation>
-					<documentation>Enable support for XACML core standard mandatory attribute datatypes.
-					</documentation>
+					<documentation>Enable support for XACML core standard attribute datatypes.					</documentation>
 				</annotation>
 			</attribute>
 			<attribute name="useStandardFunctions" type="boolean" use="optional" default="true">
 				<annotation>
-					<documentation>Enable support for XACML core standard mandatory functions.
-					</documentation>
+					<documentation>Enable support for XACML core standard mandatory functions.					</documentation>
 				</annotation>
 			</attribute>
 			<attribute name="useStandardCombiningAlgorithms" type="boolean" use="optional" default="true">
 				<annotation>
-					<documentation>Enable support for XACML core standard combining algorithms.
+					<documentation>Enable support for XACML core standard combining algorithms.					</documentation>
+				</annotation>
+			</attribute>
+			<attribute name="enableXPath" type="boolean" use="optional" default="false">
+				<annotation>
+					<documentation>Enable support for AttributeSelectors and xpathExpression datatype. This overrides 'useStandardDatatypes' parameter, i.e. xpathExpression is not supported anyway if 'enableXpath'
+						is false. This feature is experimental (not to be used in production) and may have a negative impact on performance. Use with caution. For your information, AttributeSelector and xpathExpression
+						datatype support is marked as optional in XACML 3.0 core specification.
 					</documentation>
 				</annotation>
 			</attribute>
-			<attribute name="enableAttributeSelectors" type="boolean" use="optional" default="false">
+			<attribute name="strictAttributeIssuerMatch" type="boolean" use="optional" default="false">
 				<annotation>
-					<documentation>Enable support for AttributeSelectors. This feature is experimental (not to be
-						used in production). Use with caution.
-						For your information, AttributeSelector support is
-						marked as
-						optional in XACML 3.0 core specification.
+					<documentation>Enable strict Attribute Issuer matching, i.e. AttributeDesignators without Issuer only match request Attributes without Issuer (and same AttributeId, Category...). This mode is not
+						fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it performs better and is recommended when all AttributeDesignators have an
+						Issuer (best practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the attribute designator, then the matching of the
+						attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone."
 					</documentation>
 				</annotation>
 			</attribute>
 			<attribute name="maxVariableRefDepth" use="optional" default="0">
 				<annotation>
-					<documentation>
-						Maximum depth of Variable reference chaining: VariableDefinition1 -&gt;
-						VariableDefinition2 -&gt; ...; where '-&gt;' represents a VariableReference.
-					</documentation>
+					<documentation> Maximum depth of Variable reference chaining: VariableDefinition1 -&gt; VariableDefinition2 -&gt; ...; where '-&gt;' represents a VariableReference.					</documentation>
 				</annotation>
 				<simpleType>
 					<restriction base="nonNegativeInteger">
@@ -239,11 +129,9 @@
 					</restriction>
 				</simpleType>
 			</attribute>
-			<attribute name="maxPolicySetRefDepth" use="optional" default="0">
+			<attribute name="maxPolicyRefDepth" use="optional" default="0">
 				<annotation>
-					<documentation>Maximum depth of PolicySet reference chaining: PolicySet1 -&gt; PolicySet2 -&gt;
-						...; where '-&gt;' represents a PolicySetIdReference.
-					</documentation>
+					<documentation>Maximum depth of Policy(Set) reference chaining: PolicySet1 -&gt; PolicySet2 -&gt; ... -&gt; Policy(Set)N; where '-&gt;' represents a Policy(Set)IdReference.					</documentation>
 				</annotation>
 				<simpleType>
 					<restriction base="nonNegativeInteger">
@@ -255,82 +143,29 @@
 			<attribute name="requestFilter" type="anyURI" use="optional">
 				<annotation>
 					<documentation>
-						<p>URI of a XACML Request filter to be enabled. A XACML Request filter is a PDP
-							extension
-							that
-							applies some processing of the request, such as validation and transformation, prior to the
-							policy
-							evaluation.
-							As an example of validation, a Request
-							filter may reject a request containing an
-							unsupported XACML element. As an example of transformation, it may support the
-							MultiRequests element,
-							and more generally the
-							Multiple
-							Decision
-							Profile by creating multiple
-							Individual Decision Requests (EvaluationCtx) from
-							the
-							original
-							XACML
-							request, as defined in
-							XACML Multiple Decision Profile
-							specification, section
-							2; and
-							then
-							call
-							the policy evaluation
-							engine for each Individual Decision Request.
-							At the end,
-							the
-							results
-							(one per Individual
-							Decision
-							Request) may be combined by a
-							DecisionCombiner specified
-							by next
-							attribute
-							'decisionCombiner'.
+						<p>URI of a XACML Request filter to be enabled. A XACML Request filter is a PDP extension that applies some processing of the request, such as validation and transformation, prior to the policy
+							evaluation. As an example of validation, a Request filter may reject a request containing an unsupported XACML element. As an example of transformation, it may support the MultiRequests
+							element, and more generally the Multiple Decision Profile or Hierarchical Resource Profile by creating multiple Individual Decision Requests from the original XACML request, as defined in XACML
+							Multiple Decision Profile specification, section 2; and then call the policy evaluation engine for each Individual Decision Request. At the end, the results (one per Individual Decision
+							Request) may be combined by a DecisionCombiner specified by next attribute 'decisionCombiner'.
 						</p>
-						<p>There must be one and
-							only one Java class - say 'com.example.FooRequestFilter' - on
-							the
-							classpath implementing
-							interface 'com.thalesgroup.authzforce.core.RequestFilter' with
-							zero-arg
-							constructor,
-							such
-							that this URI equals: new
-							com.example.FooRequestFilter().getId().</p>
+						<p>There must be one and only one Java class - say 'com.example.FooRequestFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.RequestFilter' with zero-arg
+							constructor, such
+							that this URI equals: new com.example.FooRequestFilter().getId().</p>
+						<p>If the configuration parameter 'enableXPath' is true, it is the responsibility of the RequestFilter to parse XACML Request/Attributes/Content nodes. If the configuration parameter
+							'strictAttributeIssuerMatch' is true, it is the responsibility of the RequestFilter to keep values of Attributes with Issuer
+							separate from values of Attributes without Issuer, in the attribute
+							map returned by getNamedAttributes() on
+							the IndividualDecisionRequests produced by the RequestFilter.</p>
 					</documentation>
 				</annotation>
 			</attribute>
 			<attribute name="resultFilter" type="anyURI" use="optional">
 				<annotation>
-					<documentation>URI of a XACML decision Result filter to be enabled. A decision Result filter is a PDP
-						extension
-						that process the result(s) from the policy evaluation before the final XACML Response
-						is created (and returned back to the requester).
-						For example, a typical Result filter may combine multiple individual decisions - produced by
-						the 'requestFilter' - to a single
-						decision Result if
-						and only if the XACML Request's 'CombinedDecision' is set
-						to true,
-						as defined in XACML
-						Multiple Decision Profile specification,
-						section 3.
-						There must be one and
-						only
-						one
-						Java class - say
-						'com.example.FooDecisionResultFilter'
-						- on
-						the classpath implementing
-						interface
-						'com.thalesgroup.authzforce.core.DecisionResultFilter' with
-						zero-arg constructor, such
-						that this URI
-						equals:
+					<documentation>URI of a XACML decision Result filter to be enabled. A decision Result filter is a PDP extension that process the result(s) from the policy evaluation before the final XACML
+						Response is created (and returned back to the requester). For example, a typical Result filter may combine multiple individual decisions - produced by the 'requestFilter' - to a single decision
+						Result if and only if the XACML Request's 'CombinedDecision' is set to true, as defined in XACML Multiple Decision Profile specification, section 3. There must be one and only one Java class -
+						say 'com.example.FooDecisionResultFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.DecisionResultFilter' with zero-arg constructor, such that this URI equals:
 						new
 						com.example.FooDecisionResultFilter().getId().
 					</documentation>
@@ -362,7 +197,6 @@
 			<field xpath="@id" />
 		</key>
 	</element>
-
 	<complexType name="BaseStaticPolicyProvider">
 		<annotation>
 			<documentation>PolicyProvider loading policies statically from URLs.</documentation>
@@ -371,30 +205,18 @@
 			<extension base="authz-ext:AbstractPolicyProvider">
 				<attribute name="policyLocation" type="anyURI" use="required">
 					<annotation>
-						<documentation>
-							Location of a XML file that is expected to contain the root (aka top-level)
-							Policy or
-							PolicySet. Use the global property 'PARENT_DIR' for paths under the parent directory
-							to the XML
-							file where this is used.
+						<documentation> Location of a XML file that is expected to contain the root (aka top-level) Policy or PolicySet. Use the global property 'PARENT_DIR' for paths under the parent directory to the
+							XML file where this is used.
 						</documentation>
 					</annotation>
 				</attribute>
 			</extension>
 		</complexContent>
 	</complexType>
-
 	<complexType name="BaseStaticRefPolicyProvider">
 		<annotation>
-			<documentation>Policy(Set)IdReference Provider loading policies statically from URLs.
-				Any
-				PolicyIdReference used in a PolicySet here must refer to a Policy loaded here as well.
-				Besides, a
-				PolicySet P1
-				must be loaded before any other PolicySet P2 with a reference
-				(PolicySetIdReference) to P1.
-				As PolicySets are loaded in the order of declaration of
-				policyLocations, the order matters for
+			<documentation>Policy(Set)IdReference Provider loading policies statically from URLs. Any PolicyIdReference used in a PolicySet here must refer to a Policy loaded here as well. Besides, a PolicySet
+				P1 must be loaded before any other PolicySet P2 with a reference (PolicySetIdReference) to P1. As PolicySets are loaded in the order of declaration of policyLocations, the order matters for
 				PolicySetIdReference resolution.
 			</documentation>
 		</annotation>
@@ -403,15 +225,8 @@
 				<sequence>
 					<element name="policyLocation" type="anyURI" minOccurs="1" maxOccurs="unbounded">
 						<annotation>
-							<documentation>
-								Location of the XML file that is expected to contain the Policy or
-								PolicySet
-								element to be referenced by a Policy(Set)IdReference in the root PolicySet loaded by a root
-								policy
-								Provider. Use the global property 'PARENT_DIR' for defining - in a generic way - a path
-								relative to the parent directory
-								to
-								the XML file where this is used.
+							<documentation> Location of the XML file that is expected to contain the Policy or PolicySet element to be referenced by a Policy(Set)IdReference in the root PolicySet loaded by a root policy
+								Provider. Use the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used.
 							</documentation>
 						</annotation>
 					</element>

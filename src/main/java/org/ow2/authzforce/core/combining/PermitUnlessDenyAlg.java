@@ -20,8 +20,8 @@ import java.util.Set;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 
 /**
  * permit-unless-deny policy algorithm
@@ -40,28 +40,34 @@ public final class PermitUnlessDenyAlg extends CombiningAlg<Decidable>
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public PolicyDecisionResult eval(EvaluationContext context)
 		{
-			DecisionResult combinedPermitResult = null;
+			PolicyDecisionResult combinedPermitResult = null;
 
 			for (Decidable combinedElement : combinedElements)
 			{
-				final DecisionResult result = combinedElement.evaluate(context);
+				final PolicyDecisionResult result = combinedElement.evaluate(context);
 				final DecisionType decision = result.getDecision();
 				switch (decision)
 				{
 				case DENY:
 					return result;
 				case PERMIT:
-					// merge the obligations/advice in case the final result is Permit
-					combinedPermitResult = result.merge(combinedPermitResult);
+					// merge the obligations, etc. in case the final result is Permit
+					if (combinedPermitResult == null)
+					{
+						combinedPermitResult = result;
+					} else
+					{
+						combinedPermitResult.merge(result.getPepActions(), result.getApplicablePolicyIdList());
+					}
 					break;
 				default:
 					continue;
 				}
 			}
 
-			return combinedPermitResult == null ? DecisionResult.PERMIT : combinedPermitResult;
+			return combinedPermitResult == null ? PolicyDecisionResult.PERMIT : combinedPermitResult;
 		}
 
 	}

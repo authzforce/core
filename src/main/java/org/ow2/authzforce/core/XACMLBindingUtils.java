@@ -3,18 +3,13 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core;
 
@@ -32,8 +27,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
  * Utilities/constants for XACML-to-Java binding
  * 
  */
-public class XACMLBindingUtils
+public final class XACMLBindingUtils
 {
+
 	private final static String[] XACML_3_0_SCHEMA_LOCATIONS = { "classpath:xml.xsd", "classpath:xacml-core-v3-schema-wd-17.xsd" };
 
 	/**
@@ -44,7 +40,7 @@ public class XACMLBindingUtils
 	/**
 	 * XACML 3.0 schema
 	 */
-	public static final Schema XACML_3_0_SCHEMA = SchemaHandler.createSchema(Arrays.asList(XACML_3_0_SCHEMA_LOCATIONS), null);
+	private static final Schema XACML_3_0_SCHEMA = SchemaHandler.createSchema(Arrays.asList(XACML_3_0_SCHEMA_LOCATIONS), null);
 
 	/**
 	 * JAXB context for (un)marshalling from/to JAXB objects derived from XACML 3.0 schema
@@ -91,4 +87,9 @@ public class XACMLBindingUtils
 		marshaller.setSchema(XACML_3_0_SCHEMA);
 		return marshaller;
 	}
+
+	private XACMLBindingUtils()
+	{
+	}
+
 }

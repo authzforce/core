@@ -3,18 +3,13 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core;
 
@@ -73,9 +68,8 @@ public class StatusHelper extends oasis.names.tc.xacml._3_0.core.schema.wd_17.St
 	 * Constructor that takes both the status code and a message to include with the status.
 	 * 
 	 * @param codes
-	 *            a <code>List</code> of <code>String</code> codes, typically just one code, but
-	 *            this may contain any number of minor codes after the first item in the list, which
-	 *            is the major code
+	 *            a <code>List</code> of <code>String</code> codes, typically just one code, but this may contain any number of minor codes after the first item
+	 *            in the list, which is the major code
 	 * @param message
 	 *            a message to include with the code
 	 */
@@ -85,22 +79,19 @@ public class StatusHelper extends oasis.names.tc.xacml._3_0.core.schema.wd_17.St
 	}
 
 	/**
-	 * Max depth of status code. StatusCode in XACML schema is a recursive structure like an error
-	 * stacktrace that allows chaining status codes endlessly unless the implementation enforces a
-	 * maximum depth as done here.
+	 * Max depth of status code. StatusCode in XACML schema is a recursive structure like an error stacktrace that allows chaining status codes endlessly unless
+	 * the implementation enforces a maximum depth as done here.
 	 */
 	public static final int MAX_STATUS_CODE_DEPTH = 10;
 
 	/**
-	 * Constructor that takes the status code, an optional message, and some detail to include with
-	 * the status. Note that the specification explicitly says that a status code of OK, SyntaxError
-	 * or ProcessingError may not appear with status detail, so an exception is thrown if one of
-	 * these status codes is used and detail is included.
+	 * Constructor that takes the status code, an optional message, and some detail to include with the status. Note that the specification explicitly says that
+	 * a status code of OK, SyntaxError or ProcessingError may not appear with status detail, so an exception is thrown if one of these status codes is used and
+	 * detail is included.
 	 * 
 	 * @param codes
-	 *            a <code>List</code> of <code>String</code> codes, typically just one code, but
-	 *            this may contain any number of minor codes after the first item in the list, which
-	 *            is the major code
+	 *            a <code>List</code> of <code>String</code> codes, typically just one code, but this may contain any number of minor codes after the first item
+	 *            in the list, which is the major code
 	 * @param message
 	 *            a message to include with the code, or null if there should be no message
 	 * @param detail
@@ -158,21 +149,8 @@ public class StatusHelper extends oasis.names.tc.xacml._3_0.core.schema.wd_17.St
 			throw new IllegalArgumentException("Null status code found");
 		}
 
-		final StatusCode statusCode = new StatusCode();
-		statusCode.setValue(codeVal);
-		if (depth == 0)
-		{
-			// stop the recursivity here
-			return statusCode;
-		}
-
-		final StatusCode nextStatusCode = stringsToStatusCode(codesIterator, depth - 1);
-		if (nextStatusCode != null)
-		{
-			statusCode.setStatusCode(nextStatusCode);
-		}
-
-		return statusCode;
+		final StatusCode nextStatusCode = depth == 0 ? null : stringsToStatusCode(codesIterator, depth - 1);
+		return new StatusCode(nextStatusCode, codeVal);
 	}
 
 	// /**

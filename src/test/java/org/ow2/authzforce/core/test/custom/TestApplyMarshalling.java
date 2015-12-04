@@ -14,6 +14,7 @@
 package org.ow2.authzforce.core.test.custom;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.xml.bind.JAXBElement;
@@ -29,7 +30,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.ow2.authzforce.core.XACMLBindingUtils;
 import org.ow2.authzforce.core.expression.Apply;
-import org.ow2.authzforce.core.test.utils.TestUtils;
+import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
+import org.ow2.authzforce.core.func.StandardFunctionRegistry;
+import org.ow2.authzforce.core.value.StandardDatatypeFactoryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +41,18 @@ import com.sun.xacml.ParsingException;
 
 public class TestApplyMarshalling
 {
+	private static final ExpressionFactory STD_EXPRESSION_FACTORY;
+	static
+	{
+		try
+		{
+			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES, StandardFunctionRegistry.getInstance(true),
+					null, 0, false, false);
+		} catch (IllegalArgumentException | IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 
 	/*
 	 * LOGGER used for all class
@@ -65,9 +81,9 @@ public class TestApplyMarshalling
 		try
 		{
 			u = XACMLBindingUtils.createXacml3Unmarshaller();
-			applyElt = (JAXBElement<ApplyType>) u.unmarshal(new File("src/test/resources/custom/TestApply.xml"));
+			applyElt = (JAXBElement<ApplyType>) u.unmarshal(new File("src/test/resources/custom/TestApplyMarshalling.xml"));
 			applyType = applyElt.getValue();
-			apply = Apply.getInstance(applyType, null, TestUtils.STD_EXPRESSION_FACTORY, null);
+			apply = Apply.getInstance(applyType, null, STD_EXPRESSION_FACTORY, null);
 			marshaller = XACMLBindingUtils.createXacml3Marshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			final StringWriter strWriter = new StringWriter();

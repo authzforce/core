@@ -26,8 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * XACML 3.0 conformance tests posted on the xacml-comments mailing list, partially based on OASIS XACML 2.0 conformance tests
- * https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html
+ * "Various" XACML 3.0 conformance tests that are not in the official set of conformance tests already addressed by {@link ConformanceV3FromV2Mandatory}.
  */
 @RunWith(value = Parameterized.class)
 public class ConformanceV3Others extends PdpTest

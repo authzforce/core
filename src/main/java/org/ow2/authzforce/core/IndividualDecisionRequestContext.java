@@ -20,9 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
 import org.ow2.authzforce.core.expression.AttributeGUID;
 import org.ow2.authzforce.core.expression.AttributeSelectorId;
@@ -52,6 +50,10 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	private final Map<String, Value> varValsById = new HashMap<>();
 
+	private final Map<String, Object> updatableProperties = new HashMap<>();
+
+	private final boolean isApplicablePolicyIdListReturned;
+
 	/*
 	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based
 	 * functions, etc. This may be null if no Content in Request or no feature requiring XPath evaluation against Content is supported/enabled.
@@ -63,8 +65,6 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	private final Map<AttributeSelectorId, Bag<?>> attributeSelectorResults;
 
-	private final XPathCompiler defaultXPathCompiler;
-
 	/**
 	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation
 	 * against Content element in Attributes
@@ -74,17 +74,17 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 *            value is a bag of primitive values.
 	 * @param extraContentsByAttributeCategory
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
-	 * @param requestDefaultXPathCompiler
-	 *            Request's default XPath Compiler (derived from {@link RequestDefaults#getXPathVersion()})
+	 * @param returnApplicablePolicyIdList
+	 *            true iff list of IDs of policies matched during evaluation must be returned
 	 * 
 	 */
 	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> attributeMap, Map<String, XdmNode> extraContentsByAttributeCategory,
-			XPathCompiler requestDefaultXPathCompiler)
+			boolean returnApplicablePolicyIdList)
 	{
 		this.attributes = attributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : attributeMap;
 		this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
 		this.attributeSelectorResults = extraContentsByAttributeCategory == null ? null : new HashMap<AttributeSelectorId, Bag<?>>();
-		this.defaultXPathCompiler = requestDefaultXPathCompiler;
+		this.isApplicablePolicyIdListReturned = returnApplicablePolicyIdList;
 	}
 
 	/**
@@ -95,7 +95,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	public IndividualDecisionRequestContext(IndividualDecisionRequest individualDecisionReq)
 	{
-		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq.getDefaultXPathCompiler());
+		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq
+				.isApplicablePolicyIdListReturned());
 	}
 
 	@Override
@@ -245,8 +246,6 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return attributeSelectorResults.put(id, result) == null;
 	}
 
-	private final Map<String, Object> updatableProperties = new HashMap<>();
-
 	@Override
 	public Object getOther(String key)
 	{
@@ -272,15 +271,15 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	}
 
 	@Override
-	public XPathCompiler getDefaultXPathCompiler()
-	{
-		return this.defaultXPathCompiler;
-	}
-
-	@Override
 	public Iterator<Entry<AttributeGUID, Bag<?>>> getAttributes()
 	{
 		final Set<Entry<AttributeGUID, Bag<?>>> immutableAttributeSet = Collections.unmodifiableSet(attributes.entrySet());
 		return immutableAttributeSet.iterator();
+	}
+
+	@Override
+	public boolean isApplicablePolicyIdListReturned()
+	{
+		return isApplicablePolicyIdListReturned;
 	}
 }

@@ -13,6 +13,7 @@
  */
 package org.ow2.authzforce.core.value;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -33,27 +34,35 @@ public final class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRe
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(StandardDatatypeFactoryRegistry.class);
 
-	private static final PdpExtensionComparator<DatatypeFactory<?>> COMPARATOR = new PdpExtensionComparator<>();
+	/**
+	 * Singleton instance of Standard mandatory datatype registry
+	 */
+	public static final StandardDatatypeFactoryRegistry MANDATORY_DATATYPES;
 
 	/**
-	 * Singleton instance of standard datatype factory.
+	 * Singleton instance of registry of all standard datatypes
 	 */
-	public static final StandardDatatypeFactoryRegistry INSTANCE;
+	public static final StandardDatatypeFactoryRegistry ALL_DATATYPES;
 
 	static
 	{
 		final Set<DatatypeFactory<?>> datatypeFactories = new HashSet<>();
-		for (final DatatypeConstants<?> datatypeDef : DatatypeConstants.SET)
+		for (final DatatypeConstants<?> datatypeDef : DatatypeConstants.MANDATORY_DATATYPE_SET)
 		{
 			datatypeFactories.add(datatypeDef.FACTORY);
 		}
 
-		INSTANCE = new StandardDatatypeFactoryRegistry(datatypeFactories);
+		MANDATORY_DATATYPES = new StandardDatatypeFactoryRegistry(Collections.unmodifiableSet(datatypeFactories));
+
+		// create another instance with optional xpathExpression datatype, to be used only if XPath support enabled, see getInstance(boolean) method.
+		datatypeFactories.add(DatatypeConstants.XPATH.FACTORY);
+		ALL_DATATYPES = new StandardDatatypeFactoryRegistry(Collections.unmodifiableSet(datatypeFactories));
+
 		if (LOGGER.isDebugEnabled())
 		{
 			final TreeSet<DatatypeFactory<?>> sortedFactories = new TreeSet<>(COMPARATOR);
 			sortedFactories.addAll(datatypeFactories);
-			LOGGER.debug("Loaded XACML standard datatypes: {}", sortedFactories);
+			LOGGER.debug("Supported XACML standard datatypes: {}", sortedFactories);
 		}
 	}
 

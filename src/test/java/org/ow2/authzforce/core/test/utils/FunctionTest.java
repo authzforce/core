@@ -16,6 +16,7 @@
  */
 package org.ow2.authzforce.core.test.utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,11 +32,15 @@ import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.StatusHelper;
 import org.ow2.authzforce.core.expression.Expression;
+import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
 import org.ow2.authzforce.core.expression.PrimitiveValueExpression;
 import org.ow2.authzforce.core.func.FunctionCall;
+import org.ow2.authzforce.core.func.StandardFunctionRegistry;
 import org.ow2.authzforce.core.value.AttributeValue;
 import org.ow2.authzforce.core.value.Bag;
 import org.ow2.authzforce.core.value.Datatype;
+import org.ow2.authzforce.core.value.DatatypeConstants;
 import org.ow2.authzforce.core.value.DatatypeFactory;
 import org.ow2.authzforce.core.value.StandardDatatypeFactoryRegistry;
 import org.ow2.authzforce.core.value.Value;
@@ -51,6 +56,22 @@ import com.sun.xacml.UnknownIdentifierException;
 public abstract class FunctionTest
 {
 	// private static final Logger LOGGER = LoggerFactory.getLogger(GeneralFunctionTest.class);
+
+	/**
+	 * XACML standard Expression factory/parser
+	 */
+	private static final ExpressionFactory STD_EXPRESSION_FACTORY;
+	static
+	{
+		try
+		{
+			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES, StandardFunctionRegistry.getInstance(true),
+					null, 0, false, false);
+		} catch (IllegalArgumentException | IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 
 	private final FunctionCall<?> funcCall;
 	private final Value expectedResult;
@@ -92,7 +113,7 @@ public abstract class FunctionTest
 
 		try
 		{
-			final Function<?> function = TestUtils.STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
+			final Function<?> function = STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
 			if (function == null)
 			{
 				throw new IllegalArgumentException("Function " + functionName
@@ -120,7 +141,8 @@ public abstract class FunctionTest
 
 	private static <V extends AttributeValue> Expression<?> createValueExpression(Datatype<V> datatype, AttributeValue rawValue)
 	{
-		return new PrimitiveValueExpression<>(datatype, datatype.cast(rawValue));
+		// static expression only if not xpathExpression
+		return new PrimitiveValueExpression<>(datatype, datatype.cast(rawValue), datatype != DatatypeConstants.XPATH.TYPE);
 	}
 
 	private static <V extends Bag<?>> Expression<?> createValueExpression(Datatype<V> datatype, Bag<?> rawValue)
@@ -169,7 +191,7 @@ public abstract class FunctionTest
 		if (subFunctionName != null)
 		{
 			// sub-function of higher-order function
-			final Function<?> subFunc = TestUtils.STD_EXPRESSION_FACTORY.getFunction(subFunctionName);
+			final Function<?> subFunc = STD_EXPRESSION_FACTORY.getFunction(subFunctionName);
 			if (subFunc == null)
 			{
 				throw new UnsupportedOperationException("Function " + subFunctionName + " not valid/supported (as first-order function)");
@@ -188,17 +210,17 @@ public abstract class FunctionTest
 				 * to return a result, such as logical or/and/n-o
 				 */
 				final NullValue nullVal = (NullValue) val;
-				final DatatypeFactory<?> datatypeFactory = StandardDatatypeFactoryRegistry.INSTANCE.getExtension(nullVal.getDatatypeId());
+				final DatatypeFactory<?> datatypeFactory = StandardDatatypeFactoryRegistry.ALL_DATATYPES.getExtension(nullVal.getDatatypeId());
 				valExpr = new IndeterminateExpression<>(nullVal.isBag() ? datatypeFactory.getBagDatatype() : datatypeFactory.getDatatype());
 			} else if (val instanceof AttributeValue)
 			{
 				final AttributeValue primVal = (AttributeValue) val;
-				final DatatypeFactory<?> datatypeFactory = StandardDatatypeFactoryRegistry.INSTANCE.getExtension(primVal.getDataType());
+				final DatatypeFactory<?> datatypeFactory = StandardDatatypeFactoryRegistry.ALL_DATATYPES.getExtension(primVal.getDataType());
 				valExpr = createValueExpression(datatypeFactory.getDatatype(), primVal);
 			} else if (val instanceof Bag)
 			{
 				final Bag<?> bagVal = (Bag<?>) val;
-				final DatatypeFactory<?> datatypeFactory = StandardDatatypeFactoryRegistry.INSTANCE.getExtension(bagVal.getElementDatatype().getId());
+				final DatatypeFactory<?> datatypeFactory = StandardDatatypeFactoryRegistry.ALL_DATATYPES.getExtension(bagVal.getElementDatatype().getId());
 				valExpr = createValueExpression(datatypeFactory.getBagDatatype(), bagVal);
 			} else
 			{

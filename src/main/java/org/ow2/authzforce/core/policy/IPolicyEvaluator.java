@@ -16,8 +16,10 @@
  */
 package org.ow2.authzforce.core.policy;
 
+import java.util.List;
+
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 
@@ -57,7 +59,7 @@ public interface IPolicyEvaluator extends Decidable
 	 *            whether to evaluate the Target. If false, this must be equivalent to {@link #evaluate(EvaluationContext)}
 	 * @return decision result
 	 */
-	DecisionResult evaluate(EvaluationContext context, boolean skipTarget);
+	PolicyDecisionResult evaluate(EvaluationContext context, boolean skipTarget);
 
 	/**
 	 * Get policy ID, e.g. for auditing
@@ -72,4 +74,16 @@ public interface IPolicyEvaluator extends Decidable
 	 * @return Policy/Rule combining algorithm
 	 */
 	String getCombiningAlgId();
+
+	/**
+	 * Get longest chain of Policy reference (via Policy(Set)IdReference) starting from this Policy(Set), in order to limit the length of such chain. Note that
+	 * in the current XACML 3.0 model, it is safe to ignore Policy elements; since they cannot have references. However, we consider that Policy and PolicySet
+	 * types could be merged into one Policy type on the long-term. That's why we define this method at the interface level on top of both Policy and PolicySet
+	 * evaluator classes. Indeed, this interface represents common behavior of the two.
+	 * 
+	 * @return longest policy reference chain in this policy; null if there is no Policy(Set)IdReference in this Policy(Set), or undefined because there are
+	 *         Policy references dynamically resolved depending of the evaluation context (as opposed to static policy reference resolved by static policy
+	 *         finders).
+	 */
+	List<String> getLongestPolicyReferenceChain();
 }

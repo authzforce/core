@@ -22,7 +22,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import org.ow2.authzforce.core.BasePdpExtensionRegistry;
 import org.ow2.authzforce.core.expression.PrimitiveValueExpression;
 
-import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 
 /**
@@ -30,6 +29,8 @@ import com.sun.xacml.UnknownIdentifierException;
  */
 public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<DatatypeFactory<?>> implements DatatypeFactoryRegistry
 {
+
+	protected static final PdpExtensionComparator<DatatypeFactory<?>> COMPARATOR = new PdpExtensionComparator<>();
 
 	private final Set<DatatypeFactory<?>> datatypeFactoryClasses = new HashSet<>();
 
@@ -58,7 +59,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 		super(DatatypeFactory.class);
 	}
 
-	private DatatypeFactory<?> get(String typeId) throws UnknownIdentifierException
+	protected DatatypeFactory<?> get(String typeId) throws UnknownIdentifierException
 	{
 		final DatatypeFactory<?> datatypeFactory = getExtension(typeId);
 		if (datatypeFactory == null)
@@ -69,8 +70,8 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 		return datatypeFactory;
 	}
 
-	private static <V extends AttributeValue> V createValue(DatatypeFactory<V> datatypeFactory, AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler)
-			throws ParsingException
+	protected static final <V extends AttributeValue> V createValue(DatatypeFactory<V> datatypeFactory, AttributeValueType jaxbAttrVal,
+			XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		final V attrVal;
 		try
@@ -78,47 +79,47 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 			attrVal = datatypeFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), xPathCompiler);
 		} catch (IllegalArgumentException e)
 		{
-			throw new ParsingException("Invalid Attribute value for datatype '" + datatypeFactory.getDatatype() + "'", e);
+			throw new IllegalArgumentException("Invalid Attribute value for datatype '" + datatypeFactory.getDatatype() + "'", e);
 		}
 
 		return attrVal;
 	}
 
-	private static <V extends AttributeValue> PrimitiveValueExpression<V> createValueExpression(DatatypeFactory<V> datatypeFactory,
-			AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws ParsingException
+	private static final <V extends AttributeValue> PrimitiveValueExpression<V> createValueExpression(DatatypeFactory<V> datatypeFactory,
+			AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler, boolean isStatic) throws IllegalArgumentException
 	{
 		final V rawValue = createValue(datatypeFactory, jaxbAttrVal, xPathCompiler);
-		return new PrimitiveValueExpression<>(datatypeFactory.getDatatype(), rawValue);
+		return new PrimitiveValueExpression<>(datatypeFactory.getDatatype(), rawValue, isStatic);
 	}
 
 	@Override
 	public PrimitiveValueExpression<?> createValueExpression(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws UnknownIdentifierException,
-			ParsingException
+			IllegalArgumentException
 	{
 		final DatatypeFactory<?> datatypeFactory = get(jaxbAttrVal.getDataType());
-		return createValueExpression(datatypeFactory, jaxbAttrVal, xPathCompiler);
+		return createValueExpression(datatypeFactory, jaxbAttrVal, xPathCompiler, datatypeFactory.isExpressionStatic());
 	}
 
-	@Override
-	public <AV extends AttributeValue> PrimitiveValueExpression<AV> createValueExpression(AttributeValueType jaxbAttrVal, Datatype<AV> expectedDatatype,
-			XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException
-	{
-		final DatatypeFactory<?> datatypeFactory = get(expectedDatatype.getId());
-		final AttributeValue rawValue = createValue(datatypeFactory, jaxbAttrVal, xPathCompiler);
-
-		final AV value;
-		try
-		{
-			value = expectedDatatype.cast(rawValue);
-		} catch (ClassCastException e)
-		{
-			throw new IllegalArgumentException("Expected attribute datatype (" + expectedDatatype + ") does not match actual one ("
-					+ datatypeFactory.getDatatype() + ") registered in datatype factory for input XACML/JAXB AttributeValue's datatype URI  ("
-					+ jaxbAttrVal.getDataType() + ")", e);
-		}
-
-		return new PrimitiveValueExpression<>(expectedDatatype, value);
-	}
+	// @Override
+	// public <AV extends AttributeValue> PrimitiveValueExpression<AV> createValueExpression(AttributeValueType jaxbAttrVal, Datatype<AV> expectedDatatype,
+	// XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException
+	// {
+	// final DatatypeFactory<?> datatypeFactory = get(expectedDatatype.getId());
+	// final AttributeValue rawValue = createValue(datatypeFactory, jaxbAttrVal, xPathCompiler);
+	//
+	// final AV value;
+	// try
+	// {
+	// value = expectedDatatype.cast(rawValue);
+	// } catch (ClassCastException e)
+	// {
+	// throw new IllegalArgumentException("Expected attribute datatype (" + expectedDatatype + ") does not match actual one ("
+	// + datatypeFactory.getDatatype() + ") registered in datatype factory for input XACML/JAXB AttributeValue's datatype URI  ("
+	// + jaxbAttrVal.getDataType() + ")", e);
+	// }
+	//
+	// return new PrimitiveValueExpression<>(expectedDatatype, value);
+	// }
 
 	/*
 	 * (non-Javadoc)

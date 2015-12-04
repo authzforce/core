@@ -31,7 +31,7 @@ import com.sun.xacml.Function;
  * 
  * 
  */
-public class StringConcatenateFunction
+public final class StringConcatenateFunction
 {
 
 	/**
@@ -39,13 +39,9 @@ public class StringConcatenateFunction
 	 */
 	public static final String NAME_STRING_CONCATENATE = Function.XACML_NS_2_0 + "string-concatenate";
 
-	/**
-	 * Instantiates function. Takes two or more arguments, i.e. third is varargs
-	 */
-	// private StringConcatenateFunction()
-	// {
-	// super();
-	// }
+	private StringConcatenateFunction()
+	{
+	}
 
 	/**
 	 * Instance of string-concatenate function (singleton)

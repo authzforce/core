@@ -41,10 +41,15 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 	 */
 	public static final String NAME_AND = XACML_NS_1_0 + "and";
 
+	/**
+	 * Singleton instance of "and" logical function
+	 */
+	public static final LogicalAndFunction INSTANCE = new LogicalAndFunction();
+
 	private static final class CallFactory
 	{
 
-		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + BooleanValue.class.getName()
+		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + DatatypeConstants.BOOLEAN.TYPE
 				+ ") of arg#";
 		private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_AND + ": Indeterminate arg #";
 
@@ -141,11 +146,7 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 
 	private final CallFactory funcCallFactory;
 
-	/**
-	 * Instantiates the function
-	 * 
-	 */
-	public LogicalAndFunction()
+	private LogicalAndFunction()
 	{
 		super(NAME_AND, DatatypeConstants.BOOLEAN.TYPE, true, Arrays.asList(DatatypeConstants.BOOLEAN.TYPE));
 		this.funcCallFactory = new CallFactory(this.functionSignature);

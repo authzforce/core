@@ -33,12 +33,14 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.ow2.authzforce.core.PDPImpl;
 import org.ow2.authzforce.core.PdpConfigurationParser;
+import org.ow2.authzforce.core.XACMLParsers;
+import org.ow2.authzforce.core.XACMLParsers.NamespaceFilteringParser;
+import org.ow2.authzforce.core.XACMLParsers.XACMLParserFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
-
-import com.sun.xacml.PDP;
 
 /**
  * PDP test class. There should be a folder for test data of each issue. Each test folder is expected to be in one of these two configurations:
@@ -113,7 +115,9 @@ public abstract class PdpTest
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(PdpTest.class);
 
-	final String testDirPath;
+	private static final XACMLParserFactory XACML_PARSER_FACTORY = XACMLParsers.getXACMLParserFactory(false);
+
+	private final String testDirPath;
 
 	/**
 	 * 
@@ -178,19 +182,19 @@ public abstract class PdpTest
 		Request request = null;
 		// if no Request file, it is just a static policy syntax error check
 		String expectedReqFilepath = testResourceLocationPrefix + REQUEST_FILENAME;
+		NamespaceFilteringParser unmarshaller = XACML_PARSER_FACTORY.getInstance();
 		try
 		{
-			request = TestUtils.createRequest(expectedReqFilepath);
+			request = TestUtils.createRequest(expectedReqFilepath, unmarshaller);
+			LOGGER.debug("XACML Request sent to the PDP: {}", request);
 		} catch (FileNotFoundException notFoundErr)
 		{
 			// do nothing except logging -> request = null
 			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", expectedReqFilepath);
 		}
 
-		LOGGER.debug("XACML Request sent to the PDP: {}", request);
-
 		// Create PDP
-		PDP pdp = null;
+		PDPImpl pdp = null;
 		final String pdpConfLocation = testResourceLocationPrefix + PDP_CONF_FILENAME;
 		File pdpConfFile = null;
 		try
@@ -208,21 +212,30 @@ public abstract class PdpTest
 			{
 				// PDP configuration filename NOT found in test directory -> create minimal PDP using TestUtils.getPDPNewInstance(policy)
 
-				pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME, testResourceLocationPrefix + REF_POLICIES_DIR_NAME);
+				pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME, testResourceLocationPrefix + REF_POLICIES_DIR_NAME, false,
+						null, null);
 
 			} else
 			{
 				// PDP configuration filename found in test directory -> create PDP from it
 				final String pdpExtXsdLocation = testResourceLocationPrefix + PDP_EXTENSION_XSD;
-				final File pdpExtXsdFile = ResourceUtils.getFile(pdpExtXsdLocation);
+				File pdpExtXsdFile = null;
+				try
+				{
+					pdpExtXsdFile = ResourceUtils.getFile(pdpExtXsdLocation);
+				} catch (FileNotFoundException e)
+				{
+					LOGGER.debug("No PDP extension configuration file '{}' found -> JAXB-bound PDP extensions not allowed.", pdpExtXsdLocation);
+				}
+
 				try
 				{
 					/*
 					 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this file exists, and the XML catalog
 					 * required to resolve these extension XSDs
 					 */
-					pdp = pdpExtXsdFile.exists() ? PdpConfigurationParser.getPDP(pdpConfFile, XML_CATALOG_LOCATION, pdpExtXsdLocation) : PdpConfigurationParser
-							.getPDP(pdpConfLocation);
+					pdp = pdpExtXsdFile == null ? PdpConfigurationParser.getPDP(pdpConfLocation) : PdpConfigurationParser.getPDP(pdpConfFile,
+							XML_CATALOG_LOCATION, pdpExtXsdLocation);
 				} catch (IOException | JAXBException e)
 				{
 					throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfLocation + "' with extension XSD '" + pdpExtXsdLocation
@@ -238,9 +251,9 @@ public abstract class PdpTest
 			} else
 			{
 				// Parse expected response
-				final Response expectedResponse = TestUtils.createResponse(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME);
+				final Response expectedResponse = TestUtils.createResponse(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME, unmarshaller);
 
-				final Response response = pdp.evaluate(request);
+				final Response response = pdp.evaluate(request, null);
 				if (LOGGER.isDebugEnabled())
 				{
 					LOGGER.debug("XACML Response received from the PDP: {}", TestUtils.printResponse(response));

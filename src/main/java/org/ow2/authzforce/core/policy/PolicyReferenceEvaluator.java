@@ -13,17 +13,11 @@
  */
 package org.ow2.authzforce.core.policy;
 
-import java.util.Deque;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
-import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.ParsingException;
 import com.sun.xacml.VersionConstraints;
 
 /**
@@ -33,89 +27,43 @@ import com.sun.xacml.VersionConstraints;
  *            type of referred element: Policy, PolicySet...
  * 
  */
-public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> extends IdReferenceType implements IPolicyEvaluator
+public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> implements IPolicyEvaluator
 {
 	static final Logger LOGGER = LoggerFactory.getLogger(PolicyReferenceEvaluator.class);
 
-	private static final UnsupportedOperationException UNSUPPORTED_SET_VALUE_EXCEPTION = new UnsupportedOperationException(
-			"ID in Policy(Set)IdReference is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_SET_VERSION_EXCEPTION = new UnsupportedOperationException(
-			"Version in Policy(Set)IdReference is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_SET_EARLIEST_VERSION_EXCEPTION = new UnsupportedOperationException(
-			"EarliestVersion in Policy(Set)IdReference is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_SET_LATEST_VERSION_EXCEPTION = new UnsupportedOperationException(
-			"LatestVersion in Policy(Set)IdReference is read-only");
-
-	private static final IllegalArgumentException UNDEF_REF_POLICY_PROVIDER_EXCEPTION = new IllegalArgumentException(
-			"Policy(Set)IdReference resolver/Provider undefined");
-
+	protected final String refPolicyId;
 	// and version constraints on this reference
 	protected final VersionConstraints versionConstraints;
-
 	protected final Class<T> referredPolicyClass;
+	private final String toString;
 
-	private transient volatile String toString = null;
-
-	protected PolicyReferenceEvaluator(String idRef, VersionConstraints versionConstraints, Class<T> policyReferenceType)
-	{
-		this.versionConstraints = versionConstraints;
-		this.referredPolicyClass = policyReferenceType;
-		this.toString = toString(referredPolicyClass, idRef, versionConstraints);
-	}
-
-	private static String toString(Class<? extends IPolicyEvaluator> policyReferenceType, String policyRefId, VersionConstraints versionConstraints)
+	/**
+	 * Get Policy reference description
+	 * 
+	 * @param policyReferenceType
+	 *            type of Policy reference (PolicySetIdReference or PolicyIdReference)
+	 * @param policyRefId
+	 *            referenced policy ID
+	 * @param versionConstraints
+	 *            referenced policy version constraints
+	 * @return description
+	 */
+	public static String toString(Class<? extends IPolicyEvaluator> policyReferenceType, String policyRefId, VersionConstraints versionConstraints)
 	{
 		return (policyReferenceType == PolicyEvaluator.class ? "PolicyIdReference" : "PolicySetIdReference") + "[Id=" + policyRefId + ", " + versionConstraints
 				+ "]";
 	}
 
-	// Make all super fields final
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType#setValue(java.lang.String)
-	 */
-	@Override
-	public final void setValue(String value)
+	protected PolicyReferenceEvaluator(String idRef, VersionConstraints versionConstraints, Class<T> policyReferenceType)
 	{
-		throw UNSUPPORTED_SET_VALUE_EXCEPTION;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType#setVersion(java.lang.String)
-	 */
-	@Override
-	public final void setVersion(String value)
-	{
-		throw UNSUPPORTED_SET_VERSION_EXCEPTION;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType#setEarliestVersion(java.lang. String)
-	 */
-	@Override
-	public final void setEarliestVersion(String value)
-	{
-		throw UNSUPPORTED_SET_EARLIEST_VERSION_EXCEPTION;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType#setLatestVersion(java.lang.String )
-	 */
-	@Override
-	public final void setLatestVersion(String value)
-	{
-		throw UNSUPPORTED_SET_LATEST_VERSION_EXCEPTION;
+		this.refPolicyId = idRef;
+		this.versionConstraints = versionConstraints;
+		this.referredPolicyClass = policyReferenceType;
+		this.toString = toString(referredPolicyClass, idRef, versionConstraints);
 	}
 
 	@Override
-	public final DecisionResult evaluate(EvaluationContext context)
+	public final PolicyDecisionResult evaluate(EvaluationContext context)
 	{
 		return evaluate(context, false);
 	}
@@ -135,65 +83,7 @@ public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> exten
 	public String getPolicyId()
 	{
 		// IdReference
-		return this.value;
-	}
-
-	/**
-	 * Instantiates Policy(Set) Reference evaluator
-	 * 
-	 * @param idRef
-	 *            Policy(Set)IdReference
-	 * @param refPolicyProvider
-	 *            Policy(Set)IdReference resolver/Provider
-	 * @param refPolicyType
-	 *            type of policy referenced, i.e. whether it refers to Policy or PolicySet
-	 * @param parentPolicySetRefChain
-	 *            chain of ancestor PolicySetIdReferences leading to the reference identified here by {@code idRef} (exclusive): PolicySet Ref 1 -> PolicySet
-	 *            Ref 2 -> ... -> Ref n -> {@code idRef}. This allows to detect circular references and validate the size of the chain against the max depth
-	 *            enforced by {@code policyProvider}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level PolicySet. Beware that we only
-	 *            keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what
-	 *            the version is.
-	 * @return instance instance of PolicyReference
-	 * @throws ParsingException
-	 *             if PolicySetIdReference loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
-	 * @throws IllegalArgumentException
-	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by
-	 *             {@code refPolicyProvider}
-	 */
-	public static <T extends IPolicyEvaluator> PolicyReferenceEvaluator<T> getInstance(IdReferenceType idRef, RefPolicyProvider refPolicyProvider,
-			Class<T> refPolicyType, Deque<String> parentPolicySetRefChain) throws ParsingException, IllegalArgumentException
-	{
-		if (refPolicyProvider == null)
-		{
-			throw UNDEF_REF_POLICY_PROVIDER_EXCEPTION;
-		}
-
-		final VersionConstraints versionConstraints = new VersionConstraints(idRef.getVersion(), idRef.getEarliestVersion(), idRef.getLatestVersion());
-		/*
-		 * REMINDER: parentPolicySetRefChain is handled/updated by the refPolicyProvider. So do not modify it here, just pass the parameter. modify it here.
-		 */
-		if (refPolicyProvider.isStatic())
-		{
-			final T policy;
-			try
-			{
-				policy = refPolicyProvider.get(idRef.getValue(), versionConstraints, refPolicyType, parentPolicySetRefChain);
-			} catch (IndeterminateEvaluationException e)
-			{
-				throw new ParsingException("Error resolving statically or parsing " + toString(refPolicyType, idRef.getValue(), versionConstraints)
-						+ " into its referenced policy (via static policy Provider)", e);
-			}
-
-			if (policy == null)
-			{
-				throw new IllegalArgumentException("No " + (refPolicyType == PolicyEvaluator.class ? "Policy" : "PolicySet") + " matching reference: " + idRef);
-			}
-
-			return new StaticPolicyRefEvaluator<>(idRef.getValue(), versionConstraints, policy);
-		}
-
-		// dynamic reference resolution
-		return new DynamicPolicyRefEvaluator<>(idRef.getValue(), versionConstraints, refPolicyType, refPolicyProvider, parentPolicySetRefChain);
+		return this.refPolicyId;
 	}
 
 }

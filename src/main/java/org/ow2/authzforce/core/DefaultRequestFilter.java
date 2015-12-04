@@ -16,95 +16,103 @@ package org.ow2.authzforce.core;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import javax.xml.bind.JAXBContext;
 
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
-import org.ow2.authzforce.core.expression.Expressions;
+import org.ow2.authzforce.core.XACMLParsers.JaxbXACMLAttributesParser;
 import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
  * 
  */
-public final class DefaultRequestFilter extends RequestFilter
+public final class DefaultRequestFilter extends BaseRequestFilter
 {
+	/**
+	 *
+	 * Factory for this type of request filter that allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
+	 * (complying with XACML 3.0 core spec, §7.3.3).
+	 *
+	 */
+	public static final class LaxFilterFactory implements RequestFilter.Factory
+	{
+		private static final String ID = "urn:thalesgroup:xacml:request-filter:default-lax";
+
+		@Override
+		public String getId()
+		{
+			return ID;
+		}
+
+		@Override
+		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath,
+				Processor xmlProcessor)
+		{
+			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, true, requireContentForXPath, xmlProcessor);
+		}
+
+		/**
+		 * Singleton instance of Factory for DefaultRequestFilters
+		 * 
+		 */
+		public static final RequestFilter.Factory INSTANCE = new LaxFilterFactory();
+	}
 
 	/**
-	 * Creates instance
-	 * 
-	 * @param datatypeFactoryRegistry
-	 *            registry of attribute datatype factories for parsing XACML Request AttributeValues into Java types compatible with/optimized for the policy
-	 *            evaluation engine
-	 * @param requireContentForXPath
-	 *            true iff XPath evaluation against Attributes/Content element is required (e.g. AttributeSelector, XPath-based funtion...). A preprocessor may
-	 *            skip Content parsing for XPath evaluation, if and only if this is false. (Be aware that a preprocessor may support the MultipleDecision
-	 *            Profile or Hierarchical Profile and therefore require Content parsing for other purposes defined by these profiles.)
-	 * @param attributesContentJaxbCtx
-	 *            JAXBContext that was used to unmarshall Attributes/Content elements in the Request. This context is used to create a new instance of
-	 *            marshaller to pass it as JAXBSource to xmlProcesor to convert to XDM data model for XPATH evaluation. May be null if requireContentForXPath is
-	 *            false.
-	 * 
-	 * @param xmlProcessor
-	 *            XML processor for parsing Attributes/Content prior to XPATH evaluation (e.g. AttributeSelectors). May be null if requireContentForXPath is
-	 *            false.
+	 *
+	 * Factory for this type of request filter that does NOT allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a
+	 * Request (NOT complying fully with XACML 3.0 core spec, §7.3.3).
+	 *
 	 */
-	public DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean requireContentForXPath, JAXBContext attributesContentJaxbCtx,
-			Processor xmlProcessor)
+	public static final class StrictFilterFactory implements RequestFilter.Factory
 	{
-		super(datatypeFactoryRegistry, requireContentForXPath, attributesContentJaxbCtx, xmlProcessor);
+		private static final String ID = "urn:thalesgroup:xacml:request-filter:default-strict";
+
+		@Override
+		public String getId()
+		{
+			return ID;
+		}
+
+		@Override
+		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath,
+				Processor xmlProcessor)
+		{
+			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, false, requireContentForXPath, xmlProcessor);
+		}
+	}
+
+	private DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean allowAttributeDuplicates,
+			boolean requireContentForXPath, Processor xmlProcessor)
+	{
+		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor);
 	}
 
 	@Override
-	public List<IndividualDecisionRequest> filter(Request jaxbRequest) throws IndeterminateEvaluationException
+	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser,
+			boolean isApplicablePolicyIdListReturned, boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix)
+			throws IndeterminateEvaluationException
 	{
-		// MultiRequests element not supported (optional XACML feature)
-		if (jaxbRequest.getMultiRequests() != null)
-		{
-			/*
-			 * According to 7.19.1 Unsupported functionality, return Indeterminate with syntax-error code for unsupported element
-			 */
-			throw UNSUPPORTED_MULTI_REQUESTS_EXCEPTION;
-		}
-
-		// RequestDefaults element is supported for XPath expressions (optional XACML feature)
-		final RequestDefaults reqDefs = jaxbRequest.getRequestDefaults();
-		final XPathCompiler reqDefXPathCompiler;
-		if (reqDefs == null)
-		{
-			reqDefXPathCompiler = null;
-		} else
-		{
-			reqDefXPathCompiler = Expressions.XPATH_COMPILERS_BY_VERSION.get(reqDefs.getXPathVersion());
-			if (reqDefXPathCompiler == null)
-			{
-				throw new IndeterminateEvaluationException("Invalid <RequestDefaults>/XPathVersion: " + reqDefs.getXPathVersion(),
-						StatusHelper.STATUS_SYNTAX_ERROR);
-			}
-		}
 
 		/*
 		 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple Decision Profile. So we keep track of
 		 * attribute categories to check duplicates.
 		 */
 		final Set<String> attrCategoryNames = new HashSet<>();
-		final XACMLAttributesParser xacmlAttrsParser = getXACMLAttributesParserInstance();
-		final IndividualDecisionRequest individualDecisionRequest;
+		final MutableIndividualDecisionRequest individualDecisionRequest;
 		try
 		{
-			individualDecisionRequest = new IndividualDecisionRequest(jaxbRequest.isReturnPolicyIdList(), reqDefXPathCompiler);
+			individualDecisionRequest = new MutableIndividualDecisionRequest(isApplicablePolicyIdListReturned);
 		} catch (IllegalArgumentException e)
 		{
 			throw new IndeterminateEvaluationException("Invalid RequestDefaults/XPathVersion", StatusHelper.STATUS_SYNTAX_ERROR, e);
 		}
 
-		for (final Attributes jaxbAttributes : jaxbRequest.getAttributes())
+		for (final Attributes jaxbAttributes : attributesList)
 		{
 			final String categoryName = jaxbAttributes.getCategory();
 			if (!attrCategoryNames.add(categoryName))
@@ -114,7 +122,7 @@ public final class DefaultRequestFilter extends RequestFilter
 						StatusHelper.STATUS_SYNTAX_ERROR);
 			}
 
-			final CategorySpecificAttributes categorySpecificAttributes = xacmlAttrsParser.parse(jaxbAttributes, reqDefXPathCompiler);
+			final SingleCategoryAttributes<?> categorySpecificAttributes = xacmlAttrsParser.parseAttributes(jaxbAttributes, xPathCompiler);
 			if (categorySpecificAttributes == null)
 			{
 				// skip this empty Attributes

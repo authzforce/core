@@ -14,6 +14,7 @@
 package org.ow2.authzforce.core.value;
 
 import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import org.ow2.authzforce.core.PdpExtensionRegistry;
 import org.ow2.authzforce.core.expression.PrimitiveValueExpression;
@@ -42,24 +43,24 @@ public interface DatatypeFactoryRegistry extends PdpExtensionRegistry<DatatypeFa
 	 * @throws UnknownIdentifierException
 	 *             value datatype unknown/not supported
 	 */
-	PrimitiveValueExpression<?> createValueExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value, XPathCompiler xPathCompiler)
-			throws UnknownIdentifierException, ParsingException;
+	PrimitiveValueExpression<?> createValueExpression(AttributeValueType value, XPathCompiler xPathCompiler) throws UnknownIdentifierException,
+			ParsingException;
 
-	/**
-	 * Create internal model's AttributeValue expression
-	 * 
-	 * @param value
-	 *            AttributeValue from OASIS XACML model
-	 * @param datatype
-	 *            datatype of the instance returned
-	 * @param xPathCompiler
-	 *            XPath compiler for evaluating/compiling any XPath expression in {@code value}
-	 * @return AttributeValue expression
-	 * @throws ParsingException
-	 *             if value cannot be parsed into the value's defined datatype
-	 * @throws UnknownIdentifierException
-	 *             value datatype unknown/not supported
-	 */
-	<AV extends AttributeValue> PrimitiveValueExpression<AV> createValueExpression(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType value,
-			Datatype<AV> datatype, XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException;
+	// /**
+	// * Create internal model's AttributeValue expression
+	// *
+	// * @param value
+	// * AttributeValue from OASIS XACML model
+	// * @param datatype
+	// * datatype of the instance returned
+	// * @param xPathCompiler
+	// * XPath compiler for evaluating/compiling any XPath expression in {@code value}
+	// * @return AttributeValue expression
+	// * @throws ParsingException
+	// * if value cannot be parsed into the value's defined datatype
+	// * @throws UnknownIdentifierException
+	// * value datatype unknown/not supported
+	// */
+	// <AV extends AttributeValue> PrimitiveValueExpression<AV> createValueExpression(AttributeValueType value,
+	// Datatype<AV> datatype, XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException;
 }

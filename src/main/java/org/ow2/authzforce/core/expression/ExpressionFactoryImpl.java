@@ -46,14 +46,17 @@ import com.sun.xacml.UnknownIdentifierException;
 /**
  * Implementation of ExpressionFactory that supports the Expressions defined in VariableDefinitions in order to resolve VariableReferences. In particular, it
  * makes sure the depth of recursivity of VariableDefinition does not exceed a value (to avoid inconveniences such as stackoverflow or very negative performance
- * impact) defined by parameter to {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean)} parameter. Note that reference
- * loops are avoided by the fact that a VariableReference can reference only a VariableDefinition defined previously to the VariableReference in this
+ * impact) defined by parameter to {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} parameter. Note that
+ * reference loops are avoided by the fact that a VariableReference can reference only a VariableDefinition defined previously to the VariableReference in this
  * implementation.
  * 
  */
 public class ExpressionFactoryImpl implements ExpressionFactory
 {
-	private static final ParsingException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new ParsingException(
+	private static final IllegalArgumentException MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION = new IllegalArgumentException(
+			"Missing Issuer that is required on AttributeDesignators by PDP configuration");
+
+	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException(
 			"Unsupported Expression type (optional XACML feature): AttributeSelector");
 
 	private static final IllegalArgumentException NULL_FUNCTION_REGISTRY_EXCEPTION = new IllegalArgumentException("Undefined function registry");
@@ -61,7 +64,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	private static final IllegalArgumentException NULL_ATTRIBUTE_DATATYPE_REGISTRY_EXCEPTION = new IllegalArgumentException(
 			"Undefined attribute datatype registry");
 
-	private static final ParsingException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_Provider_EXCEPTION = new ParsingException(
+	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_PROVIDER_EXCEPTION = new IllegalArgumentException(
 			"Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute Provider defined");
 
 	private final DatatypeFactoryRegistry datatypeFactoryRegistry;
@@ -71,6 +74,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	// the map from identifiers to internal data
 	private final Map<String, VariableReference<?>> idToVariableMap = new HashMap<>();
 	private final boolean allowAttributeSelectors;
+
+	private final boolean issuerRequiredOnAttributeDesignators;
 
 	/**
 	 * Maximum VariableReference depth allowed for VariableDefinitions to be managed. Examples:
@@ -93,16 +98,23 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference)
 	 * @param allowAttributeSelectors
 	 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
+	 * @param issuerRequiredInAttributeDesignators
+	 *            true iff it is required that all AttributeDesignator set the Issuer field, as a best practice. If the issuer is not set, remember what XACML
+	 *            3.0 AttributeDesignator Evaluation says: "If the Issuer is not present in the attribute designator, then the matching of the attribute to the
+	 *            named attribute SHALL be governed by AttributeId and DataType attributes alone." As a result, be aware that if you use AttributeDesignators
+	 *            without Issuer ({@code issuerRequiredInAttributeDesignators == false}) and the requests are using matching Attributes but with one or more
+	 *            different Issuers, this PDP engine has to gather all the values from all the attributes with matching Category/AttributeId but with any Issuer
+	 *            or no Issuer, resulting in lower performance.
 	 * @throws IllegalArgumentException
-	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with
-	 *             another one already registered to provide the same or part of the same attributes.
+	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict
+	 *             with another one already registered to provide the same or part of the same attributes.
 	 * @throws IOException
-	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException}
-	 *             is raised
+	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an
+	 *             {@link IllegalArgumentException} is raised
 	 */
 	public ExpressionFactoryImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry,
-			List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVarRefDepth, boolean allowAttributeSelectors) throws IllegalArgumentException,
-			IOException
+			List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVarRefDepth, boolean allowAttributeSelectors,
+			boolean issuerRequiredInAttributeDesignators) throws IllegalArgumentException, IOException
 	{
 		if (attributeFactory == null)
 		{
@@ -125,6 +137,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		// finally create the global attribute Provider used to resolve AttributeDesignators
 		this.attributeProvider = new CloseableAttributeProvider(jaxbAttributeProviderConfs, attributeFactory);
 		this.allowAttributeSelectors = allowAttributeSelectors;
+		this.issuerRequiredOnAttributeDesignators = issuerRequiredInAttributeDesignators;
 	}
 
 	/**
@@ -138,7 +151,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * @return The previous VariableReference if VariableId already used
 	 * @throws ParsingException
 	 *             error parsing expression in <code>var</code>, in particular if reference depth exceeded (as fixed by max parameter to
-	 *             {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean)} )
+	 *             {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} )
 	 */
 	@Override
 	public VariableReference<?> addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, XPathCompiler xPathCompiler)
@@ -215,8 +228,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 			{
 				// current longest is no longer the longest, so replace with new longest's content
 				longestVarRefChain.clear();
-				longestVarRefChain.addAll(referencedVarLongestRefChain);
 				longestVarRefChain.add(varId);
+				longestVarRefChain.addAll(referencedVarLongestRefChain);
 			}
 
 			if (longestVarRefChain.size() > this.maxVariableReferenceDepth)
@@ -232,7 +245,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 	/**
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean)} .
+	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
 	 * 
 	 * @param functionId
 	 *            function ID (XACML URI)
@@ -246,7 +259,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 	/**
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean)} .
+	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
 	 * 
 	 * @param functionId
 	 *            function ID (XACML URI)
@@ -284,7 +297,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType, java.util.List)
 	 */
 	@Override
-	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws ParsingException
+	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws ParsingException,
+			IllegalArgumentException
 	{
 		final Expression<?> expression;
 		/*
@@ -297,14 +311,19 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		{
 			if (this.attributeProvider == null)
 			{
-				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_Provider_EXCEPTION;
+				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_PROVIDER_EXCEPTION;
 			}
 
 			final AttributeDesignatorType jaxbAttrDes = (AttributeDesignatorType) expr;
+			if (this.issuerRequiredOnAttributeDesignators && jaxbAttrDes.getIssuer() == null)
+			{
+				throw MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION;
+			}
+
 			final DatatypeFactory<?> attrFactory = datatypeFactoryRegistry.getExtension(jaxbAttrDes.getDataType());
 			if (attrFactory == null)
 			{
-				throw new ParsingException("Unsupported Datatype used in AttributeDesignator: " + jaxbAttrDes.getDataType());
+				throw new IllegalArgumentException("Unsupported Datatype used in AttributeDesignator: " + jaxbAttrDes.getDataType());
 			}
 
 			expression = new AttributeDesignator<>(jaxbAttrDes, attrFactory.getBagDatatype(), attributeProvider);
@@ -317,20 +336,20 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 			if (this.attributeProvider == null)
 			{
-				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_Provider_EXCEPTION;
+				throw UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_PROVIDER_EXCEPTION;
 			}
 
 			final AttributeSelectorType jaxbAttrSelector = (AttributeSelectorType) expr;
 			final DatatypeFactory<?> attrFactory = datatypeFactoryRegistry.getExtension(jaxbAttrSelector.getDataType());
 			if (attrFactory == null)
 			{
-				throw new ParsingException("Unsupported Datatype used in AttributeSelector: " + jaxbAttrSelector.getDataType());
+				throw new IllegalArgumentException("Unsupported Datatype used in AttributeSelector: " + jaxbAttrSelector.getDataType());
 			}
 
 			// Check whether default XPath compiler/version specified for the XPath evaluator
 			if (xPathCompiler == null)
 			{
-				throw new ParsingException(
+				throw new IllegalArgumentException(
 						"AttributeSelector found but missing Policy(Set)Defaults/XPathVersion required for XPath evaluation in AttributeSelector");
 			}
 
@@ -353,7 +372,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				expression = func;
 			} else
 			{
-				throw new ParsingException(
+				throw new IllegalArgumentException(
 						"Function "
 								+ jaxbFunc.getFunctionId()
 								+ " is not supported (at least) as standalone Expression: either a generic higher-order function supported only as Apply FunctionId, or function completely unknown.");
@@ -366,11 +385,11 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				expression = getVariable(varRefElt, longestVarRefChain);
 			} catch (UnknownIdentifierException e)
 			{
-				throw new ParsingException("Invalid VariableReference/VariableId", e);
+				throw new IllegalArgumentException("Invalid VariableReference/VariableId", e);
 			}
 		} else
 		{
-			throw new ParsingException("Expressions of type " + expr.getClass().getSimpleName()
+			throw new IllegalArgumentException("Expressions of type " + expr.getClass().getSimpleName()
 					+ " are not supported. Expected: one of Apply, AttributeDesignator, AttributeSelector, AttributeValue, Function or VariableReference.");
 		}
 

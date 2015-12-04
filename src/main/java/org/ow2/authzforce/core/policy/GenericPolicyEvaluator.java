@@ -14,21 +14,25 @@
 package org.ow2.authzforce.core.policy;
 
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.xml.bind.JAXBElement;
+
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.PepActions;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 import org.ow2.authzforce.core.TargetEvaluator;
 import org.ow2.authzforce.core.combining.CombiningAlg;
 import org.ow2.authzforce.core.combining.CombiningAlgParameter;
@@ -39,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
+import com.sun.xacml.VersionConstraints;
 
 /**
  * Generic Policy(Set) evaluator. Evaluates to a Decision.
@@ -47,14 +52,78 @@ import com.sun.xacml.UnknownIdentifierException;
  *            type of combined child elements in evaluated Policy(Set)
  * 
  */
-public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvaluator
+public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvaluator
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(GenericPolicyEvaluator.class);
-	private static final ParsingException NULL_POLICY_ID_EXCEPTION = new ParsingException("Undefined Policy(Set)Id (required)");
-	private static final ParsingException NULL_VERSION_EXCEPTION = new ParsingException("Undefined Policy(Set) Version (required)");
+	private static final IllegalArgumentException NULL_POLICY_ID_EXCEPTION = new IllegalArgumentException("Undefined Policy(Set)Id (required)");
+	private static final IllegalArgumentException NULL_VERSION_EXCEPTION = new IllegalArgumentException("Undefined Policy(Set) Version (required)");
+
+	private static final IllegalArgumentException UNDEF_REF_POLICY_PROVIDER_EXCEPTION = new IllegalArgumentException(
+			"Policy(Set)IdReference resolver/Provider undefined");
+	private static final IllegalArgumentException NULL_POLICY_REF_EXCEPTION = new IllegalArgumentException(
+			"Undefined Policy(Set) reference (ID, Version) (required)");
+
+	/**
+	 * Instantiates Policy(Set) Reference evaluator
+	 * 
+	 * @param idRef
+	 *            Policy(Set)IdReference
+	 * @param refPolicyProvider
+	 *            Policy(Set)IdReference resolver/Provider
+	 * @param refPolicyType
+	 *            type of policy referenced, i.e. whether it refers to Policy or PolicySet
+	 * @param parentPolicySetRefChain
+	 *            chain of ancestor PolicySetIdReferences leading to the reference identified here by {@code idRef} (exclusive): PolicySet Ref 1 -> PolicySet
+	 *            Ref 2 -> ... -> Ref n -> {@code idRef}. This allows to detect circular references and validate the size of the chain against the max depth
+	 *            enforced by {@code policyProvider}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level PolicySet. Beware that we only
+	 *            keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what
+	 *            the version is.
+	 * @return instance instance of PolicyReference
+	 * @throws ParsingException
+	 *             if PolicySetIdReference loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
+	 * @throws IllegalArgumentException
+	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by
+	 *             {@code refPolicyProvider}
+	 */
+	public static <T extends IPolicyEvaluator> PolicyReferenceEvaluator<T> getPolicyRefEvaluator(IdReferenceType idRef, RefPolicyProvider refPolicyProvider,
+			Class<T> refPolicyType, Deque<String> parentPolicySetRefChain) throws ParsingException, IllegalArgumentException
+	{
+		if (refPolicyProvider == null)
+		{
+			throw UNDEF_REF_POLICY_PROVIDER_EXCEPTION;
+		}
+
+		final VersionConstraints versionConstraints = new VersionConstraints(idRef.getVersion(), idRef.getEarliestVersion(), idRef.getLatestVersion());
+		/*
+		 * REMINDER: parentPolicySetRefChain is handled/updated by the refPolicyProvider. So do not modify it here, just pass the parameter. modify it here.
+		 */
+		if (refPolicyProvider.isStatic())
+		{
+			final T policy;
+			try
+			{
+				policy = refPolicyProvider.get(idRef.getValue(), versionConstraints, refPolicyType, parentPolicySetRefChain);
+			} catch (IndeterminateEvaluationException e)
+			{
+				throw new IllegalArgumentException("Error resolving statically or parsing "
+						+ PolicyReferenceEvaluator.toString(refPolicyType, idRef.getValue(), versionConstraints)
+						+ " into its referenced policy (via static policy Provider)", e);
+			}
+
+			if (policy == null)
+			{
+				throw new IllegalArgumentException("No " + (refPolicyType == PolicyEvaluator.class ? "Policy" : "PolicySet") + " matching reference: " + idRef);
+			}
+
+			return new StaticPolicyRefEvaluator<>(idRef.getValue(), versionConstraints, policy);
+		}
+
+		// dynamic reference resolution
+		return new DynamicPolicyRefEvaluator<>(idRef.getValue(), versionConstraints, refPolicyType, refPolicyProvider, parentPolicySetRefChain);
+	}
 
 	private final String policyId;
-	private final String version;
+	private final String policyVersion;
 	private final TargetEvaluator targetEvaluator;
 	private final CombiningAlg.Evaluator combiningAlgEvaluator;
 	private final PolicyPepActionExpressionsEvaluator pepActionExps;
@@ -63,6 +132,7 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 
 	private transient final String toString;
 	private transient final int hashCode;
+	private transient final JAXBElement<IdReferenceType> refToSelf;
 
 	/**
 	 * Instantiates an evaluator
@@ -78,10 +148,8 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 	 *            combining algorithm parameters
 	 * @param localVariableIds
 	 *            IDs of variables defined locally (in policy {@code policyId})
-	 * @param policyId
-	 *            identifier of the policy that this evaluator evaluates
-	 * @param policyVersion
-	 *            policy version
+	 * @param jaxbPolicyRef
+	 *            policy reference (identifier and version) of the policy that this evaluator evaluates
 	 * @param combiningAlgId
 	 *            (policy/rule-)combining algorithm ID
 	 * @param obligationExps
@@ -94,39 +162,50 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 	 *            Expression factory/parser
 	 * @param combiningAlgRegistry
 	 *            rule/policy combining algorithm registry
-	 * @throws ParsingException
+	 * @throws IllegalArgumentException
+	 *             if {@code jaxbPolicyRef == null || jaxbPolicyRef.getValue().getValue() == null || jaxbPolicyRef.getValue().getVersion() == null}
 	 */
-	public GenericPolicyEvaluator(Class<T> combinedElementClass, String policyId, String policyVersion, Target policyTarget, String combiningAlgId,
+	public GenericPolicyEvaluator(Class<T> combinedElementClass, JAXBElement<IdReferenceType> jaxbPolicyRef, Target policyTarget, String combiningAlgId,
 			List<? extends T> combinedElements, List<CombiningAlgParameter<? extends T>> combinerParameters, ObligationExpressions obligationExps,
 			AdviceExpressions adviceExps, Set<String> localVariableIds, XPathCompiler defaultXPathCompiler, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry) throws ParsingException
+			CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
-		if (policyId == null)
+		if (jaxbPolicyRef == null)
+		{
+			throw NULL_POLICY_REF_EXCEPTION;
+		}
+
+		this.refToSelf = jaxbPolicyRef;
+		final IdReferenceType jaxbIdRef = jaxbPolicyRef.getValue();
+		final String id = jaxbIdRef.getValue();
+		if (id == null)
 		{
 			throw NULL_POLICY_ID_EXCEPTION;
 		}
 
-		this.policyId = policyId;
-		if (policyVersion == null)
+		this.policyId = id;
+
+		final String version = jaxbIdRef.getVersion();
+		if (version == null)
 		{
 			throw NULL_VERSION_EXCEPTION;
 		}
 
-		this.version = policyVersion;
+		this.policyVersion = version;
 
-		this.toString = this.getClass().getSimpleName() + "[" + this.policyId + "#v" + this.version + "]";
+		this.toString = this.getClass().getSimpleName() + "[" + this.policyId + "#v" + this.policyVersion + "]";
 		/*
 		 * Note that we ignore the PolicyIssuer in the hashCode because it is ignored/unused as well in PolicyIdReferences. So we consider it is useless for
 		 * identification in the XACML model.
 		 */
-		this.hashCode = Objects.hash(this.getClass(), this.policyId, this.version);
+		this.hashCode = Objects.hash(this.getClass(), this.policyId, this.policyVersion);
 
 		try
 		{
 			this.targetEvaluator = new TargetEvaluator(policyTarget, defaultXPathCompiler, expressionFactory);
-		} catch (ParsingException e)
+		} catch (IllegalArgumentException | ParsingException e)
 		{
-			throw new ParsingException(this + ": Error parsing Target", e);
+			throw new IllegalArgumentException(this + ": Error parsing Target", e);
 		}
 
 		this.combiningAlgId = combiningAlgId;
@@ -136,11 +215,18 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 			combiningAlg = combiningAlgRegistry.getAlgorithm(combiningAlgId, combinedElementClass);
 		} catch (UnknownIdentifierException e)
 		{
-			throw new ParsingException(this + ": Unknown combining algorithm ID = " + combiningAlgId, e);
+			throw new IllegalArgumentException(this + ": Unknown combining algorithm ID = " + combiningAlgId, e);
 		}
 
 		this.combiningAlgEvaluator = combiningAlg.getInstance(combinerParameters, combinedElements);
-		this.pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(obligationExps, adviceExps, defaultXPathCompiler, expressionFactory);
+		try
+		{
+			this.pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(obligationExps, adviceExps, defaultXPathCompiler, expressionFactory);
+		} catch (IllegalArgumentException | ParsingException e)
+		{
+			throw new IllegalArgumentException(this + ": Error parsing AttributeAssignmentExpressions", e);
+		}
+
 		this.localVariableIds = localVariableIds == null ? Collections.<String> emptySet() : localVariableIds;
 	}
 
@@ -155,11 +241,11 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 	 * @return decision result
 	 */
 	@Override
-	public DecisionResult evaluate(EvaluationContext context, boolean skipTarget)
+	public PolicyDecisionResult evaluate(EvaluationContext context, boolean skipTarget)
 	{
 		try
 		{
-			final DecisionResult algResult;
+			final PolicyDecisionResult algResult;
 			if (skipTarget)
 			{
 				// evaluate with combining algorithm
@@ -174,7 +260,7 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 					if (!isApplicable(context))
 					{
 						LOGGER.debug("{} -> NotApplicable", policyId);
-						return DecisionResult.NOT_APPLICABLE;
+						return PolicyDecisionResult.NOT_APPLICABLE;
 					}
 				} catch (IndeterminateEvaluationException e)
 				{
@@ -201,48 +287,77 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 					}
 
 					// everything else considered as Indeterminate
-					return new DecisionResult(targetMatchIndeterminateException.getStatus());
+					return new PolicyDecisionResult(targetMatchIndeterminateException.getStatus());
 				}
 			}
 
 			// target match not indeterminate
 			final DecisionType algResultDecision = algResult.getDecision();
+			final PepActions pepActions;
+			final List<JAXBElement<IdReferenceType>> applicablePolicyIdList;
 			switch (algResultDecision)
 			{
 			case NOT_APPLICABLE:
-			case INDETERMINATE:
 				return algResult;
-			default:
-				if (pepActionExps == null)
+			case INDETERMINATE:
+				if (context.isApplicablePolicyIdListReturned())
+				{
+					applicablePolicyIdList = algResult.getApplicablePolicyIdList();
+					applicablePolicyIdList.add(this.refToSelf);
+					// PEP actions not returned with Indeterminate
+					pepActions = null;
+				} else
 				{
 					return algResult;
 				}
+				break;
+			default:
+				if (context.isApplicablePolicyIdListReturned())
+				{
+					applicablePolicyIdList = algResult.getApplicablePolicyIdList();
+					applicablePolicyIdList.add(this.refToSelf);
+				} else
+				{
+					// applicable policy identifiers are NOT requested
+					applicablePolicyIdList = null;
+				}
 
-				/*
-				 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute
-				 * evaluates to "Indeterminate", then the whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18).
-				 */
-				final PepActions pepActions;
-				try
+				if (pepActionExps == null)
 				{
-					pepActions = pepActionExps.evaluate(algResultDecision, context);
-				} catch (IndeterminateEvaluationException e)
+					if (applicablePolicyIdList == null)
+					{
+						// nothing to add to the combining alg eval result
+						return algResult;
+					}
+
+					// no PEP actions on this Policy(Set) explicitly but maybe on the children evaluated by combining algorithm
+					// so we take the PEP actions resulting of algorithm evaluation as the result PEP actions
+					pepActions = algResult.getPepActions();
+				} else
 				{
+					// pepActionExps != null -> evaluate pepActionExps
+
 					/*
-					 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error,
-					 * therefore lower level than error)
+					 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute
+					 * evaluates to "Indeterminate", then the whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section
+					 * 7.18).
 					 */
-					LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyId, e);
-					return new DecisionResult(e.getStatus());
+					try
+					{
+						pepActions = pepActionExps.evaluate(algResult, context);
+					} catch (IndeterminateEvaluationException e)
+					{
+						/*
+						 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application
+						 * error, therefore lower level than error)
+						 */
+						LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyId, e);
+						return new PolicyDecisionResult(DecisionType.INDETERMINATE, e.getStatus(), null, applicablePolicyIdList);
+					}
 				}
-
-				if (pepActions != null)
-				{
-					algResult.add(pepActions.getObligations(), pepActions.getAdvices());
-				}
-
-				return algResult;
 			}
+
+			return new PolicyDecisionResult(algResultDecision, algResult.getStatus(), pepActions, applicablePolicyIdList);
 		} finally
 		{
 			// remove local variables from context
@@ -271,7 +386,7 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 	}
 
 	@Override
-	public DecisionResult evaluate(EvaluationContext context)
+	public PolicyDecisionResult evaluate(EvaluationContext context)
 	{
 		return evaluate(context, false);
 	}
@@ -307,7 +422,7 @@ public class GenericPolicyEvaluator<T extends Decidable> implements IPolicyEvalu
 		/*
 		 * We ignore the policyIssuer because it is no part of PolicyReferences, therefore we consider it is not part of the Policy uniqueness
 		 */
-		return this.policyId.equals(other.policyId) && this.version.equals(other.version);
+		return this.policyId.equals(other.policyId) && this.policyVersion.equals(other.policyVersion);
 	}
 
 	@Override

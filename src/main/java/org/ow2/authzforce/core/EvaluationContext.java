@@ -16,9 +16,7 @@ package org.ow2.authzforce.core;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RequestDefaults;
 
 import org.ow2.authzforce.core.expression.AttributeGUID;
 import org.ow2.authzforce.core.expression.AttributeSelectorId;
@@ -34,14 +32,6 @@ import org.ow2.authzforce.core.value.Value;
  */
 public interface EvaluationContext
 {
-
-	/**
-	 * Get default XPath compiler for compiling/evaluating all XPath expressions in the request context (derived from XACML
-	 * {@link RequestDefaults#getXPathVersion()}); null if none specified in the XACML Request.
-	 * 
-	 * @return default XPath compiler
-	 */
-	XPathCompiler getDefaultXPathCompiler();
 
 	/**
 	 * Returns available context evaluation result for given AttributeDesignator.
@@ -206,5 +196,12 @@ public interface EvaluationContext
 	 * @return the previous value associated with key, or null if there was no mapping for key.
 	 */
 	Object remove(String key);
+
+	/**
+	 * Flag representing XACML Request ReturnPolicyIdList
+	 * 
+	 * @return true iff list of matched policy IDs must be returned
+	 */
+	boolean isApplicablePolicyIdListReturned();
 
 }

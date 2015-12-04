@@ -185,7 +185,7 @@ public class RulePepActionExpressionsEvaluator
 	 */
 	public PepActions evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		return PepActionExpressions.Helper.evaluate(this.ruleEffectMatchingActionExpressions, context);
+		return PepActionExpressions.Helper.evaluate(this.ruleEffectMatchingActionExpressions, context, null);
 	}
 
 }

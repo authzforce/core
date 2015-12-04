@@ -58,7 +58,8 @@ public interface RefPolicyProvider
 				final int actualPolicySetRefDepth = policySetRefChain.size();
 				if (maxPolicySetRefDepth != UNLIMITED_POLICY_REF_DEPTH && actualPolicySetRefDepth > maxPolicySetRefDepth)
 				{
-					throw new ParsingException("Depth of PolicySetIdReference (" + actualPolicySetRefDepth + ") > max allowed (" + maxPolicySetRefDepth + ")");
+					throw new ParsingException("Depth of Policy Reference (" + actualPolicySetRefDepth + ") > max allowed (" + maxPolicySetRefDepth + "): "
+							+ policySetRefChain);
 				}
 
 				newPolicySetRefChain = new ArrayDeque<>(policySetRefChain);
@@ -66,6 +67,27 @@ public interface RefPolicyProvider
 
 			newPolicySetRefChain.add(nextPolicySetIdRef);
 			return newPolicySetRefChain;
+		}
+
+		/**
+		 * Checks whether the given Policy reference chain's depth does not exceed the given limit
+		 * 
+		 * @param policySetRefChain
+		 *            Policy reference chain to be checked
+		 * @param maxPolicySetRefDepth
+		 *            max allowed Policy reference depth
+		 * @throws ParsingException
+		 *             error if check failed (depth exceeded)
+		 */
+		static void checkPolicySetRefChain(Deque<String> policySetRefChain, int maxPolicySetRefDepth) throws ParsingException
+		{
+			// validate reference depth
+			final int actualPolicySetRefDepth = policySetRefChain.size();
+			if (maxPolicySetRefDepth != UNLIMITED_POLICY_REF_DEPTH && actualPolicySetRefDepth > maxPolicySetRefDepth)
+			{
+				throw new ParsingException("Depth of Policy Reference (" + actualPolicySetRefDepth + ") > max allowed (" + maxPolicySetRefDepth + "): "
+						+ policySetRefChain);
+			}
 		}
 	}
 
@@ -117,7 +139,7 @@ public interface RefPolicyProvider
 	 * @throws IndeterminateEvaluationException
 	 *             if error determining a matching policy of type {@code policyType}
 	 */
-	<T extends IPolicyEvaluator> T get(String policyIdRef, VersionConstraints constraints, Class<T> refPolicyType, Deque<String> policySetRefChain)
+	<P extends IPolicyEvaluator> P get(String policyIdRef, VersionConstraints constraints, Class<P> refPolicyType, Deque<String> policySetRefChain)
 			throws ParsingException, IndeterminateEvaluationException;
 
 }

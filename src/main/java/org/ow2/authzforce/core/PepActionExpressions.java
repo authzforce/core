@@ -237,13 +237,19 @@ public interface PepActionExpressions
 			return obligations;
 		}
 
-		public static PepActions evaluate(PepActionExpressions.EffectSpecific pepActionExpressions, EvaluationContext context)
+		public static PepActions evaluate(PepActionExpressions.EffectSpecific pepActionExpressions, EvaluationContext context, PepActions pepActionsToUpdate)
 				throws IndeterminateEvaluationException
 		{
-			final List<Obligation> obligations = evaluate(pepActionExpressions.getObligationExpressions(), context,
+			final List<Obligation> newObligations = evaluate(pepActionExpressions.getObligationExpressions(), context,
 					PepActions.OBLIGATION_FACTORY.getActionXmlElementName());
-			final List<Advice> advices = evaluate(pepActionExpressions.getAdviceExpressions(), context, PepActions.ADVICE_FACTORY.getActionXmlElementName());
-			return obligations == null && advices == null ? null : new PepActions(obligations, advices);
+			final List<Advice> newAdvices = evaluate(pepActionExpressions.getAdviceExpressions(), context, PepActions.ADVICE_FACTORY.getActionXmlElementName());
+			if (pepActionsToUpdate == null)
+			{
+				return new PepActions(newObligations, newAdvices);
+			}
+
+			pepActionsToUpdate.merge(newObligations, newAdvices);
+			return pepActionsToUpdate;
 		}
 	}
 

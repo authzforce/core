@@ -86,9 +86,11 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 *             if {@code xacmlApply} or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid expressions, or
 	 *             invalid arguments for this function; or if all {@code xprs} are static but calling the function statically (with these static arguments)
 	 *             failed
+	 * @throws IllegalArgumentException
+	 *             if invalid {@code xacmlApply}
 	 */
 	public static Apply<?> getInstance(ApplyType xacmlApply, XPathCompiler xPathCompiler, ExpressionFactory expFactory, Deque<String> longestVarRefChain)
-			throws ParsingException
+			throws ParsingException, IllegalArgumentException
 	{
 		if (xacmlApply == null)
 		{
@@ -143,13 +145,14 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 			function = expFactory.getFunction(functionId, subFuncReturnType);
 		} catch (UnknownIdentifierException e)
 		{
-			throw new ParsingException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
+			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
 					+ ") of sub-function (first-parameter) of Apply Function '" + functionId + "'", e);
 		}
 
 		if (function == null)
 		{
-			throw new ParsingException("Error parsing Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId + "' not supported");
+			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId
+					+ "' not supported");
 		}
 
 		return new Apply<>(function, funcInputs, xacmlApply.getExpressions(), applyDesc);
@@ -167,13 +170,15 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 * @param description
 	 *            Description; may be null if no description
 	 * 
+	 * @throws IllegalArgumentException
+	 *             if {@code xprs} are invalid arguments for this function;
+	 * 
 	 * @throws ParsingException
-	 *             if {@code xprs} are invalid arguments for this function; or if all {@code xprs} are static but calling the function with these static
-	 *             arguments failed
+	 *             if all {@code xprs} are static but calling the function with these static arguments failed
 	 * 
 	 */
 	private Apply(Function<V> function, List<Expression<?>> xprs, List<JAXBElement<? extends ExpressionType>> originalXacmlExpressions, String description)
-			throws ParsingException
+			throws IllegalArgumentException, ParsingException
 	{
 		assert function != null;
 
@@ -193,7 +198,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 			funcCall = function.newCall(Collections.unmodifiableList(xprs));
 		} catch (IllegalArgumentException e)
 		{
-			throw new ParsingException("Error parsing Apply[Description = " + description + "]: Invalid args for function " + function, e);
+			throw new IllegalArgumentException("Error parsing Apply[Description = " + description + "]: Invalid args for function " + function, e);
 		}
 
 		// Are all input expressions static?

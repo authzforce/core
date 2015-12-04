@@ -52,9 +52,11 @@ public final class NotFunction extends FirstOrderFunction.SingleParameterTyped<B
 	public static final String NAME_NOT = XACML_NS_1_0 + "not";
 
 	/**
-	 * Creates a new <code>NotFunction</code> object.
+	 * Singleton instance of "not" logical function
 	 */
-	public NotFunction()
+	public static final NotFunction INSTANCE = new NotFunction();
+
+	private NotFunction()
 	{
 		super(NAME_NOT, DatatypeConstants.BOOLEAN.TYPE, false, Collections.singletonList(DatatypeConstants.BOOLEAN.TYPE));
 	}

@@ -1,9 +1,24 @@
+/**
+ * Copyright (C) 2012-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce CE.
+ *
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.ow2.authzforce.core.expression;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -91,16 +106,18 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 
 	private static AttributeValueType xdmToJaxbAttributeValue(String attrDatatype, XdmNode node) throws ParsingException
 	{
-		final AttributeValueType xacmlAttrVal = new AttributeValueType();
-		xacmlAttrVal.setDataType(attrDatatype);
+		final Map<QName, String> otherAttributes;
+		final List<Serializable> content;
+		final String nodeStrVal = node.getStringValue();
 		switch (node.getNodeKind())
 		{
 		case ATTRIBUTE:
-			xacmlAttrVal.getOtherAttributes().put(new QName(node.getNodeName().getNamespaceURI(), node.getNodeName().getLocalName()), node.getStringValue());
-			break;
-
+			/*
+			 * We only take the attribute value. (For XPath getting an attribute Value, the result XdmNode still holds the attribute QName.)
+			 */
 		case TEXT:
-			xacmlAttrVal.getContent().add(node.getStringValue());
+			otherAttributes = null;
+			content = Collections.<Serializable> singletonList(nodeStrVal);
 			break;
 
 		/*
@@ -143,7 +160,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 			throw new ParsingException("Cannot create AttributeValue from XML node (type not supported): " + getDescription(node));
 		}
 
-		return xacmlAttrVal;
+		return new AttributeValueType(content, attrDatatype, otherAttributes);
 	}
 
 	private final transient String missingAttributeMessage;
@@ -248,8 +265,8 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * @throws XPathExpressionException
 	 *             if the Path could not be compiled to an XPath expression (using <code>namespaceContextNode</code> if non-null)
 	 * @throws IllegalArgumentException
-	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is null; or ContextSelectorId is not null but {@code attrProvider}
-	 *             is null
+	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is null; or ContextSelectorId is not null but
+	 *             {@code attrProvider} is null
 	 */
 	public AttributeSelectorExpression(AttributeSelectorType attrSelectorElement, XPathCompiler xPathCompiler, AttributeProvider attrProvider,
 			DatatypeFactory<AV> attrFactory) throws XPathExpressionException, IllegalArgumentException
@@ -457,17 +474,15 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 							+ xpathEvalResultItem.getClass().getName(), StatusHelper.STATUS_SYNTAX_ERROR);
 				}
 
-				final XPathCompiler defXPathCompiler = context.getDefaultXPathCompiler();
 				final AttributeValue attrVal;
 				try
 				{
-					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), defXPathCompiler == null ? this.xpathCompiler
-							: defXPathCompiler);
+					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), this.xpathCompiler);
 				} catch (IllegalArgumentException e)
 				{
 					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + dataType + "' from result #"
-							+ xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category
-							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem,
+							+ xpathEvalResultItemIndex + " of evaluating XPath against XML node from Content of Attributes Category='" + category + "'"
+							+ (contextSelectorId == null ? "" : " selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem,
 							StatusHelper.STATUS_SYNTAX_ERROR, e);
 				}
 

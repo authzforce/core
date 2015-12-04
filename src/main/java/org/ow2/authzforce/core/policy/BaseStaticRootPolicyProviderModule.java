@@ -15,11 +15,15 @@ package org.ow2.authzforce.core.policy;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
-import org.ow2.authzforce.core.XACMLBindingUtils;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+
+import org.ow2.authzforce.core.XACMLParsers.NamespaceFilteringParser;
+import org.ow2.authzforce.core.XACMLParsers.XACMLParserFactory;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyProvider;
@@ -38,6 +42,9 @@ import com.sun.xacml.ParsingException;
  */
 public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule.Static
 {
+	private static final IllegalArgumentException ILLEGAL_XACML_PARSER_ARG_EXCEPTION = new IllegalArgumentException("Undefined XACML parser factory");
+	private static final IllegalArgumentException ILLEGAL_ROOT_POLICY_URL_ARG_EXCEPTION = new IllegalArgumentException("Undefined root policy URL");
+
 	/**
 	 * Module factory
 	 * 
@@ -52,7 +59,7 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 		}
 
 		@Override
-		public RootPolicyProviderModule getInstance(BaseStaticPolicyProvider conf, ExpressionFactory expressionFactory,
+		public RootPolicyProviderModule getInstance(BaseStaticPolicyProvider conf, XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory,
 				CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
 		{
 			final URL rootPolicyURL;
@@ -62,16 +69,11 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 				rootPolicyURL = ResourceUtils.getURL(conf.getPolicyLocation());
 			} catch (FileNotFoundException ioe)
 			{
-				throw new IllegalArgumentException("Error loading root policy (as Spring resource) from the following URL : " + conf.getPolicyLocation(), ioe);
+				throw new IllegalArgumentException("No root policy (as Spring resource) found at the following URL: " + conf.getPolicyLocation(), ioe);
 			}
 
-			if (rootPolicyURL == null)
-			{
-				throw new IllegalArgumentException("No root policy file found at the specified location: " + conf.getPolicyLocation());
-			}
-
-			return BaseStaticRootPolicyProviderModule.getInstance(rootPolicyURL, expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf,
-					maxPolicySetRefDepth);
+			return BaseStaticRootPolicyProviderModule.getInstance(rootPolicyURL, xacmlParserFactory, expressionFactory, combiningAlgRegistry,
+					jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
 		}
 	}
 
@@ -86,19 +88,21 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * 
 	 * @param jaxbPolicy
 	 *            root Policy (JAXB) to be parsed
+	 * @param namespacePrefixesByURI
+	 *            namespace prefix-URI mappings from the original XACML Policy (XML) document, to be used for namespace-aware XPath evaluation
 	 * @param combiningAlgRegistry
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
 	 */
-	public BaseStaticRootPolicyProviderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy jaxbPolicy, ExpressionFactory expressionFactory,
+	public BaseStaticRootPolicyProviderModule(Policy jaxbPolicy, Map<String, String> namespacePrefixesByURI, ExpressionFactory expressionFactory,
 			CombiningAlgRegistry combiningAlgRegistry)
 	{
-		super(expressionFactory, combiningAlgRegistry, null, 0);
+		super(null, null, expressionFactory, combiningAlgRegistry, 0);
 
 		try
 		{
-			rootPolicy = PolicyEvaluator.getInstance(jaxbPolicy, null, expressionFactory, combiningAlgRegistry);
+			rootPolicy = PolicyEvaluator.getInstance(jaxbPolicy, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry);
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing Policy: " + jaxbPolicy.getPolicyId(), e);
@@ -110,6 +114,8 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * 
 	 * @param jaxbPolicySet
 	 *            root PolicySet (JAXB) to be parsed
+	 * @param namespacePrefixesByURI
+	 *            namespace prefix-URI mappings from the original XACML PolicySet (XML) document, to be used for namespace-aware XPath evaluation
 	 * @param combiningAlgRegistry
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
@@ -120,15 +126,19 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * @param maxPolicySetRefDepth
 	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
 	 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
+	 * @param xacmlParserFactory
+	 *            XACML Parser factory; may be null if {@code jaxbRefPolicyProviderConf} as it is meant to be used by the RefPolicyProvider module
 	 */
-	public BaseStaticRootPolicyProviderModule(oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet jaxbPolicySet, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
+	public BaseStaticRootPolicyProviderModule(PolicySet jaxbPolicySet, Map<String, String> namespacePrefixesByURI, ExpressionFactory expressionFactory,
+			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth,
+			XACMLParserFactory xacmlParserFactory)
 	{
-		super(expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
+		super(jaxbRefPolicyProviderConf, xacmlParserFactory, expressionFactory, combiningAlgRegistry, maxPolicySetRefDepth);
 
 		try
 		{
-			rootPolicy = PolicySetEvaluator.getInstance(jaxbPolicySet, null, expressionFactory, combiningAlgRegistry, refPolicyProvider, null);
+			rootPolicy = PolicySetEvaluator.getInstance(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry,
+					refPolicyProvider, null);
 		} catch (ParsingException e)
 		{
 			throw new IllegalArgumentException("Error parsing PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
@@ -140,6 +150,8 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * 
 	 * @param rootPolicyURL
 	 *            location of root Policy(Set) (JAXB) to be parsed
+	 * @param xacmlParserFactory
+	 *            XACML Policy(Set) parser factory
 	 * @param combiningAlgRegistry
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
@@ -154,18 +166,23 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * @return instance of this class
 	 * 
 	 */
-	public static BaseStaticRootPolicyProviderModule getInstance(URL rootPolicyURL, ExpressionFactory expressionFactory,
+	public static BaseStaticRootPolicyProviderModule getInstance(URL rootPolicyURL, XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory,
 			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
 	{
 		if (rootPolicyURL == null)
 		{
-			throw new IllegalArgumentException("Undefined root policy URL");
+			throw ILLEGAL_ROOT_POLICY_URL_ARG_EXCEPTION;
 		}
 
-		final Unmarshaller unmarshaller;
+		if (xacmlParserFactory == null)
+		{
+			throw ILLEGAL_XACML_PARSER_ARG_EXCEPTION;
+		}
+
+		final NamespaceFilteringParser parser;
 		try
 		{
-			unmarshaller = XACMLBindingUtils.createXacml3Unmarshaller();
+			parser = xacmlParserFactory.getInstance();
 		} catch (JAXBException e)
 		{
 			throw new IllegalArgumentException("Failed to create JAXB unmarshaller for XML Policy(Set)", e);
@@ -174,20 +191,20 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 		final Object jaxbPolicyOrPolicySetObj;
 		try
 		{
-			jaxbPolicyOrPolicySetObj = unmarshaller.unmarshal(rootPolicyURL);
+			jaxbPolicyOrPolicySetObj = parser.parse(rootPolicyURL);
 		} catch (JAXBException e)
 		{
 			throw new IllegalArgumentException("Failed to unmarshall Policy(Set) XML document from policy location: " + rootPolicyURL, e);
 		}
 
-		if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy)
+		if (jaxbPolicyOrPolicySetObj instanceof Policy)
 		{
-			return new BaseStaticRootPolicyProviderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy) jaxbPolicyOrPolicySetObj, expressionFactory,
+			return new BaseStaticRootPolicyProviderModule((Policy) jaxbPolicyOrPolicySetObj, parser.getNamespacePrefixUriMap(), expressionFactory,
 					combiningAlgRegistry);
-		} else if (jaxbPolicyOrPolicySetObj instanceof oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet)
+		} else if (jaxbPolicyOrPolicySetObj instanceof PolicySet)
 		{
-			return new BaseStaticRootPolicyProviderModule((oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet) jaxbPolicyOrPolicySetObj, expressionFactory,
-					combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
+			return new BaseStaticRootPolicyProviderModule((PolicySet) jaxbPolicyOrPolicySetObj, parser.getNamespacePrefixUriMap(), expressionFactory,
+					combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth, xacmlParserFactory);
 		} else
 		{
 			throw new IllegalArgumentException("Unexpected element found as root of the policy document: "

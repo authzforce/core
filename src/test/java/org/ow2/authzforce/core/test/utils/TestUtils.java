@@ -25,8 +25,11 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -35,52 +38,35 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
-import org.ow2.authzforce.core.DefaultRequestFilter;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.IndividualDecisionRequest;
-import org.ow2.authzforce.core.IndividualDecisionRequestContext;
+import org.ow2.authzforce.core.PDPImpl;
 import org.ow2.authzforce.core.PdpConfigurationParser;
-import org.ow2.authzforce.core.RequestFilter;
 import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
-import org.ow2.authzforce.core.func.StandardFunctionRegistry;
-import org.ow2.authzforce.core.value.StandardDatatypeFactoryRegistry;
+import org.ow2.authzforce.core.XACMLParsers.NamespaceFilteringParser;
 import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyProvider;
 import org.ow2.authzforce.core.xmlns.pdp.BaseStaticRefPolicyProvider;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
+import org.ow2.authzforce.core.xmlns.test.TestAttributeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import com.sun.xacml.PDP;
-
 public class TestUtils
 {
+
 	/**
-	 * XACML standard Expression factory/parser
+	 * JAXB context for (un)marshalling TestAttributeProvider configuration
 	 */
-	public static final ExpressionFactory STD_EXPRESSION_FACTORY;
+	public static final JAXBContext TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT;
 	static
 	{
 		try
 		{
-			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.INSTANCE, StandardFunctionRegistry.INSTANCE, null, 0, false);
-		} catch (IllegalArgumentException | IOException e)
+			TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT = JAXBContext.newInstance(TestAttributeProvider.class);
+		} catch (JAXBException e)
 		{
-			throw new RuntimeException(e);
+			throw new RuntimeException("Error instantiating JAXB context for unmarshalling TestAttributeProvider configurations", e);
 		}
 	}
-
-	/**
-	 * Default (basic) request filter, supporting only XACML core mandatory features of Individual Decision requests (no support for AttributeSelectors)
-	 */
-	private static final RequestFilter BASIC_REQUEST_FILTER = new DefaultRequestFilter(StandardDatatypeFactoryRegistry.INSTANCE, false, null, null);
-
-	public static final String POLICY_DIRECTORY = "policies";
-	public static final String REQUEST_DIRECTORY = "requests";
-	public static final String RESPONSE_DIRECTORY = "responses";
 
 	/**
 	 * the logger we'll use for all messages
@@ -92,13 +78,15 @@ public class TestUtils
 	 * 
 	 * @param requestFileLocation
 	 *            file path (with Spring-supported URL prefixes: 'classpath:', etc.) path to the request file, relative to classpath
+	 * @param unmarshaller
+	 *            XACML unmarshaller
 	 * @return the XML/JAXB Request or null if any error
 	 * @throws JAXBException
 	 *             error reading XACML 3.0 Request from the file at {@code requestFileLocation}
 	 * @throws FileNotFoundException
 	 *             no file found at {@code requestFileLocation}
 	 */
-	public static Request createRequest(String requestFileLocation) throws JAXBException, FileNotFoundException
+	public static Request createRequest(String requestFileLocation, NamespaceFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
 	{
 		/**
 		 * Get absolute path/URL to request file in a portable way, using current class loader. As per javadoc, the name of the resource passed to
@@ -113,8 +101,7 @@ public class TestUtils
 		}
 
 		LOGGER.debug("Request file to read: {}", requestFileURL);
-		Unmarshaller u = XACMLBindingUtils.createXacml3Unmarshaller();
-		Request request = (Request) u.unmarshal(requestFileURL);
+		Request request = (Request) unmarshaller.parse(requestFileURL);
 		return request;
 	}
 
@@ -123,13 +110,15 @@ public class TestUtils
 	 * 
 	 * @param responseFileLocation
 	 *            path to the response file (with Spring-supported URL prefixes: 'classpath:', etc.)
+	 * @param unmarshaller
+	 *            XACML unmarshaller
 	 * @return the XML/JAXB Response or null if any error
 	 * @throws JAXBException
 	 *             error reading XACML 3.0 Request from the file at {@code responseFileLocation}
 	 * @throws FileNotFoundException
 	 *             no file found at {@code responseFileLocation}
 	 */
-	public static Response createResponse(String responseFileLocation) throws JAXBException, FileNotFoundException
+	public static Response createResponse(String responseFileLocation, NamespaceFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
 	{
 		/**
 		 * Get absolute path/URL to response file in a portable way, using current class loader. As per javadoc, the name of the resource passed to
@@ -138,9 +127,8 @@ public class TestUtils
 		 * separator by this method), and file will not be found as a result.
 		 */
 		URL responseFileURL = ResourceUtils.getURL(responseFileLocation);
-		LOGGER.debug("Response file to read: {}", responseFileURL);
-		Unmarshaller u = XACMLBindingUtils.createXacml3Unmarshaller();
-		Response response = (Response) u.unmarshal(responseFileURL);
+		LOGGER.debug("Response file to read: {}", responseFileLocation);
+		Response response = (Response) unmarshaller.parse(responseFileURL);
 		return response;
 	}
 
@@ -167,8 +155,9 @@ public class TestUtils
 	 * @param response
 	 *            input XACML Response
 	 */
-	private static void normalizeForComparison(Response response)
+	private static Response normalizeForComparison(Response response)
 	{
+		final List<Result> results = new ArrayList<>();
 		/*
 		 * We iterate over all results, because for each results, we don't compare everything. In particular, we choose to ignore the Status. Indeed, a PDP
 		 * implementation might return a perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
@@ -177,8 +166,11 @@ public class TestUtils
 		{
 			// We ignore the status, so set it to null in both expected and tested response to avoid
 			// Status comparison
-			result.setStatus(null);
+			results.add(new Result(result.getDecision(), null, result.getObligations(), result.getAssociatedAdvice(), result.getAttributes(), result
+					.getPolicyIdentifierList()));
 		}
+
+		return new Response(results);
 	}
 
 	/**
@@ -190,17 +182,26 @@ public class TestUtils
 	 *            (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy at {@code policyLocation} via
 	 *            Policy(Set)IdReference; required only if there is any Policy(Set)IdReference in {@code rootPolicyLocation} to resolve. If file not found,
 	 *            support for Policy(Set)IdReference is disabled, i.e. any presence of such reference is considered invalid.
+	 * @param enableXPath
+	 *            Enable support for AttributeSelectors and xpathExpression datatype. Reminder: AttributeSelector and xpathExpression datatype support are
+	 *            marked as optional in XACML 3.0 core specification, so set this to false if you are testing mandatory features only.
+	 * @param attributeProviderConfLocation
+	 *            (optional) {@link TestAttributeProvider} XML configuration location
+	 * @param requestFilterId
+	 *            RequestFilter ID
 	 * @return PDP instance
 	 * @throws IllegalArgumentException
 	 *             invalid XACML policy located at {@code policyLocation}
 	 * @throws IOException
 	 *             if error closing some resources used by the PDP after {@link IllegalArgumentException} occurred
 	 * @throws URISyntaxException
+	 * @throws JAXBException
 	 */
-	public static PDP getPDPNewInstance(String rootPolicyLocation, String refPoliciesDirectoryLocation) throws IllegalArgumentException, IOException,
-			URISyntaxException
+	public static PDPImpl getPDPNewInstance(String rootPolicyLocation, String refPoliciesDirectoryLocation, boolean enableXPath,
+			String attributeProviderConfLocation, String requestFilterId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
 		Pdp jaxbPDP = new Pdp();
+		jaxbPDP.setEnableXPath(enableXPath);
 
 		/**
 		 * Get absolute path/URL to PolicySet file and, if any, the directory of referenceable sub-PolicySets, in a portable way, using current class loader. As
@@ -216,7 +217,7 @@ public class TestUtils
 				refPoliciesDirectoryURL = ResourceUtils.getURL(refPoliciesDirectoryLocation);
 			} catch (FileNotFoundException e)
 			{
-				LOGGER.warn("No refPolicies directory: {} -> Policy(Set)IdReference(s) not supported for this test.", refPoliciesDirectoryLocation);
+				LOGGER.info("No refPolicies directory: {} -> Policy(Set)IdReference(s) not supported for this test.", refPoliciesDirectoryLocation);
 			}
 
 			if (refPoliciesDirectoryURL != null)
@@ -243,35 +244,41 @@ public class TestUtils
 				// set max PolicySet reference depth to max possible depth automatically
 				if (!jaxbRefPolicyProviderPolicyLocations.isEmpty())
 				{
-					jaxbPDP.setMaxPolicySetRefDepth(jaxbRefPolicyProviderPolicyLocations.size());
+					jaxbPDP.setMaxPolicyRefDepth(jaxbRefPolicyProviderPolicyLocations.size());
 					jaxbPDP.setRefPolicyProvider(jaxbRefPolicyProvider);
 				}
 			}
 		}
 
-		URL policyFileURL = ResourceUtils.getURL(rootPolicyLocation);
-		if (policyFileURL == null)
-		{
-			throw new FileNotFoundException("No such file: " + rootPolicyLocation);
-		}
-
+		final URL rootPolicyFileURL = ResourceUtils.getURL(rootPolicyLocation);
 		BaseStaticPolicyProvider jaxbRootPolicyProvider = new BaseStaticPolicyProvider();
 		jaxbRootPolicyProvider.setId("rootPolicyProvider");
-		jaxbRootPolicyProvider.setPolicyLocation(policyFileURL.toString());
+		jaxbRootPolicyProvider.setPolicyLocation(rootPolicyFileURL.toString());
 		jaxbPDP.setRootPolicyProvider(jaxbRootPolicyProvider);
 
-		final PDP pdp = PdpConfigurationParser.getPDP(jaxbPDP);
-		return pdp;
-	}
+		// test attribute provider
+		if (attributeProviderConfLocation != null)
+		{
+			try
+			{
+				URL testAttrProviderURL = ResourceUtils.getURL(attributeProviderConfLocation);
+				final Unmarshaller unmarshaller = TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT.createUnmarshaller();
+				JAXBElement<TestAttributeProvider> testAttributeProviderElt = (JAXBElement<TestAttributeProvider>) unmarshaller.unmarshal(testAttrProviderURL);
+				jaxbPDP.getAttributeProviders().add(testAttributeProviderElt.getValue());
+			} catch (FileNotFoundException e)
+			{
+				LOGGER.info("No test attribute provider configuration found at: {} -> TestAttributeProvider not supported for this test.",
+						attributeProviderConfLocation);
+			}
+		}
 
-	public static EvaluationContext createContext(Request request) throws IndeterminateEvaluationException
-	{
-		/*
-		 * The request filter used here does not support, therefore filters out AttributeSelectors, so make sure there's no AttributeSelector in the
-		 * Target/Match elements of the PolicySet.
-		 */
-		IndividualDecisionRequest individualDecisionReq = BASIC_REQUEST_FILTER.filter(request).get(0);
-		return new IndividualDecisionRequestContext(individualDecisionReq);
+		// request filter
+		if (requestFilterId != null)
+		{
+			jaxbPDP.setRequestFilter(requestFilterId);
+		}
+
+		return PdpConfigurationParser.getPDP(jaxbPDP);
 	}
 
 	/**
@@ -287,9 +294,24 @@ public class TestUtils
 	 */
 	public static void assertNormalizedEquals(String testId, Response expectedResponse, Response actualResponseFromPDP) throws JAXBException
 	{
+		if (testId == null)
+		{
+			throw new IllegalArgumentException("Undefined test ID");
+		}
+
+		if (expectedResponse == null)
+		{
+			throw new IllegalArgumentException("Undefined expected response for response equality check");
+		}
+
+		if (actualResponseFromPDP == null)
+		{
+			throw new IllegalArgumentException("Undefined actual response  for response equality check");
+		}
+
 		// normalize responses for comparison
-		TestUtils.normalizeForComparison(expectedResponse);
-		TestUtils.normalizeForComparison(actualResponseFromPDP);
-		assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", expectedResponse, actualResponseFromPDP);
+		final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse);
+		final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP);
+		assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", normalizedExpectedResponse, normalizedActualResponse);
 	}
 }

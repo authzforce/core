@@ -1,9 +1,48 @@
-OASIS XACML Committee's 2.0 version of conformance tests upgraded to conform to the XACML 3.0 standard. Most of them have been submitted to the OASIS XACML Committee in April 2014 by AT&T.
-The original files are available on the xacml-comment mailing list:
+<!-- Markdown syntax -->
+This folder contains OASIS XACML Committee's 2.0 version of conformance tests upgraded to conform to the XACML 3.0 standard, including new tests for new features introducted in XACML 3.0. Most of them have been submitted to the OASIS XACML Committee in April 2014 by AT&T.
+The original files are available on the xacml-comment mailing list: 
 https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html
-and on AT&T's Github repository (MIT License):
+and on AT&T's Github repository (MIT License): 
 https://github.com/att/XACML/wiki/XACML-TEST-Project-Information
 
-However, the files in this directory differ inasmuch as we have fixed some issues with some of the AT&T files that are not compliant with the XACML 3.0 XML schema, as of writing (26 September 2015). For instance, IIIA002Response.xml (and others) contains a 'FulfillOn' attribute on the Obligation elements, which used to be valid for XACML 2.0 but no longer for XACML 3.0.
+For a description of the tests, see file `ConformanceTests.html` which is the original HTML description published on the OASIS xacml-comments mailing list.
 
-For a description of the tests, see file ``ConformanceTests.html``.
+**WARNING**: There are several issues with these original conformance tests (as of 26 September 2015) and changes done to adapt to our PDP implementation:
+
+1. For all tests testing the validation of XACML policy syntax, our PDP implementation is expected to reject the policy at initialization time, before receiving any Request. For these tests, the original Request.xml and Response.xml have been renamed to Request.xml.ignore and Response.xml.ignore to indicate to our test framework that an invalid policy syntax is expected. 
+1. For tests testing the validation of XACML Request syntax, our PDP implementation is expected to reject the request before evaluation. For these tests, the original Policy.xml and Response.xml have been renamed to Policy.xml.ignore and Response.xml.ignore to indicate to our test framework that an invalid Request syntax is expected.
+1. Invalid schemaLocation in many XXXXPolicy.xml have xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os access_control-xacml-2.0-policy-schema-os.xsd".
+1. IIA002Special.txt missing. We put it back from original XACML 2.0 conformance tests. We also consider this test to be optional because it is not mandatory in the spec that the PDP must be able to retrieve specific attribute not provided in the request. We consider it an optional feature, therefore moved to 'optional' subfolder.
+1. IIA006Policy.xml uses SubjectCategory attribute, which is not valid in XACML 3.0 schema (errata in section 8). We fixed it here (replaced with Category).
+1. IIA016, IIA018, IIA020 tests are using fixed value of standard current-time attribute in the Request. However, XACML 3.0 spec says: "In practice it is the time at which the request context was created." We consider the request context is created when the ContextHandler handles the request, so it is not the same time (but at a later time). And our implementation overrides the value of current-time (if Issuer undefined), no matter what. Therefore, for this test to work, we specified an issuer ("pep") to prevent override by our context handler.
+1. IIA022 and IIA023 Request.xml use wrong attributeId "urn:oasis:names:tc:xacml:1.0:subject:subject-rfc822Name" on "http://www.w3.org/2001/XMLSchema#base64Binary" value: c3VyZS4=. Fixed here by replacing AttributeId with urn:oasis:names:tc:xacml:1.0:subject:subject-base64Binary.
+1. IIA022 and IIA023 Request.xml use xpathExpression datatype which is optional feature, therefore in the wrong section. Should be renamed IIA300. So we replaced with a copy without xpathExpressions (renamed `IIA023_FIXED`) and moved the original test files to `optional` directory.
+1. IIA022Request.xml missing RequestDefaults although it has xpathExpressions, so fixed in the version located in `optional` directory
+1. IIA023Request.xml uses RequestDefaults element which is optional feature, therefore should be moved to Optional testset. We fixed it by commenting out RequestDefaults for the mandatory tests, and moving the original version to 'optional' folder.
+1. IIA023Request.xml using timezone -14:30 in AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dateTime" and "urn:oasis:names:tc:xacml:1.0:environment:current-time" with datatype "http://www.w3.org/2001/XMLSchema#dateTime" and "http://www.w3.org/2001/XMLSchema#time" respectively. This is not valid per XML schema dateTime and time definitions. We fixed it here replacing them with timezone -14:00.
+1. IIA023Request.xml contains c\_clown@NOSE\_MEDICO.COM  in one of the urn:oasis:names:tc:xacml:1.0:subject:subject-rfc822Name attributes, which is not valid (underscore is illegal in Domain name). Fixed here by replacing with "c\_clown@NOSE.MEDICO.COM".
+1. IIB010Policy.xml and IIB011Policy.xml mention SubjectCategory in Description, which is not valid in XACML 3.0 schema (errata in section 8)
+1. IID321-329 missing.
+1. IID334-339 missing.
+1. IIE tests concern Policy(Set)IdReference, therefore require configuration of the referenced policies in a separate repository. In the original conformance tests provided by AT&T, this is done in the ATT-specific way with a IIEXXXRepository.properties file. We use a directory named 'IIEXXXRepository' containing all the referenced policies instead. For more advanced tests on Policy references, see the 'others' directory.
+1. IIF300Policy.xml is using wrong XPath version URI: "http://www.w3.org/TR/1999/Rec-xpath-19991116". Fixed: http://www.w3.org/TR/1999/REC-xpath-19991116. And test exclusively on xpathExpression (optional), so moved to 'optional' folder.
+1. IIF301Policy.xml uses xpathExpression datatype which is optional feature, therefore in the wrong section. So we replaced with a copy without xpathExpressions in directory (renamed `IIF301_FIXED_NO_XPATH`) and moved the original to `optional` directory. Also it is using invalid PolicyDefaults/XPathVersion: "http://www.w3.org/TR/1999/Rec-xpath-19991116". Fixed: http://www.w3.org/TR/1999/REC-xpath-19991116
+1. IIF310 uses xpathExpression datatype which is optional feature, therefore in the wrong section. So we replaced with a copy without xpathExpressions in directory (renamed `IIF310_FIXED_NO_XPATH`) and moved the original to `optional` directory. Also it is using invalid PolicyDefaults/XPathVersion: "http://www.w3.org/TR/1999/Rec-xpath-19991116". Fixed: http://www.w3.org/TR/1999/REC-xpath-19991116
+1. IIIA: The tests on Obligations are wrongly part of the Optional section (III). Indeed, they are now mandatory in XACML 3.0 whereas they were not in XACML 2.0. This is why we added a subdirectory "mandatory" in the conformance tests, where there are the "III" tests on Obligations; except III.A.30 which uses xpathExpressions. As xpathExpression datatype is optional feature, we moved it to a subdirectory "optional". Note that it should be numbered above 300 as it is XACML 3.0 only.
+1. IIIA002Response.xml, IIIA005Response.xml, IIIA006Response.xml, IIIA009Response.xml, IIIA010Response.xml,IIIA013Response.xml,IIIA014Response.xml,IIIA017Response.xml,IIIA018Response.xml,IIIA021Response.xml,IIIA022Response.xml,IIIA025Response.xml,IIIA026Response.xml are not schema-valid: use of invalid FulfillOn attribute on Obligation
+1. IIIA029 is missing although IIIA028 and IIA030 are there.
+1. IIIA030Policy.xml and IIIA330Policy.xml use xpathExpression but no PolicyDefaults XPathVersion specified, whereas it is done for others, e.g. IIF300Policy.xml. We fixed it here by adding the same PolicyDefaults element as in IIF300Policy.xml. Besides, IIIA330Policy.xml uses xpathExpression with md prefix but md prefix-namespace mapping undefined, whereas it is done for others, e.g. IIF300Policy.xml so considered not clearly schema compliant. We fixed it here by adding '... xmlns:md="http://www.medico.com/schemas/record" '.
+1. III.B tests missing.
+1. IIIC*Response.xml are not XACML 3.0 schema-compliant: ResourceId attribute not allowed on Result.
+1. IIIE302Response.xml have the subject and resource Attributes elements in reverse order of the Request, whereas our PDP implementation returns them in same order as in the Request. FIXED by putting back the Attributes in the same order.
+1. IIIF001 is using invalid PolicyDefaults/XPathVersion: "http://www.w3.org/TR/1999/Rec-xpath-19991116". Fixed: http://www.w3.org/TR/1999/REC-xpath-19991116
+1. IIIG001 is using invalid PolicyDefaults/XPathVersion: "http://www.w3.org/TR/1999/Rec-xpath-19991116". Fixed: http://www.w3.org/TR/1999/REC-xpath-19991116
+1. IIIG302 does not exist, but IIIG300 does. Fix: re-numbered 301 to 302, and 300 to 301.
+
+**WARNING**: There are conformance tests which are intentionally not supported (in `unsupported` directory):
+
+1. IIA010, IIA012, IIA024: the test Requests contain attributes with same AttributeId in same Category but different Datatypes. We don't support different Datatypes for the same Attribute meta-data (Category/AttributeId), i.e. the PDP replies with INDETERMINATE, as we consider that a bad practice.
+1. IID029, IID030: for PDP using multiple root/initial policies. Does not apply to our implementation.
+1. III.C: Except for 001 (original is not XACML schema-compliant, because of ResourceId attribute on Result, so we fixed it by removing ResourceId), the tests are using Hierarchical Resource Profile which is not supported (except Immediate scope).
+1. IIIE - Multiple Decision Profile: only IIIE301 is supported, i.e. scheme 2.3 (repetition of Attributes elements) is supported. Other schemes of Multiple Decision Profile not supported (MultiRequests, use of multiple:content-selector attribute in Attributes), so IIIE302 and IIIE303 not supported.
+1. IIIG: IIIG001 - xpath-node-count is the only XPath function supported, so IIIG002-6 not supported.

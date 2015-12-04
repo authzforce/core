@@ -18,8 +18,10 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import org.ow2.authzforce.core.test.conformance.ConformanceV3FromV2;
+import org.ow2.authzforce.core.test.conformance.ConformanceV3FromV2Mandatory;
+import org.ow2.authzforce.core.test.conformance.ConformanceV3FromV2Optional;
 import org.ow2.authzforce.core.test.conformance.ConformanceV3Others;
+import org.ow2.authzforce.core.test.custom.CustomPdpTest;
 import org.ow2.authzforce.core.test.custom.TestApplyMarshalling;
 import org.ow2.authzforce.core.test.func.BagFunctionsTest;
 import org.ow2.authzforce.core.test.func.DateTimeArithmeticFunctionsTest;
@@ -48,8 +50,8 @@ import org.slf4j.LoggerFactory;
 @SuiteClasses(value = { AnyURIAttributeTest.class, EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class,
 		NumericConversionFunctionsTest.class, LogicalFunctionsTest.class, NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class,
 		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class, SetFunctionsTest.class, HigherOrderFunctionsTest.class,
-		RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, ConformanceV3FromV2.class, ConformanceV3Others.class, TestApplyMarshalling.class,
-		NonRegression.class })
+		RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, ConformanceV3FromV2Mandatory.class, ConformanceV3FromV2Optional.class,
+		ConformanceV3Others.class, CustomPdpTest.class, TestApplyMarshalling.class, NonRegression.class })
 public class MainTest
 {
 	/**

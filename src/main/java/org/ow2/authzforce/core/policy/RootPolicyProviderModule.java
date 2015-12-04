@@ -20,6 +20,7 @@ import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.JaxbBoundPdpExtension;
 import org.ow2.authzforce.core.PdpExtensionLoader;
+import org.ow2.authzforce.core.XACMLParsers.XACMLParserFactory;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
@@ -53,20 +54,14 @@ public abstract class RootPolicyProviderModule implements Closeable
 	 * @param maxPolicySetRefDepth
 	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
 	 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
+	 * @param xacmlParserFactory
+	 *            XACML Parser Factory
+	 * @throws IllegalArgumentException
+	 *             if {@code jaxbRefPolicyProviderConf != null && (expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null)}
 	 */
-	protected RootPolicyProviderModule(ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
-			AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
+	protected RootPolicyProviderModule(AbstractPolicyProvider jaxbRefPolicyProviderConf, XACMLParserFactory xacmlParserFactory,
+			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, int maxPolicySetRefDepth) throws IllegalArgumentException
 	{
-		if (expressionFactory == null)
-		{
-			throw new IllegalArgumentException("Undefined Expression factory");
-		}
-
-		if (combiningAlgRegistry == null)
-		{
-			throw new IllegalArgumentException("Undefined CombiningAlgorithm registry");
-		}
-
 		// create ref-policy Provider
 		if (jaxbRefPolicyProviderConf == null)
 		{
@@ -75,8 +70,8 @@ public abstract class RootPolicyProviderModule implements Closeable
 		{
 			final RefPolicyProviderModule.Factory<AbstractPolicyProvider> refPolicyProviderModFactory = PdpExtensionLoader.getJaxbBoundExtension(
 					RefPolicyProviderModule.Factory.class, jaxbRefPolicyProviderConf.getClass());
-			this.refPolicyProvider = new BaseRefPolicyProvider(jaxbRefPolicyProviderConf, refPolicyProviderModFactory, expressionFactory, combiningAlgRegistry,
-					maxPolicySetRefDepth);
+			this.refPolicyProvider = new BaseRefPolicyProvider(jaxbRefPolicyProviderConf, refPolicyProviderModFactory, xacmlParserFactory, expressionFactory,
+					combiningAlgRegistry, maxPolicySetRefDepth);
 		}
 	}
 
@@ -94,6 +89,8 @@ public abstract class RootPolicyProviderModule implements Closeable
 		 * 
 		 * @param conf
 		 *            module configuration
+		 * @param xacmlParserFactory
+		 *            XACML parser factory for parsing any XACML Policy(Set)
 		 * @param expressionFactory
 		 *            Expression factory for parsing Expressions in the root policy(set)
 		 * @param combiningAlgRegistry
@@ -103,12 +100,13 @@ public abstract class RootPolicyProviderModule implements Closeable
 		 *            PolicyReferences is disabled or this RootPolicyProvider module already supports these.
 		 * @param maxPolicySetRefDepth
 		 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
-		 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
+		 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is
+		 *            ignored.
 		 * 
 		 * @return the module instance
 		 */
-		public abstract RootPolicyProviderModule getInstance(CONF_T conf, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
-				AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth);
+		public abstract RootPolicyProviderModule getInstance(CONF_T conf, XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory,
+				CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth);
 	}
 
 	/**
@@ -141,8 +139,8 @@ public abstract class RootPolicyProviderModule implements Closeable
 	}
 
 	/**
-	 * Root policy Provider module that resolves statically the root policy when it is initialized, i.e. it is context-independent. Concretely, this means for any
-	 * given context:
+	 * Root policy Provider module that resolves statically the root policy when it is initialized, i.e. it is context-independent. Concretely, this means for
+	 * any given context:
 	 * 
 	 * <pre>
 	 * this.findPolicy(context) == this.findPolicy(null)
@@ -150,10 +148,10 @@ public abstract class RootPolicyProviderModule implements Closeable
 	 */
 	public static abstract class Static extends RootPolicyProviderModule
 	{
-		protected Static(ExpressionFactory defaultExpressionFactory, CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf,
-				int maxPolicySetRefDepth)
+		protected Static(AbstractPolicyProvider jaxbRefPolicyProviderConf, XACMLParserFactory xacmlParserFactory, ExpressionFactory defaultExpressionFactory,
+				CombiningAlgRegistry combiningAlgRegistry, int maxPolicySetRefDepth)
 		{
-			super(defaultExpressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
+			super(jaxbRefPolicyProviderConf, xacmlParserFactory, defaultExpressionFactory, combiningAlgRegistry, maxPolicySetRefDepth);
 		}
 
 		/**

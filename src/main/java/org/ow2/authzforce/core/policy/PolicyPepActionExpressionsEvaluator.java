@@ -20,7 +20,6 @@ import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
@@ -31,6 +30,7 @@ import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.PepActionExpression;
 import org.ow2.authzforce.core.PepActionExpressions;
 import org.ow2.authzforce.core.PepActions;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
 
 import com.sun.xacml.ParsingException;
@@ -158,19 +158,19 @@ public class PolicyPepActionExpressionsEvaluator
 	/**
 	 * Evaluates the PEP action (obligations/Advice) expressions for a given decision and evaluation context
 	 * 
-	 * @param decision
-	 *            PERMIT/DENY decision to select the Obligation/Advice expressions to apply, based on FulfillOn/AppliesTo, typically resuling from evaluation of
-	 *            the parent Policy(Set)/Rule
+	 * @param combiningAlgResult
+	 *            Policy(Set) combining algorithm evaluation result; this result's decision is used to select the Obligation/Advice expressions to apply, i.e.
+	 *            matching on FulfillOn/AppliesTo. This result's PEP actions are also merged with the PEP actions computed in this method.
 	 * @param context
 	 *            evaluation context
 	 * @return PEP actions (obligations/advices) or null if none
 	 * @throws IndeterminateEvaluationException
 	 *             error evaluating one of ObligationExpression/AdviceExpressions' AttributeAssignmentExpressions' expressions
 	 */
-	public PepActions evaluate(DecisionType decision, EvaluationContext context) throws IndeterminateEvaluationException
+	public PepActions evaluate(PolicyDecisionResult combiningAlgResult, EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final PepActionExpressions.EffectSpecific matchingActionExpressions;
-		switch (decision)
+		switch (combiningAlgResult.getDecision())
 		{
 		case DENY:
 			matchingActionExpressions = this.denyActionExpressions;
@@ -183,7 +183,8 @@ public class PolicyPepActionExpressionsEvaluator
 			break;
 		}
 
-		return matchingActionExpressions == null ? null : PepActionExpressions.Helper.evaluate(matchingActionExpressions, context);
+		return matchingActionExpressions == null ? null : PepActionExpressions.Helper.evaluate(matchingActionExpressions, context,
+				combiningAlgResult.getPepActions());
 	}
 
 }

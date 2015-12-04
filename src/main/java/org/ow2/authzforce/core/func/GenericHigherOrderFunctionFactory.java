@@ -23,7 +23,7 @@ import org.ow2.authzforce.core.value.DatatypeFactory;
  * type.
  * 
  */
-public interface GenericHigherOrderFunctionFactory extends PdpExtension
+public abstract class GenericHigherOrderFunctionFactory implements PdpExtension
 {
 	/**
 	 * Returns instance of the Higher-order function
@@ -32,5 +32,13 @@ public interface GenericHigherOrderFunctionFactory extends PdpExtension
 	 *            sub-function's return datatype factory
 	 * @return higher-order function instance
 	 */
-	<SUB_RETURN_T extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN_T> getInstance(DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory);
+	public abstract <SUB_RETURN_T extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN_T> getInstance(
+			DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory);
+
+	@Override
+	public String toString()
+	{
+		return this.getId();
+	}
+
 }

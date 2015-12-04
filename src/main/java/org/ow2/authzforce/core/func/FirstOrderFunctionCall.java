@@ -188,23 +188,20 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 		return evalBagArgs(args, context, argReturnType, results);
 	}
 
-	private static final void checkArgType(Datatype<?> argType, int argIndex, Datatype<?> expectedType, String functionDescription)
-			throws IllegalArgumentException
+	private static final void checkArgType(Datatype<?> argType, int argIndex, Datatype<?> expectedType, String funcId) throws IllegalArgumentException
 	{
 		if (!argType.equals(expectedType))
 		{
-			throw new IllegalArgumentException("Function " + functionDescription + ": type of arg #" + argIndex + " not valid: " + argType + ". Required: "
-					+ expectedType + ".");
+			throw new IllegalArgumentException("Function " + funcId + ": type of arg #" + argIndex + " not valid: " + argType + ". Required: " + expectedType
+					+ ".");
 		}
 	}
 
-	private static final void checkArgType(AttributeValue arg, int argIndex, Datatype<?> expectedType, String functionDescription)
-			throws IllegalArgumentException
+	private static final void checkArgType(AttributeValue arg, int argIndex, Datatype<?> expectedType, String funcId) throws IllegalArgumentException
 	{
 		if (!arg.getClass().equals(expectedType.getValueClass()))
 		{
-			throw new IllegalArgumentException("Function " + functionDescription + ": type of arg #" + argIndex + " does not match required type: "
-					+ expectedType + ".");
+			throw new IllegalArgumentException("Function " + funcId + ": type of arg #" + argIndex + " does not match required type: " + expectedType + ".");
 		}
 	}
 
@@ -246,7 +243,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 		}
 	}
 
-	private final String funcDescription;
+	private final String funcId;
 	private final List<? extends Datatype<?>> expectedParamTypesForRemainingArgs;
 	private final RequestTimeArgCountChecker requestTimeArgCountChecker;
 	private final Datatype<RETURN> returnType;
@@ -271,12 +268,12 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 	protected FirstOrderFunctionCall(FunctionSignature<RETURN> functionSig, List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException
 	{
-		this.funcDescription = functionSig.toString();
+		this.funcId = functionSig.name;
 		final List<? extends Datatype<?>> paramTypes = functionSig.getParameterTypes();
 		final int arity = paramTypes.size();
 		if (arity < 1)
 		{
-			throw new IllegalArgumentException("Invalid function: " + funcDescription + ": does not have any parameter. Required arity: >= 1.");
+			throw new IllegalArgumentException("Invalid function: " + funcId + ": does not have any parameter. Required arity: >= 1.");
 		}
 
 		// check number of arguments
@@ -291,7 +288,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 			final int minArgCount = arity - 1;
 			if (totalActualArgCount < minArgCount)
 			{
-				throw new IllegalArgumentException("Invalid number of args (" + totalActualArgCount + ") passed to varargs function: " + funcDescription
+				throw new IllegalArgumentException("Invalid number of args (" + totalActualArgCount + ") passed to varargs function: " + funcId
 						+ ". Required: >= " + minArgCount);
 			}
 
@@ -303,18 +300,18 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 			// if(initialArgCount >= minArgCount), there is already enough args, so we don't care how many request-time/remaining args there will be -> use
 			// null-checker that does nothing
 			this.requestTimeArgCountChecker = initialArgCount >= minArgCount ? NULL_REQUEST_TIME_ARG_COUNT_CHECKER : new DefaultRequestTimeArgCountChecker(
-					funcDescription, minArgCount - initialArgCount);
+					funcId, minArgCount - initialArgCount);
 
 		} else
 		{
 			if (totalActualArgCount != arity)
 			{
-				throw new IllegalArgumentException("Invalid number (" + totalActualArgCount + ") to function: " + funcDescription + ". Required: " + arity);
+				throw new IllegalArgumentException("Invalid number (" + totalActualArgCount + ") to function: " + funcId + ". Required: " + arity);
 			}
 
 			// We will validate remainingArgs only, so we skip all the initial arguments, and therefore check the list starting at index = initialArgCount
 			this.expectedParamTypesForRemainingArgs = paramTypes.subList(initialArgCount, arity);
-			this.requestTimeArgCountChecker = new DefaultRequestTimeArgCountChecker(funcDescription, arity - initialArgCount);
+			this.requestTimeArgCountChecker = new DefaultRequestTimeArgCountChecker(funcId, arity - initialArgCount);
 		}
 
 		// check types of arguments
@@ -329,7 +326,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 				expectedType = expectedTypesIterator.next();
 			}
 
-			checkArgType(argExpression.getReturnType(), paramIndex, expectedType, funcDescription);
+			checkArgType(argExpression.getReturnType(), paramIndex, expectedType, funcId);
 			paramIndex++;
 		}
 
@@ -338,7 +335,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 			if (remainingArgType.getTypeParameter() != null)
 			{
 				throw new IllegalArgumentException("Invalid type (" + remainingArgType + ") of request-time arg for parameter #" + paramIndex
-						+ " of function: " + funcDescription + ". Only primitive type are allowed for request-time args.");
+						+ " of function: " + funcId + ". Only primitive type are allowed for request-time args.");
 			}
 
 			if (expectedTypesIterator.hasNext())
@@ -346,7 +343,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 				expectedType = expectedTypesIterator.next();
 			}
 
-			checkArgType(remainingArgType, paramIndex, expectedType, funcDescription);
+			checkArgType(remainingArgType, paramIndex, expectedType, funcId);
 			paramIndex++;
 		}
 
@@ -417,7 +414,7 @@ public abstract class FirstOrderFunctionCall<RETURN extends Value> implements Fu
 					expectedType = expectedTypesIterator.next();
 				}
 
-				checkArgType(remainingArg, paramIndex, expectedType, funcDescription);
+				checkArgType(remainingArg, paramIndex, expectedType, funcId);
 				paramIndex++;
 			}
 

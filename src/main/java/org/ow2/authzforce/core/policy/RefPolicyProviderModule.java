@@ -15,11 +15,13 @@ package org.ow2.authzforce.core.policy;
 
 import java.io.Closeable;
 import java.util.Deque;
+import java.util.Map;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.JaxbBoundPdpExtension;
+import org.ow2.authzforce.core.XACMLParsers.XACMLParserFactory;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
@@ -51,6 +53,8 @@ public interface RefPolicyProviderModule extends Closeable
 		 * 
 		 * @param conf
 		 *            module configuration
+		 * @param xacmlParserFactory
+		 *            XACML parser factory for parsing any XACML Policy(Set)
 		 * @param maxPolicySetRefDepth
 		 *            maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...; to be enforced by any
 		 *            instance created by this factory
@@ -61,8 +65,8 @@ public interface RefPolicyProviderModule extends Closeable
 		 * 
 		 * @return the module instance
 		 */
-		public abstract RefPolicyProviderModule getInstance(CONF_T conf, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
-				CombiningAlgRegistry combiningAlgRegistry);
+		public abstract RefPolicyProviderModule getInstance(CONF_T conf, XACMLParserFactory xacmlParserFactory, int maxPolicySetRefDepth,
+				ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry);
 	}
 
 	/**
@@ -73,7 +77,7 @@ public interface RefPolicyProviderModule extends Closeable
 	boolean isStatic();
 
 	/**
-	 * Tries to find one and only one matching policy given the idReference and version boundaries.
+	 * Gets one and only one policy matching a given idReference and version boundaries.
 	 * 
 	 * @param id
 	 *            Policy(Set)Id used in the policy reference
@@ -101,7 +105,7 @@ public interface RefPolicyProviderModule extends Closeable
 	 *            chain of PolicySetIdReference leading to the policy to be found here. This chain is used to control all PolicySetIdReferences found within the
 	 *            result policy (to detect loops, i.e. circular references, and validate reference depth); therefore it is the responsibility of the
 	 *            implementation to pass this parameter as the last one to
-	 *            {@link PolicySetEvaluator#getInstance(PolicySet, net.sf.saxon.s9api.XPathCompiler, ExpressionFactory, CombiningAlgRegistry, RefPolicyProvider, Deque)}
+	 *            {@link PolicySetEvaluator#getInstance(PolicySet, net.sf.saxon.s9api.XPathCompiler, Map, ExpressionFactory, CombiningAlgRegistry, RefPolicyProvider, Deque)}
 	 *            whenever it instantiates a {@link PolicySetEvaluator}.
 	 * 
 	 * @return the result of looking for a matching policy, or null if no policy found with PolicyId matching {@code idReference} and Version meeting the
@@ -112,6 +116,6 @@ public interface RefPolicyProviderModule extends Closeable
 	 * @throws IndeterminateEvaluationException
 	 *             if error determining the one matching policy of type {@code policyType}, e.g. if more than one policy is found
 	 */
-	<POLICY_T extends IPolicyEvaluator> POLICY_T findPolicy(String id, Class<POLICY_T> policyType, VersionConstraints constraints,
-			Deque<String> policySetRefChain) throws IndeterminateEvaluationException, ParsingException;
+	<POLICY_T extends IPolicyEvaluator> POLICY_T get(String id, Class<POLICY_T> policyType, VersionConstraints constraints, Deque<String> policySetRefChain)
+			throws IndeterminateEvaluationException, ParsingException;
 }

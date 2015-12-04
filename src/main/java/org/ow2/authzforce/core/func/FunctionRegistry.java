@@ -32,11 +32,20 @@ public class FunctionRegistry
 	private final BasePdpExtensionRegistry<Function<?>> nonGenericFunctionRegistry;
 	private final BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericHigherOrderFunctionFactoryRegistry;
 
+	/**
+	 * Low-level constructor
+	 * 
+	 * @param nonGenericFunctionRegistry
+	 *            (mandatory) non-generic function registry
+	 * @param genericFunctionFactoryRegistry
+	 *            (optional) generic function factory registry
+	 */
 	protected FunctionRegistry(BasePdpExtensionRegistry<Function<?>> nonGenericFunctionRegistry,
 			BasePdpExtensionRegistry<GenericHigherOrderFunctionFactory> genericFunctionFactoryRegistry)
 	{
 		this.nonGenericFunctionRegistry = new BasePdpExtensionRegistry<>(Function.class, nonGenericFunctionRegistry);
-		this.genericHigherOrderFunctionFactoryRegistry = new BasePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class, genericFunctionFactoryRegistry);
+		this.genericHigherOrderFunctionFactoryRegistry = genericFunctionFactoryRegistry == null ? null : new BasePdpExtensionRegistry<>(
+				GenericHigherOrderFunctionFactory.class, genericFunctionFactoryRegistry);
 	}
 
 	/**
@@ -81,8 +90,8 @@ public class FunctionRegistry
 
 	/**
 	 * Get any function including generic ones. 'Generic' here means the function is a higher-order function that is instantiated for a specific sub-function.
-	 * For instance, the {@link MapFunction} function class takes the sub-function's return type as type parameter and therefore it needs this sub-function's
-	 * return type to be instantiated (this is done via the {@link MapFunction}).
+	 * For instance, the XACML 'map' function ({@link MapFunctionFactory}) function class takes the sub-function's return type as type parameter and therefore
+	 * it needs this sub-function's return type to be instantiated (this is done via the {@link MapFunctionFactory}).
 	 * 
 	 * @param functionId
 	 *            function ID
@@ -96,6 +105,11 @@ public class FunctionRegistry
 		if (nonGenericFunc != null)
 		{
 			return nonGenericFunc;
+		}
+
+		if (genericHigherOrderFunctionFactoryRegistry == null)
+		{
+			return null;
 		}
 
 		final GenericHigherOrderFunctionFactory funcFactory = genericHigherOrderFunctionFactoryRegistry.getExtension(functionId);

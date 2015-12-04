@@ -39,16 +39,16 @@ public final class LogicalOrFunction extends FirstOrderFunction.SingleParameterT
 	private static final class Call extends FirstOrderFunctionCall<BooleanValue>
 	{
 		private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_OR + ": Indeterminate arg #";
-		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_OR + ": Invalid type (expected = " + BooleanValue.class.getName()
+		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_OR + ": Invalid type (expected = " + DatatypeConstants.BOOLEAN.TYPE
 				+ ") of arg#";
 
 		private final List<Expression<?>> checkedArgExpressions;
 
-		private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> checkedArgExpressions, Datatype<?>[] remainingArgTypes,
-				List<Expression<?>> argExpressions2) throws IllegalArgumentException
+		private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
+				throws IllegalArgumentException
 		{
-			super(functionSig, checkedArgExpressions, remainingArgTypes);
-			this.checkedArgExpressions = argExpressions2;
+			super(functionSig, argExpressions, remainingArgTypes);
+			this.checkedArgExpressions = argExpressions;
 		}
 
 		@Override
@@ -133,14 +133,15 @@ public final class LogicalOrFunction extends FirstOrderFunction.SingleParameterT
 	 */
 	public static final String NAME_OR = XACML_NS_1_0 + "or";
 
-	/**
-	 * Instantiates the function
-	 * 
-	 */
-	public LogicalOrFunction()
+	private LogicalOrFunction()
 	{
 		super(NAME_OR, DatatypeConstants.BOOLEAN.TYPE, true, Arrays.asList(DatatypeConstants.BOOLEAN.TYPE));
 	}
+
+	/**
+	 * Singleton instance of "or" logical function
+	 */
+	public static final LogicalOrFunction INSTANCE = new LogicalOrFunction();
 
 	/*
 	 * (non-Javadoc)
@@ -150,7 +151,7 @@ public final class LogicalOrFunction extends FirstOrderFunction.SingleParameterT
 	@Override
 	protected FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
-		return new Call(functionSignature, argExpressions, remainingArgTypes, argExpressions);
+		return new Call(functionSignature, argExpressions, remainingArgTypes);
 	}
 
 }

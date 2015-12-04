@@ -165,6 +165,12 @@ public abstract class SimpleValue<V> extends AttributeValue
 			return getInstance(val);
 		}
 
+		@Override
+		protected boolean isExpressionStatic()
+		{
+			return true;
+		}
+
 		/**
 		 * Creates attribute value from string representation
 		 * 
@@ -197,6 +203,9 @@ public abstract class SimpleValue<V> extends AttributeValue
 	 *            attribute datatype ID. MUST NOT be null.
 	 * @param rawVal
 	 *            internal Java native value
+	 * @param otherXmlAttributes
+	 *            (optional) other XML attributes on the xpathExpression AttributeValue node, one of which is expected to be the
+	 *            {@value #XPATH_CATEGORY_ATTRIBUTE_QNAME }
 	 * @throws IllegalArgumentException
 	 *             if {@code datatype == null || jaxbVal == null}
 	 */

@@ -39,6 +39,10 @@ import org.ow2.authzforce.core.expression.Expressions.XPathEvaluator;
  * <p>
  * In short, the xpathExpression is evaluated in the context of calling XPath-based functions on a given evaluation context only. These functions typically use
  * {@link #evaluate(EvaluationContext)} to get the matching node-set.
+ * <p>
+ * WARNING: this class is not optimized for request-time evaluation but for policy initialization-time. Therefore, its use is not recommended for evaluating
+ * xpathExpressions in XACML Request. We consider it not useful in the latter case, as the Requester (PEP) could evaluate the xpathExpressions in the first
+ * place, and does not need the PDP to do it.
  */
 public final class XPathValue extends SimpleValue<String>
 {
@@ -63,6 +67,8 @@ public final class XPathValue extends SimpleValue<String>
 	private final IndeterminateEvaluationException missingAttributesContentException;
 
 	private final String xpathEvalExceptionMessage;
+
+	private IndeterminateEvaluationException missingContextException;
 
 	/**
 	 * Official name of this type
@@ -109,10 +115,11 @@ public final class XPathValue extends SimpleValue<String>
 			throw new IllegalArgumentException("Invalid value for XPathCategory (xs:anyURI): " + xpathCategory);
 		}
 
-		this.getOtherAttributes().put(XPATH_CATEGORY_ATTRIBUTE_QNAME, xpathCategory);
 		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category="
 				+ xpathCategory, StatusHelper.STATUS_SYNTAX_ERROR);
 		this.xpathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + xpathCategory + "'";
+		this.missingContextException = new IndeterminateEvaluationException(this + ":  undefined evaluation context: XPath value cannot be evaluated",
+				StatusHelper.STATUS_PROCESSING_ERROR);
 	}
 
 	// /**
@@ -133,6 +140,11 @@ public final class XPathValue extends SimpleValue<String>
 	 */
 	public XdmValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
+		if (context == null)
+		{
+			throw this.missingContextException;
+		}
+
 		final XdmNode contentNode = context.getAttributesContent(this.xpathCategory);
 		if (contentNode == null)
 		{

@@ -1,3 +1,5 @@
 org.ow2.authzforce.core.policy.BaseStaticRootPolicyProviderModule$Factory
 org.ow2.authzforce.core.policy.BaseStaticRefPolicyProviderModule$Factory
-org.ow2.authzforce.core.MultiDecisionRequestFilter$Factory
+org.ow2.authzforce.core.DefaultRequestFilter$StrictFilterFactory
+org.ow2.authzforce.core.MultiDecisionRequestFilter$LaxFilterFactory
+org.ow2.authzforce.core.MultiDecisionRequestFilter$StrictFilterFactory

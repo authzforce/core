@@ -139,22 +139,22 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 	}
 
 	// For quick testing
-	public static void main(String... args)
-	{
-		// Double arg1 = new Double("1");
-		// Double divisor = new Double("0");
-		// Double result = arg1 / divisor;
-		// System.out.println(result); // Infinity!
-		// arg1 = new Double("-1");
-		// result = arg1 / divisor;
-		// System.out.println(result); // -Infinity!
-		//
-		// Double positiveZero = new Double("0.");
-		// Double negativeZero = new Double("-0.");
-		// System.out.println(positiveZero.equals(negativeZero));
-		// double inf = DatatypeConverter.parseDouble("INF");
-		// System.out.println(DatatypeConverter.printDouble(inf));
-	}
+	// public static void main(String... args)
+	// {
+	// Double arg1 = new Double("1");
+	// Double divisor = new Double("0");
+	// Double result = arg1 / divisor;
+	// System.out.println(result); // Infinity!
+	// arg1 = new Double("-1");
+	// result = arg1 / divisor;
+	// System.out.println(result); // -Infinity!
+	//
+	// Double positiveZero = new Double("0.");
+	// Double negativeZero = new Double("-0.");
+	// System.out.println(positiveZero.equals(negativeZero));
+	// double inf = DatatypeConverter.parseDouble("INF");
+	// System.out.println(DatatypeConverter.printDouble(inf));
+	// }
 
 	@Override
 	public DoubleValue subtract(DoubleValue subtractedVal)

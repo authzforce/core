@@ -439,7 +439,7 @@ public final class FirstOrderBagFunctionSet
 	private static Set<Function<?>> getFunctions()
 	{
 		final Set<Function<?>> mutableSet = new HashSet<>();
-		for (final DatatypeConstants<?> typeParam : DatatypeConstants.SET)
+		for (final DatatypeConstants<?> typeParam : DatatypeConstants.MANDATORY_DATATYPE_SET)
 		{
 			/**
 			 * 

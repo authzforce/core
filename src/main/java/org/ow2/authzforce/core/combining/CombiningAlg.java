@@ -1,9 +1,27 @@
+/**
+ * Copyright (C) 2012-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce CE.
+ *
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.ow2.authzforce.core.combining;
 
 import java.util.List;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.PdpExtension;
 
@@ -34,13 +52,11 @@ public abstract class CombiningAlg<T extends Decidable> implements PdpExtension
 		 * 
 		 * @return combined result
 		 */
-		DecisionResult eval(EvaluationContext context);
+		PolicyDecisionResult eval(EvaluationContext context);
 	}
 
 	// the identifier for the algorithm
 	private final String id;
-
-	private transient volatile String toString = null;
 
 	protected final UnsupportedOperationException unsupportedLegacyAlgorithmException;
 
@@ -67,7 +83,6 @@ public abstract class CombiningAlg<T extends Decidable> implements PdpExtension
 	{
 		this.combinedElementType = combinedType;
 		this.id = id;
-		this.toString = "CombiningAlgorithm[" + id + "]";
 		this.unsupportedLegacyAlgorithmException = isLegacy ? new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this)) : null;
 	}
 
@@ -85,7 +100,7 @@ public abstract class CombiningAlg<T extends Decidable> implements PdpExtension
 	@Override
 	public final String toString()
 	{
-		return this.toString;
+		return this.id;
 	}
 
 	/**

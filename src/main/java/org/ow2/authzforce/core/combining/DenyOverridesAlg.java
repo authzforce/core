@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 
 /**
  * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of
@@ -39,29 +39,34 @@ public final class DenyOverridesAlg extends CombiningAlg<Decidable>
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public PolicyDecisionResult eval(EvaluationContext context)
 		{
 			/*
 			 * Replaces atLeastOneError from XACML spec. atLeastOneError == true <=> firstIndeterminateResult != null
 			 */
-			DecisionResult firstIndeterminateResult = null;
+			PolicyDecisionResult firstIndeterminateResult = null;
 
 			/*
 			 * Replaces atLeastOnePermit from XACML spec. atLeastOnePermit == true <=> combinedPermitResult != null
 			 */
-			DecisionResult combinedPermitResult = null;
+			PolicyDecisionResult combinedPermitResult = null;
 
 			for (final Decidable combinedElement : combinedElements)
 			{
 				// evaluate the policy
-				final DecisionResult result = combinedElement.evaluate(context);
+				final PolicyDecisionResult result = combinedElement.evaluate(context);
 				switch (result.getDecision())
 				{
 				case DENY:
 					return result;
 				case PERMIT:
-					// Get PEP actions from result in case the final decision is Permit
-					combinedPermitResult = result.merge(combinedPermitResult);
+					if (combinedPermitResult == null)
+					{
+						combinedPermitResult = result;
+					} else
+					{
+						combinedPermitResult.merge(result.getPepActions(), result.getApplicablePolicyIdList());
+					}
 					break;
 				case INDETERMINATE:
 					/*
@@ -88,7 +93,7 @@ public final class DenyOverridesAlg extends CombiningAlg<Decidable>
 				return combinedPermitResult;
 			}
 
-			return DecisionResult.NOT_APPLICABLE;
+			return PolicyDecisionResult.NOT_APPLICABLE;
 		}
 
 	}

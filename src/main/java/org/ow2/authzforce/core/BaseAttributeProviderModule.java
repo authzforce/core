@@ -45,10 +45,10 @@ public abstract class BaseAttributeProviderModule implements Closeable, Attribut
 	{
 
 		/**
-		 * Returns non-null <code>Set</code> of <code>AttributeDesignator</code>s required as runtime inputs to the attribute Provider module instance created by
-		 * this builder. The PDP framework calls this method to know what input attributes the module will require (dependencies) before
-		 * {@link #getInstance(DatatypeFactoryRegistry, AttributeProvider)} , and based on this, creates a specific dependency attribute Provider that will enable
-		 * the module to find its dependency attributes. So when the PDP framework calls {@link #getInstance(DatatypeFactoryRegistry, AttributeProvider)}
+		 * Returns non-null <code>Set</code> of <code>AttributeDesignator</code>s required as runtime inputs to the attribute Provider module instance created
+		 * by this builder. The PDP framework calls this method to know what input attributes the module will require (dependencies) before
+		 * {@link #getInstance(DatatypeFactoryRegistry, AttributeProvider)} , and based on this, creates a specific dependency attribute Provider that will
+		 * enable the module to find its dependency attributes. So when the PDP framework calls {@link #getInstance(DatatypeFactoryRegistry, AttributeProvider)}
 		 * subsequently to instantiate the module, the last argument is this dependency attribute Provider.
 		 * 
 		 * @return a <code>Set</code> of required <code>AttributeDesignatorType</code>s. Null or empty if none required.
@@ -210,9 +210,7 @@ public abstract class BaseAttributeProviderModule implements Closeable, Attribut
 			"Unsupported attribute datetype");
 	private static final IllegalArgumentException UNDEF_MODULE_INSTANCE_ID = new IllegalArgumentException("Undefined attribute Provider module's instance ID");
 
-	protected final String instanceID;
-	protected final AttributeProvider dependencyAttributeProvider;
-	protected final DatatypeFactoryRegistry attributeFactory;
+	private final String instanceID;
 
 	// cached method result
 	private transient final int hashCode;
@@ -231,8 +229,7 @@ public abstract class BaseAttributeProviderModule implements Closeable, Attribut
 	 * @throws IllegalArgumentException
 	 *             if instanceId null
 	 */
-	protected BaseAttributeProviderModule(String instanceID, DatatypeFactoryRegistry attributeFactory, AttributeProvider depAttributeProvider)
-			throws IllegalArgumentException
+	protected BaseAttributeProviderModule(String instanceID) throws IllegalArgumentException
 	{
 		if (instanceID == null)
 		{
@@ -240,8 +237,6 @@ public abstract class BaseAttributeProviderModule implements Closeable, Attribut
 		}
 
 		this.instanceID = instanceID;
-		this.dependencyAttributeProvider = depAttributeProvider;
-		this.attributeFactory = attributeFactory;
 		this.hashCode = instanceID.hashCode();
 		this.toString = "AttributeProvider[" + instanceID + "]";
 	}

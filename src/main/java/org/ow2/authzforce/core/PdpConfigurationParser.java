@@ -31,7 +31,6 @@ import org.ow2.authzforce.core.combining.BaseCombiningAlgRegistry;
 import org.ow2.authzforce.core.combining.CombiningAlg;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.combining.StandardCombiningAlgRegistry;
-import org.ow2.authzforce.core.expression.Expressions;
 import org.ow2.authzforce.core.func.FirstOrderFunction;
 import org.ow2.authzforce.core.func.FunctionRegistry;
 import org.ow2.authzforce.core.func.FunctionSet;
@@ -51,7 +50,6 @@ import org.springframework.util.PropertyPlaceholderHelper;
 import org.springframework.util.ResourceUtils;
 
 import com.sun.xacml.Function;
-import com.sun.xacml.PDP;
 
 /**
  * XML-based PDP Configuration parser
@@ -76,7 +74,7 @@ public class PdpConfigurationParser
 	 *             Error unmarshalling to Pdps instance from confLocation
 	 * 
 	 */
-	public static PDP getPDP(String confLocation) throws IOException, JAXBException
+	public static PDPImpl getPDP(String confLocation) throws IOException, JAXBException
 	{
 		return getPDP(confLocation, null, null);
 	}
@@ -113,8 +111,8 @@ public class PdpConfigurationParser
 	 * </pre>
 	 * 
 	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
-	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider'
-	 *            (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
+	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types,
+	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
 	 * 
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extension XSD specified as
@@ -126,7 +124,7 @@ public class PdpConfigurationParser
 	 *             Error unmarshalling to Pdps instance from confLocation
 	 * 
 	 */
-	public static PDP getPDP(String confLocation, String catalogLocation, String extensionXsdLocation) throws IOException, JAXBException
+	public static PDPImpl getPDP(String confLocation, String catalogLocation, String extensionXsdLocation) throws IOException, JAXBException
 	{
 		return getPDP(confLocation, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
@@ -163,8 +161,8 @@ public class PdpConfigurationParser
 	 * </pre>
 	 * 
 	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
-	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider'
-	 *            (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
+	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types,
+	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
 	 * 
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extension XSD specified as
@@ -176,7 +174,7 @@ public class PdpConfigurationParser
 	 *             Error unmarshalling to Pdps instance from confLocation
 	 * 
 	 */
-	public static PDP getPDP(File confFile, String catalogLocation, String extensionXsdLocation) throws IOException, JAXBException
+	public static PDPImpl getPDP(File confFile, String catalogLocation, String extensionXsdLocation) throws IOException, JAXBException
 	{
 		return getPDP(confFile, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
@@ -185,8 +183,6 @@ public class PdpConfigurationParser
 	private static final String PROPERTY_PLACEHOLDER_SUFFIX = "}";
 	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = ":";
 	private static final String PARENT_DIRECTORY_PROPERTY_NAME = "PARENT_DIR";
-	private static final String PARENT_DIRECTORY_PROPERTY_UNDEFINED_ERROR_MESSAGE = "Property '" + PARENT_DIRECTORY_PROPERTY_NAME
-			+ "' undefined because location of PDP configuration could not be resolved to a file on the filesystem: ";
 
 	/**
 	 * @param confLocation
@@ -200,7 +196,7 @@ public class PdpConfigurationParser
 	 * @throws IllegalArgumentException
 	 *             invalid configuration file
 	 */
-	private static PDP getPDP(String confLocation, PdpModelHandler modelHandler) throws IOException, JAXBException, IllegalArgumentException
+	private static PDPImpl getPDP(String confLocation, PdpModelHandler modelHandler) throws IOException, JAXBException, IllegalArgumentException
 	{
 		/*
 		 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file
@@ -214,7 +210,7 @@ public class PdpConfigurationParser
 			confFile = ResourceUtils.getFile(confLocation);
 		} catch (FileNotFoundException e)
 		{
-			throw new IllegalArgumentException(PARENT_DIRECTORY_PROPERTY_UNDEFINED_ERROR_MESSAGE + confLocation, e);
+			throw new IllegalArgumentException("Invalid PDP configuration location: " + confLocation, e);
 		}
 
 		return getPDP(confFile, modelHandler);
@@ -232,7 +228,7 @@ public class PdpConfigurationParser
 	 * @throws IllegalArgumentException
 	 *             invalid configuration file
 	 */
-	private static PDP getPDP(File confFile, PdpModelHandler modelhandler) throws IOException, JAXBException, IllegalArgumentException
+	private static PDPImpl getPDP(File confFile, PdpModelHandler modelhandler) throws IOException, JAXBException, IllegalArgumentException
 	{
 		if (confFile == null || !confFile.exists())
 		{
@@ -271,15 +267,18 @@ public class PdpConfigurationParser
 	 * @throws IOException
 	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
 	 */
-	public static PDP getPDP(Pdp pdpJaxbConf) throws IllegalArgumentException, IOException
+	public static PDPImpl getPDP(Pdp pdpJaxbConf) throws IllegalArgumentException, IOException
 	{
 		/*
 		 * Initialize all parameters of ExpressionFactoryImpl: attribute datatype factories, functions, etc.
 		 */
 
+		final boolean enableXPath = pdpJaxbConf.isEnableXPath();
+
 		// Attribute datatypes
 		final DatatypeFactoryRegistry attributeFactory = new BaseDatatypeFactoryRegistry(
-				pdpJaxbConf.isUseStandardDatatypes() ? StandardDatatypeFactoryRegistry.INSTANCE : null);
+				pdpJaxbConf.isUseStandardDatatypes() ? (enableXPath ? StandardDatatypeFactoryRegistry.ALL_DATATYPES
+						: StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES) : null);
 		for (final String attrDatatypeURI : pdpJaxbConf.getAttributeDatatypes())
 		{
 			final DatatypeFactory<?> datatypeFactory = PdpExtensionLoader.getExtension(DatatypeFactory.class, attrDatatypeURI);
@@ -287,16 +286,16 @@ public class PdpConfigurationParser
 		}
 
 		// Functions
-		/*
-		 * For each function, check whether it is XPath-based (takes any XPathExpression as argument). Based on this and whether AttributeSelector evaluation is
-		 * enabled, request Attributes/Content needs to be parsed specifically for XPath evaluation
-		 */
-		boolean isAnyFuncXPathBased = false;
-		final FunctionRegistry functionRegistry = new FunctionRegistry(pdpJaxbConf.isUseStandardFunctions() ? StandardFunctionRegistry.INSTANCE : null);
+		final FunctionRegistry functionRegistry = new FunctionRegistry(pdpJaxbConf.isUseStandardFunctions() ? StandardFunctionRegistry.getInstance(enableXPath)
+				: null);
 		for (final String funcId : pdpJaxbConf.getFunctions())
 		{
 			final Function<?> function = PdpExtensionLoader.getExtension(Function.class, funcId);
-			isAnyFuncXPathBased = isXpathBased(function);
+			if (!enableXPath && isXpathBased(function))
+			{
+				throw new IllegalArgumentException("XPath-based function not allowed (because configuration parameter 'enableXPath' = false): " + function);
+			}
+
 			functionRegistry.addFunction(function);
 		}
 
@@ -305,7 +304,11 @@ public class PdpConfigurationParser
 			final FunctionSet functionSet = PdpExtensionLoader.getExtension(FunctionSet.class, funcSetId);
 			for (final Function<?> function : functionSet.getSupportedFunctions())
 			{
-				isAnyFuncXPathBased = isXpathBased(function);
+				if (!enableXPath && isXpathBased(function))
+				{
+					throw new IllegalArgumentException("XPath-based function not allowed (because configuration parameter 'enableXPath' = false): " + function);
+				}
+
 				functionRegistry.addFunction(function);
 			}
 		}
@@ -319,18 +322,6 @@ public class PdpConfigurationParser
 			combiningAlgRegistry.addExtension(alg);
 		}
 
-		// Request preprocessor
-		final String requesFilterId = pdpJaxbConf.getRequestFilter();
-		final RequestFilter.Factory requestFilterFactory = requesFilterId == null ? DefaultRequestFilterFactory.INSTANCE : PdpExtensionLoader.getExtension(
-				RequestFilter.Factory.class, requesFilterId);
-
-		/*
-		 * Is the request filter required to parse/prepare Attributes/Content element for XPath evaluation (AttributeSelector, XPath-based function...)?
-		 */
-		final boolean isContentRequiredForXPathEval = pdpJaxbConf.isEnableAttributeSelectors() || isAnyFuncXPathBased;
-		final RequestFilter requestFilter = requestFilterFactory.getInstance(attributeFactory, isContentRequiredForXPathEval,
-				XACMLBindingUtils.XACML_3_0_JAXB_CONTEXT, Expressions.SAXON_PROCESSOR);
-
 		// Decision combiner
 		final String resultFilterId = pdpJaxbConf.getResultFilter();
 		final DecisionResultFilter decisionResultFilter = resultFilterId == null ? null : PdpExtensionLoader.getExtension(DecisionResultFilter.class,
@@ -339,9 +330,9 @@ public class PdpConfigurationParser
 		// decision cache
 		final AbstractDecisionCache jaxbDecisionCache = pdpJaxbConf.getDecisionCache();
 
-		return new PDP(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), pdpJaxbConf.getMaxVariableRefDepth(),
-				pdpJaxbConf.isEnableAttributeSelectors(), combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(),
-				pdpJaxbConf.getMaxPolicySetRefDepth(), requestFilter, decisionResultFilter, jaxbDecisionCache);
+		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), pdpJaxbConf.getMaxVariableRefDepth(), enableXPath,
+				combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(), pdpJaxbConf.getMaxPolicyRefDepth(),
+				pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache);
 	}
 
 	private static boolean isXpathBased(Function<?> function)

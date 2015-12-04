@@ -17,10 +17,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.PolicyDecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.PdpExtensionLoader;
+import org.ow2.authzforce.core.XACMLParsers;
 import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
 import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
@@ -52,7 +53,7 @@ public interface RootPolicyEvaluator extends Closeable
 	 * @return the result of evaluating the request against the applicable policy; or NotApplicable if none is applicable; or Indeterminate if error determining
 	 *         an applicable policy or more than one applies or evaluation of the applicable policy returned Indeterminate Decision
 	 */
-	DecisionResult findAndEvaluate(EvaluationContext context);
+	PolicyDecisionResult findAndEvaluate(EvaluationContext context);
 
 	/**
 	 * 
@@ -73,7 +74,7 @@ public interface RootPolicyEvaluator extends Closeable
 		}
 
 		@Override
-		public DecisionResult findAndEvaluate(EvaluationContext context)
+		public PolicyDecisionResult findAndEvaluate(EvaluationContext context)
 		{
 			return staticRootPolicyEvaluator.evaluate(context);
 		}
@@ -90,6 +91,9 @@ public interface RootPolicyEvaluator extends Closeable
 	 */
 	class Base implements RootPolicyEvaluator
 	{
+		private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+				"Invalid arguments to root policy Provider creation: missing one of these args: root policy Provider's XML/JAXB configuration (jaxbRootPolicyProviderConf), XACML Expression parser/factory (expressionFactory), combining algorithm registry (combiningAlgRegistry)");
+
 		private static final Logger LOGGER = LoggerFactory.getLogger(Base.class);
 
 		private final RootPolicyProviderModule rootPolicyProviderMod;
@@ -109,8 +113,8 @@ public interface RootPolicyEvaluator extends Closeable
 		 *            evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
 		 * @param maxVariableReferenceDepth
 		 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference)
-		 * @param allowAttributeSelectors
-		 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
+		 * @param enableXPath
+		 *            allow XPath evaluation for AttributeSelectors, xpathExpressions, etc. (experimental, not for production, use with caution)
 		 * 
 		 * @param jaxbRootPolicyProviderConf
 		 *            (mandatory) root policy Provider's XML/JAXB configuration
@@ -121,35 +125,41 @@ public interface RootPolicyEvaluator extends Closeable
 		 *            found by root policy Provider
 		 * @param maxPolicySetRefDepth
 		 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...
+		 * @param strictAttributeIssuerMatch
+		 *            true iff strict Attribute Issuer matching is enabled, i.e. AttributeDesignators without Issuer only match request Attributes without
+		 *            Issuer (and same AttributeId, Category...). This mode is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed
+		 *            not present on a AttributeDesignator; but it performs better and is recommended when all AttributeDesignators have an Issuer (best
+		 *            practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the
+		 *            attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes
+		 *            alone." if one of the mandatory arguments is null
 		 * @throws IllegalArgumentException
-		 *             if one of the mandatory arguments is null; or if any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not
-		 *             provide any attribute; or it is in conflict with another one already registered to provide the same or part of the same attributes.
+		 *             if one of the mandatory arguments is null; or if any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does
+		 *             not provide any attribute; or it is in conflict with another one already registered to provide the same or part of the same attributes.
 		 * @throws IOException
 		 */
 		public Base(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
-				int maxVariableReferenceDepth, boolean allowAttributeSelectors, CombiningAlgRegistry combiningAlgRegistry,
-				AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
-				throws IllegalArgumentException, IOException
+				int maxVariableReferenceDepth, boolean enableXPath, CombiningAlgRegistry combiningAlgRegistry,
+				AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth,
+				boolean strictAttributeIssuerMatch) throws IllegalArgumentException, IOException
 		{
 			if (jaxbRootPolicyProviderConf == null || combiningAlgRegistry == null)
 			{
-				throw new IllegalArgumentException(
-						"Invalid arguments to root policy Provider creation: missing one of these args: root policy Provider's XML/JAXB configuration (jaxbRootPolicyProviderConf), XACML Expression parser/factory (expressionFactory), combining algorithm registry (combiningAlgRegistry)");
+				throw ILLEGAL_ARGUMENT_EXCEPTION;
 			}
 
 			// Initialize ExpressionFactory
 			this.expressionFactory = new ExpressionFactoryImpl(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth,
-					allowAttributeSelectors);
+					enableXPath, strictAttributeIssuerMatch);
 
 			final RootPolicyProviderModule.Factory<AbstractPolicyProvider> rootPolicyProviderModFactory = PdpExtensionLoader.getJaxbBoundExtension(
 					RootPolicyProviderModule.Factory.class, jaxbRootPolicyProviderConf.getClass());
 
-			rootPolicyProviderMod = rootPolicyProviderModFactory.getInstance(jaxbRootPolicyProviderConf, this.expressionFactory, combiningAlgRegistry,
-					jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
+			rootPolicyProviderMod = rootPolicyProviderModFactory.getInstance(jaxbRootPolicyProviderConf, XACMLParsers.getXACMLParserFactory(enableXPath),
+					this.expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
 		}
 
 		@Override
-		public DecisionResult findAndEvaluate(EvaluationContext context)
+		public PolicyDecisionResult findAndEvaluate(EvaluationContext context)
 		{
 			final IPolicyEvaluator policy;
 			try
@@ -158,7 +168,7 @@ public interface RootPolicyEvaluator extends Closeable
 			} catch (IndeterminateEvaluationException e)
 			{
 				LOGGER.info("Error finding applicable root policy to evaluate with root policy Provider module {}", rootPolicyProviderMod, e);
-				return new DecisionResult(e.getStatus());
+				return new PolicyDecisionResult(e.getStatus());
 			} catch (ParsingException e)
 			{
 				LOGGER.warn("Error parsing one of the possible root policies (handled by root policy Provider module {})", rootPolicyProviderMod, e);
@@ -167,7 +177,7 @@ public interface RootPolicyEvaluator extends Closeable
 
 			if (policy == null)
 			{
-				return DecisionResult.NOT_APPLICABLE;
+				return PolicyDecisionResult.NOT_APPLICABLE;
 			}
 
 			return policy.evaluate(context, true);
@@ -181,8 +191,8 @@ public interface RootPolicyEvaluator extends Closeable
 		}
 
 		/**
-		 * Gets the static version of this policy Provider, i.e. a policy Provider using the same constant root policy resolved by this Provider (once and for all)
-		 * when calling this method. This root policy will be used for all evaluations. This is possible only for Providers independent from the evaluation
+		 * Gets the static version of this policy Provider, i.e. a policy Provider using the same constant root policy resolved by this Provider (once and for
+		 * all) when calling this method. This root policy will be used for all evaluations. This is possible only for Providers independent from the evaluation
 		 * context (static resolution).
 		 * 
 		 * @return static view of this policy Provider; or null if none could be created because the Provider depends on the evaluation context to find the root

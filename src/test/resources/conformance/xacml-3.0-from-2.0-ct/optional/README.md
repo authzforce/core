@@ -1,0 +1,1 @@
+This folder must contain only tests of optional (not mandatory) XACML 3.0 features, such as xpathExpression datatype or XPath-based functions, and XACML profiles.

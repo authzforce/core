@@ -16,7 +16,10 @@
  */
 package org.ow2.authzforce.core;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
@@ -28,6 +31,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
  */
 public final class PepActions
 {
+	private static final IllegalArgumentException UNDEF_MERGED_PEP_ACTIONS_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined PEP actions");
+
 	/**
 	 * Obligation factory
 	 *
@@ -70,8 +75,9 @@ public final class PepActions
 
 	};
 
-	private List<Obligation> obligationList = null;
-	private List<Advice> adviceList = null;
+	// always non-null fields
+	private final List<Obligation> obligationList;
+	private final List<Advice> adviceList;
 
 	/**
 	 * Instantiates PEP action set from obligations/advice
@@ -83,27 +89,102 @@ public final class PepActions
 	 */
 	public PepActions(List<Obligation> obligations, List<Advice> advices)
 	{
-		this.obligationList = obligations;
-		this.adviceList = advices;
+		this.obligationList = obligations == null ? new ArrayList<Obligation>() : obligations;
+		this.adviceList = advices == null ? new ArrayList<Advice>() : advices;
 	}
 
 	/**
 	 * Get the internal obligation list
 	 * 
-	 * @return obligations; null if no obligation, else an immutable list
+	 * @return obligations; empty if no obligation (always non-null)
 	 */
 	public List<Obligation> getObligations()
 	{
-		return obligationList;
+		return Collections.unmodifiableList(obligationList);
 	}
 
 	/**
 	 * Get the internal advice list
 	 * 
-	 * @return advice; null if no advice, else an immutable list
+	 * @return advice; empty if no obligation (always non-null)
 	 */
 	public List<Advice> getAdvices()
 	{
-		return adviceList;
+		return Collections.unmodifiableList(adviceList);
 	}
+
+	private transient volatile int hashCode = 0;
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = Objects.hash(this.obligationList, this.adviceList);
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (!(obj instanceof PepActions))
+		{
+			return false;
+		}
+
+		final PepActions other = (PepActions) obj;
+		return this.obligationList.equals(other.obligationList) && this.adviceList.equals(other.adviceList);
+	}
+
+	/**
+	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
+	 * 
+	 * @param newObligations
+	 *            new obligation list
+	 * @param newAdvices
+	 *            new advice list
+	 * 
+	 */
+	public void merge(List<Obligation> newObligations, List<Advice> newAdvices)
+	{
+		if (newObligations != null)
+		{
+			this.obligationList.addAll(newObligations);
+		}
+
+		if (newAdvices != null)
+		{
+			this.adviceList.addAll(newAdvices);
+		}
+	}
+
+	/**
+	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
+	 * 
+	 * @param pepActions
+	 *            PEP actions
+	 */
+	public void merge(PepActions pepActions)
+	{
+		if (pepActions == null)
+		{
+			throw UNDEF_MERGED_PEP_ACTIONS_ARGUMENT_EXCEPTION;
+		}
+
+		merge(pepActions.obligationList, pepActions.adviceList);
+	}
+
+	@Override
+	public String toString()
+	{
+		return "[obligations=" + obligationList + ", advices=" + adviceList + "]";
+	}
+
 }

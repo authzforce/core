@@ -13,7 +13,6 @@
  */
 package org.ow2.authzforce.core;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -87,15 +86,13 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 
 		this.extClass = extensionClass;
 
-		final Map<String, T> mutableMap = new HashMap<>();
+		this.extensionsById = new HashMap<>();
 		for (final T extension : extensions)
 		{
 			final String id = extension.getId();
 
-			mutableMap.put(id, extension);
+			this.extensionsById.put(id, extension);
 		}
-
-		this.extensionsById = Collections.unmodifiableMap(mutableMap);
 	}
 
 	/**

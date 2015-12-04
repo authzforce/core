@@ -3,18 +3,13 @@
  *
  * This file is part of AuthZForce.
  *
- * AuthZForce is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
@@ -48,8 +43,7 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	private final transient List<AllOfEvaluator> evaluatableAllOfList;
 
 	/**
-	 * Constructor that creates a new <code>AnyOf</code> evaluator based on the given
-	 * XACML-schema-derived JAXB AnyOf.
+	 * Constructor that creates a new <code>AnyOf</code> evaluator based on the given XACML-schema-derived JAXB AnyOf.
 	 * 
 	 * @param jaxbAnyOf
 	 *            JAXB AnyOf
@@ -61,7 +55,8 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	 * @throws ParsingException
 	 *             if AnyOf element is invalid
 	 */
-	public AnyOfEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws ParsingException
+	public AnyOfEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
+			throws ParsingException
 	{
 		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> jaxbAllOfList = jaxbAnyOf.getAllOves();
 		if (jaxbAllOfList.isEmpty())
@@ -79,7 +74,7 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 				allOfEvaluator = new AllOfEvaluator(jaxbAllOf, xPathCompiler, expFactory);
 			} catch (ParsingException e)
 			{
-				throw new ParsingException("Error parsing <AllOf>'s <Match>#" + matchIndex, e);
+				throw new ParsingException("Error parsing <AnyOf>'s <AllOf>#" + matchIndex, e);
 			}
 
 			evaluatableAllOfList.add(allOfEvaluator);
@@ -90,9 +85,8 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	}
 
 	/**
-	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is
-	 * applicable). If all the AllOf values is No_Match so it's a No_Match. If all matches it's a
-	 * Match. If None matches and at least one “Indeterminate�? it's Indeterminate
+	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is applicable). If all the AllOf values is No_Match so it's a No_Match.
+	 * If all matches it's a Match. If None matches and at least one “Indeterminate�? it's Indeterminate
 	 * 
 	 * <pre>
 	 * 		AllOf values 						AnyOf value 
@@ -159,7 +153,8 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 		}
 
 		// No Match and at least one Indeterminate (lastIndeterminate != null) -> Indeterminate
-		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
+				lastIndeterminate);
 	}
 
 }

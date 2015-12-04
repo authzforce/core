@@ -1,3 +1,16 @@
+/**
+ * Copyright (C) 2012-2015 Thales Services SAS.
+ *
+ * This file is part of AuthZForce CE.
+ *
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.ow2.authzforce.core.expression;
 
 import java.io.Closeable;
@@ -7,6 +20,7 @@ import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 
 import org.ow2.authzforce.core.CloseableAttributeProvider;
 import org.ow2.authzforce.core.value.Datatype;
@@ -18,9 +32,9 @@ import com.sun.xacml.UnknownIdentifierException;
 /**
  * Expression factory for parsing XACML {@link ExpressionType}s: AttributeDesignator, AttributeSelector, Apply, etc.
  * <p>
- * Extends {@link Closeable} because it may use an {@link CloseableAttributeProvider} to resolve AttributeDesignators for attributes not provided in the request;
- * and that attribute Provider needs to be closed by calling {@link #close()} (in order to call {@link CloseableAttributeProvider#close()}) when it is no longer
- * needed.
+ * Extends {@link Closeable} because it may use an {@link CloseableAttributeProvider} to resolve AttributeDesignators for attributes not provided in the
+ * request; and that attribute Provider needs to be closed by calling {@link #close()} (in order to call {@link CloseableAttributeProvider#close()}) when it is
+ * no longer needed.
  */
 public interface ExpressionFactory extends Closeable
 {
@@ -69,9 +83,10 @@ public interface ExpressionFactory extends Closeable
 	 * @return The previous VariableReference if VariableId already used
 	 * @throws ParsingException
 	 *             error parsing expression in <code>var</code>
+	 * @throws IllegalArgumentException
+	 *             if {@code varDef} contains an invalid expression
 	 */
-	VariableReference<?> addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, XPathCompiler xPathCompiler)
-			throws ParsingException;
+	VariableReference<?> addVariable(VariableDefinition varDef, XPathCompiler xPathCompiler) throws ParsingException, IllegalArgumentException;
 
 	/**
 	 * Removes the VariableReference(Definition) from the manager
