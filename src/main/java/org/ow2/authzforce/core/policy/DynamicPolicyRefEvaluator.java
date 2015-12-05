@@ -21,7 +21,7 @@ package org.ow2.authzforce.core.policy;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.StatusHelper;
@@ -72,7 +72,7 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 	}
 
 	@Override
-	public final PolicyDecisionResult evaluate(EvaluationContext context, boolean skipTarget)
+	public final DecisionResult evaluate(EvaluationContext context, boolean skipTarget)
 	{
 		// we must have found a policy
 		try
@@ -81,7 +81,7 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 		} catch (IndeterminateEvaluationException e)
 		{
 			LOGGER.info("Error resolving {} to the policy to evaluate in the request context", this, e);
-			return new PolicyDecisionResult(e.getStatus());
+			return new DecisionResult(e.getStatus());
 		} catch (ParsingException e)
 		{
 			LOGGER.info("Error resolving {} to the policy to evaluate in the request context", this, e);

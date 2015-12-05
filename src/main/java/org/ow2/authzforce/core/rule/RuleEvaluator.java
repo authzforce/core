@@ -18,7 +18,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.PepActions;
@@ -41,7 +41,7 @@ public class RuleEvaluator implements Decidable
 	private final transient TargetEvaluator evaluatableTarget;
 	private final transient ConditionEvaluator evaluatableCondition;
 	private final transient RulePepActionExpressionsEvaluator effectMatchPepActionExps;
-	private final transient PolicyDecisionResult nullActionsRuleDecisionResult;
+	private final transient DecisionResult nullActionsRuleDecisionResult;
 	private final String toString;
 	private final String ruleId;
 
@@ -97,7 +97,7 @@ public class RuleEvaluator implements Decidable
 		if (this.effectMatchPepActionExps == null)
 		{
 
-			this.nullActionsRuleDecisionResult = new PolicyDecisionResult(this.effectAsDecision, null);
+			this.nullActionsRuleDecisionResult = new DecisionResult(this.effectAsDecision, null);
 		} else
 		{
 			this.nullActionsRuleDecisionResult = null;
@@ -129,7 +129,7 @@ public class RuleEvaluator implements Decidable
 	 * @return the result of the evaluation
 	 */
 	@Override
-	public PolicyDecisionResult evaluate(EvaluationContext context)
+	public DecisionResult evaluate(EvaluationContext context)
 	{
 		/*
 		 * Null or empty Target matches all So we just check if target non-null matches
@@ -144,7 +144,7 @@ public class RuleEvaluator implements Decidable
 				if (!evaluatableTarget.match(context))
 				{
 					LOGGER.debug("{}/Target -> No-match", this);
-					final PolicyDecisionResult result = PolicyDecisionResult.NOT_APPLICABLE;
+					final DecisionResult result = DecisionResult.NOT_APPLICABLE;
 					LOGGER.debug("{} -> {}", this, result);
 					return result;
 				}
@@ -162,7 +162,7 @@ public class RuleEvaluator implements Decidable
 				 * FIXME: implement Extended Indeterminate: "Indeterminate{P}" if the Rule's Effect is Permit, or "Indeterminate{D}" if the Rule's Effect is
 				 * Deny
 				 */
-				final PolicyDecisionResult result = new PolicyDecisionResult(e.getStatus());
+				final DecisionResult result = new DecisionResult(e.getStatus());
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -190,7 +190,7 @@ public class RuleEvaluator implements Decidable
 				 * therefore lower level than Error level)
 				 */
 				LOGGER.info("{}/Condition -> Indeterminate", this, e);
-				final PolicyDecisionResult result = new PolicyDecisionResult(e.getStatus());
+				final DecisionResult result = new DecisionResult(e.getStatus());
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -198,7 +198,7 @@ public class RuleEvaluator implements Decidable
 			if (!isConditionTrue)
 			{
 				LOGGER.debug("{}/Condition -> False", this);
-				final PolicyDecisionResult result = PolicyDecisionResult.NOT_APPLICABLE;
+				final DecisionResult result = DecisionResult.NOT_APPLICABLE;
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -237,12 +237,12 @@ public class RuleEvaluator implements Decidable
 			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates
 			 * to "Indeterminate", then the whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18).
 			 */
-			final PolicyDecisionResult result = new PolicyDecisionResult(e.getStatus());
+			final DecisionResult result = new DecisionResult(e.getStatus());
 			LOGGER.debug("{} -> {}", this, result);
 			return result;
 		}
 
-		final PolicyDecisionResult result = new PolicyDecisionResult(this.effectAsDecision, pepActions);
+		final DecisionResult result = new DecisionResult(this.effectAsDecision, pepActions);
 		LOGGER.debug("{} -> {}", this, result);
 		return result;
 	}

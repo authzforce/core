@@ -20,7 +20,7 @@ package org.ow2.authzforce.core.combining;
 
 import java.util.List;
 
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.StatusHelper;
@@ -38,7 +38,7 @@ public class OnlyOneApplicableAlg extends CombiningAlg<IPolicyEvaluator>
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(Evaluator.class);
 
-		private static final PolicyDecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new PolicyDecisionResult(new StatusHelper(
+		private static final DecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new DecisionResult(new StatusHelper(
 				StatusHelper.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
 
 		private final List<? extends IPolicyEvaluator> policyElements;
@@ -49,7 +49,7 @@ public class OnlyOneApplicableAlg extends CombiningAlg<IPolicyEvaluator>
 		}
 
 		@Override
-		public PolicyDecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(EvaluationContext context)
 		{
 			// atLeastOne == true iff selectedPolicy != null
 			IPolicyEvaluator selectedPolicy = null;
@@ -64,7 +64,7 @@ public class OnlyOneApplicableAlg extends CombiningAlg<IPolicyEvaluator>
 				} catch (IndeterminateEvaluationException e)
 				{
 					LOGGER.info("Error checking whether {} is applicable", policy, e);
-					return new PolicyDecisionResult(e.getStatus());
+					return new DecisionResult(e.getStatus());
 				}
 
 				if (isApplicable)
@@ -88,7 +88,7 @@ public class OnlyOneApplicableAlg extends CombiningAlg<IPolicyEvaluator>
 				return selectedPolicy.evaluate(context, true);
 			}
 
-			return PolicyDecisionResult.NOT_APPLICABLE;
+			return DecisionResult.NOT_APPLICABLE;
 		}
 
 	}

@@ -21,7 +21,7 @@ package org.ow2.authzforce.core.combining;
 import java.util.List;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.PdpExtension;
 
@@ -52,7 +52,7 @@ public abstract class CombiningAlg<T extends Decidable> implements PdpExtension
 		 * 
 		 * @return combined result
 		 */
-		PolicyDecisionResult eval(EvaluationContext context);
+		DecisionResult eval(EvaluationContext context);
 	}
 
 	// the identifier for the algorithm

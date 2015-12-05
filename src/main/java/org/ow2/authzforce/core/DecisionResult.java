@@ -31,24 +31,24 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
  * Attributes to be included in the final Result; and Obligations/Advices are packaged together in a {@link PepActions} field.
  * 
  */
-public final class PolicyDecisionResult
+public final class DecisionResult
 {
 	private static final IllegalArgumentException ILLEGAL_DECISION_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Decision");
 
 	/**
 	 * NotApplicable decision result
 	 */
-	public static final PolicyDecisionResult NOT_APPLICABLE = new PolicyDecisionResult(DecisionType.NOT_APPLICABLE, null);
+	public static final DecisionResult NOT_APPLICABLE = new DecisionResult(DecisionType.NOT_APPLICABLE, null);
 
 	/**
 	 * Deny result with no obligation/advice/Included attribute/policy identifiers. Deny decision and nothing else.
 	 */
-	public static final PolicyDecisionResult DENY = new PolicyDecisionResult(DecisionType.DENY, null);
+	public static final DecisionResult DENY = new DecisionResult(DecisionType.DENY, null);
 
 	/**
 	 * Permit result with no obligation/advice/Included attribute/policy identifiers. Permit decision and nothing else.
 	 */
-	public static final PolicyDecisionResult PERMIT = new PolicyDecisionResult(DecisionType.PERMIT, null);
+	public static final DecisionResult PERMIT = new DecisionResult(DecisionType.PERMIT, null);
 
 	private final DecisionType decision;
 
@@ -72,7 +72,7 @@ public final class PolicyDecisionResult
 	 * @param policyIdentifierList
 	 *            list of matched policy identifiers
 	 */
-	public PolicyDecisionResult(DecisionType decision, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	public DecisionResult(DecisionType decision, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
 		if (decision == null)
 		{
@@ -92,7 +92,7 @@ public final class PolicyDecisionResult
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
-	public PolicyDecisionResult(Status status)
+	public DecisionResult(Status status)
 	{
 		this(DecisionType.INDETERMINATE, status, null, null);
 	}
@@ -106,7 +106,7 @@ public final class PolicyDecisionResult
 	 * @param pepActions
 	 *            PEP actions (obligations/advices)
 	 */
-	public PolicyDecisionResult(DecisionType decision, PepActions pepActions)
+	public DecisionResult(DecisionType decision, PepActions pepActions)
 	{
 		this(decision, null, pepActions, null);
 	}
@@ -132,12 +132,12 @@ public final class PolicyDecisionResult
 			return true;
 		}
 
-		if (!(obj instanceof PolicyDecisionResult))
+		if (!(obj instanceof DecisionResult))
 		{
 			return false;
 		}
 
-		final PolicyDecisionResult other = (PolicyDecisionResult) obj;
+		final DecisionResult other = (DecisionResult) obj;
 		if (this.decision != other.decision)
 		{
 			return false;

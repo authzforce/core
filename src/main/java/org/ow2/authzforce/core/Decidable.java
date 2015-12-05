@@ -38,6 +38,6 @@ public interface Decidable
 	 * 
 	 * @return the result of evaluation
 	 */
-	PolicyDecisionResult evaluate(EvaluationContext context);
+	DecisionResult evaluate(EvaluationContext context);
 
 }

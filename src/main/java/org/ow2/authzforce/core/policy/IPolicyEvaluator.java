@@ -19,7 +19,7 @@ package org.ow2.authzforce.core.policy;
 import java.util.List;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 
@@ -59,7 +59,7 @@ public interface IPolicyEvaluator extends Decidable
 	 *            whether to evaluate the Target. If false, this must be equivalent to {@link #evaluate(EvaluationContext)}
 	 * @return decision result
 	 */
-	PolicyDecisionResult evaluate(EvaluationContext context, boolean skipTarget);
+	DecisionResult evaluate(EvaluationContext context, boolean skipTarget);
 
 	/**
 	 * Get policy ID, e.g. for auditing

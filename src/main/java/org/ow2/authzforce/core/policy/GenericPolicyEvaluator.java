@@ -32,7 +32,7 @@ import org.ow2.authzforce.core.Decidable;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.PepActions;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.TargetEvaluator;
 import org.ow2.authzforce.core.combining.CombiningAlg;
 import org.ow2.authzforce.core.combining.CombiningAlgParameter;
@@ -241,11 +241,11 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 	 * @return decision result
 	 */
 	@Override
-	public PolicyDecisionResult evaluate(EvaluationContext context, boolean skipTarget)
+	public DecisionResult evaluate(EvaluationContext context, boolean skipTarget)
 	{
 		try
 		{
-			final PolicyDecisionResult algResult;
+			final DecisionResult algResult;
 			if (skipTarget)
 			{
 				// evaluate with combining algorithm
@@ -260,7 +260,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 					if (!isApplicable(context))
 					{
 						LOGGER.debug("{} -> NotApplicable", policyId);
-						return PolicyDecisionResult.NOT_APPLICABLE;
+						return DecisionResult.NOT_APPLICABLE;
 					}
 				} catch (IndeterminateEvaluationException e)
 				{
@@ -287,7 +287,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 					}
 
 					// everything else considered as Indeterminate
-					return new PolicyDecisionResult(targetMatchIndeterminateException.getStatus());
+					return new DecisionResult(targetMatchIndeterminateException.getStatus());
 				}
 			}
 
@@ -352,12 +352,12 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 						 * error, therefore lower level than error)
 						 */
 						LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyId, e);
-						return new PolicyDecisionResult(DecisionType.INDETERMINATE, e.getStatus(), null, applicablePolicyIdList);
+						return new DecisionResult(DecisionType.INDETERMINATE, e.getStatus(), null, applicablePolicyIdList);
 					}
 				}
 			}
 
-			return new PolicyDecisionResult(algResultDecision, algResult.getStatus(), pepActions, applicablePolicyIdList);
+			return new DecisionResult(algResultDecision, algResult.getStatus(), pepActions, applicablePolicyIdList);
 		} finally
 		{
 			// remove local variables from context
@@ -386,7 +386,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 	}
 
 	@Override
-	public PolicyDecisionResult evaluate(EvaluationContext context)
+	public DecisionResult evaluate(EvaluationContext context)
 	{
 		return evaluate(context, false);
 	}

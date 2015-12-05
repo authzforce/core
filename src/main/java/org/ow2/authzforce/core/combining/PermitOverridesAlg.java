@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.ow2.authzforce.core.Decidable;
 import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 
 /**
  * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take precedence over any number of deny,
@@ -39,22 +39,22 @@ public final class PermitOverridesAlg extends CombiningAlg<Decidable>
 		}
 
 		@Override
-		public PolicyDecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(EvaluationContext context)
 		{
 			/*
 			 * Replaces and enhances atLeastOneError from XACML spec. atLeastOneError == true <=> firstIndeterminateResult != null
 			 */
-			PolicyDecisionResult firstIndeterminateResult = null;
+			DecisionResult firstIndeterminateResult = null;
 
 			/*
 			 * Replaces and enhances atLeastOneDeny from XACML spec. atLeastOneDeny == true <=> combinedDenyResult != null
 			 */
-			PolicyDecisionResult combinedDenyResult = null;
+			DecisionResult combinedDenyResult = null;
 
 			for (final Decidable combinedElement : combinedElements)
 			{
 				// evaluate the policy
-				final PolicyDecisionResult result = combinedElement.evaluate(context);
+				final DecisionResult result = combinedElement.evaluate(context);
 				switch (result.getDecision())
 				{
 				case PERMIT:
@@ -96,7 +96,7 @@ public final class PermitOverridesAlg extends CombiningAlg<Decidable>
 				return combinedDenyResult;
 			}
 
-			return PolicyDecisionResult.NOT_APPLICABLE;
+			return DecisionResult.NOT_APPLICABLE;
 		}
 
 	}

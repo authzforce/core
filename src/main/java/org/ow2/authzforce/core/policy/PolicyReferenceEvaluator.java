@@ -14,7 +14,7 @@
 package org.ow2.authzforce.core.policy;
 
 import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> imple
 	}
 
 	@Override
-	public final PolicyDecisionResult evaluate(EvaluationContext context)
+	public final DecisionResult evaluate(EvaluationContext context)
 	{
 		return evaluate(context, false);
 	}

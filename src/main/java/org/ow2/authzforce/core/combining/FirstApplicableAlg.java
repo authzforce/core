@@ -18,7 +18,7 @@ import java.util.List;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 
 /**
@@ -39,12 +39,12 @@ public final class FirstApplicableAlg extends CombiningAlg<Decidable>
 		}
 
 		@Override
-		public PolicyDecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(EvaluationContext context)
 		{
 			for (final Decidable combinedElement : combinedElements)
 			{
 				// evaluate the policy
-				final PolicyDecisionResult result = combinedElement.evaluate(context);
+				final DecisionResult result = combinedElement.evaluate(context);
 				final DecisionType decision = result.getDecision();
 
 				// in the case of PERMIT, DENY, or INDETERMINATE, we always
@@ -57,7 +57,7 @@ public final class FirstApplicableAlg extends CombiningAlg<Decidable>
 			}
 
 			// if we got here, then none of the rules applied
-			return PolicyDecisionResult.NOT_APPLICABLE;
+			return DecisionResult.NOT_APPLICABLE;
 		}
 
 	}

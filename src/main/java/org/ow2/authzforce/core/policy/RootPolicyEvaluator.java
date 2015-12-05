@@ -17,7 +17,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.PdpExtensionLoader;
@@ -53,7 +53,7 @@ public interface RootPolicyEvaluator extends Closeable
 	 * @return the result of evaluating the request against the applicable policy; or NotApplicable if none is applicable; or Indeterminate if error determining
 	 *         an applicable policy or more than one applies or evaluation of the applicable policy returned Indeterminate Decision
 	 */
-	PolicyDecisionResult findAndEvaluate(EvaluationContext context);
+	DecisionResult findAndEvaluate(EvaluationContext context);
 
 	/**
 	 * 
@@ -74,7 +74,7 @@ public interface RootPolicyEvaluator extends Closeable
 		}
 
 		@Override
-		public PolicyDecisionResult findAndEvaluate(EvaluationContext context)
+		public DecisionResult findAndEvaluate(EvaluationContext context)
 		{
 			return staticRootPolicyEvaluator.evaluate(context);
 		}
@@ -159,7 +159,7 @@ public interface RootPolicyEvaluator extends Closeable
 		}
 
 		@Override
-		public PolicyDecisionResult findAndEvaluate(EvaluationContext context)
+		public DecisionResult findAndEvaluate(EvaluationContext context)
 		{
 			final IPolicyEvaluator policy;
 			try
@@ -168,7 +168,7 @@ public interface RootPolicyEvaluator extends Closeable
 			} catch (IndeterminateEvaluationException e)
 			{
 				LOGGER.info("Error finding applicable root policy to evaluate with root policy Provider module {}", rootPolicyProviderMod, e);
-				return new PolicyDecisionResult(e.getStatus());
+				return new DecisionResult(e.getStatus());
 			} catch (ParsingException e)
 			{
 				LOGGER.warn("Error parsing one of the possible root policies (handled by root policy Provider module {})", rootPolicyProviderMod, e);
@@ -177,7 +177,7 @@ public interface RootPolicyEvaluator extends Closeable
 
 			if (policy == null)
 			{
-				return PolicyDecisionResult.NOT_APPLICABLE;
+				return DecisionResult.NOT_APPLICABLE;
 			}
 
 			return policy.evaluate(context, true);

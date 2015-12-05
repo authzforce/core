@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.ow2.authzforce.core.EvaluationContext;
 import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 
 import com.sun.xacml.VersionConstraints;
 
@@ -57,7 +57,7 @@ class StaticPolicyRefEvaluator<P extends IPolicyEvaluator> extends PolicyReferen
 	}
 
 	@Override
-	public final PolicyDecisionResult evaluate(EvaluationContext context, boolean skipTarget)
+	public final DecisionResult evaluate(EvaluationContext context, boolean skipTarget)
 	{
 		return referredPolicy.evaluate(context, skipTarget);
 	}

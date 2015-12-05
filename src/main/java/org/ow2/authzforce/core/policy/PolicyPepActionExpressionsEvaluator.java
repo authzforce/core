@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.PepActionExpression;
 import org.ow2.authzforce.core.PepActionExpressions;
 import org.ow2.authzforce.core.PepActions;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 import org.ow2.authzforce.core.expression.ExpressionFactory;
 
 import com.sun.xacml.ParsingException;
@@ -167,7 +167,7 @@ public class PolicyPepActionExpressionsEvaluator
 	 * @throws IndeterminateEvaluationException
 	 *             error evaluating one of ObligationExpression/AdviceExpressions' AttributeAssignmentExpressions' expressions
 	 */
-	public PepActions evaluate(PolicyDecisionResult combiningAlgResult, EvaluationContext context) throws IndeterminateEvaluationException
+	public PepActions evaluate(DecisionResult combiningAlgResult, EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final PepActionExpressions.EffectSpecific matchingActionExpressions;
 		switch (combiningAlgResult.getDecision())

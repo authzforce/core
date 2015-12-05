@@ -21,7 +21,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import org.ow2.authzforce.core.Decidable;
 import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 
 /**
  * permit-unless-deny policy algorithm
@@ -40,13 +40,13 @@ public final class PermitUnlessDenyAlg extends CombiningAlg<Decidable>
 		}
 
 		@Override
-		public PolicyDecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(EvaluationContext context)
 		{
-			PolicyDecisionResult combinedPermitResult = null;
+			DecisionResult combinedPermitResult = null;
 
 			for (Decidable combinedElement : combinedElements)
 			{
-				final PolicyDecisionResult result = combinedElement.evaluate(context);
+				final DecisionResult result = combinedElement.evaluate(context);
 				final DecisionType decision = result.getDecision();
 				switch (decision)
 				{
@@ -67,7 +67,7 @@ public final class PermitUnlessDenyAlg extends CombiningAlg<Decidable>
 				}
 			}
 
-			return combinedPermitResult == null ? PolicyDecisionResult.PERMIT : combinedPermitResult;
+			return combinedPermitResult == null ? DecisionResult.PERMIT : combinedPermitResult;
 		}
 
 	}

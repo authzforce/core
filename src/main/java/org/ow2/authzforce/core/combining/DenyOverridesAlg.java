@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.ow2.authzforce.core.Decidable;
 import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.PolicyDecisionResult;
+import org.ow2.authzforce.core.DecisionResult;
 
 /**
  * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of
@@ -39,22 +39,22 @@ public final class DenyOverridesAlg extends CombiningAlg<Decidable>
 		}
 
 		@Override
-		public PolicyDecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(EvaluationContext context)
 		{
 			/*
 			 * Replaces atLeastOneError from XACML spec. atLeastOneError == true <=> firstIndeterminateResult != null
 			 */
-			PolicyDecisionResult firstIndeterminateResult = null;
+			DecisionResult firstIndeterminateResult = null;
 
 			/*
 			 * Replaces atLeastOnePermit from XACML spec. atLeastOnePermit == true <=> combinedPermitResult != null
 			 */
-			PolicyDecisionResult combinedPermitResult = null;
+			DecisionResult combinedPermitResult = null;
 
 			for (final Decidable combinedElement : combinedElements)
 			{
 				// evaluate the policy
-				final PolicyDecisionResult result = combinedElement.evaluate(context);
+				final DecisionResult result = combinedElement.evaluate(context);
 				switch (result.getDecision())
 				{
 				case DENY:
@@ -93,7 +93,7 @@ public final class DenyOverridesAlg extends CombiningAlg<Decidable>
 				return combinedPermitResult;
 			}
 
-			return PolicyDecisionResult.NOT_APPLICABLE;
+			return DecisionResult.NOT_APPLICABLE;
 		}
 
 	}

@@ -62,13 +62,13 @@ public class IndividualDecisionRequestEvaluator
 		namedAttributes.putAll(pdpIssuedAttributes);
 		final EvaluationContext ctx = new IndividualDecisionRequestContext(namedAttributes, request.getExtraContentsByCategory(),
 				request.isApplicablePolicyIdListReturned());
-		final PolicyDecisionResult result = rootPolicyEvaluator.findAndEvaluate(ctx);
-		if (result == PolicyDecisionResult.PERMIT)
+		final DecisionResult result = rootPolicyEvaluator.findAndEvaluate(ctx);
+		if (result == DecisionResult.PERMIT)
 		{
 			return PERMIT;
 		}
 
-		if (result == PolicyDecisionResult.DENY)
+		if (result == DecisionResult.DENY)
 		{
 			return DENY;
 		}
