@@ -1,6 +1,9 @@
 # AuthZForce Core
 PDP engine implementation of the XACML 3.0 Core and part of the Multiple Decision Profile (section 2.3, i.e. repetition of attribute categories) specifications. For further details on what is actually supported with regards to the specifications, please refer to the conformance tests [README](src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).
-*For more information on how to use AuthZForce as a server (RESTful), see the `server` project.*
+
+Java projects may use AuthZForce Core to access an embedded Java PDP. 
+
+*For more information on how to use AuthZForce as a server (RESTful), see the* `server` *project.*
 
 ## Versions
 See the [change log file](CHANGELOG.md) according to the *Keep a CHANGELOG* [conventions](http://keepachangelog.com/).
