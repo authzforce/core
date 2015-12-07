@@ -19,28 +19,6 @@
 		<url>${git.url.base}/core</url>
 	</scm>
 	<!-- distributionManagement defined in parent POM already -->
-			<!-- Setting dependency versions for episode used by maven jaxb2 plugin -->
-	<!--
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>${artifactId.prefix}-xmlns-model</artifactId>
-				<version>${project.parent.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>${artifactId.prefix}-xacml-model</artifactId>
-				<version>${project.parent.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>${project.groupId}</groupId>
-				<artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
-				<version>${project.parent.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
--->
 	<dependencies>
 		<!-- Third-party dependencies -->
 		<dependency>
