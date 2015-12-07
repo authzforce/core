@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-parent</artifactId>
-		<version>3.3.3</version>
+		<version>3.3.5</version>
 	</parent>
 	<artifactId>authzforce-ce-core</artifactId>
 	<version>3.6.0-SNAPSHOT</version>
@@ -19,9 +19,10 @@
 		<url>${git.url.base}/core</url>
 	</scm>
 	<!-- distributionManagement defined in parent POM already -->
+			<!-- Setting dependency versions for episode used by maven jaxb2 plugin -->
+	<!--
 	<dependencyManagement>
 		<dependencies>
-			<!-- Setting dependency versions for episode used by maven jaxb2 plugin -->
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>${artifactId.prefix}-xmlns-model</artifactId>
@@ -39,6 +40,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+-->
 	<dependencies>
 		<!-- Third-party dependencies -->
 		<dependency>
