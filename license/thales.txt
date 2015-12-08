@@ -1,1 +1,0 @@
-Copyright (C) ${inceptionYear}-${currentYear} ${copyrightOwner}. All rights reserved. No warranty, explicit or implicit, provided.

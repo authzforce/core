@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<Request xmlns='urn:oasis:names:tc:xacml:3.0:core:schema:wd-17' CombinedDecision="false"
+	ReturnPolicyIdList="false">
+	<Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
+		<Attribute AttributeId='urn:oasis:names:tc:xacml:1.0:subject:subject-id'
+			IncludeInResult="false">
+			<AttributeValue DataType='http://www.w3.org/2001/XMLSchema#string'>joe</AttributeValue>
+		</Attribute>
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role" IncludeInResult="false">
+			<AttributeValue DataType='http://www.w3.org/2001/XMLSchema#string'>Manager</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
+		<Attribute AttributeId='urn:oasis:names:tc:xacml:1.0:resource:resource-id'
+			IncludeInResult="false">
+			<AttributeValue DataType='http://www.w3.org/2001/XMLSchema#string'>https://acme.com/ticketmanagementservice/tickets</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
+		<Attribute AttributeId='urn:oasis:names:tc:xacml:1.0:action:action-id' IncludeInResult="false">
+			<AttributeValue DataType='http://www.w3.org/2001/XMLSchema#string'>POST</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" />
+</Request>

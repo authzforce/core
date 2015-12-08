@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicySetId="PPS:Manager" Version="1.0" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
+	<Description>Permissions of the Manager role</Description>
+	<Target />
+	<Policy PolicyId="PP1:Manager" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Description>Permissions specific to Manager Role</Description>
+		<Target />
+		<Rule RuleId="Permission_to_create_new_project" Effect="Permit">
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">https://acme.com/ticketmanagementservice/projects</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" DataType="http://www.w3.org/2001/XMLSchema#string"
+								MustBePresent="true" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">POST</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" DataType="http://www.w3.org/2001/XMLSchema#string"
+								MustBePresent="true" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+		</Rule>
+	</Policy>
+	<!-- This role is senior to the Employee role, therefore includes the Employee role Permission PolicySet -->
+	<PolicySetIdReference>PPS:Employee</PolicySetIdReference>
+</PolicySet>
