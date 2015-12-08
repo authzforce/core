@@ -1,7 +1,7 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. Starting with version 3.6.0, this project adheres to [Semantic Versioning](http://semver.org).
 
-## Unreleased
+## 3.6.0 - 2015-12-08 
 ### Added
 - Support all [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, except IIA010, IIA012, IIA024, IID029, IID030, III.C.2, III.C.3, IIIE301, IIIE303, II.G.2-6 (see also [README](src\test\resources\conformance\xacml-3.0-from-2.0-ct\README.md) ); with specific adaptations and anhancements:
   1. XACML 3.0 Schema validation in all conformance tests (original files are not all compliant with XACML 3.0). 
