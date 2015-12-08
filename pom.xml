@@ -249,6 +249,15 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<mavenExecutorId>forked-path</mavenExecutorId>
+					<!-- Disabling sonatype-oss-release that requires GPG sign which is not compatible with Jenkins, until we find a better solution -->
+					<useReleaseProfile>true</useReleaseProfile>
+					<arguments>-DperformRelease=true</arguments>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
