@@ -1,9 +1,12 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
-## Unreleased
+## 3.7.0
 ### Added
 - Root policy provider module based on any policy-by-reference provider (parameter is the root policy reference to be resolved by the policy-by-reference provider)
+
+### Changed
+- PDP configuration XSD version -> 3.6.1 (supporting new configuration type for the new ref-based Root policy provider module mentioned in previous section)
 
 ### Removed
 - Moved/Refactored API classes sufficient for implementing PDP extensions (Datatypes, Functions, Policy/Attribute providers, etc.) to a separate project: authzforce-ce-core-pdp-api
