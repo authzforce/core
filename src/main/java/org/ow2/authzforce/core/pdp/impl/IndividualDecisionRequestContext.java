@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,12 +22,16 @@ import java.util.Set;
 
 import net.sf.saxon.s9api.XdmNode;
 
-import org.ow2.authzforce.core.expression.AttributeGUID;
-import org.ow2.authzforce.core.expression.AttributeSelectorId;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.Value;
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +50,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	private static final IndeterminateEvaluationException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IndeterminateEvaluationException(
 			"Unsupported XACML feature (optional): <AttributeSelector>", StatusHelper.STATUS_SYNTAX_ERROR);
 
-	private final Map<AttributeGUID, Bag<?>> attributes;
+	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 
 	private final Map<String, Value> varValsById = new HashMap<>();
 
@@ -69,19 +73,19 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation
 	 * against Content element in Attributes
 	 * 
-	 * @param attributeMap
-	 *            attribute key and value pairs from the original Request. An attribute key is a global ID based on attribute category,issuer,id. An attribute
-	 *            value is a bag of primitive values.
+	 * @param namedAttributeMap
+	 *            mutable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on
+	 *            attribute category,issuer,id. An attribute value is a bag of primitive values.
 	 * @param extraContentsByAttributeCategory
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
 	 * 
 	 */
-	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> attributeMap, Map<String, XdmNode> extraContentsByAttributeCategory,
+	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> namedAttributeMap, Map<String, XdmNode> extraContentsByAttributeCategory,
 			boolean returnApplicablePolicyIdList)
 	{
-		this.attributes = attributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : attributeMap;
+		this.namedAttributes = namedAttributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : namedAttributeMap;
 		this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
 		this.attributeSelectorResults = extraContentsByAttributeCategory == null ? null : new HashMap<AttributeSelectorId, Bag<?>>();
 		this.isApplicablePolicyIdListReturned = returnApplicablePolicyIdList;
@@ -96,14 +100,14 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	public IndividualDecisionRequestContext(IndividualDecisionRequest individualDecisionReq)
 	{
 		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq
-				.isApplicablePolicyIdListReturned());
+				.isApplicablePolicyIdentifiersReturned());
 	}
 
 	@Override
 	public <AV extends AttributeValue> Bag<AV> getAttributeDesignatorResult(AttributeGUID attributeGUID, Datatype<AV> attributeDatatype)
 			throws IndeterminateEvaluationException
 	{
-		final Bag<?> bagResult = attributes.get(attributeGUID);
+		final Bag<?> bagResult = namedAttributes.get(attributeGUID);
 		if (bagResult == null)
 		{
 			return null;
@@ -133,21 +137,21 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	@Override
 	public boolean putAttributeDesignatorResultIfAbsent(AttributeGUID attributeGUID, Bag<?> result)
 	{
-		if (attributes.containsKey(attributeGUID))
+		if (namedAttributes.containsKey(attributeGUID))
 		{
 			/*
 			 * This should never happen, as getAttributeDesignatorResult() should have been called first (for same id) and returned this oldResult, and no
 			 * further call to putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but
 			 * different datatype URI/datatype class) in the same context
 			 */
-			LOGGER.error("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", attributeGUID, result);
+			LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", attributeGUID, result);
 			return false;
 		}
 
 		/*
 		 * Attribute value cannot change during evaluation context, so if old value already there, put it back
 		 */
-		return attributes.put(attributeGUID, result) == null;
+		return namedAttributes.put(attributeGUID, result) == null;
 	}
 
 	@Override
@@ -273,7 +277,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	@Override
 	public Iterator<Entry<AttributeGUID, Bag<?>>> getAttributes()
 	{
-		final Set<Entry<AttributeGUID, Bag<?>>> immutableAttributeSet = Collections.unmodifiableSet(attributes.entrySet());
+		final Set<Entry<AttributeGUID, Bag<?>>> immutableAttributeSet = Collections.unmodifiableSet(namedAttributes.entrySet());
 		return immutableAttributeSet.iterator();
 	}
 

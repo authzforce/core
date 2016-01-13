@@ -14,7 +14,7 @@
 /**
  * 
  */
-package org.ow2.authzforce.core.policy;
+package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,15 +36,14 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParameters;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.expression.Expressions;
-import org.ow2.authzforce.core.expression.VariableReference;
-import org.ow2.authzforce.core.rule.RuleEvaluator;
-
-import com.sun.xacml.ParsingException;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.VariableReference;
+import org.ow2.authzforce.core.pdp.api.XMLUtils;
+import org.ow2.authzforce.core.pdp.impl.combining.BaseCombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 
 /**
  * Evaluates a XACML Policy to a Decision.
@@ -56,11 +55,11 @@ public final class PolicyEvaluator extends GenericPolicyEvaluator<RuleEvaluator>
 	private PolicyEvaluator(String policyId, String version, Target target, String ruleCombiningAlgId, List<RuleEvaluator> ruleEvaluators,
 			List<CombiningAlgParameter<? extends RuleEvaluator>> ruleCombinerParameters, ObligationExpressions obligationExpressions,
 			AdviceExpressions adviceExpressions, Set<String> localVariableIDs, XPathCompiler defaultXPathCompiler, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry) throws ParsingException
+			CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
-		super(RuleEvaluator.class, XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createPolicyIdReference(new IdReferenceType(policyId, version, null, null)),
-				target, ruleCombiningAlgId, ruleEvaluators, ruleCombinerParameters, obligationExpressions, adviceExpressions, localVariableIDs,
-				defaultXPathCompiler, expressionFactory, combiningAlgRegistry);
+		super(RuleEvaluator.class, JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createPolicyIdReference(new IdReferenceType(policyId, version, null, null)), target,
+				ruleCombiningAlgId, ruleEvaluators, ruleCombinerParameters, obligationExpressions, adviceExpressions, localVariableIDs, defaultXPathCompiler,
+				expressionFactory, combiningAlgRegistry);
 	}
 
 	/**
@@ -80,11 +79,9 @@ public final class PolicyEvaluator extends GenericPolicyEvaluator<RuleEvaluator>
 	 * @return instance
 	 * @throws IllegalArgumentException
 	 *             if Policy element is invalid
-	 * @throws ParsingException
-	 *             Policy parsing error
 	 */
 	public static PolicyEvaluator getInstance(Policy policyElement, XPathCompiler parentDefaultXPathCompiler, Map<String, String> namespacePrefixesByURI,
-			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException, ParsingException
+			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		final String policyId = policyElement.getPolicyId();
 		final String policyVersion = policyElement.getVersion();
@@ -101,7 +98,7 @@ public final class PolicyEvaluator extends GenericPolicyEvaluator<RuleEvaluator>
 		{
 			try
 			{
-				defaultXPathCompiler = Expressions.newXPathCompiler(policyDefaults.getXPathVersion(), namespacePrefixesByURI);
+				defaultXPathCompiler = XMLUtils.newXPathCompiler(policyDefaults.getXPathVersion(), namespacePrefixesByURI);
 			} catch (IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(policyFriendlyId + ": Invalid PolicyDefaults/XPathVersion or XML namespace prefix/URI undefined", e);
@@ -134,28 +131,28 @@ public final class PolicyEvaluator extends GenericPolicyEvaluator<RuleEvaluator>
 							+ combinedRuleId + " (no such rule defined before this element)");
 				}
 
-				final CombiningAlgParameter<RuleEvaluator> combinerElt;
+				final BaseCombiningAlgParameter<RuleEvaluator> combinerElt;
 				try
 				{
-					combinerElt = new CombiningAlgParameter<>(combinedRule, ((CombinerParametersType) policyChildElt).getCombinerParameters(),
+					combinerElt = new BaseCombiningAlgParameter<>(combinedRule, ((CombinerParametersType) policyChildElt).getCombinerParameters(),
 							expressionFactory, defaultXPathCompiler);
-				} catch (ParsingException e)
+				} catch (IllegalArgumentException e)
 				{
-					throw new ParsingException(policyFriendlyId + ": Error parsing child #" + childIndex + " (RuleCombinerParameters)", e);
+					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (RuleCombinerParameters)", e);
 				}
 
 				ruleCombinerParameters.add(combinerElt);
 			} else if (policyChildElt instanceof CombinerParametersType)
 			{
 				// CombinerParameters that is not RuleCombinerParameters already tested before
-				final CombiningAlgParameter<RuleEvaluator> combinerElt;
+				final BaseCombiningAlgParameter<RuleEvaluator> combinerElt;
 				try
 				{
-					combinerElt = new CombiningAlgParameter<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory,
+					combinerElt = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory,
 							defaultXPathCompiler);
-				} catch (ParsingException e)
+				} catch (IllegalArgumentException e)
 				{
-					throw new ParsingException(policyFriendlyId + ": Error parsing child #" + childIndex + " (CombinerParameters)", e);
+					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (CombinerParameters)", e);
 				}
 
 				ruleCombinerParameters.add(combinerElt);
@@ -166,9 +163,9 @@ public final class PolicyEvaluator extends GenericPolicyEvaluator<RuleEvaluator>
 				try
 				{
 					var = expressionFactory.addVariable(varDef, defaultXPathCompiler);
-				} catch (ParsingException e)
+				} catch (IllegalArgumentException e)
 				{
-					throw new ParsingException(policyFriendlyId + ": Error parsing child #" + childIndex + " (VariableDefinition)", e);
+					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (VariableDefinition)", e);
 				}
 
 				if (var != null)
@@ -187,9 +184,9 @@ public final class PolicyEvaluator extends GenericPolicyEvaluator<RuleEvaluator>
 				try
 				{
 					ruleEvaluator = new RuleEvaluator((Rule) policyChildElt, defaultXPathCompiler, expressionFactory);
-				} catch (ParsingException e)
+				} catch (IllegalArgumentException e)
 				{
-					throw new ParsingException(policyFriendlyId + ": Error parsing child #" + childIndex + " (Rule)", e);
+					throw new IllegalArgumentException(policyFriendlyId + ": Error parsing child #" + childIndex + " (Rule)", e);
 				}
 
 				rulesById.put(ruleEvaluator.getRuleId(), ruleEvaluator);

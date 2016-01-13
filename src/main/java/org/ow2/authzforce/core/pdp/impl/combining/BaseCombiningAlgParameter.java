@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.combining;
+package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,10 +21,10 @@ import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 
-import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-
-import com.sun.xacml.ParsingException;
+import org.ow2.authzforce.core.pdp.api.CombinerParameterEvaluator;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 
 /**
  * Represents a set of CombinerParameters to a combining algorithm that may or may not be associated with a policy/rule
@@ -37,7 +32,7 @@ import com.sun.xacml.ParsingException;
  * @param <T>
  *            Type of combined element (Policy, Rule...) with which the CombinerParameters are associated
  */
-public class CombiningAlgParameter<T extends Decidable>
+public final class BaseCombiningAlgParameter<T extends Decidable> implements CombiningAlgParameter<T>
 {
 
 	// the element to be combined
@@ -60,11 +55,11 @@ public class CombiningAlgParameter<T extends Decidable>
 	 *            if none specified
 	 * @param expFactory
 	 *            attribute value factory
-	 * @throws ParsingException
-	 *             if error parsing CombinerParameters
+	 * @throws IllegalArgumentException
+	 *             if if one of the CombinerParameters is invalid
 	 */
-	public CombiningAlgParameter(T element, List<CombinerParameter> jaxbCombinerParameters, ExpressionFactory expFactory, XPathCompiler xPathCompiler)
-			throws ParsingException
+	public BaseCombiningAlgParameter(T element, List<CombinerParameter> jaxbCombinerParameters, ExpressionFactory expFactory, XPathCompiler xPathCompiler)
+			throws IllegalArgumentException
 	{
 		this.element = element;
 		if (jaxbCombinerParameters == null)
@@ -80,9 +75,9 @@ public class CombiningAlgParameter<T extends Decidable>
 				{
 					final CombinerParameterEvaluator combinerParam = new CombinerParameterEvaluator(jaxbCombinerParam, expFactory, xPathCompiler);
 					modifiableParamList.add(combinerParam);
-				} catch (ParsingException e)
+				} catch (IllegalArgumentException e)
 				{
-					throw new ParsingException("Error parsing CombinerParameters/CombinerParameter#" + paramIndex, e);
+					throw new IllegalArgumentException("Error parsing CombinerParameters/CombinerParameter#" + paramIndex, e);
 				}
 
 				paramIndex++;
@@ -97,6 +92,7 @@ public class CombiningAlgParameter<T extends Decidable>
 	 * 
 	 * @return the combined element
 	 */
+	@Override
 	public T getCombinedElement()
 	{
 		return element;
@@ -107,6 +103,7 @@ public class CombiningAlgParameter<T extends Decidable>
 	 * 
 	 * @return a <code>List</code> of <code>CombinerParameterEvaluator</code>s
 	 */
+	@Override
 	public List<CombinerParameterEvaluator> getParameters()
 	{
 		return parameters;

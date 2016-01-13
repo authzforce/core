@@ -11,15 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.expression;
+package org.ow2.authzforce.core.pdp.impl.expression;
 
 import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.ValueExpression;
 
 /**
  * 
@@ -53,6 +54,6 @@ public final class PrimitiveValueExpression<V extends AttributeValue> extends Va
 	public JAXBElement<AttributeValueType> getJAXBElement()
 	{
 		// create new JAXB AttributeValue as defensive copy (JAXB AttributeValue is not immutable)
-		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeValue(this.value);
+		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createAttributeValue(this.value);
 	}
 }

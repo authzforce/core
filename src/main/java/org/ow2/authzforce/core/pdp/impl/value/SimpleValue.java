@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.value;
+package org.ow2.authzforce.core.pdp.impl.value;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -26,6 +26,9 @@ import javax.xml.namespace.QName;
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.BaseDatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
 import org.w3c.dom.Element;
 
 /**
@@ -65,7 +68,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 	 * @param <AV>
 	 *            type of attribute values created by this factory
 	 */
-	public static abstract class Factory<AV extends AttributeValue> extends DatatypeFactory<AV>
+	public static abstract class Factory<AV extends AttributeValue> extends BaseDatatypeFactory<AV>
 	{
 
 		/**
@@ -166,7 +169,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 		}
 
 		@Override
-		protected boolean isExpressionStatic()
+		public boolean isExpressionStatic()
 		{
 			return true;
 		}

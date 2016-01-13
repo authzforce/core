@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.value;
+package org.ow2.authzforce.core.pdp.impl.value;
 
 import java.util.Deque;
 
@@ -106,7 +106,7 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 		 * XML schema (INF, -INF, Nan), so we can return the result of division by zero as it is (JAXB will convert it properly).
 		 */
 
-		final Double result = new Double(value / divisor.value);
+		final Double result = Double.valueOf(value / divisor.value);
 		if (result.isInfinite() || result.isNaN())
 		{
 			throw ILLEGAL_DIV_BY_ZERO_EXCEPTION;

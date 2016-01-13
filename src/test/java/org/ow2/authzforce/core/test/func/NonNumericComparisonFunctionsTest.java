@@ -23,13 +23,13 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.impl.value.DateValue;
+import org.ow2.authzforce.core.pdp.impl.value.StringValue;
+import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
 import org.ow2.authzforce.core.test.utils.FunctionTest;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.DateTimeValue;
-import org.ow2.authzforce.core.value.DateValue;
-import org.ow2.authzforce.core.value.StringValue;
-import org.ow2.authzforce.core.value.TimeValue;
-import org.ow2.authzforce.core.value.Value;
 
 @RunWith(Parameterized.class)
 public class NonNumericComparisonFunctionsTest extends FunctionTest

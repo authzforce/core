@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +25,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
-import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * Low-level interface to a list of PEP action (obligation/advice) expressions
@@ -161,12 +162,12 @@ public interface PepActionExpressions
 		 * @param actionExpressionsFactory
 		 *            PepActionExpressions factory
 		 * @return PEP action expressions
-		 * @throws ParsingException
-		 *             if there is a parsing/syntax error with one of the obligation/advice expressions
+		 * @throws IllegalArgumentException
+		 *             if there is an invalid obligation/advice expression
 		 */
 		public static <T extends PepActionExpressions> T parseActionExpressions(ObligationExpressions jaxbObligationExpressions,
 				AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, ExpressionFactory expFactory,
-				PepActionExpressions.Factory<T> actionExpressionsFactory) throws ParsingException
+				PepActionExpressions.Factory<T> actionExpressionsFactory) throws IllegalArgumentException
 		{
 			final T actionExpressions = actionExpressionsFactory.getInstance(xPathCompiler, expFactory);
 			if (jaxbObligationExpressions != null)
@@ -177,10 +178,10 @@ public interface PepActionExpressions
 					try
 					{
 						actionExpressions.add(jaxbObligationExp);
-					} catch (ParsingException e)
+					} catch (IllegalArgumentException e)
 					{
-						throw new ParsingException("Error parsing one of the ObligationExpression[@ObligationId='" + jaxbObligationExp.getObligationId()
-								+ "']/AttributeAssignmentExpression/Expression elements", e);
+						throw new IllegalArgumentException("One of the ObligationExpression[@ObligationId='" + jaxbObligationExp.getObligationId()
+								+ "']/AttributeAssignmentExpression/Expression elements is invalid", e);
 					}
 				}
 			}
@@ -193,10 +194,10 @@ public interface PepActionExpressions
 					try
 					{
 						actionExpressions.add(jaxbAdviceExp);
-					} catch (ParsingException e)
+					} catch (IllegalArgumentException e)
 					{
-						throw new ParsingException("Error parsing one of the AdviceExpression[@AdviceId='" + jaxbAdviceExp.getAdviceId()
-								+ "']/AttributeAssignmentExpression/Expression elements", e);
+						throw new IllegalArgumentException("One of the AdviceExpression[@AdviceId='" + jaxbAdviceExp.getAdviceId()
+								+ "']/AttributeAssignmentExpression/Expression elements is invalid", e);
 					}
 				}
 			}
@@ -241,11 +242,12 @@ public interface PepActionExpressions
 				throws IndeterminateEvaluationException
 		{
 			final List<Obligation> newObligations = evaluate(pepActionExpressions.getObligationExpressions(), context,
-					PepActions.OBLIGATION_FACTORY.getActionXmlElementName());
-			final List<Advice> newAdvices = evaluate(pepActionExpressions.getAdviceExpressions(), context, PepActions.ADVICE_FACTORY.getActionXmlElementName());
+					BasePepActions.OBLIGATION_FACTORY.getActionXmlElementName());
+			final List<Advice> newAdvices = evaluate(pepActionExpressions.getAdviceExpressions(), context,
+					BasePepActions.ADVICE_FACTORY.getActionXmlElementName());
 			if (pepActionsToUpdate == null)
 			{
-				return new PepActions(newObligations, newAdvices);
+				return new BasePepActions(newObligations, newAdvices);
 			}
 
 			pepActionsToUpdate.merge(newObligations, newAdvices);
@@ -258,20 +260,20 @@ public interface PepActionExpressions
 	 * 
 	 * @param jaxbObligationExp
 	 *            XACML ObligationExpression
-	 * @throws ParsingException
-	 *             if error (e.g. syntax error) parsing the expression
+	 * @throws IllegalArgumentException
+	 *             if invalid expression
 	 */
-	void add(ObligationExpression jaxbObligationExp) throws ParsingException;
+	void add(ObligationExpression jaxbObligationExp) throws IllegalArgumentException;
 
 	/**
 	 * Adds a XACML AdviceExpression to the list
 	 * 
 	 * @param jaxbAdviceExp
 	 *            XACML ObligationExpression
-	 * @throws ParsingException
-	 *             if error (e.g. syntax error) parsing the expression
+	 * @throws IllegalArgumentException
+	 *             if invalid expression
 	 */
-	void add(AdviceExpression jaxbAdviceExp) throws ParsingException;
+	void add(AdviceExpression jaxbAdviceExp) throws IllegalArgumentException;
 
 	/**
 	 * Gets all the expressions added with {@link #add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression)}

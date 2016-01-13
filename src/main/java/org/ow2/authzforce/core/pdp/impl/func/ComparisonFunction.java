@@ -14,7 +14,7 @@
 /**
  *
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.Deque;
@@ -22,16 +22,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-
-import com.sun.xacml.Function;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 
 /**
  * A superclass of all the standard comparison functions (return a boolean).
@@ -126,7 +129,7 @@ public final class ComparisonFunction<AV extends AttributeValue & Comparable<AV>
 		{
 			this.funcSig = functionSig;
 			this.postCondition = postCondition;
-			illegalComparisonMsgPrefix = "Function " + funcSig.name + ": cannot compare arguments: ";
+			illegalComparisonMsgPrefix = "Function " + funcSig.getName() + ": cannot compare arguments: ";
 		}
 
 		private FirstOrderFunctionCall<BooleanValue> getInstance(List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
@@ -198,7 +201,7 @@ public final class ComparisonFunction<AV extends AttributeValue & Comparable<AV>
 	 * all numeric types (integers, doubles...) and string, but not to XML schema date/times that may have indeterminate relationship to each other (see
 	 * {@link #TEMPORAL_SET}).
 	 */
-	public static final FunctionSet TOTAL_ORDER_SET = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "total-order-comparison",
+	public static final FunctionSet TOTAL_ORDER_SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "total-order-comparison",
 			getTotalComparisonFunctions());
 
 	/*
@@ -207,7 +210,7 @@ public final class ComparisonFunction<AV extends AttributeValue & Comparable<AV>
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
 		return funcCallFactory.getInstance(argExpressions, remainingArgTypes);
 	}
@@ -230,5 +233,5 @@ public final class ComparisonFunction<AV extends AttributeValue & Comparable<AV>
 	 * relationship to each other.
 	 * 
 	 */
-	public static final FunctionSet TEMPORAL_SET = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-comparison", getTemporalFunctions());
+	public static final FunctionSet TEMPORAL_SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-comparison", getTemporalFunctions());
 }

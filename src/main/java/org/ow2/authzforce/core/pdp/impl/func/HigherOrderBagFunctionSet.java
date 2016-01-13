@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -26,20 +21,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.Expressions;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.BagDatatype;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.Value;
-
-import com.sun.xacml.Function;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.Expressions;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 
 /**
  * Set of higher-order bag functions
@@ -91,7 +89,7 @@ public final class HigherOrderBagFunctionSet
 	 */
 	private static abstract class BooleanHigherOrderTwoBagFunction extends BooleanHigherOrderBagFunction
 	{
-		private final IllegalArgumentException invalidLastArgTypeException = new IllegalArgumentException("Function" + functionId
+		private final IllegalArgumentException invalidLastArgTypeException = new IllegalArgumentException("Function" + this
 				+ ": Invalid last argument type: primitive (not a bag). Required: a bag");
 
 		private BooleanHigherOrderTwoBagFunction(String functionName)
@@ -104,7 +102,7 @@ public final class HigherOrderBagFunctionSet
 		{
 			if (numInputs != 3)
 			{
-				throw new IllegalArgumentException("Function " + this.functionId + ": Invalid number of arguments (" + numInputs + "). Required: 3");
+				throw new IllegalArgumentException("Function " + this + ": Invalid number of arguments (" + numInputs + "). Required: 3");
 			}
 		}
 
@@ -515,7 +513,7 @@ public final class HigherOrderBagFunctionSet
 		{
 			if (numInputs < 2)
 			{
-				throw new IllegalArgumentException("Function " + this.functionId + ": Invalid number of arguments (" + numInputs + "). Required: >= 2");
+				throw new IllegalArgumentException("Function " + this + ": Invalid number of arguments (" + numInputs + "). Required: >= 2");
 			}
 		}
 
@@ -915,7 +913,7 @@ public final class HigherOrderBagFunctionSet
 	/**
 	 * Function cluster
 	 */
-	public static final FunctionSet INSTANCE = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "higher-order-bag",
+	public static final FunctionSet INSTANCE = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "higher-order-bag",
 	//
 			new BooleanOneBagOnlyFunction(NAME_ANY_OF, new AnyOfCallFactory()),//
 			new BooleanOneBagOnlyFunction(NAME_ALL_OF, new AllOfCallFactory()),//

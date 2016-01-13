@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.List;
 

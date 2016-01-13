@@ -3,34 +3,31 @@
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.expression;
+package org.ow2.authzforce.core.pdp.impl.expression;
 
 import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import org.ow2.authzforce.core.AttributeProvider;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.BagDatatype;
-import org.ow2.authzforce.core.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeProvider;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
 
 /**
  * AttributeDesignator
@@ -237,7 +234,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	@Override
 	public JAXBElement<AttributeDesignatorType> getJAXBElement()
 	{
-		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator(this);
+		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator(this);
 	}
 
 	// lazy initialization

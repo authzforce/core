@@ -28,16 +28,14 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObjectFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.expression.Apply;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
-import org.ow2.authzforce.core.func.StandardFunctionRegistry;
-import org.ow2.authzforce.core.value.StandardDatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.impl.expression.Apply;
+import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
+import org.ow2.authzforce.core.pdp.impl.func.StandardFunctionRegistry;
+import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 public class TestApplyMarshalling
 {
@@ -80,16 +78,16 @@ public class TestApplyMarshalling
 
 		try
 		{
-			u = XACMLBindingUtils.createXacml3Unmarshaller();
+			u = JaxbXACMLUtils.createXacml3Unmarshaller();
 			applyElt = (JAXBElement<ApplyType>) u.unmarshal(new File("src/test/resources/custom/TestApplyMarshalling.xml"));
 			applyType = applyElt.getValue();
 			apply = Apply.getInstance(applyType, null, STD_EXPRESSION_FACTORY, null);
-			marshaller = XACMLBindingUtils.createXacml3Marshaller();
+			marshaller = JaxbXACMLUtils.createXacml3Marshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			final StringWriter strWriter = new StringWriter();
 			marshaller.marshal(new ObjectFactory().createApply(apply), strWriter);
 			LOGGER.debug("Marshalling result: {}", strWriter);
-		} catch (JAXBException | ParsingException e)
+		} catch (JAXBException e)
 		{
 			LOGGER.error("XACML Apply (un)marshalling test error", e);
 			Assert.fail(e.getLocalizedMessage());

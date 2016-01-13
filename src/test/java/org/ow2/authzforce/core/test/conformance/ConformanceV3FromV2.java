@@ -26,10 +26,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.ow2.authzforce.core.PDPImpl;
-import org.ow2.authzforce.core.XACMLParsers;
-import org.ow2.authzforce.core.XACMLParsers.NamespaceFilteringParser;
-import org.ow2.authzforce.core.XACMLParsers.XACMLParserFactory;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
+import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
+import org.ow2.authzforce.core.pdp.impl.PDPImpl;
 import org.ow2.authzforce.core.test.utils.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +130,7 @@ public class ConformanceV3FromV2
 		this.testFilePathPrefix = filePathPrefix;
 		this.enableXPath = enableXPath;
 		this.reqFilter = requestFilter;
-		this.xacmlParserFactory = XACMLParsers.getXACMLParserFactory(enableXPath);
+		this.xacmlParserFactory = JaxbXACMLUtils.getXACMLParserFactory(enableXPath);
 	}
 
 	@Test

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.expression;
+package org.ow2.authzforce.core.pdp.impl.expression;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,16 +25,17 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.func.FunctionCall;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.Value;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.Value;
 
-import com.sun.xacml.Function;
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
 
 /**
  * Evaluates XACML Apply
@@ -82,15 +83,14 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 *            to V2. This is used to detect exceeding depth of VariableReference reference when a new VariableReference occurs in a VariableDefinition's
 	 *            expression. May be null, if this expression does not belong to any VariableDefinition.
 	 * @return Apply instance
-	 * @throws ParsingException
-	 *             if {@code xacmlApply} or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid expressions, or
-	 *             invalid arguments for this function; or if all {@code xprs} are static but calling the function statically (with these static arguments)
-	 *             failed
+	 * 
 	 * @throws IllegalArgumentException
-	 *             if invalid {@code xacmlApply}
+	 *             if {@code xacmlApply} is invalid or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid
+	 *             expressions, or invalid arguments for this function; or if all {@code xprs} are static but calling the function statically (with these static
+	 *             arguments) failed
 	 */
 	public static Apply<?> getInstance(ApplyType xacmlApply, XPathCompiler xPathCompiler, ExpressionFactory expFactory, Deque<String> longestVarRefChain)
-			throws ParsingException, IllegalArgumentException
+			throws IllegalArgumentException
 	{
 		if (xacmlApply == null)
 		{
@@ -112,9 +112,9 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 			try
 			{
 				exprHandler = expFactory.getInstance(exprElt.getValue(), xPathCompiler, longestVarRefChain);
-			} catch (ParsingException e)
+			} catch (IllegalArgumentException e)
 			{
-				throw new ParsingException("Error parsing one of Apply[description=" + applyDesc + "]'s function arguments (Expressions)", e);
+				throw new IllegalArgumentException("Error parsing one of Apply[description=" + applyDesc + "]'s function arguments (Expressions)", e);
 			}
 
 			funcInputs.add(exprHandler);
@@ -143,7 +143,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 		try
 		{
 			function = expFactory.getFunction(functionId, subFuncReturnType);
-		} catch (UnknownIdentifierException e)
+		} catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
 					+ ") of sub-function (first-parameter) of Apply Function '" + functionId + "'", e);
@@ -178,7 +178,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 * 
 	 */
 	private Apply(Function<V> function, List<Expression<?>> xprs, List<JAXBElement<? extends ExpressionType>> originalXacmlExpressions, String description)
-			throws IllegalArgumentException, ParsingException
+			throws IllegalArgumentException
 	{
 		assert function != null;
 
@@ -221,8 +221,8 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 				staticEvalResult = funcCall.evaluate(null);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new ParsingException("Error parsing Apply[Description = " + description + "]: Error pre-evaluating the function call " + function
-						+ " with (all static) arguments: " + xprs, e);
+				throw new IllegalArgumentException("Invalid Apply[Description = " + description + "]: function " + function
+						+ " is not applicable to arguments (all static): " + xprs, e);
 			}
 
 			/*
@@ -289,7 +289,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	@Override
 	public JAXBElement<ApplyType> getJAXBElement()
 	{
-		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createApply(this);
+		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createApply(this);
 	}
 
 }

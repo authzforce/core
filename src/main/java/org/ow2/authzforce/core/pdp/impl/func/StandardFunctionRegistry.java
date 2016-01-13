@@ -11,19 +11,19 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.ow2.authzforce.core.BasePdpExtensionRegistry;
-import org.ow2.authzforce.core.PdpExtensionRegistry.PdpExtensionComparator;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
+import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.Function;
 import com.sun.xacml.NotFunction;
 import com.sun.xacml.StringNormalizeFunction;
 import com.sun.xacml.TimeInRangeFunction;
@@ -32,9 +32,9 @@ import com.sun.xacml.TimeInRangeFunction;
  * This factory supports the standard set of functions specified in XACML 1.x and 2.0 and 3.0.
  * <p>
  * Note that because this supports only the standard functions, this factory does not allow the addition of any other functions. If you call
- * <code>addFunction</code> on an instance of this class, an exception will be thrown. If you need a standard factory that is modifiable, you can either create
- * a new <code>BasePdpExtensionRegistry</code> (or some other implementation of <code>PdpExtensionRegistry</code>) populated with the standard functions from
- * {@code this#getSupportedFunctions()}
+ * {@link #addFunction(Function)} on an instance of this class, an exception will be thrown. If you need a standard factory that is modifiable, you can either
+ * create a new <code>BasePdpExtensionRegistry</code> (or some other implementation of <code>PdpExtensionRegistry</code>) populated with the standard functions
+ * from {@code this#getSupportedFunctions()}
  */
 public final class StandardFunctionRegistry extends FunctionRegistry
 {
@@ -195,7 +195,7 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 	@Override
 	public void addFunction(Function<?> function) throws IllegalArgumentException
 	{
-		throw new UnsupportedOperationException("a standard factory cannot be modified");
+		throw new UnsupportedOperationException("A standard factory cannot be modified");
 	}
 
 	/**

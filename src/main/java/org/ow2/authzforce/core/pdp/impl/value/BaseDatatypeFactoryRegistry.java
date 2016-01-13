@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.value;
+package org.ow2.authzforce.core.pdp.impl.value;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,10 +19,11 @@ import java.util.Set;
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import org.ow2.authzforce.core.BasePdpExtensionRegistry;
-import org.ow2.authzforce.core.expression.PrimitiveValueExpression;
-
-import com.sun.xacml.UnknownIdentifierException;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
+import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 
 /**
  * Basic implementation of <code>DatatypeFactoryRegistry</code>.
@@ -59,12 +60,12 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 		super(DatatypeFactory.class);
 	}
 
-	protected DatatypeFactory<?> get(String typeId) throws UnknownIdentifierException
+	protected DatatypeFactory<?> get(String typeId) throws IllegalArgumentException
 	{
 		final DatatypeFactory<?> datatypeFactory = getExtension(typeId);
 		if (datatypeFactory == null)
 		{
-			throw new UnknownIdentifierException("Attribute datatype '" + typeId + "' is not supported.");
+			throw new IllegalArgumentException("Attribute datatype '" + typeId + "' is not supported.");
 		}
 
 		return datatypeFactory;
@@ -93,33 +94,11 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 	}
 
 	@Override
-	public PrimitiveValueExpression<?> createValueExpression(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws UnknownIdentifierException,
-			IllegalArgumentException
+	public PrimitiveValueExpression<?> createValueExpression(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		final DatatypeFactory<?> datatypeFactory = get(jaxbAttrVal.getDataType());
 		return createValueExpression(datatypeFactory, jaxbAttrVal, xPathCompiler, datatypeFactory.isExpressionStatic());
 	}
-
-	// @Override
-	// public <AV extends AttributeValue> PrimitiveValueExpression<AV> createValueExpression(AttributeValueType jaxbAttrVal, Datatype<AV> expectedDatatype,
-	// XPathCompiler xPathCompiler) throws UnknownIdentifierException, ParsingException
-	// {
-	// final DatatypeFactory<?> datatypeFactory = get(expectedDatatype.getId());
-	// final AttributeValue rawValue = createValue(datatypeFactory, jaxbAttrVal, xPathCompiler);
-	//
-	// final AV value;
-	// try
-	// {
-	// value = expectedDatatype.cast(rawValue);
-	// } catch (ClassCastException e)
-	// {
-	// throw new IllegalArgumentException("Expected attribute datatype (" + expectedDatatype + ") does not match actual one ("
-	// + datatypeFactory.getDatatype() + ") registered in datatype factory for input XACML/JAXB AttributeValue's datatype URI  ("
-	// + jaxbAttrVal.getDataType() + ")", e);
-	// }
-	//
-	// return new PrimitiveValueExpression<>(expectedDatatype, value);
-	// }
 
 	/*
 	 * (non-Javadoc)

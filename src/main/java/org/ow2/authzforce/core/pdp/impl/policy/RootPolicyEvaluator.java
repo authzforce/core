@@ -11,28 +11,32 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.policy;
+package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 
-import org.ow2.authzforce.core.DecisionResult;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.PdpExtensionLoader;
-import org.ow2.authzforce.core.XACMLParsers;
-import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
-import org.ow2.authzforce.core.func.FunctionRegistry;
-import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.PdpExtensionLoader;
+import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
+import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * Root policy evaluator, used by the PDP to find and evaluate the root (a.k.a. top-level) policy matching a given request context.
@@ -122,7 +126,7 @@ public interface RootPolicyEvaluator extends Closeable
 		 *            (mandatory) XACML policy/rule combining algorithm registry
 		 * @param jaxbRefPolicyProviderConf
 		 *            (optional) policy-by-reference Provider's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies
-		 *            found by root policy Provider
+		 *            found by root policy Provider; null if no refPolicyProvider specified
 		 * @param maxPolicySetRefDepth
 		 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...
 		 * @param strictAttributeIssuerMatch
@@ -132,15 +136,19 @@ public interface RootPolicyEvaluator extends Closeable
 		 *            practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the
 		 *            attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes
 		 *            alone." if one of the mandatory arguments is null
+		 * @param environmentProperties
+		 *            PDP configuration environment properties
 		 * @throws IllegalArgumentException
 		 *             if one of the mandatory arguments is null; or if any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does
 		 *             not provide any attribute; or it is in conflict with another one already registered to provide the same or part of the same attributes.
 		 * @throws IOException
+		 *             if an {@link Exception} occured after instantiating the attribute Provider modules (from {@code jaxbAttributeProviderConfs}) but the
+		 *             modules could not be closed (with {@link Closeable#close()} before throwing the exception)
 		 */
 		public Base(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
 				int maxVariableReferenceDepth, boolean enableXPath, CombiningAlgRegistry combiningAlgRegistry,
 				AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth,
-				boolean strictAttributeIssuerMatch) throws IllegalArgumentException, IOException
+				boolean strictAttributeIssuerMatch, EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
 		{
 			if (jaxbRootPolicyProviderConf == null || combiningAlgRegistry == null)
 			{
@@ -154,8 +162,11 @@ public interface RootPolicyEvaluator extends Closeable
 			final RootPolicyProviderModule.Factory<AbstractPolicyProvider> rootPolicyProviderModFactory = PdpExtensionLoader.getJaxbBoundExtension(
 					RootPolicyProviderModule.Factory.class, jaxbRootPolicyProviderConf.getClass());
 
-			rootPolicyProviderMod = rootPolicyProviderModFactory.getInstance(jaxbRootPolicyProviderConf, XACMLParsers.getXACMLParserFactory(enableXPath),
-					this.expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
+			final RefPolicyProviderModule.Factory<AbstractPolicyProvider> refPolicyProviderModFactory = jaxbRefPolicyProviderConf == null ? null
+					: PdpExtensionLoader.getJaxbBoundExtension(RefPolicyProviderModule.Factory.class, jaxbRefPolicyProviderConf.getClass());
+			rootPolicyProviderMod = rootPolicyProviderModFactory.getInstance(jaxbRootPolicyProviderConf, JaxbXACMLUtils.getXACMLParserFactory(enableXPath),
+					this.expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, refPolicyProviderModFactory, maxPolicySetRefDepth,
+					environmentProperties);
 		}
 
 		@Override
@@ -164,20 +175,21 @@ public interface RootPolicyEvaluator extends Closeable
 			final IPolicyEvaluator policy;
 			try
 			{
-				policy = rootPolicyProviderMod.findPolicy(context);
+				policy = rootPolicyProviderMod.getPolicy(context);
 			} catch (IndeterminateEvaluationException e)
 			{
-				LOGGER.info("Error finding applicable root policy to evaluate with root policy Provider module {}", rootPolicyProviderMod, e);
-				return new DecisionResult(e.getStatus());
-			} catch (ParsingException e)
+				LOGGER.info("Root policy Provider module {} could not find an applicable root policy to evaluate", rootPolicyProviderMod, e);
+				return new BaseDecisionResult(e.getStatus());
+			} catch (IllegalArgumentException e)
 			{
-				LOGGER.warn("Error parsing one of the possible root policies (handled by root policy Provider module {})", rootPolicyProviderMod, e);
-				return e.getIndeterminateResult();
+				LOGGER.warn("One of the possible root policies (resolved by the root policy provider module {}) is invalid", rootPolicyProviderMod, e);
+				// we consider that
+				return new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "No applicable policy found due to internal error"));
 			}
 
 			if (policy == null)
 			{
-				return DecisionResult.NOT_APPLICABLE;
+				return BaseDecisionResult.NOT_APPLICABLE;
 			}
 
 			return policy.evaluate(context, true);

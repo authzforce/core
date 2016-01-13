@@ -11,13 +11,13 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.value;
+package org.ow2.authzforce.core.pdp.impl.value;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
 
 /**
  * Superclass of duration attribute values, i.e. XML schema dayTime/yearMonthDuration values. The choice of the Java type Duration is based on JAXB

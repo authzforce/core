@@ -25,28 +25,28 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.Bags;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.impl.value.Base64BinaryValue;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DNSNameValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.impl.value.DateValue;
+import org.ow2.authzforce.core.pdp.impl.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.impl.value.DoubleValue;
+import org.ow2.authzforce.core.pdp.impl.value.HexBinaryValue;
+import org.ow2.authzforce.core.pdp.impl.value.IPAddressValue;
+import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.impl.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.impl.value.StringValue;
+import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
+import org.ow2.authzforce.core.pdp.impl.value.X500NameValue;
+import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
 import org.ow2.authzforce.core.test.utils.FunctionTest;
-import org.ow2.authzforce.core.value.AnyURIValue;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.Bags;
-import org.ow2.authzforce.core.value.Base64BinaryValue;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.DNSNameValue;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.DateTimeValue;
-import org.ow2.authzforce.core.value.DateValue;
-import org.ow2.authzforce.core.value.DayTimeDurationValue;
-import org.ow2.authzforce.core.value.DoubleValue;
-import org.ow2.authzforce.core.value.HexBinaryValue;
-import org.ow2.authzforce.core.value.IPAddressValue;
-import org.ow2.authzforce.core.value.IntegerValue;
-import org.ow2.authzforce.core.value.RFC822NameValue;
-import org.ow2.authzforce.core.value.StringValue;
-import org.ow2.authzforce.core.value.TimeValue;
-import org.ow2.authzforce.core.value.Value;
-import org.ow2.authzforce.core.value.X500NameValue;
-import org.ow2.authzforce.core.value.YearMonthDurationValue;
 
 @RunWith(Parameterized.class)
 public class BagFunctionsTest extends FunctionTest
@@ -138,7 +138,7 @@ public class BagFunctionsTest extends FunctionTest
 
 		// case 1: empty bag {}
 		// one-and-only({}) -> Indeterminate
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(typeParam.EMPTY_BAG), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(typeParam.FACTORY.getEmptyBag()), null });
 
 		// one-and-only({primitiveValue}) -> primitiveValue
 		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.singleton(typeParam.TYPE, primitiveValue)), primitiveValue });
@@ -162,7 +162,7 @@ public class BagFunctionsTest extends FunctionTest
 		Collection<Object[]> params = new ArrayList<>();
 
 		// bag-size({}) -> 0
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(typeParam.EMPTY_BAG), ZERO_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(typeParam.FACTORY.getEmptyBag()), ZERO_AS_INT });
 
 		// bag-size({primitiveValue}) -> 1
 		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.singleton(typeParam.TYPE, primitiveValue)), ONE_AS_INT });
@@ -184,7 +184,7 @@ public class BagFunctionsTest extends FunctionTest
 		Collection<Object[]> params = new ArrayList<>();
 
 		// is-in(val, {}) -> false
-		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, typeParam.EMPTY_BAG), BooleanValue.FALSE });
+		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, typeParam.FACTORY.getEmptyBag()), BooleanValue.FALSE });
 
 		// is-in(primitiveValue2, {primitiveValue1, primitiveValue2}) -> true
 		Bag<AV> twoValBag = Bags.getInstance(typeParam.TYPE, Arrays.asList(primitiveValue1, primitiveValue2));

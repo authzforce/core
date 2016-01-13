@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.policy;
+package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -22,15 +22,18 @@ import javax.xml.bind.JAXBException;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 
-import org.ow2.authzforce.core.XACMLParsers.NamespaceFilteringParser;
-import org.ow2.authzforce.core.XACMLParsers.XACMLParserFactory;
-import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.BaseStaticRootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
+import org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
+import org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.springframework.util.ResourceUtils;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * This is a simple implementation of <code>RootPolicyProviderModule</code> that supports static retrieval of the root policy. Its constructor accepts a
@@ -40,7 +43,7 @@ import com.sun.xacml.ParsingException;
  * Note that this class is designed to complement <code>BaseStaticRefPolicyProviderModule</code>. The reason is that when you define a configuration for your
  * PDP, it's easier to specify the two sets of policies by using two different Provider modules.
  */
-public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule.Static
+public class CoreRootPolicyProviderModule extends BaseStaticRootPolicyProviderModule
 {
 	private static final IllegalArgumentException ILLEGAL_XACML_PARSER_ARG_EXCEPTION = new IllegalArgumentException("Undefined XACML parser factory");
 	private static final IllegalArgumentException ILLEGAL_ROOT_POLICY_URL_ARG_EXCEPTION = new IllegalArgumentException("Undefined root policy URL");
@@ -49,31 +52,34 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * Module factory
 	 * 
 	 */
-	public static class Factory extends RootPolicyProviderModule.Factory<BaseStaticPolicyProvider>
+	public static class Factory extends RootPolicyProviderModule.Factory<StaticRootPolicyProvider>
 	{
 
 		@Override
-		public Class<BaseStaticPolicyProvider> getJaxbClass()
+		public Class<StaticRootPolicyProvider> getJaxbClass()
 		{
-			return BaseStaticPolicyProvider.class;
+			return StaticRootPolicyProvider.class;
 		}
 
 		@Override
-		public RootPolicyProviderModule getInstance(BaseStaticPolicyProvider conf, XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory,
-				CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
+		public <REF_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> RootPolicyProviderModule getInstance(StaticRootPolicyProvider jaxbConf,
+				XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
+				REF_POLICY_PROVIDER_CONF jaxbRefPolicyProviderConf, RefPolicyProviderModule.Factory<REF_POLICY_PROVIDER_CONF> refPolicyProviderModuleFactory,
+				int maxPolicySetRefDepth, EnvironmentProperties environmentProperties)
 		{
+			final String policyLocation = environmentProperties.replacePlaceholders(jaxbConf.getPolicyLocation());
 			final URL rootPolicyURL;
 			try
 			{
 				// try to load the policy location as a Spring resource
-				rootPolicyURL = ResourceUtils.getURL(conf.getPolicyLocation());
+				rootPolicyURL = ResourceUtils.getURL(policyLocation);
 			} catch (FileNotFoundException ioe)
 			{
-				throw new IllegalArgumentException("No root policy (as Spring resource) found at the following URL: " + conf.getPolicyLocation(), ioe);
+				throw new IllegalArgumentException("No root policy (as Spring resource) found at the following URL: " + jaxbConf.getPolicyLocation(), ioe);
 			}
 
-			return BaseStaticRootPolicyProviderModule.getInstance(rootPolicyURL, xacmlParserFactory, expressionFactory, combiningAlgRegistry,
-					jaxbRefPolicyProviderConf, maxPolicySetRefDepth);
+			return CoreRootPolicyProviderModule.getInstance(rootPolicyURL, xacmlParserFactory, expressionFactory, combiningAlgRegistry,
+					jaxbRefPolicyProviderConf, refPolicyProviderModuleFactory, maxPolicySetRefDepth, environmentProperties);
 		}
 	}
 
@@ -95,17 +101,17 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
 	 */
-	public BaseStaticRootPolicyProviderModule(Policy jaxbPolicy, Map<String, String> namespacePrefixesByURI, ExpressionFactory expressionFactory,
+	public CoreRootPolicyProviderModule(Policy jaxbPolicy, Map<String, String> namespacePrefixesByURI, ExpressionFactory expressionFactory,
 			CombiningAlgRegistry combiningAlgRegistry)
 	{
-		super(null, null, expressionFactory, combiningAlgRegistry, 0);
+		super(expressionFactory, combiningAlgRegistry, null, null, null, 0, null);
 
 		try
 		{
 			rootPolicy = PolicyEvaluator.getInstance(jaxbPolicy, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry);
-		} catch (ParsingException e)
+		} catch (IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException("Error parsing Policy: " + jaxbPolicy.getPolicyId(), e);
+			throw new IllegalArgumentException("Invalid Policy: " + jaxbPolicy.getPolicyId(), e);
 		}
 	}
 
@@ -128,20 +134,26 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
 	 * @param xacmlParserFactory
 	 *            XACML Parser factory; may be null if {@code jaxbRefPolicyProviderConf} as it is meant to be used by the RefPolicyProvider module
+	 * @param refPolicyProviderModFactory
+	 *            refPolicyProvider module factory for creating a module instance from configuration defined by {@code jaxbRefPolicyProviderConf}
+	 * @param environmentProperties
+	 *            global PDP configuration environment properties
 	 */
-	public BaseStaticRootPolicyProviderModule(PolicySet jaxbPolicySet, Map<String, String> namespacePrefixesByURI, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth,
-			XACMLParserFactory xacmlParserFactory)
+	public <CONF extends AbstractPolicyProvider> CoreRootPolicyProviderModule(PolicySet jaxbPolicySet, Map<String, String> namespacePrefixesByURI,
+			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, XACMLParserFactory xacmlParserFactory,
+			CONF jaxbRefPolicyProviderConf, RefPolicyProviderModule.Factory<CONF> refPolicyProviderModFactory, int maxPolicySetRefDepth,
+			EnvironmentProperties environmentProperties)
 	{
-		super(jaxbRefPolicyProviderConf, xacmlParserFactory, expressionFactory, combiningAlgRegistry, maxPolicySetRefDepth);
+		super(expressionFactory, combiningAlgRegistry, xacmlParserFactory, jaxbRefPolicyProviderConf, refPolicyProviderModFactory, maxPolicySetRefDepth,
+				environmentProperties);
 
 		try
 		{
 			rootPolicy = PolicySetEvaluator.getInstance(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry,
 					refPolicyProvider, null);
-		} catch (ParsingException e)
+		} catch (IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException("Error parsing PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
+			throw new IllegalArgumentException("Invalid PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
 		}
 	}
 
@@ -162,12 +174,17 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 	 * @param maxPolicySetRefDepth
 	 *            maximum depth of PolicySet reference chaining via PolicySetIdReference that is allowed in RefPolicyProvider derived from
 	 *            {@code jaxbRefPolicyProviderConf}: PolicySet1 -> PolicySet2 -> ...; iff {@code jaxbRefPolicyProviderConf == null}, this parameter is ignored.
+	 * @param refPolicyProviderModFactory
+	 *            refPolicyProvider module factory for creating a module instance from configuration defined by {@code jaxbRefPolicyProviderConf}
+	 * @param environmentProperties
+	 *            global PDP configuration environment properties
 	 *
 	 * @return instance of this class
 	 * 
 	 */
-	public static BaseStaticRootPolicyProviderModule getInstance(URL rootPolicyURL, XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth)
+	public static <CONF extends AbstractPolicyProvider> CoreRootPolicyProviderModule getInstance(URL rootPolicyURL, XACMLParserFactory xacmlParserFactory,
+			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, CONF jaxbRefPolicyProviderConf,
+			RefPolicyProviderModule.Factory<CONF> refPolicyProviderModFactory, int maxPolicySetRefDepth, EnvironmentProperties environmentProperties)
 	{
 		if (rootPolicyURL == null)
 		{
@@ -199,12 +216,13 @@ public class BaseStaticRootPolicyProviderModule extends RootPolicyProviderModule
 
 		if (jaxbPolicyOrPolicySetObj instanceof Policy)
 		{
-			return new BaseStaticRootPolicyProviderModule((Policy) jaxbPolicyOrPolicySetObj, parser.getNamespacePrefixUriMap(), expressionFactory,
+			return new CoreRootPolicyProviderModule((Policy) jaxbPolicyOrPolicySetObj, parser.getNamespacePrefixUriMap(), expressionFactory,
 					combiningAlgRegistry);
 		} else if (jaxbPolicyOrPolicySetObj instanceof PolicySet)
 		{
-			return new BaseStaticRootPolicyProviderModule((PolicySet) jaxbPolicyOrPolicySetObj, parser.getNamespacePrefixUriMap(), expressionFactory,
-					combiningAlgRegistry, jaxbRefPolicyProviderConf, maxPolicySetRefDepth, xacmlParserFactory);
+			return new CoreRootPolicyProviderModule((PolicySet) jaxbPolicyOrPolicySetObj, parser.getNamespacePrefixUriMap(), expressionFactory,
+					combiningAlgRegistry, xacmlParserFactory, jaxbRefPolicyProviderConf, refPolicyProviderModFactory, maxPolicySetRefDepth,
+					environmentProperties);
 		} else
 		{
 			throw new IllegalArgumentException("Unexpected element found as root of the policy document: "

@@ -14,25 +14,26 @@
 /**
  * 
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
 
-import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * AnyOf evaluator
  * 
  */
-public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf
+public class AnyOfEvaluator
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AnyOfEvaluator.class);
 
@@ -52,13 +53,12 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 	 * @param expFactory
 	 *            Expression factory
 	 * 
-	 * @throws ParsingException
-	 *             if AnyOf element is invalid
+	 * @throws IllegalArgumentException
+	 *             if one of the child AllOf elements is invalid
 	 */
-	public AnyOfEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
-			throws ParsingException
+	public AnyOfEvaluator(AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
-		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> jaxbAllOfList = jaxbAnyOf.getAllOves();
+		final List<AllOf> jaxbAllOfList = jaxbAnyOf.getAllOves();
 		if (jaxbAllOfList.isEmpty())
 		{
 			throw NO_ALL_OF_EXCEPTION;
@@ -66,22 +66,20 @@ public class AnyOfEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.
 
 		this.evaluatableAllOfList = new ArrayList<>(jaxbAllOfList.size());
 		int matchIndex = 0;
-		for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf jaxbAllOf : jaxbAllOfList)
+		for (final AllOf jaxbAllOf : jaxbAllOfList)
 		{
 			final AllOfEvaluator allOfEvaluator;
 			try
 			{
 				allOfEvaluator = new AllOfEvaluator(jaxbAllOf, xPathCompiler, expFactory);
-			} catch (ParsingException e)
+			} catch (IllegalArgumentException e)
 			{
-				throw new ParsingException("Error parsing <AnyOf>'s <AllOf>#" + matchIndex, e);
+				throw new IllegalArgumentException("Invalid <AnyOf>'s <AllOf>#" + matchIndex, e);
 			}
 
 			evaluatableAllOfList.add(allOfEvaluator);
 			matchIndex++;
 		}
-
-		this.allOves = Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf> unmodifiableList(evaluatableAllOfList);
 	}
 
 	/**

@@ -11,35 +11,39 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.value.AnyURIValue;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Base64BinaryValue;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.DNSNameValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.DateTimeValue;
-import org.ow2.authzforce.core.value.DateValue;
-import org.ow2.authzforce.core.value.DayTimeDurationValue;
-import org.ow2.authzforce.core.value.DoubleValue;
-import org.ow2.authzforce.core.value.HexBinaryValue;
-import org.ow2.authzforce.core.value.IPAddressValue;
-import org.ow2.authzforce.core.value.IntegerValue;
-import org.ow2.authzforce.core.value.RFC822NameValue;
-import org.ow2.authzforce.core.value.SimpleValue;
-import org.ow2.authzforce.core.value.StringValue;
-import org.ow2.authzforce.core.value.TimeValue;
-import org.ow2.authzforce.core.value.X500NameValue;
-import org.ow2.authzforce.core.value.YearMonthDurationValue;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.impl.value.Base64BinaryValue;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DNSNameValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.impl.value.DateValue;
+import org.ow2.authzforce.core.pdp.impl.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.impl.value.DoubleValue;
+import org.ow2.authzforce.core.pdp.impl.value.HexBinaryValue;
+import org.ow2.authzforce.core.pdp.impl.value.IPAddressValue;
+import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.impl.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.impl.value.SimpleValue;
+import org.ow2.authzforce.core.pdp.impl.value.StringValue;
+import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
+import org.ow2.authzforce.core.pdp.impl.value.X500NameValue;
+import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
 
 /**
  * Implements generic match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates and special match function x500Name-match
@@ -232,7 +236,7 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{
 		return funcCallFactory.getInstance(argExpressions, remainingArgTypes);
 	}
@@ -374,7 +378,7 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 	/**
 	 * Function cluster
 	 */
-	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "equal-type-match",
+	public static final FunctionSet CLUSTER = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "equal-type-match",
 	//
 			new EqualTypeMatchFunction<>(NAME_STRING_EQUAL, DatatypeConstants.STRING.TYPE, new EqualMatcher<StringValue>()),
 			//

@@ -11,24 +11,24 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.List;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.func.HigherOrderBagFunctionSet.OneBagOnlyHigherOrderFunction;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.BagDatatype;
-import org.ow2.authzforce.core.value.Bags;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeFactory;
-
-import com.sun.xacml.Function;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.Bags;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.impl.func.HigherOrderBagFunctionSet.OneBagOnlyHigherOrderFunction;
 
 /**
  * 

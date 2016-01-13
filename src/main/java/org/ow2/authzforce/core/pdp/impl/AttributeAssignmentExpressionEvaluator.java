@@ -14,7 +14,7 @@
 /**
  * 
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,23 +23,24 @@ import javax.xml.bind.JAXBElement;
 
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.Value;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * XACML AttributeAssignmentExpression evaluator
  * 
  */
-public class AttributeAssignmentExpressionEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression
+public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentExpression
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeAssignmentExpressionEvaluator.class);
 
@@ -80,11 +81,11 @@ public class AttributeAssignmentExpressionEvaluator extends oasis.names.tc.xacml
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            expression factory for parsing the AttributeAssignmentExpression's expression
-	 * @throws ParsingException
-	 *             error parsing the AttributeAssignmentExpression's Expression
+	 * @throws IllegalArgumentException
+	 *             invalid AttributeAssignmentExpression's Expression
 	 */
-	public AttributeAssignmentExpressionEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression jaxbAttrAssignExp,
-			XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws ParsingException
+	public AttributeAssignmentExpressionEvaluator(AttributeAssignmentExpression jaxbAttrAssignExp, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
+			throws IllegalArgumentException
 	{
 		// JAXB fields
 		this.attributeId = jaxbAttrAssignExp.getAttributeId();
@@ -107,7 +108,7 @@ public class AttributeAssignmentExpressionEvaluator extends oasis.names.tc.xacml
 	 * 
 	 * @param context
 	 *            evaluation context
-	 * @return AttributeAssignments or null if no AttributeValue resulting from evaluation of the Expression
+	 * @return non-null AttributeAssignments; empty if no AttributeValue resulting from evaluation of the Expression
 	 * @throws IndeterminateEvaluationException
 	 *             if evaluation of the Expression in this context fails (Indeterminate)
 	 */

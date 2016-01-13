@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.expression;
+package org.ow2.authzforce.core.pdp.impl.expression;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -34,20 +34,24 @@ import net.sf.saxon.s9api.XdmValue;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import org.ow2.authzforce.core.AttributeProvider;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.expression.Expressions.XPathEvaluator;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.BagDatatype;
-import org.ow2.authzforce.core.value.Bags;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.DatatypeFactory;
-import org.ow2.authzforce.core.value.XPathValue;
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeProvider;
+import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.Bags;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.XMLUtils;
+import org.ow2.authzforce.core.pdp.api.XMLUtils.XPathEvaluator;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
 
 import com.sun.xacml.ParsingException;
 
@@ -116,7 +120,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 			 * We only take the attribute value. (For XPath getting an attribute Value, the result XdmNode still holds the attribute QName.)
 			 */
 		case TEXT:
-			otherAttributes = null;
+			otherAttributes = Collections.emptyMap();
 			content = Collections.<Serializable> singletonList(nodeStrVal);
 			break;
 
@@ -170,7 +174,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	private final transient AttributeGUID contextSelectorGUID;
 
 	private final transient XPathCompiler xpathCompiler;
-	private final transient Expressions.XPathEvaluator xpathEvaluator;
+	private final transient XMLUtils.XPathEvaluator xpathEvaluator;
 
 	private final transient DatatypeFactory<?> attrFactory;
 
@@ -554,7 +558,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	@Override
 	public JAXBElement<AttributeSelectorType> getJAXBElement()
 	{
-		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createAttributeSelector(this);
+		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createAttributeSelector(this);
 	}
 
 	@Override

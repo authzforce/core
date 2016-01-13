@@ -11,21 +11,24 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
+import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.PDP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SystemPropertyUtils;
 
-import com.sun.xacml.PDP;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 
@@ -51,40 +54,6 @@ public final class PdpBean implements PDP
 	private String extSchemaLocation = null;
 
 	private String catalogLocation = null;
-
-	/**
-	 * @param request
-	 *            XACML Request
-	 * @param namespaceURIsByPrefix
-	 *            namespace prefix-URI mappings (e.g. "... xmlns:prefix=uri") in the original XACML Request bound to {@code req}, used as part of the context
-	 *            for XPath evaluation
-	 * @return XACML Response
-	 */
-	@Override
-	public Response evaluate(Request request, Map<String, String> namespaceURIsByPrefix)
-	{
-		if (!initialized)
-		{
-			final String cause;
-			if (confLocation == null)
-			{
-				cause = "Missing parameter: configuration file";
-			} else if (extSchemaLocation == null)
-			{
-				cause = "Missing parameter: extension schema file";
-			} else if (catalogLocation == null)
-			{
-				cause = "Missing parameter: XML catalog file";
-			} else
-			{
-				cause = "Check previous errors.";
-			}
-
-			throw new RuntimeException("PDP not initialized: " + cause);
-		}
-
-		return pdp.evaluate(request, namespaceURIsByPrefix);
-	}
 
 	/**
 	 * Configuration file. Only the 'defaultPDP' configuration will be loaded, i.e. 'pdp' element with 'name' matching the 'defaultPDP' attribute of the root
@@ -144,7 +113,7 @@ public final class PdpBean implements PDP
 			try
 			{
 				pdp = PdpConfigurationParser.getPDP(confLocation, catalogLocation, extSchemaLocation);
-			} catch (IOException | JAXBException e)
+			} catch (IOException | IllegalArgumentException e)
 			{
 				throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
 			}
@@ -159,6 +128,43 @@ public final class PdpBean implements PDP
 	public Response evaluate(Request request)
 	{
 		return evaluate(request, null);
+	}
+
+	private void checkInit()
+	{
+		if (!initialized)
+		{
+			final String cause;
+			if (confLocation == null)
+			{
+				cause = "Missing parameter: configuration file";
+			} else if (extSchemaLocation == null)
+			{
+				cause = "Missing parameter: extension schema file";
+			} else if (catalogLocation == null)
+			{
+				cause = "Missing parameter: XML catalog file";
+			} else
+			{
+				cause = "Check previous errors.";
+			}
+
+			throw new RuntimeException("PDP not initialized: " + cause);
+		}
+	}
+
+	@Override
+	public List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests)
+	{
+		checkInit();
+		return pdp.evaluate(individualDecisionRequests);
+	}
+
+	@Override
+	public Response evaluate(Request request, Map<String, String> namespaceURIsByPrefix)
+	{
+		checkInit();
+		return pdp.evaluate(request, namespaceURIsByPrefix);
 	}
 
 }

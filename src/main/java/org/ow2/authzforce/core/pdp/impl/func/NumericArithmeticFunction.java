@@ -11,22 +11,26 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.DoubleValue;
-import org.ow2.authzforce.core.value.IntegerValue;
-import org.ow2.authzforce.core.value.NumericValue;
-import org.ow2.authzforce.core.value.Value;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.DoubleValue;
+import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.impl.value.NumericValue;
 
 /**
  * A class that implements all the numeric *-add functions (as opposed to date/time *-add-* functions).
@@ -166,7 +170,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	}
 
 	@Override
-	protected FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		/**
 		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all static/constant arguments and if there are more than one, pre-compute
@@ -271,7 +275,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	/**
 	 * Numeric arithmetic function cluster
 	 */
-	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "numeric-arithmetic",
+	public static final FunctionSet CLUSTER = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "numeric-arithmetic",
 	//
 			new NumericArithmeticFunction<>(NAME_INTEGER_ABS, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE), new AbsOperation<IntegerValue>()),
 			//

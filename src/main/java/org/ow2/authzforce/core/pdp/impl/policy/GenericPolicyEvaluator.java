@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.policy;
+package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.Collections;
 import java.util.Deque;
@@ -28,22 +28,24 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
-import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.PepActions;
-import org.ow2.authzforce.core.DecisionResult;
-import org.ow2.authzforce.core.TargetEvaluator;
-import org.ow2.authzforce.core.combining.CombiningAlg;
-import org.ow2.authzforce.core.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.RefPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.VersionPatterns;
+import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-import com.sun.xacml.VersionConstraints;
 
 /**
  * Generic Policy(Set) evaluator. Evaluates to a Decision.
@@ -79,21 +81,20 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 	 *            keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what
 	 *            the version is.
 	 * @return instance instance of PolicyReference
-	 * @throws ParsingException
-	 *             if PolicySetIdReference loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
 	 * @throws IllegalArgumentException
 	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by
-	 *             {@code refPolicyProvider}
+	 *             {@code refPolicyProvider}, or PolicySetIdReference loop detected or PolicySetIdReference depth exceeds the max enforced by
+	 *             {@code policyProvider}
 	 */
 	public static <T extends IPolicyEvaluator> PolicyReferenceEvaluator<T> getPolicyRefEvaluator(IdReferenceType idRef, RefPolicyProvider refPolicyProvider,
-			Class<T> refPolicyType, Deque<String> parentPolicySetRefChain) throws ParsingException, IllegalArgumentException
+			Class<T> refPolicyType, Deque<String> parentPolicySetRefChain) throws IllegalArgumentException
 	{
 		if (refPolicyProvider == null)
 		{
 			throw UNDEF_REF_POLICY_PROVIDER_EXCEPTION;
 		}
 
-		final VersionConstraints versionConstraints = new VersionConstraints(idRef.getVersion(), idRef.getEarliestVersion(), idRef.getLatestVersion());
+		final VersionPatterns versionConstraints = new VersionPatterns(idRef.getVersion(), idRef.getEarliestVersion(), idRef.getLatestVersion());
 		/*
 		 * REMINDER: parentPolicySetRefChain is handled/updated by the refPolicyProvider. So do not modify it here, just pass the parameter. modify it here.
 		 */
@@ -102,7 +103,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 			final T policy;
 			try
 			{
-				policy = refPolicyProvider.get(idRef.getValue(), versionConstraints, refPolicyType, parentPolicySetRefChain);
+				policy = refPolicyProvider.get(refPolicyType, idRef.getValue(), versionConstraints, parentPolicySetRefChain);
 			} catch (IndeterminateEvaluationException e)
 			{
 				throw new IllegalArgumentException("Error resolving statically or parsing "
@@ -203,9 +204,9 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 		try
 		{
 			this.targetEvaluator = new TargetEvaluator(policyTarget, defaultXPathCompiler, expressionFactory);
-		} catch (IllegalArgumentException | ParsingException e)
+		} catch (IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException(this + ": Error parsing Target", e);
+			throw new IllegalArgumentException(this + ": Invalid Target", e);
 		}
 
 		this.combiningAlgId = combiningAlgId;
@@ -213,7 +214,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 		try
 		{
 			combiningAlg = combiningAlgRegistry.getAlgorithm(combiningAlgId, combinedElementClass);
-		} catch (UnknownIdentifierException e)
+		} catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": Unknown combining algorithm ID = " + combiningAlgId, e);
 		}
@@ -224,7 +225,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 			this.pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(obligationExps, adviceExps, defaultXPathCompiler, expressionFactory);
 		} catch (IllegalArgumentException | ParsingException e)
 		{
-			throw new IllegalArgumentException(this + ": Error parsing AttributeAssignmentExpressions", e);
+			throw new IllegalArgumentException(this + ": Invalid AttributeAssignmentExpressions", e);
 		}
 
 		this.localVariableIds = localVariableIds == null ? Collections.<String> emptySet() : localVariableIds;
@@ -260,7 +261,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 					if (!isApplicable(context))
 					{
 						LOGGER.debug("{} -> NotApplicable", policyId);
-						return DecisionResult.NOT_APPLICABLE;
+						return BaseDecisionResult.NOT_APPLICABLE;
 					}
 				} catch (IndeterminateEvaluationException e)
 				{
@@ -287,7 +288,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 					}
 
 					// everything else considered as Indeterminate
-					return new DecisionResult(targetMatchIndeterminateException.getStatus());
+					return new BaseDecisionResult(targetMatchIndeterminateException.getStatus());
 				}
 			}
 
@@ -352,12 +353,12 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 						 * error, therefore lower level than error)
 						 */
 						LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyId, e);
-						return new DecisionResult(DecisionType.INDETERMINATE, e.getStatus(), null, applicablePolicyIdList);
+						return new BaseDecisionResult(DecisionType.INDETERMINATE, e.getStatus(), null, applicablePolicyIdList);
 					}
 				}
 			}
 
-			return new DecisionResult(algResultDecision, algResult.getStatus(), pepActions, applicablePolicyIdList);
+			return new BaseDecisionResult(algResultDecision, algResult.getStatus(), pepActions, applicablePolicyIdList);
 		} finally
 		{
 			// remove local variables from context

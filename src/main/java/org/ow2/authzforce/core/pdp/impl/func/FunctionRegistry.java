@@ -14,13 +14,12 @@
 /**
  * 
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
-import org.ow2.authzforce.core.BasePdpExtensionRegistry;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.DatatypeFactory;
-
-import com.sun.xacml.Function;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 
 /**
  * 

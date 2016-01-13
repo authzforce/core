@@ -11,21 +11,25 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.combining;
+package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
-import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
  * Deny-unless-permit combining algorithm
  * 
  */
-public final class DenyUnlessPermitAlg extends CombiningAlg<Decidable>
+public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 {
 
 	private static class Evaluator implements CombiningAlg.Evaluator
@@ -66,13 +70,14 @@ public final class DenyUnlessPermitAlg extends CombiningAlg<Decidable>
 				}
 			}
 
-			return combinedDenyResult == null ? DecisionResult.DENY : combinedDenyResult;
+			return combinedDenyResult == null ? BaseDecisionResult.DENY : combinedDenyResult;
 		}
 
 	}
 
 	@Override
 	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
+			throws UnsupportedOperationException, IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}
@@ -91,7 +96,7 @@ public final class DenyUnlessPermitAlg extends CombiningAlg<Decidable>
 
 	private DenyUnlessPermitAlg(String algId)
 	{
-		super(algId, false, Decidable.class);
+		super(algId, Decidable.class);
 	}
 
 }

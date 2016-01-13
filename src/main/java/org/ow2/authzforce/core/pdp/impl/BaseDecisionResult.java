@@ -14,7 +14,7 @@
 /**
  * 
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,29 +26,31 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.PepActions;
+
 /**
- * Result of evaluation of {@link Decidable} (Policy, Rule...). This is different from the final Result in the Response by the PDP as it does not have the
- * Attributes to be included in the final Result; and Obligations/Advices are packaged together in a {@link PepActions} field.
+ * Base implementation of DecisionResult
  * 
  */
-public final class DecisionResult
+public final class BaseDecisionResult implements DecisionResult
 {
 	private static final IllegalArgumentException ILLEGAL_DECISION_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Decision");
 
 	/**
 	 * NotApplicable decision result
 	 */
-	public static final DecisionResult NOT_APPLICABLE = new DecisionResult(DecisionType.NOT_APPLICABLE, null);
+	public static final DecisionResult NOT_APPLICABLE = new BaseDecisionResult(DecisionType.NOT_APPLICABLE, null);
 
 	/**
 	 * Deny result with no obligation/advice/Included attribute/policy identifiers. Deny decision and nothing else.
 	 */
-	public static final DecisionResult DENY = new DecisionResult(DecisionType.DENY, null);
+	public static final DecisionResult DENY = new BaseDecisionResult(DecisionType.DENY, null);
 
 	/**
 	 * Permit result with no obligation/advice/Included attribute/policy identifiers. Permit decision and nothing else.
 	 */
-	public static final DecisionResult PERMIT = new DecisionResult(DecisionType.PERMIT, null);
+	public static final DecisionResult PERMIT = new BaseDecisionResult(DecisionType.PERMIT, null);
 
 	private final DecisionType decision;
 
@@ -72,7 +74,7 @@ public final class DecisionResult
 	 * @param policyIdentifierList
 	 *            list of matched policy identifiers
 	 */
-	public DecisionResult(DecisionType decision, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	public BaseDecisionResult(DecisionType decision, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
 		if (decision == null)
 		{
@@ -81,7 +83,7 @@ public final class DecisionResult
 
 		this.decision = decision;
 		this.status = status;
-		this.pepActions = pepActions == null ? new PepActions(null, null) : pepActions;
+		this.pepActions = pepActions == null ? new BasePepActions(null, null) : pepActions;
 		this.applicablePolicyIdList = policyIdentifierList == null ? new ArrayList<JAXBElement<IdReferenceType>>() : policyIdentifierList;
 
 	}
@@ -92,13 +94,13 @@ public final class DecisionResult
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
-	public DecisionResult(Status status)
+	public BaseDecisionResult(Status status)
 	{
 		this(DecisionType.INDETERMINATE, status, null, null);
 	}
 
 	/**
-	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #PolicyDecisionResult(Status)} for Indeterminate, and
+	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #BaseDecisionResult(Status)} for Indeterminate, and
 	 * {@link #NOT_APPLICABLE} for NotApplicable.
 	 * 
 	 * @param decision
@@ -106,7 +108,7 @@ public final class DecisionResult
 	 * @param pepActions
 	 *            PEP actions (obligations/advices)
 	 */
-	public DecisionResult(DecisionType decision, PepActions pepActions)
+	public BaseDecisionResult(DecisionType decision, PepActions pepActions)
 	{
 		this(decision, null, pepActions, null);
 	}
@@ -138,7 +140,7 @@ public final class DecisionResult
 		}
 
 		final DecisionResult other = (DecisionResult) obj;
-		if (this.decision != other.decision)
+		if (this.decision != other.getDecision())
 		{
 			return false;
 		}
@@ -146,24 +148,24 @@ public final class DecisionResult
 		// Status is optional in XACML
 		if (this.status == null)
 		{
-			if (other.status != null)
+			if (other.getStatus() != null)
 			{
 				return false;
 			}
-		} else if (!this.status.equals(other.status))
+		} else if (!this.status.equals(other.getStatus()))
 		{
 			return false;
 		}
 
 		// this.getObligations() derived from this.pepActions
 		// pepActions never null
-		if (!this.pepActions.equals(other.pepActions))
+		if (!this.pepActions.equals(other.getPepActions()))
 		{
 			return false;
 		}
 
 		// applicablePolicyIdList never null
-		if (!this.applicablePolicyIdList.equals(other.applicablePolicyIdList))
+		if (!this.applicablePolicyIdList.equals(other.getApplicablePolicyIdList()))
 		{
 			return false;
 		}
@@ -176,6 +178,7 @@ public final class DecisionResult
 	 * 
 	 * @return identifiers of policies found applicable for the decision request
 	 */
+	@Override
 	public List<JAXBElement<IdReferenceType>> getApplicablePolicyIdList()
 	{
 		return this.applicablePolicyIdList;
@@ -186,6 +189,7 @@ public final class DecisionResult
 	 * 
 	 * @return decision
 	 */
+	@Override
 	public DecisionType getDecision()
 	{
 		return this.decision;
@@ -196,6 +200,7 @@ public final class DecisionResult
 	 * 
 	 * @return PEP actions
 	 */
+	@Override
 	public PepActions getPepActions()
 	{
 		return this.pepActions;
@@ -206,6 +211,7 @@ public final class DecisionResult
 	 * 
 	 * @return status
 	 */
+	@Override
 	public Status getStatus()
 	{
 		return this.status;
@@ -219,6 +225,7 @@ public final class DecisionResult
 	 * @param newMatchedPolicyIdList
 	 *            new matched policy identifiers
 	 */
+	@Override
 	public void merge(PepActions newPepActions, List<JAXBElement<IdReferenceType>> newMatchedPolicyIdList)
 	{
 		if (newPepActions != null)

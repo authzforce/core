@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.value;
+package org.ow2.authzforce.core.pdp.impl.value;
 
 import net.sf.saxon.lib.StandardURIChecker;
 
@@ -78,38 +78,5 @@ public final class AnyURIValue extends SimpleValue<String>
 	{
 		return this.value;
 	}
-
-	// /**
-	// * For testing only
-	// * @param args
-	// */
-	// public static void main(String... args) {
-	// String values[] = {"http://localhost.example.com:9090/path/to/something/somewhere/close",
-	// "http://com.example.localhost:7171/close/to/somewhere/something/path"};
-	// long best = -1;
-	// for(int i=0; i< 10000; i++) {
-	// long start = System.nanoTime();
-	// String result = String.format(XML_FRAGMENT_FORMAT, values[i%2]);
-	// long elapsed = System.nanoTime() - start;
-	// if(best == -1 || elapsed < best) {
-	// best = elapsed;
-	// }
-	// }
-	//
-	// System.out.println("Best time with String.format(): " + best + " ns");
-	//
-	// best = -1;
-	// for(int i=0; i< 10000; i++) {
-	// long start = System.nanoTime();
-	// //String result = String.format("<xml-fragment>%s</xml-fragment>", value);
-	// String result =XML_FRAGMENT_START+values[i%2]+XML_FRAGMENT_END;
-	// long elapsed = System.nanoTime() - start;
-	// if(best == -1 || elapsed < best) {
-	// best = elapsed;
-	// }
-	// }
-	//
-	// System.out.println("Best time with String +: " + best + " ns");
-	// }
 
 }

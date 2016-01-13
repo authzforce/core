@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/xmlns/pdp" xmlns:tns="http://authzforce.github.io/xmlns/pdp" elementFormDefault="qualified"
-	xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext" version="3.5.9">
-	<import namespace="http://authzforce.github.io/xmlns/pdp/ext" />
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/pdp/3.6" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/3.6" elementFormDefault="qualified"
+	xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"  version="3.6.1">
+	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
+	<import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
 	<annotation>
 		<documentation xml:lang="en">
 			Data model of AuthZForce PDP configuration.
@@ -10,14 +11,24 @@
 				the location to the configuration file is not resolved to a file on the file system, 'PARENT_DIR' is undefined. You may use the colon ':' as a separating character between the placeholder variable
 				and an associated default value, if PARENT_DIR is initially undefined. E.g. ${PARENT_DIR:/home/foo/conf} will be replaced with '/home/foo/conf' if PARENT_DIR is undefined.
 			</p>
+			<p>
+				XML schema versioning: the 'version' attribute of the root 'schema' element identifies the Major.Minor.Patch version of this schema. The Major.Minor part must match the Major.Minor part of the
+				first compatible version of authzforce-ce-core library. The Patch version is used for any backwards-compatible change. The Minor version is incremented after any change that is NOT
+				backwards-compatible. (As a result, the authzforce-ce-core library's minor version is incremented as well.)
+				The Major.Minor version part must be part of the target namespace - but not the Patch
+				version - to separate namespaces that are not backwards-compatible.
+			</p>
 		</documentation>
 	</annotation>
 	<element name="attributeProvider" type="authz-ext:AbstractAttributeProvider">
 		<annotation>
 			<documentation>Attribute Provider that provides attributes not already provided in the XACML request by PEP, e.g. from external sources. There must be one and only one Java class - say
-				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.AttributeProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where
-				CONF_T is the JAXB type bound to this XML element type. This attribute Provider may also depend on previously defined 'attributeProviders', to find dependency attributes, i.e. attributes that this
-				Provider does not support itself, but requires to find its supported attributes. Therefore, if an 'attributeProvider' AFy requires/depends on an attribute A that is not to be provided by the PEP,
+				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.AttributeProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor,
+				where
+				CONF_T is the JAXB type bound to this XML element type. This attribute Provider may also depend on previously defined 'attributeProviders', to find dependency attributes, i.e. attributes that
+				this
+				Provider does not support itself, but requires to find its supported attributes. Therefore, if an 'attributeProvider' AFy requires/depends on an attribute A that is not to be provided by the
+				PEP,
 				another 'attributeProvider' AFx providing this attribute A must be declared before X.
 			</documentation>
 		</annotation>
@@ -49,7 +60,7 @@
 				<element name="combiningAlgorithm" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of a policy/rule-combining algorithm to be added to supported algorithms. There must be one and only one Java class - say 'com.example.FooCombiningAlg' - on the classpath
-							implementing interface 'org.ow2.authzforce.core.combining.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
+							implementing interface 'org.ow2.authzforce.core.pdp.api.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
 						</documentation>
 					</annotation>
 				</element>
@@ -57,7 +68,7 @@
 				<element name="refPolicyProvider" type="authz-ext:AbstractPolicyProvider" minOccurs="0" maxOccurs="1">
 					<annotation>
 						<documentation>Referenced policy Provider that resolves Policy(Set)IdReferences. There must be one and only one Java class - say 'com.example.FooRefPolicyProviderModuleFactory' - on the
-							classpath implementing interface 'org.ow2.authzforce.core.policy.ReferencedPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
+							classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
 							this XML
 							element type. This referenced policy Provider may also use any of the 'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution; as some IdReferences may
 							not be
@@ -68,10 +79,11 @@
 				<element name="rootPolicyProvider" type="authz-ext:AbstractPolicyProvider">
 					<annotation>
 						<documentation>Root/top-level policy Provider that provides the root/top-level Policy(Set) to PDP for evaluation. There must be one and only one Java class - say
-							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.policy.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
+							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
 							constructor, where CONF_T is the JAXB type bound to this XML element type. This class may also implement
-							'org.ow2.authzforce.core.policy.ReferencedPolicyProviderModule.Factory&lt;CONF_T&gt;' to
-							be used as 'refPolicyProvider' as well. This policy Provider may also use any of the
+							'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' to
+							be used
+							as 'refPolicyProvider' as well. This policy Provider may also use any of the
 							'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution.
 						</documentation>
 					</annotation>
@@ -79,13 +91,20 @@
 				<element name="decisionCache" minOccurs="0" maxOccurs="1" type="authz-ext:AbstractDecisionCache">
 					<annotation>
 						<documentation>Decision Response cache that, for a given request, provides the XACML response from a cache if there is a cached response for the given request. There must be one and only one
-							Java class - say 'com.example.FooDecisionCacheFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.DecisionCache.Factory&lt;CONF_T&gt;' with zero-arg constructor,
+							Java class - say 'com.example.FooDecisionCacheFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.DecisionCache.Factory&lt;CONF_T&gt;' with zero-arg constructor,
 							where
 							CONF_T is the JAXB type bound to this XML element type.
 						</documentation>
 					</annotation>
 				</element>
 			</sequence>
+			<attribute name="version" type="token" use="required">
+				<annotation>
+					<documentation>Version of the current schema for which the instance document is valid. Must match the 'version' attribute value of the root 'schema' element in the corresponding version of this
+						schema.
+					</documentation>
+				</annotation>
+			</attribute>
 			<attribute name="useStandardDatatypes" type="boolean" use="optional" default="true">
 				<annotation>
 					<documentation>Enable support for XACML core standard attribute datatypes.					</documentation>
@@ -149,7 +168,7 @@
 							Multiple Decision Profile specification, section 2; and then call the policy evaluation engine for each Individual Decision Request. At the end, the results (one per Individual Decision
 							Request) may be combined by a DecisionCombiner specified by next attribute 'decisionCombiner'.
 						</p>
-						<p>There must be one and only one Java class - say 'com.example.FooRequestFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.RequestFilter' with zero-arg
+						<p>There must be one and only one Java class - say 'com.example.FooRequestFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RequestFilter' with zero-arg
 							constructor, such
 							that this URI equals: new com.example.FooRequestFilter().getId().</p>
 						<p>If the configuration parameter 'enableXPath' is true, it is the responsibility of the RequestFilter to parse XACML Request/Attributes/Content nodes. If the configuration parameter
@@ -165,7 +184,7 @@
 					<documentation>URI of a XACML decision Result filter to be enabled. A decision Result filter is a PDP extension that process the result(s) from the policy evaluation before the final XACML
 						Response is created (and returned back to the requester). For example, a typical Result filter may combine multiple individual decisions - produced by the 'requestFilter' - to a single decision
 						Result if and only if the XACML Request's 'CombinedDecision' is set to true, as defined in XACML Multiple Decision Profile specification, section 3. There must be one and only one Java class -
-						say 'com.example.FooDecisionResultFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.DecisionResultFilter' with zero-arg constructor, such that this URI equals:
+						say 'com.example.FooDecisionResultFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.DecisionResultFilter' with zero-arg constructor, such that this URI equals:
 						new
 						com.example.FooDecisionResultFilter().getId().
 					</documentation>
@@ -197,9 +216,9 @@
 			<field xpath="@id" />
 		</key>
 	</element>
-	<complexType name="BaseStaticPolicyProvider">
+	<complexType name="StaticRootPolicyProvider">
 		<annotation>
-			<documentation>PolicyProvider loading policies statically from URLs.</documentation>
+			<documentation>PolicyProvider loading root policies statically from URLs.</documentation>
 		</annotation>
 		<complexContent>
 			<extension base="authz-ext:AbstractPolicyProvider">
@@ -213,7 +232,7 @@
 			</extension>
 		</complexContent>
 	</complexType>
-	<complexType name="BaseStaticRefPolicyProvider">
+	<complexType name="StaticRefPolicyProvider">
 		<annotation>
 			<documentation>Policy(Set)IdReference Provider loading policies statically from URLs. Any PolicyIdReference used in a PolicySet here must refer to a Policy loaded here as well. Besides, a PolicySet
 				P1 must be loaded before any other PolicySet P2 with a reference (PolicySetIdReference) to P1. As PolicySets are loaded in the order of declaration of policyLocations, the order matters for
@@ -226,10 +245,33 @@
 					<element name="policyLocation" type="anyURI" minOccurs="1" maxOccurs="unbounded">
 						<annotation>
 							<documentation> Location of the XML file that is expected to contain the Policy or PolicySet element to be referenced by a Policy(Set)IdReference in the root PolicySet loaded by a root policy
-								Provider. Use the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used.
+								Provider. The location may also be a file pattern in the following form: "file://DIRECTORY_PATH/*SUFFIX", using wilcard character '*'; in which case the location is expanded to all regular
+								files
+								(not
+								subdirectories)
+								in
+								directory located at DIRECTORY_PATH with suffix SUFFIX (there may not be a SUFFIX; in other words, SUFFIX may be an empty string). The files are
+								NOT searched
+								recursively on
+								sub-directories. Use the global property 'PARENT_DIR' for defining - in a
+								generic way - a path relative to the parent directory to the XML file where this is used.
 							</documentation>
 						</annotation>
 					</element>
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<complexType name="StaticRefBasedRootPolicyProvider">
+		<annotation>
+			<documentation>
+				Static Root Policy Provider based on the RefPolicyProvider, i.e. the root policy is a PolicySet retrieved using the RefPolicyProvider (mandatory in this case).
+			</documentation>
+		</annotation>
+		<complexContent>
+			<extension base="authz-ext:AbstractPolicyProvider">
+				<sequence>
+					<element name="policyRef" type="xacml:IdReferenceType" />
 				</sequence>
 			</extension>
 		</complexContent>

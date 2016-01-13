@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -21,17 +21,19 @@ import net.sf.saxon.Configuration;
 import net.sf.saxon.regex.RegularExpression;
 import net.sf.saxon.trans.XPathException;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.Expressions;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.SimpleValue;
-import org.ow2.authzforce.core.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.Expressions;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.SimpleValue;
+import org.ow2.authzforce.core.pdp.impl.value.StringValue;
 
 /**
  * *-regexp-match function helper
@@ -84,7 +86,7 @@ final class RegexpMatchFunctionHelper
 		}
 
 		@Override
-		protected BooleanValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+		public BooleanValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
 		{
 			final SimpleValue<String> arg1;
 			if (argExpressionsAfterRegex.isEmpty())

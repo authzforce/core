@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.value;
+package org.ow2.authzforce.core.pdp.impl.value;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +23,10 @@ import javax.xml.namespace.QName;
 
 import net.sf.saxon.s9api.XPathCompiler;
 
-import com.sun.xacml.Function;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Function;
 
 /**
  * XACML standard datatype constants, i.e. constants related to XACML standard datatypes
@@ -324,7 +327,7 @@ public final class DatatypeConstants<AV extends AttributeValue>
 		}
 
 		@Override
-		protected boolean isExpressionStatic()
+		public boolean isExpressionStatic()
 		{
 			// xpathExpression evaluation result depends on the context (request Content node)
 			return false;
@@ -348,11 +351,6 @@ public final class DatatypeConstants<AV extends AttributeValue>
 	 * (Primitive) Datatype
 	 */
 	public final Datatype<AV> TYPE;
-
-	/**
-	 * Empty bag
-	 */
-	public final Bag<AV> EMPTY_BAG;
 
 	/**
 	 * Bag datatype based on the primitive datatype {@link #TYPE}
@@ -379,7 +377,6 @@ public final class DatatypeConstants<AV extends AttributeValue>
 		this.TYPE = valueFactory.getDatatype();
 		this.FACTORY = valueFactory;
 		this.BAG_TYPE = valueFactory.getBagDatatype();
-		this.EMPTY_BAG = valueFactory.getEmptyBag();
 		this.ARRAY_CLASS = valueArrayClass;
 		this.FUNCTION_ID_PREFIX = functionIdPrefix;
 	}

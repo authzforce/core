@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.expression;
+package org.ow2.authzforce.core.pdp.impl.expression;
 
 import java.util.Deque;
 
@@ -19,11 +19,13 @@ import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.Value;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.api.VariableReference;
 
 /**
  * This class defines a VariableReference built from VariableReference after the referenced VariableDefinition has been resolved and therefore its expression.
@@ -32,23 +34,9 @@ import org.ow2.authzforce.core.value.Value;
  * @param <V>
  *            evaluation's return type
  */
-public class VariableReference<V extends Value> extends VariableReferenceType implements Expression<V>
+public class BaseVariableReference<V extends Value> implements VariableReference<V>
 {
-	private static final UnsupportedOperationException UNSUPPORTED_SET_VARIABLE_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"VariableReference.setVariableId() not allowed");
 	private final transient Expression<V> expression;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType#setVariableId(java.lang .String)
-	 */
-	@Override
-	public final void setVariableId(String value)
-	{
-		// variable ID cannot be changed (must remain identical during evaluation context)
-		throw UNSUPPORTED_SET_VARIABLE_OPERATION_EXCEPTION;
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -61,16 +49,18 @@ public class VariableReference<V extends Value> extends VariableReferenceType im
 		return expression.isStatic();
 	}
 
-	/**
-	 * Get the referenced VariableDefinition's Expression. For example, used to check whether the actual expression type behind a VariableReference is a
-	 * Function in Higher-order function's arguments
+	/*
+	 * (non-Javadoc)
 	 * 
-	 * @return the expression
+	 * @see org.ow2.authzforce.core.pdp.impl.expression.VariableReference#getReferencedExpression()
 	 */
+	@Override
 	public Expression<?> getReferencedExpression()
 	{
 		return expression;
 	}
+
+	private final String variableId;
 
 	private final transient Deque<String> longestVariableReferenceChain;
 
@@ -85,7 +75,7 @@ public class VariableReference<V extends Value> extends VariableReferenceType im
 	 *            longest chain of VariableReference Reference in <code>expr</code> (V1 -> V2 -> ... -> Vn, where "V1 -> V2" means VariableReference V1's
 	 *            expression contains one or more VariableReferences to V2)
 	 */
-	public VariableReference(String varId, Expression<V> varExpr, Deque<String> longestVarRefChain)
+	public BaseVariableReference(String varId, Expression<V> varExpr, Deque<String> longestVarRefChain)
 	{
 		this.variableId = varId;
 		this.expression = varExpr;
@@ -137,6 +127,12 @@ public class VariableReference<V extends Value> extends VariableReferenceType im
 		return expression.getReturnType();
 	}
 
+	@Override
+	public String getVariableId()
+	{
+		return this.variableId;
+	}
+
 	/**
 	 * @return the longestVariableReferenceChain
 	 */
@@ -148,7 +144,7 @@ public class VariableReference<V extends Value> extends VariableReferenceType im
 	@Override
 	public JAXBElement<VariableReferenceType> getJAXBElement()
 	{
-		return XACMLBindingUtils.XACML_3_0_OBJECT_FACTORY.createVariableReference(this);
+		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createVariableReference(new VariableReferenceType(variableId));
 	}
 
 }

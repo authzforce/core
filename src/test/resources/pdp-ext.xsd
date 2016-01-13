@@ -8,5 +8,5 @@
 	</xs:annotation>
 	<!-- Do not specify schema locations here. Define the schema locations in the XML catalog instead (see file 'catalog.xml'). -->
 	<!--  Adding TestAttributeProvider extension -->
-	<xs:import namespace="http://authzforce.github.io/core/xmlns/test" />
+	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 </xs:schema>

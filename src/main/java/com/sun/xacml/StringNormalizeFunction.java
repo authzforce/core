@@ -28,16 +28,17 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.func.FirstOrderFunction;
-import org.ow2.authzforce.core.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.func.FunctionSet;
-import org.ow2.authzforce.core.func.FunctionSignature;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.impl.func.BaseFunctionSet;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.StringValue;
 
 /**
  * string-normalize-* function
@@ -135,7 +136,7 @@ public final class StringNormalizeFunction extends FirstOrderFunction.SinglePara
 	/**
 	 * *-string-normalize-* function cluster
 	 */
-	public static final FunctionSet CLUSTER = new FunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "string-normalize", //
+	public static final FunctionSet CLUSTER = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "string-normalize", //
 			new StringNormalizeFunction(NAME_STRING_NORMALIZE_SPACE, STRING_NORMALIZE_SPACE_FUNCTION_CALL_FACTORY), //
 			new StringNormalizeFunction(NAME_STRING_NORMALIZE_TO_LOWER_CASE, STRING_NORMALIZE_TO_LOWER_CASE_FUNCTION_CALL_FACTORY));
 
@@ -145,7 +146,7 @@ public final class StringNormalizeFunction extends FirstOrderFunction.SinglePara
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<StringValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<StringValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return funcCallFactory.getInstance(argExpressions, remainingArgTypes);
 	}

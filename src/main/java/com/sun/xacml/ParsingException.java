@@ -23,8 +23,8 @@
  */
 package com.sun.xacml;
 
-import org.ow2.authzforce.core.DecisionResult;
-import org.ow2.authzforce.core.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
  * Exception that gets thrown if any general parsing error occurs.
@@ -79,9 +79,9 @@ public class ParsingException extends Exception
 	 * 
 	 * @return "Indeterminate" DecisionResult
 	 */
-	public DecisionResult getIndeterminateResult()
+	public BaseDecisionResult getIndeterminateResult()
 	{
-		return new DecisionResult(new StatusHelper(StatusHelper.STATUS_SYNTAX_ERROR, this.getMessage()));
+		return new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_SYNTAX_ERROR, this.getMessage()));
 	}
 
 }

@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.expression;
+package org.ow2.authzforce.core.pdp.impl.expression;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -27,19 +27,24 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
-import org.ow2.authzforce.core.CloseableAttributeProvider;
-import org.ow2.authzforce.core.func.FunctionRegistry;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeFactory;
-import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.ValueExpression;
+import org.ow2.authzforce.core.pdp.api.VariableReference;
+import org.ow2.authzforce.core.pdp.impl.CloseableAttributeProvider;
+import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 
-import com.sun.xacml.Function;
 import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 
@@ -72,7 +77,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	private final CloseableAttributeProvider attributeProvider;
 	private final int maxVariableReferenceDepth;
 	// the map from identifiers to internal data
-	private final Map<String, VariableReference<?>> idToVariableMap = new HashMap<>();
+	private final Map<String, BaseVariableReference<?>> idToVariableMap = new HashMap<>();
 	private final boolean allowAttributeSelectors;
 
 	private final boolean issuerRequiredOnAttributeDesignators;
@@ -135,27 +140,13 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		this.functionRegistry = functionRegistry;
 		this.maxVariableReferenceDepth = maxVarRefDepth;
 		// finally create the global attribute Provider used to resolve AttributeDesignators
-		this.attributeProvider = new CloseableAttributeProvider(jaxbAttributeProviderConfs, attributeFactory);
+		this.attributeProvider = CloseableAttributeProvider.getInstance(jaxbAttributeProviderConfs, attributeFactory);
 		this.allowAttributeSelectors = allowAttributeSelectors;
 		this.issuerRequiredOnAttributeDesignators = issuerRequiredInAttributeDesignators;
 	}
 
-	/**
-	 * Add VariableDefinition to be managed
-	 * 
-	 * @param varDef
-	 *            VariableDefinition
-	 * @param xPathCompiler
-	 *            Enclosing PolicySet default XPath compiler, corresponding to the PolicySet's default XPath version specified in
-	 *            {@link DefaultsType#getXPathVersion()}
-	 * @return The previous VariableReference if VariableId already used
-	 * @throws ParsingException
-	 *             error parsing expression in <code>var</code>, in particular if reference depth exceeded (as fixed by max parameter to
-	 *             {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} )
-	 */
 	@Override
-	public VariableReference<?> addVariable(oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition varDef, XPathCompiler xPathCompiler)
-			throws ParsingException
+	public VariableReference<?> addVariable(VariableDefinition varDef, XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		final String varId = varDef.getVariableId();
 		/*
@@ -171,16 +162,10 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		 */
 		final Deque<String> longestVarRefChain = new ArrayDeque<>();
 		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), xPathCompiler, longestVarRefChain);
-		final VariableReference<?> var = new VariableReference<>(varId, varExpr, longestVarRefChain);
+		final BaseVariableReference<?> var = new BaseVariableReference<>(varId, varExpr, longestVarRefChain);
 		return idToVariableMap.put(varId, var);
 	}
 
-	/**
-	 * Removes the VariableReference(Definition) from the manager
-	 * 
-	 * @param varId
-	 * @return the VariableReference previously identified by <code>varId</code>, or null if there was no such variable.
-	 */
 	@Override
 	public VariableReference<?> removeVariable(String varId)
 	{
@@ -211,14 +196,14 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * @throws UnknownIdentifierException
 	 *             if VariableReference's VariableId is unknown by this factory
 	 */
-	private VariableReference<?> getVariable(VariableReferenceType jaxbVarRef, Deque<String> longestVarRefChain) throws UnknownIdentifierException,
-			ParsingException
+	private BaseVariableReference<?> getVariable(VariableReferenceType jaxbVarRef, Deque<String> longestVarRefChain) throws IllegalArgumentException
 	{
 		final String varId = jaxbVarRef.getVariableId();
-		final VariableReference<?> var = idToVariableMap.get(varId);
+		final BaseVariableReference<?> var = idToVariableMap.get(varId);
 		if (var == null)
 		{
-			throw new UnknownIdentifierException("VariableReference's VariableId=" + varId + " does not match any prior VariableDefinition's VariableId");
+			throw new IllegalArgumentException("VariableReference's VariableId=" + varId
+					+ " unknown in the current context, i.e. does not match any prior VariableDefinition's VariableId");
 		}
 
 		if (longestVarRefChain != null)
@@ -234,7 +219,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 			if (longestVarRefChain.size() > this.maxVariableReferenceDepth)
 			{
-				throw new ParsingException("Max allowed VariableReference depth (" + this.maxVariableReferenceDepth + ") exceeded by length ("
+				throw new IllegalArgumentException("Max allowed VariableReference depth (" + this.maxVariableReferenceDepth + ") exceeded by length ("
 						+ longestVarRefChain.size() + ") of VariableReference Reference chain: " + longestVarRefChain);
 			}
 
@@ -269,12 +254,12 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 *            depends on the sub-function ('s return type).
 	 * @return function instance; or null if no such function with ID {@code functionId}, or if non-null {@code subFunctionReturnTypeId} specified and no
 	 *         higher-order function compatible with sub-function's return type {@code subFunctionReturnTypeId}
-	 * @throws UnknownIdentifierException
+	 * @throws IllegalArgumentException
 	 *             if datatype {@code subFunctionReturnType} is not supported/known
 	 * 
 	 */
 	@Override
-	public Function<?> getFunction(String functionId, Datatype<?> subFunctionReturnType) throws UnknownIdentifierException
+	public Function<?> getFunction(String functionId, Datatype<?> subFunctionReturnType) throws IllegalArgumentException
 	{
 		if (subFunctionReturnType == null)
 		{
@@ -284,7 +269,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		final DatatypeFactory<?> subFuncReturnTypeFactory = this.datatypeFactoryRegistry.getExtension(subFunctionReturnType.getId());
 		if (subFuncReturnTypeFactory == null)
 		{
-			throw new UnknownIdentifierException("Invalid sub-function's return type specified: unknown/unsupported ID: " + subFunctionReturnType.getId());
+			throw new IllegalArgumentException("Invalid sub-function's return type specified: unknown/unsupported ID: " + subFunctionReturnType.getId());
 		}
 
 		return this.functionRegistry.getFunction(functionId, subFuncReturnTypeFactory);
@@ -297,8 +282,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType, java.util.List)
 	 */
 	@Override
-	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws ParsingException,
-			IllegalArgumentException
+	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws IllegalArgumentException
 	{
 		final Expression<?> expression;
 		/*
@@ -358,7 +342,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				expression = new AttributeSelectorExpression<>(jaxbAttrSelector, xPathCompiler, attributeProvider, attrFactory);
 			} catch (XPathExpressionException e)
 			{
-				throw new ParsingException("Error parsing AttributeSelector's Path='" + jaxbAttrSelector.getPath() + "' into a XPath expression", e);
+				throw new IllegalArgumentException("Invalid AttributeSelector's Path='" + jaxbAttrSelector.getPath() + "' into a XPath expression", e);
 			}
 		} else if (expr instanceof AttributeValueType)
 		{
@@ -380,13 +364,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		} else if (expr instanceof VariableReferenceType)
 		{
 			final VariableReferenceType varRefElt = (VariableReferenceType) expr;
-			try
-			{
-				expression = getVariable(varRefElt, longestVarRefChain);
-			} catch (UnknownIdentifierException e)
-			{
-				throw new IllegalArgumentException("Invalid VariableReference/VariableId", e);
-			}
+			expression = getVariable(varRefElt, longestVarRefChain);
 		} else
 		{
 			throw new IllegalArgumentException("Expressions of type " + expr.getClass().getSimpleName()
@@ -403,15 +381,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
 	 */
 	@Override
-	public PrimitiveValueExpression<?> getInstance(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws ParsingException
+	public ValueExpression<? extends AttributeValue> getInstance(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
-		try
-		{
-			return this.datatypeFactoryRegistry.createValueExpression(jaxbAttrVal, xPathCompiler);
-		} catch (UnknownIdentifierException e)
-		{
-			throw new ParsingException("Error parsing AttributeValue expression: invalid/unsupported datatype URI", e);
-		}
+		return this.datatypeFactoryRegistry.createValueExpression(jaxbAttrVal, xPathCompiler);
 	}
 
 	@Override

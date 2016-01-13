@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,15 +22,17 @@ import java.util.Map.Entry;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
-import org.ow2.authzforce.core.expression.AttributeGUID;
-import org.ow2.authzforce.core.value.Bag;
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 
 /**
  * Mutable Individual Decision Request
  */
 public class MutableIndividualDecisionRequest implements IndividualDecisionRequest
 {
-	private final Map<AttributeGUID, Bag<?>> attributes;
+	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 	private final Map<String, XdmNode> extraContentsByCategory;
 	private final List<Attributes> attributesToIncludeInResult;
 	private final boolean returnApplicablePolicyIdList;
@@ -44,7 +46,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	public MutableIndividualDecisionRequest(boolean returnPolicyIdList)
 	{
 		// these maps/lists may be updated later by put(...) method defined in this class
-		attributes = new HashMap<>();
+		namedAttributes = new HashMap<>();
 		extraContentsByCategory = new HashMap<>();
 		attributesToIncludeInResult = new ArrayList<>();
 		returnApplicablePolicyIdList = returnPolicyIdList;
@@ -59,10 +61,13 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	public MutableIndividualDecisionRequest(IndividualDecisionRequest baseRequest)
 	{
 		// these maps/lists may be updated later by put(...) method defined in this class
-		attributes = new HashMap<>(baseRequest.getNamedAttributes());
-		extraContentsByCategory = new HashMap<>(baseRequest.getExtraContentsByCategory());
-		attributesToIncludeInResult = new ArrayList<>(baseRequest.getReturnedAttributes());
-		returnApplicablePolicyIdList = baseRequest.isApplicablePolicyIdListReturned();
+		final Map<AttributeGUID, Bag<?>> baseNamedAttributes = baseRequest.getNamedAttributes();
+		final Map<String, XdmNode> baseExtraContentsByCategory = baseRequest.getExtraContentsByCategory();
+		final List<Attributes> baseReturnedAttributes = baseRequest.getReturnedAttributes();
+		namedAttributes = baseNamedAttributes == null ? new HashMap<AttributeGUID, Bag<?>>() : new HashMap<>(baseNamedAttributes);
+		extraContentsByCategory = baseExtraContentsByCategory == null ? new HashMap<String, XdmNode>() : new HashMap<>(baseExtraContentsByCategory);
+		attributesToIncludeInResult = baseReturnedAttributes == null ? new ArrayList<Attributes>() : new ArrayList<>(baseRequest.getReturnedAttributes());
+		returnApplicablePolicyIdList = baseRequest.isApplicablePolicyIdentifiersReturned();
 	}
 
 	/**
@@ -95,7 +100,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 		 */
 		for (final Entry<AttributeGUID, Bag<?>> attrEntry : categorySpecificAttributes)
 		{
-			attributes.put(attrEntry.getKey(), attrEntry.getValue());
+			namedAttributes.put(attrEntry.getKey(), attrEntry.getValue());
 		}
 
 		extraContentsByCategory.put(categoryName, categorySpecificAttributes.getExtraContent());
@@ -115,7 +120,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	@Override
 	public Map<AttributeGUID, Bag<?>> getNamedAttributes()
 	{
-		return attributes;
+		return namedAttributes;
 	}
 
 	/*
@@ -144,7 +149,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * @return the returnApplicablePolicyIdList
 	 */
 	@Override
-	public boolean isApplicablePolicyIdListReturned()
+	public boolean isApplicablePolicyIdentifiersReturned()
 	{
 		return returnApplicablePolicyIdList;
 	}

@@ -29,15 +29,15 @@ import java.util.Deque;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.func.FirstOrderFunction;
-import org.ow2.authzforce.core.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.func.FunctionSignature;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.TimeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
 
 /**
  * This class implements the time-in-range function, which takes three time values and returns true if the first value falls between the second and the third
@@ -196,8 +196,7 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 	}
 
 	@Override
-	protected FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
-			throws IllegalArgumentException
+	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call(functionSignature, argExpressions, remainingArgTypes);
 	}

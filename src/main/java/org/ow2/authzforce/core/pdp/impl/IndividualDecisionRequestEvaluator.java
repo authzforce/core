@@ -11,9 +11,9 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,15 +28,18 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIdentifierList;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
-import org.ow2.authzforce.core.expression.AttributeGUID;
-import org.ow2.authzforce.core.policy.RootPolicyEvaluator;
-import org.ow2.authzforce.core.value.Bag;
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
 
 /**
  * Individual decision request evaluator
  *
  */
-public class IndividualDecisionRequestEvaluator
+public abstract class IndividualDecisionRequestEvaluator
 {
 	private static final Result PERMIT = new Result(DecisionType.PERMIT, null, null, null, null, null);
 	private static final Result DENY = new Result(DecisionType.DENY, null, null, null, null, null);
@@ -49,7 +52,7 @@ public class IndividualDecisionRequestEvaluator
 	 * @param rootPolicyEvaluator
 	 *            root policy evaluator that this request evaluator uses to evaluate individual decision request
 	 */
-	public IndividualDecisionRequestEvaluator(RootPolicyEvaluator rootPolicyEvaluator)
+	protected IndividualDecisionRequestEvaluator(RootPolicyEvaluator rootPolicyEvaluator)
 	{
 		assert rootPolicyEvaluator != null;
 		this.rootPolicyEvaluator = rootPolicyEvaluator;
@@ -57,18 +60,30 @@ public class IndividualDecisionRequestEvaluator
 
 	protected final Result evaluate(IndividualDecisionRequest request, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 	{
+		assert request != null;
+
 		// convert to EvaluationContext
-		final Map<AttributeGUID, Bag<?>> namedAttributes = request.getNamedAttributes();
-		namedAttributes.putAll(pdpIssuedAttributes);
-		final EvaluationContext ctx = new IndividualDecisionRequestContext(namedAttributes, request.getExtraContentsByCategory(),
-				request.isApplicablePolicyIdListReturned());
+		/*
+		 * The pdpIssuedAttributes may be re-used for many individual requests, so we must not modify it but clone it before individual decision request
+		 * processing
+		 */
+		final Map<AttributeGUID, Bag<?>> pdpEnhancedNamedAttributes = pdpIssuedAttributes == null ? new HashMap<AttributeGUID, Bag<?>>() : new HashMap<>(
+				pdpIssuedAttributes);
+		final Map<AttributeGUID, Bag<?>> reqNamedAttributes = request.getNamedAttributes();
+		if (reqNamedAttributes != null)
+		{
+			pdpEnhancedNamedAttributes.putAll(reqNamedAttributes);
+		}
+
+		final EvaluationContext ctx = new IndividualDecisionRequestContext(pdpEnhancedNamedAttributes, request.getExtraContentsByCategory(),
+				request.isApplicablePolicyIdentifiersReturned());
 		final DecisionResult result = rootPolicyEvaluator.findAndEvaluate(ctx);
-		if (result == DecisionResult.PERMIT)
+		if (result == BaseDecisionResult.PERMIT)
 		{
 			return PERMIT;
 		}
 
-		if (result == DecisionResult.DENY)
+		if (result == BaseDecisionResult.DENY)
 		{
 			return DENY;
 		}
@@ -83,24 +98,6 @@ public class IndividualDecisionRequestEvaluator
 				applicablePolicyIdList == null || applicablePolicyIdList.isEmpty() ? null : new PolicyIdentifierList(applicablePolicyIdList));
 	}
 
-	/**
-	 * Evaluates individual decision requests
-	 * 
-	 * @param individualDecisionRequests
-	 *            individual decision requests
-	 * @param pdpIssuedAttributes
-	 *            PDP-issued attributes to be combined with the attributes of each individual decision request (e.g. date/time)
-	 * @return evaluation results, one per individual decision request
-	 */
-	public List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
-	{
-		final List<Result> results = new ArrayList<>(individualDecisionRequests.size());
-		for (final IndividualDecisionRequest request : individualDecisionRequests)
-		{
-			final Result result = evaluate(request, pdpIssuedAttributes);
-			results.add(result);
-		}
-
-		return results;
-	}
+	protected abstract List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests,
+			Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
 }

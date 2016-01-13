@@ -11,14 +11,14 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.policy;
+package org.ow2.authzforce.core.pdp.impl.policy;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.VersionPatterns;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.VersionConstraints;
 
 /**
  * This class is responsible for evaluating XACML Policy(Set)IdReferences.
@@ -33,7 +33,7 @@ public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> imple
 
 	protected final String refPolicyId;
 	// and version constraints on this reference
-	protected final VersionConstraints versionConstraints;
+	protected final VersionPatterns versionConstraints;
 	protected final Class<T> referredPolicyClass;
 	private final String toString;
 
@@ -48,13 +48,13 @@ public abstract class PolicyReferenceEvaluator<T extends IPolicyEvaluator> imple
 	 *            referenced policy version constraints
 	 * @return description
 	 */
-	public static String toString(Class<? extends IPolicyEvaluator> policyReferenceType, String policyRefId, VersionConstraints versionConstraints)
+	public static String toString(Class<? extends IPolicyEvaluator> policyReferenceType, String policyRefId, VersionPatterns versionConstraints)
 	{
 		return (policyReferenceType == PolicyEvaluator.class ? "PolicyIdReference" : "PolicySetIdReference") + "[Id=" + policyRefId + ", " + versionConstraints
 				+ "]";
 	}
 
-	protected PolicyReferenceEvaluator(String idRef, VersionConstraints versionConstraints, Class<T> policyReferenceType)
+	protected PolicyReferenceEvaluator(String idRef, VersionPatterns versionConstraints, Class<T> policyReferenceType)
 	{
 		this.refPolicyId = idRef;
 		this.versionConstraints = versionConstraints;

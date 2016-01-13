@@ -3,31 +3,29 @@
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Iterator;
 import java.util.List;
 
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.VariableReference;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.Value;
-
-import com.sun.xacml.Function;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.BaseFunction;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.api.VariableReference;
+import org.ow2.authzforce.core.pdp.impl.expression.BaseVariableReference;
 
 /**
  * Higher-order bag function
@@ -37,7 +35,7 @@ import com.sun.xacml.Function;
  * @param <SUB_RETURN_PRIMITIVE_T>
  *            sub-function's return (primitive) type. Only functions returning primitive type of result are compatible with higher-order functions here.
  */
-public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_PRIMITIVE_T extends AttributeValue> extends Function<RETURN_T>
+public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_PRIMITIVE_T extends AttributeValue> extends BaseFunction<RETURN_T>
 {
 
 	private final Datatype<RETURN_T> returnType;
@@ -100,7 +98,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 		if (input0 instanceof Function)
 		{
 			inputFunc = (Function<?>) input0;
-		} else if (input0 instanceof VariableReference)
+		} else if (input0 instanceof BaseVariableReference)
 		{
 			final Expression<?> varRefExp = ((VariableReference<?>) input0).getReferencedExpression();
 			if (!(varRefExp instanceof Function))

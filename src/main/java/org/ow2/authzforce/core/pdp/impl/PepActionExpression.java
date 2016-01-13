@@ -3,20 +3,15 @@
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,11 +22,11 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
-import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * PEP action (obligation/advice) expression evaluator
@@ -69,11 +64,11 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing/instantiating AttributeAssignment expressions
-	 * @throws ParsingException
-	 *             error parsing one of the AttributeAssignmentExpressions' Expression
+	 * @throws IllegalArgumentException
+	 *             one of the AttributeAssignmentExpressions' Expression is invalid
 	 */
 	public PepActionExpression(PepActionFactory<JAXB_PEP_ACTION> pepActionFactory, String pepActionId, EffectType appliesTo,
-			List<AttributeAssignmentExpression> jaxbAssignmentExps, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws ParsingException
+			List<AttributeAssignmentExpression> jaxbAssignmentExps, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		this.actionId = pepActionId;
 		this.appliesTo = appliesTo;
@@ -92,9 +87,9 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 				try
 				{
 					attrAssignExp = new AttributeAssignmentExpressionEvaluator(jaxbAttrAssignExp, xPathCompiler, expFactory);
-				} catch (ParsingException e)
+				} catch (IllegalArgumentException e)
 				{
-					throw new ParsingException("Error parsing AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId()
+					throw new IllegalArgumentException("Invalid AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId()
 							+ "]/Expression", e);
 				}
 
@@ -163,10 +158,7 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 						+ attrAssignmentExpr.getAttributeId() + "]/Expression", e.getStatusCode(), e);
 			}
 
-			if (attrAssignsFromExpr != null)
-			{
-				assignments.addAll(attrAssignsFromExpr);
-			}
+			assignments.addAll(attrAssignsFromExpr);
 		}
 
 		return pepActionFactory.getInstance(assignments, actionId);

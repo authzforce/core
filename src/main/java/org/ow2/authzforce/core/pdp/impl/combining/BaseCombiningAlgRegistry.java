@@ -11,14 +11,14 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.combining;
+package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.Set;
 
-import org.ow2.authzforce.core.BasePdpExtensionRegistry;
-import org.ow2.authzforce.core.Decidable;
-
-import com.sun.xacml.UnknownIdentifierException;
+import org.ow2.authzforce.core.pdp.api.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 
 /**
  * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>CombiningAlgRegistry</code>.
@@ -48,9 +48,8 @@ public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<Combining
 		super(CombiningAlg.class);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedEltType) throws UnknownIdentifierException
+	public <T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedEltType) throws IllegalArgumentException
 	{
 		final CombiningAlg<? extends Decidable> alg = this.getExtension(algId);
 		if (alg.getCombinedElementType().isAssignableFrom(combinedEltType))

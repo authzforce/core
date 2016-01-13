@@ -11,23 +11,26 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.List;
 
 import net.sf.saxon.s9api.XdmValue;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.Expressions;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.IntegerValue;
-import org.ow2.authzforce.core.value.XPathValue;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.Expressions;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
 
 /**
  * A class that implements the optional XACML 3.0 xpath-node-count function.
@@ -50,6 +53,59 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 	private static final class CallFactory
 	{
 
+		private static final class Call extends FirstOrderFunctionCall<IntegerValue>
+		{
+			private final List<Expression<?>> checkedArgExpressions;
+
+			private Call(FunctionSignature<IntegerValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
+					throws IllegalArgumentException
+			{
+				super(functionSig, argExpressions, remainingArgTypes);
+				this.checkedArgExpressions = argExpressions;
+			}
+
+			@Override
+			public IntegerValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+			{
+				// Evaluate the argument
+				final XPathValue xpathVal;
+
+				if (checkedArgExpressions.isEmpty())
+				{
+					try
+					{
+						xpathVal = XPathValue.class.cast(remainingArgs[0]);
+					} catch (ClassCastException e)
+					{
+						throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE + remainingArgs[0].getDataType(),
+								StatusHelper.STATUS_PROCESSING_ERROR, e);
+					}
+				} else
+				{
+					final Expression<?> arg = checkedArgExpressions.get(0);
+					try
+					{
+						xpathVal = Expressions.eval(arg, context, DatatypeConstants.XPATH.TYPE);
+
+					} catch (IndeterminateEvaluationException e)
+					{
+						throw new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE, StatusHelper.STATUS_PROCESSING_ERROR, e);
+					}
+				}
+
+				final XdmValue xdmResult;
+				try
+				{
+					xdmResult = xpathVal.evaluate(context);
+				} catch (IndeterminateEvaluationException e)
+				{
+					throw new IndeterminateEvaluationException(INDETERMINATE_ARG_EVAL_MESSAGE, StatusHelper.STATUS_PROCESSING_ERROR, e);
+				}
+
+				return new IntegerValue(xdmResult.size());
+			}
+		}
+
 		private static final String INVALID_ARG_TYPE_MESSAGE = "Function " + NAME + ": Invalid type (expected = " + DatatypeConstants.XPATH.TYPE
 				+ ") of arg#0: ";
 		private static final String INDETERMINATE_ARG_MESSAGE = "Function " + NAME + ": Indeterminate arg #0";
@@ -64,50 +120,7 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 
 		protected FirstOrderFunctionCall<IntegerValue> getInstance(final List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
 		{
-			return new FirstOrderFunctionCall<IntegerValue>(funcSig, argExpressions, remainingArgTypes)
-			{
-
-				@Override
-				protected IntegerValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
-				{
-					// Evaluate the argument
-					final XPathValue xpathVal;
-
-					if (argExpressions.isEmpty())
-					{
-						try
-						{
-							xpathVal = XPathValue.class.cast(remainingArgs[0]);
-						} catch (ClassCastException e)
-						{
-							throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE + remainingArgs[0].getDataType(),
-									StatusHelper.STATUS_PROCESSING_ERROR, e);
-						}
-					} else
-					{
-						final Expression<?> arg = argExpressions.get(0);
-						try
-						{
-							xpathVal = Expressions.eval(arg, context, DatatypeConstants.XPATH.TYPE);
-
-						} catch (IndeterminateEvaluationException e)
-						{
-							throw new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE, StatusHelper.STATUS_PROCESSING_ERROR, e);
-						}
-					}
-
-					final XdmValue xdmResult;
-					try
-					{
-						xdmResult = xpathVal.evaluate(context);
-					} catch (IndeterminateEvaluationException e)
-					{
-						throw new IndeterminateEvaluationException(INDETERMINATE_ARG_EVAL_MESSAGE, StatusHelper.STATUS_PROCESSING_ERROR, e);
-					}
-
-					return new IntegerValue(xdmResult.size());
-				}
-			};
+			return new Call(funcSig, argExpressions, remainingArgTypes);
 		}
 	}
 
@@ -125,7 +138,7 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<IntegerValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+	public FirstOrderFunctionCall<IntegerValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException
 	{
 		return this.funcCallFactory.getInstance(argExpressions, remainingArgTypes);

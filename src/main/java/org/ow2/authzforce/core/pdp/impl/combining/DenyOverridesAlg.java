@@ -11,22 +11,26 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.combining;
+package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
  * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of
  * permit, not applicable or indeterminate results. Note that since this implementation does an ordered evaluation, this class also supports the
  * Ordered-Deny-Overrides-algorithm.
  */
-public final class DenyOverridesAlg extends CombiningAlg<Decidable>
+public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 {
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
@@ -93,7 +97,7 @@ public final class DenyOverridesAlg extends CombiningAlg<Decidable>
 				return combinedPermitResult;
 			}
 
-			return DecisionResult.NOT_APPLICABLE;
+			return BaseDecisionResult.NOT_APPLICABLE;
 		}
 
 	}
@@ -123,11 +127,12 @@ public final class DenyOverridesAlg extends CombiningAlg<Decidable>
 
 	private DenyOverridesAlg(String algId)
 	{
-		super(algId, false, Decidable.class);
+		super(algId, Decidable.class);
 	}
 
 	@Override
 	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
+			throws UnsupportedOperationException, IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}

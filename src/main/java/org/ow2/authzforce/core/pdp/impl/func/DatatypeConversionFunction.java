@@ -11,35 +11,39 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.value.AnyURIValue;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.DNSNameValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.DateTimeValue;
-import org.ow2.authzforce.core.value.DateValue;
-import org.ow2.authzforce.core.value.DayTimeDurationValue;
-import org.ow2.authzforce.core.value.DoubleValue;
-import org.ow2.authzforce.core.value.IPAddressValue;
-import org.ow2.authzforce.core.value.IntegerValue;
-import org.ow2.authzforce.core.value.RFC822NameValue;
-import org.ow2.authzforce.core.value.SimpleValue;
-import org.ow2.authzforce.core.value.StringValue;
-import org.ow2.authzforce.core.value.TimeValue;
-import org.ow2.authzforce.core.value.Value;
-import org.ow2.authzforce.core.value.X500NameValue;
-import org.ow2.authzforce.core.value.YearMonthDurationValue;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DNSNameValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.impl.value.DateValue;
+import org.ow2.authzforce.core.pdp.impl.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.impl.value.DoubleValue;
+import org.ow2.authzforce.core.pdp.impl.value.IPAddressValue;
+import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.impl.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.impl.value.SimpleValue;
+import org.ow2.authzforce.core.pdp.impl.value.StringValue;
+import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
+import org.ow2.authzforce.core.pdp.impl.value.X500NameValue;
+import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
 
 /**
  * A class that implements all the primitive datatype conversion functions: double-to-integer, integer-to-double, *-from-string, *-to-string, etc. It takes one
@@ -210,7 +214,7 @@ public final class DatatypeConversionFunction<PARAM_T extends AttributeValue, RE
 		{
 			this.funcSig = functionSignature;
 			this.converter = converter;
-			this.invalidArgMsgPrefix = "Function " + functionSignature.name + ": invalid arg: ";
+			this.invalidArgMsgPrefix = "Function " + functionSignature.getName() + ": invalid arg: ";
 		}
 
 		public FirstOrderFunctionCall<RETURN> getInstance(List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
@@ -257,7 +261,7 @@ public final class DatatypeConversionFunction<PARAM_T extends AttributeValue, RE
 	}
 
 	@Override
-	protected FirstOrderFunctionCall<RETURN_T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<RETURN_T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return this.funcCallFactory.getInstance(argExpressions, remainingArgTypes);
 	}
@@ -333,7 +337,7 @@ public final class DatatypeConversionFunction<PARAM_T extends AttributeValue, RE
 	/**
 	 * Datatype-conversion function cluster
 	 */
-	public static final FunctionSet CLUSTER = new FunctionSet(
+	public static final FunctionSet CLUSTER = new BaseFunctionSet(
 			FunctionSet.DEFAULT_ID_NAMESPACE + "type-conversion",
 			//
 			new DatatypeConversionFunction<>(NAME_DOUBLE_TO_INTEGER, DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.INTEGER.TYPE, DOUBLE_TO_INTEGER_CONVERTER),

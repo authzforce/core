@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.policy;
+package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +25,14 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.PepActionExpression;
-import org.ow2.authzforce.core.PepActionExpressions;
-import org.ow2.authzforce.core.PepActions;
-import org.ow2.authzforce.core.DecisionResult;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.impl.BasePepActions;
+import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
+import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
 
 import com.sun.xacml.ParsingException;
 
@@ -69,19 +70,20 @@ public class PolicyPepActionExpressionsEvaluator
 		}
 
 		@Override
-		public void add(ObligationExpression jaxbObligationExp) throws ParsingException
+		public void add(ObligationExpression jaxbObligationExp) throws IllegalArgumentException
 		{
-			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(PepActions.OBLIGATION_FACTORY, jaxbObligationExp.getObligationId(),
-					jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
+			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(BasePepActions.OBLIGATION_FACTORY,
+					jaxbObligationExp.getObligationId(), jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(),
+					xPathCompiler, expFactory);
 			final PepActionExpressions.EffectSpecific effectSpecificActionExps = obligationExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions
 					: permitActionExpressions;
 			effectSpecificActionExps.addObligationExpression(obligationExp);
 		}
 
 		@Override
-		public void add(AdviceExpression jaxbAdviceExp) throws ParsingException
+		public void add(AdviceExpression jaxbAdviceExp) throws IllegalArgumentException
 		{
-			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(PepActions.ADVICE_FACTORY, jaxbAdviceExp.getAdviceId(),
+			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(BasePepActions.ADVICE_FACTORY, jaxbAdviceExp.getAdviceId(),
 					jaxbAdviceExp.getAppliesTo(), jaxbAdviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
 			final PepActionExpressions.EffectSpecific effectSpecificActionExps = adviceExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions
 					: permitActionExpressions;

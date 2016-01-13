@@ -11,17 +11,17 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.policy;
+package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.DecisionResult;
-
-import com.sun.xacml.VersionConstraints;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.VersionPatterns;
 
 class StaticPolicyRefEvaluator<P extends IPolicyEvaluator> extends PolicyReferenceEvaluator<P>
 {
@@ -29,7 +29,7 @@ class StaticPolicyRefEvaluator<P extends IPolicyEvaluator> extends PolicyReferen
 	private final transient P referredPolicy;
 	private final List<String> longestPolicyRefChain;
 
-	StaticPolicyRefEvaluator(String policyIdRef, VersionConstraints versionConstraints, P referredPolicy)
+	StaticPolicyRefEvaluator(String policyIdRef, VersionPatterns versionConstraints, P referredPolicy)
 	{
 		super(policyIdRef, versionConstraints, (Class<P>) validate(referredPolicy).getClass());
 		this.referredPolicy = referredPolicy;

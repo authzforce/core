@@ -11,7 +11,7 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -98,12 +98,13 @@ public class SchemaHandler
 						return new LSInputImpl(publicId, systemId, resourceURL.openStream());
 					}
 				}
-			} catch (Exception ex)
+			} catch (IOException ex)
 			{
 				final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='" + catalogLocation + "'): type=" + type
 						+ ", namespaceURI=" + namespaceURI + ", publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
 				throw new RuntimeException(errMsg, ex);
 			}
+
 			return null;
 		}
 	}
@@ -245,11 +246,21 @@ public class SchemaHandler
 			}
 		}
 
+		/**
+		 * Creates new {@link OASISCatalogManager} with default constructor
+		 * 
+		 * @return new instance of {@link OASISCatalogManager} (so not null)
+		 */
 		private static OASISCatalogManager getContextCatalog()
 		{
 			return new OASISCatalogManager();
 		}
 
+		/**
+		 * Creates new {@link OASISCatalogManager}
+		 * 
+		 * @return new instance of {@link OASISCatalogManager} (so not null)
+		 */
 		private static OASISCatalogManager getCatalogManager()
 		{
 			return getContextCatalog();
@@ -465,7 +476,7 @@ public class SchemaHandler
 	public static Schema createSchema(List<String> schemaLocations, final String catalogLocation)
 	{
 		/*
-		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring DefaultResourceLoader to get
+		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring ResourceUtils class to get
 		 * Resource URLs and we don't use any Bus object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which
 		 * drags many dependencies on CXF we don't need, the full CXF JAX-RS framework actually. It would make more sense if SchemaHandler was part of some cxf
 		 * common utility package, but it is not the case as of writing (December 2014).
@@ -485,49 +496,66 @@ public class SchemaHandler
 
 		final ErrorHandler schemaErrorHandler = new SchemaParsingErrorHandler();
 		factory.setErrorHandler(schemaErrorHandler);
-		final Schema s;
+		final List<Source> sources = new ArrayList<>(schemaLocations.size());
 		try
 		{
-			final List<Source> sources = new ArrayList<>(schemaLocations.size());
 			for (String schemaLocation : schemaLocations)
 			{
-				final URL schemaURL = ResourceUtils.getURL(schemaLocation);
+				final URL schemaURL;
+				try
+				{
+					schemaURL = ResourceUtils.getURL(schemaLocation);
+				} catch (FileNotFoundException e)
+				{
+					throw new RuntimeException("No resource found for XML schema location: " + schemaLocation, e);
+				}
+
 				final Reader r = new BufferedReader(new InputStreamReader(schemaURL.openStream(), "UTF-8"));
 				final StreamSource source = new StreamSource(r);
 				source.setSystemId(schemaURL.toString());
 				sources.add(source);
 			}
-
-			if (sources.isEmpty())
-			{
-				return null;
-			}
-
-			if (catalogLocation != null)
-			{
-				final OASISCatalogManager catalogResolver = OASISCatalogManager.getCatalogManager();
-				if (catalogResolver != null)
-				{
-					final URL catalogURL = ResourceUtils.getURL(catalogLocation);
-					if (catalogURL != null)
-					{
-						try
-						{
-							catalogResolver.loadCatalog(catalogURL);
-							factory.setResourceResolver(new XmlSchemaResourceResolver(catalogLocation, catalogResolver));
-						} catch (IOException ex)
-						{
-							throw new IllegalArgumentException("Catalog located at '" + catalogLocation + "' can not be loaded", ex);
-						}
-					}
-				}
-			}
-
-			s = factory.newSchema(sources.toArray(new Source[sources.size()]));
-		} catch (Exception ex)
+		} catch (IOException ex)
 		{
-			throw new IllegalArgumentException("Failed to load XML schemas: " + schemaLocations, ex);
+			throw new RuntimeException("Failed to load XML schemas: " + schemaLocations, ex);
 		}
+
+		if (sources.isEmpty())
+		{
+			return null;
+		}
+
+		if (catalogLocation != null)
+		{
+			final OASISCatalogManager catalogResolver = OASISCatalogManager.getCatalogManager();
+			final URL catalogURL;
+			try
+			{
+				catalogURL = ResourceUtils.getURL(catalogLocation);
+			} catch (FileNotFoundException e)
+			{
+				throw new RuntimeException("No resource found for XML catalog file location: " + catalogLocation, e);
+			}
+
+			try
+			{
+				catalogResolver.loadCatalog(catalogURL);
+				factory.setResourceResolver(new XmlSchemaResourceResolver(catalogLocation, catalogResolver));
+			} catch (IOException ex)
+			{
+				throw new RuntimeException("Catalog located at '" + catalogLocation + "' can not be loaded", ex);
+			}
+		}
+
+		final Schema s;
+		try
+		{
+			s = factory.newSchema(sources.toArray(new Source[sources.size()]));
+		} catch (SAXException e)
+		{
+			throw new RuntimeException("Failed to load XML schemas: " + schemaLocations, e);
+		}
+
 		return s;
 
 	}

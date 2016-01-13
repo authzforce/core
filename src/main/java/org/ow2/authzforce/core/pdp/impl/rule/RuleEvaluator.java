@@ -11,23 +11,24 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.rule;
+package org.ow2.authzforce.core.pdp.impl.rule;
 
 import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule;
 
-import org.ow2.authzforce.core.Decidable;
-import org.ow2.authzforce.core.DecisionResult;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.PepActions;
-import org.ow2.authzforce.core.TargetEvaluator;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * Evaluates a XACML Rule to a Decision.
@@ -41,7 +42,7 @@ public class RuleEvaluator implements Decidable
 	private final transient TargetEvaluator evaluatableTarget;
 	private final transient ConditionEvaluator evaluatableCondition;
 	private final transient RulePepActionExpressionsEvaluator effectMatchPepActionExps;
-	private final transient DecisionResult nullActionsRuleDecisionResult;
+	private final transient BaseDecisionResult nullActionsRuleDecisionResult;
 	private final String toString;
 	private final String ruleId;
 
@@ -53,11 +54,10 @@ public class RuleEvaluator implements Decidable
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expressionFactory
 	 *            Expression parser/factory
-	 * @throws ParsingException
-	 *             Error parsing Target and/or Condition
+	 * @throws IllegalArgumentException
+	 *             Invalid Target, Condition or Obligation/Advice expressions
 	 */
-	public RuleEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule ruleElt, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory)
-			throws ParsingException
+	public RuleEvaluator(Rule ruleElt, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory) throws IllegalArgumentException
 	// throws ParsingException
 	{
 		// JAXB fields initialization
@@ -71,33 +71,33 @@ public class RuleEvaluator implements Decidable
 		try
 		{
 			this.evaluatableTarget = targetElt == null ? null : new TargetEvaluator(targetElt, xPathCompiler, expressionFactory);
-		} catch (ParsingException e)
+		} catch (IllegalArgumentException e)
 		{
-			throw new ParsingException(this + ": Error parsing Target", e);
+			throw new IllegalArgumentException(this + ": Invalid Target", e);
 		}
 
-		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition condElt = ruleElt.getCondition();
+		final Condition condElt = ruleElt.getCondition();
 		try
 		{
 			this.evaluatableCondition = condElt == null ? null : new ConditionEvaluator(condElt, xPathCompiler, expressionFactory);
-		} catch (IllegalArgumentException | ParsingException e)
+		} catch (IllegalArgumentException e)
 		{
-			throw new ParsingException(this + ": Error parsing Condition", e);
+			throw new IllegalArgumentException(this + ": invalid Condition", e);
 		}
 
 		try
 		{
 			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(),
 					xPathCompiler, expressionFactory, effect);
-		} catch (ParsingException e)
+		} catch (IllegalArgumentException e)
 		{
-			throw new ParsingException(this + ": Error parsing ObligationExpressions/AdviceExpressions", e);
+			throw new IllegalArgumentException(this + ": Invalid ObligationExpressions/AdviceExpressions", e);
 		}
 
 		if (this.effectMatchPepActionExps == null)
 		{
 
-			this.nullActionsRuleDecisionResult = new DecisionResult(this.effectAsDecision, null);
+			this.nullActionsRuleDecisionResult = new BaseDecisionResult(this.effectAsDecision, null);
 		} else
 		{
 			this.nullActionsRuleDecisionResult = null;
@@ -144,7 +144,7 @@ public class RuleEvaluator implements Decidable
 				if (!evaluatableTarget.match(context))
 				{
 					LOGGER.debug("{}/Target -> No-match", this);
-					final DecisionResult result = DecisionResult.NOT_APPLICABLE;
+					final DecisionResult result = BaseDecisionResult.NOT_APPLICABLE;
 					LOGGER.debug("{} -> {}", this, result);
 					return result;
 				}
@@ -162,7 +162,7 @@ public class RuleEvaluator implements Decidable
 				 * FIXME: implement Extended Indeterminate: "Indeterminate{P}" if the Rule's Effect is Permit, or "Indeterminate{D}" if the Rule's Effect is
 				 * Deny
 				 */
-				final DecisionResult result = new DecisionResult(e.getStatus());
+				final DecisionResult result = new BaseDecisionResult(e.getStatus());
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -190,7 +190,7 @@ public class RuleEvaluator implements Decidable
 				 * therefore lower level than Error level)
 				 */
 				LOGGER.info("{}/Condition -> Indeterminate", this, e);
-				final DecisionResult result = new DecisionResult(e.getStatus());
+				final DecisionResult result = new BaseDecisionResult(e.getStatus());
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -198,7 +198,7 @@ public class RuleEvaluator implements Decidable
 			if (!isConditionTrue)
 			{
 				LOGGER.debug("{}/Condition -> False", this);
-				final DecisionResult result = DecisionResult.NOT_APPLICABLE;
+				final DecisionResult result = BaseDecisionResult.NOT_APPLICABLE;
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -237,12 +237,12 @@ public class RuleEvaluator implements Decidable
 			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates
 			 * to "Indeterminate", then the whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18).
 			 */
-			final DecisionResult result = new DecisionResult(e.getStatus());
+			final BaseDecisionResult result = new BaseDecisionResult(e.getStatus());
 			LOGGER.debug("{} -> {}", this, result);
 			return result;
 		}
 
-		final DecisionResult result = new DecisionResult(this.effectAsDecision, pepActions);
+		final BaseDecisionResult result = new BaseDecisionResult(this.effectAsDecision, pepActions);
 		LOGGER.debug("{} -> {}", this, result);
 		return result;
 	}

@@ -11,8 +11,9 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.value;
+package org.ow2.authzforce.core.pdp.impl.value;
 
+import java.util.Locale;
 import java.util.Objects;
 
 import javax.mail.internet.AddressException;
@@ -86,7 +87,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 		}
 
 		this.localPart = parts[0];
-		this.domainPartLowerCase = parts[1].toLowerCase();
+		this.domainPartLowerCase = parts[1].toLowerCase(Locale.US);
 	}
 
 	// /**
@@ -188,7 +189,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 			 * removed the dot, it could be a suffix witouth being a valid subdomain; e.g. ".east.sun.com" matches domain-part "isrg.east.sun.com" but must not
 			 * match "northeast.sun.com" although it is a valid suffix without the dot)
 			 */
-			final String otherToLowerCase = maybePartialRfc822Name.toLowerCase();
+			final String otherToLowerCase = maybePartialRfc822Name.toLowerCase(Locale.US);
 			return this.domainPartLowerCase.endsWith(otherToLowerCase) || this.domainPartLowerCase.equals(otherToLowerCase.substring(1));
 		}
 

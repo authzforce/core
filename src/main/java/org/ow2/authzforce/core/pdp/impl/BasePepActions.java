@@ -14,7 +14,7 @@
 /**
  * 
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,11 +25,13 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 
+import org.ow2.authzforce.core.pdp.api.PepActions;
+
 /**
- * PEP actions (obligations/advice)
+ * Base PEP actions (obligations/advice)
  * 
  */
-public final class PepActions
+public final class BasePepActions implements PepActions
 {
 	private static final IllegalArgumentException UNDEF_MERGED_PEP_ACTIONS_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined PEP actions");
 
@@ -87,7 +89,7 @@ public final class PepActions
 	 * @param advices
 	 *            advice list; null if no advice
 	 */
-	public PepActions(List<Obligation> obligations, List<Advice> advices)
+	public BasePepActions(List<Obligation> obligations, List<Advice> advices)
 	{
 		this.obligationList = obligations == null ? new ArrayList<Obligation>() : obligations;
 		this.adviceList = advices == null ? new ArrayList<Advice>() : advices;
@@ -98,6 +100,7 @@ public final class PepActions
 	 * 
 	 * @return obligations; empty if no obligation (always non-null)
 	 */
+	@Override
 	public List<Obligation> getObligations()
 	{
 		return Collections.unmodifiableList(obligationList);
@@ -108,6 +111,7 @@ public final class PepActions
 	 * 
 	 * @return advice; empty if no obligation (always non-null)
 	 */
+	@Override
 	public List<Advice> getAdvices()
 	{
 		return Collections.unmodifiableList(adviceList);
@@ -134,12 +138,12 @@ public final class PepActions
 			return true;
 		}
 
-		if (!(obj instanceof PepActions))
+		if (!(obj instanceof BasePepActions))
 		{
 			return false;
 		}
 
-		final PepActions other = (PepActions) obj;
+		final BasePepActions other = (BasePepActions) obj;
 		return this.obligationList.equals(other.obligationList) && this.adviceList.equals(other.adviceList);
 	}
 
@@ -152,6 +156,7 @@ public final class PepActions
 	 *            new advice list
 	 * 
 	 */
+	@Override
 	public void merge(List<Obligation> newObligations, List<Advice> newAdvices)
 	{
 		if (newObligations != null)
@@ -171,6 +176,7 @@ public final class PepActions
 	 * @param pepActions
 	 *            PEP actions
 	 */
+	@Override
 	public void merge(PepActions pepActions)
 	{
 		if (pepActions == null)
@@ -178,7 +184,7 @@ public final class PepActions
 			throw UNDEF_MERGED_PEP_ACTIONS_ARGUMENT_EXCEPTION;
 		}
 
-		merge(pepActions.obligationList, pepActions.adviceList);
+		merge(pepActions.getObligations(), pepActions.getAdvices());
 	}
 
 	@Override

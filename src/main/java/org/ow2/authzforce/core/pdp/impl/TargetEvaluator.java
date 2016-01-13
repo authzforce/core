@@ -11,25 +11,26 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
-import org.ow2.authzforce.core.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xacml.ParsingException;
 
 /**
  * Represents the TargetType XML type in XACML.
  * 
  */
-public class TargetEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17.Target
+public class TargetEvaluator
 {
 
 	/**
@@ -49,48 +50,44 @@ public class TargetEvaluator extends oasis.names.tc.xacml._3_0.core.schema.wd_17
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
-	 * @throws ParsingException
+	 * @throws IllegalArgumentException
+	 *             if one of the child AnyOf elements is invalid
+	 * 
 	 */
-	public TargetEvaluator(oasis.names.tc.xacml._3_0.core.schema.wd_17.Target jaxbTarget, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
-			throws ParsingException
+	public TargetEvaluator(Target jaxbTarget, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
-		final List<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf> jaxbAnyOfList = jaxbTarget.getAnyOves();
+		final List<AnyOf> jaxbAnyOfList = jaxbTarget.getAnyOves();
 		if (jaxbAnyOfList.isEmpty())
 		{
 			evaluatableAnyOfList = null;
-			// make the super field anyOves unmodifiable to prevent inconsistency with
-			// evaluatableAnyOfList
-			this.anyOves = Collections.emptyList();
 			return;
 		}
 
 		evaluatableAnyOfList = new ArrayList<>(jaxbAnyOfList.size());
 		int childIndex = 0;
-		for (final oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf jaxbAnyOf : jaxbAnyOfList)
+		for (final AnyOf jaxbAnyOf : jaxbAnyOfList)
 		{
 			final AnyOfEvaluator anyOfEvaluator;
 			try
 			{
 				anyOfEvaluator = new AnyOfEvaluator(jaxbAnyOf, xPathCompiler, expFactory);
-			} catch (ParsingException e)
+			} catch (IllegalArgumentException e)
 			{
-				throw new ParsingException("Error parsing <Target>'s <AnyOf>#" + childIndex, e);
+				throw new IllegalArgumentException("Invalid <Target>'s <AnyOf>#" + childIndex, e);
 			}
 
 			evaluatableAnyOfList.add(anyOfEvaluator);
 			childIndex++;
 		}
-
-		this.anyOves = Collections.<oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf> unmodifiableList(evaluatableAnyOfList);
 	}
 
 	/**
 	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context
 	 * so it's a NO_MATCH result. Here is the table shown in the specification: <code> 
 	 * 		<AnyOf> values 				<Target> value
-	 * 		All “Match�?					“Match�?
-	 * 		At Least one "No Match"		“No Match�?
-	 * 		Otherwise					“Indeterminate�?
+	 * 		All Match?					Match?
+	 * 		At Least one "No Match"		No Match?
+	 * 		Otherwise					Indeterminate?
 	 * </code> Also if Target empty (no AnyOf), return "Match"
 	 * 
 	 * @param context

@@ -11,45 +11,41 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.StringReader;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import org.ow2.authzforce.core.combining.BaseCombiningAlgRegistry;
-import org.ow2.authzforce.core.combining.CombiningAlg;
-import org.ow2.authzforce.core.combining.CombiningAlgRegistry;
-import org.ow2.authzforce.core.combining.StandardCombiningAlgRegistry;
-import org.ow2.authzforce.core.func.FirstOrderFunction;
-import org.ow2.authzforce.core.func.FunctionRegistry;
-import org.ow2.authzforce.core.func.FunctionSet;
-import org.ow2.authzforce.core.func.StandardFunctionRegistry;
-import org.ow2.authzforce.core.value.BaseDatatypeFactoryRegistry;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeFactory;
-import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
-import org.ow2.authzforce.core.value.StandardDatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
+import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.impl.combining.BaseCombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
+import org.ow2.authzforce.core.pdp.impl.func.StandardFunctionRegistry;
+import org.ow2.authzforce.core.pdp.impl.value.BaseDatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xacml.identifiers.XACMLDatatypeId;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.PropertyPlaceholderHelper;
 import org.springframework.util.ResourceUtils;
-
-import com.sun.xacml.Function;
 
 /**
  * XML-based PDP Configuration parser
@@ -57,6 +53,8 @@ import com.sun.xacml.Function;
  */
 public class PdpConfigurationParser
 {
+	private static final IllegalArgumentException NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"Undefined PDP configuration model handler");
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpConfigurationParser.class);
 
 	/**
@@ -69,12 +67,12 @@ public class PdpConfigurationParser
 	 * @return PDP instance
 	 * 
 	 * @throws IOException
-	 *             I/O error reading from confLocation
-	 * @throws JAXBException
-	 *             Error unmarshalling to Pdps instance from confLocation
+	 *             I/O error reading from {@code confLocation}
+	 * @throws IllegalArgumentException
+	 *             Invalid PDP configuration at {@code confLocation}
 	 * 
 	 */
-	public static PDPImpl getPDP(String confLocation) throws IOException, JAXBException
+	public static PDPImpl getPDP(String confLocation) throws IOException, IllegalArgumentException
 	{
 		return getPDP(confLocation, null, null);
 	}
@@ -119,12 +117,12 @@ public class PdpConfigurationParser
 	 *            'extensionXsdLocation' argument (may be null)
 	 * @return PDP instance
 	 * @throws IOException
-	 *             I/O error reading from confLocation
-	 * @throws JAXBException
-	 *             Error unmarshalling to Pdps instance from confLocation
+	 *             I/O error reading from {@code confLocation}
+	 * @throws IllegalArgumentException
+	 *             Invalid PDP configuration at {@code confLocation}
 	 * 
 	 */
-	public static PDPImpl getPDP(String confLocation, String catalogLocation, String extensionXsdLocation) throws IOException, JAXBException
+	public static PDPImpl getPDP(String confLocation, String catalogLocation, String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
 		return getPDP(confLocation, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
@@ -169,41 +167,37 @@ public class PdpConfigurationParser
 	 *            'extensionXsdLocation' argument (may be null)
 	 * @return PDP instance
 	 * @throws IOException
-	 *             I/O error reading from confLocation
-	 * @throws JAXBException
-	 *             Error unmarshalling to Pdps instance from confLocation
+	 *             I/O error reading from {@code confLocation}
+	 * @throws IllegalArgumentException
+	 *             Invalid PDP configuration at {@code confLocation}
 	 * 
 	 */
-	public static PDPImpl getPDP(File confFile, String catalogLocation, String extensionXsdLocation) throws IOException, JAXBException
+	public static PDPImpl getPDP(File confFile, String catalogLocation, String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
 		return getPDP(confFile, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
 
-	private static final String PROPERTY_PLACEHOLDER_PREFIX = "${";
-	private static final String PROPERTY_PLACEHOLDER_SUFFIX = "}";
-	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = ":";
-	private static final String PARENT_DIRECTORY_PROPERTY_NAME = "PARENT_DIR";
-
 	/**
+	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info:
+	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html.
+	 * <p>
+	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file
+	 * (including in PDP extensions'), we define a property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the
+	 * configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation
+	 * is not a file on the filesystem, then ${PARENT_DIR} is undefined.
+	 * 
 	 * @param confLocation
 	 *            location of PDP configuration file
 	 * @param modelHandler
 	 *            PDP configuration model handler
+	 * @return PDP instance
 	 * @throws IOException
-	 *             I/O error occurred reading from confLocation
-	 * @throws JAXBException
-	 *             Error unmarshalling to Pdps instance from confLocation
+	 *             I/O error reading from {@code confLocation}
 	 * @throws IllegalArgumentException
-	 *             invalid configuration file
+	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	private static PDPImpl getPDP(String confLocation, PdpModelHandler modelHandler) throws IOException, JAXBException, IllegalArgumentException
+	public static PDPImpl getPDP(String confLocation, PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
 	{
-		/*
-		 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file
-		 * (including in PDP extensions'), we define a property 'PARENT_DIRECTORY', so that the placeholder ${PARENT_DIRECTORY} can be used as prefix for file
-		 * paths in the configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then ${PARENT_DIRECTORY} will be replaced by
-		 * 'file:///path/to'. If confLocation is not a file on the filesystem, then ${PARENT_DIRECTORY} is undefined.
-		 */
 		File confFile = null;
 		try
 		{
@@ -217,43 +211,51 @@ public class PdpConfigurationParser
 	}
 
 	/**
+	 * Create PDP instance
+	 * <p>
+	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file
+	 * (including in PDP extensions'), we define a property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the
+	 * configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation
+	 * is not a file on the filesystem, then ${PARENT_DIR} is undefined.
+	 * 
 	 * @param confFile
 	 *            PDP configuration file
-	 * @param modelhandler
+	 * @param modelHandler
 	 *            PDP configuration model handler
+	 * @return PDP instance
 	 * @throws IOException
-	 *             I/O error occurred reading from confLocation
-	 * @throws JAXBException
-	 *             Error unmarshalling to Pdps instance from confLocation
+	 *             I/O error reading from {@code confFile}
 	 * @throws IllegalArgumentException
-	 *             invalid configuration file
+	 *             Invalid PDP configuration in {@code confFile}
 	 */
-	private static PDPImpl getPDP(File confFile, PdpModelHandler modelhandler) throws IOException, JAXBException, IllegalArgumentException
+	public static PDPImpl getPDP(File confFile, PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
 	{
 		if (confFile == null || !confFile.exists())
 		{
-			// no property replacement of PARENT_DIRECTORY
+			// no property replacement of PARENT_DIR
 			throw new IllegalArgumentException("Invalid configuration file location: No file exists at: " + confFile);
 		}
 
-		// configuration file exists
-		// property replacement of PARENT_DIRECTORY
-		final File parentDir = confFile.getParentFile();
-		final Properties props = new Properties();
-		final URI propVal = parentDir.toURI();
-		/*
-		 * Property value must be a String! Using props.put(Object,Object) is misleading here as it makes falsely believe other datatypes would work
-		 */
-		props.setProperty(PARENT_DIRECTORY_PROPERTY_NAME, propVal.toString());
-		LOGGER.debug("Property {} = {}", PARENT_DIRECTORY_PROPERTY_NAME, propVal);
-		final PropertyPlaceholderHelper propPlaceholderHelper = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX,
-				PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
-		final String confString = new String(FileCopyUtils.copyToByteArray(confFile), StandardCharsets.UTF_8);
-		final String newConfString = propPlaceholderHelper.replacePlaceholders(confString, props);
-		final Source xmlSrc = new StreamSource(new StringReader(newConfString));
+		if (modelHandler == null)
+		{
+			throw NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION;
+		}
 
-		final Pdp pdpJaxbConf = modelhandler.unmarshal(xmlSrc, Pdp.class);
-		return getPDP(pdpJaxbConf);
+		// configuration file exists
+		final Pdp pdpJaxbConf;
+		try
+		{
+			pdpJaxbConf = modelHandler.unmarshal(new StreamSource(confFile), Pdp.class);
+		} catch (JAXBException e)
+		{
+			throw new IllegalArgumentException("Invalid PDP configuration file", e);
+		}
+
+		// Set property PARENT_DIR in environment properties for future replacement in configuration strings by PDP extensions using file paths
+		final String propVal = confFile.getParentFile().toURI().toString();
+		LOGGER.debug("Property {} = {}", EnvironmentPropertyName.PARENT_DIR, propVal);
+		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propVal));
+		return getPDP(pdpJaxbConf, envProps);
 	}
 
 	/**
@@ -261,13 +263,15 @@ public class PdpConfigurationParser
 	 * 
 	 * @param pdpJaxbConf
 	 *            (JAXB-bound) PDP configuration
+	 * @param envProps
+	 *            PDP configuration environment properties (e.g. PARENT_DIR)
 	 * @return PDP instance
 	 * @throws IllegalArgumentException
 	 *             invalid PDP configuration
 	 * @throws IOException
 	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
 	 */
-	public static PDPImpl getPDP(Pdp pdpJaxbConf) throws IllegalArgumentException, IOException
+	public static PDPImpl getPDP(Pdp pdpJaxbConf, EnvironmentProperties envProps) throws IllegalArgumentException, IOException
 	{
 		/*
 		 * Initialize all parameters of ExpressionFactoryImpl: attribute datatype factories, functions, etc.
@@ -332,7 +336,7 @@ public class PdpConfigurationParser
 
 		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), pdpJaxbConf.getMaxVariableRefDepth(), enableXPath,
 				combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(), pdpJaxbConf.getMaxPolicyRefDepth(),
-				pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache);
+				pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache, envProps);
 	}
 
 	private static boolean isXpathBased(Function<?> function)

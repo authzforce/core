@@ -11,9 +11,10 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core;
+package org.ow2.authzforce.core.pdp.impl;
 
 import java.beans.ConstructorProperties;
+import java.io.File;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -176,6 +177,24 @@ public class PdpModelHandler
 		marshaller.setSchema(confSchema);
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 		marshaller.marshal(conf, os);
+	}
+
+	/**
+	 * Saves full configuration (XML)
+	 * 
+	 * @param conf
+	 *            configuration
+	 * @param f
+	 *            output file where to save
+	 * @throws JAXBException
+	 *             error when marshalling the XML configuration to file
+	 */
+	public void marshal(Pdp conf, File f) throws JAXBException
+	{
+		final Marshaller marshaller = confJaxbCtx.createMarshaller();
+		marshaller.setSchema(confSchema);
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		marshaller.marshal(conf, f);
 	}
 
 }

@@ -11,20 +11,23 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.Expressions;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.Expressions;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 
 /**
  * A class that implements the logical function "and".
@@ -49,6 +52,93 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 	private static final class CallFactory
 	{
 
+		/**
+		 * TODO: optimize this function call by checking the following:
+		 * <ol>
+		 * <li>If any argument expression is constant BooleanAttributeValue False, return always False.</li>
+		 * <li>Else If all argument expressions are constant BooleanAttributeValue True, return always True.</li>
+		 * <li>
+		 * Else If any argument expression is constant BooleanAttributeValue True, remove it from the arguments, as it has no effect on the final result.
+		 * Indeed, and function is commutative and and(true, x, y...) = and(x, y...).</li>
+		 * </ol>
+		 * The first two optimizations can be achieved by pre-evaluating the function call with context = null and check the result if no
+		 * IndeterminateEvaluationException is thrown.
+		 */
+		private static final class Call extends FirstOrderFunctionCall<BooleanValue>
+		{
+			private final List<Expression<?>> checkedArgExpressions;
+
+			private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
+					throws IllegalArgumentException
+			{
+				super(functionSig, argExpressions, remainingArgTypes);
+				this.checkedArgExpressions = argExpressions;
+			}
+
+			@Override
+			public BooleanValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+			{
+				IndeterminateEvaluationException indeterminateException = null;
+				int argIndex = 0;
+				for (final Expression<?> arg : checkedArgExpressions)
+				{
+					// Evaluate the argument
+					final BooleanValue attrVal;
+					try
+					{
+						attrVal = Expressions.eval(arg, context, DatatypeConstants.BOOLEAN.TYPE);
+						if (!attrVal.getUnderlyingValue())
+						{
+							return BooleanValue.FALSE;
+						}
+					} catch (IndeterminateEvaluationException e)
+					{
+						// keep the indeterminate error to throw later if there was not any FALSE in
+						// remaining args
+						indeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE_PREFIX + argIndex,
+								StatusHelper.STATUS_PROCESSING_ERROR, e);
+					}
+
+					argIndex++;
+				}
+
+				// do the same with remaining arg values
+				if (remainingArgs != null)
+				{
+
+					for (final AttributeValue arg : remainingArgs)
+					{
+						// Evaluate the argument
+						final BooleanValue attrVal;
+						try
+						{
+							attrVal = BooleanValue.class.cast(arg);
+						} catch (ClassCastException e)
+						{
+							throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(),
+									StatusHelper.STATUS_PROCESSING_ERROR, e);
+						}
+
+						if (!attrVal.getUnderlyingValue())
+						{
+							return BooleanValue.FALSE;
+						}
+
+						argIndex++;
+					}
+				}
+
+				if (indeterminateException != null)
+				{
+					// there was at least one indeterminate arg that could have been TRUE or FALSE ->
+					// indeterminate result
+					throw indeterminateException;
+				}
+
+				return BooleanValue.TRUE;
+			}
+		}
+
 		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + DatatypeConstants.BOOLEAN.TYPE
 				+ ") of arg#";
 		private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_AND + ": Indeterminate arg #";
@@ -62,84 +152,7 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 
 		protected FirstOrderFunctionCall<BooleanValue> getInstance(final List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
 		{
-			/**
-			 * TODO: optimize this function call by checking the following:
-			 * <ol>
-			 * <li>If any argument expression is constant BooleanAttributeValue False, return always False.</li>
-			 * <li>Else If all argument expressions are constant BooleanAttributeValue True, return always True.</li>
-			 * <li>
-			 * Else If any argument expression is constant BooleanAttributeValue True, remove it from the arguments, as it has no effect on the final result.
-			 * Indeed, and function is commutative and and(true, x, y...) = and(x, y...).</li>
-			 * </ol>
-			 * The first two optimizations can be achieved by pre-evaluating the function call with context = null and check the result if no
-			 * IndeterminateEvaluationException is thrown.
-			 */
-			return new FirstOrderFunctionCall<BooleanValue>(funcSig, argExpressions, remainingArgTypes)
-			{
-
-				@Override
-				protected BooleanValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
-				{
-					IndeterminateEvaluationException indeterminateException = null;
-					int argIndex = 0;
-					for (final Expression<?> arg : argExpressions)
-					{
-						// Evaluate the argument
-						final BooleanValue attrVal;
-						try
-						{
-							attrVal = Expressions.eval(arg, context, DatatypeConstants.BOOLEAN.TYPE);
-							if (!attrVal.getUnderlyingValue())
-							{
-								return BooleanValue.FALSE;
-							}
-						} catch (IndeterminateEvaluationException e)
-						{
-							// keep the indeterminate error to throw later if there was not any FALSE in
-							// remaining args
-							indeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE_PREFIX + argIndex,
-									StatusHelper.STATUS_PROCESSING_ERROR, e);
-						}
-
-						argIndex++;
-					}
-
-					// do the same with remaining arg values
-					if (remainingArgs != null)
-					{
-
-						for (final AttributeValue arg : remainingArgs)
-						{
-							// Evaluate the argument
-							final BooleanValue attrVal;
-							try
-							{
-								attrVal = BooleanValue.class.cast(arg);
-							} catch (ClassCastException e)
-							{
-								throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(),
-										StatusHelper.STATUS_PROCESSING_ERROR, e);
-							}
-
-							if (!attrVal.getUnderlyingValue())
-							{
-								return BooleanValue.FALSE;
-							}
-
-							argIndex++;
-						}
-					}
-
-					if (indeterminateException != null)
-					{
-						// there was at least one indeterminate arg that could have been TRUE or FALSE ->
-						// indeterminate result
-						throw indeterminateException;
-					}
-
-					return BooleanValue.TRUE;
-				}
-			};
+			return new Call(funcSig, argExpressions, remainingArgTypes);
 		}
 
 	}
@@ -158,7 +171,7 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException
 	{
 		return this.funcCallFactory.getInstance(argExpressions, remainingArgTypes);

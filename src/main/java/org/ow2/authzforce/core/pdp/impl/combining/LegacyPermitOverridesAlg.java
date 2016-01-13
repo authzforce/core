@@ -11,13 +11,16 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.combining;
+package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.ow2.authzforce.core.Decidable;
+import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.Decidable;
 
 /**
  * This implements the standard Permit-Overrides and Ordered-Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take
@@ -25,8 +28,10 @@ import org.ow2.authzforce.core.Decidable;
  * supports the Ordered Permit Overrides algorithm.
  * 
  */
-public final class LegacyPermitOverridesAlg extends CombiningAlg<Decidable>
+public final class LegacyPermitOverridesAlg extends BaseCombiningAlg<Decidable>
 {
+	private static final String LEGACY_ALG_WARNING = "%s is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
+
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
@@ -50,9 +55,12 @@ public final class LegacyPermitOverridesAlg extends CombiningAlg<Decidable>
 		SET = new CombiningAlgSet(algSet);
 	}
 
+	private final UnsupportedOperationException unsupportedLegacyAlgorithmException;
+
 	private LegacyPermitOverridesAlg(String algId)
 	{
-		super(algId, true, Decidable.class);
+		super(algId, Decidable.class);
+		this.unsupportedLegacyAlgorithmException = new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this));
 	}
 
 	@Override

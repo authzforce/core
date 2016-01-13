@@ -11,22 +11,25 @@
  *
  * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.func;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.Expressions;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.BooleanValue;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.Expressions;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
 
 /**
  * A class that implements the n-of function. From the XACML spec (urn:oasis:names:tc:xacml:1.0:function:n-of): the first argument to this function SHALL be of
@@ -64,7 +67,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 		}
 
 		@Override
-		protected BooleanValue evaluate(EvaluationContext context, AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
+		public BooleanValue evaluate(EvaluationContext context, AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
 		{
 			/*
 			 * Arg datatypes and number is already checked in superclass but we need to do further checks specific to this function such as the first argument
@@ -261,7 +264,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
 	@Override
-	protected FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, Datatype<?>... remainingArgTypes)
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException
 	{
 		return new Call(functionSignature, checkedArgExpressions, remainingArgTypes);
