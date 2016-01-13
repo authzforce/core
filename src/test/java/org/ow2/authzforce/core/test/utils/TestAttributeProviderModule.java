@@ -27,18 +27,19 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
-import org.ow2.authzforce.core.AttributeProvider;
-import org.ow2.authzforce.core.BaseAttributeProviderModule;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.XACMLParsers.JaxbXACMLAttributeParser;
-import org.ow2.authzforce.core.XACMLParsers.NonIssuedLikeIssuedStrictJaxbXACMLAttributeParser;
-import org.ow2.authzforce.core.expression.AttributeGUID;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeProvider;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.BaseAttributeProviderModule;
+import org.ow2.authzforce.core.pdp.api.CloseableAttributeProviderModule;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.JaxbXACMLAttributeParser;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.NonIssuedLikeIssuedStrictJaxbXACMLAttributeParser;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.xmlns.test.TestAttributeProvider;
 
 /**
@@ -53,7 +54,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 	 * module factory
 	 * 
 	 */
-	public static class Factory extends BaseAttributeProviderModule.Factory<TestAttributeProvider>
+	public static class Factory extends CloseableAttributeProviderModule.FactoryBuilder<TestAttributeProvider>
 	{
 
 		@Override
@@ -63,7 +64,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 		}
 
 		@Override
-		public DependencyAwareFactory parseDependencies(final TestAttributeProvider conf)
+		public DependencyAwareFactory getInstance(final TestAttributeProvider conf)
 		{
 			return new DependencyAwareFactory()
 			{
@@ -76,7 +77,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 				}
 
 				@Override
-				public BaseAttributeProviderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeProvider depAttrProvider)
+				public CloseableAttributeProviderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeProvider depAttrProvider)
 				{
 					return new TestAttributeProviderModule(conf, attrDatatypeFactory);
 				}

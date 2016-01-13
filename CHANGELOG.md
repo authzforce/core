@@ -1,7 +1,21 @@
 # Change log
-All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. Starting with version 3.6.0, this project adheres to [Semantic Versioning](http://semver.org).
+All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
-## 3.6.0 - 2015-12-08 
+## 3.7.0
+### Added
+- Root policy provider module based on any policy-by-reference provider (parameter is the root policy reference to be resolved by the policy-by-reference provider)
+
+### Changed
+- PDP configuration XSD version -> 3.6.1 (supporting new configuration type for the new ref-based Root policy provider module mentioned in previous section)
+
+### Removed
+- Moved/Refactored API classes sufficient for implementing PDP extensions (Datatypes, Functions, Policy/Attribute providers, etc.) to a separate project: authzforce-ce-core-pdp-api
+
+### Fixed
+- Broken validation of max policy reference depth
+
+
+## 3.6.0
 ### Added
 - Support all [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, except IIA010, IIA012, IIA024, IID029, IID030, III.C.2, III.C.3, IIIE301, IIIE303, II.G.2-6 (see also [README](src\test\resources\conformance\xacml-3.0-from-2.0-ct\README.md) ); with specific adaptations and anhancements:
   1. XACML 3.0 Schema validation in all conformance tests (original files are not all compliant with XACML 3.0). 
@@ -23,15 +37,12 @@ All notable changes to this project are documented in this file following the [K
   2. *Allow Attribute duplicates*: allows defining multi-valued attributes by repeating the same XACML Attribute (same AttributeId) within a XACML Attributes element (same Category). Indeed, not allowing this enables the PDP to parse and evaluate Requests more efficiently, especially if you know the Requests to be well-formed, i.e. all AttributeValues of a given Attribute are grouped together in the same `<Attribute>` element. However, it may not be fully compliant with the XACML spec according to a [discussion](https://lists.oasis-open.org/archives/xacml-dev/201507/msg00001.html) on the xacml-dev mailing list, referring to the XACML 3.0 core spec, §7.3.3, that indicates that multiple occurrences of the same `<Attribute>` with same meta-data but different values should be considered equivalent to a single `<Attribute>` element with same meta-data and merged values (multi-valued Attribute). Moreover, the XACML 3.0 conformance test 'IIIA024' expects this behavior: the multiple subject-id Attributes are expected to result in a multi-value bag during evaluation of the `<AttributeDesignator>`.
 - Features to prevent circular references in Policy(Set)IdReferences or VariableReference
 - Features to limit depth of PolicySetIdReference or VariableReference chain (otherwise no theoretical limit)
-- PMD and findbugs plugins in Maven build
-- Logging of XML catalog/schema loading in PDP configuration
 
 ### Changed
 - TestMatchAlg class replaced with official conformance test on Target matching: group II.B.
 - Improved `TestUtils` class to allow configuring a directory of referenced policies for Policy(Set)IdReferences, to enable/disable XPath support, and to configure a specific RequestFilter ID, e.g. to use the MultipleDecisionProfile for conformance tests of 'optional' features.
 - Renamed RELEASE-NOTES.md to CHANGELOG.md to adopt conventions from [keepachangelog.com](http://keepachangelog.com).
 - Logback dependency scope (maven) from `compile` to `test` (not required for compiling, only for tests, any SLF4J-compatible library may be used at runtime).
-- spring-xml dependency (maven) - no longer required - replaced with child dependency spring-core required because of use of `org.springframework.util.*`.
 - Moved old README.md content to the server project since it does not apply anymore to this project but to the AuthzForce server project.
 
 ### Fixed 

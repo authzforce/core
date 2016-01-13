@@ -33,11 +33,11 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ow2.authzforce.core.PDPImpl;
-import org.ow2.authzforce.core.PdpConfigurationParser;
-import org.ow2.authzforce.core.XACMLParsers;
-import org.ow2.authzforce.core.XACMLParsers.NamespaceFilteringParser;
-import org.ow2.authzforce.core.XACMLParsers.XACMLParserFactory;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
+import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
+import org.ow2.authzforce.core.pdp.impl.PDPImpl;
+import org.ow2.authzforce.core.pdp.impl.PdpConfigurationParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
@@ -115,7 +115,7 @@ public abstract class PdpTest
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(PdpTest.class);
 
-	private static final XACMLParserFactory XACML_PARSER_FACTORY = XACMLParsers.getXACMLParserFactory(false);
+	private static final XACMLParserFactory XACML_PARSER_FACTORY = JaxbXACMLUtils.getXACMLParserFactory(false);
 
 	private final String testDirPath;
 
@@ -181,16 +181,16 @@ public abstract class PdpTest
 		// Parse request
 		Request request = null;
 		// if no Request file, it is just a static policy syntax error check
-		String expectedReqFilepath = testResourceLocationPrefix + REQUEST_FILENAME;
+		String reqFilepath = testResourceLocationPrefix + REQUEST_FILENAME;
 		NamespaceFilteringParser unmarshaller = XACML_PARSER_FACTORY.getInstance();
 		try
 		{
-			request = TestUtils.createRequest(expectedReqFilepath, unmarshaller);
+			request = TestUtils.createRequest(reqFilepath, unmarshaller);
 			LOGGER.debug("XACML Request sent to the PDP: {}", request);
 		} catch (FileNotFoundException notFoundErr)
 		{
 			// do nothing except logging -> request = null
-			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", expectedReqFilepath);
+			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", reqFilepath);
 		}
 
 		// Create PDP
@@ -236,7 +236,7 @@ public abstract class PdpTest
 					 */
 					pdp = pdpExtXsdFile == null ? PdpConfigurationParser.getPDP(pdpConfLocation) : PdpConfigurationParser.getPDP(pdpConfFile,
 							XML_CATALOG_LOCATION, pdpExtXsdLocation);
-				} catch (IOException | JAXBException e)
+				} catch (IOException e)
 				{
 					throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfLocation + "' with extension XSD '" + pdpExtXsdLocation
 							+ "' and XML catalog file '" + XML_CATALOG_LOCATION + "'", e);

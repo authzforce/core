@@ -1,0 +1,6 @@
+org.ow2.authzforce.core.pdp.impl.policy.CoreRootPolicyProviderModule$Factory
+org.ow2.authzforce.core.pdp.impl.policy.CoreRefPolicyProviderModule$Factory
+org.ow2.authzforce.core.pdp.impl.policy.CoreRefBasedRootPolicyProviderModule$Factory
+org.ow2.authzforce.core.pdp.impl.DefaultRequestFilter$StrictFilterFactory
+org.ow2.authzforce.core.pdp.impl.MultiDecisionRequestFilter$LaxFilterFactory
+org.ow2.authzforce.core.pdp.impl.MultiDecisionRequestFilter$StrictFilterFactory

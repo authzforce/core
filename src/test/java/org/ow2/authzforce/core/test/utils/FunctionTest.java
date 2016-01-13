@@ -28,24 +28,24 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ow2.authzforce.core.EvaluationContext;
-import org.ow2.authzforce.core.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.StatusHelper;
-import org.ow2.authzforce.core.expression.Expression;
-import org.ow2.authzforce.core.expression.ExpressionFactory;
-import org.ow2.authzforce.core.expression.ExpressionFactoryImpl;
-import org.ow2.authzforce.core.expression.PrimitiveValueExpression;
-import org.ow2.authzforce.core.func.FunctionCall;
-import org.ow2.authzforce.core.func.StandardFunctionRegistry;
-import org.ow2.authzforce.core.value.AttributeValue;
-import org.ow2.authzforce.core.value.Bag;
-import org.ow2.authzforce.core.value.Datatype;
-import org.ow2.authzforce.core.value.DatatypeConstants;
-import org.ow2.authzforce.core.value.DatatypeFactory;
-import org.ow2.authzforce.core.value.StandardDatatypeFactoryRegistry;
-import org.ow2.authzforce.core.value.Value;
+import org.ow2.authzforce.core.pdp.api.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.Bag;
+import org.ow2.authzforce.core.pdp.api.Datatype;
+import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.Expression;
+import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
+import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
+import org.ow2.authzforce.core.pdp.impl.func.StandardFunctionRegistry;
+import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 
-import com.sun.xacml.Function;
 import com.sun.xacml.UnknownIdentifierException;
 
 /**
@@ -111,23 +111,17 @@ public abstract class FunctionTest
 			}
 		}
 
-		try
+		final Function<?> function = STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
+		if (function == null)
 		{
-			final Function<?> function = STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
-			if (function == null)
-			{
-				throw new IllegalArgumentException("Function " + functionName
-						+ (subFuncReturnType == null ? "" : "(sub-function return type = " + subFuncReturnType + ")") + " not valid/supported");
-			}
-
-			funcCall = function.newCall(inputs);
-
-			this.expectedResult = expectedResult;
-			this.toString = function + "( " + inputs + " )";
-		} catch (UnknownIdentifierException e)
-		{
-			throw new RuntimeException(e);
+			throw new IllegalArgumentException("Function " + functionName
+					+ (subFuncReturnType == null ? "" : "(sub-function return type = " + subFuncReturnType + ")") + " not valid/supported");
 		}
+
+		funcCall = function.newCall(inputs);
+
+		this.expectedResult = expectedResult;
+		this.toString = function + "( " + inputs + " )";
 
 		this.areBagsComparedAsSets = compareBagsAsSets;
 	}

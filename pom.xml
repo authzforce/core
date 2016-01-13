@@ -3,10 +3,10 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-parent</artifactId>
-		<version>3.3.5</version>
+		<version>3.3.7</version>
 	</parent>
 	<artifactId>authzforce-ce-core</artifactId>
-	<version>3.6.0</version>
+	<version>3.7.0</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>AuthZForce Community Edition - XACML-compliant Core Engine</description>
 	<url>https://tuleap.ow2.org/projects/authzforce</url>
@@ -19,7 +19,6 @@
 		<url>${git.url.base}/core</url>
 	</scm>
 	<!-- distributionManagement defined in parent POM already -->
-			<!-- Setting dependency versions for episode used by maven jaxb2 plugin -->
 	<dependencies>
 		<!-- Third-party dependencies -->
 		<dependency>
@@ -50,18 +49,14 @@
 			<artifactId>guava</artifactId>
 			<version>18.0</version>
 		</dependency>
-		<dependency>
-			<!-- For XACML AttributeSelector evaluation and XPath-based functions (making reference to [XF]) -->
-			<groupId>net.sf.saxon</groupId>
-			<artifactId>Saxon-HE</artifactId>
-			<version>9.6.0-5</version>
-		</dependency>
 		<!-- /Third-party dependencies -->
 
 		<!-- Authzforce dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
+			<artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
+			<!-- Major/minor version should match this artifact major/minor version to respect Semantic Versioning; -->
+			<version>3.6.1</version>
 		</dependency>
 		<!-- /Authzforce dependencies -->
 
@@ -107,6 +102,17 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
 				<version>3.0.2</version>
+				<configuration>
+					<!--
+						Enables analysis which takes more memory but finds more bugs.
+						If you run out of memory, changes the value of the effort element
+						to 'Low'.
+					-->
+					<effort>Max</effort>
+					<!-- Reports all bugs (other values are medium and max) -->
+					<threshold>Low</threshold>
+					<failOnError>true</failOnError>
+				</configuration>
 				<executions>
 					<execution>
 						<phase>verify</phase>
@@ -179,6 +185,7 @@
 						<episode>
 							<groupId>${project.groupId}</groupId>
 							<artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
+							<version>3.3.7</version>
 						</episode>
 					</episodes>
 					<catalog>src/main/jaxb/catalog.xml</catalog>

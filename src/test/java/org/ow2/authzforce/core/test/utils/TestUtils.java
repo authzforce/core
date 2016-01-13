@@ -38,13 +38,14 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
-import org.ow2.authzforce.core.PDPImpl;
-import org.ow2.authzforce.core.PdpConfigurationParser;
-import org.ow2.authzforce.core.XACMLBindingUtils;
-import org.ow2.authzforce.core.XACMLParsers.NamespaceFilteringParser;
-import org.ow2.authzforce.core.xmlns.pdp.BaseStaticPolicyProvider;
-import org.ow2.authzforce.core.xmlns.pdp.BaseStaticRefPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
+import org.ow2.authzforce.core.pdp.impl.DefaultEnvironmentProperties;
+import org.ow2.authzforce.core.pdp.impl.PDPImpl;
+import org.ow2.authzforce.core.pdp.impl.PdpConfigurationParser;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
+import org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider;
+import org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider;
 import org.ow2.authzforce.core.xmlns.test.TestAttributeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +138,7 @@ public class TestUtils
 		StringWriter writer = new StringWriter();
 		try
 		{
-			Marshaller marshaller = XACMLBindingUtils.createXacml3Marshaller();
+			Marshaller marshaller = JaxbXACMLUtils.createXacml3Marshaller();
 			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 			marshaller.marshal(response, writer);
 		} catch (Exception e)
@@ -154,8 +155,9 @@ public class TestUtils
 	 * 
 	 * @param response
 	 *            input XACML Response
+	 * @return normalized response
 	 */
-	private static Response normalizeForComparison(Response response)
+	public static Response normalizeForComparison(Response response)
 	{
 		final List<Result> results = new ArrayList<>();
 		/*
@@ -222,7 +224,7 @@ public class TestUtils
 
 			if (refPoliciesDirectoryURL != null)
 			{
-				BaseStaticRefPolicyProvider jaxbRefPolicyProvider = new BaseStaticRefPolicyProvider();
+				StaticRefPolicyProvider jaxbRefPolicyProvider = new StaticRefPolicyProvider();
 				jaxbRefPolicyProvider.setId("refPolicyProvider");
 				List<String> jaxbRefPolicyProviderPolicyLocations = jaxbRefPolicyProvider.getPolicyLocations();
 				final Path refPoliciesDirectoryPath = Paths.get(refPoliciesDirectoryURL.toURI());
@@ -251,7 +253,7 @@ public class TestUtils
 		}
 
 		final URL rootPolicyFileURL = ResourceUtils.getURL(rootPolicyLocation);
-		BaseStaticPolicyProvider jaxbRootPolicyProvider = new BaseStaticPolicyProvider();
+		StaticRootPolicyProvider jaxbRootPolicyProvider = new StaticRootPolicyProvider();
 		jaxbRootPolicyProvider.setId("rootPolicyProvider");
 		jaxbRootPolicyProvider.setPolicyLocation(rootPolicyFileURL.toString());
 		jaxbPDP.setRootPolicyProvider(jaxbRootPolicyProvider);
@@ -278,7 +280,7 @@ public class TestUtils
 			jaxbPDP.setRequestFilter(requestFilterId);
 		}
 
-		return PdpConfigurationParser.getPDP(jaxbPDP);
+		return PdpConfigurationParser.getPDP(jaxbPDP, new DefaultEnvironmentProperties());
 	}
 
 	/**
