@@ -56,7 +56,7 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
 			<!-- Major/minor version should match this artifact major/minor version to respect Semantic Versioning; -->
-			<version>3.6.1-SNAPSHOT</version>
+			<version>3.6.1</version>
 		</dependency>
 		<!-- /Authzforce dependencies -->
 
@@ -185,7 +185,7 @@
 						<episode>
 							<groupId>${project.groupId}</groupId>
 							<artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
-							<version>3.3.7-SNAPSHOT</version>
+							<version>3.3.7</version>
 						</episode>
 					</episodes>
 					<catalog>src/main/jaxb/catalog.xml</catalog>
