@@ -22,12 +22,8 @@
 	</annotation>
 	<element name="attributeProvider" type="authz-ext:AbstractAttributeProvider">
 		<annotation>
-			<documentation>Attribute Provider that provides attributes not already provided in the XACML request by PEP, e.g. from external sources. There must be one and only one Java class - say
-				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.AttributeProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor,
-				where
-				CONF_T is the JAXB type bound to this XML element type. This attribute Provider may also depend on previously defined 'attributeProviders', to find dependency attributes, i.e. attributes that
-				this
-				Provider does not support itself, but requires to find its supported attributes. Therefore, if an 'attributeProvider' AFy requires/depends on an attribute A that is not to be provided by the
+			<documentation>Attribute Provider that provides attributes not already provided in the XACML request by PEP, e.g. from external sources. There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' on the classpath, that contains a line stating the fully qualified name of the one Java class - say
+				'com.example.FooAttributeProviderModuleFactory' - on the classpath (see the Java ServiceLoader API java doc for more info on the META-INF/services files), which must implement the interface 'org.ow2.authzforce.core.pdp.api.AttributeProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB-annotated class bound to the XML type of this element in the instance document (e.g &lt;attributeProvider xsi:type='ns_prefix:FooAttributeProviderModel'&gt; ... &lt;/attributeProvider&gt;). This attribute Provider may also depend on previously defined 'attributeProviders', to find dependency attributes, i.e. attributes that this Provider does not support itself, but requires to find its supported attributes. Therefore, if an 'attributeProvider' AFy requires/depends on an attribute A that is not to be provided by the
 				PEP,
 				another 'attributeProvider' AFx providing this attribute A must be declared before X.
 			</documentation>
@@ -38,62 +34,70 @@
 			<sequence>
 				<element name="attributeDatatype" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of an attribute datatype to be added to supported datatypes. There must be one and only one Java class - say 'com.example.FooValueFactory' - on the classpath implementing
-							interface 'org.ow2.authzforce.core.value.DatatypeFactory' with zero-arg constructor, such that this URI equals: new com.example.FooValueFactory().getId().
+						<documentation>URI of an attribute datatype to be added to supported datatypes. There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' (see the Java ServiceLoader API java doc for more info on the META-INF/services files) on the classpath, that contains a line stating the fully qualified name of the one Java class - say 'com.example.FooDatatypeFactory' - on the classpath, that implements
+							interface 'org.ow2.authzforce.core.pdp.api.DatatypeFactory' with a zero-arg constructor, such that the value of this XML element equals (Java code): 
+							new com.example.FooDatatypeFactory().getId()
 						</documentation>
 					</annotation>
 				</element>
 				<element name="function" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of a function to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunction' - on the classpath implementing interface
-							'com.sun.xacml.Function' with zero-arg constructor, such that this URI equals: new com.example.FooFunction().getId().
+						<documentation>
+						URI of function to be added to supported functions. There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' (see the Java ServiceLoader API java doc for more info on the META-INF/services files) on the classpath, that contains a line stating the fully qualified name of the one Java class - say 'com.example.FooFunction' - on the classpath, that implements
+							interface 'org.ow2.authzforce.core.pdp.api.Function' with a zero-arg constructor, such that the value of this XML element equals (Java code): 
+							new com.example.FooFunction().getId()
 						</documentation>
 					</annotation>
 				</element>
 				<element name="functionSet" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of a set of functions to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunctionSet' - on the classpath implementing
-							interface 'org.ow2.authzforce.core.func.FunctionSet' with zero-arg constructor, such that this URI equals: new com.example.FooFunctionSet().getId().
+						<documentation>URI of a function set (package of multiple functions) to be added to supported function sets. There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' (see the Java ServiceLoader API java doc for more info on the META-INF/services files) on the classpath, that contains a line stating the fully qualified name of the one Java class - say 'com.example.FooFunctionSet' - on the classpath, that implements
+							interface 'org.ow2.authzforce.core.pdp.api.FunctionSet' with a zero-arg constructor, such that the value of this XML element equals (Java code): 
+							new com.example.FooFunctionSet().getId()
 						</documentation>
 					</annotation>
 				</element>
 				<element name="combiningAlgorithm" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
-						<documentation>URI of a policy/rule-combining algorithm to be added to supported algorithms. There must be one and only one Java class - say 'com.example.FooCombiningAlg' - on the classpath
-							implementing interface 'org.ow2.authzforce.core.pdp.api.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
+						<documentation>
+						URI of a policy/rule combining algorithm to be added to supported combining algorithms. There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' (see the Java ServiceLoader API java doc for more info on the META-INF/services files) on the classpath, that contains a line stating the fully qualified name of the one Java class - say 'com.example.FooCombiningAlg' - on the classpath, that implements
+							interface 'org.ow2.authzforce.core.pdp.api.CombiningAlg' with a zero-arg constructor, such that the value of this XML element equals (Java code): 
+							new com.example.FooCombiningAlg().getId()
 						</documentation>
 					</annotation>
 				</element>
 				<element ref="tns:attributeProvider" maxOccurs="unbounded" minOccurs="0" />
 				<element name="refPolicyProvider" type="authz-ext:AbstractPolicyProvider" minOccurs="0" maxOccurs="1">
 					<annotation>
-						<documentation>Referenced policy Provider that resolves Policy(Set)IdReferences. There must be one and only one Java class - say 'com.example.FooRefPolicyProviderModuleFactory' - on the
-							classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
-							this XML
-							element type. This referenced policy Provider may also use any of the 'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution; as some IdReferences may
+						<documentation>Referenced policy Provider that resolves Policy(Set)IdReferences. 
+						<p>
+						There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' on the classpath, that contains a line stating the fully qualified name of the one Java class - say
+				'com.example.FooRefPolicyProviderModuleFactory' - on the classpath (see the Java ServiceLoader API java doc for more info on the META-INF/services files), which must implement the interface 'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB-annotated class bound to the XML type of this element in the instance document (e.g &lt;refPolicyProvider xsi:type='ns_prefix:FooRefPolicyProviderModel'&gt; ... &lt;/refPolicyProvider&gt;).
+						</p>
+						<p>This referenced policy Provider may also use any of the 'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution; as some IdReferences may
 							not be
 							supported by this Provider. This element is not required if root policies found by the 'rootPolicyProvider' are always Policy elements, and not PolicySet elements.
+							</p>
 						</documentation>
 					</annotation>
 				</element>
 				<element name="rootPolicyProvider" type="authz-ext:AbstractPolicyProvider">
 					<annotation>
-						<documentation>Root/top-level policy Provider that provides the root/top-level Policy(Set) to PDP for evaluation. There must be one and only one Java class - say
-							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
-							constructor, where CONF_T is the JAXB type bound to this XML element type. This class may also implement
-							'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' to
-							be used
-							as 'refPolicyProvider' as well. This policy Provider may also use any of the
-							'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution.
+						<documentation>Root/top-level policy Provider that provides the root/top-level Policy(Set) to PDP for evaluation. 
+						<p>
+						There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' on the classpath, that contains a line stating the fully qualified name of the one Java class - say
+				'com.example.FooRootPolicyProviderModuleFactory' - on the classpath (see the Java ServiceLoader API java doc for more info on the META-INF/services files), which must implement the interface 'org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB-annotated class bound to the XML type of this element in the instance document (e.g &lt;rootPolicyProvider xsi:type='ns_prefix:FooRootPolicyProviderModel'&gt; ... &lt;/rootPolicyProvider&gt;).
+						</p>
 						</documentation>
 					</annotation>
 				</element>
 				<element name="decisionCache" minOccurs="0" maxOccurs="1" type="authz-ext:AbstractDecisionCache">
 					<annotation>
-						<documentation>Decision Response cache that, for a given request, provides the XACML response from a cache if there is a cached response for the given request. There must be one and only one
-							Java class - say 'com.example.FooDecisionCacheFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.DecisionCache.Factory&lt;CONF_T&gt;' with zero-arg constructor,
-							where
-							CONF_T is the JAXB type bound to this XML element type.
+						<documentation>URI of a Decision Response cache implementation that, for a given request, provides the XACML response from a cache if there is a cached response for the given request. 
+						<p>
+						There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' on the classpath, that contains a line stating the fully qualified name of the one Java class - say
+				'com.example.FooDecisionCacheFactory' - on the classpath (see the Java ServiceLoader API java doc for more info on the META-INF/services files), which must implement the interface 'org.ow2.authzforce.core.pdp.api.DecisionCache.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB-annotated class bound to the XML type of this element in the instance document (e.g &lt;decisionCache xsi:type='ns_prefix:FooDecisionCacheModel'&gt; ... &lt;/decisionCache&gt;).
+						</p>
 						</documentation>
 					</annotation>
 				</element>
@@ -168,9 +172,9 @@
 							Multiple Decision Profile specification, section 2; and then call the policy evaluation engine for each Individual Decision Request. At the end, the results (one per Individual Decision
 							Request) may be combined by a DecisionCombiner specified by next attribute 'decisionCombiner'.
 						</p>
-						<p>There must be one and only one Java class - say 'com.example.FooRequestFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RequestFilter' with zero-arg
-							constructor, such
-							that this URI equals: new com.example.FooRequestFilter().getId().</p>
+						<p>There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' (see the Java ServiceLoader API java doc for more info on the META-INF/services files) on the classpath, that contains a line stating the fully qualified name of the one Java class - say 'com.example.FooRequestFilter' - on the classpath, that implements
+							interface 'org.ow2.authzforce.core.pdp.api.RequestFilter' with a zero-arg constructor, such that the value of this XML element equals (Java code): 
+							new com.example.FooRequestFilter().getId()</p>
 						<p>If the configuration parameter 'enableXPath' is true, it is the responsibility of the RequestFilter to parse XACML Request/Attributes/Content nodes. If the configuration parameter
 							'strictAttributeIssuerMatch' is true, it is the responsibility of the RequestFilter to keep values of Attributes with Issuer
 							separate from values of Attributes without Issuer, in the attribute
@@ -181,12 +185,15 @@
 			</attribute>
 			<attribute name="resultFilter" type="anyURI" use="optional">
 				<annotation>
-					<documentation>URI of a XACML decision Result filter to be enabled. A decision Result filter is a PDP extension that process the result(s) from the policy evaluation before the final XACML
+					<documentation>URI of a XACML decision Result filter to be enabled. 
+					<p>
+					A decision Result filter is a PDP extension that process the result(s) from the policy evaluation before the final XACML
 						Response is created (and returned back to the requester). For example, a typical Result filter may combine multiple individual decisions - produced by the 'requestFilter' - to a single decision
-						Result if and only if the XACML Request's 'CombinedDecision' is set to true, as defined in XACML Multiple Decision Profile specification, section 3. There must be one and only one Java class -
-						say 'com.example.FooDecisionResultFilter' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.DecisionResultFilter' with zero-arg constructor, such that this URI equals:
-						new
-						com.example.FooDecisionResultFilter().getId().
+						Result if and only if the XACML Request's 'CombinedDecision' is set to true, as defined in XACML Multiple Decision Profile specification, section 3. 
+						</p>
+						<p>There must be a file 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' (see the Java ServiceLoader API java doc for more info on the META-INF/services files) on the classpath, that contains a line stating the fully qualified name of the one Java class - say 'com.example.FooRequestFilter' - on the classpath, that implements
+							interface 'org.ow2.authzforce.core.pdp.api.DecisionResultFilter' with a zero-arg constructor, such that the value of this XML element equals (Java code): 
+							new com.example.FooDecisionResultFilter().getId()</p>
 					</documentation>
 				</annotation>
 			</attribute>
