@@ -15,11 +15,13 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.RefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.VersionPatterns;
@@ -110,6 +112,18 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 	public List<String> getLongestPolicyReferenceChain()
 	{
 		// computed dynamically at evaluation time, see resolve() method
+		return null;
+	}
+
+	@Override
+	public Map<String, PolicyVersion> getStaticRefPolicies() {
+		// this is not static
+		return null;
+	}
+
+	@Override
+	public PolicyVersion getPolicyVersion() {
+		// Version is not statically defined
 		return null;
 	}
 }

@@ -40,6 +40,7 @@ import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
+import org.ow2.authzforce.core.pdp.api.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.VariableReference;
 import org.ow2.authzforce.core.pdp.api.XMLUtils;
 import org.ow2.authzforce.core.pdp.impl.combining.BaseCombiningAlgParameter;
@@ -217,6 +218,12 @@ public final class PolicyEvaluator extends GenericPolicyEvaluator<RuleEvaluator>
 	{
 		// a Policy does not have any policy reference
 		return null;
+	}
+
+	@Override
+	public Map<String, PolicyVersion> getStaticRefPolicies() {
+		// a Policy does not have any policy reference
+		return Collections.emptyMap();
 	}
 
 }
