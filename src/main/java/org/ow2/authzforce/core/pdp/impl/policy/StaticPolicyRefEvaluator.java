@@ -16,18 +16,20 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.VersionPatterns;
 
 class StaticPolicyRefEvaluator<P extends IPolicyEvaluator> extends PolicyReferenceEvaluator<P>
 {
 	private static final IllegalArgumentException UNDEF_POLICY_EXCEPTION = new IllegalArgumentException("undefined policy as target of static policy reference");
-	private final transient P referredPolicy;
-	private final List<String> longestPolicyRefChain;
+	private final P referredPolicy;
+	private transient final List<String> longestPolicyRefChain;
 
 	StaticPolicyRefEvaluator(String policyIdRef, VersionPatterns versionConstraints, P referredPolicy)
 	{
@@ -85,6 +87,16 @@ class StaticPolicyRefEvaluator<P extends IPolicyEvaluator> extends PolicyReferen
 	public List<String> getLongestPolicyReferenceChain()
 	{
 		return this.longestPolicyRefChain;
+	}
+
+	@Override
+	public PolicyVersion getPolicyVersion() {
+		return referredPolicy.getPolicyVersion();
+	}
+
+	@Override
+	public Map<String, PolicyVersion> getStaticRefPolicies() {
+		return referredPolicy.getStaticRefPolicies();
 	}
 
 }

@@ -2,6 +2,8 @@
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
 ## Unreleased
+### Added
+- PdpImpl#getStaticRootAndRefPolicies() that provides all the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved. This allows PDP clients to know all the policies (if statically resolved) possibly used by the PDP during the evaluation.
 
 ## 3.7.0
 ### Added

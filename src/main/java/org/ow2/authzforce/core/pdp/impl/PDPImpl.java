@@ -41,6 +41,7 @@ import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.XMLUtils;
@@ -209,7 +210,7 @@ public class PDPImpl implements CloseablePDP
 
 	};
 
-	private final RootPolicyEvaluator rootPolicyProvider;
+	private final RootPolicyEvaluator rootPolicyEvaluator;
 	private final DecisionCache decisionCache;
 	private final RequestFilter reqFilter;
 	private final IndividualDecisionRequestEvaluator individualReqEvaluator;
@@ -276,17 +277,17 @@ public class PDPImpl implements CloseablePDP
 		final RequestFilter requestFilter = requestFilterFactory.getInstance(attributeFactory, strictAttributeIssuerMatch, enableXPath,
 				XMLUtils.SAXON_PROCESSOR);
 
-		final RootPolicyEvaluator.Base candidateRootPolicyProvider = new RootPolicyEvaluator.Base(attributeFactory, functionRegistry,
+		final RootPolicyEvaluator.Base candidateRootPolicyEvaluator = new RootPolicyEvaluator.Base(attributeFactory, functionRegistry,
 				jaxbAttributeProviderConfs, maxVariableReferenceDepth, enableXPath, combiningAlgRegistry, jaxbRootPolicyProviderConf,
 				jaxbRefPolicyProviderConf, maxPolicySetRefDepth, strictAttributeIssuerMatch, environmentProperties);
 		// Use static resolution if possible
-		final RootPolicyEvaluator staticRootPolicyProvider = candidateRootPolicyProvider.toStatic();
-		if (staticRootPolicyProvider == null)
+		final RootPolicyEvaluator staticRootPolicyEvaluator = candidateRootPolicyEvaluator.toStatic();
+		if (staticRootPolicyEvaluator == null)
 		{
-			this.rootPolicyProvider = candidateRootPolicyProvider;
+			this.rootPolicyEvaluator = candidateRootPolicyEvaluator;
 		} else
 		{
-			this.rootPolicyProvider = staticRootPolicyProvider;
+			this.rootPolicyEvaluator = staticRootPolicyEvaluator;
 		}
 
 		this.reqFilter = requestFilter;
@@ -302,8 +303,8 @@ public class PDPImpl implements CloseablePDP
 			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
 		}
 
-		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyProvider)
-				: new CachingIndividualRequestEvaluator(rootPolicyProvider, this.decisionCache);
+		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator)
+				: new CachingIndividualRequestEvaluator(rootPolicyEvaluator, this.decisionCache);
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
@@ -379,7 +380,7 @@ public class PDPImpl implements CloseablePDP
 	@Override
 	public void close() throws IOException
 	{
-		rootPolicyProvider.close();
+		rootPolicyEvaluator.close();
 		if (decisionCache != null)
 		{
 			decisionCache.close();
@@ -390,6 +391,14 @@ public class PDPImpl implements CloseablePDP
 	public Response evaluate(Request request)
 	{
 		return evaluate(request, null);
+	}
+	
+	/**
+	 * Get the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved
+	 * @return the root and referenced policies; null if any of these policies is not statically resolved (once and for all)
+	 */
+	public Map<String, PolicyVersion> getStaticRootAndRefPolicies() {
+		return this.rootPolicyEvaluator.getStaticRootAndRefPolicies();
 	}
 
 }

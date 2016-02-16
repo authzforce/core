@@ -145,11 +145,16 @@ public class PdpExtensionLoader
 	 */
 	public static <T extends PdpExtension> T getExtension(Class<T> extensionType, String id) throws IllegalArgumentException
 	{
+		if(!NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.containsKey(extensionType)) 
+		{
+			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: "
+					+ NON_JAXB_BOUND_EXTENSION_CLASSES);	
+		}
+		
 		final Map<String, PdpExtension> typeSpecificExtsById = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.get(extensionType);
 		if (typeSpecificExtsById == null)
 		{
-			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: "
-					+ NON_JAXB_BOUND_EXTENSION_CLASSES);
+			throw new IllegalArgumentException("No PDP extension of type '" + extensionType + "' found");	
 		}
 
 		final PdpExtension ext = typeSpecificExtsById.get(id);
