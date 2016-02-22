@@ -40,7 +40,6 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActions;
 import org.ow2.authzforce.core.pdp.api.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.RefPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.VersionPatterns;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
@@ -306,7 +305,7 @@ public abstract class GenericPolicyEvaluator<T extends Decidable> implements IPo
 					switch (algDecision)
 					{
 					case NOT_APPLICABLE:
-						return algResult;						
+						return algResult;
 					case PERMIT:
 					case DENY:
 						return new BaseDecisionResult(targetMatchIndeterminateException.getStatus(), algDecision);
