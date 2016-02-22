@@ -39,13 +39,14 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 	private final transient RefPolicyProvider refPolicyProvider;
 
 	/*
-	 * Chain of Policy Reference leading from root policy down to this reference (excluded) (Do not use a Queue as it is FIFO, and we need LIFO and iteration in
-	 * order of insertion, so different from Collections.asLifoQueue(Deque) as well.)
+	 * Chain of Policy Reference leading from root policy down to this reference (excluded) (Do not use a Queue as it is
+	 * FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as
+	 * well.)
 	 */
 	private final transient Deque<String> ancestorPolicyRefChain;
 
-	DynamicPolicyRefEvaluator(String policyIdRef, VersionPatterns versionConstraints, Class<T> policyReferenceType, RefPolicyProvider refPolicyProvider,
-			Deque<String> ancestorPolicyRefChain)
+	DynamicPolicyRefEvaluator(String policyIdRef, VersionPatterns versionConstraints, Class<T> policyReferenceType,
+			RefPolicyProvider refPolicyProvider, Deque<String> ancestorPolicyRefChain)
 	{
 		super(policyIdRef, versionConstraints, policyReferenceType);
 		if (refPolicyProvider == null)
@@ -61,14 +62,16 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 	 * Resolves this to the actual Policy
 	 * 
 	 * @throws ParsingException
-	 *             Error parsing the policy referenced by this. The referenced policy may be parsed on the fly, when calling this method.
+	 *             Error parsing the policy referenced by this. The referenced policy may be parsed on the fly, when
+	 *             calling this method.
 	 * @throws IndeterminateEvaluationException
 	 *             if error determining the policy referenced by this, e.g. if more than one policy is found
 	 */
 	private T resolve() throws ParsingException, IndeterminateEvaluationException
 	{
 
-		return refPolicyProvider.get(this.referredPolicyClass, this.refPolicyId, this.versionConstraints, ancestorPolicyRefChain);
+		return refPolicyProvider.get(this.referredPolicyClass, this.refPolicyId, this.versionConstraints,
+				ancestorPolicyRefChain);
 	}
 
 	@Override
@@ -98,7 +101,8 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 		} catch (ParsingException e)
 		{
 			throw new IndeterminateEvaluationException("Error resolving " + this
-					+ " to check whether the referenced policy is applicable to the request context", StatusHelper.STATUS_SYNTAX_ERROR, e);
+					+ " to check whether the referenced policy is applicable to the request context",
+					StatusHelper.STATUS_SYNTAX_ERROR, e);
 		}
 	}
 
@@ -116,13 +120,15 @@ class DynamicPolicyRefEvaluator<T extends IPolicyEvaluator> extends PolicyRefere
 	}
 
 	@Override
-	public Map<String, PolicyVersion> getStaticRefPolicies() {
+	public Map<String, PolicyVersion> getStaticRefPolicies()
+	{
 		// this is not static
 		return null;
 	}
 
 	@Override
-	public PolicyVersion getPolicyVersion() {
+	public PolicyVersion getPolicyVersion()
+	{
 		// Version is not statically defined
 		return null;
 	}

@@ -3,6 +3,7 @@ All notable changes to this project are documented in this file following the [K
 
 ## Unreleased
 ### Added
+- Support for Extended Indeterminate values (XACML 3.0 Core specification, section 7.10-7.14, appendix C: combining algorithms)
 - PdpImpl#getStaticRootAndRefPolicies() that provides all the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved. This allows PDP clients to know all the policies (if statically resolved) possibly used by the PDP during the evaluation.
 
 ## 3.7.0
