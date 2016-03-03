@@ -43,17 +43,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
 /**
- * PDP test class. There should be a folder for test data of each issue. Each test folder is expected to be in one of these two configurations:
+ * PDP test class. There should be a folder for test data of each issue. Each test folder is expected to be in one of
+ * these two configurations:
  * <p>
  * Configuration 1 for minimal/basic PDP configuration:
  * <ul>
  * <li>{@value #POLICY_FILENAME}: root policy filename used by the PDP</li>
- * <li>{@value #REF_POLICIES_DIR_NAME}: (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy
- * {@value #POLICY_FILENAME} via Policy(Set)IdReference; required only if there is any Policy(Set)IdReference in {@value #POLICY_FILENAME} to resolve.</li>
- * <li>{@value #REQUEST_FILENAME}: (optional) XACML request file sent to the PDP for evaluation. If not present, the test is considered as a static policy test,
- * i.e. test for invalid policy detection, such as invalid syntax, circular reference, etc.</li>
- * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the actual response. Required only if
- * {@value #REQUEST_FILENAME} is present.</li>
+ * <li>{@value #REF_POLICIES_DIR_NAME}: (optional) directory containing files of XACML Policy(Set) that can be referred
+ * to from root policy {@value #POLICY_FILENAME} via Policy(Set)IdReference; required only if there is any
+ * Policy(Set)IdReference in {@value #POLICY_FILENAME} to resolve.</li>
+ * <li>{@value #REQUEST_FILENAME}: (optional) XACML request file sent to the PDP for evaluation. If not present, the
+ * test is considered as a static policy test, i.e. test for invalid policy detection, such as invalid syntax, circular
+ * reference, etc.</li>
+ * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the
+ * actual response. Required only if {@value #REQUEST_FILENAME} is present.</li>
  * </ul>
  * </p>
  * <p>
@@ -61,12 +64,14 @@ import org.springframework.util.ResourceUtils;
  * <ul>
  * <li>{@value #PDP_CONF_FILENAME}: PDP configuration file</li>
  * <li>{@value #PDP_EXTENSION_XSD}: (optional) PDP extensions schema, required iff custom PDP extensions are required</li>
- * <li>{@value #REQUEST_FILENAME}: (optional) XACML request file sent to the PDP for evaluation. If not present, the test is considered as a static policy test,
- * i.e. test for invalid policy detection, such as invalid syntax, circular reference, etc.</li>
- * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the actual response. Required only if
- * {@value #REQUEST_FILENAME} is present.</li>
- * <li>{@value #REF_POLICIES_DIR_NAME}: (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy
- * {@value #POLICY_FILENAME} via Policy(Set)IdReference; required only if there is any Policy(Set)IdReference in {@value #POLICY_FILENAME} to resolve.</li>
+ * <li>{@value #REQUEST_FILENAME}: (optional) XACML request file sent to the PDP for evaluation. If not present, the
+ * test is considered as a static policy test, i.e. test for invalid policy detection, such as invalid syntax, circular
+ * reference, etc.</li>
+ * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the
+ * actual response. Required only if {@value #REQUEST_FILENAME} is present.</li>
+ * <li>{@value #REF_POLICIES_DIR_NAME}: (optional) directory containing files of XACML Policy(Set) that can be referred
+ * to from root policy {@value #POLICY_FILENAME} via Policy(Set)IdReference; required only if there is any
+ * Policy(Set)IdReference in {@value #POLICY_FILENAME} to resolve.</li>
  * <li>Policy files matching locations defined in {@value #PDP_CONF_FILENAME}.</li>
  * </ul>
  * </p>
@@ -86,12 +91,14 @@ public abstract class PdpTest
 	public final static String PDP_EXTENSION_XSD = "pdp-ext.xsd";
 
 	/**
-	 * XACML policy filename used by default when no PDP configuration file found, i.e. no file named {@value #PDP_CONF_FILENAME} exists in the test directory
+	 * XACML policy filename used by default when no PDP configuration file found, i.e. no file named
+	 * {@value #PDP_CONF_FILENAME} exists in the test directory
 	 */
 	public final static String POLICY_FILENAME = "policy.xml";
 
 	/**
-	 * Name of directory containing files of XACML Policy(Set) that can be referred to from root policy {@value #POLICY_FILENAME} via Policy(Set)IdReference
+	 * Name of directory containing files of XACML Policy(Set) that can be referred to from root policy
+	 * {@value #POLICY_FILENAME} via Policy(Set)IdReference
 	 */
 	public final static String REF_POLICIES_DIR_NAME = "refPolicies";
 
@@ -133,7 +140,8 @@ public abstract class PdpTest
 	 * Initialize test parameters for each test. To be called by method with Parameters annotation in subclasses.
 	 * 
 	 * @param testResourcesRootDirectory
-	 *            Spring-resolvable location (e.g. classpath:...) of root directory that contains test resources for each test
+	 *            Spring-resolvable location (e.g. classpath:...) of root directory that contains test resources for
+	 *            each test
 	 * 
 	 * @return collection of test dataset
 	 * @throws URISyntaxException
@@ -143,7 +151,8 @@ public abstract class PdpTest
 	{
 		final Collection<Object[]> testParams = new ArrayList<>();
 		/*
-		 * Each sub-directory of the root directory is data for a specific test. So we configure a test for each directory
+		 * Each sub-directory of the root directory is data for a specific test. So we configure a test for each
+		 * directory
 		 */
 		final URL testRootDir = ResourceUtils.getURL(testResourcesRootDirectory);
 		final Path testRootPath = Paths.get(testRootDir.toURI());
@@ -190,7 +199,9 @@ public abstract class PdpTest
 		} catch (FileNotFoundException notFoundErr)
 		{
 			// do nothing except logging -> request = null
-			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", reqFilepath);
+			LOGGER.debug(
+					"Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)",
+					reqFilepath);
 		}
 
 		// Create PDP
@@ -202,7 +213,8 @@ public abstract class PdpTest
 			pdpConfFile = ResourceUtils.getFile(pdpConfLocation);
 		} catch (FileNotFoundException e)
 		{
-			LOGGER.debug("No PDP configuration file found at location: '{}'. Using minimal PDP instead (returned by TestUtils.getPDPNewInstance(policy) ).",
+			LOGGER.debug(
+					"No PDP configuration file found at location: '{}'. Using minimal PDP instead (returned by TestUtils.getPDPNewInstance(policy) ).",
 					pdpConfLocation);
 		}
 
@@ -210,10 +222,12 @@ public abstract class PdpTest
 		{
 			if (pdpConfFile == null)
 			{
-				// PDP configuration filename NOT found in test directory -> create minimal PDP using TestUtils.getPDPNewInstance(policy)
-
-				pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME, testResourceLocationPrefix + REF_POLICIES_DIR_NAME, false,
-						null, null);
+				/*
+				 * PDP configuration filename NOT found in test directory -> create minimal PDP using
+				 * TestUtils.getPDPNewInstance(policy)
+				 */
+				pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME,
+						testResourceLocationPrefix + REF_POLICIES_DIR_NAME, false, null, null);
 
 			} else
 			{
@@ -225,21 +239,24 @@ public abstract class PdpTest
 					pdpExtXsdFile = ResourceUtils.getFile(pdpExtXsdLocation);
 				} catch (FileNotFoundException e)
 				{
-					LOGGER.debug("No PDP extension configuration file '{}' found -> JAXB-bound PDP extensions not allowed.", pdpExtXsdLocation);
+					LOGGER.debug(
+							"No PDP extension configuration file '{}' found -> JAXB-bound PDP extensions not allowed.",
+							pdpExtXsdLocation);
 				}
 
 				try
 				{
 					/*
-					 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this file exists, and the XML catalog
-					 * required to resolve these extension XSDs
+					 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this
+					 * file exists, and the XML catalog required to resolve these extension XSDs
 					 */
-					pdp = pdpExtXsdFile == null ? PdpConfigurationParser.getPDP(pdpConfLocation) : PdpConfigurationParser.getPDP(pdpConfFile,
-							XML_CATALOG_LOCATION, pdpExtXsdLocation);
+					pdp = pdpExtXsdFile == null ? PdpConfigurationParser.getPDP(pdpConfLocation)
+							: PdpConfigurationParser.getPDP(pdpConfFile, XML_CATALOG_LOCATION, pdpExtXsdLocation);
 				} catch (IOException e)
 				{
-					throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfLocation + "' with extension XSD '" + pdpExtXsdLocation
-							+ "' and XML catalog file '" + XML_CATALOG_LOCATION + "'", e);
+					throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfLocation
+							+ "' with extension XSD '" + pdpExtXsdLocation + "' and XML catalog file '"
+							+ XML_CATALOG_LOCATION + "'", e);
 				}
 			}
 
@@ -247,11 +264,13 @@ public abstract class PdpTest
 			{
 				// this is a policy syntax error check and we didn't found the syntax error as
 				// expected
-				Assert.fail("Failed to find syntax error as expected in policy(ies) located in directory: " + testDirPath);
+				Assert.fail("Failed to find syntax error as expected in policy(ies) located in directory: "
+						+ testDirPath);
 			} else
 			{
 				// Parse expected response
-				final Response expectedResponse = TestUtils.createResponse(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME, unmarshaller);
+				final Response expectedResponse = TestUtils.createResponse(testResourceLocationPrefix
+						+ EXPECTED_RESPONSE_FILENAME, unmarshaller);
 
 				final Response response = pdp.evaluate(request, null);
 				if (LOGGER.isDebugEnabled())
@@ -268,7 +287,8 @@ public abstract class PdpTest
 			{
 				// this is a policy syntax error check and we found the syntax error as
 				// expected -> success
-				LOGGER.debug("Successfully found syntax error as expected in policy(ies) located in directory: {}", testDirPath, e);
+				LOGGER.debug("Successfully found syntax error as expected in policy(ies) located in directory: {}",
+						testDirPath, e);
 			} else
 			{
 				throw e;
