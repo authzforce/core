@@ -16,7 +16,6 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,12 +66,13 @@ public interface RootPolicyEvaluator extends Closeable
 	DecisionResult findAndEvaluate(EvaluationContext context);
 
 	/**
-	 * Get the evaluated root policy and (directly/indirectly) referenced policies, only if statically resolved
+	 * Get the statically applicable policies for this evaluator, i.e. the root policy and (directly/indirectly)
+	 * referenced policies, only if statically resolved
 	 * 
 	 * @return the static root and referenced policies; null if any of these policies is not statically resolved (once
 	 *         and for all)
 	 */
-	Map<String, PolicyVersion> getStaticRootAndRefPolicies();
+	StaticApplicablePolicyView getStaticApplicablePolicies();
 
 	/**
 	 * 
@@ -84,7 +84,7 @@ public interface RootPolicyEvaluator extends Closeable
 	{
 		private final IPolicyEvaluator staticRootPolicyEvaluator;
 		private final ExpressionFactory expressionFactory;
-		private transient final Map<String, PolicyVersion> staticRootAndRefPolicies;
+		private transient final StaticApplicablePolicyView staticApplicablePolicies;
 
 		private StaticView(RootPolicyProviderModule.Static staticProviderModule,
 				ExpressionFactory expressionFactoryForClosing) throws IOException
@@ -96,13 +96,12 @@ public interface RootPolicyEvaluator extends Closeable
 			if (staticRefPolicies == null)
 			{
 				// some policy reference is not statically resolved
-				this.staticRootAndRefPolicies = null;
+				this.staticApplicablePolicies = null;
 			} else
 			{
-				final Map<String, PolicyVersion> mutableMap = new HashMap<>(staticRefPolicies.size() + 1);
-				mutableMap.putAll(staticRefPolicies);
-				mutableMap.put(staticRootPolicyEvaluator.getPolicyId(), staticRootPolicyEvaluator.getPolicyVersion());
-				staticRootAndRefPolicies = Collections.unmodifiableMap(mutableMap);
+				staticApplicablePolicies = new StaticApplicablePolicyView(staticRootPolicyEvaluator.getPolicyId(),
+						staticRootPolicyEvaluator.getPolicyVersion(),
+						Collections.<String, PolicyVersion> unmodifiableMap(staticRefPolicies));
 			}
 
 			staticProviderModule.close();
@@ -121,9 +120,9 @@ public interface RootPolicyEvaluator extends Closeable
 		}
 
 		@Override
-		public Map<String, PolicyVersion> getStaticRootAndRefPolicies()
+		public StaticApplicablePolicyView getStaticApplicablePolicies()
 		{
-			return staticRootAndRefPolicies;
+			return staticApplicablePolicies;
 		}
 	}
 
@@ -292,9 +291,9 @@ public interface RootPolicyEvaluator extends Closeable
 		}
 
 		@Override
-		public Map<String, PolicyVersion> getStaticRootAndRefPolicies()
+		public StaticApplicablePolicyView getStaticApplicablePolicies()
 		{
-			return staticView == null ? null : staticView.getStaticRootAndRefPolicies();
+			return staticView == null ? null : staticView.getStaticApplicablePolicies();
 		}
 
 	}
