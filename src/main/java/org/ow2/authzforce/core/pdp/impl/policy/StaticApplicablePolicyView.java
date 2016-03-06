@@ -19,6 +19,7 @@
 package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +33,7 @@ import org.ow2.authzforce.core.pdp.api.PolicyVersion;
  */
 public final class StaticApplicablePolicyView implements Iterable<Entry<String, PolicyVersion>>
 {
+	private static final IllegalArgumentException ILLEGAL_ARGUMENTS_EXCEPTION = new IllegalArgumentException("Null root policy ID/version");
 	private static final UnsupportedOperationException UNSUPPORTED_REMOVE_OPERATION_EXCEPTION = new UnsupportedOperationException();
 	private final Entry<String, PolicyVersion> rootPolicyEntry;
 	private final Map<String, PolicyVersion> refPolicies;
@@ -89,8 +91,13 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	public StaticApplicablePolicyView(String rootPolicyId, PolicyVersion rootPolicyVersion,
 			Map<String, PolicyVersion> refPolicies)
 	{
+		if (rootPolicyId == null || rootPolicyVersion == null)
+		{
+			throw ILLEGAL_ARGUMENTS_EXCEPTION;
+		}
+
 		this.rootPolicyEntry = new SimpleImmutableEntry<>(rootPolicyId, rootPolicyVersion);
-		this.refPolicies = refPolicies;
+		this.refPolicies = refPolicies == null ? Collections.<String, PolicyVersion> emptyMap() : refPolicies;
 	}
 
 	/**
@@ -114,7 +121,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	}
 
 	/**
-	 * Policies referenced directly or indirectly from the root policy
+	 * Policies referenced directly or indirectly from the root policy; empty map if none
 	 * 
 	 * @return referenced policies (by policy ID)
 	 */
@@ -123,6 +130,9 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 		return this.refPolicies;
 	}
 
+	/**
+	 * The root policy entry is always the first item in the iteration
+	 */
 	@Override
 	public Iterator<Entry<String, PolicyVersion>> iterator()
 	{

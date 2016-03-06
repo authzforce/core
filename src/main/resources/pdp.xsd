@@ -159,12 +159,13 @@
 					</restriction>
 				</simpleType>
 			</attribute>
-			<attribute name="requestFilter" type="anyURI" use="optional">
+			<attribute name="requestFilter" type="anyURI" use="optional" default="urn:thalesgroup:xacml:request-filter:default-lax">
 				<annotation>
 					<documentation>
 						<p>URI of a XACML Request filter to be enabled. A XACML Request filter is a PDP extension that applies some processing of the request, such as validation and transformation, prior to the policy
 							evaluation. As an example of validation, a Request filter may reject a request containing an unsupported XACML element. As an example of transformation, it may support the MultiRequests
-							element, and more generally the Multiple Decision Profile or Hierarchical Resource Profile by creating multiple Individual Decision Requests from the original XACML request, as defined in XACML
+							element, and more generally the Multiple Decision Profile or Hierarchical Resource Profile by creating multiple
+							Individual Decision Requests from the original XACML request, as defined in XACML
 							Multiple Decision Profile specification, section 2; and then call the policy evaluation engine for each Individual Decision Request. At the end, the results (one per Individual Decision
 							Request) may be combined by a DecisionCombiner specified by next attribute 'decisionCombiner'.
 						</p>
@@ -176,6 +177,15 @@
 							separate from values of Attributes without Issuer, in the attribute
 							map returned by getNamedAttributes() on
 							the IndividualDecisionRequests produced by the RequestFilter.</p>
+						<p>The following values of 'requestFilter' are natively supported:</p>
+						<p>"urn:thalesgroup:xacml:request-filter:default-lax": implements only XACML 3.0 Core (NO support for Multiple Decision) and allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
+							(complying with XACML 3.0 core spec, §7.3.3)</p>
+						<p>"urn:thalesgroup:xacml:request-filter:default-strict": implements only XACML 3.0 Core (NO support for Multiple Decision) and does not allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
+							(NOT complying with XACML 3.0 core spec, §7.3.3, but better performances)</p>
+						<p>"urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories-lax": implements Multiple Decision Profile, section 2.3 (repeated attribute categories), and allows duplicate &lt;Attribute&gt; with same meta-data in the same
+							&lt;Attributes&gt; element of a Request (complying with XACML 3.0 core spec, §7.3.3)</p>
+						<p>"urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories-strict": same as previous one, except it does not allow duplicate &lt;Attribute&gt; with same meta-data in the same
+							&lt;Attributes&gt; element of a Request (NOT complying with XACML 3.0 core spec, §7.3.3, but better performances)</p>
 					</documentation>
 				</annotation>
 			</attribute>
