@@ -11,3 +11,4 @@
 *.log
 /.pmd
 /.eclipse-pmd
+/.pmdruleset.xml
