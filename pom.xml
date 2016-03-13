@@ -232,6 +232,9 @@
 				<version>2.12.4</version>
 				<configuration>
 					<skipTests>false</skipTests>
+					<systemPropertyVariables>
+						<javax.xml.accessExternalSchema>all</javax.xml.accessExternalSchema>
+					</systemPropertyVariables>
 					<includes>
 						<include>**/MainTest.java</include>
 					</includes>

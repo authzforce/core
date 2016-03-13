@@ -26,7 +26,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -34,6 +37,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
@@ -168,11 +172,35 @@ public class TestUtils
 		{
 			// We ignore the status, so set it to null in both expected and tested response to avoid
 			// Status comparison
-			results.add(new Result(result.getDecision(), null, result.getObligations(), result.getAssociatedAdvice(), result.getAttributes(), result
+			results.add(new Result(result.getDecision(), null, result.getObligations(), result.getAssociatedAdvice(), normalizeAttributeCategories(result.getAttributes()), result
 					.getPolicyIdentifierList()));
 		}
 
 		return new Response(results);
+	}
+	
+	private static final Comparator<Attributes> ATTRIBUTES_COMPARATOR = new Comparator<Attributes>() {
+
+		@Override
+		public int compare(Attributes arg0, Attributes arg1) {
+			if(arg0 == null || arg1 == null)  {
+				throw new IllegalArgumentException("Invalid Attribtues args for comparator");
+			}
+			
+			return arg0.getCategory().compareTo(arg1.getCategory());
+		}
+		
+	};
+
+	private static List<Attributes> normalizeAttributeCategories(List<Attributes> attributesList) {
+		// Attributes categories may be in different order than expected although it is still compliant (order does not matter to the spec)
+		// always use the same order (lexicographical here)
+		final SortedSet<Attributes> sortedSet = new TreeSet<>(ATTRIBUTES_COMPARATOR);
+		for(final Attributes attributes: attributesList) {
+			sortedSet.add(attributes);
+		}
+		
+		return new ArrayList<>(sortedSet);
 	}
 
 	/**
