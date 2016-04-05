@@ -21,31 +21,34 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
 
+import org.ow2.authzforce.core.pdp.api.ExtraPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.PolicyVersion;
+import org.ow2.authzforce.core.pdp.api.TopLevelPolicyElementType;
 
 /**
- * View of all statically resolved policies applicable by the PDP or specific PolicySet evaluator (root policy as well
- * as policies referenced directly or indirectly from the root one)
+ * View of all statically resolved policies applicable by the PDP or specific
+ * PolicySet evaluator (root policy as well as policies referenced directly or
+ * indirectly from the root one)
  *
  */
 public final class StaticApplicablePolicyView implements Iterable<Entry<String, PolicyVersion>>
 {
-	private static final IllegalArgumentException ILLEGAL_ARGUMENTS_EXCEPTION = new IllegalArgumentException("Null root policy ID/version");
+	private static final IllegalArgumentException ILLEGAL_ARGUMENTS_EXCEPTION = new IllegalArgumentException("Null root policy ID/version/extra metadata");
 	private static final UnsupportedOperationException UNSUPPORTED_REMOVE_OPERATION_EXCEPTION = new UnsupportedOperationException();
 	private final Entry<String, PolicyVersion> rootPolicyEntry;
-	private final Map<String, PolicyVersion> refPolicies;
+	private final TopLevelPolicyElementType rootPolicyType;
+	private final ExtraPolicyMetadata extraRootPolicyMetadata;
 
-	private final class IteratorImpl implements Iterator<Entry<String, PolicyVersion>>
+	private final class PolicySetIteratorImpl implements Iterator<Entry<String, PolicyVersion>>
 	{
 
-		private Iterator<Entry<String, PolicyVersion>> refPolicyIterator;
+		private Iterator<Entry<String, PolicyVersion>> refPolicySetIterator;
 
-		private IteratorImpl()
+		private PolicySetIteratorImpl()
 		{
-			refPolicyIterator = refPolicies.entrySet().iterator();
+			refPolicySetIterator = extraRootPolicyMetadata.getRefPolicySets().entrySet().iterator();
 		}
 
 		private boolean isFirst = true;
@@ -53,7 +56,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 		@Override
 		public boolean hasNext()
 		{
-			return isFirst || refPolicyIterator.hasNext();
+			return isFirst || refPolicySetIterator.hasNext();
 		}
 
 		@Override
@@ -67,7 +70,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 				return rootPolicyEntry;
 			}
 
-			return refPolicyIterator.next();
+			return refPolicySetIterator.next();
 		}
 
 		@Override
@@ -79,25 +82,37 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	}
 
 	/**
-	 * Creates view of applicable policies from the root policy metadata and map of referenced policies
+	 * Creates view of applicable policies from the root policy metadata and map
+	 * of referenced policies. All fields made immutable by this constructor.
+	 * 
+	 * @param rootPolicyType
+	 *            root policy type
 	 * 
 	 * @param rootPolicyId
 	 *            (static) root policy ID
-	 * @param rootPolicyVersion
-	 *            (static) root policy version
-	 * @param refPolicies
-	 *            map of (statically) referenced policies by policy ID
+	 * @param extraRootPolicyMetadata
+	 *            root policy's extra metadata
 	 */
-	public StaticApplicablePolicyView(String rootPolicyId, PolicyVersion rootPolicyVersion,
-			Map<String, PolicyVersion> refPolicies)
+	public StaticApplicablePolicyView(TopLevelPolicyElementType rootPolicyType, String rootPolicyId, ExtraPolicyMetadata extraRootPolicyMetadata)
 	{
-		if (rootPolicyId == null || rootPolicyVersion == null)
+		if (rootPolicyType == null || rootPolicyId == null || extraRootPolicyMetadata == null)
 		{
 			throw ILLEGAL_ARGUMENTS_EXCEPTION;
 		}
 
-		this.rootPolicyEntry = new SimpleImmutableEntry<>(rootPolicyId, rootPolicyVersion);
-		this.refPolicies = refPolicies == null ? Collections.<String, PolicyVersion> emptyMap() : refPolicies;
+		this.rootPolicyType = rootPolicyType;
+		this.rootPolicyEntry = new SimpleImmutableEntry<>(rootPolicyId, extraRootPolicyMetadata.getVersion());
+		this.extraRootPolicyMetadata = extraRootPolicyMetadata;
+	}
+
+	/**
+	 * Get the root policy type
+	 * 
+	 * @return root policy type
+	 */
+	public TopLevelPolicyElementType rootPolicyType()
+	{
+		return this.rootPolicyType;
 	}
 
 	/**
@@ -111,43 +126,72 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	}
 
 	/**
-	 * Get the root policy version
+	 * Get the extra metadata of the root policy
 	 * 
 	 * @return policy version
 	 */
-	public PolicyVersion rootPolicyVersion()
+	public ExtraPolicyMetadata rootPolicyExtraMetadata()
 	{
-		return this.rootPolicyEntry.getValue();
+		return this.extraRootPolicyMetadata;
 	}
 
 	/**
-	 * Policies referenced directly or indirectly from the root policy; empty map if none
+	 * If {@link #rootPolicyType()} returns
+	 * {@link TopLevelPolicyElementType#POLICY}, it is the only item in the
+	 * iteration (since there is no child Policy(Set)). Else this iterates over
+	 * policies referenced directly or indirectly from the root policySet.
 	 * 
-	 * @return referenced policies (by policy ID)
+	 * @return iterator over applicable Policies
 	 */
-	public Map<String, PolicyVersion> refPolicies()
+	public Iterator<Entry<String, PolicyVersion>> policyIterator()
 	{
-		return this.refPolicies;
+		return (rootPolicyType == TopLevelPolicyElementType.POLICY ? Collections.singleton(rootPolicyEntry) : extraRootPolicyMetadata.getRefPolicies().entrySet()).iterator();
 	}
 
 	/**
-	 * The root policy entry is always the first item in the iteration
+	 * If {@link #rootPolicyType()} returns
+	 * {@link TopLevelPolicyElementType#POLICY}, there is no item in this
+	 * iteration, else the root policy(set) entry is always the first item in
+	 * the iteration, then the policies referenced directly or indirectly from
+	 * the root policySet.
+	 * 
+	 * @return iterator over applicable PolicySets
 	 */
-	@Override
-	public Iterator<Entry<String, PolicyVersion>> iterator()
+	public Iterator<Entry<String, PolicyVersion>> policySetIterator()
 	{
-		return new IteratorImpl();
+		return rootPolicyType == TopLevelPolicyElementType.POLICY ? Collections.<Entry<String, PolicyVersion>> emptyIterator() : new PolicySetIteratorImpl();
 	}
 
 	/**
-	 * Get applicable policy matching a given policy ID
+	 * Get applicable Policy matching a given policy ID
 	 * 
 	 * @param policyId
 	 *            policy ID to be matched
 	 * @return matching applicable policy version; null if no match
 	 */
-	public PolicyVersion get(String policyId)
+	public PolicyVersion getPolicy(String policyId)
 	{
-		return rootPolicyEntry.getKey().equals(policyId) ? rootPolicyEntry.getValue() : refPolicies.get(policyId);
+		return rootPolicyType == TopLevelPolicyElementType.POLICY && rootPolicyEntry.getKey().equals(policyId) ? rootPolicyEntry.getValue() : extraRootPolicyMetadata.getRefPolicies().get(policyId);
+	}
+
+	/**
+	 * Get applicable PolicySet matching a given policy ID
+	 * 
+	 * @param policyId
+	 *            policy ID to be matched
+	 * @return matching applicable policy version; null if no match
+	 */
+	public PolicyVersion getPolicySet(String policyId)
+	{
+		return rootPolicyType == TopLevelPolicyElementType.POLICY_SET && rootPolicyEntry.getKey().equals(policyId) ? rootPolicyEntry.getValue() : extraRootPolicyMetadata.getRefPolicySets().get(policyId);
+	}
+
+	/**
+	 * Same as {@link #policySetIterator()}
+	 */
+	@Override
+	public Iterator<Entry<String, PolicyVersion>> iterator()
+	{
+		return policySetIterator();
 	}
 }

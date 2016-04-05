@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/pdp/3.6" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/3.6" elementFormDefault="qualified"
-	xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"  version="3.6.1">
+	xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"  version="3.6.3">
 	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
 	<import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
 	<annotation>
@@ -137,7 +137,7 @@
 					</documentation>
 				</annotation>
 			</attribute>
-			<attribute name="maxVariableRefDepth" use="optional" default="0">
+			<attribute name="maxVariableRefDepth" use="optional">
 				<annotation>
 					<documentation> Maximum depth of Variable reference chaining: VariableDefinition1 -&gt; VariableDefinition2 -&gt; ...; where '-&gt;' represents a VariableReference.					</documentation>
 				</annotation>
@@ -148,7 +148,7 @@
 					</restriction>
 				</simpleType>
 			</attribute>
-			<attribute name="maxPolicyRefDepth" use="optional" default="0">
+			<attribute name="maxPolicyRefDepth" use="optional">
 				<annotation>
 					<documentation>Maximum depth of Policy(Set) reference chaining: PolicySet1 -&gt; PolicySet2 -&gt; ... -&gt; Policy(Set)N; where '-&gt;' represents a Policy(Set)IdReference.					</documentation>
 				</annotation>
@@ -159,7 +159,7 @@
 					</restriction>
 				</simpleType>
 			</attribute>
-			<attribute name="requestFilter" type="anyURI" use="optional" default="urn:thalesgroup:xacml:request-filter:default-lax">
+			<attribute name="requestFilter" type="anyURI" use="optional" default="urn:ow2:authzforce:xacml:request-filter:default-lax">
 				<annotation>
 					<documentation>
 						<p>URI of a XACML Request filter to be enabled. A XACML Request filter is a PDP extension that applies some processing of the request, such as validation and transformation, prior to the policy
@@ -178,13 +178,13 @@
 							map returned by getNamedAttributes() on
 							the IndividualDecisionRequests produced by the RequestFilter.</p>
 						<p>The following values of 'requestFilter' are natively supported:</p>
-						<p>"urn:thalesgroup:xacml:request-filter:default-lax": implements only XACML 3.0 Core (NO support for Multiple Decision) and allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
+						<p>"urn:ow2:authzforce:xacml:request-filter:default-lax": implements only XACML 3.0 Core (NO support for Multiple Decision) and allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
 							(complying with XACML 3.0 core spec, §7.3.3)</p>
-						<p>"urn:thalesgroup:xacml:request-filter:default-strict": implements only XACML 3.0 Core (NO support for Multiple Decision) and does not allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
+						<p>"urn:ow2:authzforce:xacml:request-filter:default-strict": implements only XACML 3.0 Core (NO support for Multiple Decision) and does not allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
 							(NOT complying with XACML 3.0 core spec, §7.3.3, but better performances)</p>
-						<p>"urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories-lax": implements Multiple Decision Profile, section 2.3 (repeated attribute categories), and allows duplicate &lt;Attribute&gt; with same meta-data in the same
+						<p>"urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax": implements Multiple Decision Profile, section 2.3 (repeated attribute categories), and allows duplicate &lt;Attribute&gt; with same meta-data in the same
 							&lt;Attributes&gt; element of a Request (complying with XACML 3.0 core spec, §7.3.3)</p>
-						<p>"urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories-strict": same as previous one, except it does not allow duplicate &lt;Attribute&gt; with same meta-data in the same
+						<p>"urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-strict": same as previous one, except it does not allow duplicate &lt;Attribute&gt; with same meta-data in the same
 							&lt;Attributes&gt; element of a Request (NOT complying with XACML 3.0 core spec, §7.3.3, but better performances)</p>
 					</documentation>
 				</annotation>

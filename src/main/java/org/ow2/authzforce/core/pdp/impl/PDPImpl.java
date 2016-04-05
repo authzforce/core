@@ -25,11 +25,6 @@ import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
-
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.Bag;
 import org.ow2.authzforce.core.pdp.api.Bags;
@@ -59,9 +54,14 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
+
 /**
- * This is the core XACML PDP engine implementation. To build an XACML policy engine, you start by instantiating this
- * object directly or in a easier and preferred way, using {@link PdpConfigurationParser}.
+ * This is the core XACML PDP engine implementation. To build an XACML policy engine, you start by instantiating this object directly or in a easier and
+ * preferred way, using {@link PdpConfigurationParser}.
  * 
  */
 public class PDPImpl implements CloseablePDP
@@ -74,16 +74,14 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		@Override
-		protected List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests,
-				Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		protected List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
 			final List<Result> results = new ArrayList<>(individualDecisionRequests.size());
 			for (final IndividualDecisionRequest individuaDecisionRequest : individualDecisionRequests)
 			{
 				if (individuaDecisionRequest == null)
 				{
-					throw new RuntimeException(
-							"One of the individual decision requests returned by the request filter is invalid (null).");
+					throw new RuntimeException("One of the individual decision requests returned by the request filter is invalid (null).");
 				}
 
 				final Result result = evaluate(individuaDecisionRequest, pdpIssuedAttributes);
@@ -100,8 +98,7 @@ public class PDPImpl implements CloseablePDP
 		// the logger we'll use for all messages
 		private static final Logger _LOGGER = LoggerFactory.getLogger(CachingIndividualRequestEvaluator.class);
 
-		private static final Result INVALID_DECISION_CACHE_RESULT = new Result(DecisionType.INDETERMINATE,
-				new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Internal error"), null, null, null, null);
+		private static final Result INVALID_DECISION_CACHE_RESULT = new Result(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Internal error"), null, null, null, null);
 
 		private final DecisionCache decisionCache;
 
@@ -113,11 +110,9 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		@Override
-		public final List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests,
-				Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		public final List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
-			final Map<IndividualDecisionRequest, Result> cachedResultsByRequest = decisionCache
-					.getAll(individualDecisionRequests);
+			final Map<IndividualDecisionRequest, Result> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
 				// error, return indeterminate result as only result
@@ -125,20 +120,19 @@ public class PDPImpl implements CloseablePDP
 				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
 			}
 
-			// At least check that we have as many results from cache as input requests
-			// (For each request with no result in cache, there must still be an entry with value
+			// At least check that we have as many results from cache as input
+			// requests
+			// (For each request with no result in cache, there must still be an
+			// entry with value
 			// null.)
 			if (cachedResultsByRequest.size() != individualDecisionRequests.size())
 			{
 				// error, return indeterminate result as only result
-				_LOGGER.error(
-						"Invalid decision cache result: number of returned decision results ({}) != number of input (individual) decision requests ({})",
-						cachedResultsByRequest.size(), individualDecisionRequests.size());
+				_LOGGER.error("Invalid decision cache result: number of returned decision results ({}) != number of input (individual) decision requests ({})", cachedResultsByRequest.size(), individualDecisionRequests.size());
 				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
 			}
 
-			final Set<Entry<IndividualDecisionRequest, Result>> cachedRequestResultEntries = cachedResultsByRequest
-					.entrySet();
+			final Set<Entry<IndividualDecisionRequest, Result>> cachedRequestResultEntries = cachedResultsByRequest.entrySet();
 			final List<Result> results = new ArrayList<>(cachedRequestResultEntries.size());
 			final Map<IndividualDecisionRequest, Result> newResultsByRequest = new HashMap<>();
 			for (final Entry<IndividualDecisionRequest, Result> cachedRequestResultPair : cachedRequestResultEntries)
@@ -151,9 +145,7 @@ public class PDPImpl implements CloseablePDP
 					final IndividualDecisionRequest individuaDecisionRequest = cachedRequestResultPair.getKey();
 					if (individuaDecisionRequest == null)
 					{
-						throw new RuntimeException(
-								"One of the entry keys (individual decision request) returned by the decision cache implementation '"
-										+ decisionCache + "' is invalid (null).");
+						throw new RuntimeException("One of the entry keys (individual decision request) returned by the decision cache implementation '" + decisionCache + "' is invalid (null).");
 					}
 
 					finalResult = super.evaluate(individuaDecisionRequest, pdpIssuedAttributes);
@@ -171,36 +163,26 @@ public class PDPImpl implements CloseablePDP
 		}
 	}
 
-	private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"No input Individual Decision Request");
+	private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("No input Individual Decision Request");
 
 	// the logger we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(PDPImpl.class);
 
 	/**
-	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any
-	 * scheme from MultipleDecisionProfile section 2.
+	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any scheme from MultipleDecisionProfile
+	 * section 2.
 	 */
-	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(
-			Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
-					StatusHelper.STATUS_SYNTAX_ERROR, "Unsupported feature: CombinedDecision='true'"), null, null,
-					null, null)));
+	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_SYNTAX_ERROR, "Unsupported feature: CombinedDecision='true'"), null, null, null, null)));
 
-	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(
-			XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
-			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
+	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
 
-	private static final AttributeGUID ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID = new AttributeGUID(
-			XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
-			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value());
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value());
 
-	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(
-			XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
-			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
 
 	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
 	{
-		private static final String ID = "urn:thalesgroup:xacml:result-filter:default";
+		private static final String ID = "urn:ow2:authzforce:xacml:result-filter:default";
 
 		@Override
 		public String getId()
@@ -236,20 +218,17 @@ public class PDPImpl implements CloseablePDP
 	 * @param functionRegistry
 	 *            function registry - mandatory
 	 * @param jaxbAttributeProviderConfs
-	 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation;
-	 *            may be null for static expression evaluation (out of context), in which case
-	 *            AttributeSelectors/AttributeDesignators are not supported
+	 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression
+	 *            evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
 	 * @param maxVariableReferenceDepth
-	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->'
-	 *            represents a VariableReference)
+	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference); strictly
+	 *            negative value means no limit
 	 * @param enableXPath
-	 *            allow XPath evaluation, i.e. AttributeSelectors and xpathExpressions (experimental, not for
-	 *            production, use with caution)
+	 *            allow XPath evaluation, i.e. AttributeSelectors and xpathExpressions (experimental, not for production, use with caution)
 	 * @param requestFilterId
 	 *            ID of request filter (XACML Request processing prior to policy evaluation) - mandatory
 	 * @param decisionResultFilter
-	 *            decision result filter (XACML Result processing after policy evaluation, before creating/returning
-	 *            final XACML Response)
+	 *            decision result filter (XACML Result processing after policy evaluation, before creating/returning final XACML Response)
 	 * @param jaxbDecisionCacheConf
 	 *            decision response cache XML/JAXB configuration
 	 * @param jaxbRootPolicyProviderConf
@@ -257,54 +236,38 @@ public class PDPImpl implements CloseablePDP
 	 * @param combiningAlgRegistry
 	 *            XACML policy/rule combining algorithm registry - mandatory
 	 * @param jaxbRefPolicyProviderConf
-	 *            policy-by-reference Provider's XML/JAXB configuration, for resolving policies referred to by
-	 *            Policy(Set)IdReference in policies found by root policy Provider
+	 *            policy-by-reference Provider's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies found by root
+	 *            policy Provider
 	 * @param maxPolicySetRefDepth
-	 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2)
-	 *            -> ...
+	 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...; a strictly negative value means
+	 *            no limit
 	 * @param strictAttributeIssuerMatch
-	 *            true iff strict Attribute Issuer matching is enabled, i.e. AttributeDesignators without Issuer only
-	 *            match request Attributes without Issuer (and same AttributeId, Category...). This mode is not fully
-	 *            compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a
-	 *            AttributeDesignator; but it performs better and is recommended when all AttributeDesignators have an
-	 *            Issuer (best practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation
-	 *            (5.29) says: "If the Issuer is not present in the attribute designator, then the matching of the
-	 *            attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone." if
-	 *            one of the mandatory arguments is null
+	 *            true iff strict Attribute Issuer matching is enabled, i.e. AttributeDesignators without Issuer only match request Attributes without Issuer
+	 *            (and same AttributeId, Category...). This mode is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present
+	 *            on a AttributeDesignator; but it performs better and is recommended when all AttributeDesignators have an Issuer (best practice). Reminder:
+	 *            the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the attribute designator, then
+	 *            the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone." if one of the mandatory
+	 *            arguments is null
 	 * @param environmentProperties
 	 *            PDP configuration environment properties
 	 * @throws IllegalArgumentException
-	 *             if there is not any extension found for type
-	 *             {@link org.ow2.authzforce.core.pdp.api.RequestFilter.Factory} with ID {@code requestFilterId}; or if
-	 *             one of the mandatory arguments is null; or if any Attribute Provider module created from
-	 *             {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with another
-	 *             one already registered to provide the same or part of the same attributes; of if there is no
-	 *             extension supporting {@code jaxbDecisionCacheConf}
+	 *             if there is not any extension found for type {@link org.ow2.authzforce.core.pdp.api.RequestFilter.Factory} with ID {@code requestFilterId};
+	 *             or if one of the mandatory arguments is null; or if any Attribute Provider module created from {@code jaxbAttributeProviderConfs} does not
+	 *             provide any attribute; or it is in conflict with another one already registered to provide the same or part of the same attributes; of if
+	 *             there is no extension supporting {@code jaxbDecisionCacheConf}
 	 * 
 	 * @throws IOException
-	 *             error closing the root policy Provider when static resolution is to be used; or error closing the
-	 *             attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an
-	 *             {@link IllegalArgumentException} is raised
+	 *             error closing the root policy Provider when static resolution is to be used; or error closing the attribute Provider modules created from
+	 *             {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 * 
 	 */
-	public PDPImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry,
-			List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVariableReferenceDepth,
-			boolean enableXPath, CombiningAlgRegistry combiningAlgRegistry,
-			AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf,
-			int maxPolicySetRefDepth, String requestFilterId, boolean strictAttributeIssuerMatch,
-			DecisionResultFilter decisionResultFilter, AbstractDecisionCache jaxbDecisionCacheConf,
-			EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
+	public PDPImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVariableReferenceDepth, boolean enableXPath, CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth, String requestFilterId, boolean strictAttributeIssuerMatch, DecisionResultFilter decisionResultFilter, AbstractDecisionCache jaxbDecisionCacheConf, EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
 	{
-		final RequestFilter.Factory requestFilterFactory = requestFilterId == null ? DefaultRequestFilter.LaxFilterFactory.INSTANCE
-				: PdpExtensionLoader.getExtension(RequestFilter.Factory.class, requestFilterId);
+		final RequestFilter.Factory requestFilterFactory = requestFilterId == null ? DefaultRequestFilter.LaxFilterFactory.INSTANCE : PdpExtensionLoader.getExtension(RequestFilter.Factory.class, requestFilterId);
 
-		final RequestFilter requestFilter = requestFilterFactory.getInstance(attributeFactory,
-				strictAttributeIssuerMatch, enableXPath, XMLUtils.SAXON_PROCESSOR);
+		final RequestFilter requestFilter = requestFilterFactory.getInstance(attributeFactory, strictAttributeIssuerMatch, enableXPath, XMLUtils.SAXON_PROCESSOR);
 
-		final RootPolicyEvaluator.Base candidateRootPolicyEvaluator = new RootPolicyEvaluator.Base(attributeFactory,
-				functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth, enableXPath,
-				combiningAlgRegistry, jaxbRootPolicyProviderConf, jaxbRefPolicyProviderConf, maxPolicySetRefDepth,
-				strictAttributeIssuerMatch, environmentProperties);
+		final RootPolicyEvaluator.Base candidateRootPolicyEvaluator = new RootPolicyEvaluator.Base(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth, enableXPath, combiningAlgRegistry, jaxbRootPolicyProviderConf, jaxbRefPolicyProviderConf, maxPolicySetRefDepth, strictAttributeIssuerMatch, environmentProperties);
 		// Use static resolution if possible
 		final RootPolicyEvaluator staticRootPolicyEvaluator = candidateRootPolicyEvaluator.toStatic();
 		if (staticRootPolicyEvaluator == null)
@@ -323,13 +286,11 @@ public class PDPImpl implements CloseablePDP
 			this.decisionCache = null;
 		} else
 		{
-			final DecisionCache.Factory<AbstractDecisionCache> responseCacheStoreFactory = PdpExtensionLoader
-					.getJaxbBoundExtension(DecisionCache.Factory.class, jaxbDecisionCacheConf.getClass());
+			final DecisionCache.Factory<AbstractDecisionCache> responseCacheStoreFactory = PdpExtensionLoader.getJaxbBoundExtension(DecisionCache.Factory.class, jaxbDecisionCacheConf.getClass());
 			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
 		}
 
-		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(
-				rootPolicyEvaluator) : new CachingIndividualRequestEvaluator(rootPolicyEvaluator, this.decisionCache);
+		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator) : new CachingIndividualRequestEvaluator(rootPolicyEvaluator, this.decisionCache);
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
@@ -342,24 +303,21 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		/*
-		 * Every request context (named attributes) is completed with common current date/time attribute (same values)
-		 * set/"issued" locally (here by the PDP engine) according to XACML core spec:
-		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created."
-		 * (� B.7).
+		 * Every request context (named attributes) is completed with common current date/time attribute (same values) set/"issued" locally (here by the PDP
+		 * engine) according to XACML core spec:
+		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (� B.7).
 		 */
 		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>();
 		// current datetime
 		final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID,
-				Bags.singleton(DatatypeConstants.DATETIME.TYPE, currentDateTimeValue));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATETIME.TYPE, currentDateTimeValue));
 		// current date
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATE.TYPE,
-				DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATE.TYPE, DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 		// current time
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.TIME.TYPE,
-				TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.TIME.TYPE, TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 
-		// evaluate the individual decision requests with the extra common attributes set previously
+		// evaluate the individual decision requests with the extra common
+		// attributes set previously
 		final List<Result> results = individualReqEvaluator.evaluate(individualDecisionRequests, pdpIssuedAttributes);
 		return resultFilter.filter(results);
 	}
@@ -373,23 +331,22 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		/*
-		 * No support for CombinedDecision = true if no decisionCombiner defined. (The use of the CombinedDecision
-		 * attribute is specified in Multiple Decision Profile.)
+		 * No support for CombinedDecision = true if no decisionCombiner defined. (The use of the CombinedDecision attribute is specified in Multiple Decision
+		 * Profile.)
 		 */
 		if (request.isCombinedDecision() && !resultFilter.supportsMultipleDecisionCombining())
 		{
 			/*
-			 * According to XACML core spec, 5.42, "If the PDP does not implement the relevant functionality in
-			 * [Multiple Decision Profile], then the PDP must return an Indeterminate with a status code of
-			 * urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute set to
-			 * �true�.
+			 * According to XACML core spec, 5.42, "If the PDP does not implement the relevant functionality in [Multiple Decision Profile], then the PDP must
+			 * return an Indeterminate with a status code of urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute
+			 * set to �true�.
 			 */
 			return UNSUPPORTED_COMBINED_DECISION_RESPONSE;
 		}
 
 		/*
-		 * The request parser may return multiple individual decision requests from a single Request, e.g. if the
-		 * request parser implements the Multiple Decision profile or Hierarchical Resource profile
+		 * The request parser may return multiple individual decision requests from a single Request, e.g. if the request parser implements the Multiple
+		 * Decision profile or Hierarchical Resource profile
 		 */
 		final List<? extends IndividualDecisionRequest> individualDecisionRequests;
 		try
@@ -398,8 +355,7 @@ public class PDPImpl implements CloseablePDP
 		} catch (IndeterminateEvaluationException e)
 		{
 			LOGGER.info("Invalid or unsupported input XACML Request syntax", e);
-			return new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE,
-					e.getStatus(), null, null, null, null)));
+			return new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, e.getStatus(), null, null, null, null)));
 		}
 
 		final List<Result> results = evaluate(individualDecisionRequests);
@@ -423,11 +379,9 @@ public class PDPImpl implements CloseablePDP
 	}
 
 	/**
-	 * Get the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are
-	 * statically resolved
+	 * Get the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved
 	 * 
-	 * @return the root and referenced policies; null if any of these policies is not statically resolved (once and for
-	 *         all)
+	 * @return the root and referenced policies; null if any of these policies is not statically resolved (once and for all)
 	 */
 	public StaticApplicablePolicyView getStaticApplicablePolicies()
 	{

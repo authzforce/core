@@ -27,47 +27,38 @@ import org.ow2.authzforce.core.pdp.api.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 
 /**
- * Combining algorithm set. Allows to group combining algorithms, especially when it is actually the
- * same generic algorithm but with different IDs, such as most standard algorithms which are the
- * same for policy combining and rule combining algorithm IDs.
+ * Combining algorithm set. Allows to group combining algorithms, especially when it is actually the same generic algorithm but with different IDs, such as most
+ * standard algorithms which are the same for policy combining and rule combining algorithm IDs.
  * 
  * TODO: consider making it a PdpExtension like FunctionSet, or generic PdpExtensionSet
  */
 public class CombiningAlgSet
 {
-//	/**
-//	 * Namespace to be used as default prefix for internal algorithm set IDs
-//	 */
-//	public static final String DEFAULT_ID_NAMESPACE = "urn:thalesgroup:xacml:combining-algorithm-set:";
-
-//	private final String id;
-
 	private final Set<CombiningAlg<?>> algs;
 
 	/**
-//	 * @param id
-//	 *            globally unique ID of this function set, to be used as PDP extension ID
+	 * Creates set from multiple combining algorithms
+	 * 
 	 * @param algorithms
 	 */
-	public CombiningAlgSet(/*String id,*/ CombiningAlg<?>... algorithms)
+	public CombiningAlgSet(CombiningAlg<?>... algorithms)
 	{
-		this(/*id,*/ new HashSet<>(Arrays.asList(algorithms)));
+		this(new HashSet<>(Arrays.asList(algorithms)));
 	}
 
 	/**
-//	 * @param id
+	 * Creates a set as a copy of an existing set
+	 * 
 	 * @param algorithms
 	 */
-	public CombiningAlgSet(/*String id,*/ Set<CombiningAlg<?>> algorithms)
+	public CombiningAlgSet(Set<CombiningAlg<?>> algorithms)
 	{
-//		this.id = id;
 		this.algs = Collections.unmodifiableSet(algorithms);
 	}
 
 	/**
-	 * Returns a single instance of each of the functions supported by some class. The
-	 * <code>Set</code> must contain instances of <code>Function</code>, and it must be both
-	 * non-null and non-empty. It may contain only a single <code>Function</code>.
+	 * Returns a single instance of each of the functions supported by some class. The <code>Set</code> must contain instances of <code>Function</code>, and it
+	 * must be both non-null and non-empty. It may contain only a single <code>Function</code>.
 	 * 
 	 * @return the functions members of this group
 	 */
@@ -75,11 +66,5 @@ public class CombiningAlgSet
 	{
 		return algs;
 	}
-//
-//	@Override
-//	public String getId()
-//	{
-//		return id;
-//	}
 
 }

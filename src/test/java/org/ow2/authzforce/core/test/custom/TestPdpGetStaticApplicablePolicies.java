@@ -29,14 +29,15 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 import org.junit.Test;
+import org.ow2.authzforce.core.pdp.api.ExtraPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.PolicyVersion;
 import org.ow2.authzforce.core.pdp.impl.PDPImpl;
 import org.ow2.authzforce.core.pdp.impl.policy.StaticApplicablePolicyView;
 import org.ow2.authzforce.core.test.utils.PdpTest;
 import org.ow2.authzforce.core.test.utils.TestUtils;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 /**
  * Test of {@link PDPImpl#getStaticApplicablePolicies()}
@@ -49,13 +50,12 @@ public class TestPdpGetStaticApplicablePolicies
 	 */
 	public final static String TEST_RESOURCES_DIRECTORY_LOCATION = "classpath:conformance/others/PolicyReference.Valid";
 
-	private final static IdReferenceType ROOT_POLICY_IDREF = new IdReferenceType("root:policyset-with-refs", "1.0",
-			null, null);
-	private final static Set<IdReferenceType> REF_POLICY_IDREFS;
+	private final static IdReferenceType ROOT_POLICYSET_IDREF = new IdReferenceType("root:policyset-with-refs", "1.0", null, null);
+	private final static Set<IdReferenceType> REF_POLICYSET_IDREFS;
 	static
 	{
-		REF_POLICY_IDREFS = new HashSet<>();
-		REF_POLICY_IDREFS.add(new IdReferenceType("PPS:Employee", "1.0", null, null));
+		REF_POLICYSET_IDREFS = new HashSet<>();
+		REF_POLICYSET_IDREFS.add(new IdReferenceType("PPS:Employee", "1.0", null, null));
 	}
 
 	@Test
@@ -63,23 +63,17 @@ public class TestPdpGetStaticApplicablePolicies
 	{
 		final String testResourceLocationPrefix = TEST_RESOURCES_DIRECTORY_LOCATION + "/";
 		// Create PDP
-		try (PDPImpl pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + PdpTest.POLICY_FILENAME,
-				testResourceLocationPrefix + PdpTest.REF_POLICIES_DIR_NAME, false, null, null))
+		try (PDPImpl pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + PdpTest.POLICY_FILENAME, testResourceLocationPrefix + PdpTest.REF_POLICIES_DIR_NAME, false, null, null))
 		{
-			final StaticApplicablePolicyView staticRootAndRefPolicyMap = pdp.getStaticApplicablePolicies();
-			assertEquals("Invalid root policy returned by PDPImpl#getStaticApplicablePolicies()", ROOT_POLICY_IDREF,
-					new IdReferenceType(staticRootAndRefPolicyMap.rootPolicyId(), staticRootAndRefPolicyMap
-							.rootPolicyVersion().toString(), null, null));
+			final StaticApplicablePolicyView staticApplicablePolicies = pdp.getStaticApplicablePolicies();
+			final ExtraPolicyMetadata rootPolicyExtraMetadata = staticApplicablePolicies.rootPolicyExtraMetadata();
+			assertEquals("Invalid root policy returned by PDPImpl#getStaticApplicablePolicies()", ROOT_POLICYSET_IDREF, new IdReferenceType(staticApplicablePolicies.rootPolicyId(), rootPolicyExtraMetadata.getVersion().toString(), null, null));
 
-			assertEquals("Invalid number of referenced policies returned by PDPImpl#getStaticApplicablePolicies()",
-					REF_POLICY_IDREFS.size(), staticRootAndRefPolicyMap.refPolicies().size());
+			assertEquals("Invalid number of referenced policy sets returned by PDPImpl#getStaticApplicablePolicies()", REF_POLICYSET_IDREFS.size(), rootPolicyExtraMetadata.getRefPolicySets().size());
 
-			for (final Entry<String, PolicyVersion> policyEntry : pdp.getStaticApplicablePolicies().refPolicies()
-					.entrySet())
+			for (final Entry<String, PolicyVersion> policyEntry : rootPolicyExtraMetadata.getRefPolicySets().entrySet())
 			{
-				assertTrue("Unexpected policy returned by PDPImpl#getStaticApplicablePolicies()",
-						REF_POLICY_IDREFS.contains(new IdReferenceType(policyEntry.getKey(), policyEntry.getValue()
-								.toString(), null, null)));
+				assertTrue("Unexpected policy returned by PDPImpl#getStaticApplicablePolicies()", REF_POLICYSET_IDREFS.contains(new IdReferenceType(policyEntry.getKey(), policyEntry.getValue().toString(), null, null)));
 			}
 
 		}

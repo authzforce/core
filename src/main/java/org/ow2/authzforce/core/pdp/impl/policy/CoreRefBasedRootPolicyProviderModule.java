@@ -13,20 +13,23 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 import org.ow2.authzforce.core.pdp.api.BaseStaticRootPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
 import org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.StaticTopLevelPolicyElementEvaluator;
+import org.ow2.authzforce.core.pdp.api.TopLevelPolicyElementEvaluator;
+import org.ow2.authzforce.core.pdp.api.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.VersionPatterns;
 import org.ow2.authzforce.core.xmlns.pdp.StaticRefBasedRootPolicyProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 /**
  * This Root policy provider module retrieves the root policy from a {@link RefPolicyProviderModule} statically (once and for all), based on a XACML
@@ -51,22 +54,18 @@ public class CoreRefBasedRootPolicyProviderModule extends BaseStaticRootPolicyPr
 		}
 
 		@Override
-		public <REF_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> RootPolicyProviderModule getInstance(StaticRefBasedRootPolicyProvider jaxbConf,
-				XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry,
-				REF_POLICY_PROVIDER_CONF jaxbRefPolicyProviderConf, RefPolicyProviderModule.Factory<REF_POLICY_PROVIDER_CONF> refPolicyProviderModuleFactory,
-				int maxPolicySetRefDepth, EnvironmentProperties environmentProperties)
+		public <REF_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> RootPolicyProviderModule getInstance(StaticRefBasedRootPolicyProvider jaxbConf, XACMLParserFactory xacmlParserFactory, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, REF_POLICY_PROVIDER_CONF jaxbRefPolicyProviderConf, RefPolicyProviderModule.Factory<REF_POLICY_PROVIDER_CONF> refPolicyProviderModuleFactory, int maxPolicySetRefDepth, EnvironmentProperties environmentProperties)
 		{
 			if (jaxbConf == null)
 			{
 				throw ILLEGAL_XML_CONF_ARG_EXCEPTION;
 			}
 
-			return new CoreRefBasedRootPolicyProviderModule(jaxbConf.getPolicyRef(), expressionFactory, combiningAlgRegistry, xacmlParserFactory,
-					jaxbRefPolicyProviderConf, refPolicyProviderModuleFactory, maxPolicySetRefDepth, environmentProperties);
+			return new CoreRefBasedRootPolicyProviderModule(jaxbConf.getPolicyRef(), expressionFactory, combiningAlgRegistry, xacmlParserFactory, jaxbRefPolicyProviderConf, refPolicyProviderModuleFactory, maxPolicySetRefDepth, environmentProperties);
 		}
 	}
 
-	private final IPolicyEvaluator rootPolicy;
+	private final StaticTopLevelPolicyElementEvaluator rootPolicy;
 
 	/**
 	 * Creates instance with the root PolicySet retrieved from the refPolicyprovider once and for all
@@ -94,13 +93,9 @@ public class CoreRefBasedRootPolicyProviderModule extends BaseStaticRootPolicyPr
 	 *             {@code jaxbRefPolicyProviderConf != null && (expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null)} or no
 	 *             PolicySet matching {@code policySetRef} could be resolved by the refPolicyProvider
 	 */
-	public <CONF extends AbstractPolicyProvider> CoreRefBasedRootPolicyProviderModule(IdReferenceType policyRef, ExpressionFactory expressionFactory,
-			CombiningAlgRegistry combiningAlgRegistry, XACMLParserFactory xacmlParserFactory, CONF jaxbRefPolicyProviderConf,
-			RefPolicyProviderModule.Factory<CONF> refPolicyProviderModFactory, int maxPolicySetRefDepth, EnvironmentProperties environmentProperties)
-			throws IllegalArgumentException
+	public <CONF extends AbstractPolicyProvider> CoreRefBasedRootPolicyProviderModule(IdReferenceType policyRef, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, XACMLParserFactory xacmlParserFactory, CONF jaxbRefPolicyProviderConf, RefPolicyProviderModule.Factory<CONF> refPolicyProviderModFactory, int maxPolicySetRefDepth, EnvironmentProperties environmentProperties) throws IllegalArgumentException
 	{
-		super(expressionFactory, combiningAlgRegistry, xacmlParserFactory, jaxbRefPolicyProviderConf, refPolicyProviderModFactory, maxPolicySetRefDepth,
-				environmentProperties);
+		super(expressionFactory, combiningAlgRegistry, xacmlParserFactory, jaxbRefPolicyProviderConf, refPolicyProviderModFactory, maxPolicySetRefDepth, environmentProperties);
 		if (policyRef == null)
 		{
 			throw ILLEGAL_XACML_POLICY_REF_ARG_EXCEPTION;
@@ -110,22 +105,26 @@ public class CoreRefBasedRootPolicyProviderModule extends BaseStaticRootPolicyPr
 		final VersionPatterns versionPatterns = new VersionPatterns(policyRef.getVersion(), policyRef.getEarliestVersion(), policyRef.getLatestVersion());
 		try
 		{
-			rootPolicy = refPolicyProvider.get(IPolicyEvaluator.class, policySetId, versionPatterns, null);
+			rootPolicy = refPolicyProvider.get(TopLevelPolicyElementType.POLICY_SET, policySetId, versionPatterns, null);
 		} catch (IndeterminateEvaluationException e)
 		{
-			throw new IllegalArgumentException("Error resolving/instantiating the root policy matching PolicySetIdReference: PolicySetId = " + policySetId
-					+ "; " + versionPatterns, e);
+			throw new IllegalArgumentException("Failed to find a root PolicySet with id = " + policySetId + ", " + versionPatterns, e);
 		}
 
 		if (rootPolicy == null)
 		{
-			throw new IllegalArgumentException("No policy found by the refPolicyProvider for the specified PolicySetIdReference: PolicySetId = " + policySetId
-					+ "; " + versionPatterns);
+			throw new IllegalArgumentException("No policy found by the refPolicyProvider for the specified PolicySetIdReference: PolicySetId = " + policySetId + "; " + versionPatterns);
 		}
 	}
 
 	@Override
-	public IPolicyEvaluator getRootPolicy()
+	public StaticTopLevelPolicyElementEvaluator getPolicy()
+	{
+		return rootPolicy;
+	}
+
+	@Override
+	public TopLevelPolicyElementEvaluator getPolicy(EvaluationContext context) throws IndeterminateEvaluationException, IllegalArgumentException
 	{
 		return rootPolicy;
 	}
