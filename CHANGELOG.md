@@ -5,12 +5,14 @@ All notable changes to this project are documented in this file following the [K
 ### Added
 - PDP XML schema: 'requestFilter' attribute (RequestFilter extension): 
 	- Added documentation about natively supported values, with '-lax' suffix meaning that duplicate <Attribute> with same meta-data in the same <Attributes> element of a Request is allowed (in compliance with XACML 3.0 core spec, §7.3.3), and '-strict' suffix meaning that it is not allowed (not strictly compliant with XACML 3.0 Core, section 7.3.3):
-		- 'urn:thalesgroup:xacml:request-filter:default-lax' and 'urn:thalesgroup:xacml:request-filter:default-strict': default requestFilter limited to what is specified in XACML 3.0 Core specification
-		- 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories-lax' and 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories-strict': implement Multiple Decision Profile, section 2.3 (repeated attribute categories)
-categories)
-	- Added XSD-defined default value: 'urn:thalesgroup:xacml:request-filter:default-lax'
+		- 'urn:ow2:authzforce:xacml:request-filter:default-lax' and 'urn:ow2:authzforce:xacml:request-filter:default-strict': default requestFilter limited to what is specified in XACML 3.0 Core specification
+		- 'urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax' and 'urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-strict': implement Multiple Decision Profile, section 2.3 (repeated attribute categories)
+	- Added XSD-defined default value for this 'requestFilter' attribute: 'urn:ow2:authzforce:xacml:request-filter:default-lax'
 - Support for Extended Indeterminate values (XACML 3.0 Core specification, section 7.10-7.14, appendix C: combining algorithms)
-- PdpImpl#getStaticRootAndRefPolicies() that provides all the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved. This allows PDP clients to know all the policies (if statically resolved) possibly used by the PDP during the evaluation.
+- PdpImpl#getStaticApplicablePolicies() method that provides all the PDP's applicable policies (root and referenced - directly or indirectly - from the root policy) if all are statically resolved. This allows PDP clients to know all the policies (if statically resolved) possibly used by the PDP during the evaluation.
+
+### Changed
+- PDP XML schema: maxVariableRefDepth and maxPolicyRefDepth attributes made optional (instead of required)
 
 ## 3.7.0
 ### Added
