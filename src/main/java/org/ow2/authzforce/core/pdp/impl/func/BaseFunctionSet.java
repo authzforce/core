@@ -29,7 +29,7 @@ public class BaseFunctionSet implements FunctionSet
 	/**
 	 * Namespace to be used as default prefix for internal function set IDs
 	 */
-	public static final String DEFAULT_ID_NAMESPACE = "urn:thalesgroup:xacml:function-set:";
+	public static final String DEFAULT_ID_NAMESPACE = "urn:ow2:authzforce:xacml:function-set:";
 
 	private final String id;
 

@@ -35,7 +35,8 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
  */
 public final class BaseDecisionResult implements DecisionResult
 {
-	private static final IllegalArgumentException ILLEGAL_DECISION_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Decision");
+	private static final IllegalArgumentException ILLEGAL_DECISION_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"Undefined Decision");
 
 	/**
 	 * NotApplicable decision result
@@ -54,6 +55,21 @@ public final class BaseDecisionResult implements DecisionResult
 
 	private final DecisionType decision;
 
+	/**
+	 * Extended Indeterminate value, as defined in section 7.10 of XACML 3.0 core: <i>potential effect value which could
+	 * have occurred if there would not have been an error causing the “Indeterminate”</i>. We use the following
+	 * convention:
+	 * <ul>
+	 * <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
+	 * <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
+	 * <li>Null means "Indeterminate{DP}"</li>
+	 * <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and
+	 * therefore any extended Indeterminate value should be ignored</li>
+	 * </ul>
+	 * 
+	 */
+	private final DecisionType extIndeterminate;
+
 	private final Status status;
 
 	// initialized non-null
@@ -67,6 +83,8 @@ public final class BaseDecisionResult implements DecisionResult
 	 * 
 	 * @param decision
 	 *            decision
+	 * @param extendedIndeterminate
+	 *            Extended Indeterminate value, null if {@code decision !=  DecisionType.INDETERMINATE}
 	 * @param status
 	 *            status
 	 * @param pepActions
@@ -74,7 +92,8 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param policyIdentifierList
 	 *            list of matched policy identifiers
 	 */
-	public BaseDecisionResult(DecisionType decision, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	public BaseDecisionResult(DecisionType decision, DecisionType extendedIndeterminate, Status status,
+			PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
 		if (decision == null)
 		{
@@ -82,26 +101,51 @@ public final class BaseDecisionResult implements DecisionResult
 		}
 
 		this.decision = decision;
+		this.extIndeterminate = extendedIndeterminate;
 		this.status = status;
 		this.pepActions = pepActions == null ? new BasePepActions(null, null) : pepActions;
-		this.applicablePolicyIdList = policyIdentifierList == null ? new ArrayList<JAXBElement<IdReferenceType>>() : policyIdentifierList;
+		this.applicablePolicyIdList = policyIdentifierList == null ? new ArrayList<JAXBElement<IdReferenceType>>()
+				: policyIdentifierList;
 
 	}
 
 	/**
 	 * Instantiates a Indeterminate Decision result with a given error status
 	 * 
+	 * @param extendedIndeterminate
+	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10). We use the following convention:
+	 *            <ul>
+	 *            <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
+	 *            <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
+	 *            <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
+	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not
+	 *            Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 *            </ul>
+	 * 
+	 * @param status
+	 *            reason/code for Indeterminate
+	 */
+	public BaseDecisionResult(Status status, DecisionType extendedIndeterminate)
+	{
+		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, null);
+	}
+
+	/**
+	 * Instantiates a Indeterminate Decision result with a given error status and extended Indeterminate set to
+	 * Indeterminate{DP}
+	 * 
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
 	public BaseDecisionResult(Status status)
 	{
-		this(DecisionType.INDETERMINATE, status, null, null);
+		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null);
 	}
 
 	/**
-	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #BaseDecisionResult(Status)} for Indeterminate, and
-	 * {@link #NOT_APPLICABLE} for NotApplicable.
+	 * Instantiates a Permit/Deny decision with optional obligations and advice. See
+	 * {@link #BaseDecisionResult(Status, DecisionType)} for Indeterminate, and {@link #NOT_APPLICABLE} for
+	 * NotApplicable.
 	 * 
 	 * @param decision
 	 *            decision
@@ -110,7 +154,7 @@ public final class BaseDecisionResult implements DecisionResult
 	 */
 	public BaseDecisionResult(DecisionType decision, PepActions pepActions)
 	{
-		this(decision, null, pepActions, null);
+		this(decision, DecisionType.NOT_APPLICABLE, null, pepActions, null);
 	}
 
 	private transient volatile int hashCode = 0;
@@ -120,7 +164,8 @@ public final class BaseDecisionResult implements DecisionResult
 	{
 		if (hashCode == 0)
 		{
-			hashCode = Objects.hash(this.decision, this.status, this.pepActions, this.applicablePolicyIdList);
+			hashCode = Objects.hash(this.decision, this.extIndeterminate, this.status, this.pepActions,
+					this.applicablePolicyIdList);
 		}
 
 		return hashCode;
@@ -141,6 +186,11 @@ public final class BaseDecisionResult implements DecisionResult
 
 		final DecisionResult other = (DecisionResult) obj;
 		if (this.decision != other.getDecision())
+		{
+			return false;
+		}
+
+		if (this.extIndeterminate != other.getExtendedIndeterminate())
 		{
 			return false;
 		}
@@ -218,7 +268,8 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
-	 * Merge extra PEP actions and/or matched policy identifiers. Used when combining results from child Rules of Policy or child Policies of PolicySet
+	 * Merge extra PEP actions and/or matched policy identifiers. Used when combining results from child Rules of Policy
+	 * or child Policies of PolicySet
 	 * 
 	 * @param newPepActions
 	 *            new PEP actions
@@ -242,8 +293,14 @@ public final class BaseDecisionResult implements DecisionResult
 	@Override
 	public String toString()
 	{
-		return "Result [decision=" + decision + ", status=" + status + ", pepActions=" + pepActions + ", applicablePolicyIdList=" + applicablePolicyIdList
-				+ "]";
+		return "Result [decision=" + decision + ", status=" + status + ", pepActions=" + pepActions
+				+ ", applicablePolicyIdList=" + applicablePolicyIdList + "]";
+	}
+
+	@Override
+	public DecisionType getExtendedIndeterminate()
+	{
+		return this.extIndeterminate;
 	}
 
 }

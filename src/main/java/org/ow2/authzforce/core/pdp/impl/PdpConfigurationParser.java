@@ -53,17 +53,20 @@ import org.springframework.util.ResourceUtils;
  */
 public class PdpConfigurationParser
 {
-	private static final IllegalArgumentException NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined PDP configuration model handler");
+	private static final IllegalArgumentException NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined PDP configuration model handler");
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpConfigurationParser.class);
 
 	/**
 	 * Create PDP instance.
 	 * 
 	 * @param confLocation
-	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd). This location may be any resource string supported by
-	 *            Spring ResourceLoader. For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd... More info:
-	 *            http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
+	 *            location of PDP configuration XML file, compliant with the PDP
+	 *            XML schema (pdp.xsd). This location may be any resource string
+	 *            supported by Spring ResourceLoader. For example:
+	 *            classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd,
+	 *            http://myserver/ccc.xsd... More info:
+	 *            http://docs.spring.io/spring/docs/current/spring-framework-
+	 *            reference/html/resources.html
 	 * @return PDP instance
 	 * 
 	 * @throws IOException
@@ -78,17 +81,25 @@ public class PdpConfigurationParser
 	}
 
 	/**
-	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
+	 * Create PDP instance. Locations here may be any resource string supported
+	 * by Spring ResourceLoader. More info:
+	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * /resources.html
 	 * 
-	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
+	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd,
+	 * http://myserver/ccc.xsd...
 	 * 
 	 * @param confLocation
-	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
+	 *            location of PDP configuration XML file, compliant with the PDP
+	 *            XML schema (pdp.xsd)
 	 * 
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD import for each
-	 *            extension, where the 'schemaLocation' attribute value must be ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}.xsd, for example:
+	 *            location of user-defined extension XSD (may be null if no
+	 *            extension to load), if exists; in such XSD, there must be a
+	 *            XSD import for each extension, where the 'schemaLocation'
+	 *            attribute value must be
+	 *            ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}.
+	 *            xsd, for example:
 	 * 
 	 *            <pre>
 	 * {@literal
@@ -106,15 +117,21 @@ public class PdpConfigurationParser
 	 * 
 	 *            </xs:schema>
 	 * 			}
-	 * </pre>
+	 *            </pre>
 	 * 
-	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
-	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types,
-	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
+	 *            In this example,
+	 *            'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest
+	 *            .RESTfulAttributeFinde r ' is the JAXB-annotated class bound
+	 *            to XML type 'RESTfulAttributeProvider'. We assume that this
+	 *            XML type is an extension of one the PDP extension base types,
+	 *            'AbstractAttributeProvider' (that extends
+	 *            'AbstractPdpExtension' like all other extension base types) in
+	 *            this case.
 	 * 
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extension XSD specified as
-	 *            'extensionXsdLocation' argument (may be null)
+	 *            location of XML catalog for resolving XSDs imported by the
+	 *            pdp.xsd (PDP configuration schema) and the extension XSD
+	 *            specified as 'extensionXsdLocation' argument (may be null)
 	 * @return PDP instance
 	 * @throws IOException
 	 *             I/O error reading from {@code confLocation}
@@ -128,17 +145,25 @@ public class PdpConfigurationParser
 	}
 
 	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
+	 * Create PDP instance. Locations here can be any resource string supported
+	 * by Spring ResourceLoader. More info:
+	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * /resources.html
 	 * 
-	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
+	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd,
+	 * http://myserver/ccc.xsd...
 	 * 
 	 * @param confFile
-	 *            PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
+	 *            PDP configuration XML file, compliant with the PDP XML schema
+	 *            (pdp.xsd)
 	 * 
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD import for each
-	 *            extension, where the 'schemaLocation' attribute value must be ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}.xsd, for example:
+	 *            location of user-defined extension XSD (may be null if no
+	 *            extension to load), if exists; in such XSD, there must be a
+	 *            XSD import for each extension, where the 'schemaLocation'
+	 *            attribute value must be
+	 *            ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}.
+	 *            xsd, for example:
 	 * 
 	 *            <pre>
 	 * {@literal
@@ -156,15 +181,21 @@ public class PdpConfigurationParser
 	 * 
 	 *            </xs:schema>
 	 * 			}
-	 * </pre>
+	 *            </pre>
 	 * 
-	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeFinde r ' is the JAXB-annotated class bound to
-	 *            XML type 'RESTfulAttributeProvider'. We assume that this XML type is an extension of one the PDP extension base types,
-	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this case.
+	 *            In this example,
+	 *            'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest
+	 *            .RESTfulAttributeFinde r ' is the JAXB-annotated class bound
+	 *            to XML type 'RESTfulAttributeProvider'. We assume that this
+	 *            XML type is an extension of one the PDP extension base types,
+	 *            'AbstractAttributeProvider' (that extends
+	 *            'AbstractPdpExtension' like all other extension base types) in
+	 *            this case.
 	 * 
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extension XSD specified as
-	 *            'extensionXsdLocation' argument (may be null)
+	 *            location of XML catalog for resolving XSDs imported by the
+	 *            pdp.xsd (PDP configuration schema) and the extension XSD
+	 *            specified as 'extensionXsdLocation' argument (may be null)
 	 * @return PDP instance
 	 * @throws IOException
 	 *             I/O error reading from {@code confLocation}
@@ -178,13 +209,19 @@ public class PdpConfigurationParser
 	}
 
 	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html.
+	 * Create PDP instance. Locations here can be any resource string supported
+	 * by Spring ResourceLoader. More info:
+	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * /resources.html.
 	 * <p>
-	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file
-	 * (including in PDP extensions'), we define a property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the
-	 * configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation
-	 * is not a file on the filesystem, then ${PARENT_DIR} is undefined.
+	 * To allow using file paths relative to the parent folder of the
+	 * configuration file (located at confLocation) anywhere in this
+	 * configuration file (including in PDP extensions'), we define a property
+	 * 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix
+	 * for file paths in the configuration file. E.g. if confLocation =
+	 * 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced
+	 * by 'file:///path/to'. If confLocation is not a file on the filesystem,
+	 * then ${PARENT_DIR} is undefined.
 	 * 
 	 * @param confLocation
 	 *            location of PDP configuration file
@@ -213,10 +250,14 @@ public class PdpConfigurationParser
 	/**
 	 * Create PDP instance
 	 * <p>
-	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file
-	 * (including in PDP extensions'), we define a property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the
-	 * configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation
-	 * is not a file on the filesystem, then ${PARENT_DIR} is undefined.
+	 * To allow using file paths relative to the parent folder of the
+	 * configuration file (located at confLocation) anywhere in this
+	 * configuration file (including in PDP extensions'), we define a property
+	 * 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix
+	 * for file paths in the configuration file. E.g. if confLocation =
+	 * 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced
+	 * by 'file:///path/to'. If confLocation is not a file on the filesystem,
+	 * then ${PARENT_DIR} is undefined.
 	 * 
 	 * @param confFile
 	 *            PDP configuration file
@@ -251,7 +292,9 @@ public class PdpConfigurationParser
 			throw new IllegalArgumentException("Invalid PDP configuration file", e);
 		}
 
-		// Set property PARENT_DIR in environment properties for future replacement in configuration strings by PDP extensions using file paths
+		// Set property PARENT_DIR in environment properties for future
+		// replacement in configuration strings by PDP extensions using file
+		// paths
 		final String propVal = confFile.getParentFile().toURI().toString();
 		LOGGER.debug("Property {} = {}", EnvironmentPropertyName.PARENT_DIR, propVal);
 		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propVal));
@@ -269,20 +312,21 @@ public class PdpConfigurationParser
 	 * @throws IllegalArgumentException
 	 *             invalid PDP configuration
 	 * @throws IOException
-	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
+	 *             if any error occurred closing already created
+	 *             {@link Closeable} modules (policy Providers, attribute
+	 *             Providers, decision cache)
 	 */
 	public static PDPImpl getPDP(Pdp pdpJaxbConf, EnvironmentProperties envProps) throws IllegalArgumentException, IOException
 	{
 		/*
-		 * Initialize all parameters of ExpressionFactoryImpl: attribute datatype factories, functions, etc.
+		 * Initialize all parameters of ExpressionFactoryImpl: attribute
+		 * datatype factories, functions, etc.
 		 */
 
 		final boolean enableXPath = pdpJaxbConf.isEnableXPath();
 
 		// Attribute datatypes
-		final DatatypeFactoryRegistry attributeFactory = new BaseDatatypeFactoryRegistry(
-				pdpJaxbConf.isUseStandardDatatypes() ? (enableXPath ? StandardDatatypeFactoryRegistry.ALL_DATATYPES
-						: StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES) : null);
+		final DatatypeFactoryRegistry attributeFactory = new BaseDatatypeFactoryRegistry(pdpJaxbConf.isUseStandardDatatypes() ? (enableXPath ? StandardDatatypeFactoryRegistry.ALL_DATATYPES : StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES) : null);
 		for (final String attrDatatypeURI : pdpJaxbConf.getAttributeDatatypes())
 		{
 			final DatatypeFactory<?> datatypeFactory = PdpExtensionLoader.getExtension(DatatypeFactory.class, attrDatatypeURI);
@@ -290,8 +334,7 @@ public class PdpConfigurationParser
 		}
 
 		// Functions
-		final FunctionRegistry functionRegistry = new FunctionRegistry(pdpJaxbConf.isUseStandardFunctions() ? StandardFunctionRegistry.getInstance(enableXPath)
-				: null);
+		final FunctionRegistry functionRegistry = new FunctionRegistry(pdpJaxbConf.isUseStandardFunctions() ? StandardFunctionRegistry.getInstance(enableXPath) : null);
 		for (final String funcId : pdpJaxbConf.getFunctions())
 		{
 			final Function<?> function = PdpExtensionLoader.getExtension(Function.class, funcId);
@@ -318,8 +361,7 @@ public class PdpConfigurationParser
 		}
 
 		// Combining Algorithms
-		final CombiningAlgRegistry combiningAlgRegistry = new BaseCombiningAlgRegistry(
-				pdpJaxbConf.isUseStandardCombiningAlgorithms() ? StandardCombiningAlgRegistry.INSTANCE : null);
+		final CombiningAlgRegistry combiningAlgRegistry = new BaseCombiningAlgRegistry(pdpJaxbConf.isUseStandardCombiningAlgorithms() ? StandardCombiningAlgRegistry.INSTANCE : null);
 		for (final String algId : pdpJaxbConf.getCombiningAlgorithms())
 		{
 			final CombiningAlg<?> alg = PdpExtensionLoader.getExtension(CombiningAlg.class, algId);
@@ -328,25 +370,29 @@ public class PdpConfigurationParser
 
 		// Decision combiner
 		final String resultFilterId = pdpJaxbConf.getResultFilter();
-		final DecisionResultFilter decisionResultFilter = resultFilterId == null ? null : PdpExtensionLoader.getExtension(DecisionResultFilter.class,
-				resultFilterId);
+		final DecisionResultFilter decisionResultFilter = resultFilterId == null ? null : PdpExtensionLoader.getExtension(DecisionResultFilter.class, resultFilterId);
 
 		// decision cache
 		final AbstractDecisionCache jaxbDecisionCache = pdpJaxbConf.getDecisionCache();
 
-		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), pdpJaxbConf.getMaxVariableRefDepth(), enableXPath,
-				combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(), pdpJaxbConf.getMaxPolicyRefDepth(),
-				pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache, envProps);
+		final Integer maxVarRefDepth = pdpJaxbConf.getMaxVariableRefDepth();
+		final Integer maxPolicyRefDepth = pdpJaxbConf.getMaxPolicyRefDepth();
+		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), maxVarRefDepth == null ? -1 : maxVarRefDepth, enableXPath, combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth == null ? -1 : maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache, envProps);
 	}
 
 	private static boolean isXpathBased(Function<?> function)
 	{
 		/*
-		 * A function is said "XPath-based" iff it takes at least one XPathExpression parameter. Regarding higher-order function, as of now, we only provide
-		 * higher-order functions defined in the XACML (3.0) Core specification, which are not XPath-based, or if a higher-order function happens to take a
-		 * XPathExpression parameter, it is actually a parameter to the first-order sub-function. Plus it is not possible to add extensions that are
-		 * higher-order functions in this PDP implementation. Therefore, it is enough to check first-order functions (class FirstOrderFunction) only. (Remember
-		 * that such functions may be used as parameter to a higher-order function.)
+		 * A function is said "XPath-based" iff it takes at least one
+		 * XPathExpression parameter. Regarding higher-order function, as of
+		 * now, we only provide higher-order functions defined in the XACML
+		 * (3.0) Core specification, which are not XPath-based, or if a
+		 * higher-order function happens to take a XPathExpression parameter, it
+		 * is actually a parameter to the first-order sub-function. Plus it is
+		 * not possible to add extensions that are higher-order functions in
+		 * this PDP implementation. Therefore, it is enough to check first-order
+		 * functions (class FirstOrderFunction) only. (Remember that such
+		 * functions may be used as parameter to a higher-order function.)
 		 */
 		if (function instanceof FirstOrderFunction)
 		{

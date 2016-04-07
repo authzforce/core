@@ -12,18 +12,18 @@
         </Status>
         <Obligations>
          <Obligation
-             ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG301:obligation-1" >
+             ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:obligation-1" >
              <AttributeAssignment
-                 AttributeId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG301:assignment1"
+                 AttributeId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:assignment1"
                  DataType="http://www.w3.org/2001/XMLSchema#string">assignment1</AttributeAssignment>
          </Obligation>
         </Obligations>
         
         <PolicyIdentifierList>
 
-        	<PolicyIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG301:InternalPolicy4</PolicyIdReference>
-        	<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG301:InternalPolicyset</PolicySetIdReference>
-        	<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG301:policyset</PolicySetIdReference>
+        	<PolicyIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicy4</PolicyIdReference>
+        	<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicyset</PolicySetIdReference>
+        	<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:policyset</PolicySetIdReference>
 
         </PolicyIdentifierList>
     </Result>

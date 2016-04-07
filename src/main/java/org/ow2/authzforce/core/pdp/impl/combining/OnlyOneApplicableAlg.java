@@ -20,7 +20,7 @@ import org.ow2.authzforce.core.pdp.api.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * This is the standard only-one-applicable policy combining algorithm.
  * 
  */
-public class OnlyOneApplicableAlg extends BaseCombiningAlg<IPolicyEvaluator>
+public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 {
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
@@ -40,9 +40,9 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<IPolicyEvaluator>
 		private static final BaseDecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new BaseDecisionResult(new StatusHelper(
 				StatusHelper.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
 
-		private final List<? extends IPolicyEvaluator> policyElements;
+		private final List<? extends PolicyEvaluator> policyElements;
 
-		private Evaluator(List<? extends IPolicyEvaluator> policyElements)
+		private Evaluator(List<? extends PolicyEvaluator> policyElements)
 		{
 			this.policyElements = policyElements;
 		}
@@ -51,9 +51,9 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<IPolicyEvaluator>
 		public DecisionResult eval(EvaluationContext context)
 		{
 			// atLeastOne == true iff selectedPolicy != null
-			IPolicyEvaluator selectedPolicy = null;
+			PolicyEvaluator selectedPolicy = null;
 
-			for (final IPolicyEvaluator policy : policyElements)
+			for (final PolicyEvaluator policy : policyElements)
 			{
 				// see if the policy applies to the context
 				final boolean isApplicable;
@@ -93,7 +93,7 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<IPolicyEvaluator>
 	}
 
 	@Override
-	public Evaluator getInstance(List<CombiningAlgParameter<? extends IPolicyEvaluator>> params, List<? extends IPolicyEvaluator> combinedElements)
+	public Evaluator getInstance(List<CombiningAlgParameter<? extends PolicyEvaluator>> params, List<? extends PolicyEvaluator> combinedElements)
 	{
 		return new Evaluator(combinedElements);
 	}
@@ -108,7 +108,7 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<IPolicyEvaluator>
 	 */
 	public OnlyOneApplicableAlg()
 	{
-		super(ID, IPolicyEvaluator.class);
+		super(ID, PolicyEvaluator.class);
 	}
 
 }

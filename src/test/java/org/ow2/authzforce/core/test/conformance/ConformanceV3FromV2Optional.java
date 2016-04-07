@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import org.junit.BeforeClass;
 import org.junit.runners.Parameterized.Parameters;
+import org.ow2.authzforce.core.pdp.impl.MultiDecisionRequestFilter;
 
 /**
  * XACML 3.0 conformance tests for optional features.
@@ -36,10 +37,7 @@ public class ConformanceV3FromV2Optional extends ConformanceV3FromV2
 		// enum constant name gives the sub-directory with all test files
 		// first param is the file prefix (before number) if different from enum constant name, then
 		// the start number and end number corresponding to last files in the sub-folder
-		IIA002("IIA", 2, 2), IIA022_23_FIXED_WITH_XPATH("IIA", 22, 23), IIF300_301_FIXED_WITH_XPATH("IIF", 300, 301), IIF310_FIXED_WITH_XPATH("IIF", 310, 310), IIIA030(
-				"IIIA", 30, 30), IIIA330("IIIA", 330, 330), IIIE302("IIIE", 302, 302,
-				"urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories-lax"), IIIF001("IIIF", 1, 1), IIIG001("IIIG", 1, 1), IIIG301(
-				"IIIG", 301, 302);
+		IIA002("IIA", 2, 2), IIA022_23_FIXED_WITH_XPATH("IIA", 22, 23), IIF300_301_FIXED_WITH_XPATH("IIF", 300, 301), IIF310_FIXED_WITH_XPATH("IIF", 310, 310), IIIA030("IIIA", 30, 30), IIIA330("IIIA", 330, 330), IIIE302("IIIE", 302, 302, MultiDecisionRequestFilter.LaxFilterFactory.ID), IIIF001("IIIF", 1, 1), IIIG001("IIIG", 1, 1), IIIG301("IIIG", 301, 302);
 
 		private final String filenamePrefixBeforeNum;
 		private final int startNum;
@@ -82,8 +80,7 @@ public class ConformanceV3FromV2Optional extends ConformanceV3FromV2
 		final Collection<Object[]> testData = new ArrayList<>();
 		for (TestParameters testParams : TestParameters.values())
 		{
-			testData.addAll(getTestData(ROOT_DIRECTORY, testParams.name(), testParams.filenamePrefixBeforeNum, testParams.startNum, testParams.endNum,
-					testParams.requestFilterId));
+			testData.addAll(getTestData(ROOT_DIRECTORY, testParams.name(), testParams.filenamePrefixBeforeNum, testParams.startNum, testParams.endNum, testParams.requestFilterId));
 		}
 
 		return testData;

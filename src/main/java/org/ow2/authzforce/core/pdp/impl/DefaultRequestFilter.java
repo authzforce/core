@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-
 import org.ow2.authzforce.core.pdp.api.BaseRequestFilter;
 import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -31,6 +27,10 @@ import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.JaxbXACMLAttributesParser;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
@@ -46,7 +46,10 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 	 */
 	public static final class LaxFilterFactory implements RequestFilter.Factory
 	{
-		private static final String ID = "urn:thalesgroup:xacml:request-filter:default-lax";
+		/**
+		 * Request filter ID, as returned by {@link #getId()}
+		 */
+		public static final String ID = "urn:ow2:authzforce:xacml:request-filter:default-lax";
 
 		@Override
 		public String getId()
@@ -55,8 +58,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		}
 
 		@Override
-		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath,
-				Processor xmlProcessor)
+		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath, Processor xmlProcessor)
 		{
 			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, true, requireContentForXPath, xmlProcessor);
 		}
@@ -76,7 +78,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 	 */
 	public static final class StrictFilterFactory implements RequestFilter.Factory
 	{
-		private static final String ID = "urn:thalesgroup:xacml:request-filter:default-strict";
+		private static final String ID = "urn:ow2:authzforce:xacml:request-filter:default-strict";
 
 		@Override
 		public String getId()
@@ -85,23 +87,19 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		}
 
 		@Override
-		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath,
-				Processor xmlProcessor)
+		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath, Processor xmlProcessor)
 		{
 			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, false, requireContentForXPath, xmlProcessor);
 		}
 	}
 
-	private DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean allowAttributeDuplicates,
-			boolean requireContentForXPath, Processor xmlProcessor)
+	private DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean allowAttributeDuplicates, boolean requireContentForXPath, Processor xmlProcessor)
 	{
 		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor);
 	}
 
 	@Override
-	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser,
-			boolean isApplicablePolicyIdListReturned, boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix)
-			throws IndeterminateEvaluationException
+	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser, boolean isApplicablePolicyIdListReturned, boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{
 
 		/*
@@ -123,9 +121,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 			final String categoryName = jaxbAttributes.getCategory();
 			if (!attrCategoryNames.add(categoryName))
 			{
-				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName
-						+ "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)",
-						StatusHelper.STATUS_SYNTAX_ERROR);
+				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName + "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
 			}
 
 			final SingleCategoryAttributes<?> categorySpecificAttributes = xacmlAttrsParser.parseAttributes(jaxbAttributes, xPathCompiler);

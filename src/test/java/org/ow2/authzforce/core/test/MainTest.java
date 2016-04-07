@@ -23,6 +23,7 @@ import org.ow2.authzforce.core.test.conformance.ConformanceV3FromV2Optional;
 import org.ow2.authzforce.core.test.conformance.ConformanceV3Others;
 import org.ow2.authzforce.core.test.custom.CustomPdpTest;
 import org.ow2.authzforce.core.test.custom.TestApplyMarshalling;
+import org.ow2.authzforce.core.test.custom.TestPdpGetStaticApplicablePolicies;
 import org.ow2.authzforce.core.test.func.BagFunctionsTest;
 import org.ow2.authzforce.core.test.func.DateTimeArithmeticFunctionsTest;
 import org.ow2.authzforce.core.test.func.EqualityFunctionsTest;
@@ -43,15 +44,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 
- * class to use for the testSuite MatchTest.class, ConformanceV3FromV2.class, BasicV3_1.class, BasicV3_2.class, BasicV3_3.class, BasicV3_4.class,
- * BasicV3_5.class, BasicFunctionV3.class
+ * class to use for the testSuite MatchTest.class, ConformanceV3FromV2.class, BasicV3_1.class, BasicV3_2.class,
+ * BasicV3_3.class, BasicV3_4.class, BasicV3_5.class, BasicFunctionV3.class
  */
 @RunWith(Suite.class)
-@SuiteClasses(value = { AnyURIAttributeTest.class, EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class,
-		NumericConversionFunctionsTest.class, LogicalFunctionsTest.class, NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class,
-		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class, SetFunctionsTest.class, HigherOrderFunctionsTest.class,
-		RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, ConformanceV3FromV2Mandatory.class, ConformanceV3FromV2Optional.class,
-		ConformanceV3Others.class, CustomPdpTest.class, TestApplyMarshalling.class, NonRegression.class })
+@SuiteClasses(value = { AnyURIAttributeTest.class, EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class,
+		StringConversionFunctionsTest.class, NumericConversionFunctionsTest.class, LogicalFunctionsTest.class,
+		NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class,
+		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class,
+		SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class,
+		SpecialMatchFunctionsTest.class, ConformanceV3FromV2Mandatory.class, ConformanceV3FromV2Optional.class,
+		ConformanceV3Others.class, CustomPdpTest.class, TestApplyMarshalling.class,
+		TestPdpGetStaticApplicablePolicies.class, NonRegression.class })
 public class MainTest
 {
 	/**
