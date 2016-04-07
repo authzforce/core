@@ -1,7 +1,10 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
-## Unreleased
+## 3.8.0
+### Changed
+- PDP XML schema: maxVariableRefDepth and maxPolicyRefDepth attributes made optional (instead of required)
+
 ### Added
 - PDP XML schema: 'requestFilter' attribute (RequestFilter extension): 
 	- Added documentation about natively supported values, with '-lax' suffix meaning that duplicate <Attribute> with same meta-data in the same <Attributes> element of a Request is allowed (in compliance with XACML 3.0 core spec, §7.3.3), and '-strict' suffix meaning that it is not allowed (not strictly compliant with XACML 3.0 Core, section 7.3.3):
@@ -11,8 +14,6 @@ All notable changes to this project are documented in this file following the [K
 - Support for Extended Indeterminate values (XACML 3.0 Core specification, section 7.10-7.14, appendix C: combining algorithms)
 - PdpImpl#getStaticApplicablePolicies() method that provides all the PDP's applicable policies (root and referenced - directly or indirectly - from the root policy) if all are statically resolved. This allows PDP clients to know all the policies (if statically resolved) possibly used by the PDP during the evaluation.
 
-### Changed
-- PDP XML schema: maxVariableRefDepth and maxPolicyRefDepth attributes made optional (instead of required)
 
 ## 3.7.0
 ### Added
