@@ -29,15 +29,27 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+/**
+ * 
+ * XACML anyURI validation test. This test is no longer used since we refer to the definition of anyURI datatype given in XSD 1.1, which has the same value space as the string datatype. This is
+ * confirmed by SAXON documentation: http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html
+ * 
+ * Although XACML 3.0 still refers to XSD 1.0 and its stricter definition of anyURI, we prefer to anticipate and use the definition from XSD 1.1 for XACML AttributeValues of datatype anyURI. However,
+ * this does not affect XACML schema validation of Policy/PolicySet/Request documents, where the XSD 1.0 definition of anyURI still applies.
+ * 
+ * This class is kept for the record only.
+ */
 @RunWith(value = Parameterized.class)
 public class AnyURIAttributeTest
 {
 	@Parameters
 	public static Collection<Object[]> data()
 	{
-		Object[][] data = new Object[][] { { "http://datypic.com", "absolute URI (also a URL)", true }, { "mailto:info@datypic.com", "absolute URI", true }, { "../%C3%A9dition.html", "relative URI containing escaped non-ASCII character", true },
-				{ "../édition.html", "relative URI containing escaped non-ASCII character", true }, { "http://datypic.com/prod.html#shirt", "URI with fragment identifier", true }, { "../prod.html#shirt", "relative URI with fragment identifier", true }, { "", "an empty value is allowed", true },
-				{ "http://datypic.com#frag1#frag2", "too many # characters", false }, { "http://datypic.com#f% rag", "% character followed by something other than two hexadecimal digits", false } };
+		Object[][] data = new Object[][] { { "http://datypic.com", "absolute URI (also a URL)", true }, { "mailto:info@datypic.com", "absolute URI", true },
+				{ "../%C3%A9dition.html", "relative URI containing escaped non-ASCII character", true }, { "../édition.html", "relative URI containing escaped non-ASCII character", true },
+				{ "http://datypic.com/prod.html#shirt", "URI with fragment identifier", true }, { "../prod.html#shirt", "relative URI with fragment identifier", true },
+				{ "", "an empty value is allowed", true }, { "http://datypic.com#frag1#frag2", "too many # characters", false },
+				{ "http://datypic.com#f% rag", "% character followed by something other than two hexadecimal digits", false } };
 		return Arrays.asList(data);
 	}
 
