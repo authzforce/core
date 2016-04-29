@@ -18,8 +18,7 @@ import java.util.Locale;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * Representation of an xs:string value. This class supports parsing xs:string values. All objects of this class are immutable and all methods of the class are
- * thread-safe.
+ * Representation of an xs:string value. This class supports parsing xs:string values. All objects of this class are immutable and all methods of the class are thread-safe.
  */
 public final class StringValue extends SimpleValue<String> implements Comparable<StringValue>
 {
@@ -46,8 +45,8 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 	}
 
 	/**
-	 * Convert string argument - assumed a valid xsd:string into a String value. Use with caution as no xsd:string format validation is done here. For internal
-	 * purposes only. If you need proper input validation, use {@link #parse(String)} instead.
+	 * Convert string argument - assumed a valid xsd:string into a String value. Use with caution as no xsd:string format validation is done here. For internal purposes only. If you need proper input
+	 * validation, use {@link #parse(String)} instead.
 	 * 
 	 * @param validXsdString
 	 *            A string containing a valid lexical representation of xsd:string
@@ -64,14 +63,15 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 	}
 
 	/**
-	 * Same as {@link String#equalsIgnoreCase(String)} on attribute values
+	 * Same as {@link String#equalsIgnoreCase(String)} on string attribute values
 	 * 
-	 * @param otherAttribute
+	 * @param other
+	 *            other value to be compared against
 	 * @return true if the other attribute value is not null and it represents an equivalent String ignoring case; false otherwise
 	 */
-	public boolean equalsIgnoreCase(StringValue otherAttribute)
+	public boolean equalsIgnoreCase(StringValue other)
 	{
-		return this.value.equalsIgnoreCase(otherAttribute.value);
+		return this.value.equalsIgnoreCase(other.value);
 	}
 
 	/**

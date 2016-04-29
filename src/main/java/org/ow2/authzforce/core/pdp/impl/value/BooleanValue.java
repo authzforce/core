@@ -16,9 +16,8 @@ package org.ow2.authzforce.core.pdp.impl.value;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * Representation of an xs:boolean value. This class supports parsing xs:boolean values. All objects of this class are immutable and all methods of the class
- * are thread-safe. The choice of the Java type boolean is based on JAXB schema-to-Java mapping spec:
- * https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
+ * Representation of an xs:boolean value. This class supports parsing xs:boolean values. All objects of this class are immutable and all methods of the class are thread-safe. The choice of the Java
+ * type boolean is based on JAXB schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  * 
  */
 public final class BooleanValue extends SimpleValue<Boolean>
@@ -41,11 +40,10 @@ public final class BooleanValue extends SimpleValue<Boolean>
 	public static final BooleanValue FALSE = new BooleanValue(false);
 
 	/**
-	 * Convert a boolean value from string, according to the XML Schema definition. Adapted from
-	 * {@link net.sf.saxon.value.BooleanValue#fromString(CharSequence)}, but without whitespace trimming. This is meant to replace
-	 * {@link DatatypeConverter#parseBoolean(String)} which is flawed and does not comply with XSD definition of boolean type as of now (JDK7/8). See
-	 * https://java.net/jira/browse/JAXB-901, and https://java.net/jira/browse/JAXB-902. E.g. DatatypeConverter.parseBoolean("not") throws NullPointerException
-	 * instead of IllegalArgumentException as expected according to javadoc.
+	 * Convert a boolean value from string, according to the XML Schema definition. Adapted from {@link net.sf.saxon.value.BooleanValue#fromString(CharSequence)}, but without whitespace trimming. This
+	 * is meant to replace {@link DatatypeConverter#parseBoolean(String)} which is flawed and does not comply with XSD definition of boolean type as of now (JDK7/8). See
+	 * https://java.net/jira/browse/JAXB-901, and https://java.net/jira/browse/JAXB-902. E.g. DatatypeConverter.parseBoolean("not") throws NullPointerException instead of IllegalArgumentException as
+	 * expected according to javadoc.
 	 * 
 	 * @param s
 	 *            XSD-compliant string representation of boolean
@@ -92,15 +90,14 @@ public final class BooleanValue extends SimpleValue<Boolean>
 		default:
 		}
 
-		throw new IllegalArgumentException("The string '" + (s.length() > 5 ? (s.substring(0, 5) + "... (content omitted)") : s)
-				+ "' is not a valid xs:boolean value.");
+		throw new IllegalArgumentException("The string '" + (s.length() > 5 ? (s.substring(0, 5) + "... (content omitted)") : s) + "' is not a valid xs:boolean value.");
 	}
 
 	/**
 	 * Creates a new <code>BooleanAttributeValue</code> that represents the boolean value supplied.
 	 * <p>
-	 * This constructor is private because it should not be used by anyone other than the static initializer in this class. Instead, please use one of the
-	 * getInstance methods, which will ensure that only two BooleanAttributeValue objects are created, thus avoiding excess object creation.
+	 * This constructor is private because it should not be used by anyone other than the static initializer in this class. Instead, please use one of the getInstance methods, which will ensure that
+	 * only two BooleanAttributeValue objects are created, thus avoiding excess object creation.
 	 */
 	private BooleanValue(boolean value)
 	{
@@ -112,6 +109,7 @@ public final class BooleanValue extends SimpleValue<Boolean>
 	 * Get BooleanAttributeValue.TRUE (resp. FALSE) instance if <code>b</code> (resp. if ! <code>b</code>)
 	 * 
 	 * @param b
+	 *            boolean input
 	 * @return instance
 	 */
 	public static BooleanValue valueOf(boolean b)

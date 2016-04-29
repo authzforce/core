@@ -50,8 +50,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 	 * @param returnType
 	 *            function's return type
 	 * @param subFunctionReturnType
-	 *            sub-function's return datatype; may be null to indicate any datatype (e.g. map function's sub-function return datatype can be any primitive
-	 *            type)
+	 *            sub-function's return datatype; may be null to indicate any datatype (e.g. map function's sub-function return datatype can be any primitive type)
 	 */
 	HigherOrderBagFunction(String functionId, Datatype<RETURN_T> returnType, Datatype<?> subFunctionReturnType)
 	{
@@ -72,18 +71,15 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 	}
 
 	/**
-	 * Creates function call from sub-function definition and all inputs to higher-order function To be overriden by OneBagOnlyFunctions (any-of/all-of)
+	 * Creates function call from sub-function definition and all inputs to higher-order function. To be overriden by OneBagOnlyFunctions (any-of/all-of)
 	 * 
-	 * @param boolSubFunc
-	 *            boolean sub-function
-	 * @param subFuncArgTypes
-	 *            sub-function argument types
-	 * @param inputs
-	 *            all inputs
+	 * @param subFunc
+	 *            first-order sub-function
+	 * @param inputsAfterSubFunc
+	 *            sub-function arguments
 	 * @return function call
 	 */
-	protected abstract FunctionCall<RETURN_T> createFunctionCallFromSubFunction(FirstOrderFunction<SUB_RETURN_PRIMITIVE_T> subFunc,
-			List<Expression<?>> inputsAfterSubFunc);
+	protected abstract FunctionCall<RETURN_T> createFunctionCallFromSubFunction(FirstOrderFunction<SUB_RETURN_PRIMITIVE_T> subFunc, List<Expression<?>> inputsAfterSubFunc);
 
 	@Override
 	public final FunctionCall<RETURN_T> newCall(List<Expression<?>> inputs) throws IllegalArgumentException
@@ -113,8 +109,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 		}
 
 		/*
-		 * Check whether it is a FirstOrderFunction because it is the only type of function for which we have a generic way to validate argument types as done
-		 * later below
+		 * Check whether it is a FirstOrderFunction because it is the only type of function for which we have a generic way to validate argument types as done later below
 		 */
 		if (!(inputFunc instanceof FirstOrderFunction))
 		{
@@ -129,15 +124,13 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 			 */
 			if (inputFuncReturnType.getTypeParameter() != null)
 			{
-				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType
-						+ " (bag type). Required: any primitive type");
+				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType + " (bag type). Required: any primitive type");
 			}
 		} else
 		{
 			if (!inputFuncReturnType.equals(subFuncReturnType))
 			{
-				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType + ". Required: "
-						+ subFuncReturnType);
+				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType + ". Required: " + subFuncReturnType);
 			}
 		}
 

@@ -34,6 +34,9 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+
 import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -53,27 +56,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-
 /**
- * This is the core implementation of <code>RefPolicyProviderModule</code> that
- * supports static retrieval of the policies referenced by
- * Policy(Set)IdReference. It is configured by a list of locations that
- * represent Spring-compatible resource URLs, corresponding to XACML Policy(Set)
- * files - each file content is expected to be a XACML Policy(Set) document -
- * when the module is initialized. Beyond this, there is no modifying or
- * re-loading the policies handled by this class.
+ * This is the core implementation of <code>RefPolicyProviderModule</code> that supports static retrieval of the policies referenced by Policy(Set)IdReference. It is configured by a list of locations
+ * that represent Spring-compatible resource URLs, corresponding to XACML Policy(Set) files - each file content is expected to be a XACML Policy(Set) document - when the module is initialized. Beyond
+ * this, there is no modifying or re-loading the policies handled by this class.
  * <p>
- * A policy location may also be a file pattern in the following form:
- * "file://DIRECTORY_PATH/*SUFFIX" using wilcard character '*'; in which case
- * the location is expanded to all regular files (not subdirectories) in
- * directory located at DIRECTORY_PATH with suffix SUFFIX (SUFFIX may be empty,
- * i.e. no suffix). The files are NOT searched recursively on sub-directories.
+ * A policy location may also be a file pattern in the following form: "file://DIRECTORY_PATH/*SUFFIX" using wilcard character '*'; in which case the location is expanded to all regular files (not
+ * subdirectories) in directory located at DIRECTORY_PATH with suffix SUFFIX (SUFFIX may be empty, i.e. no suffix). The files are NOT searched recursively on sub-directories.
  * <p>
- * Note that this class is designed to complement
- * {@link CoreRootPolicyProviderModule} in charge of the root policy(set) which
- * may refer to policies resolved by this {@link CoreRefPolicyProviderModule}.
+ * Note that this class is designed to complement {@link CoreRootPolicyProviderModule} in charge of the root policy(set) which may refer to policies resolved by this
+ * {@link CoreRefPolicyProviderModule}.
  */
 public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModule
 {
@@ -84,10 +76,10 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	private static final Logger LOGGER = LoggerFactory.getLogger(CoreRefPolicyProviderModule.class);
 
 	/**
-	 * Policy wrapper to link a XACML policy to the namespace prefix-URIs in
-	 * original policy XML document
+	 * Policy wrapper to link a XACML policy to the namespace prefix-URIs in original policy XML document
 	 *
 	 * @param <P>
+	 *            policy type
 	 */
 	public static final class PolicyWithNamespaces<P>
 	{
@@ -139,7 +131,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		}
 
 		@Override
-		public RefPolicyProviderModule getInstance(org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider conf, XACMLParserFactory xacmlParserFactory, int maxPolicySetRefDepth, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, EnvironmentProperties environmentProperties)
+		public RefPolicyProviderModule getInstance(org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider conf, XACMLParserFactory xacmlParserFactory, int maxPolicySetRefDepth,
+				ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry, EnvironmentProperties environmentProperties)
 		{
 			if (conf == null)
 			{
@@ -160,7 +153,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 						// this is a file path pattern
 						final String directoryLocation = policyLocation.substring(0, index);
 						final String suffix = policyLocation.substring(index + 2);
-						LOGGER.debug("Policy location #{} is a filepath pattern (found '/*') -> expanding to all files in directory '{}' with suffix '{}'", policyLocationIndex, directoryLocation, suffix);
+						LOGGER.debug("Policy location #{} is a filepath pattern (found '/*') -> expanding to all files in directory '{}' with suffix '{}'", policyLocationIndex, directoryLocation,
+								suffix);
 
 						final String dirLocation = environmentProperties.replacePlaceholders(directoryLocation);
 						final URL directoryURL;
@@ -178,7 +172,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 							directoryPath = Paths.get(directoryURL.toURI());
 						} catch (URISyntaxException e)
 						{
-							throw new RuntimeException("Error converting policy directory URL '" + directoryURL + "' - extracted from policy location (pattern) '" + policyLocation + "' - to a Java Path (via URI)", e);
+							throw new RuntimeException("Error converting policy directory URL '" + directoryURL + "' - extracted from policy location (pattern) '" + policyLocation
+									+ "' - to a Java Path (via URI)", e);
 						}
 
 						try (DirectoryStream<Path> stream = Files.newDirectoryStream(directoryPath))
@@ -198,7 +193,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 						{
 							// I/O error encounted during the iteration, the
 							// cause is an IOException
-							throw new RuntimeException("Error iterating over files in directory '" + dirLocation + "' to get policies at locations matching pattern '" + policyLocation + "'", ex.getCause());
+							throw new RuntimeException("Error iterating over files in directory '" + dirLocation + "' to get policies at locations matching pattern '" + policyLocation + "'",
+									ex.getCause());
 						} catch (IOException e)
 						{
 							throw new RuntimeException("Error getting policy files in '" + dirLocation + "' according to policy location pattern '" + policyLocation + "'", e);
@@ -299,9 +295,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	}
 
 	/*
-	 * Ref policy Provider used only for initialization, more particularly for
-	 * parsing the PolicySets when they are referred to by others (in
-	 * PolicySetIdReferences) at initialization time
+	 * Ref policy Provider used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in PolicySetIdReferences) at initialization time
 	 */
 	private static class InitOnlyRefPolicyProvider implements StaticRefPolicyProvider
 	{
@@ -313,7 +307,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		private final PolicyMap<StaticTopLevelPolicyElementEvaluator> policySetMapToUpdate;
 		private final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap;
 
-		private InitOnlyRefPolicyProvider(PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap, PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap, PolicyMap<StaticTopLevelPolicyElementEvaluator> policySetMapToUpdate, int maxPolicySetRefDepth, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry)
+		private InitOnlyRefPolicyProvider(PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap, PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap,
+				PolicyMap<StaticTopLevelPolicyElementEvaluator> policySetMapToUpdate, int maxPolicySetRefDepth, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry)
 		{
 			this.policyMap = policyMap;
 			this.policySetMapToUpdate = policySetMapToUpdate;
@@ -324,7 +319,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		}
 
 		@Override
-		public TopLevelPolicyElementEvaluator get(TopLevelPolicyElementType policyType, String id, VersionPatterns versionConstraints, Deque<String> ancestorPolicyRefChain, EvaluationContext evaluationContext) throws IndeterminateEvaluationException, IllegalArgumentException
+		public TopLevelPolicyElementEvaluator get(TopLevelPolicyElementType policyType, String id, VersionPatterns versionConstraints, Deque<String> ancestorPolicyRefChain,
+				EvaluationContext evaluationContext) throws IndeterminateEvaluationException, IllegalArgumentException
 		{
 			return get(policyType, id, versionConstraints, ancestorPolicyRefChain);
 		}
@@ -355,8 +351,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 			if (policySetVersions == null)
 			{
 				/*
-				 * No matching version already parsed, and this is the first
-				 * version to be parsed for this PolicySetId
+				 * No matching version already parsed, and this is the first version to be parsed for this PolicySetId
 				 */
 				newPolicySetVersions = new PolicyVersions<>();
 				policySetMapToUpdate.put(id, newPolicySetVersions);
@@ -367,19 +362,14 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				if (policySetEvaluator != null)
 				{
 					/*
-					 * check total policy ref depth, i.e. length of
-					 * (newAncestorPolicySetRefChain + parsed policySet's
-					 * longest (nested) policy ref chain) <=
-					 * maxPolicySetRefDepth
+					 * check total policy ref depth, i.e. length of (newAncestorPolicySetRefChain + parsed policySet's longest (nested) policy ref chain) <= maxPolicySetRefDepth
 					 */
 					Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, policySetEvaluator.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
 					return policySetEvaluator;
 				}
 
 				/*
-				 * No matching version already parsed, but there are versions
-				 * already parsed, so we'll add the new one - that we are about
-				 * to parse - to them.
+				 * No matching version already parsed, but there are versions already parsed, so we'll add the new one - that we are about to parse - to them.
 				 */
 				newPolicySetVersions = policySetVersions;
 			}
@@ -389,7 +379,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 			final StaticTopLevelPolicyElementEvaluator policySetEvaluator;
 			try
 			{
-				policySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry, this, newPolicySetRefChain);
+				policySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry, this,
+						newPolicySetRefChain);
 			} catch (IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Invalid PolicySet with PolicySetId=" + id + ", Version=" + jaxbPolicySetVersion, e);
@@ -404,7 +395,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	private final PolicyMap<StaticTopLevelPolicyElementEvaluator> policySetMap;
 	private final int maxPolicySetRefDepth;
 
-	private CoreRefPolicyProviderModule(PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap, PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap, int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
+	private CoreRefPolicyProviderModule(PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap, PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap, int maxPolicySetRefDepth,
+			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		assert policyMap != null && jaxbPolicySetMap != null && expressionFactory != null && combiningAlgRegistry != null;
 
@@ -412,11 +404,10 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		this.policyMap = policyMap;
 		this.policySetMap = new PolicyMap<>();
 		/*
-		 * Ref policy Provider module used only for initialization, more
-		 * particularly for parsing the PolicySets when they are referred to by
-		 * others (in PolicySetIdReferences)
+		 * Ref policy Provider module used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in PolicySetIdReferences)
 		 */
-		final StaticRefPolicyProvider refPolicyProvider = new InitOnlyRefPolicyProvider(this.policyMap, jaxbPolicySetMap, this.policySetMap, this.maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
+		final StaticRefPolicyProvider refPolicyProvider = new InitOnlyRefPolicyProvider(this.policyMap, jaxbPolicySetMap, this.policySetMap, this.maxPolicySetRefDepth, expressionFactory,
+				combiningAlgRegistry);
 
 		for (final Entry<String, PolicyVersions<PolicyWithNamespaces<PolicySet>>> jaxbPolicySetWithNsEntry : jaxbPolicySetMap.entrySet())
 		{
@@ -454,7 +445,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				final StaticTopLevelPolicyElementEvaluator newPolicySet;
 				try
 				{
-					newPolicySet = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry, refPolicyProvider, null);
+					newPolicySet = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry, refPolicyProvider,
+							null);
 				} catch (IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException("Invalid PolicySet with PolicySetId=" + policySetId + ", Version=" + policySetVersion, e);
@@ -473,22 +465,18 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	 * @param jaxbPolicySets
 	 *            XACML PolicySets
 	 * @param maxPolicySetRefDepth
-	 *            maximum allowed depth of PolicySet reference chain (via
-	 *            PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...
+	 *            maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...
 	 * @param combiningAlgRegistry
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
-	 *            Expression factory for parsing Expressions used in the
-	 *            policy(set)
+	 *            Expression factory for parsing Expressions used in the policy(set)
 	 * @return instance of this module
 	 * @throws IllegalArgumentException
-	 *             if both {@code jaxbPoliciesByIdAndVersion} and
-	 *             {@code jaxbPolicySetsByIdAndVersion} are null/empty, or
-	 *             expressionFactory/combiningAlgRegistry undefined; or one of
-	 *             the Policy(Set)s is not valid or conflicts with another
-	 *             because it has same Policy(Set)Id and Version.
+	 *             if both {@code jaxbPoliciesByIdAndVersion} and {@code jaxbPolicySetsByIdAndVersion} are null/empty, or expressionFactory/combiningAlgRegistry undefined; or one of the Policy(Set)s
+	 *             is not valid or conflicts with another because it has same Policy(Set)Id and Version.
 	 */
-	public static CoreRefPolicyProviderModule getInstance(List<PolicyWithNamespaces<Policy>> jaxbPolicies, List<PolicyWithNamespaces<PolicySet>> jaxbPolicySets, int maxPolicySetRefDepth, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
+	public static CoreRefPolicyProviderModule getInstance(List<PolicyWithNamespaces<Policy>> jaxbPolicies, List<PolicyWithNamespaces<PolicySet>> jaxbPolicySets, int maxPolicySetRefDepth,
+			ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		if ((jaxbPolicies == null || jaxbPolicies.isEmpty()) && (jaxbPolicySets == null || jaxbPolicySets.isEmpty()))
 		{
@@ -545,9 +533,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				}
 
 				/*
-				 * PolicySets cannot be parsed before we have collected them
-				 * all, because each PolicySet may refer to others via
-				 * PolicySetIdReferences
+				 * PolicySets cannot be parsed before we have collected them all, because each PolicySet may refer to others via PolicySetIdReferences
 				 */
 			}
 		}
@@ -559,30 +545,23 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	 * Creates an instance from policy locations
 	 * 
 	 * @param policyURLs
-	 *            location of Policy(Set) elements (JAXB) to be parsed for
-	 *            future reference by Policy(Set)IdReferences
+	 *            location of Policy(Set) elements (JAXB) to be parsed for future reference by Policy(Set)IdReferences
 	 * @param xacmlParserFactory
 	 *            XACML parser factory for parsing any XACML Policy(Set)
 	 * @param maxPolicySetRefDepth
-	 *            maximum allowed depth of PolicySet reference chain (via
-	 *            PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...; a
-	 *            strictly negative value means no limit
+	 *            maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...; a strictly negative value means no limit
 	 * @param combiningAlgRegistry
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
-	 *            Expression factory for parsing Expressions used in the
-	 *            policy(set)
+	 *            Expression factory for parsing Expressions used in the policy(set)
 	 * @return instance of this class
 	 * @throws IllegalArgumentException
-	 *             if {@code policyURLs == null || policyURLs.length == 0}, or
-	 *             expressionFactory/combiningAlgRegistry undefined; or one of
-	 *             {@code policyURLs} is null or is not a valid XACML
-	 *             Policy(Set) or conflicts with another because it has same
-	 *             Policy(Set)Id and Version. Beware that the Policy(Set)Issuer
-	 *             is ignored from this check!
+	 *             if {@code policyURLs == null || policyURLs.length == 0}, or expressionFactory/combiningAlgRegistry undefined; or one of {@code policyURLs} is null or is not a valid XACML
+	 *             Policy(Set) or conflicts with another because it has same Policy(Set)Id and Version. Beware that the Policy(Set)Issuer is ignored from this check!
 	 * 
 	 */
-	public static CoreRefPolicyProviderModule getInstance(Collection<URL> policyURLs, XACMLParserFactory xacmlParserFactory, int maxPolicySetRefDepth, ExpressionFactory expressionFactory, CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
+	public static CoreRefPolicyProviderModule getInstance(Collection<URL> policyURLs, XACMLParserFactory xacmlParserFactory, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
+			CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		if (policyURLs == null || policyURLs.isEmpty())
 		{
@@ -665,9 +644,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				}
 
 				/*
-				 * PolicySets cannot be parsed before we have collected them
-				 * all, because each PolicySet may refer to others via
-				 * PolicySetIdReferences
+				 * PolicySets cannot be parsed before we have collected them all, because each PolicySet may refer to others via PolicySetIdReferences
 				 */
 			} else
 			{
@@ -704,9 +681,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		}
 
 		/*
-		 * check total policy ref depth, i.e. length of
-		 * (newAncestorPolicySetRefChain + parsed policySet's longest (nested)
-		 * policy ref chain) <= maxPolicySetRefDepth
+		 * check total policy ref depth, i.e. length of (newAncestorPolicySetRefChain + parsed policySet's longest (nested) policy ref chain) <= maxPolicySetRefDepth
 		 */
 		final StaticTopLevelPolicyElementEvaluator policy = policyEntry.getValue();
 		Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, policy.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
@@ -721,7 +696,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	}
 
 	@Override
-	public TopLevelPolicyElementEvaluator get(TopLevelPolicyElementType policyType, String policyId, VersionPatterns policyVersionConstraints, Deque<String> policySetRefChain, EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+	public TopLevelPolicyElementEvaluator get(TopLevelPolicyElementType policyType, String policyId, VersionPatterns policyVersionConstraints, Deque<String> policySetRefChain,
+			EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		return get(policyType, policyId, policyVersionConstraints, policySetRefChain);
 	}

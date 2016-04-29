@@ -34,8 +34,6 @@ import org.ow2.authzforce.core.pdp.impl.BasePepActions;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
 
-import com.sun.xacml.ParsingException;
-
 /**
  * Evaluator of a Policy(Set)'s PEP action (Obligation/Advice) expressions
  * 
@@ -72,21 +70,18 @@ public class PolicyPepActionExpressionsEvaluator
 		@Override
 		public void add(ObligationExpression jaxbObligationExp) throws IllegalArgumentException
 		{
-			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(BasePepActions.OBLIGATION_FACTORY,
-					jaxbObligationExp.getObligationId(), jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(),
-					xPathCompiler, expFactory);
-			final PepActionExpressions.EffectSpecific effectSpecificActionExps = obligationExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions
-					: permitActionExpressions;
+			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(BasePepActions.OBLIGATION_FACTORY, jaxbObligationExp.getObligationId(), jaxbObligationExp.getFulfillOn(),
+					jaxbObligationExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
+			final PepActionExpressions.EffectSpecific effectSpecificActionExps = obligationExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions : permitActionExpressions;
 			effectSpecificActionExps.addObligationExpression(obligationExp);
 		}
 
 		@Override
 		public void add(AdviceExpression jaxbAdviceExp) throws IllegalArgumentException
 		{
-			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(BasePepActions.ADVICE_FACTORY, jaxbAdviceExp.getAdviceId(),
-					jaxbAdviceExp.getAppliesTo(), jaxbAdviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
-			final PepActionExpressions.EffectSpecific effectSpecificActionExps = adviceExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions
-					: permitActionExpressions;
+			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(BasePepActions.ADVICE_FACTORY, jaxbAdviceExp.getAdviceId(), jaxbAdviceExp.getAppliesTo(),
+					jaxbAdviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
+			final PepActionExpressions.EffectSpecific effectSpecificActionExps = adviceExp.getAppliesTo() == EffectType.DENY ? denyActionExpressions : permitActionExpressions;
 			effectSpecificActionExps.addAdviceExpression(adviceExp);
 		}
 
@@ -121,11 +116,11 @@ public class PolicyPepActionExpressionsEvaluator
 	private final PepActionExpressions.EffectSpecific denyActionExpressions;
 	private final PepActionExpressions.EffectSpecific permitActionExpressions;
 
-	private PolicyPepActionExpressionsEvaluator(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions,
-			XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws ParsingException
+	private PolicyPepActionExpressionsEvaluator(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
+			throws IllegalArgumentException
 	{
-		final ActionExpressionsParser actionExpressionsParser = PepActionExpressions.Helper.parseActionExpressions(jaxbObligationExpressions,
-				jaxbAdviceExpressions, xPathCompiler, expFactory, new ActionExpressionsFactory());
+		final ActionExpressionsParser actionExpressionsParser = PepActionExpressions.Helper.parseActionExpressions(jaxbObligationExpressions, jaxbAdviceExpressions, xPathCompiler, expFactory,
+				new ActionExpressionsFactory());
 		this.denyActionExpressions = actionExpressionsParser.denyActionExpressions;
 		this.permitActionExpressions = actionExpressionsParser.permitActionExpressions;
 	}
@@ -142,11 +137,11 @@ public class PolicyPepActionExpressionsEvaluator
 	 * @param expFactory
 	 *            Expression factory for parsing the AttributeAssignmentExpressions in the Obligation/Advice Expressions
 	 * @return Policy's Obligation/Advice expressions evaluator
-	 * @throws ParsingException
+	 * @throws IllegalArgumentException
 	 *             if error parsing one of the AttributeAssignmentExpressions
 	 */
-	public static PolicyPepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions,
-			XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws ParsingException
+	public static PolicyPepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler,
+			ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		if ((jaxbObligationExpressions == null || jaxbObligationExpressions.getObligationExpressions().isEmpty())
 				&& (jaxbAdviceExpressions == null || jaxbAdviceExpressions.getAdviceExpressions().isEmpty()))
@@ -161,8 +156,8 @@ public class PolicyPepActionExpressionsEvaluator
 	 * Evaluates the PEP action (obligations/Advice) expressions for a given decision and evaluation context
 	 * 
 	 * @param combiningAlgResult
-	 *            Policy(Set) combining algorithm evaluation result; this result's decision is used to select the Obligation/Advice expressions to apply, i.e.
-	 *            matching on FulfillOn/AppliesTo. This result's PEP actions are also merged with the PEP actions computed in this method.
+	 *            Policy(Set) combining algorithm evaluation result; this result's decision is used to select the Obligation/Advice expressions to apply, i.e. matching on FulfillOn/AppliesTo. This
+	 *            result's PEP actions are also merged with the PEP actions computed in this method.
 	 * @param context
 	 *            evaluation context
 	 * @return PEP actions (obligations/advices) or null if none
@@ -185,8 +180,7 @@ public class PolicyPepActionExpressionsEvaluator
 			break;
 		}
 
-		return matchingActionExpressions == null ? null : PepActionExpressions.Helper.evaluate(matchingActionExpressions, context,
-				combiningAlgResult.getPepActions());
+		return matchingActionExpressions == null ? null : PepActionExpressions.Helper.evaluate(matchingActionExpressions, context, combiningAlgResult.getPepActions());
 	}
 
 }

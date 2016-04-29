@@ -50,6 +50,7 @@ public class RuleEvaluator implements Decidable
 	 * Instantiates rule from XACML RuleType
 	 * 
 	 * @param ruleElt
+	 *            Rule element definition
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expressionFactory
@@ -57,9 +58,7 @@ public class RuleEvaluator implements Decidable
 	 * @throws IllegalArgumentException
 	 *             Invalid Target, Condition or Obligation/Advice expressions
 	 */
-	public RuleEvaluator(Rule ruleElt, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory)
-			throws IllegalArgumentException
-	// throws ParsingException
+	public RuleEvaluator(Rule ruleElt, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory) throws IllegalArgumentException
 	{
 		// JAXB fields initialization
 		this.ruleId = ruleElt.getRuleId();
@@ -71,8 +70,7 @@ public class RuleEvaluator implements Decidable
 		final oasis.names.tc.xacml._3_0.core.schema.wd_17.Target targetElt = ruleElt.getTarget();
 		try
 		{
-			this.evaluatableTarget = targetElt == null ? null : new TargetEvaluator(targetElt, xPathCompiler,
-					expressionFactory);
+			this.evaluatableTarget = targetElt == null ? null : new TargetEvaluator(targetElt, xPathCompiler, expressionFactory);
 		} catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": Invalid Target", e);
@@ -81,8 +79,7 @@ public class RuleEvaluator implements Decidable
 		final Condition condElt = ruleElt.getCondition();
 		try
 		{
-			this.evaluatableCondition = condElt == null ? null : new ConditionEvaluator(condElt, xPathCompiler,
-					expressionFactory);
+			this.evaluatableCondition = condElt == null ? null : new ConditionEvaluator(condElt, xPathCompiler, expressionFactory);
 		} catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": invalid Condition", e);
@@ -90,9 +87,7 @@ public class RuleEvaluator implements Decidable
 
 		try
 		{
-			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(
-					ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), xPathCompiler,
-					expressionFactory, effect);
+			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), xPathCompiler, expressionFactory, effect);
 		} catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": Invalid ObligationExpressions/AdviceExpressions", e);
@@ -119,14 +114,12 @@ public class RuleEvaluator implements Decidable
 	}
 
 	/**
-	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to
-	 * evaluate the condition. If the target and condition apply, then the rule's effect is returned in the result.
+	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to evaluate the condition. If the target and condition apply, then the rule's effect is
+	 * returned in the result.
 	 * <p>
-	 * Note that rules are not required to have targets. If no target is specified, then the rule inherits its parent's
-	 * target. In the event that this <code>RuleEvaluator</code> has no <code>Target</code> then the match is assumed to
-	 * be true, since evaluating a policy tree to this level required the parent's target to match. In debug level, this
-	 * method logs the evaluation result before return. Indeterminate results are logged in warn level only (which
-	 * "includes" debug level).
+	 * Note that rules are not required to have targets. If no target is specified, then the rule inherits its parent's target. In the event that this <code>RuleEvaluator</code> has no
+	 * <code>Target</code> then the match is assumed to be true, since evaluating a policy tree to this level required the parent's target to match. In debug level, this method logs the evaluation
+	 * result before return. Indeterminate results are logged in warn level only (which "includes" debug level).
 	 * 
 	 * @param context
 	 *            the representation of the request we're evaluating
@@ -159,14 +152,12 @@ public class RuleEvaluator implements Decidable
 			{
 				// Target is Indeterminate
 				/*
-				 * Before we lose the exception information, log it at a higher level because it is an evaluation error
-				 * (but no critical application error, therefore lower level than error)
+				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than error)
 				 */
 				LOGGER.info("{}/Target -> Indeterminate", this, e);
 
 				/*
-				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the
-				 * Rule's Effect
+				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
 				 */
 				final DecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
 				LOGGER.debug("{} -> {}", this, result);
@@ -175,9 +166,8 @@ public class RuleEvaluator implements Decidable
 		}
 
 		/*
-		 * Target matches -> check condition Rule's condition considered as True if condition = null or condition's
-		 * expression evaluated to true. See section 7.9 of XACML core spec, so result is the Rule's Effect, unless
-		 * condition is not null AND it evaluates to False or throws Indeterminate exception.
+		 * Target matches -> check condition Rule's condition considered as True if condition = null or condition's expression evaluated to true. See section 7.9 of XACML core spec, so result is the
+		 * Rule's Effect, unless condition is not null AND it evaluates to False or throws Indeterminate exception.
 		 */
 		if (evaluatableCondition == null)
 		{
@@ -192,12 +182,10 @@ public class RuleEvaluator implements Decidable
 			} catch (IndeterminateEvaluationException e)
 			{
 				/*
-				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the
-				 * Rule's Effect
+				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
 				 */
 				/*
-				 * Before we lose the exception information, log it at a higher level because it is an evaluation error
-				 * (but not a critical application error, therefore lower level than Error level)
+				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but not a critical application error, therefore lower level than Error level)
 				 */
 				LOGGER.info("{}/Condition -> Indeterminate", this, e);
 				final DecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
@@ -227,9 +215,8 @@ public class RuleEvaluator implements Decidable
 		}
 
 		/*
-		 * Evaluate obligations/advice we have already filtered out obligations/advice that do not apply to Rule's
-		 * effect, after calling PepActionExpressionsEvaluator.getInstance(..., effect) in the constructor. So no need
-		 * to do it again, that's why Effect not used as argument to evaluate() here.
+		 * Evaluate obligations/advice we have already filtered out obligations/advice that do not apply to Rule's effect, after calling PepActionExpressionsEvaluator.getInstance(..., effect) in the
+		 * constructor. So no need to do it again, that's why Effect not used as argument to evaluate() here.
 		 */
 		final PepActions pepActions;
 		try
@@ -238,16 +225,14 @@ public class RuleEvaluator implements Decidable
 		} catch (IndeterminateEvaluationException e)
 		{
 			/*
-			 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but
-			 * no critical application error, therefore lower level than Error level)
+			 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than Error level)
 			 */
 			LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", this, e);
 
 			/*
-			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching
-			 * FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then the whole rule, policy, or policy set
-			 * SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18). For the Extended Indeterminate, we do
-			 * like for Target or Condition evaluation in section 7.11 (same as the rule's Effect).
+			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then the whole rule,
+			 * policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18). For the Extended Indeterminate, we do like for Target or Condition evaluation in section 7.11
+			 * (same as the rule's Effect).
 			 */
 			final BaseDecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
 			LOGGER.debug("{} -> {}", this, result);

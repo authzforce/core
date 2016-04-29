@@ -36,9 +36,12 @@ public class BaseFunctionSet implements FunctionSet
 	private final Set<Function<?>> functions;
 
 	/**
+	 * Constructor from an identifier and an array of functions
+	 * 
 	 * @param id
 	 *            globally unique ID of this function set, to be used as PDP extension ID
 	 * @param functions
+	 *            functions added to the set
 	 */
 	public BaseFunctionSet(String id, Function<?>... functions)
 	{
@@ -46,8 +49,12 @@ public class BaseFunctionSet implements FunctionSet
 	}
 
 	/**
+	 * Constructor from an identifier and a set of functions
+	 * 
 	 * @param id
+	 *            globally unique ID of this function set, to be used as PDP extension ID
 	 * @param functions
+	 *            functions added to the set. This function set uses a immutable copy of this input.
 	 */
 	public BaseFunctionSet(String id, Set<Function<?>> functions)
 	{
@@ -56,8 +63,8 @@ public class BaseFunctionSet implements FunctionSet
 	}
 
 	/**
-	 * Returns a single instance of each of the functions supported by some class. The <code>Set</code> must contain instances of <code>Function</code>, and it
-	 * must be both non-null and non-empty. It may contain only a single <code>Function</code>.
+	 * Returns a single instance of each of the functions supported by some class. The <code>Set</code> must contain instances of <code>Function</code>, and it must be both non-null and non-empty. It
+	 * may contain only a single <code>Function</code>.
 	 * 
 	 * @return the functions members of this group
 	 */

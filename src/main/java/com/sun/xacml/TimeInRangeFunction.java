@@ -40,11 +40,11 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
 
 /**
- * This class implements the time-in-range function, which takes three time values and returns true if the first value falls between the second and the third
- * value. This function was introduced in XACML 2.0.
+ * This class implements the time-in-range function, which takes three time values and returns true if the first value falls between the second and the third value. This function was introduced in
+ * XACML 2.0.
  * <p>
- * Note that this function allows any time ranges less than 24 hours. In other words, it is not bound by normal day boundries (midnight GMT), but by the minimum
- * time in the range. This means that ranges like 9am-5pm are supported, as are ranges like 5pm-9am.
+ * Note that this function allows any time ranges less than 24 hours. In other words, it is not bound by normal day boundries (midnight GMT), but by the minimum time in the range. This means that
+ * ranges like 9am-5pm are supported, as are ranges like 5pm-9am.
  * 
  * @since 2.0
  * @author seth proctor
@@ -90,14 +90,16 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 		}
 
 		/**
-		 * Evaluates the time-in-range function, which takes three <code>TimeAttributeValue</code> values. This function return true if the first value falls
-		 * between the second and third values (ie., on or after the second time and on or before the third time). If no time zone is specified for the second
-		 * and/or third time value, then the timezone from the first time value is used. This lets you say time-in-range(current-time, 9am, 5pm) and always have
-		 * the evaluation happen in your current-time timezone.
+		 * Evaluates the time-in-range function, which takes three <code>TimeAttributeValue</code> values. This function return true if the first value falls between the second and third values (ie.,
+		 * on or after the second time and on or before the third time). If no time zone is specified for the second and/or third time value, then the timezone from the first time value is used. This
+		 * lets you say time-in-range(current-time, 9am, 5pm) and always have the evaluation happen in your current-time timezone.
 		 * 
 		 * @param arg
+		 *            time to be checked against the lower and upper bounds
 		 * @param lowerBound
+		 *            lower time bound
 		 * @param upperBound
+		 *            upper time bound
 		 * @return true iff arg is in range [lowerBound, upperBound]
 		 * 
 		 * 
@@ -127,9 +129,8 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 			 */
 			setSameDate(calCheckedWhetherInRange, startCal);
 			/*
-			 * Now we date does not matter in calendar comparison, we only compare times of the day so ignoring the date, the checked time of the day might be
-			 * before the lower time bound but still be in range if considered this is the time on the next day. In this case, startCal is on day N, and
-			 * calCheckedWhetherInRange on day N+1.
+			 * Now we date does not matter in calendar comparison, we only compare times of the day so ignoring the date, the checked time of the day might be before the lower time bound but still be
+			 * in range if considered this is the time on the next day. In this case, startCal is on day N, and calCheckedWhetherInRange on day N+1.
 			 */
 			/*
 			 * Boolean below says whether the checked time is strictly after the start time if considered on the *same day*, i.e. in terms of time of day.
@@ -138,16 +139,15 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 			if (startCal.after(endCal))
 			{
 				/**
-				 * start time of the day > end time of the day, for instance 02:00:00 > 01:00:00 so we consider the end time (01:00:00) on the next day (later
-				 * than the second argument - end time - by less than 24h, the spec says). So we interpret the time interval as the date interval [startTime on
-				 * day N, endTime on day N+1]. If checked time of day < start time of day (compared on the same day), then checked time can only be on day after
-				 * to be in range
+				 * start time of the day > end time of the day, for instance 02:00:00 > 01:00:00 so we consider the end time (01:00:00) on the next day (later than the second argument - end time - by
+				 * less than 24h, the spec says). So we interpret the time interval as the date interval [startTime on day N, endTime on day N+1]. If checked time of day < start time of day (compared
+				 * on the same day), then checked time can only be on day after to be in range
 				 */
 				if (isCheckedDayTimeStrictlyBeforeStartDayTime)
 				{
 					/*
-					 * time checked is strictly before start time if considered on the same day, so not in range unless considered on day N+1 So let's compared
-					 * with end time after considering them on the same day
+					 * time checked is strictly before start time if considered on the same day, so not in range unless considered on day N+1 So let's compared with end time after considering them on
+					 * the same day
 					 */
 					// calCheckedWhetherInRange.add(Calendar.DAY_OF_YEAR, 1);
 					// set checked time to same day as end time for comparison
@@ -178,8 +178,7 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 			return !calCheckedWhetherInRange.after(endCal);
 		}
 
-		private Call(FunctionSignature.SingleParameterTyped<BooleanValue, TimeValue> functionSignature, List<Expression<?>> argExpressions,
-				Datatype<?>... remainingArgTypes)
+		private Call(FunctionSignature.SingleParameterTyped<BooleanValue, TimeValue> functionSignature, List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 		{
 			super(functionSignature, argExpressions, remainingArgTypes);
 		}
@@ -188,8 +187,7 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 		protected BooleanValue evaluate(Deque<TimeValue> argStack) throws IndeterminateEvaluationException
 		{
 			/*
-			 * args.poll() returns the first element and remove it from the stack, so that next poll() returns the next element (and removes it from the stack),
-			 * etc.
+			 * args.poll() returns the first element and remove it from the stack, so that next poll() returns the next element (and removes it from the stack), etc.
 			 */
 			return BooleanValue.valueOf(eval(argStack.poll(), argStack.poll(), argStack.poll()));
 		}

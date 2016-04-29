@@ -33,8 +33,7 @@ import org.ow2.authzforce.core.pdp.impl.func.HigherOrderBagFunctionSet;
 import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
 
 /**
- * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding
- * attribute values in the request context.
+ * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding attribute values in the request context.
  */
 public class MatchEvaluator
 {
@@ -99,8 +98,7 @@ public class MatchEvaluator
 			this.anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
 		} catch (IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException(
-					"Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): " + anyOfFuncInputs, e);
+			throw new IllegalArgumentException("Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): " + anyOfFuncInputs, e);
 		}
 	}
 
@@ -112,6 +110,7 @@ public class MatchEvaluator
 	 * 
 	 * @return true iff the context matches
 	 * @throws IndeterminateEvaluationException
+	 *             error occurred evaluating the Match element in this evaluation {@code context}
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
 	{

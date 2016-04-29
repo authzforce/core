@@ -19,8 +19,8 @@ import java.util.Deque;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * Representation of an xs:integer value. This class supports parsing xs:integer values. All objects of this class are immutable and all methods of the class
- * are thread-safe. The actual type of the underlying value is BigInteger. See https://jaxb.java.net/tutorial/section_2_2_2-Numeric-Types.html
+ * Representation of an xs:integer value. This class supports parsing xs:integer values. All objects of this class are immutable and all methods of the class are thread-safe. The actual type of the
+ * underlying value is BigInteger. See https://jaxb.java.net/tutorial/section_2_2_2-Numeric-Types.html
  * 
  */
 public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> implements Comparable<IntegerValue>
@@ -31,8 +31,8 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#integer";
 
 	/*
-	 * WARNING: these static variables must be declared before ZERO static variable, because the latter needs the former to get initialized, and static
-	 * variables are initialized in order of declaration.
+	 * WARNING: these static variables must be declared before ZERO static variable, because the latter needs the former to get initialized, and static variables are initialized in order of
+	 * declaration.
 	 */
 	private static final BigInteger MAX_INT_AS_BIGINT = BigInteger.valueOf(Integer.MAX_VALUE);
 
@@ -47,6 +47,7 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	 * Creates instance from integer argument
 	 * 
 	 * @param val
+	 *            Java equivalent of xsd:integer
 	 */
 	public IntegerValue(BigInteger val)
 	{
@@ -60,6 +61,7 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	 * </p>
 	 * 
 	 * @param val
+	 *            integer value as Java long
 	 */
 	public IntegerValue(long val)
 	{
@@ -70,6 +72,7 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	 * Creates instance from lexical representation of xsd:integer
 	 * 
 	 * @param val
+	 *            String representation of xsd:integer
 	 * @throws IllegalArgumentException
 	 *             if {@code val} is not a valid string representation of xs:integer
 	 */
@@ -161,13 +164,12 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 
 	/**
 	 * 
-	 * Converts this to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException
-	 * is thrown.
+	 * Converts this to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException is thrown.
 	 * <p>
 	 * TODO: replace with Java 8 native equivalent - BigInteger#intValueExact() - after upgrade to Java 8
 	 * 
-	 * @see <a href="https://www.securecoding.cert.org/confluence/display/java/NUM00-J.+Detect+or+prevent+integer+overflow">The CERT Oracle Secure Coding
-	 *      Standard for Java - NUM00-J. Detect or prevent integer overflow</a>
+	 * @see <a href="https://www.securecoding.cert.org/confluence/display/java/NUM00-J.+Detect+or+prevent+integer+overflow">The CERT Oracle Secure Coding Standard for Java - NUM00-J. Detect or prevent
+	 *      integer overflow</a>
 	 * 
 	 * @return this converted to an int
 	 * @throws ArithmeticException

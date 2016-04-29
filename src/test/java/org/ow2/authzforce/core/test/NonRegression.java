@@ -26,8 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Non-regression testing. Each test addresses a bug reported in the issue management system (e.g. Gitlab). There should be a folder for test data of each issue
- * in folder: src/test/resources/NonRegression.
+ * Non-regression testing. Each test addresses a bug reported in the issue management system (e.g. Gitlab). There should be a folder for test data of each issue in folder:
+ * src/test/resources/NonRegression.
  */
 @RunWith(value = Parameterized.class)
 public class NonRegression extends PdpTest
@@ -47,7 +47,9 @@ public class NonRegression extends PdpTest
 	 * 
 	 * @return collection of test dataset
 	 * @throws URISyntaxException
+	 *             if {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} is not a valid location
 	 * @throws IOException
+	 *             if {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} location could not be accessed
 	 */
 	@Parameters
 	public static Collection<Object[]> params() throws URISyntaxException, IOException

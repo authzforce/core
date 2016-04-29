@@ -35,8 +35,6 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
 import org.ow2.authzforce.core.pdp.api.Value;
 
-import com.sun.xacml.ParsingException;
-
 /**
  * Evaluates XACML Apply
  * 
@@ -73,24 +71,20 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 * @param xacmlApply
 	 *            XACML Apply element
 	 * @param xPathCompiler
-	 *            Enclosing Policy(Set)'s default XPath compiler, corresponding to the Policy(Set)'s default XPath version specified in {@link DefaultsType}
-	 *            element.
+	 *            Enclosing Policy(Set)'s default XPath compiler, corresponding to the Policy(Set)'s default XPath version specified in {@link DefaultsType} element.
 	 * @param expFactory
 	 *            expression factory for instantiating Apply's parameters
 	 * @param longestVarRefChain
-	 *            Longest chain of VariableReference references leading to this Apply, when evaluating a VariableDefinitions, i.e. list of VariableIds, such
-	 *            that V1-> V2 ->... -> Vn -> <code>this</code>, where "V1 -> V2" means: the expression in VariableDefinition of V1 contains a VariableReference
-	 *            to V2. This is used to detect exceeding depth of VariableReference reference when a new VariableReference occurs in a VariableDefinition's
-	 *            expression. May be null, if this expression does not belong to any VariableDefinition.
+	 *            Longest chain of VariableReference references leading to this Apply, when evaluating a VariableDefinitions, i.e. list of VariableIds, such that V1-> V2 ->... -> Vn ->
+	 *            <code>this</code>, where "V1 -> V2" means: the expression in VariableDefinition of V1 contains a VariableReference to V2. This is used to detect exceeding depth of VariableReference
+	 *            reference when a new VariableReference occurs in a VariableDefinition's expression. May be null, if this expression does not belong to any VariableDefinition.
 	 * @return Apply instance
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if {@code xacmlApply} is invalid or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid
-	 *             expressions, or invalid arguments for this function; or if all {@code xprs} are static but calling the function statically (with these static
-	 *             arguments) failed
+	 *             if {@code xacmlApply} is invalid or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid expressions, or invalid arguments for this
+	 *             function; or if all {@code xprs} are static but calling the function statically (with these static arguments) failed
 	 */
-	public static Apply<?> getInstance(ApplyType xacmlApply, XPathCompiler xPathCompiler, ExpressionFactory expFactory, Deque<String> longestVarRefChain)
-			throws IllegalArgumentException
+	public static Apply<?> getInstance(ApplyType xacmlApply, XPathCompiler xPathCompiler, ExpressionFactory expFactory, Deque<String> longestVarRefChain) throws IllegalArgumentException
 	{
 		if (xacmlApply == null)
 		{
@@ -151,8 +145,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 
 		if (function == null)
 		{
-			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId
-					+ "' not supported");
+			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId + "' not supported");
 		}
 
 		return new Apply<>(function, funcInputs, xacmlApply.getExpressions(), applyDesc);
@@ -173,12 +166,8 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 * @throws IllegalArgumentException
 	 *             if {@code xprs} are invalid arguments for this function;
 	 * 
-	 * @throws ParsingException
-	 *             if all {@code xprs} are static but calling the function with these static arguments failed
-	 * 
 	 */
-	private Apply(Function<V> function, List<Expression<?>> xprs, List<JAXBElement<? extends ExpressionType>> originalXacmlExpressions, String description)
-			throws IllegalArgumentException
+	private Apply(Function<V> function, List<Expression<?>> xprs, List<JAXBElement<? extends ExpressionType>> originalXacmlExpressions, String description) throws IllegalArgumentException
 	{
 		assert function != null;
 
@@ -221,8 +210,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 				staticEvalResult = funcCall.evaluate(null);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IllegalArgumentException("Invalid Apply[Description = " + description + "]: function " + function
-						+ " is not applicable to arguments (all static): " + xprs, e);
+				throw new IllegalArgumentException("Invalid Apply[Description = " + description + "]: function " + function + " is not applicable to arguments (all static): " + xprs, e);
 			}
 
 			/*
@@ -259,14 +247,14 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	}
 
 	/**
-	 * Evaluates the apply object using the given function. This will in turn call evaluate on all the given parameters, some of which may be other
-	 * <code>Apply</code> objects.
+	 * Evaluates the apply object using the given function. This will in turn call evaluate on all the given parameters, some of which may be other <code>Apply</code> objects.
 	 * 
 	 * @param context
 	 *            the representation of the request
 	 * 
 	 * @return the result of trying to evaluate this apply object
 	 * @throws IndeterminateEvaluationException
+	 *             if any evaluation error occured when evaluating the Apply expression in the given {@context}
 	 */
 	@Override
 	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -275,8 +263,8 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	}
 
 	/**
-	 * Returns the type of attribute that this object will return on a call to <code>evaluate</code> . In practice, this will always be the same as the result
-	 * of calling <code>getReturnType</code> on the function used by this object.
+	 * Returns the type of attribute that this object will return on a call to <code>evaluate</code> . In practice, this will always be the same as the result of calling <code>getReturnType</code> on
+	 * the function used by this object.
 	 * 
 	 * @return the type returned by <code>evaluate</code>
 	 */
