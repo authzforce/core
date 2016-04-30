@@ -31,7 +31,7 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
 
 /**
  * AttributeDesignator
- * 
+ *
  * <p>
  * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI
  * [1], not in java.net.URI.
@@ -45,10 +45,11 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
  * <p>
  * https://java.net/projects/jaxb/lists/users/archive/2011-07/message/16
  * </p>
- * 
+ *
  * @param <AV>
  *            AttributeDesignator evaluation result value's primitive datatype
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public class AttributeDesignator<AV extends AttributeValue> extends AttributeDesignatorType implements Expression<Bag<AV>>
 {
@@ -81,6 +82,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setCategory(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setCategory(String value)
 	{
@@ -93,6 +95,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setAttributeId(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setAttributeId(String value)
 	{
@@ -105,6 +108,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setIssuer(java.lang.String )
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setIssuer(String value)
 	{
@@ -117,6 +121,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setDataType(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setDataType(String value)
 	{
@@ -129,6 +134,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isStatic()
 	{
@@ -138,7 +144,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 
 	/**
 	 * Return an instance of an AttributeDesignator based on an AttributeDesignatorType
-	 * 
+	 *
 	 * @param attrDesignator
 	 *            the AttributeDesignatorType we want to convert
 	 * @param resultDatatype
@@ -194,12 +200,9 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Evaluates the pre-assigned meta-data against the given context, trying to find some matching values.
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return a result containing a bag either empty because no values were found or containing at least one value
 	 */
 	@Override
 	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -225,12 +228,14 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		return bag;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Datatype<Bag<AV>> getReturnType()
 	{
 		return this.returnType;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public JAXBElement<AttributeDesignatorType> getJAXBElement()
 	{
@@ -246,6 +251,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{
@@ -258,6 +264,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		return toString;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -269,6 +276,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{

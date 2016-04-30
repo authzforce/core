@@ -37,7 +37,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 /**
  * Request filter implementing Multiple Decision Profile, section 2.3 (repeated attribute categories). Other schemes are not supported.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class MultiDecisionRequestFilter extends BaseRequestFilter
 {
@@ -100,6 +102,7 @@ public final class MultiDecisionRequestFilter extends BaseRequestFilter
 		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser, boolean isApplicablePolicyIdListReturned, boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{

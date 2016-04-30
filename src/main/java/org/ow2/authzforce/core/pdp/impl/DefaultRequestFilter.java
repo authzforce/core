@@ -34,7 +34,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DefaultRequestFilter extends BaseRequestFilter
 {
@@ -98,6 +100,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser, boolean isApplicablePolicyIdListReturned, boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{

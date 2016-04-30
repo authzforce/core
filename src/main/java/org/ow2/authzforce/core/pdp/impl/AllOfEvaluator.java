@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * XACML AllOf evaluator
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class AllOfEvaluator
 {
@@ -42,14 +44,14 @@ public class AllOfEvaluator
 
 	/**
 	 * Instantiates AllOf (evaluator) from XACML-Schema-derived <code>AllOf</code>.
-	 * 
+	 *
 	 * @param jaxbAllOf
 	 *            XACML-schema-derived JAXB AllOf
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             one of the child Match elements is invalid
 	 */
 	public AllOfEvaluator(AllOf jaxbAllOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -80,18 +82,17 @@ public class AllOfEvaluator
 
 	/**
 	 * Determines whether this <code>AllOf</code> matches the input request (whether it is applicable).Here is the table shown in the specification: <code>
-	 * 		<Match> values 						<AllOf> value 
-	 * 		All True				 			“Match�? 
-	 * 		No False and at least 
+	 * 		<Match> values 						<AllOf> value
+	 * 		All True				 			“Match�?
+	 * 		No False and at least
 	 * 		one "Indeterminate" 				“Indeterminate�?
 	 * 		At least one False					"No Match"
 	 * </code>
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true iff Match, else No match
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             Indeterminate
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException

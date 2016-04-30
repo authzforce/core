@@ -24,6 +24,9 @@ import javax.mail.internet.InternetAddress;
  * Local-part "@" Domain
  * <p>
  * N.B.: This is more restrictive than a generic RFC 822 name.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class RFC822NameValue extends SimpleValue<String>
 {
@@ -39,7 +42,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 
 	/**
 	 * Creates instance from InternetAddress
-	 * 
+	 *
 	 * @param address
 	 *            Java equivalent of RFC822Name
 	 */
@@ -67,10 +70,10 @@ public final class RFC822NameValue extends SimpleValue<String>
 
 	/**
 	 * Creates a new <code>RFC822NameAttributeValue</code> that represents the value supplied.
-	 * 
+	 *
 	 * @param value
 	 *            the email address to be represented
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code value} is not a valid string representation of XACML rfc822Name
 	 */
 	public RFC822NameValue(String value) throws IllegalArgumentException
@@ -113,6 +116,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -129,6 +133,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -152,7 +157,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 
 	/**
 	 * Implements function 'urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match'
-	 * 
+	 *
 	 * @param maybePartialRfc822Name
 	 *            used as first argument to the function
 	 * @return true if match
@@ -195,6 +200,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 		return this.domainPartLowerCase.equalsIgnoreCase(maybePartialRfc822Name);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

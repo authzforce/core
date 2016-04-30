@@ -38,6 +38,8 @@ import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
 /**
  * Individual decision request evaluator
  *
+ * @author cdangerv
+ * @version $Id: $
  */
 public abstract class IndividualDecisionRequestEvaluator
 {
@@ -48,7 +50,7 @@ public abstract class IndividualDecisionRequestEvaluator
 
 	/**
 	 * Creates an evaluator
-	 * 
+	 *
 	 * @param rootPolicyEvaluator
 	 *            root policy evaluator that this request evaluator uses to evaluate individual decision request
 	 */
@@ -58,6 +60,13 @@ public abstract class IndividualDecisionRequestEvaluator
 		this.rootPolicyEvaluator = rootPolicyEvaluator;
 	}
 
+	/**
+	 * <p>evaluate</p>
+	 *
+	 * @param request a {@link org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest} object.
+	 * @param pdpIssuedAttributes a {@link java.util.Map} object.
+	 * @return a {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.Result} object.
+	 */
 	protected final Result evaluate(IndividualDecisionRequest request, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 	{
 		assert request != null;
@@ -98,6 +107,13 @@ public abstract class IndividualDecisionRequestEvaluator
 				applicablePolicyIdList == null || applicablePolicyIdList.isEmpty() ? null : new PolicyIdentifierList(applicablePolicyIdList));
 	}
 
+	/**
+	 * <p>evaluate</p>
+	 *
+	 * @param individualDecisionRequests a {@link java.util.List} object.
+	 * @param pdpIssuedAttributes a {@link java.util.Map} object.
+	 * @return a {@link java.util.List} object.
+	 */
 	protected abstract List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests,
 			Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
 }

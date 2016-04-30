@@ -30,10 +30,11 @@ import org.ow2.authzforce.core.pdp.api.Function;
 
 /**
  * XACML standard datatype constants, i.e. constants related to XACML standard datatypes
- * 
+ *
  * @param <AV>
  *            Concrete Java type actually implementing the datatype
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DatatypeConstants<AV extends AttributeValue>
 {

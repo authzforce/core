@@ -29,6 +29,9 @@ import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 
 /**
  * Mutable Individual Decision Request
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class MutableIndividualDecisionRequest implements IndividualDecisionRequest
 {
@@ -39,7 +42,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 
 	/**
 	 * Creates empty request (no attribute)
-	 * 
+	 *
 	 * @param returnPolicyIdList
 	 *            equivalent of XACML ReturnPolicyIdList
 	 */
@@ -54,7 +57,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 
 	/**
 	 * Create new instance as a clone of an existing request.
-	 * 
+	 *
 	 * @param baseRequest
 	 *            replicated existing request. Further changes to it are not reflected back to this new instance.
 	 */
@@ -72,12 +75,12 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 
 	/**
 	 * Put attributes of a specific category in request.
-	 * 
+	 *
 	 * @param categoryName
 	 *            category URI
 	 * @param categorySpecificAttributes
 	 *            attributes in category {@code categoryName}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code categoryName} or {@code attributes} is null
 	 */
 	public void put(String categoryName, SingleCategoryAttributes<?> categorySpecificAttributes) throws IllegalArgumentException
@@ -117,6 +120,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * 
 	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getNamedAttributes()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public Map<AttributeGUID, Bag<?>> getNamedAttributes()
 	{
@@ -128,6 +132,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * 
 	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getAttributesIncludedInResult()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public List<Attributes> getReturnedAttributes()
 	{
@@ -139,15 +144,14 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * 
 	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getExtraContentsByCategory()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public Map<String, XdmNode> getExtraContentsByCategory()
 	{
 		return this.extraContentsByCategory;
 	}
 
-	/**
-	 * @return the returnApplicablePolicyIdList
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isApplicablePolicyIdentifiersReturned()
 	{

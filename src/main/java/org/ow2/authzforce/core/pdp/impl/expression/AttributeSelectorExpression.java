@@ -58,7 +58,7 @@ import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
  * specification, and this implementation is experimental (not to be used in production).
  * <p>
  * Reasons for using SAXON's native API (s9api) in XPath evaluation instead of standard Java APIs (e.g. JAXP):
- * 
+ *
  * <ol>
  * <li>Performance: See http://www.saxonica.com/documentation9.5/javadoc/net /sf/saxon/s9api/package-summary.html:
  * <p>
@@ -67,14 +67,16 @@ import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
  * performance of the application.</i>
  * </p>
  * </li>
- * 
+ *
  * <li>Functional: s9api provides XPATH 3.0 support, whereas standard Java APIs designed for XPATH 1.0 support only. See http://www.saxonica.com/html/documentation/conformance/jaxp.html. However, for
  * the moment, only XPath 1.0 and 2.0 are supported by this class. But we prepare for the future.</li>
  * </ol>
  * </p>
- * 
+ *
  * @param <AV>
  *            AttributeSelector evaluation results' primitive returnType
+ * @author cdangerv
+ * @version $Id: $
  */
 public class AttributeSelectorExpression<AV extends AttributeValue> extends AttributeSelectorType implements Expression<Bag<AV>>
 {
@@ -188,6 +190,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setDataType(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setDataType(String value)
 	{
@@ -200,6 +203,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setCategory(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setCategory(String value)
 	{
@@ -212,6 +216,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setAttributeId(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setContextSelectorId(String value)
 	{
@@ -224,6 +229,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setDataType(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setPath(String value)
 	{
@@ -236,6 +242,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * 
 	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isStatic()
 	{
@@ -245,7 +252,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 
 	/**
 	 * Creates instance from XACML model
-	 * 
+	 *
 	 * @param attrSelectorElement
 	 *            XACML AttributeSelector
 	 * @param xPathCompiler
@@ -254,9 +261,9 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 *            AttributeProvider for finding value of the attribute identified by ContextSelectorId in {@code attrSelectorElement}; may be null if ContextSelectorId not specified
 	 * @param attrFactory
 	 *            attribute factory to create the AttributeValue(s) from the XML node(s) resolved by XPath
-	 * @throws XPathExpressionException
+	 * @throws javax.xml.xpath.XPathExpressionException
 	 *             if the Path could not be compiled to an XPath expression (using <code>namespaceContextNode</code> if non-null)
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code attrSelectorElement}, {@code xpathCompiler} or {@code attrFactory} is null; or ContextSelectorId is not null but {@code attrProvider} is null
 	 */
 	public AttributeSelectorExpression(AttributeSelectorType attrSelectorElement, XPathCompiler xPathCompiler, AttributeProvider attrProvider, DatatypeFactory<AV> attrFactory)
@@ -322,9 +329,9 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Returns the data type of the attribute values that the evaluation of this selector will return
-	 * 
-	 * @return the data type of the values found by this selector
 	 */
 	@Override
 	public Datatype<Bag<AV>> getReturnType()
@@ -341,14 +348,11 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Invokes the <code>AttributeProvider</code> used by the given <code>EvaluationContext</code> to try to resolve an attribute value. If the selector is defined with MustBePresent as true, then
 	 * failure to find a matching value will result in Indeterminate, otherwise it will result in an empty bag. To support the com.thalesgroup.authzforce.core.test.basic selector functionality defined
 	 * in the XACML specification, use a Provider that has only the <code>SelectorModule</code> as a module that supports selector finding.
-	 * 
-	 * @param context
-	 *            representation of the request to search
-	 * 
-	 * @return a result containing a bag either empty because no values were found or containing at least one value, or status associated with an Indeterminate result
 	 */
 	@Override
 	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -513,6 +517,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{
@@ -528,12 +533,14 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 		return toString;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public JAXBElement<AttributeSelectorType> getJAXBElement()
 	{
 		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createAttributeSelector(this);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -545,6 +552,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{

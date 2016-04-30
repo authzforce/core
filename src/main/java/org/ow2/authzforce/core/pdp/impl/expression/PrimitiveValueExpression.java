@@ -23,33 +23,34 @@ import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
 import org.ow2.authzforce.core.pdp.api.ValueExpression;
 
 /**
- * 
- * Expression wrapper for primitive static values to be used as Expressions, e.g. as function arguments; 'static' here means the actual value does not depend on
- * the evaluation context; it evaluates to itself.
- * 
+ *
+ * Expression wrapper for primitive static values to be used as Expressions, e.g. as function arguments; 'static' here means the actual value does not depend on the evaluation context; it evaluates to
+ * itself.
+ *
  * @param <V>
  *            concrete value type
- *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class PrimitiveValueExpression<V extends AttributeValue> extends ValueExpression<V>
 {
 
 	/**
 	 * Creates instance
-	 * 
+	 *
 	 * @param type
 	 *            value datatype
 	 * @param v
 	 *            static value
 	 * @param isStatic
-	 *            true iff the expression based on this value always evaluates to the same constant in any context (not the case for xpathExpressions for
-	 *            instance)
+	 *            true iff the expression based on this value always evaluates to the same constant in any context (not the case for xpathExpressions for instance)
 	 */
 	public PrimitiveValueExpression(Datatype<V> type, V v, boolean isStatic)
 	{
 		super(type, v, isStatic);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public JAXBElement<AttributeValueType> getJAXBElement()
 	{

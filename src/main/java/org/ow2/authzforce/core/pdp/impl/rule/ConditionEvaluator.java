@@ -26,7 +26,9 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 
 /**
  * Evaluates a XACML ConditionEvaluator. It contains exactly one child expression that is boolean and returns a single value.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class ConditionEvaluator
 {
@@ -35,15 +37,14 @@ public class ConditionEvaluator
 
 	/**
 	 * Constructs a Condition evaluator
-	 * 
+	 *
 	 * @param condition
 	 *            Condition in JAXB model
 	 * @param expFactory
 	 *            expression factory
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
-	 * 
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if the expression is not a valid boolean expression
 	 */
 	public ConditionEvaluator(Condition condition, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -63,12 +64,11 @@ public class ConditionEvaluator
 
 	/**
 	 * Evaluates the <code>Condition</code> to boolean by evaluating its child boolean <code>Expression</code>.
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true if and only if condition is true, i.e. its expression evaluates to True
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if error evaluating the condition
 	 */
 	public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException

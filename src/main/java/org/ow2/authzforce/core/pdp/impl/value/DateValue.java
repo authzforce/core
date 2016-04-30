@@ -18,6 +18,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * Representation of an xs:date value. This class supports parsing xs:date values. All objects of this class are immutable and thread-safe.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DateValue extends BaseTimeValue<DateValue>
 {
@@ -28,10 +31,10 @@ public final class DateValue extends BaseTimeValue<DateValue>
 
 	/**
 	 * Creates a new <code>DateAttributeValue</code> from a string representation of date
-	 * 
+	 *
 	 * @param date
 	 *            string representation of date
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code date} is not a valid string representation of xs:date
 	 */
 	public DateValue(String date) throws IllegalArgumentException
@@ -54,13 +57,13 @@ public final class DateValue extends BaseTimeValue<DateValue>
 
 	/**
 	 * Creates a new <code>DateAttributeValue</code> from a Calendar
-	 * 
+	 *
 	 * @param calendar
 	 *            a <code>XMLGregorianCalendar</code> object representing the specified date; beware that this method modifies {@code calendar} by unsetting all
 	 *            time fields:
 	 *            {@code calendar.setTime(DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED, DatatypeConstants.FIELD_UNDEFINED)}
 	 * @return new instance
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code calendar == null}
 	 */
 	public static DateValue getInstance(XMLGregorianCalendar calendar) throws IllegalArgumentException
@@ -71,6 +74,7 @@ public final class DateValue extends BaseTimeValue<DateValue>
 		return new DateValue(calendar);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DateValue add(DurationValue<?> durationVal)
 	{
@@ -79,6 +83,7 @@ public final class DateValue extends BaseTimeValue<DateValue>
 		return new DateValue(cal);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DateValue subtract(DurationValue<?> durationVal)
 	{

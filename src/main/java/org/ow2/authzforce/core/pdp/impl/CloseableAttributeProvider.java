@@ -37,7 +37,9 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
  * The sub-modules may very likely hold resources such as network resources to get attributes remotely, or attribute caches to speed up finding, etc. Therefore,
  * you are required to call {@link #close()} when you no longer need an instance - especially before replacing with a new instance (with different modules) - in
  * order to make sure these resources are released properly by each underlying module (e.g. close the attribute caches).
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class CloseableAttributeProvider extends ModularAttributeProvider implements Closeable
 {
@@ -130,18 +132,17 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	/**
 	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the
 	 * requested attribute ID, if any.
-	 * 
+	 *
 	 * @param attributeFactory
 	 *            (mandatory) attribute value factory
-	 * 
 	 * @param jaxbAttributeProviderConfs
 	 *            (optional) XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static
 	 *            expression evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
 	 * @return instance of this class
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict
 	 *             with another one already registered to provide the same or part of the same attributes.
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an
 	 *             {@link IllegalArgumentException} is raised
 	 */
@@ -211,6 +212,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 		return new CloseableAttributeProvider(modulesByAttributeId, moduleCloserSet);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException
 	{

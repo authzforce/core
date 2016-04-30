@@ -48,11 +48,13 @@ import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
 /**
  * A class that implements all the primitive datatype conversion functions: double-to-integer, integer-to-double, *-from-string, *-to-string, etc. It takes one
  * argument of the appropriate type, converts that argument to the other type, and returns the result.
- * 
+ *
  * @param <PARAM_T>
  *            parameter/input type
  * @param <RETURN_T>
  *            return/output type
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DatatypeConversionFunction<PARAM_T extends AttributeValue, RETURN_T extends AttributeValue> extends
 		FirstOrderFunction.SingleParameterTyped<RETURN_T, PARAM_T>
@@ -260,6 +262,7 @@ public final class DatatypeConversionFunction<PARAM_T extends AttributeValue, RE
 		this.funcCallFactory = new CallFactory<>(functionSignature, converter);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<RETURN_T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

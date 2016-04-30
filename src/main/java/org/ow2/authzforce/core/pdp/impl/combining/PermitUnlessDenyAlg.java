@@ -29,7 +29,9 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
  * permit-unless-deny policy algorithm
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 {
@@ -76,6 +78,7 @@ public final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
 	{

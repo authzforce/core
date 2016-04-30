@@ -52,7 +52,9 @@ import com.sun.xacml.UnknownIdentifierException;
  * VariableDefinition does not exceed a value (to avoid inconveniences such as stackoverflow or very negative performance impact) defined by parameter to
  * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} parameter. Note that reference loops are avoided by the fact that a VariableReference can
  * reference only a VariableDefinition defined previously to the VariableReference in this implementation.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class ExpressionFactoryImpl implements ExpressionFactory
 {
@@ -87,7 +89,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * <li>A VariableDefinition V1 that uses a VariableReference to VariableDefinition V2 with no further VariableReference, has a reference depth of 1</li>
 	 * <li>etc.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param attributeFactory
 	 *            attribute value factory (not null)
 	 * @param functionRegistry
@@ -105,10 +107,10 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 *            As a result, be aware that if you use AttributeDesignators without Issuer ( {@code issuerRequiredInAttributeDesignators == false}) and the requests are using matching Attributes but
 	 *            with one or more different Issuers, this PDP engine has to gather all the values from all the attributes with matching Category/AttributeId but with any Issuer or no Issuer,
 	 *            resulting in lower performance.
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with another one already registered to
 	 *             provide the same or part of the same attributes.
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 */
 	public ExpressionFactoryImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVarRefDepth,
@@ -134,6 +136,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		this.issuerRequiredOnAttributeDesignators = issuerRequiredInAttributeDesignators;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public VariableReference<?> addVariable(VariableDefinition varDef, XPathCompiler xPathCompiler, Deque<String> inoutLongestVarRefChain) throws IllegalArgumentException
 	{
@@ -154,6 +157,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		return idToVariableMap.put(varId, var);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public VariableReference<?> removeVariable(String varId)
 	{
@@ -210,11 +214,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Create a function instance using the function registry passed as parameter to {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
-	 * 
-	 * @param functionId
-	 *            function ID (XACML URI)
-	 * @return function instance; or null if no such function with ID {@code functionId}
 	 */
 	@Override
 	public Function<?> getFunction(String functionId)
@@ -223,18 +225,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Create a function instance using the function registry passed as parameter to {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
-	 * 
-	 * @param functionId
-	 *            function ID (XACML URI)
-	 * @param subFunctionReturnType
-	 *            optional sub-function's return type required only if a generic higher-order function is expected as the result, of which the sub-function is expected to be the first parameter;
-	 *            otherwise null (for first-order function). A generic higher-order function is a function whose return type depends on the sub-function ('s return type).
-	 * @return function instance; or null if no such function with ID {@code functionId}, or if non-null {@code subFunctionReturnTypeId} specified and no higher-order function compatible with
-	 *         sub-function's return type {@code subFunctionReturnTypeId}
-	 * @throws IllegalArgumentException
-	 *             if datatype {@code subFunctionReturnType} is not supported/known
-	 * 
 	 */
 	@Override
 	public Function<?> getFunction(String functionId, Datatype<?> subFunctionReturnType) throws IllegalArgumentException
@@ -259,6 +252,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * @see com.thalesgroup.authzforce.core.eval.ExpressionFactory#getInstance(oasis. names.tc.xacml._3_0 .core.schema.wd_17.ExpressionType, oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType,
 	 * java.util.List)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws IllegalArgumentException
 	{
@@ -355,12 +349,14 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	 * 
 	 * @see com.thalesgroup.authzforce.core.eval.ExpressionFactory# createAttributeValueExpression(oasis .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public ValueExpression<? extends AttributeValue> getInstance(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		return this.datatypeFactoryRegistry.createValueExpression(jaxbAttrVal, xPathCompiler);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException
 	{

@@ -29,11 +29,13 @@ import org.ow2.authzforce.core.pdp.impl.expression.BaseVariableReference;
 
 /**
  * Higher-order bag function
- * 
+ *
  * @param <RETURN_T>
  *            return type
  * @param <SUB_RETURN_PRIMITIVE_T>
  *            sub-function's return (primitive) type. Only functions returning primitive type of result are compatible with higher-order functions here.
+ * @author cdangerv
+ * @version $Id: $
  */
 public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_PRIMITIVE_T extends AttributeValue> extends BaseFunction<RETURN_T>
 {
@@ -60,9 +62,9 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Returns the type of attribute value that will be returned by this function.
-	 * 
-	 * @return the return type
 	 */
 	@Override
 	public Datatype<RETURN_T> getReturnType()
@@ -72,7 +74,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 
 	/**
 	 * Creates function call from sub-function definition and all inputs to higher-order function. To be overriden by OneBagOnlyFunctions (any-of/all-of)
-	 * 
+	 *
 	 * @param subFunc
 	 *            first-order sub-function
 	 * @param inputsAfterSubFunc
@@ -81,6 +83,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 	 */
 	protected abstract FunctionCall<RETURN_T> createFunctionCallFromSubFunction(FirstOrderFunction<SUB_RETURN_PRIMITIVE_T> subFunc, List<Expression<?>> inputsAfterSubFunc);
 
+	/** {@inheritDoc} */
 	@Override
 	public final FunctionCall<RETURN_T> newCall(List<Expression<?>> inputs) throws IllegalArgumentException
 	{
@@ -141,5 +144,10 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 		return createFunctionCallFromSubFunction(subFunc, inputs.subList(1, numInputs));
 	}
 
+	/**
+	 * <p>checkNumberOfArgs</p>
+	 *
+	 * @param numInputs a int.
+	 */
 	protected abstract void checkNumberOfArgs(int numInputs);
 }

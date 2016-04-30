@@ -26,7 +26,9 @@ import org.ow2.authzforce.core.pdp.api.Decidable;
  * This is the standard Deny-Overrides and Ordered-Deny-Overrides combining algorithm. It allows a single evaluation of Deny to take precedence over any number
  * of permit, not applicable or indeterminate results. Note that since this implementation does an ordered evaluation, this class also supports the
  * Ordered-Deny-Overrides algorithm.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
 {
@@ -63,6 +65,7 @@ public final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		this.unsupportedLegacyAlgorithmException = new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
 	{

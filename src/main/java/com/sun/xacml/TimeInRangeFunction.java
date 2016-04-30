@@ -45,9 +45,10 @@ import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
  * <p>
  * Note that this function allows any time ranges less than 24 hours. In other words, it is not bound by normal day boundries (midnight GMT), but by the minimum time in the range. This means that
  * ranges like 9am-5pm are supported, as are ranges like 5pm-9am.
- * 
+ *
  * @since 2.0
  * @author seth proctor
+ * @version $Id: $
  */
 public final class TimeInRangeFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, TimeValue>
 {
@@ -193,6 +194,7 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

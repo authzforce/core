@@ -26,7 +26,9 @@ import org.ow2.authzforce.core.pdp.api.Decidable;
  * This implements the standard Permit-Overrides and Ordered-Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take
  * precedence over any number of deny, not applicable or indeterminate results. Note that since this implementation does an ordered evaluation, this class also
  * supports the Ordered Permit Overrides algorithm.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class LegacyPermitOverridesAlg extends BaseCombiningAlg<Decidable>
 {
@@ -63,6 +65,7 @@ public final class LegacyPermitOverridesAlg extends BaseCombiningAlg<Decidable>
 		this.unsupportedLegacyAlgorithmException = new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> parameters, List<? extends Decidable> combinedElements)
 	{

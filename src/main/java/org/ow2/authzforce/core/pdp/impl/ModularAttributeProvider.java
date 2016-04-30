@@ -36,6 +36,9 @@ import org.slf4j.LoggerFactory;
 /**
  * AttributeProvider working with sub-modules, each responsible of finding specific attributes in a specific way from a specific source. This attribute Provider
  * tries to resolve attribute values in current evaluation context first, then if not there, query the sub-modules.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class ModularAttributeProvider implements AttributeProvider
 {
@@ -60,7 +63,7 @@ public class ModularAttributeProvider implements AttributeProvider
 	/**
 	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query sub-modules providing the requested
 	 * attribute ID, if any.
-	 * 
+	 *
 	 * @param attributeProviderModulesByAttributeId
 	 *            attribute Provider modules sorted by supported attribute ID; may be null if none
 	 * @param selectedAttributeSupport
@@ -96,6 +99,7 @@ public class ModularAttributeProvider implements AttributeProvider
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final <AV extends AttributeValue> Bag<AV> get(AttributeGUID attributeGUID, Datatype<AV> attributeDatatype, EvaluationContext context)
 			throws IndeterminateEvaluationException

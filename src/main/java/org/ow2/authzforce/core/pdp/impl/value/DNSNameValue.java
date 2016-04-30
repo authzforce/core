@@ -23,7 +23,9 @@ import com.sun.xacml.PortRange;
 
 /**
  * Represents the DNSName datatype introduced in XACML 2.0.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DNSNameValue extends SimpleValue<String>
 {
@@ -110,10 +112,10 @@ public final class DNSNameValue extends SimpleValue<String>
 
 	/**
 	 * Returns a new <code>DNSNameAttributeValue</code> that represents the name indicated by the <code>String</code> provided.
-	 * 
+	 *
 	 * @param val
 	 *            a string representing the name
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if format of {@code val} does not comply with the dnsName datatype definition
 	 */
 	public DNSNameValue(String val) throws IllegalArgumentException
@@ -159,6 +161,7 @@ public final class DNSNameValue extends SimpleValue<String>
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -179,6 +182,7 @@ public final class DNSNameValue extends SimpleValue<String>
 	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange
 	 * attribute (more optimal than String equals)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -202,6 +206,7 @@ public final class DNSNameValue extends SimpleValue<String>
 		return hostname.equalsIgnoreCase(other.hostname) && portRange.equals(other.portRange);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

@@ -34,6 +34,9 @@ import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
 
 /**
  * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding attribute values in the request context.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class MatchEvaluator
 {
@@ -47,14 +50,14 @@ public class MatchEvaluator
 
 	/**
 	 * Instantiates Match evaluator from XACML-Schema-derived JAXB Match
-	 * 
+	 *
 	 * @param jaxbMatch
 	 *            XACML-Schema-derived JAXB Match
 	 * @param expFactory
 	 *            bagExpression factory
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             invalid <code>jaxbMatch</code>
 	 */
 	public MatchEvaluator(Match jaxbMatch, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -104,12 +107,11 @@ public class MatchEvaluator
 
 	/**
 	 * Determines whether this <code>Match</code> matches the input request (whether it is applicable)
-	 * 
+	 *
 	 * @param context
 	 *            the evaluation context
-	 * 
 	 * @return true iff the context matches
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error occurred evaluating the Match element in this evaluation {@code context}
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException

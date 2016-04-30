@@ -35,7 +35,9 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
  * From XACML core specification of function 'urn:oasis:names:tc:xacml:1.0:function:and': This function SHALL return "True" if it has no arguments and SHALL
  * return "False" if one of its arguments evaluates to "False". The order of evaluation SHALL be from first argument to last. The evaluation SHALL stop with a
  * result of "False" if any argument evaluates to "False", leaving the rest of the arguments unevaluated.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class LogicalAndFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, BooleanValue>
 {
@@ -170,6 +172,7 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 	 * 
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException
