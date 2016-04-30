@@ -31,6 +31,9 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to
  * take precedence over any number of deny, not applicable or indeterminate results. Note that since this implementation
  * does an ordered evaluation, this class also supports the Ordered-Permit-Overrides algorithm.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 {
@@ -156,6 +159,7 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params,
 			List<? extends Decidable> combinedElements)

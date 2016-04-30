@@ -32,6 +32,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Evaluates a XACML Rule to a Decision.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class RuleEvaluator implements Decidable
 {
@@ -48,14 +51,14 @@ public class RuleEvaluator implements Decidable
 
 	/**
 	 * Instantiates rule from XACML RuleType
-	 * 
+	 *
 	 * @param ruleElt
 	 *            Rule element definition
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expressionFactory
 	 *            Expression parser/factory
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid Target, Condition or Obligation/Advice expressions
 	 */
 	public RuleEvaluator(Rule ruleElt, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory) throws IllegalArgumentException
@@ -105,7 +108,7 @@ public class RuleEvaluator implements Decidable
 
 	/**
 	 * Get evaluated rule ID
-	 * 
+	 *
 	 * @return evaluated rule ID
 	 */
 	public String getRuleId()
@@ -114,17 +117,14 @@ public class RuleEvaluator implements Decidable
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to evaluate the condition. If the target and condition apply, then the rule's effect is
 	 * returned in the result.
 	 * <p>
 	 * Note that rules are not required to have targets. If no target is specified, then the rule inherits its parent's target. In the event that this <code>RuleEvaluator</code> has no
 	 * <code>Target</code> then the match is assumed to be true, since evaluating a policy tree to this level required the parent's target to match. In debug level, this method logs the evaluation
 	 * result before return. Indeterminate results are logged in warn level only (which "includes" debug level).
-	 * 
-	 * @param context
-	 *            the representation of the request we're evaluating
-	 * 
-	 * @return the result of the evaluation
 	 */
 	@Override
 	public DecisionResult evaluate(EvaluationContext context)
@@ -244,6 +244,7 @@ public class RuleEvaluator implements Decidable
 		return result;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{

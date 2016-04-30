@@ -38,7 +38,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * XACML AttributeAssignmentExpression evaluator
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentExpression
 {
@@ -54,6 +56,7 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression#getExpression()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final JAXBElement<? extends ExpressionType> getExpression()
 	{
@@ -65,6 +68,7 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression#setExpression(javax .xml.bind.JAXBElement)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setExpression(JAXBElement<? extends ExpressionType> value)
 	{
@@ -74,14 +78,14 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	/**
 	 * Instantiates evaluatable AttributeAssignment expression from XACML-Schema-derived JAXB
 	 * {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
-	 * 
+	 *
 	 * @param jaxbAttrAssignExp
 	 *            XACML-schema-derived JAXB AttributeAssignmentExpression
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            expression factory for parsing the AttributeAssignmentExpression's expression
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             invalid AttributeAssignmentExpression's Expression
 	 */
 	public AttributeAssignmentExpressionEvaluator(AttributeAssignmentExpression jaxbAttrAssignExp, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
@@ -105,11 +109,11 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	 * value, then there MUST be one resulting AttributeAssignment which MUST contain this single attribute value. If the AttributeAssignmentExpression
 	 * evaluates to a bag, then there MUST be a resulting AttributeAssignment for each of the values in the bag. If the bag is empty, there shall be no
 	 * AttributeAssignment from this AttributeAssignmentExpression
-	 * 
+	 *
 	 * @param context
 	 *            evaluation context
 	 * @return non-null AttributeAssignments; empty if no AttributeValue resulting from evaluation of the Expression
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if evaluation of the Expression in this context fails (Indeterminate)
 	 */
 	public List<AttributeAssignment> evaluate(EvaluationContext context) throws IndeterminateEvaluationException

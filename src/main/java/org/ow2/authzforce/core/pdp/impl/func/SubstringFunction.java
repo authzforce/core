@@ -34,10 +34,11 @@ import org.ow2.authzforce.core.pdp.impl.value.StringValue;
 
 /**
  * Implements *-substring functions
- * 
+ *
  * @param <AV>
  *            parameter type
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class SubstringFunction<AV extends SimpleValue<String>> extends FirstOrderFunction.MultiParameterTyped<StringValue>
 {
@@ -145,6 +146,7 @@ public final class SubstringFunction<AV extends SimpleValue<String>> extends Fir
 	 * 
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<StringValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{

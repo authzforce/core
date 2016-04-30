@@ -37,12 +37,13 @@ import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
- * 
+ *
  * @param <T>
  *            type of first parameter and returned value (date/time)
  * @param <D>
  *            type of second parameter (duration)
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends FirstOrderFunction.MultiParameterTyped<T>
 {
@@ -148,6 +149,7 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 		this.op = op;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

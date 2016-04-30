@@ -42,11 +42,19 @@ import org.ow2.authzforce.core.pdp.api.XMLUtils.XPathEvaluator;
  * <p>
  * WARNING: this class is not optimized for request-time evaluation but for policy initialization-time. Therefore, its use is not recommended for evaluating xpathExpressions in XACML Request. We
  * consider it not useful in the latter case, as the Requester (PEP) could evaluate the xpathExpressions in the first place, and does not need the PDP to do it.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class XPathValue extends SimpleValue<String>
 {
 	/**
-	 * QName of XPathCategory attribute in xpathExpression. This is allowed by XACML schema as part of:
+	 * XML attribute local name that indicate the XACML attribute category of the Content to which the xpathExpression is applied: {@value} .
+	 */
+	public static final String XPATH_CATEGORY_ATTRIBUTE_LOCALNAME = "XPathCategory";
+
+	/**
+	 * QName of XPathCategory attribute in xpathExpression, using {@value #XPATH_CATEGORY_ATTRIBUTE_LOCALNAME} as local name. This is allowed by XACML schema as part of:
 	 * 
 	 * <pre>
 	 * {@code
@@ -57,7 +65,7 @@ public final class XPathValue extends SimpleValue<String>
 	 * ... therefore namespace returned by JAXB is empty "". More info: https://jaxb.java.net/tutorial/section_6_2_7_5 -Collecting-Unspecified-Attributes-XmlAnyAttribute
 	 * .html#Collecting%20Unspecified%20Attributes:%20XmlAnyAttribute
 	 */
-	public static final QName XPATH_CATEGORY_ATTRIBUTE_QNAME = new QName("", "XPathCategory");
+	public static final QName XPATH_CATEGORY_ATTRIBUTE_QNAME = new QName("", XPATH_CATEGORY_ATTRIBUTE_LOCALNAME);
 
 	private final String xpathCategory;
 
@@ -80,14 +88,14 @@ public final class XPathValue extends SimpleValue<String>
 
 	/**
 	 * Instantiates from XPath expression.
-	 * 
+	 *
 	 * @param xpath
 	 *            XPath
 	 * @param otherXmlAttributes
-	 *            other XML attributes on the xpathExpression AttributeValue node, one of which is expected to be the {@value #XPATH_CATEGORY_ATTRIBUTE_QNAME }
+	 *            other XML attributes on the xpathExpression AttributeValue node, one of which is expected to be the attribute {@value #XPATH_CATEGORY_ATTRIBUTE_LOCALNAME}
 	 * @param xPathCompiler
 	 *            XPath compiler for compiling/evaluating {@code xpath}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code value} is not a valid string representation for this value datatype
 	 */
 	public XPathValue(String xpath, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException
@@ -123,11 +131,11 @@ public final class XPathValue extends SimpleValue<String>
 	 * Convenient method to get the XML nodes ("node-set") matching the XPath expression from the Content node of the XACML Attributes element with category <i>XPathCategory</i> in this
 	 * {@code context}. <i>XPathCategory</i> is extracted from the attribute of the same name in {@code otherXmlAttributes} argument passed to {@link #XPathValue(String, Map, XPathCompiler)} when
 	 * creating this instance. To be used by XPath-based functions defined in section A.3.15 of XACML 3.0 Core specification.
-	 * 
+	 *
 	 * @param context
 	 *            current evaluation context
 	 * @return node-set
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error evaluating the XPath expression
 	 */
 	public XdmValue evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -160,6 +168,7 @@ public final class XPathValue extends SimpleValue<String>
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -177,6 +186,7 @@ public final class XPathValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -195,6 +205,7 @@ public final class XPathValue extends SimpleValue<String>
 		return this.xpathCategory.equals(other.xpathCategory) && this.value.equals(other.value);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

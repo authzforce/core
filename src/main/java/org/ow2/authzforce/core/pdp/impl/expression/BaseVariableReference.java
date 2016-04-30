@@ -30,9 +30,11 @@ import org.ow2.authzforce.core.pdp.api.VariableReference;
 /**
  * This class defines a VariableReference built from VariableReference after the referenced VariableDefinition has been resolved and therefore its expression.
  * As a result, Variables are simply Expressions identified by an ID (VariableId) and replace original XACML VariableReferences for actual evaluation.
- * 
+ *
  * @param <V>
  *            evaluation's return type
+ * @author cdangerv
+ * @version $Id: $
  */
 public class BaseVariableReference<V extends Value> implements VariableReference<V>
 {
@@ -43,6 +45,7 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 	 * 
 	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isStatic()
 	{
@@ -54,6 +57,7 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 	 * 
 	 * @see org.ow2.authzforce.core.pdp.impl.expression.VariableReference#getReferencedExpression()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public Expression<?> getReferencedExpression()
 	{
@@ -66,7 +70,7 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 
 	/**
 	 * Constructor that takes a variable identifier
-	 * 
+	 *
 	 * @param varId
 	 *            input VariableReference from XACML model
 	 * @param varExpr
@@ -83,13 +87,10 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable
 	 * expression (eg, a single Function) then this will throw an exception.
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return the result of evaluation
 	 */
 	@Override
 	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -116,10 +117,9 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Returns the type of the referenced expression.
-	 * 
-	 * @return the attribute return type of the referenced expression
-	 * 
 	 */
 	@Override
 	public Datatype<V> getReturnType()
@@ -127,6 +127,7 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 		return expression.getReturnType();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String getVariableId()
 	{
@@ -134,6 +135,8 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 	}
 
 	/**
+	 * <p>Getter for the field <code>longestVariableReferenceChain</code>.</p>
+	 *
 	 * @return the longestVariableReferenceChain
 	 */
 	public Deque<String> getLongestVariableReferenceChain()
@@ -141,6 +144,7 @@ public class BaseVariableReference<V extends Value> implements VariableReference
 		return longestVariableReferenceChain;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public JAXBElement<VariableReferenceType> getJAXBElement()
 	{

@@ -31,7 +31,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * AnyOf evaluator
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class AnyOfEvaluator
 {
@@ -45,15 +47,14 @@ public class AnyOfEvaluator
 
 	/**
 	 * Constructor that creates a new <code>AnyOf</code> evaluator based on the given XACML-schema-derived JAXB AnyOf.
-	 * 
+	 *
 	 * @param jaxbAnyOf
 	 *            JAXB AnyOf
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
-	 * 
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if one of the child AllOf elements is invalid
 	 */
 	public AnyOfEvaluator(AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -85,20 +86,19 @@ public class AnyOfEvaluator
 	/**
 	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is applicable). If all the AllOf values is No_Match so it's a No_Match.
 	 * If all matches it's a Match. If None matches and at least one “Indeterminate�? it's Indeterminate
-	 * 
+	 *
 	 * <pre>
-	 * 		AllOf values 						AnyOf value 
-	 * 		At Least one "Match"	 			“Match�? 
-	 * 		None matches and 
+	 * 		AllOf values 						AnyOf value
+	 * 		At Least one "Match"	 			“Match�?
+	 * 		None matches and
 	 * 		at least one Indeterminate 			“Indeterminate�?
 	 * 		All "No Match"						"No Match"
 	 * </pre>
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true if and only if Match (else No-match)
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if Indeterminate
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException

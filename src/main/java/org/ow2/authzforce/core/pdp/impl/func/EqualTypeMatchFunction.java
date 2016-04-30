@@ -47,9 +47,11 @@ import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
 
 /**
  * Implements generic match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates and special match function x500Name-match
- * 
+ *
  * @param <PARAM>
  *            type of compared parameters
+ * @author cdangerv
+ * @version $Id: $
  */
 public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstOrderFunction.SingleParameterTyped<BooleanValue, PARAM>
 {
@@ -235,6 +237,7 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 	 * 
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{

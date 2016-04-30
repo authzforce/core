@@ -18,7 +18,9 @@ import javax.xml.bind.DatatypeConverter;
 /**
  * Representation of an xs:boolean value. This class supports parsing xs:boolean values. All objects of this class are immutable and all methods of the class are thread-safe. The choice of the Java
  * type boolean is based on JAXB schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class BooleanValue extends SimpleValue<Boolean>
 {
@@ -44,11 +46,11 @@ public final class BooleanValue extends SimpleValue<Boolean>
 	 * is meant to replace {@link DatatypeConverter#parseBoolean(String)} which is flawed and does not comply with XSD definition of boolean type as of now (JDK7/8). See
 	 * https://java.net/jira/browse/JAXB-901, and https://java.net/jira/browse/JAXB-902. E.g. DatatypeConverter.parseBoolean("not") throws NullPointerException instead of IllegalArgumentException as
 	 * expected according to javadoc.
-	 * 
+	 *
 	 * @param s
 	 *            XSD-compliant string representation of boolean
 	 * @return boolean value corresponding to {@code s}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if string parameter does not conform to lexical value space defined in XML Schema Part 2: Datatypes for xsd:boolean.
 	 */
 	public static BooleanValue getInstance(String s) throws IllegalArgumentException
@@ -107,7 +109,7 @@ public final class BooleanValue extends SimpleValue<Boolean>
 
 	/**
 	 * Get BooleanAttributeValue.TRUE (resp. FALSE) instance if <code>b</code> (resp. if ! <code>b</code>)
-	 * 
+	 *
 	 * @param b
 	 *            boolean input
 	 * @return instance
@@ -119,7 +121,7 @@ public final class BooleanValue extends SimpleValue<Boolean>
 
 	/**
 	 * not(this)
-	 * 
+	 *
 	 * @return <code>!value</code>
 	 */
 	public BooleanValue not()
@@ -132,12 +134,14 @@ public final class BooleanValue extends SimpleValue<Boolean>
 	// System.out.println(fromString("not"));
 	// }
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -163,6 +167,7 @@ public final class BooleanValue extends SimpleValue<Boolean>
 		return value == other.value.booleanValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

@@ -20,6 +20,9 @@ import javax.xml.bind.DatatypeConverter;
 /**
  * Representation of an xs:double value. This class supports parsing xs:double values. All objects of this class are immutable and all methods of the class are thread-safe. The choice of the Java type
  * Double is based on JAXB schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DoubleValue extends NumericValue<Double, DoubleValue> implements Comparable<DoubleValue>
 {
@@ -35,7 +38,7 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 
 	/**
 	 * Creates a new <code>DoubleAttributeValue</code> that represents the double value supplied.
-	 * 
+	 *
 	 * @param value
 	 *            the <code>double</code> value to be represented
 	 */
@@ -46,10 +49,10 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 
 	/**
 	 * Creates instance from lexical representation of xs:double
-	 * 
+	 *
 	 * @param val
 	 *            String representation of a xsd:double
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code val} is not a valid string representation of xs:double
 	 */
 	public DoubleValue(String val) throws IllegalArgumentException
@@ -57,18 +60,21 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 		this(DatatypeConverter.parseDouble(val));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int compareTo(DoubleValue o)
 	{
 		return this.value.compareTo(o.value);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DoubleValue abs()
 	{
 		return new DoubleValue(Math.abs(this.value));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DoubleValue add(Deque<DoubleValue> others)
 	{
@@ -82,6 +88,7 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 		return new DoubleValue(sum);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DoubleValue multiply(Deque<DoubleValue> others)
 	{
@@ -96,6 +103,7 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 
 	private static final ArithmeticException ILLEGAL_DIV_BY_ZERO_EXCEPTION = new ArithmeticException("Illegal division by zero");
 
+	/** {@inheritDoc} */
 	@Override
 	public DoubleValue divide(DoubleValue divisor) throws ArithmeticException
 	{
@@ -116,9 +124,10 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 	}
 
 	/**
+	 * <p>floor</p>
+	 *
 	 * @see Math#floor(double)
 	 * @return result of Math#floor(double) as AttributeValue
-	 * 
 	 */
 	public DoubleValue floor()
 	{
@@ -128,9 +137,8 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 	/**
 	 * Rounds the double using default IEEE754 rounding mode . According to XACML core spec, §7.5 Arithmetic evaluation, "rounding - is set to round-half-even (IEEE 854 §4.1)" (
 	 * {@link java.math.RoundingMode#HALF_EVEN}). This method uses {@link Math#rint(double)} that does the equivalent of the {@link java.math.RoundingMode#HALF_EVEN}.
-	 * 
+	 *
 	 * @return result of Math#rint(double) as AttributeValue
-	 * 
 	 */
 	public DoubleValue roundIEEE754Default()
 	{
@@ -155,6 +163,7 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 	// System.out.println(DatatypeConverter.printDouble(inf));
 	// }
 
+	/** {@inheritDoc} */
 	@Override
 	public DoubleValue subtract(DoubleValue subtractedVal)
 	{
@@ -163,7 +172,7 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 
 	/**
 	 * Converts this double value to a long, as specified by {@link Double#longValue()}
-	 * 
+	 *
 	 * @return <code>this</code> as an integer
 	 */
 	public long longValue()
@@ -171,6 +180,7 @@ public final class DoubleValue extends NumericValue<Double, DoubleValue> impleme
 		return value.longValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

@@ -18,7 +18,9 @@ import javax.naming.ldap.LdapName;
 
 /**
  * Representation of an X.500 Directory Name.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class X500NameValue extends SimpleValue<String>
 {
@@ -31,10 +33,10 @@ public final class X500NameValue extends SimpleValue<String>
 
 	/**
 	 * Returns a new <code>X500NameAttributeValue</code> that represents the X500 Name value indicated by the string provided.
-	 * 
+	 *
 	 * @param value
 	 *            a string representing the desired value
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if value is not a valid XACML X500Name
 	 */
 	public X500NameValue(String value) throws IllegalArgumentException
@@ -51,7 +53,7 @@ public final class X500NameValue extends SimpleValue<String>
 
 	/**
 	 * Implements XACML function 'urn:oasis:names:tc:xacml:1.0:function:x500Name-match' with this as first argument.
-	 * 
+	 *
 	 * @param other
 	 *            the second argument
 	 * @return true if and only if this matches some terminal sequence of RDNs from the <code>other</other>'s value when compared using x500Name-equal.
@@ -69,6 +71,7 @@ public final class X500NameValue extends SimpleValue<String>
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -80,6 +83,7 @@ public final class X500NameValue extends SimpleValue<String>
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -101,6 +105,7 @@ public final class X500NameValue extends SimpleValue<String>
 		return ldapName.equals(other.ldapName);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

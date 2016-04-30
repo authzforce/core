@@ -38,7 +38,9 @@ import org.slf4j.LoggerFactory;
 /**
  * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple
  * Decision Profile spec for more information on Individual Decision Request as opposed to Multiple Decision Request).
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class IndividualDecisionRequestContext implements EvaluationContext
 {
@@ -72,7 +74,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	/**
 	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation
 	 * against Content element in Attributes
-	 * 
+	 *
 	 * @param namedAttributeMap
 	 *            mutable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on
 	 *            attribute category,issuer,id. An attribute value is a bag of primitive values.
@@ -80,7 +82,6 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
-	 * 
 	 */
 	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> namedAttributeMap, Map<String, XdmNode> extraContentsByAttributeCategory,
 			boolean returnApplicablePolicyIdList)
@@ -93,7 +94,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	/**
 	 * Creates evaluation context from Individual Decision Request
-	 * 
+	 *
 	 * @param individualDecisionReq
 	 *            individual decision request
 	 */
@@ -103,6 +104,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 				.isApplicablePolicyIdentifiersReturned());
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public <AV extends AttributeValue> Bag<AV> getAttributeDesignatorResult(AttributeGUID attributeGUID, Datatype<AV> attributeDatatype)
 			throws IndeterminateEvaluationException
@@ -134,6 +136,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return (Bag<AV>) bagResult;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean putAttributeDesignatorResultIfAbsent(AttributeGUID attributeGUID, Bag<?> result)
 	{
@@ -154,12 +157,14 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return namedAttributes.put(attributeGUID, result) == null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public XdmNode getAttributesContent(String category)
 	{
 		return extraContentsByAttributeCategory == null ? null : extraContentsByAttributeCategory.get(category);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public <V extends Value> V getVariableValue(String variableId, Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
 	{
@@ -179,6 +184,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean putVariableIfAbsent(String variableId, Value value)
 	{
@@ -191,12 +197,14 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return varValsById.put(variableId, value) == null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Value removeVariable(String variableId)
 	{
 		return varValsById.remove(variableId);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(AttributeSelectorId id, Datatype<AV> datatype)
 			throws IndeterminateEvaluationException
@@ -233,6 +241,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return (Bag<AV>) bagResult;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean putAttributeSelectorResultIfAbsent(AttributeSelectorId id, Bag<?> result) throws IndeterminateEvaluationException
 	{
@@ -250,30 +259,35 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return attributeSelectorResults.put(id, result) == null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Object getOther(String key)
 	{
 		return updatableProperties.get(key);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean containsKey(String key)
 	{
 		return updatableProperties.containsKey(key);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void putOther(String key, Object val)
 	{
 		updatableProperties.put(key, val);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Object remove(String key)
 	{
 		return updatableProperties.remove(key);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Iterator<Entry<AttributeGUID, Bag<?>>> getAttributes()
 	{
@@ -281,6 +295,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return immutableAttributeSet.iterator();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isApplicablePolicyIdListReturned()
 	{

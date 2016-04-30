@@ -49,7 +49,9 @@ import org.springframework.util.ResourceUtils;
 
 /**
  * XML-based PDP Configuration parser
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class PdpConfigurationParser
 {
@@ -58,7 +60,7 @@ public class PdpConfigurationParser
 
 	/**
 	 * Create PDP instance.
-	 * 
+	 *
 	 * @param confLocation
 	 *            location of PDP configuration XML file, compliant with the PDP
 	 *            XML schema (pdp.xsd). This location may be any resource string
@@ -68,12 +70,10 @@ public class PdpConfigurationParser
 	 *            http://docs.spring.io/spring/docs/current/spring-framework-
 	 *            reference/html/resources.html
 	 * @return PDP instance
-	 * 
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
-	 * 
 	 */
 	public static PDPImpl getPDP(String confLocation) throws IOException, IllegalArgumentException
 	{
@@ -85,14 +85,13 @@ public class PdpConfigurationParser
 	 * by Spring ResourceLoader. More info:
 	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html
 	 * /resources.html
-	 * 
+	 *
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd,
 	 * http://myserver/ccc.xsd...
-	 * 
+	 *
 	 * @param confLocation
 	 *            location of PDP configuration XML file, compliant with the PDP
 	 *            XML schema (pdp.xsd)
-	 * 
 	 * @param extensionXsdLocation
 	 *            location of user-defined extension XSD (may be null if no
 	 *            extension to load), if exists; in such XSD, there must be a
@@ -100,25 +99,25 @@ public class PdpConfigurationParser
 	 *            attribute value must be
 	 *            ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}.
 	 *            xsd, for example:
-	 * 
+	 *
 	 *            <pre>
 	 * {@literal
-	 * 		  <?xml version="1.0" encoding="UTF-8"?> 
+	 * 		  <?xml version="1.0" encoding="UTF-8"?>
 	 * 		  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	 *            targetNamespace="http://thalesgroup.com/authzforce/model/3.0"
 	 *            xmlns:tns="http://thalesgroup.com/authzforce/model/3.0"
 	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
-	 * 
+	 *
 	 *            <xs:import
 	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest"
 	 *            schemaLocation=
 	 *            "com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeProvider.xsd"
 	 *            />
-	 * 
+	 *
 	 *            </xs:schema>
 	 * 			}
 	 *            </pre>
-	 * 
+	 *
 	 *            In this example,
 	 *            'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest
 	 *            .RESTfulAttributeFinde r ' is the JAXB-annotated class bound
@@ -127,17 +126,15 @@ public class PdpConfigurationParser
 	 *            'AbstractAttributeProvider' (that extends
 	 *            'AbstractPdpExtension' like all other extension base types) in
 	 *            this case.
-	 * 
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the
 	 *            pdp.xsd (PDP configuration schema) and the extension XSD
 	 *            specified as 'extensionXsdLocation' argument (may be null)
 	 * @return PDP instance
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
-	 * 
 	 */
 	public static PDPImpl getPDP(String confLocation, String catalogLocation, String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
@@ -149,14 +146,13 @@ public class PdpConfigurationParser
 	 * by Spring ResourceLoader. More info:
 	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html
 	 * /resources.html
-	 * 
+	 *
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd,
 	 * http://myserver/ccc.xsd...
-	 * 
+	 *
 	 * @param confFile
 	 *            PDP configuration XML file, compliant with the PDP XML schema
 	 *            (pdp.xsd)
-	 * 
 	 * @param extensionXsdLocation
 	 *            location of user-defined extension XSD (may be null if no
 	 *            extension to load), if exists; in such XSD, there must be a
@@ -164,25 +160,25 @@ public class PdpConfigurationParser
 	 *            attribute value must be
 	 *            ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}.
 	 *            xsd, for example:
-	 * 
+	 *
 	 *            <pre>
 	 * {@literal
-	 * 		  <?xml version="1.0" encoding="UTF-8"?> 
+	 * 		  <?xml version="1.0" encoding="UTF-8"?>
 	 * 		  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	 *            targetNamespace="http://thalesgroup.com/authzforce/model/3.0"
 	 *            xmlns:tns="http://thalesgroup.com/authzforce/model/3.0"
 	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
-	 * 
+	 *
 	 *            <xs:import
 	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest"
 	 *            schemaLocation=
 	 *            "com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeProvider.xsd"
 	 *            />
-	 * 
+	 *
 	 *            </xs:schema>
 	 * 			}
 	 *            </pre>
-	 * 
+	 *
 	 *            In this example,
 	 *            'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest
 	 *            .RESTfulAttributeFinde r ' is the JAXB-annotated class bound
@@ -191,17 +187,15 @@ public class PdpConfigurationParser
 	 *            'AbstractAttributeProvider' (that extends
 	 *            'AbstractPdpExtension' like all other extension base types) in
 	 *            this case.
-	 * 
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the
 	 *            pdp.xsd (PDP configuration schema) and the extension XSD
 	 *            specified as 'extensionXsdLocation' argument (may be null)
 	 * @return PDP instance
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
-	 * 
 	 */
 	public static PDPImpl getPDP(File confFile, String catalogLocation, String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
@@ -222,15 +216,15 @@ public class PdpConfigurationParser
 	 * 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced
 	 * by 'file:///path/to'. If confLocation is not a file on the filesystem,
 	 * then ${PARENT_DIR} is undefined.
-	 * 
+	 *
 	 * @param confLocation
 	 *            location of PDP configuration file
 	 * @param modelHandler
 	 *            PDP configuration model handler
 	 * @return PDP instance
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
 	public static PDPImpl getPDP(String confLocation, PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
@@ -258,15 +252,15 @@ public class PdpConfigurationParser
 	 * 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced
 	 * by 'file:///path/to'. If confLocation is not a file on the filesystem,
 	 * then ${PARENT_DIR} is undefined.
-	 * 
+	 *
 	 * @param confFile
 	 *            PDP configuration file
 	 * @param modelHandler
 	 *            PDP configuration model handler
 	 * @return PDP instance
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confFile}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration in {@code confFile}
 	 */
 	public static PDPImpl getPDP(File confFile, PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
@@ -303,15 +297,15 @@ public class PdpConfigurationParser
 
 	/**
 	 * Get PDP instance
-	 * 
+	 *
 	 * @param pdpJaxbConf
 	 *            (JAXB-bound) PDP configuration
 	 * @param envProps
 	 *            PDP configuration environment properties (e.g. PARENT_DIR)
 	 * @return PDP instance
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             invalid PDP configuration
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             if any error occurred closing already created
 	 *             {@link Closeable} modules (policy Providers, attribute
 	 *             Providers, decision cache)

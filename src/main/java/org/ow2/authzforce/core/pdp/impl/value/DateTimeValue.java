@@ -20,6 +20,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * Representation of an xs:dateTime value. This class supports parsing xs:dateTime values. All objects of this class are immutable and thread-safe.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DateTimeValue extends BaseTimeValue<DateTimeValue>
 {
@@ -30,10 +33,10 @@ public final class DateTimeValue extends BaseTimeValue<DateTimeValue>
 
 	/**
 	 * Creates a new <code>DateTimeAttributeValue</code> from a string representation of date/time
-	 * 
+	 *
 	 * @param dateTime
 	 *            string representation of date/time
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code dateTime} is not a valid string representation for this value datatype
 	 */
 	public DateTimeValue(String dateTime) throws IllegalArgumentException
@@ -43,10 +46,10 @@ public final class DateTimeValue extends BaseTimeValue<DateTimeValue>
 
 	/**
 	 * Creates a new <code>DateTimeAttributeValue</code> that represents the supplied date
-	 * 
+	 *
 	 * @param dateTime
 	 *            a <code>XMLGregorianCalendar</code> object representing the specified date and time
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code dateTime} does not correspond to a valid xs:dateTime
 	 */
 	public DateTimeValue(XMLGregorianCalendar dateTime) throws IllegalArgumentException
@@ -56,10 +59,10 @@ public final class DateTimeValue extends BaseTimeValue<DateTimeValue>
 
 	/**
 	 * Creates a new <code>DateTimeAttributeValue</code> that represents the supplied date
-	 * 
+	 *
 	 * @param dateTime
 	 *            a <code>GregorianCalendar</code> object representing the specified date and time
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code dateTime} does not correspond to a valid xs:dateTime
 	 */
 	public DateTimeValue(GregorianCalendar dateTime)
@@ -67,6 +70,7 @@ public final class DateTimeValue extends BaseTimeValue<DateTimeValue>
 		this(XML_TEMPORAL_DATATYPE_FACTORY.newXMLGregorianCalendar(dateTime));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DateTimeValue add(DurationValue<?> durationVal)
 	{
@@ -75,6 +79,7 @@ public final class DateTimeValue extends BaseTimeValue<DateTimeValue>
 		return new DateTimeValue(cal);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DateTimeValue subtract(DurationValue<?> durationVal)
 	{

@@ -36,7 +36,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * PDP Engine XML configuration handler
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class PdpModelHandler
 {
@@ -46,7 +48,7 @@ public class PdpModelHandler
 	public final static String CORE_XSD_LOCATION = "classpath:pdp.xsd";
 
 	/**
-	 * Default location of XML catalog to resolve imported XML schemas in {@value PdpModelHandler#CORE_XSD_LOCATION}
+	 * Default location of XML catalog to resolve imported XML schemas in {@value #CORE_XSD_LOCATION}
 	 */
 	public final static String DEFAULT_CATALOG_LOCATION = "classpath:catalog.xml";
 
@@ -63,17 +65,16 @@ public class PdpModelHandler
 	/**
 	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can be any resource string supported by Spring ResourceLoader. More info:
 	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
-	 * 
+	 *
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
-	 * 
-	 * 
+	 *
 	 * @param extensionXsdLocation
 	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD import for each extension schema. Only import the namespace,
 	 *            do not define the actual schema location here. Use the catalog specified by the <code>catalogLocation</code> parameter to specify the schema location. For example:
-	 * 
+	 *
 	 *            <pre>
 	 * {@literal
-	 * 		  <?xml version="1.0" encoding="UTF-8"?> 
+	 * 		  <?xml version="1.0" encoding="UTF-8"?>
 	 * 		  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 	 *            targetNamespace="http://thalesgroup.com/authzforce/model/3.0"
 	 *            xmlns:tns="http://thalesgroup.com/authzforce/model/3.0"
@@ -83,10 +84,8 @@ public class PdpModelHandler
 	 *            </xs:schema>
 	 * 			}
 	 * </pre>
-	 * 
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extensions XSD specified as 'extensionXsdLocation' argument (may be null)
-	 * 
 	 */
 	@ConstructorProperties({ "catalogLocation", "extensionXsdLocation" })
 	public PdpModelHandler(String catalogLocation, String extensionXsdLocation)
@@ -137,14 +136,16 @@ public class PdpModelHandler
 
 	/**
 	 * Unmarshall object from XML source
-	 * 
+	 *
 	 * @param src
 	 *            XML source
 	 * @param clazz
-	 *            Class of object to be unmarshalled, must be a subclass (or the class itself) of {@value #SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE}
+	 *            Class of object to be unmarshalled, must be a subclass (or the class itself) of the one defined by {@link #SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE}, i.e. {@link Pdp}
 	 * @return object of class clazz
-	 * @throws JAXBException
+	 * @throws javax.xml.bind.JAXBException
 	 *             if an error was encountered while unmarshalling the XML document in {@code src} into an instance of {@code clazz}
+	 * @param <T>
+	 *            a T object.
 	 */
 	public <T> T unmarshal(Source src, Class<T> clazz) throws JAXBException
 	{
@@ -162,12 +163,12 @@ public class PdpModelHandler
 
 	/**
 	 * Saves full configuration (XML)
-	 * 
+	 *
 	 * @param conf
 	 *            configuration
 	 * @param os
 	 *            output stream where to save
-	 * @throws JAXBException
+	 * @throws javax.xml.bind.JAXBException
 	 *             error when marshalling the XML configuration to the output stream
 	 */
 	public void marshal(Pdp conf, OutputStream os) throws JAXBException
@@ -180,12 +181,12 @@ public class PdpModelHandler
 
 	/**
 	 * Saves full configuration (XML)
-	 * 
+	 *
 	 * @param conf
 	 *            configuration
 	 * @param f
 	 *            output file where to save
-	 * @throws JAXBException
+	 * @throws javax.xml.bind.JAXBException
 	 *             error when marshalling the XML configuration to file
 	 */
 	public void marshal(Pdp conf, File f) throws JAXBException

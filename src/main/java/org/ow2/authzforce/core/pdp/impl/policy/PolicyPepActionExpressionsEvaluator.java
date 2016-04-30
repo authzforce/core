@@ -36,7 +36,9 @@ import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
 
 /**
  * Evaluator of a Policy(Set)'s PEP action (Obligation/Advice) expressions
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class PolicyPepActionExpressionsEvaluator
 {
@@ -127,7 +129,7 @@ public class PolicyPepActionExpressionsEvaluator
 
 	/**
 	 * Instantiates the evaluator with given XACML-schema-derived ObligationExpressions/AdviceExpressions (a priori specific to a Policy(Set))
-	 * 
+	 *
 	 * @param jaxbObligationExpressions
 	 *            XACML-schema-derived ObligationExpressions
 	 * @param jaxbAdviceExpressions
@@ -137,7 +139,7 @@ public class PolicyPepActionExpressionsEvaluator
 	 * @param expFactory
 	 *            Expression factory for parsing the AttributeAssignmentExpressions in the Obligation/Advice Expressions
 	 * @return Policy's Obligation/Advice expressions evaluator
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if error parsing one of the AttributeAssignmentExpressions
 	 */
 	public static PolicyPepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler,
@@ -154,14 +156,14 @@ public class PolicyPepActionExpressionsEvaluator
 
 	/**
 	 * Evaluates the PEP action (obligations/Advice) expressions for a given decision and evaluation context
-	 * 
+	 *
 	 * @param combiningAlgResult
 	 *            Policy(Set) combining algorithm evaluation result; this result's decision is used to select the Obligation/Advice expressions to apply, i.e. matching on FulfillOn/AppliesTo. This
 	 *            result's PEP actions are also merged with the PEP actions computed in this method.
 	 * @param context
 	 *            evaluation context
 	 * @return PEP actions (obligations/advices) or null if none
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error evaluating one of ObligationExpression/AdviceExpressions' AttributeAssignmentExpressions' expressions
 	 */
 	public PepActions evaluate(DecisionResult combiningAlgResult, EvaluationContext context) throws IndeterminateEvaluationException

@@ -17,7 +17,9 @@ package org.ow2.authzforce.core.pdp.impl.value;
  * Representation of an xs:yearMonthDuration value. This class supports parsing xs:yearMonthDuration values. All objects of this class are immutable and
  * thread-safe. The choice of the Java type Duration is based on JAXB schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  * and documentation of javax.xml.datatype package.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class YearMonthDurationValue extends DurationValue<YearMonthDurationValue>
 {
@@ -37,10 +39,10 @@ public final class YearMonthDurationValue extends DurationValue<YearMonthDuratio
 
 	/**
 	 * Instantiates year-month duration from string representation of xs:dayTimeDuration value.
-	 * 
+	 *
 	 * @param value
 	 *            a string representing the desired duration
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code value} is not a valid string representation of xs:dayTimeDuration
 	 */
 	public YearMonthDurationValue(String value) throws IllegalArgumentException

@@ -37,9 +37,11 @@ import org.ow2.authzforce.core.pdp.api.Value;
 
 /**
  * Evaluates XACML Apply
- * 
+ *
  * @param <V>
  *            evaluation's return type
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class Apply<V extends Value> extends ApplyType implements Expression<V>
 {
@@ -58,6 +60,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType#setFunctionId(java.lang.String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public void setFunctionId(String value)
 	{
@@ -67,7 +70,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 
 	/**
 	 * Creates instance from XACML Apply element
-	 * 
+	 *
 	 * @param xacmlApply
 	 *            XACML Apply element
 	 * @param xPathCompiler
@@ -79,8 +82,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	 *            <code>this</code>, where "V1 -> V2" means: the expression in VariableDefinition of V1 contains a VariableReference to V2. This is used to detect exceeding depth of VariableReference
 	 *            reference when a new VariableReference occurs in a VariableDefinition's expression. May be null, if this expression does not belong to any VariableDefinition.
 	 * @return Apply instance
-	 * 
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code xacmlApply} is invalid or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid expressions, or invalid arguments for this
 	 *             function; or if all {@code xprs} are static but calling the function statically (with these static arguments) failed
 	 */
@@ -240,6 +242,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 		isStatic = allStatic;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isStatic()
 	{
@@ -247,14 +250,9 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Evaluates the apply object using the given function. This will in turn call evaluate on all the given parameters, some of which may be other <code>Apply</code> objects.
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return the result of trying to evaluate this apply object
-	 * @throws IndeterminateEvaluationException
-	 *             if any evaluation error occured when evaluating the Apply expression in the given {@context}
 	 */
 	@Override
 	public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -263,10 +261,10 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Returns the type of attribute that this object will return on a call to <code>evaluate</code> . In practice, this will always be the same as the result of calling <code>getReturnType</code> on
 	 * the function used by this object.
-	 * 
-	 * @return the type returned by <code>evaluate</code>
 	 */
 	@Override
 	public Datatype<V> getReturnType()
@@ -274,6 +272,7 @@ public final class Apply<V extends Value> extends ApplyType implements Expressio
 		return functionCall.getReturnType();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public JAXBElement<ApplyType> getJAXBElement()
 	{

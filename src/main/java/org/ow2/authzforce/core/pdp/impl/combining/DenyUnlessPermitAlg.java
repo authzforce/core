@@ -27,7 +27,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 /**
  * Deny-unless-permit combining algorithm
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 {
@@ -75,6 +77,7 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException, IllegalArgumentException
 	{

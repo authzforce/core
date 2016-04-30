@@ -21,7 +21,9 @@ import javax.xml.bind.DatatypeConverter;
  * Representation of an xs:base64Binary value. This class supports parsing xs:base64Binary values. All objects of this class are immutable and all methods of
  * the class are thread-safe. The choice of the Java type byte[] is based on JAXB schema-to-Java mapping spec:
  * https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class Base64BinaryValue extends SimpleValue<byte[]>
 {
@@ -32,10 +34,10 @@ public final class Base64BinaryValue extends SimpleValue<byte[]>
 
 	/**
 	 * Creates instance from lexical representation of xs:base64Binary
-	 * 
+	 *
 	 * @param val
 	 *            string representation of xs:base64Binary
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code val} is not a valid string representation for this value datatype
 	 */
 	public Base64BinaryValue(String val) throws IllegalArgumentException
@@ -45,6 +47,7 @@ public final class Base64BinaryValue extends SimpleValue<byte[]>
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -56,6 +59,7 @@ public final class Base64BinaryValue extends SimpleValue<byte[]>
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -78,6 +82,7 @@ public final class Base64BinaryValue extends SimpleValue<byte[]>
 		return Arrays.equals(value, other.value);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

@@ -32,6 +32,8 @@ import org.ow2.authzforce.core.pdp.api.TopLevelPolicyElementType;
  * PolicySet evaluator (root policy as well as policies referenced directly or
  * indirectly from the root one)
  *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class StaticApplicablePolicyView implements Iterable<Entry<String, PolicyVersion>>
 {
@@ -84,10 +86,9 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	/**
 	 * Creates view of applicable policies from the root policy metadata and map
 	 * of referenced policies. All fields made immutable by this constructor.
-	 * 
+	 *
 	 * @param rootPolicyType
 	 *            root policy type
-	 * 
 	 * @param rootPolicyId
 	 *            (static) root policy ID
 	 * @param extraRootPolicyMetadata
@@ -107,7 +108,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 
 	/**
 	 * Get the root policy type
-	 * 
+	 *
 	 * @return root policy type
 	 */
 	public TopLevelPolicyElementType rootPolicyType()
@@ -117,7 +118,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 
 	/**
 	 * Get the root policy ID
-	 * 
+	 *
 	 * @return root policy ID
 	 */
 	public String rootPolicyId()
@@ -127,7 +128,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 
 	/**
 	 * Get the extra metadata of the root policy
-	 * 
+	 *
 	 * @return policy version
 	 */
 	public ExtraPolicyMetadata rootPolicyExtraMetadata()
@@ -140,7 +141,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	 * {@link TopLevelPolicyElementType#POLICY}, it is the only item in the
 	 * iteration (since there is no child Policy(Set)). Else this iterates over
 	 * policies referenced directly or indirectly from the root policySet.
-	 * 
+	 *
 	 * @return iterator over applicable Policies
 	 */
 	public Iterator<Entry<String, PolicyVersion>> policyIterator()
@@ -154,7 +155,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	 * iteration, else the root policy(set) entry is always the first item in
 	 * the iteration, then the policies referenced directly or indirectly from
 	 * the root policySet.
-	 * 
+	 *
 	 * @return iterator over applicable PolicySets
 	 */
 	public Iterator<Entry<String, PolicyVersion>> policySetIterator()
@@ -164,7 +165,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 
 	/**
 	 * Get applicable Policy matching a given policy ID
-	 * 
+	 *
 	 * @param policyId
 	 *            policy ID to be matched
 	 * @return matching applicable policy version; null if no match
@@ -176,7 +177,7 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 
 	/**
 	 * Get applicable PolicySet matching a given policy ID
-	 * 
+	 *
 	 * @param policyId
 	 *            policy ID to be matched
 	 * @return matching applicable policy version; null if no match
@@ -187,6 +188,8 @@ public final class StaticApplicablePolicyView implements Iterable<Entry<String, 
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Same as {@link #policySetIterator()}
 	 */
 	@Override

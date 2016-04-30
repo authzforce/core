@@ -17,15 +17,26 @@ import java.util.Deque;
 
 /**
  * Superclass of all numeric Attribute Values (integer, double...)
- * 
+ *
  * @param <N>
  *            actual Java type of the underlying numeric value (Integer, Double...)
  * @param <NAV>
  *            Concreate NumericAttributeValue type subclass
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public abstract class NumericValue<N extends Number, NAV extends NumericValue<N, NAV>> extends SimpleValue<N>
 {
+	/**
+	 * <p>
+	 * Constructor for NumericValue.
+	 * </p>
+	 *
+	 * @param datatypeId
+	 *            a {@link java.lang.String} object.
+	 * @param val
+	 *            a N object.
+	 */
 	protected NumericValue(String datatypeId, N val)
 	{
 		super(datatypeId, val);
@@ -33,14 +44,14 @@ public abstract class NumericValue<N extends Number, NAV extends NumericValue<N,
 
 	/**
 	 * Returns the absolute value of <code>this</code>. Used by the XACML "abs" functions.
-	 * 
+	 *
 	 * @return the absolute value
 	 */
 	public abstract NAV abs();
 
 	/**
 	 * Adds numbers to this. Used by the XACML numeric *-add functions.
-	 * 
+	 *
 	 * @param others
 	 *            values to add to this value
 	 * @return sum of this and the others. 0 is returned if {@code offset >= others.length}.
@@ -48,9 +59,8 @@ public abstract class NumericValue<N extends Number, NAV extends NumericValue<N,
 	public abstract NAV add(Deque<NAV> others);
 
 	/**
-	 * Multiply <code>this</code> by other numbers, starting to multiply others from a specific offset (index in the array). Used by the XACML "multiply"
-	 * functions.
-	 * 
+	 * Multiply <code>this</code> by other numbers, starting to multiply others from a specific offset (index in the array). Used by the XACML "multiply" functions.
+	 *
 	 * @param others
 	 *            other values to add
 	 * @return product of this by the others
@@ -59,19 +69,18 @@ public abstract class NumericValue<N extends Number, NAV extends NumericValue<N,
 
 	/**
 	 * Divide <code>this</code> by some other number. Used by XACML *-divide functions.
-	 * 
+	 *
 	 * @param divisor
 	 *            number by which <code>this</code> is divided
-	 * 
 	 * @return the result quotient
-	 * @throws ArithmeticException
+	 * @throws java.lang.ArithmeticException
 	 *             if divisor is zero
 	 */
 	public abstract NAV divide(NAV divisor) throws ArithmeticException;
 
 	/**
 	 * Substract a number from this. Used by XACML numeric *-subtract functions.
-	 * 
+	 *
 	 * @param subtractedVal
 	 *            value to be subtracted from <code>this</code>
 	 * @return this - substractedVal

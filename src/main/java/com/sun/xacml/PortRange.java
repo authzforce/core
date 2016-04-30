@@ -28,6 +28,9 @@ import java.util.Objects;
 /**
  * This class represents a port range as specified in the <code>dnsName</code> and <code>ipAddress</code> datatypes. The range may have upper and lower bounds,
  * be specified by a single port number, or may be unbound.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class PortRange
 {
@@ -66,13 +69,11 @@ public final class PortRange
 
 	/**
 	 * Creates an instance of <code>PortRange</code> based on the given value.
-	 * 
+	 *
 	 * @param value
 	 *            a <code>String</code> representing the range
-	 * 
 	 * @return a new <code>PortRange</code>
-	 * 
-	 * @throws NumberFormatException
+	 * @throws java.lang.NumberFormatException
 	 *             if a port value isn't an integer
 	 */
 	public static PortRange getInstance(String value)
@@ -117,7 +118,7 @@ public final class PortRange
 	/**
 	 * Returns the lower-bound port value. If the range is not lower-bound, then this returns <code>UNBOUND</code>. If the range is actually a single port
 	 * number, then this returns the same value as <code>getUpperBound</code>.
-	 * 
+	 *
 	 * @return the upper-bound
 	 */
 	public int getLowerBound()
@@ -128,7 +129,7 @@ public final class PortRange
 	/**
 	 * Returns the upper-bound port value. If the range is not upper-bound, then this returns <code>UNBOUND</code>. If the range is actually a single port
 	 * number, then this returns the same value as <code>getLowerBound</code>.
-	 * 
+	 *
 	 * @return the upper-bound
 	 */
 	public int getUpperBound()
@@ -138,7 +139,7 @@ public final class PortRange
 
 	/**
 	 * Returns whether the range is bounded by a lower port number.
-	 * 
+	 *
 	 * @return true if lower-bounded, false otherwise
 	 */
 	public boolean isLowerBounded()
@@ -148,7 +149,7 @@ public final class PortRange
 
 	/**
 	 * Returns whether the range is bounded by an upper port number.
-	 * 
+	 *
 	 * @return true if upper-bounded, false otherwise
 	 */
 	public boolean isUpperBounded()
@@ -158,7 +159,7 @@ public final class PortRange
 
 	/**
 	 * Returns whether the range is actually a single port number.
-	 * 
+	 *
 	 * @return true if the range is a single port number, false otherwise
 	 */
 	public boolean isSinglePort()
@@ -169,7 +170,7 @@ public final class PortRange
 	/**
 	 * Returns whether the range is unbound, which means that it specifies no port number or range. This is typically used with addresses that include no port
 	 * information.
-	 * 
+	 *
 	 * @return true if the range is unbound, false otherwise
 	 */
 	public boolean isUnbound()
@@ -179,6 +180,7 @@ public final class PortRange
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -191,12 +193,9 @@ public final class PortRange
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Returns true if the input is an instance of this class and if its value equals the value contained in this class.
-	 * 
-	 * @param o
-	 *            the object to compare
-	 * 
-	 * @return true if this object and the input represent the same value
 	 */
 	@Override
 	public boolean equals(Object o)
@@ -216,8 +215,9 @@ public final class PortRange
 	}
 
 	/**
+	 * <p>encode</p>
+	 *
 	 * @return encoded port range
-	 * 
 	 */
 	public String encode()
 	{

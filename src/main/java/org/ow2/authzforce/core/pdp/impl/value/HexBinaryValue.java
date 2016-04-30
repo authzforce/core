@@ -21,7 +21,9 @@ import javax.xml.bind.DatatypeConverter;
  * Representation of an xs:hexBinary value. This class supports parsing xs:hexBinary values. All objects of this class are immutable and all methods of the
  * class are thread-safe. The choice of the Java type byte[] is based on JAXB schema-to-Java mapping spec:
  * https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class HexBinaryValue extends SimpleValue<byte[]>
 {
@@ -32,7 +34,7 @@ public final class HexBinaryValue extends SimpleValue<byte[]>
 
 	/**
 	 * Creates a new <code>HexBinaryAttributeValue</code> that represents the byte [] value supplied.
-	 * 
+	 *
 	 * @param value
 	 *            the <code>byte []</code> value to be represented
 	 */
@@ -43,10 +45,10 @@ public final class HexBinaryValue extends SimpleValue<byte[]>
 
 	/**
 	 * Returns a new <code>HexBinaryAttributeValue</code> that represents the xsi:hexBinary value indicated by the string provided.
-	 * 
+	 *
 	 * @param val
 	 *            a string representing the desired value
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code val} is not a valid string representation of xs:hexBinary
 	 */
 	public HexBinaryValue(String val) throws IllegalArgumentException
@@ -56,6 +58,7 @@ public final class HexBinaryValue extends SimpleValue<byte[]>
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -67,6 +70,7 @@ public final class HexBinaryValue extends SimpleValue<byte[]>
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -89,6 +93,7 @@ public final class HexBinaryValue extends SimpleValue<byte[]>
 		return Arrays.equals(value, other.value);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

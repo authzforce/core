@@ -79,6 +79,8 @@ import org.slf4j.LoggerFactory;
 /**
  * This class consists exclusively of static methods that operate on or return {@link PolicyEvaluator}s
  *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class PolicyEvaluators
 {
@@ -1233,7 +1235,7 @@ public final class PolicyEvaluators
 
 	/**
 	 * Creates Policy handler from XACML Policy element
-	 * 
+	 *
 	 * @param policyElement
 	 *            Policy (XACML)
 	 * @param parentDefaultXPathCompiler
@@ -1245,7 +1247,7 @@ public final class PolicyEvaluators
 	 * @param combiningAlgRegistry
 	 *            rule/policy combining algorithm registry
 	 * @return instance
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if any argument is invalid
 	 */
 	public static StaticTopLevelPolicyElementEvaluator getInstance(Policy policyElement, XPathCompiler parentDefaultXPathCompiler, Map<String, String> namespacePrefixesByURI,
@@ -1479,7 +1481,7 @@ public final class PolicyEvaluators
 
 	/**
 	 * Instantiates Policy(Set) Reference evaluator from XACML Policy(Set)IdReference
-	 * 
+	 *
 	 * @param idRef
 	 *            Policy(Set)IdReference
 	 * @param refPolicyProvider
@@ -1492,7 +1494,7 @@ public final class PolicyEvaluators
 	 *            PolicySetIdReference in a top-level PolicySet. Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is
 	 *            not allowed, no matter what the version is.
 	 * @return instance instance of PolicyReference
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
 	 *             loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
 	 */
@@ -1507,7 +1509,7 @@ public final class PolicyEvaluators
 	/**
 	 * Instantiates Static Policy(Set) Reference evaluator from XACML Policy(Set)IdReference, "static" meaning that given {@code idRef} and {@code refPolicyType}, the returned policy is always the sam
 	 * statically defined policy
-	 * 
+	 *
 	 * @param idRef
 	 *            Policy(Set)IdReference
 	 * @param refPolicyProvider
@@ -1520,7 +1522,7 @@ public final class PolicyEvaluators
 	 *            PolicySetIdReference in a top-level PolicySet. Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is
 	 *            not allowed, no matter what the version is.
 	 * @return instance instance of PolicyReference
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
 	 *             loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
 	 */
@@ -1901,7 +1903,7 @@ public final class PolicyEvaluators
 
 	/**
 	 * Creates statically defined PolicySet handler from XACML PolicySet element
-	 * 
+	 *
 	 * @param policyElement
 	 *            PolicySet (XACML) without any dynamic policy references
 	 * @param parentDefaultXPathCompiler
@@ -1919,7 +1921,7 @@ public final class PolicyEvaluators
 	 *            validate the size of the chain against the max depth enforced by {@code refPolicyProvider}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level PolicySet.
 	 *            Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what the version is.
 	 * @return instance
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if any argument (e.g. {@code policyElement}) is invalid
 	 */
 	public static StaticTopLevelPolicyElementEvaluator getInstanceStatic(PolicySet policyElement, XPathCompiler parentDefaultXPathCompiler, Map<String, String> namespacePrefixesByURI,
@@ -1933,7 +1935,7 @@ public final class PolicyEvaluators
 
 	/**
 	 * Creates PolicySet handler from XACML PolicySet element
-	 * 
+	 *
 	 * @param policyElement
 	 *            PolicySet (XACML)
 	 * @param parentDefaultXPathCompiler
@@ -1951,7 +1953,7 @@ public final class PolicyEvaluators
 	 *            validate the size of the chain against the max depth enforced by {@code refPolicyProvider}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level PolicySet.
 	 *            Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what the version is.
 	 * @return instance
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if any argument (e.g. {@code policyElement}) is invalid
 	 */
 	public static TopLevelPolicyElementEvaluator getInstance(PolicySet policyElement, XPathCompiler parentDefaultXPathCompiler, Map<String, String> namespacePrefixesByURI,

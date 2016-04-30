@@ -51,10 +51,11 @@ import org.w3c.dom.Element;
  * for marshalling. It is expected that the content is used only when marshalling AttributeAssignments (e.g. in XACML response), in which case the class responsible for creating the
  * AttributeAssignments MUST call {@link #getContent()} to get/marshall the actual content.
  * </p>
- * 
+ *
  * @param <V>
  *            underlying Java value type
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public abstract class SimpleValue<V> extends AttributeValue
 {
@@ -199,12 +200,12 @@ public abstract class SimpleValue<V> extends AttributeValue
 
 	/**
 	 * Constructor from Java type of value. A Serializable JAXB-compatible form of the value must be provided to be used directly as first value in {@link #getContent()}
-	 * 
+	 *
 	 * @param datatypeId
 	 *            attribute datatype ID. MUST NOT be null.
 	 * @param rawVal
 	 *            internal Java native value
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code datatype == null || jaxbVal == null}
 	 */
 	protected SimpleValue(String datatypeId, V rawVal) throws IllegalArgumentException
@@ -221,7 +222,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 	/**
 	 * Returns the internal low-level Java value on which this AttributeValue is based off. This method is provided mostly for convenience, especially for low-level operations. However, you should not
 	 * use it unless there is no other way. Prefer the high-level methods provided by the concrete {@link SimpleValue} implementation if you need to do operations on it.
-	 * 
+	 *
 	 * @return the value
 	 */
 	public final V getUnderlyingValue()
@@ -233,11 +234,12 @@ public abstract class SimpleValue<V> extends AttributeValue
 	 * Converts the internal value (accessible via {@link #getUnderlyingValue()} to a valid lexical representation for XML marshalling. Equivalent to the 'printMethod' in JAXB 'javaType' binding
 	 * customizations. Implementations of this typically call {@link DatatypeConverter}. This method is called by {@link #getContent()} and its result cached by the same method for later use.
 	 * Therefore, no need to cache the result in the implementation.
-	 * 
+	 *
 	 * @return XML-valid lexical representation.
 	 */
 	public abstract String printXML();
 
+	/** {@inheritDoc} */
 	@Override
 	public final List<Serializable> getContent()
 	{
@@ -254,6 +256,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{
@@ -264,6 +267,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 		return toString;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -275,6 +279,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{

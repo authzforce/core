@@ -38,10 +38,11 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 /**
  * A class that implements the not function. This function takes one boolean argument and returns the logical negation of that value. If the argument evaluates
  * to indeterminate, an indeterminate result is returned.
- * 
+ *
  * @since 1.0
  * @author Steve Hanna
  * @author Seth Proctor
+ * @version $Id: $
  */
 public final class NotFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, BooleanValue>
 {
@@ -61,6 +62,7 @@ public final class NotFunction extends FirstOrderFunction.SingleParameterTyped<B
 		super(NAME_NOT, DatatypeConstants.BOOLEAN.TYPE, false, Collections.singletonList(DatatypeConstants.BOOLEAN.TYPE));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

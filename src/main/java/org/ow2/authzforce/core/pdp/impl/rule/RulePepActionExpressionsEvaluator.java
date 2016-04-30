@@ -36,7 +36,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Evaluator of a Rule's PEP action (Obligation/Advice) expressions
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class RulePepActionExpressionsEvaluator
 {
@@ -147,7 +149,7 @@ public class RulePepActionExpressionsEvaluator
 	/**
 	 * Instantiates the evaluator with given XACML-schema-derived ObligationExpressions/AdviceExpressions an Effect to be match by these expressions (a priori
 	 * specific to a Rule)
-	 * 
+	 *
 	 * @param jaxbObligationExpressions
 	 *            XACML-schema-derived ObligationExpressions
 	 * @param jaxbAdviceExpressions
@@ -159,7 +161,7 @@ public class RulePepActionExpressionsEvaluator
 	 * @param effect
 	 *            rule's Effect to be matched by ObligationExpressions/FulfillOn and AdviceExpressions/AppliesTo
 	 * @return Rule's Obligation/Advice expressions evaluator
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if one of the AttributeAssignmentExpressions is invalid
 	 */
 	public static RulePepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions,
@@ -176,11 +178,11 @@ public class RulePepActionExpressionsEvaluator
 
 	/**
 	 * Evaluates the PEP action (obligations/Advice) expressions in a given evaluation context
-	 * 
+	 *
 	 * @param context
 	 *            evaluation context
 	 * @return PEP actions (obligations/advices) or null if none
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error evaluating one of ObligationExpression/AdviceExpressions' AttributeAssignmentExpressions' expressions
 	 */
 	public PepActions evaluate(EvaluationContext context) throws IndeterminateEvaluationException

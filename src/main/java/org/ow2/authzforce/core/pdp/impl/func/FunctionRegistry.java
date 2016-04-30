@@ -22,8 +22,10 @@ import org.ow2.authzforce.core.pdp.api.Function;
 import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 
 /**
- * 
+ * <p>FunctionRegistry class.</p>
  *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class FunctionRegistry
 {
@@ -33,7 +35,7 @@ public class FunctionRegistry
 
 	/**
 	 * Low-level constructor
-	 * 
+	 *
 	 * @param nonGenericFunctionRegistry
 	 *            (mandatory) non-generic function registry
 	 * @param genericFunctionFactoryRegistry
@@ -49,7 +51,7 @@ public class FunctionRegistry
 	/**
 	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for instance to build a new registry based on a standard one (e.g. {@link StandardFunctionRegistry} for
 	 * standard functions).
-	 * 
+	 *
 	 * @param baseRegistry
 	 *            the base/parent registry on which this one is based or null
 	 */
@@ -62,7 +64,7 @@ public class FunctionRegistry
 
 	/**
 	 * Adds (non-generic) function
-	 * 
+	 *
 	 * @param function
 	 *            function
 	 */
@@ -74,10 +76,9 @@ public class FunctionRegistry
 
 	/**
 	 * Get a (non-generic) function by ID. 'Non-generic' here means the function is either first-order, or higher-order but does not need the specific sub-function parameter to be instantiated.
-	 * 
+	 *
 	 * @param functionId
 	 *            ID of function to loop up
-	 * 
 	 * @return function instance, null if none with such ID in the registry of non-generic functions, in which case it may be a generic function and you should try
 	 *         {@link #getFunction(String, DatatypeFactory)} instead.
 	 */
@@ -90,12 +91,13 @@ public class FunctionRegistry
 	 * Get any function including generic ones. 'Generic' here means the function is a higher-order function that is instantiated for a specific sub-function. For instance, the XACML 'map' function (
 	 * {@link MapFunctionFactory}) function class takes the sub-function's return type as type parameter and therefore it needs this sub-function's return type to be instantiated (this is done via the
 	 * {@link MapFunctionFactory}).
-	 * 
+	 *
 	 * @param functionId
 	 *            function ID
 	 * @param subFunctionReturnTypeFactory
 	 *            sub-function return datatype factory
 	 * @return function instance
+	 * @param <SUB_RETURN_T> a SUB_RETURN_T object.
 	 */
 	public <SUB_RETURN_T extends AttributeValue> Function<?> getFunction(String functionId, DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory)
 	{

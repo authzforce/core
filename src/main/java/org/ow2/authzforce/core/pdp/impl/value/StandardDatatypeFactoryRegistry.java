@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
  * <code>addDatatype</code> on an instance of this class, an exception will be thrown. If you need a standard factory that is modifiable, you should create a
  * new <code>BaseDatatypeFactoryRegistry</code> (or some other <code>DatatypeFactoryRegistry</code>) and pass this to
  * {@link BaseDatatypeFactoryRegistry#BaseDatatypeFactoryRegistry(BaseDatatypeFactoryRegistry)}.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
 {
@@ -79,6 +82,8 @@ public final class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRe
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Throws an <code>UnsupportedOperationException</code> since you are not allowed to modify what a standard factory supports.
 	 */
 	@Override

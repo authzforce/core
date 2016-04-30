@@ -42,6 +42,8 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 /**
  * Set of higher-order bag functions
  *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class HigherOrderBagFunctionSet
 {

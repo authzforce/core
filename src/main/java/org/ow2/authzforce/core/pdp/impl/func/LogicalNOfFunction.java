@@ -42,6 +42,9 @@ import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
  * <p>
  * This function evaluates the arguments one at a time, starting with the first one. As soon as the result of the function can be determined, evaluation stops
  * and that result is returned. During this process, if any argument evaluates to indeterminate, an indeterminate result is returned.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterTyped<BooleanValue>
 {
@@ -263,6 +266,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 	 * 
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException

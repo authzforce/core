@@ -18,7 +18,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * Representation of an xs:time value. This class supports parsing xs:time values. All objects of this class are immutable and thread-safe.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class TimeValue extends BaseTimeValue<TimeValue>
 {
@@ -29,10 +31,10 @@ public final class TimeValue extends BaseTimeValue<TimeValue>
 
 	/**
 	 * Creates a new <code>TimeAttributeValue</code> from a string representation of time
-	 * 
+	 *
 	 * @param time
 	 *            string representation of time
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code time} is not a valid string representation of xs:time
 	 */
 	public TimeValue(String time) throws IllegalArgumentException
@@ -55,12 +57,12 @@ public final class TimeValue extends BaseTimeValue<TimeValue>
 
 	/**
 	 * Creates a new instance from a Calendar
-	 * 
+	 *
 	 * @param timeCalendar
 	 *            a <code>XMLGregorianCalendar</code> object representing the specified time; beware that this method modifies {@code calendar} by unsetting all
 	 *            date fields (year, month, day): e.g. for the year, {@code calendar.setYear(DatatypeConstants.FIELD_UNDEFINED)}
 	 * @return new instance
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code calendar == null}
 	 */
 	public static TimeValue getInstance(XMLGregorianCalendar timeCalendar)
@@ -72,6 +74,7 @@ public final class TimeValue extends BaseTimeValue<TimeValue>
 		return new TimeValue(timeCalendar);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public TimeValue add(DurationValue<?> durationVal)
 	{
@@ -80,6 +83,7 @@ public final class TimeValue extends BaseTimeValue<TimeValue>
 		return new TimeValue(cal);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public TimeValue subtract(DurationValue<?> durationVal)
 	{

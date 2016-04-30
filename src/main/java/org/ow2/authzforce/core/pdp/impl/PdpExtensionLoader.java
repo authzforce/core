@@ -34,8 +34,9 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
 
 /**
  * Loads PDP extensions (implementing {@link PdpExtension}) from classpath using {@link ServiceLoader}.
- * 
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class PdpExtensionLoader
 {
@@ -124,7 +125,7 @@ public class PdpExtensionLoader
 
 	/**
 	 * Get PDP extension configuration classes (JAXB-generated from XML schema)
-	 * 
+	 *
 	 * @return classes representing datamodels of configurations of all PDP extensions
 	 */
 	public static Set<Class<? extends AbstractPdpExtension>> getExtensionJaxbClasses()
@@ -134,14 +135,15 @@ public class PdpExtensionLoader
 
 	/**
 	 * Get non-JAXB-bound (aka zero-configuration) extension
-	 * 
+	 *
 	 * @param extensionType
 	 *            type of extension: {@link DatatypeFactory }, {@link Function}, {@link CombiningAlgSet}, etc.
 	 * @param id
 	 *            extension ID
 	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link PdpExtension#getId()} returns {@code id}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if there is not any extension found for type {@code extensionType} with ID {@code id}
+	 * @param <T> a T object.
 	 */
 	public static <T extends PdpExtension> T getExtension(Class<T> extensionType, String id) throws IllegalArgumentException
 	{
@@ -169,15 +171,17 @@ public class PdpExtensionLoader
 
 	/**
 	 * Get XML/JAXB-bound extension
-	 * 
+	 *
 	 * @param extensionType
 	 *            type of extension, e.g. {@link org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory}, etc.
 	 * @param jaxbPdpExtensionClass
 	 *            JAXB class representing XML configuration type that the extension must support
 	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link JaxbBoundPdpExtension#getClass()} returns
 	 *         {@code jaxbPdpExtensionClass}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if there is no extension supporting {@code jaxbPdpExtensionClass}
+	 * @param <JAXB_T> a JAXB_T object.
+	 * @param <T> a T object.
 	 */
 	public static <JAXB_T extends AbstractPdpExtension, T extends JaxbBoundPdpExtension<JAXB_T>> T getJaxbBoundExtension(Class<T> extensionType,
 			Class<JAXB_T> jaxbPdpExtensionClass) throws IllegalArgumentException

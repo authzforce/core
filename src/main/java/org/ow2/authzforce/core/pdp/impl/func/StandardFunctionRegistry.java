@@ -35,6 +35,9 @@ import com.sun.xacml.TimeInRangeFunction;
  * {@link #addFunction(Function)} on an instance of this class, an exception will be thrown. If you need a standard factory that is modifiable, you can either
  * create a new <code>BasePdpExtensionRegistry</code> (or some other implementation of <code>PdpExtensionRegistry</code>) populated with the standard functions
  * from {@code this#getSupportedFunctions()}
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class StandardFunctionRegistry extends FunctionRegistry
 {
@@ -184,13 +187,9 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Always throws an exception, since support for new functions may not be added to a standard factory.
-	 * 
-	 * @param function
-	 *            the <code>Function</code> to add to the factory
-	 * 
-	 * @throws UnsupportedOperationException
-	 *             always
 	 */
 	@Override
 	public void addFunction(Function<?> function) throws IllegalArgumentException
@@ -200,7 +199,7 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 
 	/**
 	 * Get standard function registry
-	 * 
+	 *
 	 * @param enableXPath
 	 *            true iff XPath-based function(s) support enabled
 	 * @return standard function registry

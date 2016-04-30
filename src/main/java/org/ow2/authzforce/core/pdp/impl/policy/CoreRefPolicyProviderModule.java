@@ -66,6 +66,9 @@ import org.springframework.util.ResourceUtils;
  * <p>
  * Note that this class is designed to complement {@link CoreRootPolicyProviderModule} in charge of the root policy(set) which may refer to policies resolved by this
  * {@link CoreRefPolicyProviderModule}.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModule
 {
@@ -459,7 +462,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 
 	/**
 	 * Creates an instance from XACML/JAXB Policy(Set) elements
-	 * 
+	 *
 	 * @param jaxbPolicies
 	 *            XACML Policy elements
 	 * @param jaxbPolicySets
@@ -471,7 +474,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
 	 * @return instance of this module
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if both {@code jaxbPoliciesByIdAndVersion} and {@code jaxbPolicySetsByIdAndVersion} are null/empty, or expressionFactory/combiningAlgRegistry undefined; or one of the Policy(Set)s
 	 *             is not valid or conflicts with another because it has same Policy(Set)Id and Version.
 	 */
@@ -543,7 +546,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 
 	/**
 	 * Creates an instance from policy locations
-	 * 
+	 *
 	 * @param policyURLs
 	 *            location of Policy(Set) elements (JAXB) to be parsed for future reference by Policy(Set)IdReferences
 	 * @param xacmlParserFactory
@@ -555,10 +558,9 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	 * @param expressionFactory
 	 *            Expression factory for parsing Expressions used in the policy(set)
 	 * @return instance of this class
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code policyURLs == null || policyURLs.length == 0}, or expressionFactory/combiningAlgRegistry undefined; or one of {@code policyURLs} is null or is not a valid XACML
 	 *             Policy(Set) or conflicts with another because it has same Policy(Set)Id and Version. Beware that the Policy(Set)Issuer is ignored from this check!
-	 * 
 	 */
 	public static CoreRefPolicyProviderModule getInstance(Collection<URL> policyURLs, XACMLParserFactory xacmlParserFactory, int maxPolicySetRefDepth, ExpressionFactory expressionFactory,
 			CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
@@ -657,6 +659,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		return new CoreRefPolicyProviderModule(policyMap, jaxbPolicySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public StaticTopLevelPolicyElementEvaluator get(TopLevelPolicyElementType policyType, String id, VersionPatterns constraints, Deque<String> policySetRefChain)
 	{
@@ -688,6 +691,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		return policy;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException
 	{
@@ -695,6 +699,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		this.policySetMap.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public TopLevelPolicyElementEvaluator get(TopLevelPolicyElementType policyType, String policyId, VersionPatterns policyVersionConstraints, Deque<String> policySetRefChain,
 			EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException

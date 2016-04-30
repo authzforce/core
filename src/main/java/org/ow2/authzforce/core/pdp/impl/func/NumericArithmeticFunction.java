@@ -34,10 +34,11 @@ import org.ow2.authzforce.core.pdp.impl.value.NumericValue;
 
 /**
  * A class that implements all the numeric *-add functions (as opposed to date/time *-add-* functions).
- * 
+ *
  * @param <AV>
  *            return and parameter type
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends FirstOrderFunction.SingleParameterTyped<AV, AV>
 {
@@ -169,6 +170,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 		this.op = op;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

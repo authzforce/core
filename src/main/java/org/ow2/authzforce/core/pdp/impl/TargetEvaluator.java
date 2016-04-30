@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents the TargetType XML type in XACML.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class TargetEvaluator
 {
@@ -43,16 +45,15 @@ public class TargetEvaluator
 
 	/**
 	 * Instantiates Target (evaluator) from XACML-Schema-derived <code>Target</code>.
-	 * 
+	 *
 	 * @param jaxbTarget
 	 *            XACML-schema-derived JAXB Target
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if one of the child AnyOf elements is invalid
-	 * 
 	 */
 	public TargetEvaluator(Target jaxbTarget, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
@@ -83,18 +84,17 @@ public class TargetEvaluator
 
 	/**
 	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context
-	 * so it's a NO_MATCH result. Here is the table shown in the specification: <code> 
+	 * so it's a NO_MATCH result. Here is the table shown in the specification: <code>
 	 * 		<AnyOf> values 				<Target> value
 	 * 		All Match?					Match?
 	 * 		At Least one "No Match"		No Match?
 	 * 		Otherwise					Indeterminate?
 	 * </code> Also if Target empty (no AnyOf), return "Match"
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true if and only if Match (else No-match)
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if Indetermiante (error evaluating target)
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException

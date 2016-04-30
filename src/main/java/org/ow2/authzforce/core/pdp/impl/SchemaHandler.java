@@ -49,9 +49,11 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 
 /**
- * 
+ *
  * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by {@link ResourceUtils} as well.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class SchemaHandler
 {
@@ -431,7 +433,7 @@ public class SchemaHandler
 
 	/**
 	 * Sets (Spring-supported) locations to XML schema files
-	 * 
+	 *
 	 * @param locations
 	 *            XML schema locations
 	 */
@@ -442,7 +444,7 @@ public class SchemaHandler
 
 	/**
 	 * Sets (Spring-supported) locations to XML catalog files
-	 * 
+	 *
 	 * @param location
 	 *            XML catalog location
 	 */
@@ -453,7 +455,7 @@ public class SchemaHandler
 
 	/**
 	 * Get schema used by this handler
-	 * 
+	 *
 	 * @return XML schema
 	 */
 	public Schema getSchema()
@@ -463,8 +465,7 @@ public class SchemaHandler
 
 	/**
 	 * Creates schema from locations to XML schema files and catalog file
-	 * 
-	 * 
+	 *
 	 * @param schemaLocations
 	 *            XML schema locations
 	 * @param catalogLocation

@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
  * Note that because this supports only the standard algorithms, this factory does not allow the addition of any other algorithms. If you need a standard
  * factory that is modifiable, you should create a new <code>BaseCombiningAlgRegistry</code> by passing this to
  * {@link BaseCombiningAlgRegistry#BaseCombiningAlgRegistry(org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry)}.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 {
@@ -77,6 +79,7 @@ public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 		super(standardExtensions);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void addExtension(CombiningAlg<? extends Decidable> alg)
 	{
