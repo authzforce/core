@@ -45,6 +45,9 @@ import net.sf.saxon.lib.StandardURIChecker;
  * may be spotted as a possible memory leak by servlet containers such as Tomcat, as confirmed on the mailing list: https://sourceforge.net/p/saxon/mailman/message/27043134/ ,
  * https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/ .
  * </p>
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class AnyURIValue extends SimpleValue<String>
 {
@@ -56,14 +59,14 @@ public final class AnyURIValue extends SimpleValue<String>
 
 	/**
 	 * Creates a new <code>AnyURIAttributeValue</code> that represents the URI value supplied.
-	 * 
+	 *
 	 * @param value
 	 *            the URI to be represented
 	 *            <p>
 	 *            WARNING: java.net.URI cannot be used here for XACML datatype, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI. [1]
 	 *            http://www.w3.org/TR/xmlschema-2/#anyURI So we use String instead.
 	 *            </p>
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code value} is not a valid string representation for xs:anyURI
 	 */
 	public AnyURIValue(String value) throws IllegalArgumentException
@@ -71,6 +74,7 @@ public final class AnyURIValue extends SimpleValue<String>
 		super(TYPE_URI, value);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

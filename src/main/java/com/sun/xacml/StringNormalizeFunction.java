@@ -42,10 +42,11 @@ import org.ow2.authzforce.core.pdp.impl.value.StringValue;
 
 /**
  * string-normalize-* function
- * 
+ *
  * @since 1.0
  * @author Steve Hanna
  * @author Seth Proctor
+ * @version $Id: $
  */
 public final class StringNormalizeFunction extends FirstOrderFunction.SingleParameterTyped<StringValue, StringValue>
 {
@@ -145,6 +146,7 @@ public final class StringNormalizeFunction extends FirstOrderFunction.SinglePara
 	 * 
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<StringValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

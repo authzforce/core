@@ -29,7 +29,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This is the standard only-one-applicable policy combining algorithm.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 {
@@ -92,6 +94,7 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Evaluator getInstance(List<CombiningAlgParameter<? extends PolicyEvaluator>> params, List<? extends PolicyEvaluator> combinedElements)
 	{

@@ -62,7 +62,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 /**
  * This is the core XACML PDP engine implementation. To build an XACML policy engine, you start by instantiating this object directly or in a easier and
  * preferred way, using {@link PdpConfigurationParser}.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class PDPImpl implements CloseablePDP
 {
@@ -212,7 +214,7 @@ public class PDPImpl implements CloseablePDP
 
 	/**
 	 * Constructs a new <code>PDP</code> object with the given configuration information.
-	 * 
+	 *
 	 * @param attributeFactory
 	 *            attribute value factory - mandatory
 	 * @param functionRegistry
@@ -250,16 +252,14 @@ public class PDPImpl implements CloseablePDP
 	 *            arguments is null
 	 * @param environmentProperties
 	 *            PDP configuration environment properties
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if there is not any extension found for type {@link org.ow2.authzforce.core.pdp.api.RequestFilter.Factory} with ID {@code requestFilterId};
 	 *             or if one of the mandatory arguments is null; or if any Attribute Provider module created from {@code jaxbAttributeProviderConfs} does not
 	 *             provide any attribute; or it is in conflict with another one already registered to provide the same or part of the same attributes; of if
 	 *             there is no extension supporting {@code jaxbDecisionCacheConf}
-	 * 
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 *             error closing the root policy Provider when static resolution is to be used; or error closing the attribute Provider modules created from
 	 *             {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
-	 * 
 	 */
 	public PDPImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVariableReferenceDepth, boolean enableXPath, CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth, String requestFilterId, boolean strictAttributeIssuerMatch, DecisionResultFilter decisionResultFilter, AbstractDecisionCache jaxbDecisionCacheConf, EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
 	{
@@ -294,6 +294,7 @@ public class PDPImpl implements CloseablePDP
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests)
 	{
@@ -322,6 +323,7 @@ public class PDPImpl implements CloseablePDP
 		return resultFilter.filter(results);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Response evaluate(Request request, Map<String, String> namespaceURIsByPrefix)
 	{
@@ -362,6 +364,7 @@ public class PDPImpl implements CloseablePDP
 		return new Response(results);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException
 	{
@@ -372,6 +375,7 @@ public class PDPImpl implements CloseablePDP
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Response evaluate(Request request)
 	{
@@ -380,7 +384,7 @@ public class PDPImpl implements CloseablePDP
 
 	/**
 	 * Get the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved
-	 * 
+	 *
 	 * @return the root and referenced policies; null if any of these policies is not statically resolved (once and for all)
 	 */
 	public StaticApplicablePolicyView getStaticApplicablePolicies()

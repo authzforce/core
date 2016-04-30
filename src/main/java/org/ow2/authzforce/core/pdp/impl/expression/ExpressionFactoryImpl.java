@@ -22,6 +22,16 @@ import java.util.Map;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
+
 import org.ow2.authzforce.core.pdp.api.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.Datatype;
 import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
@@ -35,34 +45,21 @@ import org.ow2.authzforce.core.pdp.impl.CloseableAttributeProvider;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 
-import com.sun.xacml.ParsingException;
 import com.sun.xacml.UnknownIdentifierException;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
-
 /**
- * Implementation of ExpressionFactory that supports the Expressions defined in
- * VariableDefinitions in order to resolve VariableReferences. In particular, it
- * makes sure the depth of recursivity of VariableDefinition does not exceed a
- * value (to avoid inconveniences such as stackoverflow or very negative
- * performance impact) defined by parameter to
- * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)}
- * parameter. Note that reference loops are avoided by the fact that a
- * VariableReference can reference only a VariableDefinition defined previously
- * to the VariableReference in this implementation.
- * 
+ * Implementation of ExpressionFactory that supports the Expressions defined in VariableDefinitions in order to resolve VariableReferences. In particular, it makes sure the depth of recursivity of
+ * VariableDefinition does not exceed a value (to avoid inconveniences such as stackoverflow or very negative performance impact) defined by parameter to
+ * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} parameter. Note that reference loops are avoided by the fact that a VariableReference can
+ * reference only a VariableDefinition defined previously to the VariableReference in this implementation.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class ExpressionFactoryImpl implements ExpressionFactory
 {
-	private static final IllegalArgumentException MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION = new IllegalArgumentException("Missing Issuer that is required on AttributeDesignators by PDP configuration");
+	private static final IllegalArgumentException MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION = new IllegalArgumentException(
+			"Missing Issuer that is required on AttributeDesignators by PDP configuration");
 
 	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("Unsupported Expression type (optional XACML feature): AttributeSelector");
 
@@ -70,7 +67,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 	private static final IllegalArgumentException NULL_ATTRIBUTE_DATATYPE_REGISTRY_EXCEPTION = new IllegalArgumentException("Undefined attribute datatype registry");
 
-	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_PROVIDER_EXCEPTION = new IllegalArgumentException("Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute Provider defined");
+	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_PROVIDER_EXCEPTION = new IllegalArgumentException(
+			"Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute Provider defined");
 
 	private static final int UNLIMITED_MAX_VARIABLE_REF_DEPTH = -1;
 
@@ -85,60 +83,38 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	private final boolean issuerRequiredOnAttributeDesignators;
 
 	/**
-	 * Maximum VariableReference depth allowed for VariableDefinitions to be
-	 * managed. Examples:
+	 * Maximum VariableReference depth allowed for VariableDefinitions to be managed. Examples:
 	 * <ul>
-	 * <li>A VariableDefinition V1 that does not use any VariableReference has a
-	 * reference depth of 0.</li>
-	 * <li>A VariableDefinition V1 that uses a VariableReference to
-	 * VariableDefinition V2 with no further VariableReference, has a reference
-	 * depth of 1</li>
+	 * <li>A VariableDefinition V1 that does not use any VariableReference has a reference depth of 0.</li>
+	 * <li>A VariableDefinition V1 that uses a VariableReference to VariableDefinition V2 with no further VariableReference, has a reference depth of 1</li>
 	 * <li>etc.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param attributeFactory
 	 *            attribute value factory (not null)
 	 * @param functionRegistry
 	 *            function registry (not null)
 	 * @param jaxbAttributeProviderConfs
-	 *            XML/JAXB configurations of Attribute Providers for
-	 *            AttributeDesignator/AttributeSelector evaluation; may be null
-	 *            for static expression evaluation (out of context), in which
-	 *            case AttributeSelectors/AttributeDesignators are not supported
+	 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression evaluation (out of context), in which case
+	 *            AttributeSelectors/AttributeDesignators are not supported
 	 * @param maxVarRefDepth
-	 *            max depth of VariableReference chaining: VariableDefinition ->
-	 *            VariableDefinition ->... ('->' represents a
-	 *            VariableReference); strictly negative value means unlimited
+	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference); strictly negative value means unlimited
 	 * @param allowAttributeSelectors
-	 *            allow use of AttributeSelectors (experimental, not for
-	 *            production, use with caution)
+	 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
 	 * @param issuerRequiredInAttributeDesignators
-	 *            true iff it is required that all AttributeDesignator set the
-	 *            Issuer field, as a best practice. If the issuer is not set,
-	 *            remember what XACML 3.0 AttributeDesignator Evaluation says:
-	 *            "If the Issuer is not present in the attribute designator,
-	 *            then the matching of the attribute to the named attribute
-	 *            SHALL be governed by AttributeId and DataType attributes
-	 *            alone." As a result, be aware that if you use
-	 *            AttributeDesignators without Issuer (
-	 *            {@code issuerRequiredInAttributeDesignators == false}) and the
-	 *            requests are using matching Attributes but with one or more
-	 *            different Issuers, this PDP engine has to gather all the
-	 *            values from all the attributes with matching
-	 *            Category/AttributeId but with any Issuer or no Issuer,
+	 *            true iff it is required that all AttributeDesignator set the Issuer field, as a best practice. If the issuer is not set, remember what XACML 3.0 AttributeDesignator Evaluation says:
+	 *            "If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone."
+	 *            As a result, be aware that if you use AttributeDesignators without Issuer ( {@code issuerRequiredInAttributeDesignators == false}) and the requests are using matching Attributes but
+	 *            with one or more different Issuers, this PDP engine has to gather all the values from all the attributes with matching Category/AttributeId but with any Issuer or no Issuer,
 	 *            resulting in lower performance.
-	 * @throws IllegalArgumentException
-	 *             If any of attribute Provider modules created from
-	 *             {@code jaxbAttributeProviderConfs} does not provide any
-	 *             attribute; or it is in conflict with another one already
-	 *             registered to provide the same or part of the same
-	 *             attributes.
-	 * @throws IOException
-	 *             error closing the attribute Provider modules created from
-	 *             {@code jaxbAttributeProviderConfs}, when and before an
-	 *             {@link IllegalArgumentException} is raised
+	 * @throws java.lang.IllegalArgumentException
+	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with another one already registered to
+	 *             provide the same or part of the same attributes.
+	 * @throws java.io.IOException
+	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 */
-	public ExpressionFactoryImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVarRefDepth, boolean allowAttributeSelectors, boolean issuerRequiredInAttributeDesignators) throws IllegalArgumentException, IOException
+	public ExpressionFactoryImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVarRefDepth,
+			boolean allowAttributeSelectors, boolean issuerRequiredInAttributeDesignators) throws IllegalArgumentException, IOException
 	{
 		if (attributeFactory == null)
 		{
@@ -160,27 +136,20 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		this.issuerRequiredOnAttributeDesignators = issuerRequiredInAttributeDesignators;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public VariableReference<?> addVariable(VariableDefinition varDef, XPathCompiler xPathCompiler, Deque<String> inoutLongestVarRefChain) throws IllegalArgumentException
 	{
 		final String varId = varDef.getVariableId();
 		/*
-		 * Initialize the longest variable reference chain from this
-		 * VariableDefinition (varDef -> VarDef2 -> ..., where "v1 -> v2" means:
-		 * v1's expression contains a VariableReference to v2) as empty for
-		 * later update by this#getDefinition() when resolving a
-		 * VariableReference within this varDef's expression (being parsed just
-		 * after). The goal is to detect chains longer than
-		 * this.maxVariableReferenceDepth to limit abuse of VariableReferences.
-		 * There may be multiple VariableReferences in a VariableDefinition's
-		 * expression, such as an Apply, and each may be referencing a different
-		 * VariableDefinition; but we are interested only in the one with the
-		 * longest chain of references.
+		 * Initialize the longest variable reference chain from this VariableDefinition (varDef -> VarDef2 -> ..., where "v1 -> v2" means: v1's expression contains a VariableReference to v2) as empty
+		 * for later update by this#getDefinition() when resolving a VariableReference within this varDef's expression (being parsed just after). The goal is to detect chains longer than
+		 * this.maxVariableReferenceDepth to limit abuse of VariableReferences. There may be multiple VariableReferences in a VariableDefinition's expression, such as an Apply, and each may be
+		 * referencing a different VariableDefinition; but we are interested only in the one with the longest chain of references.
 		 */
 		/*
-		 * we need to check the longest variableReference chain does not have
-		 * circular reference and does not exceed a specific value (need to call
-		 * contains() method repeatedly and preserve the order).
+		 * we need to check the longest variableReference chain does not have circular reference and does not exceed a specific value (need to call contains() method repeatedly and preserve the
+		 * order).
 		 */
 		final Deque<String> longestVarRefChain = inoutLongestVarRefChain == null ? new ArrayDeque<String>() : inoutLongestVarRefChain;
 		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), xPathCompiler, longestVarRefChain);
@@ -188,6 +157,7 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 		return idToVariableMap.put(varId, var);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public VariableReference<?> removeVariable(String varId)
 	{
@@ -195,40 +165,19 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	}
 
 	/**
-	 * Resolves a VariableReference to the corresponding
-	 * VariableReference(Definition) and validates the depth of
-	 * VariableReference, i.e. the length of VariableReference chain. A chain of
-	 * variable references is a list of VariableIds, such that V1 -> V2 ->... ->
-	 * Vn, where 'V1 -> V2' means: V1's Expression contains a VariableReference
-	 * to V2.
+	 * Resolves a VariableReference to the corresponding VariableReference(Definition) and validates the depth of VariableReference, i.e. the length of VariableReference chain. A chain of variable
+	 * references is a list of VariableIds, such that V1 -> V2 ->... -> Vn, where 'V1 -> V2' means: V1's Expression contains a VariableReference to V2.
 	 * 
 	 * @param jaxbVarRef
-	 *            the JAXB/XACML VariableReference with merely identifying a
-	 *            VariableDefinition by its VariableId
+	 *            the JAXB/XACML VariableReference with merely identifying a VariableDefinition by its VariableId
 	 * 
-	 * @return VariableReference containing the resolved VariableDefinition's
-	 *         expression referenced by <code>jaxbVarRef</code> as known by this
-	 *         factory, or null if unknown
+	 * @return VariableReference containing the resolved VariableDefinition's expression referenced by <code>jaxbVarRef</code> as known by this factory, or null if unknown
 	 * @param longestVarRefChain
-	 *            If we are resolving a VariableReference in a
-	 *            VariableDefinition's expression (may be null if not), this is
-	 *            the longest chain of VariableReferences starting from a one in
-	 *            this VariableDefinition. If we are not resolving a
-	 *            VariableReference in a VariableDefinition's expression, this
-	 *            may be null.This is used to detect exceeding reference depth
-	 *            (see {@link #ExpressionFactoryImpl(int)} for the limit. In a
-	 *            Expression such as an Apply, we can have multiple
-	 *            VariableReferences referencing different VariableDefinitions.
-	 *            So we can have different depths of VariableReference
-	 *            references. We compare the length of the current longest chain
-	 *            with the one we would get by adding the longest one in the
-	 *            referenced VariableDefinition and <code>jaxbVarRef</code>'s
-	 *            VariableId. If the latter is longer, its content becomes the
-	 *            content <code>longestVarRefChain</code>.
-	 * 
-	 * @throws ParsingException
-	 *             if the length of VariableReference chain is greater than the
-	 *             defined max for this factory
+	 *            If we are resolving a VariableReference in a VariableDefinition's expression (may be null if not), this is the longest chain of VariableReferences starting from a one in this
+	 *            VariableDefinition. If we are not resolving a VariableReference in a VariableDefinition's expression, this may be null.This is used to detect exceeding reference depth (see
+	 *            {@link #ExpressionFactoryImpl(int)} for the limit. In a Expression such as an Apply, we can have multiple VariableReferences referencing different VariableDefinitions. So we can have
+	 *            different depths of VariableReference references. We compare the length of the current longest chain with the one we would get by adding the longest one in the referenced
+	 *            VariableDefinition and <code>jaxbVarRef</code>'s VariableId. If the latter is longer, its content becomes the content <code>longestVarRefChain</code>.
 	 * @throws UnknownIdentifierException
 	 *             if VariableReference's VariableId is unknown by this factory
 	 */
@@ -255,7 +204,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 
 			if (maxVariableReferenceDepth != UNLIMITED_MAX_VARIABLE_REF_DEPTH && longestVarRefChain.size() > this.maxVariableReferenceDepth)
 			{
-				throw new IllegalArgumentException("Max allowed VariableReference depth (" + this.maxVariableReferenceDepth + ") exceeded by length (" + longestVarRefChain.size() + ") of VariableReference Reference chain: " + longestVarRefChain);
+				throw new IllegalArgumentException("Max allowed VariableReference depth (" + this.maxVariableReferenceDepth + ") exceeded by length (" + longestVarRefChain.size()
+						+ ") of VariableReference Reference chain: " + longestVarRefChain);
 			}
 
 		}
@@ -264,15 +214,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	}
 
 	/**
-	 * Create a function instance using the function registry passed as
-	 * parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)}
-	 * .
-	 * 
-	 * @param functionId
-	 *            function ID (XACML URI)
-	 * @return function instance; or null if no such function with ID
-	 *         {@code functionId}
+	 * {@inheritDoc}
+	 *
+	 * Create a function instance using the function registry passed as parameter to {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
 	 */
 	@Override
 	public Function<?> getFunction(String functionId)
@@ -281,29 +225,9 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	}
 
 	/**
-	 * Create a function instance using the function registry passed as
-	 * parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)}
-	 * .
-	 * 
-	 * @param functionId
-	 *            function ID (XACML URI)
-	 * @param subFunctionReturnType
-	 *            optional sub-function's return type required only if a generic
-	 *            higher-order function is expected as the result, of which the
-	 *            sub-function is expected to be the first parameter; otherwise
-	 *            null (for first-order function). A generic higher-order
-	 *            function is a function whose return type depends on the
-	 *            sub-function ('s return type).
-	 * @return function instance; or null if no such function with ID
-	 *         {@code functionId}, or if non-null
-	 *         {@code subFunctionReturnTypeId} specified and no higher-order
-	 *         function compatible with sub-function's return type
-	 *         {@code subFunctionReturnTypeId}
-	 * @throws IllegalArgumentException
-	 *             if datatype {@code subFunctionReturnType} is not
-	 *             supported/known
-	 * 
+	 * {@inheritDoc}
+	 *
+	 * Create a function instance using the function registry passed as parameter to {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
 	 */
 	@Override
 	public Function<?> getFunction(String functionId, Datatype<?> subFunctionReturnType) throws IllegalArgumentException
@@ -325,19 +249,16 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.thalesgroup.authzforce.core.eval.ExpressionFactory#getInstance(oasis.
-	 * names.tc.xacml._3_0 .core.schema.wd_17.ExpressionType,
-	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType, java.util.List)
+	 * @see com.thalesgroup.authzforce.core.eval.ExpressionFactory#getInstance(oasis. names.tc.xacml._3_0 .core.schema.wd_17.ExpressionType, oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType,
+	 * java.util.List)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain) throws IllegalArgumentException
 	{
 		final Expression<?> expression;
 		/*
-		 * We check all types of Expression: <Apply>, <AttributeSelector>,
-		 * <AttributeValue>, <Function>, <VariableReference> and
-		 * <AttributeDesignator>
+		 * We check all types of Expression: <Apply>, <AttributeSelector>, <AttributeValue>, <Function>, <VariableReference> and <AttributeDesignator>
 		 */
 		if (expr instanceof ApplyType)
 		{
@@ -407,7 +328,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 				expression = func;
 			} else
 			{
-				throw new IllegalArgumentException("Function " + jaxbFunc.getFunctionId() + " is not supported (at least) as standalone Expression: either a generic higher-order function supported only as Apply FunctionId, or function completely unknown.");
+				throw new IllegalArgumentException("Function " + jaxbFunc.getFunctionId()
+						+ " is not supported (at least) as standalone Expression: either a generic higher-order function supported only as Apply FunctionId, or function completely unknown.");
 			}
 		} else if (expr instanceof VariableReferenceType)
 		{
@@ -415,7 +337,8 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 			expression = getVariable(varRefElt, longestVarRefChain);
 		} else
 		{
-			throw new IllegalArgumentException("Expressions of type " + expr.getClass().getSimpleName() + " are not supported. Expected: one of Apply, AttributeDesignator, AttributeSelector, AttributeValue, Function or VariableReference.");
+			throw new IllegalArgumentException("Expressions of type " + expr.getClass().getSimpleName()
+					+ " are not supported. Expected: one of Apply, AttributeDesignator, AttributeSelector, AttributeValue, Function or VariableReference.");
 		}
 
 		return expression;
@@ -424,16 +347,16 @@ public class ExpressionFactoryImpl implements ExpressionFactory
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.thalesgroup.authzforce.core.eval.ExpressionFactory#
-	 * createAttributeValueExpression(oasis
-	 * .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
+	 * @see com.thalesgroup.authzforce.core.eval.ExpressionFactory# createAttributeValueExpression(oasis .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public ValueExpression<? extends AttributeValue> getInstance(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		return this.datatypeFactoryRegistry.createValueExpression(jaxbAttrVal, xPathCompiler);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException
 	{

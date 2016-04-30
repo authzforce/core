@@ -29,11 +29,13 @@ import org.ow2.authzforce.core.pdp.impl.expression.BaseVariableReference;
 
 /**
  * Higher-order bag function
- * 
+ *
  * @param <RETURN_T>
  *            return type
  * @param <SUB_RETURN_PRIMITIVE_T>
  *            sub-function's return (primitive) type. Only functions returning primitive type of result are compatible with higher-order functions here.
+ * @author cdangerv
+ * @version $Id: $
  */
 public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_PRIMITIVE_T extends AttributeValue> extends BaseFunction<RETURN_T>
 {
@@ -50,8 +52,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 	 * @param returnType
 	 *            function's return type
 	 * @param subFunctionReturnType
-	 *            sub-function's return datatype; may be null to indicate any datatype (e.g. map function's sub-function return datatype can be any primitive
-	 *            type)
+	 *            sub-function's return datatype; may be null to indicate any datatype (e.g. map function's sub-function return datatype can be any primitive type)
 	 */
 	HigherOrderBagFunction(String functionId, Datatype<RETURN_T> returnType, Datatype<?> subFunctionReturnType)
 	{
@@ -61,9 +62,9 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Returns the type of attribute value that will be returned by this function.
-	 * 
-	 * @return the return type
 	 */
 	@Override
 	public Datatype<RETURN_T> getReturnType()
@@ -72,19 +73,17 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 	}
 
 	/**
-	 * Creates function call from sub-function definition and all inputs to higher-order function To be overriden by OneBagOnlyFunctions (any-of/all-of)
-	 * 
-	 * @param boolSubFunc
-	 *            boolean sub-function
-	 * @param subFuncArgTypes
-	 *            sub-function argument types
-	 * @param inputs
-	 *            all inputs
+	 * Creates function call from sub-function definition and all inputs to higher-order function. To be overriden by OneBagOnlyFunctions (any-of/all-of)
+	 *
+	 * @param subFunc
+	 *            first-order sub-function
+	 * @param inputsAfterSubFunc
+	 *            sub-function arguments
 	 * @return function call
 	 */
-	protected abstract FunctionCall<RETURN_T> createFunctionCallFromSubFunction(FirstOrderFunction<SUB_RETURN_PRIMITIVE_T> subFunc,
-			List<Expression<?>> inputsAfterSubFunc);
+	protected abstract FunctionCall<RETURN_T> createFunctionCallFromSubFunction(FirstOrderFunction<SUB_RETURN_PRIMITIVE_T> subFunc, List<Expression<?>> inputsAfterSubFunc);
 
+	/** {@inheritDoc} */
 	@Override
 	public final FunctionCall<RETURN_T> newCall(List<Expression<?>> inputs) throws IllegalArgumentException
 	{
@@ -113,8 +112,7 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 		}
 
 		/*
-		 * Check whether it is a FirstOrderFunction because it is the only type of function for which we have a generic way to validate argument types as done
-		 * later below
+		 * Check whether it is a FirstOrderFunction because it is the only type of function for which we have a generic way to validate argument types as done later below
 		 */
 		if (!(inputFunc instanceof FirstOrderFunction))
 		{
@@ -129,15 +127,13 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 			 */
 			if (inputFuncReturnType.getTypeParameter() != null)
 			{
-				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType
-						+ " (bag type). Required: any primitive type");
+				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType + " (bag type). Required: any primitive type");
 			}
 		} else
 		{
 			if (!inputFuncReturnType.equals(subFuncReturnType))
 			{
-				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType + ". Required: "
-						+ subFuncReturnType);
+				throw new IllegalArgumentException(this + ": Invalid return type of function in first argument: " + inputFuncReturnType + ". Required: " + subFuncReturnType);
 			}
 		}
 
@@ -148,5 +144,10 @@ public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_
 		return createFunctionCallFromSubFunction(subFunc, inputs.subList(1, numInputs));
 	}
 
+	/**
+	 * <p>checkNumberOfArgs</p>
+	 *
+	 * @param numInputs a int.
+	 */
 	protected abstract void checkNumberOfArgs(int numInputs);
 }

@@ -50,6 +50,9 @@ import org.slf4j.LoggerFactory;
  * no longer need an instance - especially before replacing with a new instance
  * (with different modules) - in order to make sure these resources are released
  * properly by each underlying module (e.g. invalidate the policy caches).
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public interface RootPolicyEvaluator extends Closeable
 {
@@ -57,10 +60,9 @@ public interface RootPolicyEvaluator extends Closeable
 	 * Finds one and only one policy applicable to the given request context and
 	 * evaluates the request context against it. This will always do a Target
 	 * match to make sure that the given policy applies.
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request data
-	 * 
 	 * @return the result of evaluating the request against the applicable
 	 *         policy; or NotApplicable if none is applicable; or Indeterminate
 	 *         if error determining an applicable policy or more than one
@@ -73,7 +75,7 @@ public interface RootPolicyEvaluator extends Closeable
 	 * Get the statically applicable policies for this evaluator, i.e. the root
 	 * policy and (directly/indirectly) referenced policies, only if statically
 	 * resolved
-	 * 
+	 *
 	 * @return the static root and referenced policies; null if any of these
 	 *         policies is not statically resolved (once and for all)
 	 */

@@ -31,7 +31,9 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
 
 /**
  * Base implementation of DecisionResult
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class BaseDecisionResult implements DecisionResult
 {
@@ -80,7 +82,7 @@ public final class BaseDecisionResult implements DecisionResult
 
 	/**
 	 * Instantiates a generic Decision result
-	 * 
+	 *
 	 * @param decision
 	 *            decision
 	 * @param extendedIndeterminate
@@ -111,7 +113,7 @@ public final class BaseDecisionResult implements DecisionResult
 
 	/**
 	 * Instantiates a Indeterminate Decision result with a given error status
-	 * 
+	 *
 	 * @param extendedIndeterminate
 	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10). We use the following convention:
 	 *            <ul>
@@ -121,7 +123,6 @@ public final class BaseDecisionResult implements DecisionResult
 	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not
 	 *            Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
 	 *            </ul>
-	 * 
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
@@ -133,7 +134,7 @@ public final class BaseDecisionResult implements DecisionResult
 	/**
 	 * Instantiates a Indeterminate Decision result with a given error status and extended Indeterminate set to
 	 * Indeterminate{DP}
-	 * 
+	 *
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
@@ -146,7 +147,7 @@ public final class BaseDecisionResult implements DecisionResult
 	 * Instantiates a Permit/Deny decision with optional obligations and advice. See
 	 * {@link #BaseDecisionResult(Status, DecisionType)} for Indeterminate, and {@link #NOT_APPLICABLE} for
 	 * NotApplicable.
-	 * 
+	 *
 	 * @param decision
 	 *            decision
 	 * @param pepActions
@@ -159,6 +160,7 @@ public final class BaseDecisionResult implements DecisionResult
 
 	private transient volatile int hashCode = 0;
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -171,6 +173,7 @@ public final class BaseDecisionResult implements DecisionResult
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -224,9 +227,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get identifiers of policies found applicable for the decision request
-	 * 
-	 * @return identifiers of policies found applicable for the decision request
 	 */
 	@Override
 	public List<JAXBElement<IdReferenceType>> getApplicablePolicyIdList()
@@ -235,9 +238,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get XACML Decision
-	 * 
-	 * @return decision
 	 */
 	@Override
 	public DecisionType getDecision()
@@ -246,9 +249,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get PEP actions (Obligations/Advices)
-	 * 
-	 * @return PEP actions
 	 */
 	@Override
 	public PepActions getPepActions()
@@ -257,9 +260,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Status code/message/detail
-	 * 
-	 * @return status
 	 */
 	@Override
 	public Status getStatus()
@@ -268,13 +271,10 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Merge extra PEP actions and/or matched policy identifiers. Used when combining results from child Rules of Policy
 	 * or child Policies of PolicySet
-	 * 
-	 * @param newPepActions
-	 *            new PEP actions
-	 * @param newMatchedPolicyIdList
-	 *            new matched policy identifiers
 	 */
 	@Override
 	public void merge(PepActions newPepActions, List<JAXBElement<IdReferenceType>> newMatchedPolicyIdList)
@@ -290,6 +290,7 @@ public final class BaseDecisionResult implements DecisionResult
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{
@@ -297,6 +298,7 @@ public final class BaseDecisionResult implements DecisionResult
 				+ ", applicablePolicyIdList=" + applicablePolicyIdList + "]";
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public DecisionType getExtendedIndeterminate()
 	{

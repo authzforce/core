@@ -27,14 +27,23 @@ import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 
 /**
  * Basic implementation of <code>DatatypeFactoryRegistry</code>.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<DatatypeFactory<?>> implements DatatypeFactoryRegistry
 {
 
+	/** Constant <code>COMPARATOR</code> */
 	protected static final PdpExtensionComparator<DatatypeFactory<?>> COMPARATOR = new PdpExtensionComparator<>();
 
 	private final Set<DatatypeFactory<?>> datatypeFactoryClasses = new HashSet<>();
 
+	/**
+	 * <p>Constructor for BaseDatatypeFactoryRegistry.</p>
+	 *
+	 * @param attributeValueFactories a {@link java.util.Set} object.
+	 */
 	protected BaseDatatypeFactoryRegistry(Set<DatatypeFactory<?>> attributeValueFactories)
 	{
 		super(DatatypeFactory.class, attributeValueFactories);
@@ -42,7 +51,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 
 	/**
 	 * Constructor that configures this factory with an initial set of supported datatypes.
-	 * 
+	 *
 	 * @param baseFactory
 	 *            (base) factory that this factory extends, i.e. this factory inherits all the datatype factories of {@code baseFactory}. If null, this is
 	 *            equivalent to {@link #BaseDatatypeFactoryRegistry()}.
@@ -60,6 +69,13 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 		super(DatatypeFactory.class);
 	}
 
+	/**
+	 * <p>get</p>
+	 *
+	 * @param typeId a {@link java.lang.String} object.
+	 * @return a {@link org.ow2.authzforce.core.pdp.api.DatatypeFactory} object.
+	 * @throws java.lang.IllegalArgumentException if any.
+	 */
 	protected DatatypeFactory<?> get(String typeId) throws IllegalArgumentException
 	{
 		final DatatypeFactory<?> datatypeFactory = getExtension(typeId);
@@ -71,6 +87,16 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 		return datatypeFactory;
 	}
 
+	/**
+	 * <p>createValue</p>
+	 *
+	 * @param datatypeFactory a {@link org.ow2.authzforce.core.pdp.api.DatatypeFactory} object.
+	 * @param jaxbAttrVal a {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType} object.
+	 * @param xPathCompiler a {@link net.sf.saxon.s9api.XPathCompiler} object.
+	 * @param <V> a V object.
+	 * @return a V object.
+	 * @throws java.lang.IllegalArgumentException if any.
+	 */
 	protected static final <V extends AttributeValue> V createValue(DatatypeFactory<V> datatypeFactory, AttributeValueType jaxbAttrVal,
 			XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
@@ -93,6 +119,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 		return new PrimitiveValueExpression<>(datatypeFactory.getDatatype(), rawValue, isStatic);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public PrimitiveValueExpression<?> createValueExpression(AttributeValueType jaxbAttrVal, XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
@@ -105,6 +132,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 	 * 
 	 * @see com.thalesgroup.authzforce.core.BasePdpExtensionRegistry#addExtension(com.thalesgroup.authzforce .core.PdpExtension)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public void addExtension(DatatypeFactory<?> datatypeFactory) throws IllegalArgumentException
 	{

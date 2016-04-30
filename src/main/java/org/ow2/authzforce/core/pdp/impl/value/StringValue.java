@@ -18,8 +18,10 @@ import java.util.Locale;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * Representation of an xs:string value. This class supports parsing xs:string values. All objects of this class are immutable and all methods of the class are
- * thread-safe.
+ * Representation of an xs:string value. This class supports parsing xs:string values. All objects of this class are immutable and all methods of the class are thread-safe.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class StringValue extends SimpleValue<String> implements Comparable<StringValue>
 {
@@ -33,11 +35,11 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 
 	/**
 	 * Convert the lexical XSD string argument into a String value, using {@link javax.xml.bind.DatatypeConverter#parseString(String)}.
-	 * 
+	 *
 	 * @param val
 	 *            A string containing a lexical representation of xsd:string
 	 * @return instance
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code value} is not a valid string representation of xsd:string
 	 */
 	public static StringValue parse(String val) throws IllegalArgumentException
@@ -46,9 +48,9 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 	}
 
 	/**
-	 * Convert string argument - assumed a valid xsd:string into a String value. Use with caution as no xsd:string format validation is done here. For internal
-	 * purposes only. If you need proper input validation, use {@link #parse(String)} instead.
-	 * 
+	 * Convert string argument - assumed a valid xsd:string into a String value. Use with caution as no xsd:string format validation is done here. For internal purposes only. If you need proper input
+	 * validation, use {@link #parse(String)} instead.
+	 *
 	 * @param validXsdString
 	 *            A string containing a valid lexical representation of xsd:string
 	 */
@@ -57,6 +59,7 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 		super(TYPE_URI, validXsdString);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int compareTo(StringValue o)
 	{
@@ -64,17 +67,20 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 	}
 
 	/**
-	 * Same as {@link String#equalsIgnoreCase(String)} on attribute values
-	 * 
-	 * @param otherAttribute
+	 * Same as {@link String#equalsIgnoreCase(String)} on string attribute values
+	 *
+	 * @param other
+	 *            other value to be compared against
 	 * @return true if the other attribute value is not null and it represents an equivalent String ignoring case; false otherwise
 	 */
-	public boolean equalsIgnoreCase(StringValue otherAttribute)
+	public boolean equalsIgnoreCase(StringValue other)
 	{
-		return this.value.equalsIgnoreCase(otherAttribute.value);
+		return this.value.equalsIgnoreCase(other.value);
 	}
 
 	/**
+	 * <p>trim</p>
+	 *
 	 * @see String#trim()
 	 * @return StringAttributeValue with value resulting from <code>value.trim()</code>
 	 */
@@ -86,6 +92,8 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 	}
 
 	/**
+	 * <p>toLowerCase</p>
+	 *
 	 * @see String#toLowerCase(Locale)
 	 * @param locale
 	 *            Locale
@@ -100,7 +108,7 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 
 	/**
 	 * Get string representation of boolean
-	 * 
+	 *
 	 * @param value
 	 *            boolean
 	 * @return string equivalent ("true" or "false")
@@ -112,7 +120,7 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 
 	/**
 	 * Converts BooleanAttributeValue to String
-	 * 
+	 *
 	 * @param value
 	 *            boolean
 	 * @return string equivalent ("true" or "false")
@@ -122,6 +130,7 @@ public final class StringValue extends SimpleValue<String> implements Comparable
 		return value == BooleanValue.TRUE ? TRUE : FALSE;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

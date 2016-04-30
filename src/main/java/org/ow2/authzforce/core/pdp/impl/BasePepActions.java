@@ -29,7 +29,9 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
 
 /**
  * Base PEP actions (obligations/advice)
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class BasePepActions implements PepActions
 {
@@ -83,7 +85,7 @@ public final class BasePepActions implements PepActions
 
 	/**
 	 * Instantiates PEP action set from obligations/advice
-	 * 
+	 *
 	 * @param obligations
 	 *            obligation list; null if no obligation
 	 * @param advices
@@ -96,9 +98,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get the internal obligation list
-	 * 
-	 * @return obligations; empty if no obligation (always non-null)
 	 */
 	@Override
 	public List<Obligation> getObligations()
@@ -107,9 +109,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get the internal advice list
-	 * 
-	 * @return advice; empty if no obligation (always non-null)
 	 */
 	@Override
 	public List<Advice> getAdvices()
@@ -119,6 +121,7 @@ public final class BasePepActions implements PepActions
 
 	private transient volatile int hashCode = 0;
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -130,6 +133,7 @@ public final class BasePepActions implements PepActions
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -148,13 +152,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
-	 * 
-	 * @param newObligations
-	 *            new obligation list
-	 * @param newAdvices
-	 *            new advice list
-	 * 
 	 */
 	@Override
 	public void merge(List<Obligation> newObligations, List<Advice> newAdvices)
@@ -171,10 +171,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
-	 * 
-	 * @param pepActions
-	 *            PEP actions
 	 */
 	@Override
 	public void merge(PepActions pepActions)
@@ -187,6 +186,7 @@ public final class BasePepActions implements PepActions
 		merge(pepActions.getObligations(), pepActions.getAdvices());
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{

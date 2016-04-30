@@ -38,9 +38,11 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 
 /**
  * A superclass of all the standard comparison functions (return a boolean).
- * 
+ *
  * @param <AV>
  *            function parameter type
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class ComparisonFunction<AV extends AttributeValue & Comparable<AV>> extends FirstOrderFunction.SingleParameterTyped<BooleanValue, AV>
 {
@@ -209,6 +211,7 @@ public final class ComparisonFunction<AV extends AttributeValue & Comparable<AV>
 	 * 
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 	{

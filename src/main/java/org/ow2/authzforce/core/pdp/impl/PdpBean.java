@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
@@ -29,17 +27,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SystemPropertyUtils;
 
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.UnknownIdentifierException;
-
 /**
  * JavaBean for the PDP to be used/called as JNDI resource.
- * 
- * In JEE application servers such as Glassfish, you could use class org.glassfish.resources.custom.factory.JavaBeanFactory for registering the custom JNDI
- * resource. More info: http://docs.oracle.com/cd/E26576_01/doc.312/e24930/jndi.htm#giywi
- * 
+ *
+ * In JEE application servers such as Glassfish, you could use class org.glassfish.resources.custom.factory.JavaBeanFactory for registering the custom JNDI resource. More info:
+ * http://docs.oracle.com/cd/E26576_01/doc.312/e24930/jndi.htm#giywi
+ *
  * For Tomcat, see http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html# Adding_Custom_Resource_Factories.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class PdpBean implements PDP
 {
@@ -56,30 +53,30 @@ public final class PdpBean implements PDP
 	private String catalogLocation = null;
 
 	/**
-	 * Configuration file. Only the 'defaultPDP' configuration will be loaded, i.e. 'pdp' element with 'name' matching the 'defaultPDP' attribute of the root
-	 * 'config' element
-	 * 
+	 * Configuration file. Only the 'defaultPDP' configuration will be loaded, i.e. 'pdp' element with 'name' matching the 'defaultPDP' attribute of the root 'config' element
+	 *
 	 * @param filePath
-	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the
-	 *            resource; any placeholder ${...} in the path will be replaced with the corresponding system property value
-	 * @throws JAXBException
+	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the resource; any placeholder ${...} in the path
+	 *            will be replaced with the corresponding system property value
+	 * @throws java.lang.IllegalArgumentException
+	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
-	public void setConfigFile(String filePath) throws JAXBException
+	public void setConfigFile(String filePath) throws IllegalArgumentException
 	{
 		confLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
 	}
 
 	/**
-	 * Configuration schema file. Used only for validating XML configurations (enclosed with 'xml' tag) of PDP extension modules in PDP configuration file set
-	 * with {@link #setConfigFile(String)}
-	 * 
+	 * Configuration schema file. Used only for validating XML configurations (enclosed with 'xml' tag) of PDP extension modules in PDP configuration file set with {@link #setConfigFile(String)}
+	 *
 	 * @param filePath
-	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the
-	 *            resource; any placeholder ${...} in the path will be replaced with the corresponding system property value
-	 * @throws JAXBException
+	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the resource; any placeholder ${...} in the path
+	 *            will be replaced with the corresponding system property value
+	 * @throws java.lang.IllegalArgumentException
+	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
-	public void setSchemaFile(String filePath) throws JAXBException
+	public void setSchemaFile(String filePath) throws IllegalArgumentException
 	{
 		extSchemaLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
@@ -87,29 +84,24 @@ public final class PdpBean implements PDP
 
 	/**
 	 * Set XML catalog for resolving XML entities used in XML schema
-	 * 
+	 *
 	 * @param filePath
-	 * @throws JAXBException
+	 *            configuration file path used as argument to {@link org.springframework.core.io.DefaultResourceLoader#getResource(String)} to resolve the resource; any placeholder ${...} in the path
+	 *            will be replaced with the corresponding system property value
+	 * @throws java.lang.IllegalArgumentException
+	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
-	public void setCatalogFile(String filePath) throws JAXBException
+	public void setCatalogFile(String filePath) throws IllegalArgumentException
 	{
 		catalogLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
 	}
 
-	/**
-	 * 
-	 * @return
-	 * @throws JAXBException
-	 * @throws ParsingException
-	 * @throws UnknownIdentifierException
-	 */
 	private boolean init()
 	{
 		if (!initialized && catalogLocation != null && extSchemaLocation != null && confLocation != null)
 		{
-			LOGGER.info("Loading PDP configuration from file {} with extension schema location '{}' and XML catalog location '{}'", new Object[] {
-					confLocation, extSchemaLocation, catalogLocation });
+			LOGGER.info("Loading PDP configuration from file {} with extension schema location '{}' and XML catalog location '{}'", new Object[] { confLocation, extSchemaLocation, catalogLocation });
 			try
 			{
 				pdp = PdpConfigurationParser.getPDP(confLocation, catalogLocation, extSchemaLocation);
@@ -124,6 +116,7 @@ public final class PdpBean implements PDP
 		return initialized;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Response evaluate(Request request)
 	{
@@ -153,6 +146,7 @@ public final class PdpBean implements PDP
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests)
 	{
@@ -160,6 +154,7 @@ public final class PdpBean implements PDP
 		return pdp.evaluate(individualDecisionRequests);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Response evaluate(Request request, Map<String, String> namespaceURIsByPrefix)
 	{

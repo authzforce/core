@@ -19,9 +19,11 @@ import java.util.Deque;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * Representation of an xs:integer value. This class supports parsing xs:integer values. All objects of this class are immutable and all methods of the class
- * are thread-safe. The actual type of the underlying value is BigInteger. See https://jaxb.java.net/tutorial/section_2_2_2-Numeric-Types.html
- * 
+ * Representation of an xs:integer value. This class supports parsing xs:integer values. All objects of this class are immutable and all methods of the class are thread-safe. The actual type of the
+ * underlying value is BigInteger. See https://jaxb.java.net/tutorial/section_2_2_2-Numeric-Types.html
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> implements Comparable<IntegerValue>
 {
@@ -31,8 +33,8 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	public static final String TYPE_URI = "http://www.w3.org/2001/XMLSchema#integer";
 
 	/*
-	 * WARNING: these static variables must be declared before ZERO static variable, because the latter needs the former to get initialized, and static
-	 * variables are initialized in order of declaration.
+	 * WARNING: these static variables must be declared before ZERO static variable, because the latter needs the former to get initialized, and static variables are initialized in order of
+	 * declaration.
 	 */
 	private static final BigInteger MAX_INT_AS_BIGINT = BigInteger.valueOf(Integer.MAX_VALUE);
 
@@ -45,8 +47,9 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 
 	/**
 	 * Creates instance from integer argument
-	 * 
+	 *
 	 * @param val
+	 *            Java equivalent of xsd:integer
 	 */
 	public IntegerValue(BigInteger val)
 	{
@@ -58,8 +61,9 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	 * <p>
 	 * Be aware that type long is not equivalent to xsd:integer type, BigInteger is. See https://jaxb.java.net/tutorial/section_2_2_2-Numeric-Types.html
 	 * </p>
-	 * 
+	 *
 	 * @param val
+	 *            integer value as Java long
 	 */
 	public IntegerValue(long val)
 	{
@@ -68,9 +72,10 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 
 	/**
 	 * Creates instance from lexical representation of xsd:integer
-	 * 
+	 *
 	 * @param val
-	 * @throws IllegalArgumentException
+	 *            String representation of xsd:integer
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code val} is not a valid string representation of xs:integer
 	 */
 	public IntegerValue(String val) throws IllegalArgumentException
@@ -78,18 +83,21 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 		this(DatatypeConverter.parseInteger(val));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int compareTo(IntegerValue o)
 	{
 		return this.value.compareTo(o.value);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IntegerValue abs()
 	{
 		return new IntegerValue(this.value.abs());
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IntegerValue add(Deque<IntegerValue> others)
 	{
@@ -102,6 +110,7 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 		return new IntegerValue(sum);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IntegerValue multiply(Deque<IntegerValue> others)
 	{
@@ -114,12 +123,14 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 		return new IntegerValue(product);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IntegerValue divide(IntegerValue divisor) throws ArithmeticException
 	{
 		return new IntegerValue(value.divide(divisor.value));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IntegerValue subtract(IntegerValue subtractedVal)
 	{
@@ -128,11 +139,11 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 
 	/**
 	 * Returns this % <code>divisor</code>
-	 * 
+	 *
 	 * @param divisor
 	 *            second argument
 	 * @return this % divisor using {@link BigInteger#remainder(BigInteger)}
-	 * @throws ArithmeticException
+	 * @throws java.lang.ArithmeticException
 	 *             if divisor is zero
 	 */
 	public IntegerValue remainder(IntegerValue divisor) throws ArithmeticException
@@ -142,9 +153,9 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 
 	/**
 	 * Converts this integer to a double as specified by {@link BigInteger#doubleValue()}
-	 * 
+	 *
 	 * @return <code>this</code> as a double
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if this integer is outside the range which can be represented by a double
 	 */
 	public double doubleValue() throws IllegalArgumentException
@@ -160,17 +171,15 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	}
 
 	/**
-	 * 
-	 * Converts this to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException
-	 * is thrown.
+	 *
+	 * Converts this to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException is thrown.
 	 * <p>
 	 * TODO: replace with Java 8 native equivalent - BigInteger#intValueExact() - after upgrade to Java 8
-	 * 
-	 * @see <a href="https://www.securecoding.cert.org/confluence/display/java/NUM00-J.+Detect+or+prevent+integer+overflow">The CERT Oracle Secure Coding
-	 *      Standard for Java - NUM00-J. Detect or prevent integer overflow</a>
-	 * 
+	 *
+	 * @see <a href="https://www.securecoding.cert.org/confluence/display/java/NUM00-J.+Detect+or+prevent+integer+overflow">The CERT Oracle Secure Coding Standard for Java - NUM00-J. Detect or prevent
+	 *      integer overflow</a>
 	 * @return this converted to an int
-	 * @throws ArithmeticException
+	 * @throws java.lang.ArithmeticException
 	 *             if the value of this will not exactly fit in a int.
 	 */
 	public int intValueExact() throws ArithmeticException
@@ -183,6 +192,7 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 		return value.intValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

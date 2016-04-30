@@ -31,21 +31,24 @@ import org.ow2.authzforce.core.pdp.api.VersionPatterns;
  *
  * @param <P>
  *            policy type (or any other type of data corresponding to a specific policy version)
+ * @author cdangerv
+ * @version $Id: $
  */
 public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 {
 	/*
-	 * Version-to-policy map with reverse ordering, to have the latest version first, since, by default, the latest version is always preferred. See §5.10 of
-	 * XACML core spec: "In the case that more than one matching version can be obtained, then the most recent one SHOULD be used."
+	 * Version-to-policy map with reverse ordering, to have the latest version first, since, by default, the latest version is always preferred. See §5.10 of XACML core spec:
+	 * "In the case that more than one matching version can be obtained, then the most recent one SHOULD be used."
 	 */
 	final TreeMap<PolicyVersion, P> policiesByVersion = new TreeMap<>(Collections.reverseOrder());
 
 	/**
 	 * Registers policy in a specific version
-	 * 
+	 *
 	 * @param version
 	 *            policy version
 	 * @param policy
+	 *            policy
 	 * @return previous policy registered at the same version, if any
 	 */
 	public P put(PolicyVersion version, P policy)
@@ -55,8 +58,9 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 
 	/**
 	 * Get policy in a specific version
-	 * 
+	 *
 	 * @param version
+	 *            policy version
 	 * @return policy
 	 */
 	public P get(PolicyVersion version)
@@ -66,7 +70,7 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 
 	/**
 	 * Get latest policy version matching specific version patterns
-	 * 
+	 *
 	 * @param versionPatterns
 	 *            version patterns
 	 * @return latest version; null if none matched
@@ -78,8 +82,8 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 		if (versionPatterns == null)
 		{
 			/*
-			 * Return the latest version which is the first element by design (TreeMap initialized with reverse order on version keys). See §5.10 of XACML core
-			 * spec: "In the case that more than one matching version can be obtained, then the most recent one SHOULD be used."
+			 * Return the latest version which is the first element by design (TreeMap initialized with reverse order on version keys). See §5.10 of XACML core spec:
+			 * "In the case that more than one matching version can be obtained, then the most recent one SHOULD be used."
 			 */
 			return versionPolicyPairsIterator.next();
 		}
@@ -94,8 +98,8 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 			final Entry<PolicyVersion, P> versionPolicyPair = versionPolicyPairsIterator.next();
 			final PolicyVersion version = versionPolicyPair.getKey();
 			/*
-			 * Versions ordered by latest first, so check against constraints' LatestVersion pattern first. If LatestVersion is matched by this version, no need
-			 * to check again for the next versions, as they are already sorted from latest to earliest. If LatestVersion not matched yet, we check now.
+			 * Versions ordered by latest first, so check against constraints' LatestVersion pattern first. If LatestVersion is matched by this version, no need to check again for the next versions,
+			 * as they are already sorted from latest to earliest. If LatestVersion not matched yet, we check now.
 			 */
 			if (!latestVersionMatched)
 			{
@@ -107,8 +111,8 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 			if (latestVersionMatched)
 			{
 				/*
-				 * If EarliestVersion already checked and not matched before, we would have returned null (see below). So at this point, EarliestVersion is
-				 * either not checked yet or already matched. So EarliestVersion no checked iff not already matched.
+				 * If EarliestVersion already checked and not matched before, we would have returned null (see below). So at this point, EarliestVersion is either not checked yet or already matched.
+				 * So EarliestVersion no checked iff not already matched.
 				 */
 				if (!earliestVersionMatched)
 				{
@@ -116,8 +120,7 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 					// check against EarliestVersion pattern
 					earliestVersionMatched = versionPatterns.matchEarliestVersion(version);
 					/*
-					 * If still not matched, version cannot be in the [EarliestVersion, LatestVersion] interval. All next versions are earlier, so they cannot
-					 * be either -> no match
+					 * If still not matched, version cannot be in the [EarliestVersion, LatestVersion] interval. All next versions are earlier, so they cannot be either -> no match
 					 */
 					if (!earliestVersionMatched)
 					{
@@ -141,6 +144,7 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 		return null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Iterator<Entry<PolicyVersion, P>> iterator()
 	{

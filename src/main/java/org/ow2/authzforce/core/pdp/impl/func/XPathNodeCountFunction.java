@@ -39,7 +39,9 @@ import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
  * 'urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression' as an argument and evaluates to an 'http://www.w3.org/2001/XMLSchema#integer'. The value returned
  * from the function SHALL be the count of the nodes within the node-set that match the given XPath expression. If the &lt;Content&gt; element of the category
  * to which the XPath expression applies to is not present in the request, this function SHALL return a value of zero.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParameterTyped<IntegerValue, XPathValue>
 {
@@ -137,6 +139,7 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 	 * 
 	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<IntegerValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 			throws IllegalArgumentException

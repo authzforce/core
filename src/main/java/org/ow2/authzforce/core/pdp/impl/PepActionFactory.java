@@ -32,7 +32,7 @@ public interface PepActionFactory<JAXB_T>
 {
 	/**
 	 * Creates instance of PEP action (obligation/advice)
-	 * 
+	 *
 	 * @param attributeAssignments
 	 *            XML/JAXB AttributeAssignments in the PEP action
 	 * @param actionId
@@ -43,7 +43,7 @@ public interface PepActionFactory<JAXB_T>
 
 	/**
 	 * Get name of PEP Action element in XACML model, e.g. 'Obligation'
-	 * 
+	 *
 	 * @return action element name
 	 */
 	String getActionXmlElementName();

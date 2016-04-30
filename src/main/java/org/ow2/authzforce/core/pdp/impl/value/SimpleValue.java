@@ -28,15 +28,13 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 import org.ow2.authzforce.core.pdp.api.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.BaseDatatypeFactory;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
 import org.w3c.dom.Element;
 
 /**
  * <p>
- * Superclass of all "simple" Attribute Values, including values of any XACML standard datatype; "simple" as in "simple type" or "simple content" of XML schema.
- * This means the value can be represented as character data only (String) with no sub-elements (no XML elements) - but with possibly extra XML attributes - as
- * opposed to structured values that have sub-elements. In this definition, all XACML core standard primitive types are "simple" types, and their corresponding
- * Java classes extend this class.
+ * Superclass of all "simple" Attribute Values, including values of any XACML standard datatype; "simple" as in "simple type" or "simple content" of XML schema. This means the value can be represented
+ * as character data only (String) with no sub-elements (no XML elements) - but with possibly extra XML attributes - as opposed to structured values that have sub-elements. In this definition, all
+ * XACML core standard primitive types are "simple" types, and their corresponding Java classes extend this class.
  * </p>
  * <p>
  * Following JAXB fields (inherited from superclass {@link AttributeValueType}) are immutable:
@@ -47,17 +45,17 @@ import org.w3c.dom.Element;
  * </ul>
  * </p>
  * <p>
- * For reasons of optimizations and in order to be an immutable value, the {@code content} field (from superclass {@link AttributeValueType} is never set here,
- * and setting it in implementations will have no effect, since this class overrides {@link #getContent()} (with 'final' modifier) with its own value returned
- * by {@link #printXML()}. Therefore, implementations customize the result of {@link #getContent()} in implementing {@link #printXML()}. As JAXB marshalls the
- * content by using the annotated the {@code content} field directly, as this is not set in this class, DO NOT use it for marshalling. It is expected that the
- * content is used only when marshalling AttributeAssignments (e.g. in XACML response), in which case the class responsible for creating the
+ * For reasons of optimizations and in order to be an immutable value, the {@code content} field (from superclass {@link AttributeValueType} is never set here, and setting it in implementations will
+ * have no effect, since this class overrides {@link #getContent()} (with 'final' modifier) with its own value returned by {@link #printXML()}. Therefore, implementations customize the result of
+ * {@link #getContent()} in implementing {@link #printXML()}. As JAXB marshalls the content by using the annotated the {@code content} field directly, as this is not set in this class, DO NOT use it
+ * for marshalling. It is expected that the content is used only when marshalling AttributeAssignments (e.g. in XACML response), in which case the class responsible for creating the
  * AttributeAssignments MUST call {@link #getContent()} to get/marshall the actual content.
  * </p>
- * 
+ *
  * @param <V>
  *            underlying Java value type
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public abstract class SimpleValue<V> extends AttributeValue
 {
@@ -72,7 +70,12 @@ public abstract class SimpleValue<V> extends AttributeValue
 	{
 
 		/**
-		 * @see DatatypeFactory#Factory(Class, String)
+		 * Creates a datatype factory from the Java datatype implementation class and atatype identifier
+		 * 
+		 * @param instanceClass
+		 *            Java implementation class representing the attribute datatype
+		 * @param datatypeId
+		 *            datatype identifier
 		 */
 		protected Factory(Class<AV> instanceClass, String datatypeId)
 		{
@@ -93,9 +96,8 @@ public abstract class SimpleValue<V> extends AttributeValue
 		public abstract AV getInstance(String val, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler);
 
 		/**
-		 * Creates an instance of {@code F_AV} from a XACML AttributeValueType-originating content ( {@code jaxbAttrVal.getContent()}) of which must contain a
-		 * single value that is a valid String representation for datatype {@code datatype} and possibly other XML attributes; or no value at all, in which case
-		 * it is considered as the empty string. An example of the latter case is:
+		 * Creates an instance of {@code F_AV} from a XACML AttributeValueType-originating content ( {@code jaxbAttrVal.getContent()}) of which must contain a single value that is a valid String
+		 * representation for datatype {@code datatype} and possibly other XML attributes; or no value at all, in which case it is considered as the empty string. An example of the latter case is:
 		 * 
 		 * <pre>
 		 * {@literal <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string"/>}
@@ -104,8 +106,8 @@ public abstract class SimpleValue<V> extends AttributeValue
 		 * @param content
 		 *            XACML AttributeValue content, i.e. list of JAXB content elements of the following types: {@link String}, {@link Element}
 		 * @throws IllegalArgumentException
-		 *             i if {@code datatype == null || content == null} or if there is more than one element in {@code content}, or first element in
-		 *             {@code content} is not a valid string representation for this datatype
+		 *             i if {@code datatype == null || content == null} or if there is more than one element in {@code content}, or first element in {@code content} is not a valid string
+		 *             representation for this datatype
 		 */
 		@Override
 		public AV getInstance(List<Serializable> content, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException
@@ -124,8 +126,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 				final Serializable content0 = contentIterator.next();
 				if (!(content0 instanceof String))
 				{
-					throw new IllegalArgumentException("Invalid primitive AttributeValueType: content contains instance of " + content0.getClass().getName()
-							+ ". Expected: " + String.class);
+					throw new IllegalArgumentException("Invalid primitive AttributeValueType: content contains instance of " + content0.getClass().getName() + ". Expected: " + String.class);
 				}
 
 				inputStrVal = (String) content0;
@@ -141,8 +142,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 	}
 
 	/**
-	 * Datatype-specific Attribute Value Factory that supports values only based on string content, without any XML attributes, and independent from the
-	 * context, i.e. constant values.
+	 * Datatype-specific Attribute Value Factory that supports values only based on string content, without any XML attributes, and independent from the context, i.e. constant values.
 	 * 
 	 * @param <AV>
 	 *            type of attribute values created by this factory
@@ -199,17 +199,13 @@ public abstract class SimpleValue<V> extends AttributeValue
 	private transient volatile List<Serializable> xmlString = null;
 
 	/**
-	 * Constructor from Java type of value. A Serializable JAXB-compatible form of the value must be provided to be used directly as first value in
-	 * {@link #getContent()}
-	 * 
+	 * Constructor from Java type of value. A Serializable JAXB-compatible form of the value must be provided to be used directly as first value in {@link #getContent()}
+	 *
 	 * @param datatypeId
 	 *            attribute datatype ID. MUST NOT be null.
 	 * @param rawVal
 	 *            internal Java native value
-	 * @param otherXmlAttributes
-	 *            (optional) other XML attributes on the xpathExpression AttributeValue node, one of which is expected to be the
-	 *            {@value #XPATH_CATEGORY_ATTRIBUTE_QNAME }
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code datatype == null || jaxbVal == null}
 	 */
 	protected SimpleValue(String datatypeId, V rawVal) throws IllegalArgumentException
@@ -224,10 +220,9 @@ public abstract class SimpleValue<V> extends AttributeValue
 	}
 
 	/**
-	 * Returns the internal low-level Java value on which this AttributeValue is based off. This method is provided mostly for convenience, especially for
-	 * low-level operations. However, you should not use it unless there is no other way. Prefer the high-level methods provided by the concrete
-	 * {@link SimpleValue} implementation if you need to do operations on it.
-	 * 
+	 * Returns the internal low-level Java value on which this AttributeValue is based off. This method is provided mostly for convenience, especially for low-level operations. However, you should not
+	 * use it unless there is no other way. Prefer the high-level methods provided by the concrete {@link SimpleValue} implementation if you need to do operations on it.
+	 *
 	 * @return the value
 	 */
 	public final V getUnderlyingValue()
@@ -236,14 +231,15 @@ public abstract class SimpleValue<V> extends AttributeValue
 	}
 
 	/**
-	 * Converts the internal value (accessible via {@link #getUnderlyingValue()} to a valid lexical representation for XML marshalling. Equivalent to the
-	 * 'printMethod' in JAXB 'javaType' binding customizations. Implementations of this typically call {@link DatatypeConverter}. This method is called by
-	 * {@link #getContent()} and its result cached by the same method for later use. Therefore, no need to cache the result in the implementation.
-	 * 
+	 * Converts the internal value (accessible via {@link #getUnderlyingValue()} to a valid lexical representation for XML marshalling. Equivalent to the 'printMethod' in JAXB 'javaType' binding
+	 * customizations. Implementations of this typically call {@link DatatypeConverter}. This method is called by {@link #getContent()} and its result cached by the same method for later use.
+	 * Therefore, no need to cache the result in the implementation.
+	 *
 	 * @return XML-valid lexical representation.
 	 */
 	public abstract String printXML();
 
+	/** {@inheritDoc} */
 	@Override
 	public final List<Serializable> getContent()
 	{
@@ -260,6 +256,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{
@@ -270,6 +267,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 		return toString;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -281,6 +279,7 @@ public abstract class SimpleValue<V> extends AttributeValue
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{

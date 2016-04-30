@@ -24,6 +24,8 @@ import org.springframework.util.PropertyPlaceholderHelper;
 /**
  * Default implementation of PDP configuration parser's environment properties.
  *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class DefaultEnvironmentProperties implements EnvironmentProperties
 {
@@ -46,7 +48,7 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 
 	/**
 	 * Constructs instance from existing properties in a map
-	 * 
+	 *
 	 * @param envProps
 	 *            environment properties
 	 */
@@ -66,6 +68,7 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String replacePlaceholders(String input)
 	{

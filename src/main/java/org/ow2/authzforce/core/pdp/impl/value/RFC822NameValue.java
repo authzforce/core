@@ -20,10 +20,13 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 /**
- * Representation of an RFC 822 email address. The valid syntax for such a name is described in IETF RFC 2821, Section 4.1.2, 4019 Command Argument Syntax,
- * under the term "Mailbox". Mailbox = Local-part "@" Domain
+ * Representation of an RFC 822 email address. The valid syntax for such a name is described in IETF RFC 2821, Section 4.1.2, 4019 Command Argument Syntax, under the term "Mailbox". Mailbox =
+ * Local-part "@" Domain
  * <p>
  * N.B.: This is more restrictive than a generic RFC 822 name.
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class RFC822NameValue extends SimpleValue<String>
 {
@@ -39,8 +42,9 @@ public final class RFC822NameValue extends SimpleValue<String>
 
 	/**
 	 * Creates instance from InternetAddress
-	 * 
+	 *
 	 * @param address
+	 *            Java equivalent of RFC822Name
 	 */
 	public RFC822NameValue(InternetAddress address)
 	{
@@ -59,26 +63,25 @@ public final class RFC822NameValue extends SimpleValue<String>
 		}
 
 		/*
-		 * The result value SHALL be the "string in the form it was originally represented in XML form" to make sure the string-from-ipAddress function works as
-		 * expected
+		 * The result value SHALL be the "string in the form it was originally represented in XML form" to make sure the string-from-ipAddress function works as expected
 		 */
 		return stringForm;
 	}
 
 	/**
 	 * Creates a new <code>RFC822NameAttributeValue</code> that represents the value supplied.
-	 * 
+	 *
 	 * @param value
 	 *            the email address to be represented
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code value} is not a valid string representation of XACML rfc822Name
 	 */
 	public RFC822NameValue(String value) throws IllegalArgumentException
 	{
 		super(TYPE_URI, validate(value));
 		/*
-		 * The validation with InternetAddress class in parse() method is not enough because InternetAddress is much less restrictive than this XACML type,
-		 * since it takes names without '@' such as "sun" or "sun.com" as valid.
+		 * The validation with InternetAddress class in parse() method is not enough because InternetAddress is much less restrictive than this XACML type, since it takes names without '@' such as
+		 * "sun" or "sun.com" as valid.
 		 */
 		final String[] parts = this.value.split("@", 2);
 		if (parts.length < 2)
@@ -113,6 +116,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -129,6 +133,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -152,7 +157,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 
 	/**
 	 * Implements function 'urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match'
-	 * 
+	 *
 	 * @param maybePartialRfc822Name
 	 *            used as first argument to the function
 	 * @return true if match
@@ -167,8 +172,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 			 */
 			if (arobaseIndex < 1 || arobaseIndex > maybePartialRfc822Name.length() - 2)
 			{
-				throw new IllegalArgumentException("Invalid first arg to function 'rfc822Name-match': " + maybePartialRfc822Name
-						+ " missing local-part/domain-part");
+				throw new IllegalArgumentException("Invalid first arg to function 'rfc822Name-match': " + maybePartialRfc822Name + " missing local-part/domain-part");
 			}
 
 			final String otherLocalPart = maybePartialRfc822Name.substring(0, arobaseIndex);
@@ -185,9 +189,8 @@ public final class RFC822NameValue extends SimpleValue<String>
 		{
 			// this is case #3 : a sub-domain of this domain (ignore case)
 			/*
-			 * Either the arg without the dot is equal to this domain-part (ignore case), or the arg is a suffix of this domain-part (with the dot! if you
-			 * removed the dot, it could be a suffix witouth being a valid subdomain; e.g. ".east.sun.com" matches domain-part "isrg.east.sun.com" but must not
-			 * match "northeast.sun.com" although it is a valid suffix without the dot)
+			 * Either the arg without the dot is equal to this domain-part (ignore case), or the arg is a suffix of this domain-part (with the dot! if you removed the dot, it could be a suffix witouth
+			 * being a valid subdomain; e.g. ".east.sun.com" matches domain-part "isrg.east.sun.com" but must not match "northeast.sun.com" although it is a valid suffix without the dot)
 			 */
 			final String otherToLowerCase = maybePartialRfc822Name.toLowerCase(Locale.US);
 			return this.domainPartLowerCase.endsWith(otherToLowerCase) || this.domainPartLowerCase.equals(otherToLowerCase.substring(1));
@@ -197,6 +200,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 		return this.domainPartLowerCase.equalsIgnoreCase(maybePartialRfc822Name);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

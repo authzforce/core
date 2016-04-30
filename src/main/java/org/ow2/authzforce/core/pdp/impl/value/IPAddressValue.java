@@ -28,7 +28,9 @@ import com.sun.xacml.PortRange;
 
 /**
  * Represents the IPAddress datatype introduced in XACML 2.0. All objects of this class are immutable and all methods of the class are thread-safe.
- * 
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class IPAddressValue extends SimpleValue<String>
 {
@@ -181,10 +183,10 @@ public final class IPAddressValue extends SimpleValue<String>
 
 	/**
 	 * Instantiates from string representation
-	 * 
+	 *
 	 * @param val
 	 *            string form of IP address
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code val} is not a valid XACML IPAddress string
 	 */
 	public IPAddressValue(String val) throws IllegalArgumentException
@@ -231,6 +233,7 @@ public final class IPAddressValue extends SimpleValue<String>
 
 	private transient volatile int hashCode = 0; // Effective Java - Item 9
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -248,6 +251,7 @@ public final class IPAddressValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -271,6 +275,7 @@ public final class IPAddressValue extends SimpleValue<String>
 		return this.mask == null ? other.mask == null : this.mask.equals(other.mask);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String printXML()
 	{

@@ -40,12 +40,13 @@ import org.ow2.authzforce.core.pdp.impl.value.X500NameValue;
 
 /**
  * Implements generic match functions taking two parameters of possibly different types, e.g. a string and a URI.
- * 
+ *
  * @param <T0>
  *            Type of the first parameter of this function.
  * @param <T1>
  *            Type of the second parameter of this function.
- * 
+ * @author cdangerv
+ * @version $Id: $
  */
 public final class NonEqualTypeMatchFunction<T0 extends AttributeValue, T1 extends AttributeValue> extends FirstOrderFunction.MultiParameterTyped<BooleanValue>
 {
@@ -201,6 +202,7 @@ public final class NonEqualTypeMatchFunction<T0 extends AttributeValue, T1 exten
 		this.funcCallFactory = callFactoryBuilder.build(functionSignature, paramType0, paramType1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

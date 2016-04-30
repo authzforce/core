@@ -27,10 +27,13 @@ import org.ow2.authzforce.core.pdp.api.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 
 /**
- * Combining algorithm set. Allows to group combining algorithms, especially when it is actually the same generic algorithm but with different IDs, such as most
- * standard algorithms which are the same for policy combining and rule combining algorithm IDs.
- * 
+ * Combining algorithm set. Allows to group combining algorithms, especially when it is actually the same generic algorithm but with different IDs, such as most standard algorithms which are the same
+ * for policy combining and rule combining algorithm IDs.
+ *
  * TODO: consider making it a PdpExtension like FunctionSet, or generic PdpExtensionSet
+ *
+ * @author cdangerv
+ * @version $Id: $
  */
 public class CombiningAlgSet
 {
@@ -38,8 +41,9 @@ public class CombiningAlgSet
 
 	/**
 	 * Creates set from multiple combining algorithms
-	 * 
+	 *
 	 * @param algorithms
+	 *            XACML policy/rule combining algorithms added to the set
 	 */
 	public CombiningAlgSet(CombiningAlg<?>... algorithms)
 	{
@@ -48,8 +52,9 @@ public class CombiningAlgSet
 
 	/**
 	 * Creates a set as a copy of an existing set
-	 * 
+	 *
 	 * @param algorithms
+	 *            XACML policy/rule combining algorithms added to the set
 	 */
 	public CombiningAlgSet(Set<CombiningAlg<?>> algorithms)
 	{
@@ -57,9 +62,9 @@ public class CombiningAlgSet
 	}
 
 	/**
-	 * Returns a single instance of each of the functions supported by some class. The <code>Set</code> must contain instances of <code>Function</code>, and it
-	 * must be both non-null and non-empty. It may contain only a single <code>Function</code>.
-	 * 
+	 * Returns a single instance of each of the functions supported by some class. The <code>Set</code> must contain instances of <code>Function</code>, and it must be both non-null and non-empty. It
+	 * may contain only a single <code>Function</code>.
+	 *
 	 * @return the functions members of this group
 	 */
 	public Set<CombiningAlg<? extends Decidable>> getSupportedAlgorithms()

@@ -21,6 +21,12 @@ import org.ow2.authzforce.core.pdp.api.Bag;
 import org.ow2.authzforce.core.pdp.api.Datatype;
 import org.ow2.authzforce.core.pdp.api.ValueExpression;
 
+/**
+ * Bag value expression
+ *
+ * @param <BV>
+ *            bag type
+ */
 public class BagValueExpression<BV extends Bag<?>> extends ValueExpression<BV>
 {
 

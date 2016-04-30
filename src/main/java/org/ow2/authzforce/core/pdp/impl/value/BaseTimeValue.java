@@ -20,10 +20,12 @@ import javax.xml.namespace.QName;
 /**
  * Superclass of date/time attribute values, i.e. XML schema date/time values. The choice of the Java type <code>XMLGregorianCalendar</code> is based on JAXB
  * schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
- * 
+ *
  * @param <TAV>
  *            type of result returned by arithmetic functions with this type of arguments: {@link #add(DurationValue)}, {@link #subtract(DurationValue)}, etc.
  *            Basically, we expect that arithmetic functions applied to this type T will return a result of the same type T.
+ * @author cdangerv
+ * @version $Id: $
  */
 /*
  * Do not replace "Time" with "Temporal" in the class name because it is NOT used for Durations (dayTimeDuration, yearMonthDuration...)
@@ -43,14 +45,14 @@ public abstract class BaseTimeValue<TAV extends BaseTimeValue<TAV>> extends Simp
 
 	/**
 	 * Instantiate date/time attribute value
-	 * 
+	 *
 	 * @param datatypeId
 	 *            datatype URI
 	 * @param val
 	 *            string representation of instance of this datatype
 	 * @param xsdDatatypeQName
 	 *            Fully qualified name for the date/time W3C XML Schema 1.0 datatype.
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code datatype == null || val == null}
 	 */
 	public BaseTimeValue(String datatypeId, XMLGregorianCalendar val, QName xsdDatatypeQName) throws IllegalArgumentException
@@ -60,7 +62,7 @@ public abstract class BaseTimeValue<TAV extends BaseTimeValue<TAV>> extends Simp
 
 	/**
 	 * Add duration to this time
-	 * 
+	 *
 	 * @param durationVal
 	 *            duration value
 	 * @return this + durationVal
@@ -69,7 +71,7 @@ public abstract class BaseTimeValue<TAV extends BaseTimeValue<TAV>> extends Simp
 
 	/**
 	 * Subtract duration to this time
-	 * 
+	 *
 	 * @param durationVal
 	 *            duration value
 	 * @return this - durationVal
@@ -77,13 +79,9 @@ public abstract class BaseTimeValue<TAV extends BaseTimeValue<TAV>> extends Simp
 	abstract public TAV subtract(DurationValue<?> durationVal);
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Compares internal date/time value ({@link XMLGregorianCalendar}) to another, using {@link XMLGregorianCalendar#compare(XMLGregorianCalendar)}
-	 * 
-	 * @param o
-	 *            compared date/time value
-	 * @return result of {@link XMLGregorianCalendar#compare(XMLGregorianCalendar)}
-	 * @throws IllegalArgumentException
-	 *             if and only if result is {@link DatatypeConstants#INDETERMINATE}
 	 */
 	@Override
 	public final int compareTo(TAV o) throws IllegalArgumentException
@@ -97,6 +95,7 @@ public abstract class BaseTimeValue<TAV extends BaseTimeValue<TAV>> extends Simp
 		return result;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final String printXML()
 	{
