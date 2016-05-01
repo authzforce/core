@@ -56,8 +56,8 @@ public final class DNSNameValue extends SimpleValue<String>
 	}
 
 	/*
-	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom
-	 * functions dealing with network access control for instance.
+	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom functions dealing with network access
+	 * control for instance.
 	 */
 	// the required hostname
 	private final String hostname;
@@ -73,7 +73,7 @@ public final class DNSNameValue extends SimpleValue<String>
 	/**
 	 * Private helper that tests whether the given string is valid.
 	 * 
-	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead
+	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead, but first make sure this issue is fixed: https://issues.apache.org/jira/browse/VALIDATOR-366
 	 */
 	private static boolean isValidHostName(String hostname)
 	{
@@ -179,8 +179,7 @@ public final class DNSNameValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 * 
-	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange
-	 * attribute (more optimal than String equals)
+	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange attribute (more optimal than String equals)
 	 */
 	/** {@inheritDoc} */
 	@Override
