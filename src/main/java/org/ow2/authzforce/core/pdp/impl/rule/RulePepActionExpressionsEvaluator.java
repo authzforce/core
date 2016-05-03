@@ -51,6 +51,8 @@ public class RulePepActionExpressionsEvaluator
 	 */
 	private static class ActionExpressionsParser implements PepActionExpressions
 	{
+		private static final IllegalArgumentException UNDEF_RULE_EFFECT_ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Rule's Effect to which obligations/advice must apply");
+
 		private static final Logger LOGGER = LoggerFactory.getLogger(ActionExpressionsParser.class);
 
 		private final XPathCompiler xPathCompiler;
@@ -71,7 +73,7 @@ public class RulePepActionExpressionsEvaluator
 		{
 			if (ruleEffect == null)
 			{
-				throw new IllegalArgumentException("Undefined Rule's Effect to which obligations/advice must apply");
+				throw UNDEF_RULE_EFFECT_ILLEGAL_ARGUMENT_EXCEPTION;
 			}
 
 			this.ruleEffectMatchingActionExpressions = new EffectSpecific(ruleEffect);

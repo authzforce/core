@@ -31,6 +31,8 @@ import javax.mail.internet.InternetAddress;
 public final class RFC822NameValue extends SimpleValue<String>
 {
 
+	private static final IllegalArgumentException INVALID_RFC822NAME_MATCH_ARG0_EXCEPTION = new IllegalArgumentException("Invalid first arg to function 'rfc822Name-match': empty string");
+
 	/**
 	 * Official name of this type
 	 */
@@ -182,7 +184,7 @@ public final class RFC822NameValue extends SimpleValue<String>
 
 		if (maybePartialRfc822Name.isEmpty())
 		{
-			throw new IllegalArgumentException("Invalid first arg to function 'rfc822Name-match': empty string");
+			throw INVALID_RFC822NAME_MATCH_ARG0_EXCEPTION;
 		}
 
 		if (maybePartialRfc822Name.charAt(0) == '.')

@@ -34,6 +34,8 @@ import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
  */
 public class MutableIndividualDecisionRequest implements IndividualDecisionRequest
 {
+	private static final IllegalArgumentException UNDEF_ATTRIBUTES_EXCEPTION = new IllegalArgumentException("Undefined attributes");
+	private static final IllegalArgumentException UNDEF_ATTRIBUTE_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute category");
 	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 	private final Map<String, XdmNode> extraContentsByCategory;
 	private final List<Attributes> attributesToIncludeInResult;
@@ -86,12 +88,12 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	{
 		if (categoryName == null)
 		{
-			throw new IllegalArgumentException("Undefined attribute category");
+			throw UNDEF_ATTRIBUTE_CATEGORY_EXCEPTION;
 		}
 
 		if (categorySpecificAttributes == null)
 		{
-			throw new IllegalArgumentException("Undefined attributes");
+			throw UNDEF_ATTRIBUTES_EXCEPTION;
 		}
 
 		/*

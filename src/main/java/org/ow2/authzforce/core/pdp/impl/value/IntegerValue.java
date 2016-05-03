@@ -27,6 +27,11 @@ import javax.xml.bind.DatatypeConverter;
  */
 public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> implements Comparable<IntegerValue>
 {
+	private static final IllegalArgumentException TOO_BIGINTEGER_FOR_DOUBLE_ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"BigInteger argument outside the range which can be represented by a double");
+
+	private static final ArithmeticException TOO_BIGINTEGER_FOR_INT_ARITHMETIC_EXCEPTION = new ArithmeticException("BigInteger argument outside the range which can be represented by an int");
+
 	/**
 	 * Official name of this type
 	 */
@@ -164,21 +169,11 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 		if (Double.isInfinite(doubleVal) || Double.isNaN(doubleVal))
 		{
 			// this BigInteger has too great a magnitude to represent as a double
-			throw new IllegalArgumentException("integer argument outside the range which can be represented by a double");
+			throw TOO_BIGINTEGER_FOR_DOUBLE_ILLEGAL_ARGUMENT_EXCEPTION;
 		}
 
 		return doubleVal;
 	}
-
-	// public int intValueExact() throws ArithmeticException
-	// {
-	// if (value.compareTo(MAX_INT_AS_BIGINT) == 1 || value.compareTo(MIN_INT_AS_BIGINT) == -1)
-	// {
-	// throw new ArithmeticException("Integer overflow");
-	// }
-	//
-	// return value.intValue();
-	// }
 
 	/**
 	 *
@@ -198,7 +193,7 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	{
 		if (val.compareTo(MAX_INT_AS_BIGINT) == 1 || val.compareTo(MIN_INT_AS_BIGINT) == -1)
 		{
-			throw new ArithmeticException("Integer overflow");
+			throw TOO_BIGINTEGER_FOR_INT_ARITHMETIC_EXCEPTION;
 		}
 
 		return val.intValue();
