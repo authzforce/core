@@ -1,6 +1,11 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
+## Unreleased
+### Fixed 
+- Removing Javadoc @author tag added automatically by maven Javadoc plugin without us knowing
+- PDP schema: removed limits (100) for maxVarRefDepth and maxPolicyRefDepth attributes. Hard arbitrary limits should not be in the XML schema.
+
 ## 3.8.2
 ### Fixed
 - Javadoc comments
