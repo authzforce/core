@@ -17,6 +17,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
@@ -319,11 +320,28 @@ public class PdpConfigurationParser
 		// decision cache
 		final AbstractDecisionCache jaxbDecisionCache = pdpJaxbConf.getDecisionCache();
 
-		final Integer maxVarRefDepth = pdpJaxbConf.getMaxVariableRefDepth();
-		final Integer maxPolicyRefDepth = pdpJaxbConf.getMaxPolicyRefDepth();
-		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), maxVarRefDepth == null ? -1 : maxVarRefDepth, enableXPath, combiningAlgRegistry,
-				pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth == null ? -1 : maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(),
-				pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache, envProps);
+		final BigInteger bigMaxVarRefDepth = pdpJaxbConf.getMaxVariableRefDepth();
+		final int maxVarRefDepth;
+		try
+		{
+			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.impl.value.IntegerValue.intValueExact(bigMaxVarRefDepth);
+		} catch (ArithmeticException e)
+		{
+			throw new IllegalArgumentException("Invalid maxVariableRefDepth: " + bigMaxVarRefDepth, e);
+		}
+
+		final BigInteger bigMaxPolicyRefDepth = pdpJaxbConf.getMaxPolicyRefDepth();
+		final int maxPolicyRefDepth;
+		try
+		{
+			maxPolicyRefDepth = bigMaxPolicyRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.impl.value.IntegerValue.intValueExact(bigMaxPolicyRefDepth);
+		} catch (ArithmeticException e)
+		{
+			throw new IllegalArgumentException("Invalid maxPolicyRefDepth: " + bigMaxPolicyRefDepth, e);
+		}
+
+		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), maxVarRefDepth, enableXPath, combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(),
+				pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache, envProps);
 	}
 
 	private static boolean isXpathBased(Function<?> function)

@@ -177,6 +177,23 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 
 	/**
 	 *
+	 * Converts this value to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException is thrown.
+	 * <p>
+	 * TODO: replace with Java 8 native equivalent - BigInteger#intValueExact() - after upgrade to Java 8
+	 * 
+	 * @see <a href="https://www.securecoding.cert.org/confluence/display/java/NUM00-J.+Detect+or+prevent+integer+overflow">The CERT Oracle Secure Coding Standard for Java - NUM00-J. Detect or prevent
+	 *      integer overflow</a>
+	 * @return this converted to an int
+	 * @throws java.lang.ArithmeticException
+	 *             if the value of this will not exactly fit in a int.
+	 */
+	public int intValueExact() throws ArithmeticException
+	{
+		return intValueExact(value);
+	}
+
+	/**
+	 *
 	 * Converts BigInteger to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException is thrown.
 	 * <p>
 	 * TODO: replace with Java 8 native equivalent - BigInteger#intValueExact() - after upgrade to Java 8

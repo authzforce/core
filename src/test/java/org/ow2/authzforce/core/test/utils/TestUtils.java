@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.DirectoryIteratorException;
@@ -94,10 +95,9 @@ public class TestUtils
 	public static Request createRequest(String requestFileLocation, NamespaceFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
 	{
 		/**
-		 * Get absolute path/URL to request file in a portable way, using current class loader. As per javadoc, the name of the resource passed to
-		 * ClassLoader.getResource() is a '/'-separated path name that identifies the resource. So let's build it. Note: do not use File.separator as path
-		 * separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c) by the getResource() method (not considered path
-		 * separator by this method), and file will not be found as a result.
+		 * Get absolute path/URL to request file in a portable way, using current class loader. As per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path
+		 * name that identifies the resource. So let's build it. Note: do not use File.separator as path separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c)
+		 * by the getResource() method (not considered path separator by this method), and file will not be found as a result.
 		 */
 		URL requestFileURL = ResourceUtils.getURL(requestFileLocation);
 		if (requestFileURL == null)
@@ -126,10 +126,9 @@ public class TestUtils
 	public static Response createResponse(String responseFileLocation, NamespaceFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
 	{
 		/**
-		 * Get absolute path/URL to response file in a portable way, using current class loader. As per javadoc, the name of the resource passed to
-		 * ClassLoader.getResource() is a '/'-separated path name that identifies the resource. So let's build it. Note: do not use File.separator as path
-		 * separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c) by the getResource() method (not considered path
-		 * separator by this method), and file will not be found as a result.
+		 * Get absolute path/URL to response file in a portable way, using current class loader. As per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path
+		 * name that identifies the resource. So let's build it. Note: do not use File.separator as path separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c)
+		 * by the getResource() method (not considered path separator by this method), and file will not be found as a result.
 		 */
 		URL responseFileURL = ResourceUtils.getURL(responseFileLocation);
 		LOGGER.debug("Response file to read: {}", responseFileLocation);
@@ -154,8 +153,8 @@ public class TestUtils
 	}
 
 	/**
-	 * Normalize a XACML response for comparison with another normalized one. In particular, it removes every Result's status as we choose to ignore the Status.
-	 * Indeed, a PDP implementation might return a perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
+	 * Normalize a XACML response for comparison with another normalized one. In particular, it removes every Result's status as we choose to ignore the Status. Indeed, a PDP implementation might
+	 * return a perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
 	 * 
 	 * @param response
 	 *            input XACML Response
@@ -165,8 +164,8 @@ public class TestUtils
 	{
 		final List<Result> results = new ArrayList<>();
 		/*
-		 * We iterate over all results, because for each results, we don't compare everything. In particular, we choose to ignore the Status. Indeed, a PDP
-		 * implementation might return a perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
+		 * We iterate over all results, because for each results, we don't compare everything. In particular, we choose to ignore the Status. Indeed, a PDP implementation might return a perfectly
+		 * XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
 		 */
 		for (Result result : response.getResults())
 		{
@@ -178,28 +177,33 @@ public class TestUtils
 
 		return new Response(results);
 	}
-	
-	private static final Comparator<Attributes> ATTRIBUTES_COMPARATOR = new Comparator<Attributes>() {
+
+	private static final Comparator<Attributes> ATTRIBUTES_COMPARATOR = new Comparator<Attributes>()
+	{
 
 		@Override
-		public int compare(Attributes arg0, Attributes arg1) {
-			if(arg0 == null || arg1 == null)  {
+		public int compare(Attributes arg0, Attributes arg1)
+		{
+			if (arg0 == null || arg1 == null)
+			{
 				throw new IllegalArgumentException("Invalid Attribtues args for comparator");
 			}
-			
+
 			return arg0.getCategory().compareTo(arg1.getCategory());
 		}
-		
+
 	};
 
-	private static List<Attributes> normalizeAttributeCategories(List<Attributes> attributesList) {
+	private static List<Attributes> normalizeAttributeCategories(List<Attributes> attributesList)
+	{
 		// Attributes categories may be in different order than expected although it is still compliant (order does not matter to the spec)
 		// always use the same order (lexicographical here)
 		final SortedSet<Attributes> sortedSet = new TreeSet<>(ATTRIBUTES_COMPARATOR);
-		for(final Attributes attributes: attributesList) {
+		for (final Attributes attributes : attributesList)
+		{
 			sortedSet.add(attributes);
 		}
-		
+
 		return new ArrayList<>(sortedSet);
 	}
 
@@ -209,12 +213,12 @@ public class TestUtils
 	 * @param rootPolicyLocation
 	 *            root XACML policy location (with Spring-supported URL prefixes: 'classpath:', etc.)
 	 * @param refPoliciesDirectoryLocation
-	 *            (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy at {@code policyLocation} via
-	 *            Policy(Set)IdReference; required only if there is any Policy(Set)IdReference in {@code rootPolicyLocation} to resolve. If file not found,
-	 *            support for Policy(Set)IdReference is disabled, i.e. any presence of such reference is considered invalid.
+	 *            (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy at {@code policyLocation} via Policy(Set)IdReference; required only if there is
+	 *            any Policy(Set)IdReference in {@code rootPolicyLocation} to resolve. If file not found, support for Policy(Set)IdReference is disabled, i.e. any presence of such reference is
+	 *            considered invalid.
 	 * @param enableXPath
-	 *            Enable support for AttributeSelectors and xpathExpression datatype. Reminder: AttributeSelector and xpathExpression datatype support are
-	 *            marked as optional in XACML 3.0 core specification, so set this to false if you are testing mandatory features only.
+	 *            Enable support for AttributeSelectors and xpathExpression datatype. Reminder: AttributeSelector and xpathExpression datatype support are marked as optional in XACML 3.0 core
+	 *            specification, so set this to false if you are testing mandatory features only.
 	 * @param attributeProviderConfLocation
 	 *            (optional) {@link TestAttributeProvider} XML configuration location
 	 * @param requestFilterId
@@ -227,17 +231,16 @@ public class TestUtils
 	 * @throws URISyntaxException
 	 * @throws JAXBException
 	 */
-	public static PDPImpl getPDPNewInstance(String rootPolicyLocation, String refPoliciesDirectoryLocation, boolean enableXPath,
-			String attributeProviderConfLocation, String requestFilterId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
+	public static PDPImpl getPDPNewInstance(String rootPolicyLocation, String refPoliciesDirectoryLocation, boolean enableXPath, String attributeProviderConfLocation, String requestFilterId)
+			throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
 		Pdp jaxbPDP = new Pdp();
 		jaxbPDP.setEnableXPath(enableXPath);
 
 		/**
-		 * Get absolute path/URL to PolicySet file and, if any, the directory of referenceable sub-PolicySets, in a portable way, using current class loader. As
-		 * per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path name that identifies the resource. So let's build
-		 * it. Note: do not use File.separator as path separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c) by the
-		 * getResource() method (not considered path separator by this method), and file will not be found as a result.
+		 * Get absolute path/URL to PolicySet file and, if any, the directory of referenceable sub-PolicySets, in a portable way, using current class loader. As per javadoc, the name of the resource
+		 * passed to ClassLoader.getResource() is a '/'-separated path name that identifies the resource. So let's build it. Note: do not use File.separator as path separator, as it will be turned
+		 * into backslash "\\" on Windows, and will be URL-encoded (%5c) by the getResource() method (not considered path separator by this method), and file will not be found as a result.
 		 */
 		if (refPoliciesDirectoryLocation != null)
 		{
@@ -274,7 +277,7 @@ public class TestUtils
 				// set max PolicySet reference depth to max possible depth automatically
 				if (!jaxbRefPolicyProviderPolicyLocations.isEmpty())
 				{
-					jaxbPDP.setMaxPolicyRefDepth(jaxbRefPolicyProviderPolicyLocations.size());
+					jaxbPDP.setMaxPolicyRefDepth(BigInteger.valueOf(jaxbRefPolicyProviderPolicyLocations.size()));
 					jaxbPDP.setRefPolicyProvider(jaxbRefPolicyProvider);
 				}
 			}
@@ -297,8 +300,7 @@ public class TestUtils
 				jaxbPDP.getAttributeProviders().add(testAttributeProviderElt.getValue());
 			} catch (FileNotFoundException e)
 			{
-				LOGGER.info("No test attribute provider configuration found at: {} -> TestAttributeProvider not supported for this test.",
-						attributeProviderConfLocation);
+				LOGGER.info("No test attribute provider configuration found at: {} -> TestAttributeProvider not supported for this test.", attributeProviderConfLocation);
 			}
 		}
 
