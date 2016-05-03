@@ -40,7 +40,7 @@ import org.ow2.authzforce.core.pdp.api.Value;
  *
  * @param <V>
  *            evaluation's return type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class Apply<V extends Value> extends ApplyType implements Expression<V>

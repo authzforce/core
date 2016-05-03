@@ -27,6 +27,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
  *
  * @param <JAXB_T>
  *            JAXB-annotated PEP action type
+ * @version $Id: $
  */
 public interface PepActionFactory<JAXB_T>
 {
@@ -38,6 +39,8 @@ public interface PepActionFactory<JAXB_T>
 	 * @param actionId
 	 *            action ID (ObligationId, AdviceId)
 	 * @return PEP action
+	 * @param <JAXB_T>
+	 *            a JAXB_T object.
 	 */
 	JAXB_T getInstance(List<AttributeAssignment> attributeAssignments, String actionId);
 

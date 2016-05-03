@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 /**
  * AnyOf evaluator
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class AnyOfEvaluator
@@ -84,8 +83,8 @@ public class AnyOfEvaluator
 	}
 
 	/**
-	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is applicable). If all the AllOf values is No_Match so it's a No_Match.
-	 * If all matches it's a Match. If None matches and at least one “Indeterminate�? it's Indeterminate
+	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is applicable). If all the AllOf values is No_Match so it's a No_Match. If all matches it's a Match. If None
+	 * matches and at least one “Indeterminate�? it's Indeterminate
 	 *
 	 * <pre>
 	 * 		AllOf values 						AnyOf value
@@ -151,8 +150,7 @@ public class AnyOfEvaluator
 		}
 
 		// No Match and at least one Indeterminate (lastIndeterminate != null) -> Indeterminate
-		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
-				lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 
 }

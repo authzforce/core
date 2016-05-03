@@ -23,15 +23,17 @@ import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 /**
  * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>CombiningAlgRegistry</code>.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<CombiningAlg<?>> implements CombiningAlgRegistry
 {
 	/**
-	 * <p>Constructor for BaseCombiningAlgRegistry.</p>
+	 * <p>
+	 * Constructor for BaseCombiningAlgRegistry.
+	 * </p>
 	 *
-	 * @param algorithms a {@link java.util.Set} object.
+	 * @param algorithms
+	 *            a {@link java.util.Set} object.
 	 */
 	protected BaseCombiningAlgRegistry(Set<CombiningAlg<?>> algorithms)
 	{
@@ -39,7 +41,9 @@ public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<Combining
 	}
 
 	/**
-	 * <p>Constructor for BaseCombiningAlgRegistry.</p>
+	 * <p>
+	 * Constructor for BaseCombiningAlgRegistry.
+	 * </p>
 	 *
 	 * @param baseRegistry
 	 *            parent registry from which this inherits all entries

@@ -35,7 +35,6 @@ import org.springframework.util.SystemPropertyUtils;
  *
  * For Tomcat, see http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html# Adding_Custom_Resource_Factories.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class PdpBean implements PDP

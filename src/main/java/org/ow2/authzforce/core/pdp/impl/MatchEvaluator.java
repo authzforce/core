@@ -35,7 +35,6 @@ import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
 /**
  * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding attribute values in the request context.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class MatchEvaluator

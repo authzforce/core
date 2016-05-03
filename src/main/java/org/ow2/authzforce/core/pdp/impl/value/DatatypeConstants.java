@@ -33,7 +33,7 @@ import org.ow2.authzforce.core.pdp.api.Function;
  *
  * @param <AV>
  *            Concrete Java type actually implementing the datatype
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class DatatypeConstants<AV extends AttributeValue>

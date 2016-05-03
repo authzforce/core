@@ -26,10 +26,8 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
- * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and
- * returns that evaluation result.
+ * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
@@ -70,8 +68,8 @@ public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
-			throws UnsupportedOperationException, IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
+			IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}
@@ -85,8 +83,7 @@ public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * Supported algorithms
 	 */
-	public static final CombiningAlgSet SET = new CombiningAlgSet(new FirstApplicableAlg(SUPPORTED_IDENTIFIERS[0]), new FirstApplicableAlg(
-			SUPPORTED_IDENTIFIERS[1]));
+	public static final CombiningAlgSet SET = new CombiningAlgSet(new FirstApplicableAlg(SUPPORTED_IDENTIFIERS[0]), new FirstApplicableAlg(SUPPORTED_IDENTIFIERS[1]));
 
 	private FirstApplicableAlg(String algId)
 	{

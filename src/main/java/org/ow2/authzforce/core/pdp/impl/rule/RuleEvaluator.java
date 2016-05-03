@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Evaluates a XACML Rule to a Decision.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class RuleEvaluator implements Decidable

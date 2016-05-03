@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This class consists exclusively of static methods that operate on or return {@link PolicyEvaluator}s
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class PolicyEvaluators

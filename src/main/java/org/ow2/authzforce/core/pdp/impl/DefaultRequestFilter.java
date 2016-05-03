@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+
 import org.ow2.authzforce.core.pdp.api.BaseRequestFilter;
 import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -28,22 +32,17 @@ import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class DefaultRequestFilter extends BaseRequestFilter
 {
 	/**
 	 *
-	 * Factory for this type of request filter that allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
-	 * (complying with XACML 3.0 core spec, §7.3.3).
+	 * Factory for this type of request filter that allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request (complying with XACML 3.0 core spec,
+	 * §7.3.3).
 	 *
 	 */
 	public static final class LaxFilterFactory implements RequestFilter.Factory
@@ -74,8 +73,8 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 
 	/**
 	 *
-	 * Factory for this type of request filter that does NOT allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a
-	 * Request (NOT complying fully with XACML 3.0 core spec, §7.3.3).
+	 * Factory for this type of request filter that does NOT allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request (NOT complying fully with XACML
+	 * 3.0 core spec, §7.3.3).
 	 *
 	 */
 	public static final class StrictFilterFactory implements RequestFilter.Factory
@@ -95,19 +94,20 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		}
 	}
 
-	private DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean allowAttributeDuplicates, boolean requireContentForXPath, Processor xmlProcessor)
+	private DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean allowAttributeDuplicates, boolean requireContentForXPath,
+			Processor xmlProcessor)
 	{
 		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser, boolean isApplicablePolicyIdListReturned, boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
+	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser, boolean isApplicablePolicyIdListReturned,
+			boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{
 
 		/*
-		 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple Decision Profile. So we keep track of
-		 * attribute categories to check duplicates.
+		 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple Decision Profile. So we keep track of attribute categories to check duplicates.
 		 */
 		final Set<String> attrCategoryNames = new HashSet<>();
 		final MutableIndividualDecisionRequest individualDecisionRequest;
@@ -124,7 +124,8 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 			final String categoryName = jaxbAttributes.getCategory();
 			if (!attrCategoryNames.add(categoryName))
 			{
-				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName + "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
+				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName
+						+ "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
 			}
 
 			final SingleCategoryAttributes<?> categorySpecificAttributes = xacmlAttrsParser.parseAttributes(jaxbAttributes, xPathCompiler);

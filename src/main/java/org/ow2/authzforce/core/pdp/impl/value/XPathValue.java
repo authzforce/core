@@ -43,7 +43,7 @@ import org.ow2.authzforce.core.pdp.api.XMLUtils.XPathEvaluator;
  * WARNING: this class is not optimized for request-time evaluation but for policy initialization-time. Therefore, its use is not recommended for evaluating xpathExpressions in XACML Request. We
  * consider it not useful in the latter case, as the Requester (PEP) could evaluate the xpathExpressions in the first place, and does not need the PDP to do it.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class XPathValue extends SimpleValue<String>

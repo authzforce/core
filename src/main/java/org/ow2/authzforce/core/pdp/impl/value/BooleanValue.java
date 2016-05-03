@@ -19,7 +19,7 @@ import javax.xml.bind.DatatypeConverter;
  * Representation of an xs:boolean value. This class supports parsing xs:boolean values. All objects of this class are immutable and all methods of the class are thread-safe. The choice of the Java
  * type boolean is based on JAXB schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class BooleanValue extends SimpleValue<Boolean>

@@ -52,7 +52,6 @@ import org.xml.sax.SAXParseException;
  *
  * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by {@link ResourceUtils} as well.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class SchemaHandler

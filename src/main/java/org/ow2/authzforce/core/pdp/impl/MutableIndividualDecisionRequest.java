@@ -30,7 +30,6 @@ import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 /**
  * Mutable Individual Decision Request
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class MutableIndividualDecisionRequest implements IndividualDecisionRequest
@@ -96,8 +95,8 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 		}
 
 		/*
-		 * Convert growable (therefore mutable) bag of attribute values to immutable ones. Indeed, we must guarantee that attribute values remain constant
-		 * during the evaluation of the request, as mandated by the XACML spec, section 7.3.5: <p> <i>
+		 * Convert growable (therefore mutable) bag of attribute values to immutable ones. Indeed, we must guarantee that attribute values remain constant during the evaluation of the request, as
+		 * mandated by the XACML spec, section 7.3.5: <p> <i>
 		 * "Regardless of any dynamic modifications of the request context during policy evaluation, the PDP SHALL behave as if each bag of attribute values is fully populated in the context before it is first tested, and is thereafter immutable during evaluation. (That is, every subsequent test of that attribute shall use the same bag of values that was initially tested.)"
 		 * </i></p>
 		 */

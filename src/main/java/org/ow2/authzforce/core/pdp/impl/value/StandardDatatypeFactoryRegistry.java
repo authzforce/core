@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * new <code>BaseDatatypeFactoryRegistry</code> (or some other <code>DatatypeFactoryRegistry</code>) and pass this to
  * {@link BaseDatatypeFactoryRegistry#BaseDatatypeFactoryRegistry(BaseDatatypeFactoryRegistry)}.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry

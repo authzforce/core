@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
  *
  * @param <JAXB_PEP_ACTION>
  *            PEP action type in XACML/JAXB model (Obligation/Advice)
- * @author cdangerv
  * @version $Id: $
  */
 public final class PepActionExpression<JAXB_PEP_ACTION>
@@ -67,6 +66,8 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	 *            Expression factory for parsing/instantiating AttributeAssignment expressions
 	 * @throws java.lang.IllegalArgumentException
 	 *             one of the AttributeAssignmentExpressions' Expression is invalid
+	 * @param <JAXB_PEP_ACTION>
+	 *            a JAXB_PEP_ACTION object.
 	 */
 	public PepActionExpression(PepActionFactory<JAXB_PEP_ACTION> pepActionFactory, String pepActionId, EffectType appliesTo, List<AttributeAssignmentExpression> jaxbAssignmentExps,
 			XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException

@@ -46,7 +46,7 @@ import net.sf.saxon.lib.StandardURIChecker;
  * https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/ .
  * </p>
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class AnyURIValue extends SimpleValue<String>

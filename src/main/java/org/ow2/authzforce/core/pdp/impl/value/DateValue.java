@@ -19,7 +19,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * Representation of an xs:date value. This class supports parsing xs:date values. All objects of this class are immutable and thread-safe.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class DateValue extends BaseTimeValue<DateValue>

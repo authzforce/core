@@ -24,7 +24,7 @@ import org.ow2.authzforce.core.pdp.api.FunctionSet;
 /**
  * Base class for {@link FunctionSet}s
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class BaseFunctionSet implements FunctionSet

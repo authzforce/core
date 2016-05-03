@@ -24,7 +24,7 @@ import com.sun.xacml.PortRange;
 /**
  * Represents the DNSName datatype introduced in XACML 2.0.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class DNSNameValue extends SimpleValue<String>

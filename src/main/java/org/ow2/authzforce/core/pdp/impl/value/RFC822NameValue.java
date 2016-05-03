@@ -25,7 +25,7 @@ import javax.mail.internet.InternetAddress;
  * <p>
  * N.B.: This is more restrictive than a generic RFC 822 name.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class RFC822NameValue extends SimpleValue<String>

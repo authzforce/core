@@ -29,7 +29,7 @@ import com.sun.xacml.PortRange;
 /**
  * Represents the IPAddress datatype introduced in XACML 2.0. All objects of this class are immutable and all methods of the class are thread-safe.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class IPAddressValue extends SimpleValue<String>

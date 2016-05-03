@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Evaluator of a Rule's PEP action (Obligation/Advice) expressions
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class RulePepActionExpressionsEvaluator

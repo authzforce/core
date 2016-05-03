@@ -15,6 +15,8 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.List;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
 import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
@@ -23,12 +25,9 @@ import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-
 /**
  * Deny-unless-permit combining algorithm
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
@@ -55,20 +54,20 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 				final DecisionType decision = policyResult.getDecision();
 				switch (decision)
 				{
-					case PERMIT:
-						return policyResult;
-					case DENY:
-						// merge result (obligations/advice/mached policy IDs)
-						if (combinedDenyResult == null)
-						{
-							combinedDenyResult = policyResult;
-						} else
-						{
-							combinedDenyResult.merge(policyResult.getPepActions(), policyResult.getApplicablePolicyIdList());
-						}
-						break;
-					default:
-						continue;
+				case PERMIT:
+					return policyResult;
+				case DENY:
+					// merge result (obligations/advice/mached policy IDs)
+					if (combinedDenyResult == null)
+					{
+						combinedDenyResult = policyResult;
+					} else
+					{
+						combinedDenyResult.merge(policyResult.getPepActions(), policyResult.getApplicablePolicyIdList());
+					}
+					break;
+				default:
+					continue;
 				}
 			}
 
@@ -79,7 +78,8 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException, IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
+			IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}
@@ -87,7 +87,8 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm; first one is for policy combinging, second one for rule combining.
 	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
 
 	/**
 	 * Supported algorithms

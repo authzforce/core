@@ -26,10 +26,9 @@ package com.sun.xacml;
 import java.util.Objects;
 
 /**
- * This class represents a port range as specified in the <code>dnsName</code> and <code>ipAddress</code> datatypes. The range may have upper and lower bounds,
- * be specified by a single port number, or may be unbound.
- *
- * @author cdangerv
+ * This class represents a port range as specified in the <code>dnsName</code> and <code>ipAddress</code> datatypes. The range may have upper and lower bounds, be specified by a single port number, or
+ * may be unbound.
+ * 
  * @version $Id: $
  */
 public final class PortRange
@@ -53,8 +52,7 @@ public final class PortRange
 	}
 
 	/**
-	 * Creates a <code>PortRange</code> with upper and lower bounds. Either of the parameters may have the value <code>UNBOUND</code> meaning that there is no
-	 * bound at the respective end.
+	 * Creates a <code>PortRange</code> with upper and lower bounds. Either of the parameters may have the value <code>UNBOUND</code> meaning that there is no bound at the respective end.
 	 * 
 	 * @param lowerBound
 	 *            the lower-bound port number or <code>UNBOUND</code>
@@ -116,8 +114,8 @@ public final class PortRange
 	}
 
 	/**
-	 * Returns the lower-bound port value. If the range is not lower-bound, then this returns <code>UNBOUND</code>. If the range is actually a single port
-	 * number, then this returns the same value as <code>getUpperBound</code>.
+	 * Returns the lower-bound port value. If the range is not lower-bound, then this returns <code>UNBOUND</code>. If the range is actually a single port number, then this returns the same value as
+	 * <code>getUpperBound</code>.
 	 *
 	 * @return the upper-bound
 	 */
@@ -127,8 +125,8 @@ public final class PortRange
 	}
 
 	/**
-	 * Returns the upper-bound port value. If the range is not upper-bound, then this returns <code>UNBOUND</code>. If the range is actually a single port
-	 * number, then this returns the same value as <code>getLowerBound</code>.
+	 * Returns the upper-bound port value. If the range is not upper-bound, then this returns <code>UNBOUND</code>. If the range is actually a single port number, then this returns the same value as
+	 * <code>getLowerBound</code>.
 	 *
 	 * @return the upper-bound
 	 */
@@ -168,8 +166,7 @@ public final class PortRange
 	}
 
 	/**
-	 * Returns whether the range is unbound, which means that it specifies no port number or range. This is typically used with addresses that include no port
-	 * information.
+	 * Returns whether the range is unbound, which means that it specifies no port number or range. This is typically used with addresses that include no port information.
 	 *
 	 * @return true if the range is unbound, false otherwise
 	 */
@@ -215,7 +212,9 @@ public final class PortRange
 	}
 
 	/**
-	 * <p>encode</p>
+	 * <p>
+	 * encode
+	 * </p>
 	 *
 	 * @return encoded port range
 	 */

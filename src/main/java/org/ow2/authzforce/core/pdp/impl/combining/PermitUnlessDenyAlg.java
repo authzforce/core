@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 /**
  * permit-unless-deny policy algorithm
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>

@@ -31,7 +31,7 @@ import org.ow2.authzforce.core.pdp.api.VersionPatterns;
  *
  * @param <P>
  *            policy type (or any other type of data corresponding to a specific policy version)
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
@@ -50,6 +50,7 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 	 * @param policy
 	 *            policy
 	 * @return previous policy registered at the same version, if any
+	 * @param <P> a P object.
 	 */
 	public P put(PolicyVersion version, P policy)
 	{

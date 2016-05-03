@@ -37,7 +37,7 @@ import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
 /**
  * Evaluator of a Policy(Set)'s PEP action (Obligation/Advice) expressions
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class PolicyPepActionExpressionsEvaluator

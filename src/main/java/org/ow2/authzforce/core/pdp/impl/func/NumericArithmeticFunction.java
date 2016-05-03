@@ -37,7 +37,7 @@ import org.ow2.authzforce.core.pdp.impl.value.NumericValue;
  *
  * @param <AV>
  *            return and parameter type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends FirstOrderFunction.SingleParameterTyped<AV, AV>

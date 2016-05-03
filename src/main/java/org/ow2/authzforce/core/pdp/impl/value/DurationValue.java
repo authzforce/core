@@ -25,7 +25,7 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
  *
  * @param <DAV>
  *            Concrete DurationAttributeValue type subclass
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public abstract class DurationValue<DAV extends DurationValue<DAV>> extends SimpleValue<Duration>
@@ -40,6 +40,7 @@ public abstract class DurationValue<DAV extends DurationValue<DAV>> extends Simp
 	 *            duration
 	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code val} is not a valid string representation for this datatype
+	 * @param <DAV> a DAV object.
 	 */
 	public DurationValue(String datatypeId, Duration duration) throws IllegalArgumentException
 	{

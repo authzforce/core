@@ -53,7 +53,7 @@ import com.sun.xacml.UnknownIdentifierException;
  * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} parameter. Note that reference loops are avoided by the fact that a VariableReference can
  * reference only a VariableDefinition defined previously to the VariableReference in this implementation.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class ExpressionFactoryImpl implements ExpressionFactory

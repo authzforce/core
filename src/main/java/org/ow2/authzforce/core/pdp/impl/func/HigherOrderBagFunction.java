@@ -34,7 +34,7 @@ import org.ow2.authzforce.core.pdp.impl.expression.BaseVariableReference;
  *            return type
  * @param <SUB_RETURN_PRIMITIVE_T>
  *            sub-function's return (primitive) type. Only functions returning primitive type of result are compatible with higher-order functions here.
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public abstract class HigherOrderBagFunction<RETURN_T extends Value, SUB_RETURN_PRIMITIVE_T extends AttributeValue> extends BaseFunction<RETURN_T>

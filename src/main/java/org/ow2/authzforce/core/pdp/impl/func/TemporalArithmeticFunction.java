@@ -42,7 +42,7 @@ import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
  *            type of first parameter and returned value (date/time)
  * @param <D>
  *            type of second parameter (duration)
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends FirstOrderFunction.MultiParameterTyped<T>

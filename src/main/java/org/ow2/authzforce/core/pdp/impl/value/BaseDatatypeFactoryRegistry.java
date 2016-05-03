@@ -28,7 +28,7 @@ import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 /**
  * Basic implementation of <code>DatatypeFactoryRegistry</code>.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<DatatypeFactory<?>> implements DatatypeFactoryRegistry
@@ -93,7 +93,6 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 	 * @param datatypeFactory a {@link org.ow2.authzforce.core.pdp.api.DatatypeFactory} object.
 	 * @param jaxbAttrVal a {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType} object.
 	 * @param xPathCompiler a {@link net.sf.saxon.s9api.XPathCompiler} object.
-	 * @param <V> a V object.
 	 * @return a V object.
 	 * @throws java.lang.IllegalArgumentException if any.
 	 */

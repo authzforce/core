@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.pdp.impl.value.StringValue;
 /**
  * Implements string-concatenate function
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class StringConcatenateFunction

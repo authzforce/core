@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T>
  *            type of extension in this registry
- * @author cdangerv
  * @version $Id: $
  */
 public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExtensionRegistry<T>
@@ -110,8 +109,8 @@ public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExte
 	}
 
 	/**
-	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for instance to build a new registry based on a standard one
-	 * like the StandardFunctionRegistry for standard functions).
+	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for instance to build a new registry based on a standard one like the StandardFunctionRegistry for
+	 * standard functions).
 	 *
 	 * @param baseRegistry
 	 *            the base/parent registry on which this one is based or null

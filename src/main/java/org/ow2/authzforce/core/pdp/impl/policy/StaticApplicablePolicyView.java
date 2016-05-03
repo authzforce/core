@@ -32,7 +32,7 @@ import org.ow2.authzforce.core.pdp.api.TopLevelPolicyElementType;
  * PolicySet evaluator (root policy as well as policies referenced directly or
  * indirectly from the root one)
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class StaticApplicablePolicyView implements Iterable<Entry<String, PolicyVersion>>
