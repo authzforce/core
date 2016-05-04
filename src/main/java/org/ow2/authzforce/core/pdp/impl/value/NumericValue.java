@@ -36,8 +36,6 @@ public abstract class NumericValue<N extends Number, NAV extends NumericValue<N,
 	 *            a {@link java.lang.String} object.
 	 * @param val
 	 *            a N object.
-	 * @param <N> a N object.
-	 * @param <NAV> a NAV object.
 	 */
 	protected NumericValue(String datatypeId, N val)
 	{

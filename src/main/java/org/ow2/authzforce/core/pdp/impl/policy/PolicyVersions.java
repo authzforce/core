@@ -50,7 +50,6 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 	 * @param policy
 	 *            policy
 	 * @return previous policy registered at the same version, if any
-	 * @param <P> a P object.
 	 */
 	public P put(PolicyVersion version, P policy)
 	{

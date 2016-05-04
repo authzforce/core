@@ -44,7 +44,6 @@ public final class PrimitiveValueExpression<V extends AttributeValue> extends Va
 	 *            static value
 	 * @param isStatic
 	 *            true iff the expression based on this value always evaluates to the same constant in any context (not the case for xpathExpressions for instance)
-	 * @param <V> a V object.
 	 */
 	public PrimitiveValueExpression(Datatype<V> type, V v, boolean isStatic)
 	{
