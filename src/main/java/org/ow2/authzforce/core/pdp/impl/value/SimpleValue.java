@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
  *
  * @param <V>
  *            underlying Java value type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public abstract class SimpleValue<V> extends AttributeValue

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/pdp/3.6" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/3.6" elementFormDefault="qualified"
-	xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"  version="3.6.3">
+	xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"  version="3.6.4">
 	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
 	<import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
 	<annotation>
@@ -137,27 +137,15 @@
 					</documentation>
 				</annotation>
 			</attribute>
-			<attribute name="maxVariableRefDepth" use="optional">
+			<attribute name="maxVariableRefDepth" type="nonNegativeInteger" use="optional">
 				<annotation>
 					<documentation> Maximum depth of Variable reference chaining: VariableDefinition1 -&gt; VariableDefinition2 -&gt; ...; where '-&gt;' represents a VariableReference.					</documentation>
 				</annotation>
-				<simpleType>
-					<restriction base="nonNegativeInteger">
-						<minInclusive value="0"></minInclusive>
-						<maxInclusive value="100"></maxInclusive>
-					</restriction>
-				</simpleType>
 			</attribute>
-			<attribute name="maxPolicyRefDepth" use="optional">
+			<attribute name="maxPolicyRefDepth" type="nonNegativeInteger" use="optional">
 				<annotation>
 					<documentation>Maximum depth of Policy(Set) reference chaining: PolicySet1 -&gt; PolicySet2 -&gt; ... -&gt; Policy(Set)N; where '-&gt;' represents a Policy(Set)IdReference.					</documentation>
 				</annotation>
-				<simpleType>
-					<restriction base="nonNegativeInteger">
-						<minInclusive value="0"></minInclusive>
-						<maxInclusive value="100"></maxInclusive>
-					</restriction>
-				</simpleType>
 			</attribute>
 			<attribute name="requestFilter" type="anyURI" use="optional" default="urn:ow2:authzforce:xacml:request-filter:default-lax">
 				<annotation>

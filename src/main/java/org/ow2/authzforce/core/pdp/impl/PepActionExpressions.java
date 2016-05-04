@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Low-level interface to a list of PEP action (obligation/advice) expressions
  *
- * @author cdangerv
  * @version $Id: $
  */
 public interface PepActionExpressions

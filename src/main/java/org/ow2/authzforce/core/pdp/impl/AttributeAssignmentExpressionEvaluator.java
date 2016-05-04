@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 /**
  * XACML AttributeAssignmentExpression evaluator
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentExpression
@@ -48,8 +47,7 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 
 	private final transient Expression<?> evaluatableExpression;
 
-	private static final UnsupportedOperationException UNSUPPORTED_SET_EXPRESSION_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"Unsupported operation: 'Expression' attribute is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_SET_EXPRESSION_OPERATION_EXCEPTION = new UnsupportedOperationException("Unsupported operation: 'Expression' attribute is read-only");
 
 	/*
 	 * (non-Javadoc)
@@ -76,8 +74,7 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	}
 
 	/**
-	 * Instantiates evaluatable AttributeAssignment expression from XACML-Schema-derived JAXB
-	 * {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
+	 * Instantiates evaluatable AttributeAssignment expression from XACML-Schema-derived JAXB {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
 	 *
 	 * @param jaxbAttrAssignExp
 	 *            XACML-schema-derived JAXB AttributeAssignmentExpression
@@ -88,8 +85,7 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	 * @throws java.lang.IllegalArgumentException
 	 *             invalid AttributeAssignmentExpression's Expression
 	 */
-	public AttributeAssignmentExpressionEvaluator(AttributeAssignmentExpression jaxbAttrAssignExp, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
-			throws IllegalArgumentException
+	public AttributeAssignmentExpressionEvaluator(AttributeAssignmentExpression jaxbAttrAssignExp, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		// JAXB fields
 		this.attributeId = jaxbAttrAssignExp.getAttributeId();
@@ -105,10 +101,9 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	}
 
 	/**
-	 * Evaluates to AttributeAssignments Section 5.39 and 5.40 of XACML 3.0 core spec: If an AttributeAssignmentExpression evaluates to an atomic attribute
-	 * value, then there MUST be one resulting AttributeAssignment which MUST contain this single attribute value. If the AttributeAssignmentExpression
-	 * evaluates to a bag, then there MUST be a resulting AttributeAssignment for each of the values in the bag. If the bag is empty, there shall be no
-	 * AttributeAssignment from this AttributeAssignmentExpression
+	 * Evaluates to AttributeAssignments Section 5.39 and 5.40 of XACML 3.0 core spec: If an AttributeAssignmentExpression evaluates to an atomic attribute value, then there MUST be one resulting
+	 * AttributeAssignment which MUST contain this single attribute value. If the AttributeAssignmentExpression evaluates to a bag, then there MUST be a resulting AttributeAssignment for each of the
+	 * values in the bag. If the bag is empty, there shall be no AttributeAssignment from this AttributeAssignmentExpression
 	 *
 	 * @param context
 	 *            evaluation context
@@ -127,21 +122,20 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 			// result is a bag
 			final Bag<?> bag = (Bag<?>) result;
 			/*
-			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of
-			 * XACML core spec says: "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
+			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
+			 * "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
 			 */
 			for (final AttributeValue attrVal : bag)
 			{
-				final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(),
-						this.attributeId, this.category, this.issuer);
+				final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category,
+						this.issuer);
 				attrAssignList.add(attrAssignment);
 			}
 		} else
 		{
 			// atomic (see spec §5.30, 5.40) / primitive attribute value
 			final AttributeValue attrVal = (AttributeValue) result;
-			final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(),
-					this.attributeId, this.category, this.issuer);
+			final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category, this.issuer);
 			attrAssignList.add(attrAssignment);
 		}
 

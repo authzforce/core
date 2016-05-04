@@ -24,7 +24,6 @@ import org.springframework.util.PropertyPlaceholderHelper;
 /**
  * Default implementation of PDP configuration parser's environment properties.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class DefaultEnvironmentProperties implements EnvironmentProperties
@@ -33,8 +32,8 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 	private static final String PROPERTY_PLACEHOLDER_SUFFIX = "}";
 	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = ":";
 
-	private static final PropertyPlaceholderHelper PROPERTY_PLACEHOLDER_HELPER = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX,
-			PROPERTY_PLACEHOLDER_SUFFIX, PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
+	private static final PropertyPlaceholderHelper PROPERTY_PLACEHOLDER_HELPER = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX,
+			PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
 
 	private final Properties props = new Properties();
 

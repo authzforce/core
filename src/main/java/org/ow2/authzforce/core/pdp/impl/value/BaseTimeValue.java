@@ -24,7 +24,7 @@ import javax.xml.namespace.QName;
  * @param <TAV>
  *            type of result returned by arithmetic functions with this type of arguments: {@link #add(DurationValue)}, {@link #subtract(DurationValue)}, etc.
  *            Basically, we expect that arithmetic functions applied to this type T will return a result of the same type T.
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 /*

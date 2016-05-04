@@ -22,11 +22,16 @@ import javax.xml.bind.DatatypeConverter;
  * Representation of an xs:integer value. This class supports parsing xs:integer values. All objects of this class are immutable and all methods of the class are thread-safe. The actual type of the
  * underlying value is BigInteger. See https://jaxb.java.net/tutorial/section_2_2_2-Numeric-Types.html
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> implements Comparable<IntegerValue>
 {
+	private static final IllegalArgumentException TOO_BIGINTEGER_FOR_DOUBLE_ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"BigInteger argument outside the range which can be represented by a double");
+
+	private static final ArithmeticException TOO_BIGINTEGER_FOR_INT_ARITHMETIC_EXCEPTION = new ArithmeticException("BigInteger argument outside the range which can be represented by an int");
+
 	/**
 	 * Official name of this type
 	 */
@@ -164,7 +169,7 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 		if (Double.isInfinite(doubleVal) || Double.isNaN(doubleVal))
 		{
 			// this BigInteger has too great a magnitude to represent as a double
-			throw new IllegalArgumentException("integer argument outside the range which can be represented by a double");
+			throw TOO_BIGINTEGER_FOR_DOUBLE_ILLEGAL_ARGUMENT_EXCEPTION;
 		}
 
 		return doubleVal;
@@ -172,10 +177,10 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 
 	/**
 	 *
-	 * Converts this to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException is thrown.
+	 * Converts this value to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException is thrown.
 	 * <p>
 	 * TODO: replace with Java 8 native equivalent - BigInteger#intValueExact() - after upgrade to Java 8
-	 *
+	 * 
 	 * @see <a href="https://www.securecoding.cert.org/confluence/display/java/NUM00-J.+Detect+or+prevent+integer+overflow">The CERT Oracle Secure Coding Standard for Java - NUM00-J. Detect or prevent
 	 *      integer overflow</a>
 	 * @return this converted to an int
@@ -184,12 +189,31 @@ public final class IntegerValue extends NumericValue<BigInteger, IntegerValue> i
 	 */
 	public int intValueExact() throws ArithmeticException
 	{
-		if (value.compareTo(MAX_INT_AS_BIGINT) == 1 || value.compareTo(MIN_INT_AS_BIGINT) == -1)
+		return intValueExact(value);
+	}
+
+	/**
+	 *
+	 * Converts BigInteger to an int, checking for lost information. If the value of this BigInteger is out of the range of the int type, then an ArithmeticException is thrown.
+	 * <p>
+	 * TODO: replace with Java 8 native equivalent - BigInteger#intValueExact() - after upgrade to Java 8
+	 *
+	 * @param val
+	 *            input value
+	 * @see <a href="https://www.securecoding.cert.org/confluence/display/java/NUM00-J.+Detect+or+prevent+integer+overflow">The CERT Oracle Secure Coding Standard for Java - NUM00-J. Detect or prevent
+	 *      integer overflow</a>
+	 * @return this converted to an int
+	 * @throws java.lang.ArithmeticException
+	 *             if the value of this will not exactly fit in a int.
+	 */
+	public static int intValueExact(BigInteger val)
+	{
+		if (val.compareTo(MAX_INT_AS_BIGINT) == 1 || val.compareTo(MIN_INT_AS_BIGINT) == -1)
 		{
-			throw new ArithmeticException("Integer overflow");
+			throw TOO_BIGINTEGER_FOR_INT_ARITHMETIC_EXCEPTION;
 		}
 
-		return value.intValue();
+		return val.intValue();
 	}
 
 	/** {@inheritDoc} */

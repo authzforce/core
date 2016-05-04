@@ -24,7 +24,7 @@ import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 /**
  * <p>FunctionRegistry class.</p>
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class FunctionRegistry
@@ -97,7 +97,6 @@ public class FunctionRegistry
 	 * @param subFunctionReturnTypeFactory
 	 *            sub-function return datatype factory
 	 * @return function instance
-	 * @param <SUB_RETURN_T> a SUB_RETURN_T object.
 	 */
 	public <SUB_RETURN_T extends AttributeValue> Function<?> getFunction(String functionId, DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory)
 	{

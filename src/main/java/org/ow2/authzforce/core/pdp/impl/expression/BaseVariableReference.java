@@ -33,7 +33,7 @@ import org.ow2.authzforce.core.pdp.api.VariableReference;
  *
  * @param <V>
  *            evaluation's return type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class BaseVariableReference<V extends Value> implements VariableReference<V>

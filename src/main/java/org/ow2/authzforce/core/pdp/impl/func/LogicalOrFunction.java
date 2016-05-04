@@ -36,7 +36,7 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
  * return "True" if at least one of its arguments evaluates to "True". The order of evaluation SHALL be from first argument to last. The evaluation SHALL stop
  * with a result of "True" if any argument evaluates to "True", leaving the rest of the arguments unevaluated.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class LogicalOrFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, BooleanValue>

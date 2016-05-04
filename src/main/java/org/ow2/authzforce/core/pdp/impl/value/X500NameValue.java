@@ -19,7 +19,7 @@ import javax.naming.ldap.LdapName;
 /**
  * Representation of an X.500 Directory Name.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class X500NameValue extends SimpleValue<String>

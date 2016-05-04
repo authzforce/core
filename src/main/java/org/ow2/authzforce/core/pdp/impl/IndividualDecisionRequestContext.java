@@ -36,10 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple
- * Decision Profile spec for more information on Individual Decision Request as opposed to Multiple Decision Request).
+ * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple Decision Profile spec for more
+ * information on Individual Decision Request as opposed to Multiple Decision Request).
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class IndividualDecisionRequestContext implements EvaluationContext
@@ -49,8 +48,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(IndividualDecisionRequestContext.class);
 
-	private static final IndeterminateEvaluationException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IndeterminateEvaluationException(
-			"Unsupported XACML feature (optional): <AttributeSelector>", StatusHelper.STATUS_SYNTAX_ERROR);
+	private static final IndeterminateEvaluationException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IndeterminateEvaluationException("Unsupported XACML feature (optional): <AttributeSelector>",
+			StatusHelper.STATUS_SYNTAX_ERROR);
 
 	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 
@@ -61,8 +60,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	private final boolean isApplicablePolicyIdListReturned;
 
 	/*
-	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based
-	 * functions, etc. This may be null if no Content in Request or no feature requiring XPath evaluation against Content is supported/enabled.
+	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based functions, etc. This may be null if no
+	 * Content in Request or no feature requiring XPath evaluation against Content is supported/enabled.
 	 */
 	private final Map<String, XdmNode> extraContentsByAttributeCategory;
 
@@ -72,19 +71,17 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	private final Map<AttributeSelectorId, Bag<?>> attributeSelectorResults;
 
 	/**
-	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation
-	 * against Content element in Attributes
+	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation against Content element in Attributes
 	 *
 	 * @param namedAttributeMap
-	 *            mutable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on
-	 *            attribute category,issuer,id. An attribute value is a bag of primitive values.
+	 *            mutable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on attribute category,issuer,id. An
+	 *            attribute value is a bag of primitive values.
 	 * @param extraContentsByAttributeCategory
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
 	 */
-	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> namedAttributeMap, Map<String, XdmNode> extraContentsByAttributeCategory,
-			boolean returnApplicablePolicyIdList)
+	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> namedAttributeMap, Map<String, XdmNode> extraContentsByAttributeCategory, boolean returnApplicablePolicyIdList)
 	{
 		this.namedAttributes = namedAttributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : namedAttributeMap;
 		this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
@@ -100,14 +97,12 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	public IndividualDecisionRequestContext(IndividualDecisionRequest individualDecisionReq)
 	{
-		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq
-				.isApplicablePolicyIdentifiersReturned());
+		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq.isApplicablePolicyIdentifiersReturned());
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public <AV extends AttributeValue> Bag<AV> getAttributeDesignatorResult(AttributeGUID attributeGUID, Datatype<AV> attributeDatatype)
-			throws IndeterminateEvaluationException
+	public <AV extends AttributeValue> Bag<AV> getAttributeDesignatorResult(AttributeGUID attributeGUID, Datatype<AV> attributeDatatype) throws IndeterminateEvaluationException
 	{
 		final Bag<?> bagResult = namedAttributes.get(attributeGUID);
 		if (bagResult == null)
@@ -117,14 +112,9 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 		if (!bagResult.getElementDatatype().equals(attributeDatatype))
 		{
-			throw new IndeterminateEvaluationException(
-					"Datatype ("
-							+ bagResult.getElementDatatype()
-							+ ") of AttributeDesignator "
-							+ attributeGUID
-							+ " in context is different from expected/requested ("
-							+ attributeDatatype
-							+ "). May be caused by refering to the same Attribute Category/Id/Issuer with different Datatypes in different policy elements and/or attribute providers, which is not allowed.",
+			throw new IndeterminateEvaluationException("Datatype (" + bagResult.getElementDatatype() + ") of AttributeDesignator " + attributeGUID
+					+ " in context is different from expected/requested (" + attributeDatatype
+					+ "). May be caused by refering to the same Attribute Category/Id/Issuer with different Datatypes in different policy elements and/or attribute providers, which is not allowed.",
 					StatusHelper.STATUS_SYNTAX_ERROR);
 		}
 
@@ -143,9 +133,9 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		if (namedAttributes.containsKey(attributeGUID))
 		{
 			/*
-			 * This should never happen, as getAttributeDesignatorResult() should have been called first (for same id) and returned this oldResult, and no
-			 * further call to putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but
-			 * different datatype URI/datatype class) in the same context
+			 * This should never happen, as getAttributeDesignatorResult() should have been called first (for same id) and returned this oldResult, and no further call to
+			 * putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but different datatype URI/datatype class) in the same
+			 * context
 			 */
 			LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", attributeGUID, result);
 			return false;
@@ -179,8 +169,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 			return expectedDatatype.cast(val);
 		} catch (ClassCastException e)
 		{
-			throw new IndeterminateEvaluationException("Datatype of variable '" + variableId + "' in context does not match expected datatype: "
-					+ expectedDatatype, StatusHelper.STATUS_PROCESSING_ERROR, e);
+			throw new IndeterminateEvaluationException("Datatype of variable '" + variableId + "' in context does not match expected datatype: " + expectedDatatype,
+					StatusHelper.STATUS_PROCESSING_ERROR, e);
 		}
 	}
 
@@ -206,8 +196,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(AttributeSelectorId id, Datatype<AV> datatype)
-			throws IndeterminateEvaluationException
+	public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(AttributeSelectorId id, Datatype<AV> datatype) throws IndeterminateEvaluationException
 	{
 		if (attributeSelectorResults == null)
 		{
@@ -222,14 +211,9 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 		if (!bagResult.getElementDatatype().equals(datatype))
 		{
-			throw new IndeterminateEvaluationException(
-					"Datatype ("
-							+ bagResult.getElementDatatype()
-							+ ")of AttributeSelector "
-							+ id
-							+ " in context is different from actually expected/requested ("
-							+ datatype
-							+ "). May be caused by use of same AttributeSelector Category/Path/ContextSelectorId with different Datatypes in different in different policy elements, which is not allowed.",
+			throw new IndeterminateEvaluationException("Datatype (" + bagResult.getElementDatatype() + ")of AttributeSelector " + id + " in context is different from actually expected/requested ("
+					+ datatype
+					+ "). May be caused by use of same AttributeSelector Category/Path/ContextSelectorId with different Datatypes in different in different policy elements, which is not allowed.",
 					StatusHelper.STATUS_SYNTAX_ERROR);
 		}
 

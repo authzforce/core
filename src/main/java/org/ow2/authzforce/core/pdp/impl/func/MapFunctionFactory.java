@@ -34,7 +34,7 @@ import org.ow2.authzforce.core.pdp.impl.func.HigherOrderBagFunctionSet.OneBagOnl
  *
  * Map function factory
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class MapFunctionFactory

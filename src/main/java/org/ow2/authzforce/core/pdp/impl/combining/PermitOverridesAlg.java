@@ -32,7 +32,7 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  * take precedence over any number of deny, not applicable or indeterminate results. Note that since this implementation
  * does an ordered evaluation, this class also supports the Ordered-Permit-Overrides algorithm.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>

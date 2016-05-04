@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * factory that is modifiable, you should create a new <code>BaseCombiningAlgRegistry</code> by passing this to
  * {@link BaseCombiningAlgRegistry#BaseCombiningAlgRegistry(org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry)}.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry

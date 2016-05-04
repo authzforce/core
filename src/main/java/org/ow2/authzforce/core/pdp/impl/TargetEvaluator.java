@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents the TargetType XML type in XACML.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class TargetEvaluator
@@ -83,8 +82,8 @@ public class TargetEvaluator
 	}
 
 	/**
-	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context
-	 * so it's a NO_MATCH result. Here is the table shown in the specification: <code>
+	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context so it's a NO_MATCH result. Here is the
+	 * table shown in the specification: <code>
 	 * 		<AnyOf> values 				<Target> value
 	 * 		All Match?					Match?
 	 * 		At Least one "No Match"		No Match?
@@ -154,8 +153,7 @@ public class TargetEvaluator
 		}
 
 		// No False but at least one Indeterminate (lastIndeterminate != null)
-		throw new IndeterminateEvaluationException("Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
-				lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 
 }

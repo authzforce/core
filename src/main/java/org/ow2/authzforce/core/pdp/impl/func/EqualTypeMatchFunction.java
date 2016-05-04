@@ -50,7 +50,7 @@ import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
  *
  * @param <PARAM>
  *            type of compared parameters
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstOrderFunction.SingleParameterTyped<BooleanValue, PARAM>

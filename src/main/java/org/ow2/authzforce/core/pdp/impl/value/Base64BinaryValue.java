@@ -22,7 +22,7 @@ import javax.xml.bind.DatatypeConverter;
  * the class are thread-safe. The choice of the Java type byte[] is based on JAXB schema-to-Java mapping spec:
  * https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class Base64BinaryValue extends SimpleValue<byte[]>

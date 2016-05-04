@@ -41,7 +41,7 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
  *
  * @param <AV>
  *            function parameter type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class ComparisonFunction<AV extends AttributeValue & Comparable<AV>> extends FirstOrderFunction.SingleParameterTyped<BooleanValue, AV>

@@ -40,7 +40,7 @@ import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
  * from the function SHALL be the count of the nodes within the node-set that match the given XPath expression. If the &lt;Content&gt; element of the category
  * to which the XPath expression applies to is not present in the request, this function SHALL return a value of zero.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParameterTyped<IntegerValue, XPathValue>

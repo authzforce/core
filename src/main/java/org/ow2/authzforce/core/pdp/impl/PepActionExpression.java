@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
  *
  * @param <JAXB_PEP_ACTION>
  *            PEP action type in XACML/JAXB model (Obligation/Advice)
- * @author cdangerv
  * @version $Id: $
  */
 public final class PepActionExpression<JAXB_PEP_ACTION>

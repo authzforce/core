@@ -22,7 +22,7 @@ import java.util.Deque;
  *            actual Java type of the underlying numeric value (Integer, Double...)
  * @param <NAV>
  *            Concreate NumericAttributeValue type subclass
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public abstract class NumericValue<N extends Number, NAV extends NumericValue<N, NAV>> extends SimpleValue<N>

@@ -48,7 +48,7 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
  *
  * @param <AV>
  *            AttributeDesignator evaluation result value's primitive datatype
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class AttributeDesignator<AV extends AttributeValue> extends AttributeDesignatorType implements Expression<Bag<AV>>

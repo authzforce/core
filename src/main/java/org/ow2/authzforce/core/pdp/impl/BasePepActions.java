@@ -30,7 +30,6 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
 /**
  * Base PEP actions (obligations/advice)
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class BasePepActions implements PepActions

@@ -43,7 +43,7 @@ import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
  * First-order bag function groups, as opposed to the higher-order bag functions (see {@link HigherOrderBagFunction}); such as the Bag functions of section
  * A.3.10, and the Set functions of A.3.11 of the XACML spec.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class FirstOrderBagFunctionSet

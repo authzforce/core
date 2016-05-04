@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * (with different modules) - in order to make sure these resources are released
  * properly by each underlying module (e.g. invalidate the policy caches).
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public interface RootPolicyEvaluator extends Closeable

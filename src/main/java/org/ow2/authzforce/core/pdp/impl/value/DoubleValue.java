@@ -21,7 +21,7 @@ import javax.xml.bind.DatatypeConverter;
  * Representation of an xs:double value. This class supports parsing xs:double values. All objects of this class are immutable and all methods of the class are thread-safe. The choice of the Java type
  * Double is based on JAXB schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class DoubleValue extends NumericValue<Double, DoubleValue> implements Comparable<DoubleValue>

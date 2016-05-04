@@ -37,7 +37,7 @@ import org.ow2.authzforce.core.pdp.impl.value.StringValue;
  *
  * @param <AV>
  *            parameter type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class SubstringFunction<AV extends SimpleValue<String>> extends FirstOrderFunction.MultiParameterTyped<StringValue>

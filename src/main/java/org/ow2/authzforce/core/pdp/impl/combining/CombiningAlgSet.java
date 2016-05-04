@@ -32,7 +32,6 @@ import org.ow2.authzforce.core.pdp.api.Decidable;
  *
  * TODO: consider making it a PdpExtension like FunctionSet, or generic PdpExtensionSet
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class CombiningAlgSet

@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 /**
  * PDP Engine XML configuration handler
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class PdpModelHandler

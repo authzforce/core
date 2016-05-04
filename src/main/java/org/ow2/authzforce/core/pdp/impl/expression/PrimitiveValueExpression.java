@@ -29,7 +29,7 @@ import org.ow2.authzforce.core.pdp.api.ValueExpression;
  *
  * @param <V>
  *            concrete value type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class PrimitiveValueExpression<V extends AttributeValue> extends ValueExpression<V>

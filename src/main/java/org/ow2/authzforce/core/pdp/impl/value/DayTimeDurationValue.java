@@ -17,7 +17,7 @@ package org.ow2.authzforce.core.pdp.impl.value;
  * Representation of an xs:dayTimeDuration value. This class supports parsing xs:dayTimeDuration values. All objects of this class are immutable and
  * thread-safe.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class DayTimeDurationValue extends DurationValue<DayTimeDurationValue>

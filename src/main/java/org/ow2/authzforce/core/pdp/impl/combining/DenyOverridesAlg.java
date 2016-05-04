@@ -28,11 +28,9 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
- * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny
- * to take precedence over any number of permit, not applicable or indeterminate results. Note that since this
- * implementation does an ordered evaluation, this class also supports the Ordered-Deny-Overrides-algorithm.
+ * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of permit, not applicable or indeterminate
+ * results. Note that since this implementation does an ordered evaluation, this class also supports the Ordered-Deny-Overrides-algorithm.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
@@ -51,8 +49,7 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		public DecisionResult eval(EvaluationContext context)
 		{
 			/*
-			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult !=
-			 * null
+			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
 			 */
 			DecisionResult firstIndeterminateDPResult = null;
 			/*
@@ -88,8 +85,7 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 					break;
 				case INDETERMINATE:
 					/*
-					 * Save Extended Indeterminate value if this is a new type of such value, till the end because
-					 * needed to compute final Extended Indeterminate value
+					 * Save Extended Indeterminate value if this is a new type of such value, till the end because needed to compute final Extended Indeterminate value
 					 */
 					switch (result.getExtendedIndeterminate())
 					{
@@ -131,13 +127,11 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 			}
 
 			/*
-			 * Else if any Indeterminate{D}, then: if ( any Indeterminate{P} or any Permit ) -> Indeterminate{DP}; else
-			 * -> Indeterminate{D} (this is a simplified equivalent of the algo in the spec)
+			 * Else if any Indeterminate{D}, then: if ( any Indeterminate{P} or any Permit ) -> Indeterminate{DP}; else -> Indeterminate{D} (this is a simplified equivalent of the algo in the spec)
 			 */
 			if (firstIndeterminateDResult != null)
 			{
-				return new BaseDecisionResult(firstIndeterminateDResult.getStatus(), firstIndeterminatePResult != null
-						|| combinedPermitResult != null ? DecisionType.INDETERMINATE : DecisionType.DENY);
+				return new BaseDecisionResult(firstIndeterminateDResult.getStatus(), firstIndeterminatePResult != null || combinedPermitResult != null ? DecisionType.INDETERMINATE : DecisionType.DENY);
 			}
 
 			// if we got a PERMIT or Indeterminate{P}, return it, otherwise it's NOT_APPLICABLE
@@ -158,11 +152,8 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	static final String[] SUPPORTED_IDENTIFIERS = {
-			"urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
+			"urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides", "urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
 
 	/**
 	 * Supported algorithms
@@ -186,8 +177,8 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params,
-			List<? extends Decidable> combinedElements) throws UnsupportedOperationException, IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
+			IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}

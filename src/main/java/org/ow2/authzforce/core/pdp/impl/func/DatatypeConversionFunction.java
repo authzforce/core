@@ -53,7 +53,7 @@ import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
  *            parameter/input type
  * @param <RETURN_T>
  *            return/output type
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class DatatypeConversionFunction<PARAM_T extends AttributeValue, RETURN_T extends AttributeValue> extends

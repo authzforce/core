@@ -18,7 +18,7 @@ package org.ow2.authzforce.core.pdp.impl.value;
  * thread-safe. The choice of the Java type Duration is based on JAXB schema-to-Java mapping spec: https://docs.oracle.com/javase/tutorial/jaxb/intro/bind.html
  * and documentation of javax.xml.datatype package.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class YearMonthDurationValue extends DurationValue<YearMonthDurationValue>

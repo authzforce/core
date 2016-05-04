@@ -34,11 +34,10 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 /**
  * Closeable AttributeProvider
  * <p>
- * The sub-modules may very likely hold resources such as network resources to get attributes remotely, or attribute caches to speed up finding, etc. Therefore,
- * you are required to call {@link #close()} when you no longer need an instance - especially before replacing with a new instance (with different modules) - in
- * order to make sure these resources are released properly by each underlying module (e.g. close the attribute caches).
+ * The sub-modules may very likely hold resources such as network resources to get attributes remotely, or attribute caches to speed up finding, etc. Therefore, you are required to call
+ * {@link #close()} when you no longer need an instance - especially before replacing with a new instance (with different modules) - in order to make sure these resources are released properly by each
+ * underlying module (e.g. close the attribute caches).
  *
- * @author cdangerv
  * @version $Id: $
  */
 public final class CloseableAttributeProvider extends ModularAttributeProvider implements Closeable
@@ -107,21 +106,19 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	private Set<ModuleAdapter> moduleClosers;
 
 	/**
-	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the
-	 * requested attribute ID, if any.
+	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the requested attribute ID, if any.
 	 * 
 	 * @param attributeFactory
 	 *            (mandatory) attribute value factory
 	 * 
 	 * @param jaxbAttributeProviderConfs
-	 *            (optional) XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static
-	 *            expression evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
+	 *            (optional) XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression evaluation (out of context), in
+	 *            which case AttributeSelectors/AttributeDesignators are not supported
 	 * @throws IllegalArgumentException
-	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict
-	 *             with another one already registered to provide the same or part of the same attributes.
+	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with another one already registered to
+	 *             provide the same or part of the same attributes.
 	 * @throws IOException
-	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an
-	 *             {@link IllegalArgumentException} is raised
+	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 */
 	private CloseableAttributeProvider(Map<AttributeGUID, AttributeProviderModule> modulesByAttributeId, Set<ModuleAdapter> moduleClosers) throws IOException
 	{
@@ -130,24 +127,21 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	}
 
 	/**
-	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the
-	 * requested attribute ID, if any.
+	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the requested attribute ID, if any.
 	 *
 	 * @param attributeFactory
 	 *            (mandatory) attribute value factory
 	 * @param jaxbAttributeProviderConfs
-	 *            (optional) XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static
-	 *            expression evaluation (out of context), in which case AttributeSelectors/AttributeDesignators are not supported
+	 *            (optional) XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression evaluation (out of context), in
+	 *            which case AttributeSelectors/AttributeDesignators are not supported
 	 * @return instance of this class
 	 * @throws java.lang.IllegalArgumentException
-	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict
-	 *             with another one already registered to provide the same or part of the same attributes.
+	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with another one already registered to
+	 *             provide the same or part of the same attributes.
 	 * @throws java.io.IOException
-	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an
-	 *             {@link IllegalArgumentException} is raised
+	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 */
-	public static CloseableAttributeProvider getInstance(List<AbstractAttributeProvider> jaxbAttributeProviderConfs, DatatypeFactoryRegistry attributeFactory)
-			throws IOException
+	public static CloseableAttributeProvider getInstance(List<AbstractAttributeProvider> jaxbAttributeProviderConfs, DatatypeFactoryRegistry attributeFactory) throws IOException
 	{
 		final Map<AttributeGUID, AttributeProviderModule> modulesByAttributeId;
 		final Set<ModuleAdapter> moduleCloserSet;
@@ -164,15 +158,14 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 			{
 				try
 				{
-					final CloseableAttributeProviderModule.FactoryBuilder<AbstractAttributeProvider> attrProviderModBuilder = PdpExtensionLoader
-							.getJaxbBoundExtension(CloseableAttributeProviderModule.FactoryBuilder.class, jaxbAttributeProviderConf.getClass());
-					final CloseableAttributeProviderModule.DependencyAwareFactory depAwareAttrProviderModBuilder = attrProviderModBuilder
-							.getInstance(jaxbAttributeProviderConf);
+					final CloseableAttributeProviderModule.FactoryBuilder<AbstractAttributeProvider> attrProviderModBuilder = PdpExtensionLoader.getJaxbBoundExtension(
+							CloseableAttributeProviderModule.FactoryBuilder.class, jaxbAttributeProviderConf.getClass());
+					final CloseableAttributeProviderModule.DependencyAwareFactory depAwareAttrProviderModBuilder = attrProviderModBuilder.getInstance(jaxbAttributeProviderConf);
 					final Set<AttributeDesignatorType> requiredAttrs = depAwareAttrProviderModBuilder.getDependencies();
 					/*
-					 * Each AttributeProviderModule is given a read-only AttributeProvider - aka "dependency attribute Provider" - to find any attribute they
-					 * require (dependency), based on the attribute Provider modules that provide these required attributes (set above); read-only so that
-					 * modules use this attribute Provider only to get required attributes, nothing else. Create this dependency attribute Provider.
+					 * Each AttributeProviderModule is given a read-only AttributeProvider - aka "dependency attribute Provider" - to find any attribute they require (dependency), based on the
+					 * attribute Provider modules that provide these required attributes (set above); read-only so that modules use this attribute Provider only to get required attributes, nothing
+					 * else. Create this dependency attribute Provider.
 					 */
 					final AttributeProvider depAttrProvider;
 					if (requiredAttrs == null)
@@ -195,8 +188,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 						if (modulesByAttributeId.containsKey(attrGUID))
 						{
 							moduleAdapter.close();
-							throw new IllegalArgumentException("Conflict: " + moduleAdapter + " providing the same AttributeDesignator (" + attrGUID
-									+ ") as another already registered.");
+							throw new IllegalArgumentException("Conflict: " + moduleAdapter + " providing the same AttributeDesignator (" + attrGUID + ") as another already registered.");
 						}
 
 						modulesByAttributeId.put(attrGUID, moduleAdapter.getAdaptedModule());

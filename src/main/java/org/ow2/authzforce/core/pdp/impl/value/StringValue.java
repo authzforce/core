@@ -20,7 +20,7 @@ import javax.xml.bind.DatatypeConverter;
 /**
  * Representation of an xs:string value. This class supports parsing xs:string values. All objects of this class are immutable and all methods of the class are thread-safe.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class StringValue extends SimpleValue<String> implements Comparable<StringValue>

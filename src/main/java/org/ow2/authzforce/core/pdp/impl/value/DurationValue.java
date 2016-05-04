@@ -25,7 +25,7 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
  *
  * @param <DAV>
  *            Concrete DurationAttributeValue type subclass
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public abstract class DurationValue<DAV extends DurationValue<DAV>> extends SimpleValue<Duration>

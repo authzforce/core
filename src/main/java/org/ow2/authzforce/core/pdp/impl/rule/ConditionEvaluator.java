@@ -27,7 +27,7 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 /**
  * Evaluates a XACML ConditionEvaluator. It contains exactly one child expression that is boolean and returns a single value.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class ConditionEvaluator

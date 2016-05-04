@@ -20,8 +20,8 @@ import org.ow2.authzforce.core.pdp.api.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 import org.slf4j.Logger;
@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 /**
  * This is the standard only-one-applicable policy combining algorithm.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
@@ -39,8 +38,8 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(Evaluator.class);
 
-		private static final BaseDecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new BaseDecisionResult(new StatusHelper(
-				StatusHelper.STATUS_PROCESSING_ERROR, "Too many (more than one) applicable policies for algorithm: " + ID));
+		private static final BaseDecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
+				"Too many (more than one) applicable policies for algorithm: " + ID));
 
 		private final List<? extends PolicyEvaluator> policyElements;
 

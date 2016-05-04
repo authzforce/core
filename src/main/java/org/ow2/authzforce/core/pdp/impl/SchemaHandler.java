@@ -52,7 +52,6 @@ import org.xml.sax.SAXParseException;
  *
  * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by {@link ResourceUtils} as well.
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class SchemaHandler
@@ -139,6 +138,8 @@ public class SchemaHandler
 	 */
 	private static class OASISCatalogManager
 	{
+		private static final IllegalArgumentException ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION = new IllegalArgumentException("Error creating org.apache.xml.resolver.tools.CatalogResolver for OASIS CatalogManager");
+
 		private final static Logger _LOGGER = LoggerFactory.getLogger(OASISCatalogManager.class);
 
 		private final CatalogResolver resolver;
@@ -150,7 +151,7 @@ public class SchemaHandler
 			resolver = getResolver();
 			if (resolver == null)
 			{
-				throw new IllegalArgumentException("Error creating org.apache.xml.resolver.tools.CatalogResolver for OASIS CatalogManager");
+				throw ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION;
 			}
 
 			catalog = getCatalog(resolver);

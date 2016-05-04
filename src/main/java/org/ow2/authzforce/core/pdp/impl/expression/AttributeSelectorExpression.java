@@ -75,7 +75,7 @@ import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
  *
  * @param <AV>
  *            AttributeSelector evaluation results' primitive returnType
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class AttributeSelectorExpression<AV extends AttributeValue> extends AttributeSelectorType implements Expression<Bag<AV>>

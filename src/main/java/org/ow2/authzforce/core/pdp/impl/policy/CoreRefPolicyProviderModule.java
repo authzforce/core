@@ -67,7 +67,7 @@ import org.springframework.util.ResourceUtils;
  * Note that this class is designed to complement {@link CoreRootPolicyProviderModule} in charge of the root policy(set) which may refer to policies resolved by this
  * {@link CoreRefPolicyProviderModule}.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModule

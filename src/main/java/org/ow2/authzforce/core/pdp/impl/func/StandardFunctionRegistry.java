@@ -36,7 +36,7 @@ import com.sun.xacml.TimeInRangeFunction;
  * create a new <code>BasePdpExtensionRegistry</code> (or some other implementation of <code>PdpExtensionRegistry</code>) populated with the standard functions
  * from {@code this#getSupportedFunctions()}
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public final class StandardFunctionRegistry extends FunctionRegistry

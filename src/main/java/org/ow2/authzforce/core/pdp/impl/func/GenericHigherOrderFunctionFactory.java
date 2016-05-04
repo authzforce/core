@@ -22,7 +22,7 @@ import org.ow2.authzforce.core.pdp.api.PdpExtension;
  * depending on the sub-function's return type, e.g. {@link MapFunctionFactory}, therefore the function is instantiated for a specific sub-function's return
  * type.
  *
- * @author cdangerv
+ * 
  * @version $Id: $
  */
 public abstract class GenericHigherOrderFunctionFactory implements PdpExtension
@@ -33,7 +33,6 @@ public abstract class GenericHigherOrderFunctionFactory implements PdpExtension
 	 * @param subFunctionReturnTypeFactory
 	 *            sub-function's return datatype factory
 	 * @return higher-order function instance
-	 * @param <SUB_RETURN_T> a SUB_RETURN_T object.
 	 */
 	public abstract <SUB_RETURN_T extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN_T> getInstance(
 			DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory);

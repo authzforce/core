@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 /**
  * XACML AllOf evaluator
  *
- * @author cdangerv
  * @version $Id: $
  */
 public class AllOfEvaluator
@@ -145,7 +144,6 @@ public class AllOfEvaluator
 		}
 
 		// No False but at least one Indeterminate (lastIndeterminate != null)
-		throw new IndeterminateEvaluationException("Error evaluating <AllOf>'s <Match>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
-				lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <AllOf>'s <Match>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 }
