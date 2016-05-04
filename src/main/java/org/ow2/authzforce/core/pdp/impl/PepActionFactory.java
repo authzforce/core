@@ -39,8 +39,6 @@ public interface PepActionFactory<JAXB_T>
 	 * @param actionId
 	 *            action ID (ObligationId, AdviceId)
 	 * @return PEP action
-	 * @param <JAXB_T>
-	 *            a JAXB_T object.
 	 */
 	JAXB_T getInstance(List<AttributeAssignment> attributeAssignments, String actionId);
 

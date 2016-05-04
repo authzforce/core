@@ -40,7 +40,6 @@ public abstract class DurationValue<DAV extends DurationValue<DAV>> extends Simp
 	 *            duration
 	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code val} is not a valid string representation for this datatype
-	 * @param <DAV> a DAV object.
 	 */
 	public DurationValue(String datatypeId, Duration duration) throws IllegalArgumentException
 	{
