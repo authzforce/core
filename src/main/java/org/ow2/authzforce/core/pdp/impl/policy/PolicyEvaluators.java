@@ -547,13 +547,13 @@ public final class PolicyEvaluators
 							 * error)
 							 */
 							LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyId, e);
-							newResult = new BaseDecisionResult(DecisionType.INDETERMINATE, algResultDecision, e.getStatus(), null, applicablePolicyIdList);
+							newResult = new BaseDecisionResult(e.getStatus(), algResultDecision, applicablePolicyIdList);
 							return newResult;
 						}
 					}
 				}
 
-				newResult = new BaseDecisionResult(algResultDecision, algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList);
+				newResult = new BaseDecisionResult(algResult, pepActions, applicablePolicyIdList);
 				return newResult;
 			} finally
 			{

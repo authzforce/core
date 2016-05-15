@@ -68,6 +68,8 @@ public abstract class SimpleValue<V> extends AttributeValue
 	 */
 	public static abstract class Factory<AV extends AttributeValue> extends BaseDatatypeFactory<AV>
 	{
+		private static final IllegalArgumentException MORE_THAN_ONE_ELEMENT_IN_XACML_ATTRIBUTE_VALUE_CONTENT_EXCEPTION = new IllegalArgumentException(
+				"Invalid primitive AttributeValueType: content has more than one element. Expected: empty or single String element ");
 
 		/**
 		 * Creates a datatype factory from the Java datatype implementation class and atatype identifier
@@ -186,8 +188,6 @@ public abstract class SimpleValue<V> extends AttributeValue
 
 	private static final IllegalArgumentException UNDEF_ATTR_CONTENT_EXCEPTION = new IllegalArgumentException("Undefined attribute value");
 
-	private static final IllegalArgumentException MORE_THAN_ONE_ELEMENT_IN_XACML_ATTRIBUTE_VALUE_CONTENT_EXCEPTION = new IllegalArgumentException(
-			"Invalid primitive AttributeValueType: content has more than one element. Expected: empty or single String element ");
 	/*
 	 * Make it final to prevent unexpected value change resulting from some function side-effects
 	 */

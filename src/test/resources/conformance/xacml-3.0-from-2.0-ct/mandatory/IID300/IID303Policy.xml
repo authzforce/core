@@ -4,7 +4,7 @@
 		PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IID303:policy" 
 		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" 
 		Version="1.0" 
-		xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os access_control-xacml-2.0-policy-schema-os.xsd">
+		>
     <Description>
         Policy for Conformance Test IID303.
         Purpose: Case: Deny: RuleCombiningAlgorithm Ordered DenyOverrides

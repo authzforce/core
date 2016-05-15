@@ -76,21 +76,7 @@ public final class BaseDecisionResult implements DecisionResult
 	// initialized non-null
 	private final List<JAXBElement<IdReferenceType>> applicablePolicyIdList;
 
-	/**
-	 * Instantiates a generic Decision result
-	 *
-	 * @param decision
-	 *            decision
-	 * @param extendedIndeterminate
-	 *            Extended Indeterminate value, null if {@code decision !=  DecisionType.INDETERMINATE}
-	 * @param status
-	 *            status
-	 * @param pepActions
-	 *            PEP actions (obligations/advices)
-	 * @param policyIdentifierList
-	 *            list of matched policy identifiers
-	 */
-	public BaseDecisionResult(DecisionType decision, DecisionType extendedIndeterminate, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	private BaseDecisionResult(DecisionType decision, DecisionType extendedIndeterminate, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
 		if (decision == null)
 		{
@@ -103,6 +89,27 @@ public final class BaseDecisionResult implements DecisionResult
 		this.pepActions = pepActions == null ? new BasePepActions(null, null) : pepActions;
 		this.applicablePolicyIdList = policyIdentifierList == null ? new ArrayList<JAXBElement<IdReferenceType>>() : policyIdentifierList;
 
+	}
+
+	/**
+	 * Instantiates a generic Decision result
+	 *
+	 * @param extendedIndeterminate
+	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10). We use the following convention:
+	 *            <ul>
+	 *            <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
+	 *            <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
+	 *            <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
+	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 *            </ul>
+	 * @param status
+	 *            status
+	 * @param policyIdentifierList
+	 *            list of matched policy identifiers
+	 */
+	public BaseDecisionResult(Status status, DecisionType extendedIndeterminate, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	{
+		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, policyIdentifierList);
 	}
 
 	/**
@@ -146,6 +153,21 @@ public final class BaseDecisionResult implements DecisionResult
 	public BaseDecisionResult(DecisionType decision, PepActions pepActions)
 	{
 		this(decision, DecisionType.NOT_APPLICABLE, null, pepActions, null);
+	}
+
+	/**
+	 * Instantiates a decision result reusing the decision, extended Indeterminate and status from a given result
+	 * 
+	 * @param algResult
+	 *            decision result giving the decision, extended Indeterminate result and status to the new instance
+	 * @param pepActions
+	 *            PEP actions (obligations/advices) to be added to the result
+	 * @param applicablePolicyIdList
+	 *            list of matched policy identifiers to be added to the result
+	 */
+	public BaseDecisionResult(DecisionResult algResult, PepActions pepActions, List<JAXBElement<IdReferenceType>> applicablePolicyIdList)
+	{
+		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList);
 	}
 
 	private transient volatile int hashCode = 0;

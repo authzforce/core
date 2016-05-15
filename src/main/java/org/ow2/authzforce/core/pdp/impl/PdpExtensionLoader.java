@@ -43,27 +43,31 @@ public class PdpExtensionLoader
 
 	/*
 	 * For each type of extension, we build the maps allowing to get the compatible/supporting extension class, using {@link ServiceLoader} API, to discover these classes from files
-	 * 'META-INF/services/com.thalesgroup.authzforce.core.PdpExtension' on the classpath, in the format described by {@link ServiceLoader} API documentation.
+	 * 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' on the classpath, in the format described by {@link ServiceLoader} API documentation.
 	 */
 
-	/*
-	 * For each type of XML/JAXB-bound extension, map XML/JAXB conf class to corresponding extension (we assume a one-to-one relationship between the XML/JAXB type and the extension class)
+	/**
+	 * Types of zero-conf (non-JAXB-bound) extension
 	 */
-	private final static Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS = new HashMap<>();
+	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(DatatypeFactory.class, Function.class,
+			FunctionSet.class, CombiningAlg.class, RequestFilter.Factory.class, DecisionResultFilter.class)));
 
-	/*
-	 * Types of zero-conf (non-JAXB-bound) extesnsion
-	 */
-	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = new HashSet<>(Arrays.asList(DatatypeFactory.class, Function.class, FunctionSet.class,
-			CombiningAlg.class, RequestFilter.Factory.class, DecisionResultFilter.class));
 	/*
 	 * For each type of zero-conf (non-JAXB-bound) extension, have a map (extension ID -> extension instance), so that the extension ID is scoped to the extension type among the ones listed in
 	 * NON_JAXB_BOUND_EXTENSION_CLASSES (you can have same ID but for different types of extensions).
 	 */
-	private final static Map<Class<? extends PdpExtension>, Map<String, PdpExtension>> NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID = new HashMap<>();
+	private final static Map<Class<? extends PdpExtension>, Map<String, PdpExtension>> NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID;
+
+	/*
+	 * For each type of XML/JAXB-bound extension, map XML/JAXB configuration class to corresponding extension (we assume a one-to-one relationship between the XML/JAXB type and the extension class)
+	 */
+	private final static Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS;
 
 	static
 	{
+		final Map<Class<? extends PdpExtension>, Map<String, PdpExtension>> mutableNonJaxbBoundExtMapByClassAndId = new HashMap<>();
+		final Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> mutableJaxbBoundExtMapByClass = new HashMap<>();
+
 		/*
 		 * REMINDER: every service provider (implementation class) loaded by ServiceLoader MUST HAVE a ZERO-ARGUMENT CONSTRUCTOR.
 		 */
@@ -74,7 +78,7 @@ public class PdpExtensionLoader
 			if (extension instanceof JaxbBoundPdpExtension<?>)
 			{
 				final JaxbBoundPdpExtension<?> jaxbBoundExt = (JaxbBoundPdpExtension<?>) extension;
-				final JaxbBoundPdpExtension<?> conflictingExt = JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.put(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
+				final JaxbBoundPdpExtension<?> conflictingExt = mutableJaxbBoundExtMapByClass.put(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
 				if (conflictingExt != null)
 				{
 					throw new IllegalArgumentException("Extension " + jaxbBoundExt + " (" + jaxbBoundExt.getClass() + ") is conflicting with " + conflictingExt + "(" + conflictingExt.getClass()
@@ -88,12 +92,12 @@ public class PdpExtensionLoader
 				{
 					if (extClass.isInstance(extension))
 					{
-						final Map<String, PdpExtension> oldMap = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.get(extClass);
+						final Map<String, PdpExtension> oldMap = mutableNonJaxbBoundExtMapByClassAndId.get(extClass);
 						final Map<String, PdpExtension> newMap;
 						if (oldMap == null)
 						{
 							newMap = new HashMap<>();
-							NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.put(extClass, newMap);
+							mutableNonJaxbBoundExtMapByClassAndId.put(extClass, newMap);
 						} else
 						{
 							newMap = oldMap;
@@ -116,6 +120,9 @@ public class PdpExtensionLoader
 				throw new UnsupportedOperationException("Unsupported/invalid type of PDP extension: " + extension.getClass() + " (extension ID = " + extension.getId() + ")");
 			}
 		}
+
+		NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID = Collections.unmodifiableMap(mutableNonJaxbBoundExtMapByClassAndId);
+		JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS = Collections.unmodifiableMap(mutableJaxbBoundExtMapByClass);
 	}
 
 	/**
@@ -126,6 +133,31 @@ public class PdpExtensionLoader
 	public static Set<Class<? extends AbstractPdpExtension>> getExtensionJaxbClasses()
 	{
 		return Collections.unmodifiableSet(JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
+	}
+
+	/**
+	 * Get non-JAXB-bound (aka zero-configuration) extension identifiers. Used by PAPs for instance, to get the list of extensions supported by the PDP before modifying PDP's configuration
+	 *
+	 * @param extensionType
+	 *            type of extension: {@link DatatypeFactory }, {@link Function}, {@link CombiningAlg}, etc.
+	 * @return unmodifiable set of supported non-JAXB bound extension IDs; may be empty (not null) if no extension available for this type
+	 * @throws java.lang.IllegalArgumentException
+	 *             if {@code extensionType} is not a valid extension type
+	 */
+	public static <T extends PdpExtension> Set<String> getNonJaxbBoundExtensionIDs(Class<T> extensionType) throws IllegalArgumentException
+	{
+		if (!NON_JAXB_BOUND_EXTENSION_CLASSES.contains(extensionType))
+		{
+			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: " + NON_JAXB_BOUND_EXTENSION_CLASSES);
+		}
+
+		final Map<String, PdpExtension> typeSpecificExtsById = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.get(extensionType);
+		if (typeSpecificExtsById == null)
+		{
+			return Collections.emptySet();
+		}
+
+		return Collections.unmodifiableSet(typeSpecificExtsById.keySet());
 	}
 
 	/**
@@ -141,7 +173,7 @@ public class PdpExtensionLoader
 	 */
 	public static <T extends PdpExtension> T getExtension(Class<T> extensionType, String id) throws IllegalArgumentException
 	{
-		if (!NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.containsKey(extensionType))
+		if (!NON_JAXB_BOUND_EXTENSION_CLASSES.contains(extensionType))
 		{
 			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: " + NON_JAXB_BOUND_EXTENSION_CLASSES);
 		}
@@ -184,145 +216,5 @@ public class PdpExtensionLoader
 
 		return extensionType.cast(ext);
 	}
-
-	/**
-	 * Create instance of PDP extension (AttributeProvider, ReferencedPolicyProvider...) with input configuration. The extension implementation class has been discovered by {@link ServiceLoader} from
-	 * files 'META-INF/services/com.thalesgroup.authzforce.core.IPdpExtensionFactory' on the classpath, in the format described by {@link ServiceLoader} API documentation. Such class must have a
-	 * constructor matching {@code constructorArgs} that is called to instantiate the extension, or a default constructor that is called instead if none matching such parameters; and it must implement
-	 * {@code IPdpExtensionFactory} and therefore have a {@code IPdpExtensionFactory#init(EXTENSION_CONF_CLASS conf)} method to initialize the instance.
-	 * 
-	 * @param extensionConf
-	 *            extension configuration (instance of custom type of PDP extension defined in XML schema)
-	 * @param constructorArgs
-	 *            optional Constructor arguments
-	 * @return extension instance
-	 * @throws IllegalArgumentException
-	 *             handlerClass is not compatible with handlerconf
-	 */
-	// public static <EXTENSION_CONF_CLASS extends AbstractPdpExtension, EXTENSION_CLASS extends
-	// PdpExtension> EXTENSION_CLASS getInstance(
-	// EXTENSION_CONF_CLASS extensionConf, Object... constructorArgs)
-	// {
-	// @SuppressWarnings("rawtypes")
-	// final Class<? extends PdpExtension> implClass =
-	// EXTENSIONS_BY_CONF_TYPE.get(extensionConf.getClass());
-	// final Class<?>[] constructorParameters = new Class<?>[constructorArgs.length];
-	// for (int i = 0; i < constructorArgs.length; i++)
-	// {
-	// constructorParameters[i] = constructorArgs[i].getClass();
-	// }
-	//
-	// Constructor<? extends PdpExtension> implConstructor;
-	// try
-	// {
-	// implConstructor = implClass.getConstructor(constructorParameters);
-	// } catch (NoSuchMethodException | SecurityException e)
-	// {
-	// LOGGER.info("PDP extension '{}' has no constructor matching parameters {}. Falling back to default constructor.",
-	// implClass,
-	// constructorParameters, e);
-	// implConstructor = null;
-	// }
-	//
-	// final PdpExtension extImpl;
-	// try
-	// {
-	// extImpl = implConstructor == null ? implClass.newInstance() :
-	// implConstructor.newInstance(constructorArgs);
-	// extImpl.init(extensionConf);
-	// @SuppressWarnings("unchecked")
-	// final EXTENSION_CLASS extInstance = (EXTENSION_CLASS) extImpl;
-	// return extInstance;
-	// } catch (ClassCastException e)
-	// {
-	// throw new IllegalArgumentException("'" + implClass +
-	// "' defined in one of the files 'META-INF/services/"
-	// + IPdpExtensionFactory.class.getName() +
-	// "' on the classpath is not a valid extension class for configuration type '"
-	// + extensionConf.getClass() + "'", e);
-	// } catch (Exception e)
-	// {
-	// throw new RuntimeException("Failed to instantiate extension implementation " + implClass +
-	// " for configuration '"
-	// + extensionConf.getClass() + "'", e);
-	// }
-	// }
-
-	// /**
-	// * Get class implementing specific PDP extension from class name.
-	// *
-	// * @param classname
-	// * name of implementation class
-	// * @param superclass
-	// * mandatory superclass of class whose name is specified as first argument.
-	// *
-	// * @return implementation class
-	// * @throws IllegalArgumentException
-	// * implementation is not subclass of extension superclass or class unknown (not on
-	// * classpath)
-	// */
-	// public static <EXTENSION_SUPERCLASS> Class<? extends EXTENSION_SUPERCLASS>
-	// getExtensionClass(String classname,
-	// Class<EXTENSION_SUPERCLASS> superclass)
-	// {
-	// final Class<?> implClass;
-	// try
-	// {
-	// implClass = Class.forName(classname);
-	// } catch (ClassNotFoundException e)
-	// {
-	// throw new IllegalArgumentException("Extension class '" + classname +
-	// "' not found in classpath", e);
-	// }
-	//
-	// if (!superclass.isAssignableFrom(implClass))
-	// {
-	// throw new IllegalArgumentException(implClass + " is not a subclass of " + superclass);
-	// }
-	//
-	// return implClass.asSubclass(superclass);
-	// }
-
-	// /**
-	// * Create instance of T using the default constructor of the class given as first argument.
-	// *
-	// * @param classname
-	// * name of class with default constructor used to create the instance
-	// * @param superclass
-	// * class of which the returned instance must be a sub-class
-	// *
-	// * @return instance of superclass (type of extension)
-	// * @throws IllegalArgumentException
-	// * handlerClass is not compatible with handlerconf
-	// */
-	// public static <T> T getInstance(String classname, Class<T> superclass)
-	// {
-	// final Class<?> instanceClass;
-	// try
-	// {
-	// instanceClass = Class.forName(classname);
-	// } catch (ClassNotFoundException e)
-	// {
-	// throw new IllegalArgumentException("Extension class '" + classname +
-	// "' not found in classpath", e);
-	// }
-	//
-	// if (!superclass.isAssignableFrom(instanceClass))
-	// {
-	// throw new IllegalArgumentException(instanceClass + " is not a subclass of " + superclass);
-	// }
-	//
-	// try
-	// {
-	// return (T) instanceClass.newInstance();
-	// } catch (InstantiationException ie)
-	// {
-	// throw new IllegalArgumentException("Cannot instantiate " + instanceClass +
-	// " with default constructor.", ie);
-	// } catch (IllegalAccessException iae)
-	// {
-	// throw new RuntimeException("Cannot access any default constructor of " + instanceClass, iae);
-	// }
-	// }
 
 }

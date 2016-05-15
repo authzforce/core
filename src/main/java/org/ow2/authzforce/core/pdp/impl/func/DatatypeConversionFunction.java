@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.Value;
 import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
 import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DNSNameValue;
+import org.ow2.authzforce.core.pdp.impl.value.DNSNameWithPortRangeValue;
 import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
 import org.ow2.authzforce.core.pdp.impl.value.DateValue;
@@ -424,7 +424,7 @@ public final class DatatypeConversionFunction<PARAM_T extends AttributeValue, RE
 					new FromStringConverter<>(DatatypeConstants.DNSNAME.FACTORY)),
 			//
 			new DatatypeConversionFunction<>(NAME_STRING_FROM_DNSNAME, DatatypeConstants.DNSNAME.TYPE, DatatypeConstants.STRING.TYPE,
-					new ToStringConverter<DNSNameValue>())
+					new ToStringConverter<DNSNameWithPortRangeValue>())
 	//
 	);
 

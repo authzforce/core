@@ -14,7 +14,7 @@
 /**
  * 
  */
-package org.ow2.authzforce.core.test.utils;
+package org.ow2.authzforce.core.test.custom;
 
 import java.io.IOException;
 import java.util.HashMap;

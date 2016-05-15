@@ -67,6 +67,11 @@ public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<Combining
 	public <T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedEltType) throws IllegalArgumentException
 	{
 		final CombiningAlg<? extends Decidable> alg = this.getExtension(algId);
+		if (alg == null)
+		{
+			throw new IllegalArgumentException("Unsupported combining algorithm: '" + algId + "'");
+		}
+
 		if (alg.getCombinedElementType().isAssignableFrom(combinedEltType))
 		{
 			return (CombiningAlg<T>) alg;

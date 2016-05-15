@@ -29,14 +29,12 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
 import org.ow2.authzforce.core.pdp.impl.value.Base64BinaryValue;
 import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DNSNameValue;
 import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
 import org.ow2.authzforce.core.pdp.impl.value.DateValue;
 import org.ow2.authzforce.core.pdp.impl.value.DayTimeDurationValue;
 import org.ow2.authzforce.core.pdp.impl.value.DoubleValue;
 import org.ow2.authzforce.core.pdp.impl.value.HexBinaryValue;
-import org.ow2.authzforce.core.pdp.impl.value.IPAddressValue;
 import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.impl.value.RFC822NameValue;
 import org.ow2.authzforce.core.pdp.impl.value.SimpleValue;
@@ -47,6 +45,9 @@ import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
 
 /**
  * Implements generic match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates and special match function x500Name-match
+ * <p>
+ * Note that there are no such functions as ipAddress-equal and dnsName-equal functions in the XACML core specification. Regexp-match alternatives should be used intead. More info:
+ * https://lists.oasis-open.org/archives/xacml-comment/200411/msg00002.html
  *
  * @param <PARAM>
  *            type of compared parameters
@@ -127,16 +128,6 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 	public static final String NAME_BASE64BINARY_EQUAL = XACML_NS_1_0 + "base64Binary-equal";
 
 	/**
-	 * Standard identifier for the ipAddress-equal function.
-	 */
-	public static final String NAME_IPADDRESS_EQUAL = XACML_NS_2_0 + "ipAddress-equal";
-
-	/**
-	 * Standard identifier for the dnsName-equal function.
-	 */
-	public static final String NAME_DNSNAME_EQUAL = XACML_NS_2_0 + "dnsName-equal";
-
-	/**
 	 * Standard identifier for the string-equal-ignore-case function.
 	 */
 	private static final String NAME_STRING_EQUAL_IGNORE_CASE = XACML_NS_3_0 + "string-equal-ignore-case";
@@ -184,8 +175,7 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 			this.matcher = matcher;
 		}
 
-		protected FirstOrderFunctionCall<BooleanValue> getInstance(List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
-				throws IllegalArgumentException
+		protected FirstOrderFunctionCall<BooleanValue> getInstance(List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			return new EagerSinglePrimitiveTypeEval<BooleanValue, PARAM_T>(funcSig, argExpressions, remainingArgTypes)
 			{
@@ -205,22 +195,39 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 		CallFactory<PARAM_T> build(FunctionSignature.SingleParameterTyped<BooleanValue, PARAM_T> functionSignature);
 	}
 
-	private interface Matcher<PARAM_T extends AttributeValue>
+	/**
+	 * Generic match function interface
+	 *
+	 * @param <PARAM_T>
+	 *            type of arguments to be matched against each other
+	 */
+	public interface Matcher<PARAM_T extends AttributeValue>
 	{
+		/**
+		 * Match two arguments (same type)
+		 * 
+		 * @param arg0
+		 *            first argument
+		 * @param arg1
+		 *            second argument to be matched against the first one
+		 * @return true iff arguments match (match algorithm is implementation-specific)
+		 */
 		boolean match(PARAM_T arg0, PARAM_T arg1);
 	}
 
 	private final CallFactory<PARAM> funcCallFactory;
 
 	/**
-	 * Creates a new <code>EqualTypeMatchFunction</code> object.
+	 * Constructor based on a match function
 	 * 
 	 * @param functionName
 	 *            the standard XACML name of the function to be handled by this object, including the full namespace
 	 * @param paramType
 	 *            parameter type
+	 * @param matcher
+	 *            match function
 	 */
-	private EqualTypeMatchFunction(String functionName, Datatype<PARAM> paramType, Matcher<PARAM> matcher)
+	public EqualTypeMatchFunction(String functionName, Datatype<PARAM> paramType, Matcher<PARAM> matcher)
 	{
 		super(functionName, DatatypeConstants.BOOLEAN.TYPE, false, Arrays.asList(paramType, paramType));
 		this.funcCallFactory = new CallFactory<>(functionSignature, matcher);
@@ -278,19 +285,19 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 	 * x500Name-match function matcher
 	 * 
 	 */
-	private static final class X500NameMatcher implements Matcher<X500NameValue>
+	private static final Matcher<X500NameValue> X500NAME_MATCHER = new Matcher<X500NameValue>()
 	{
 		@Override
 		public boolean match(X500NameValue arg0, X500NameValue arg1)
 		{
 			return arg0.match(arg1);
 		}
-	}
+	};
 
 	/**
 	 * string-starts-with function matcher. For other *-starts-with functions, see {@link NonEqualTypeMatchFunction} class.
 	 */
-	private static final class StringStartsWithMatcher implements Matcher<StringValue>
+	private static final Matcher<StringValue> STRING_STARTS_WITH_MATCHER = new Matcher<StringValue>()
 	{
 		/**
 		 * WARNING: the XACML spec defines the first argument as the prefix
@@ -300,12 +307,12 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 		{
 			return arg1.getUnderlyingValue().startsWith(prefix.getUnderlyingValue());
 		}
-	}
+	};
 
 	/**
 	 * string-ends-with function matcher
 	 */
-	private static class StringEndsWithMatcher implements Matcher<StringValue>
+	private static final Matcher<StringValue> STRING_ENDS_WITH_MATCHER = new Matcher<StringValue>()
 	{
 
 		/**
@@ -316,13 +323,13 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 		{
 			return arg1.getUnderlyingValue().endsWith(suffix.getUnderlyingValue());
 		}
-	}
+	};
 
 	/**
 	 * string-contains function matcher
 	 * 
 	 */
-	private static final class StringContainsMatcher implements Matcher<StringValue>
+	private static final Matcher<StringValue> STRING_CONTAINS_MATCHER = new Matcher<StringValue>()
 	{
 
 		/**
@@ -333,7 +340,7 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 		{
 			return arg1.getUnderlyingValue().contains(contained.getUnderlyingValue());
 		}
-	}
+	};
 
 	private static final class StringRegexpMatchCallFactory extends CallFactory<StringValue>
 	{
@@ -359,8 +366,8 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 		{
 			final FirstOrderFunctionCall<BooleanValue> compiledRegexFuncCall = regexFuncHelper.getCompiledRegexMatchCall(argExpressions, remainingArgTypes);
 			/*
-			 * compiledRegexFuncCall == null means no optimization using a pre-compiled regex could be done; in this case, use super.newCall() as usual, which
-			 * will call match() down below, compiling the regex on-the-fly for each evaluation.
+			 * compiledRegexFuncCall == null means no optimization using a pre-compiled regex could be done; in this case, use super.newCall() as usual, which will call match() down below, compiling
+			 * the regex on-the-fly for each evaluation.
 			 */
 			return compiledRegexFuncCall == null ? super.getInstance(argExpressions, remainingArgTypes) : compiledRegexFuncCall;
 		}
@@ -411,19 +418,15 @@ public class EqualTypeMatchFunction<PARAM extends AttributeValue> extends FirstO
 			//
 			new EqualTypeMatchFunction<>(NAME_BASE64BINARY_EQUAL, DatatypeConstants.BASE64BINARY.TYPE, new EqualMatcher<Base64BinaryValue>()),
 			//
-			new EqualTypeMatchFunction<>(NAME_IPADDRESS_EQUAL, DatatypeConstants.IPADDRESS.TYPE, new EqualMatcher<IPAddressValue>()),
-			//
-			new EqualTypeMatchFunction<>(NAME_DNSNAME_EQUAL, DatatypeConstants.DNSNAME.TYPE, new EqualMatcher<DNSNameValue>()),
-			//
 			new EqualTypeMatchFunction<>(NAME_STRING_EQUAL_IGNORE_CASE, DatatypeConstants.STRING.TYPE, new EqualIgnoreCaseMatcher<StringValue>()),
 			//
-			new EqualTypeMatchFunction<>(NAME_X500NAME_MATCH, DatatypeConstants.X500NAME.TYPE, new X500NameMatcher()),
+			new EqualTypeMatchFunction<>(NAME_X500NAME_MATCH, DatatypeConstants.X500NAME.TYPE, X500NAME_MATCHER),
 			//
-			new EqualTypeMatchFunction<>(NAME_STRING_STARTS_WITH, DatatypeConstants.STRING.TYPE, new StringStartsWithMatcher()),
+			new EqualTypeMatchFunction<>(NAME_STRING_STARTS_WITH, DatatypeConstants.STRING.TYPE, STRING_STARTS_WITH_MATCHER),
 			//
-			new EqualTypeMatchFunction<>(NAME_STRING_ENDS_WITH, DatatypeConstants.STRING.TYPE, new StringEndsWithMatcher()),
+			new EqualTypeMatchFunction<>(NAME_STRING_ENDS_WITH, DatatypeConstants.STRING.TYPE, STRING_ENDS_WITH_MATCHER),
 			//
-			new EqualTypeMatchFunction<>(NAME_STRING_CONTAINS, DatatypeConstants.STRING.TYPE, new StringContainsMatcher()),
+			new EqualTypeMatchFunction<>(NAME_STRING_CONTAINS, DatatypeConstants.STRING.TYPE, STRING_CONTAINS_MATCHER),
 			//
 			new EqualTypeMatchFunction<>(NAME_STRING_REGEXP_MATCH, DatatypeConstants.STRING.TYPE, STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER));
 

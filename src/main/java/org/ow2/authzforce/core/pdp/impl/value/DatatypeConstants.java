@@ -262,14 +262,14 @@ public final class DatatypeConstants<AV extends AttributeValue>
 	public static final DatatypeConstants<IPAddressValue> IPADDRESS = new DatatypeConstants<>(IPADDRESS_FACTORY, IPAddressValue[].class, Function.XACML_NS_2_0
 			+ "ipAddress");
 
-	private static final SimpleValue.Factory<DNSNameValue> DNSNAME_FACTORY = new SimpleValue.StringContentOnlyFactory<DNSNameValue>(DNSNameValue.class,
-			DNSNameValue.TYPE_URI)
+	private static final SimpleValue.Factory<DNSNameWithPortRangeValue> DNSNAME_FACTORY = new SimpleValue.StringContentOnlyFactory<DNSNameWithPortRangeValue>(DNSNameWithPortRangeValue.class,
+			DNSNameWithPortRangeValue.TYPE_URI)
 	{
 
 		@Override
-		public DNSNameValue getInstance(String value)
+		public DNSNameWithPortRangeValue getInstance(String value)
 		{
-			return new DNSNameValue(value);
+			return new DNSNameWithPortRangeValue(value);
 		}
 
 	};
@@ -277,7 +277,7 @@ public final class DatatypeConstants<AV extends AttributeValue>
 	/**
 	 * dnsName
 	 */
-	public static final DatatypeConstants<DNSNameValue> DNSNAME = new DatatypeConstants<>(DNSNAME_FACTORY, DNSNameValue[].class, Function.XACML_NS_2_0
+	public static final DatatypeConstants<DNSNameWithPortRangeValue> DNSNAME = new DatatypeConstants<>(DNSNAME_FACTORY, DNSNameWithPortRangeValue[].class, Function.XACML_NS_2_0
 			+ "dnsName");
 
 	private static final SimpleValue.Factory<DayTimeDurationValue> DAYTIMEDURATION_FACTORY = new SimpleValue.StringContentOnlyFactory<DayTimeDurationValue>(

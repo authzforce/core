@@ -4,7 +4,7 @@
 		PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IID343ordered:policy" 
 		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny" 
 		Version="1.0" 
-		xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os access_control-xacml-2.0-policy-schema-os.xsd">
+		>
     <Description>
         Policy1 for Conformance Test IID343.
         Purpose - Combining Algorithms: Rule-level permit-unless-deny with deny after permit

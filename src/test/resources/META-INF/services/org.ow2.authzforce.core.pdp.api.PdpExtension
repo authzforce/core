@@ -1,1 +1,6 @@
-org.ow2.authzforce.core.test.utils.TestAttributeProviderModule$Factory
+org.ow2.authzforce.core.test.custom.TestAttributeProviderModule$Factory
+org.ow2.authzforce.core.test.custom.TestXACMLPolicyAttributeValue$Factory
+org.ow2.authzforce.core.test.custom.TestDNSNameWithPortValue$Factory
+org.ow2.authzforce.core.test.custom.TestDNSNameValueEqualFunction
+org.ow2.authzforce.core.test.custom.TestOnPermitApplySecondCombiningAlg
+org.ow2.authzforce.core.test.custom.TestCombinedDecisionResultFilter

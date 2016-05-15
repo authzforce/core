@@ -4,7 +4,7 @@
 		PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" 
 		PolicySetId="urn:oasis:names:tc:xacml:2.0:conformance-test:IID007:policyset" 
 		Version="1.0" 
-		xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os access_control-xacml-2.0-policy-schema-os.xsd">
+		>
     <Description>
         Policy for Conformance Test IID007.
         Purpose: Case: NotApplicable: PolicyCombiningAlgorithm DenyOverrides

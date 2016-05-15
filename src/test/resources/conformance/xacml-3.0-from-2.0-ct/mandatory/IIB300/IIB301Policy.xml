@@ -20,7 +20,7 @@
 			PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIB301:policy" 
 			RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides" 
 			Version="1.0" 
-			xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os  access_control-xacml-2.0-policy-schema-os.xsd">
+			>
 	    <Description>
 	        Any Subject can perform anVersion 3.0 enhanced Target mixing categories in same logical operation:
 	        	(Doctor AND medical record) AND (read OR write)

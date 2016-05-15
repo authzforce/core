@@ -27,7 +27,7 @@ import com.sun.xacml.PortRange;
  * 
  * @version $Id: $
  */
-public final class DNSNameValue extends SimpleValue<String>
+public final class DNSNameWithPortRangeValue extends SimpleValue<String>
 {
 	/**
 	 * Official name of this type
@@ -46,11 +46,11 @@ public final class DNSNameValue extends SimpleValue<String>
 	 * </p>
 	 */
 	private static final Pattern HOSTNAME_PATTERN;
-
 	static
 	{
 		final String domainlabel = "\\w[[\\w|\\-]*\\w]?";
 		final String toplabel = "[a-zA-Z][[\\w|\\-]*\\w]?";
+		// Add the possibility of wildcard in the left-most part (specific to XACML definition)
 		final String pattern = "[\\*\\.]?[" + domainlabel + "\\.]*" + toplabel + "\\.?";
 		HOSTNAME_PATTERN = Pattern.compile(pattern);
 	}
@@ -60,9 +60,9 @@ public final class DNSNameValue extends SimpleValue<String>
 	 * control for instance.
 	 */
 	// the required hostname
-	private final String hostname;
+	private final transient String hostname;
 
-	// the optional port portRange
+	// the optional port/portRange
 	private final transient PortRange portRange;
 
 	/*
@@ -90,14 +90,14 @@ public final class DNSNameValue extends SimpleValue<String>
 		final int portSep = dnsName.indexOf(':');
 		if (portSep == -1)
 		{
-			// there is no port portRange, so just use the name
+			// there is no port/portRange, so just use the name
 			host = dnsName;
 			range = new PortRange();
 		} else
 		{
-			// split the name and the port portRange
+			// split the name and the port/portRange
 			host = dnsName.substring(0, portSep);
-			// validate port portRange
+			// validate port/portRange
 			range = PortRange.getInstance(dnsName.substring(portSep + 1, dnsName.length()));
 		}
 
@@ -118,7 +118,7 @@ public final class DNSNameValue extends SimpleValue<String>
 	 * @throws java.lang.IllegalArgumentException
 	 *             if format of {@code val} does not comply with the dnsName datatype definition
 	 */
-	public DNSNameValue(String val) throws IllegalArgumentException
+	public DNSNameWithPortRangeValue(String val) throws IllegalArgumentException
 	{
 		super(TYPE_URI, val);
 		final Entry<String, PortRange> hostAndPortRange = parseDnsName(this.value);
@@ -140,9 +140,9 @@ public final class DNSNameValue extends SimpleValue<String>
 	// }
 
 	// /**
-	// * Returns the port portRange represented by this object which will be unbound if no portRange was specified.
+	// * Returns the port/portRange represented by this object which will be unbound if no portRange was specified.
 	// *
-	// * @return the port portRange
+	// * @return the port/portRange
 	// */
 	// public PortRange getPortRange()
 	// {
@@ -190,12 +190,12 @@ public final class DNSNameValue extends SimpleValue<String>
 			return true;
 		}
 
-		if (!(obj instanceof DNSNameValue))
+		if (!(obj instanceof DNSNameWithPortRangeValue))
 		{
 			return false;
 		}
 
-		final DNSNameValue other = (DNSNameValue) obj;
+		final DNSNameWithPortRangeValue other = (DNSNameWithPortRangeValue) obj;
 
 		// hostname and portRange are not null
 		/*

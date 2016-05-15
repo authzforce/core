@@ -32,7 +32,7 @@ import org.ow2.authzforce.core.pdp.api.Value;
 import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
 import org.ow2.authzforce.core.pdp.impl.value.Base64BinaryValue;
 import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DNSNameValue;
+import org.ow2.authzforce.core.pdp.impl.value.DNSNameWithPortRangeValue;
 import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
 import org.ow2.authzforce.core.pdp.impl.value.DateValue;
@@ -233,7 +233,7 @@ public class BagFunctionsTest extends FunctionTest
 				"cn=John Smith, o=Medico Corp, c=US")));
 		params.addAll(newOneAndOnlyFunctionTestParams(NAME_RFC822NAME_ONE_AND_ONLY, DatatypeConstants.RFC822NAME, new RFC822NameValue("Anderson@sun.com")));
 		params.addAll(newOneAndOnlyFunctionTestParams(NAME_IPADDRESS_ONE_AND_ONLY, DatatypeConstants.IPADDRESS, new IPAddressValue("192.168.1.10")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DNSNAME_ONE_AND_ONLY, DatatypeConstants.DNSNAME, new DNSNameValue("example.com")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DNSNAME_ONE_AND_ONLY, DatatypeConstants.DNSNAME, new DNSNameWithPortRangeValue("example.com")));
 
 		// *-bag-size functions
 		params.addAll(newBagSizeFunctionTestParams(NAME_STRING_BAG_SIZE, DatatypeConstants.STRING, new StringValue("Test")));
@@ -251,7 +251,7 @@ public class BagFunctionsTest extends FunctionTest
 		params.addAll(newBagSizeFunctionTestParams(NAME_X500NAME_BAG_SIZE, DatatypeConstants.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US")));
 		params.addAll(newBagSizeFunctionTestParams(NAME_RFC822NAME_BAG_SIZE, DatatypeConstants.RFC822NAME, new RFC822NameValue("Anderson@sun.com")));
 		params.addAll(newBagSizeFunctionTestParams(NAME_IPADDRESS_BAG_SIZE, DatatypeConstants.IPADDRESS, new IPAddressValue("192.168.1.10")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DNSNAME_BAG_SIZE, DatatypeConstants.DNSNAME, new DNSNameValue("example.com")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DNSNAME_BAG_SIZE, DatatypeConstants.DNSNAME, new DNSNameWithPortRangeValue("example.com")));
 
 		// *-is-in functions
 		params.addAll(newIsInFunctionTestParams(NAME_STRING_IS_IN, DatatypeConstants.STRING, new StringValue("Test1"), new StringValue("Test2")));
@@ -277,8 +277,8 @@ public class BagFunctionsTest extends FunctionTest
 				new RFC822NameValue("Smith@sun.com")));
 		params.addAll(newIsInFunctionTestParams(NAME_IPADDRESS_IS_IN, DatatypeConstants.IPADDRESS, new IPAddressValue("192.168.1.10"), new IPAddressValue(
 				"192.168.1.11")));
-		params.addAll(newIsInFunctionTestParams(NAME_DNSNAME_IS_IN, DatatypeConstants.DNSNAME, new DNSNameValue("example.com"),
-				new DNSNameValue("example1.com")));
+		params.addAll(newIsInFunctionTestParams(NAME_DNSNAME_IS_IN, DatatypeConstants.DNSNAME, new DNSNameWithPortRangeValue("example.com"),
+				new DNSNameWithPortRangeValue("example1.com")));
 
 		// *-bag functions
 		params.addAll(newBagOfFunctionTestParams(NAME_STRING_BAG, DatatypeConstants.STRING, new StringValue("Test1"), new StringValue("Test2")));
@@ -304,7 +304,7 @@ public class BagFunctionsTest extends FunctionTest
 				new RFC822NameValue("Smith@sun.com")));
 		params.addAll(newBagOfFunctionTestParams(NAME_IPADDRESS_BAG, DatatypeConstants.IPADDRESS, new IPAddressValue("192.168.1.10"), new IPAddressValue(
 				"192.168.1.11")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DNSNAME_BAG, DatatypeConstants.DNSNAME, new DNSNameValue("example.com"), new DNSNameValue("example1.com")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DNSNAME_BAG, DatatypeConstants.DNSNAME, new DNSNameWithPortRangeValue("example.com"), new DNSNameWithPortRangeValue("example1.com")));
 
 		return params;
 	}

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Request  ReturnPolicyIdList="false" CombinedDecision="false" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
+    <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-location">
+      <AttributeValue DataType="urn:oasis:names:tc:xacml:3.0:data-type:dnsName-value">webserver1.acme.com</AttributeValue>
+    </Attribute>
+    <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id">
+      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#anyURI">something.confidential.acme.com</AttributeValue>
+    </Attribute>
+  </Attributes>
+  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
+    <Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:3.0:dlp-nac:action:action-protocol">
+      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">HTTP</AttributeValue>
+    </Attribute>
+  </Attributes>
+</Request>

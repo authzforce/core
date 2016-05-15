@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
 import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DNSNameValue;
+import org.ow2.authzforce.core.pdp.impl.value.DNSNameWithPortRangeValue;
 import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 import org.ow2.authzforce.core.pdp.impl.value.IPAddressValue;
 import org.ow2.authzforce.core.pdp.impl.value.RFC822NameValue;
@@ -357,7 +357,7 @@ public final class NonEqualTypeMatchFunction<T0 extends AttributeValue, T1 exten
 					new RegexpMatchCallFactoryBuilder<IPAddressValue>()),
 			//
 			new NonEqualTypeMatchFunction<>(NAME_DNSNAME_REGEXP_MATCH, DatatypeConstants.STRING.TYPE, DatatypeConstants.DNSNAME.TYPE,
-					new RegexpMatchCallFactoryBuilder<DNSNameValue>()),
+					new RegexpMatchCallFactoryBuilder<DNSNameWithPortRangeValue>()),
 			//
 			new NonEqualTypeMatchFunction<>(NAME_RFC822NAME_REGEXP_MATCH, DatatypeConstants.STRING.TYPE, DatatypeConstants.RFC822NAME.TYPE,
 					new RegexpMatchCallFactoryBuilder<RFC822NameValue>()),
