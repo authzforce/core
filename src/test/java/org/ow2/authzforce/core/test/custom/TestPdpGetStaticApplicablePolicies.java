@@ -30,8 +30,8 @@ import java.util.Set;
 import javax.xml.bind.JAXBException;
 
 import org.junit.Test;
-import org.ow2.authzforce.core.pdp.api.ExtraPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.PolicyVersion;
+import org.ow2.authzforce.core.pdp.api.policy.ExtraPolicyMetadata;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.impl.PDPImpl;
 import org.ow2.authzforce.core.pdp.impl.policy.StaticApplicablePolicyView;
 import org.ow2.authzforce.core.test.utils.PdpTest;

@@ -19,9 +19,9 @@ import java.util.Set;
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 
@@ -73,7 +73,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 	 * <p>get</p>
 	 *
 	 * @param typeId a {@link java.lang.String} object.
-	 * @return a {@link org.ow2.authzforce.core.pdp.api.DatatypeFactory} object.
+	 * @return a {@link org.ow2.authzforce.core.pdp.api.value.DatatypeFactory} object.
 	 * @throws java.lang.IllegalArgumentException if any.
 	 */
 	protected DatatypeFactory<?> get(String typeId) throws IllegalArgumentException
@@ -90,7 +90,7 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 	/**
 	 * <p>createValue</p>
 	 *
-	 * @param datatypeFactory a {@link org.ow2.authzforce.core.pdp.api.DatatypeFactory} object.
+	 * @param datatypeFactory a {@link org.ow2.authzforce.core.pdp.api.value.DatatypeFactory} object.
 	 * @param jaxbAttrVal a {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType} object.
 	 * @param xPathCompiler a {@link net.sf.saxon.s9api.XPathCompiler} object.
 	 * @return a V object.

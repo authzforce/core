@@ -22,15 +22,15 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.Function;
-import org.ow2.authzforce.core.pdp.api.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.func.HigherOrderBagFunctionSet;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions;
 
 /**
  * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding attribute values in the request context.
@@ -88,10 +88,10 @@ public class MatchEvaluator
 
 		// Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction,
 		// attributeValue, bagExpression)
-		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory.getFunction(HigherOrderBagFunctionSet.NAME_ANY_OF);
+		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory.getFunction(StandardHigherOrderBagFunctions.NAME_ANY_OF);
 		if (anyOfFunc == null)
 		{
-			throw new IllegalArgumentException("Unsupported function '" + HigherOrderBagFunctionSet.NAME_ANY_OF + "' required for Match evaluation");
+			throw new IllegalArgumentException("Unsupported function '" + StandardHigherOrderBagFunctions.NAME_ANY_OF + "' required for Match evaluation");
 		}
 
 		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr, bagExpression);

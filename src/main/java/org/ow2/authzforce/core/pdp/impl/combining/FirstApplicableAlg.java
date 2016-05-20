@@ -17,12 +17,13 @@ import java.util.List;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
-import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**

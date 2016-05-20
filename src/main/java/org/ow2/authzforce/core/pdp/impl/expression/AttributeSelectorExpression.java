@@ -37,21 +37,21 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Bag;
-import org.ow2.authzforce.core.pdp.api.BagDatatype;
-import org.ow2.authzforce.core.pdp.api.Bags;
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.XMLUtils;
 import org.ow2.authzforce.core.pdp.api.XMLUtils.XPathEvaluator;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.value.Bags;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.XPathValue;
 
 /**
  * Implements AttributeSelector support, which uses XPath expressions (using Saxon parser) to resolve values from the Request or elsewhere. The AttributeSelector feature in optional in the XACML core
@@ -386,7 +386,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 				contextNode = contentNode;
 			} else
 			{
-				final Bag<XPathValue> bag = attrProvider.get(contextSelectorGUID, DatatypeConstants.XPATH.TYPE, context);
+				final Bag<XPathValue> bag = attrProvider.get(contextSelectorGUID, StandardDatatypes.XPATH_FACTORY.getDatatype(), context);
 				if (bag == null)
 				{
 					throw this.missingAttributeForUnknownReasonException;

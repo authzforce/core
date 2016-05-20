@@ -24,8 +24,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

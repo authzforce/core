@@ -21,15 +21,15 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
-import org.ow2.authzforce.core.pdp.api.Function;
-import org.ow2.authzforce.core.pdp.api.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.JaxbBoundPdpExtension;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
-import org.ow2.authzforce.core.pdp.impl.combining.CombiningAlgSet;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
 
 /**
@@ -197,7 +197,7 @@ public class PdpExtensionLoader
 	 * Get XML/JAXB-bound extension
 	 *
 	 * @param extensionType
-	 *            type of extension, e.g. {@link org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory}, etc.
+	 *            type of extension, e.g. {@link org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule.Factory}, etc.
 	 * @param jaxbPdpExtensionClass
 	 *            JAXB class representing XML configuration type that the extension must support
 	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link JaxbBoundPdpExtension#getClass()} returns {@code jaxbPdpExtensionClass}

@@ -18,11 +18,11 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 
 /**
  * Evaluates a XACML ConditionEvaluator. It contains exactly one child expression that is boolean and returns a single value.
@@ -53,10 +53,9 @@ public class ConditionEvaluator
 		final Expression<?> expr = expFactory.getInstance(exprElt, xPathCompiler, null);
 
 		// make sure it's a boolean expression...
-		if (!(expr.getReturnType().equals(DatatypeConstants.BOOLEAN.TYPE)))
+		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN_FACTORY.getDatatype())))
 		{
-			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName()
-					+ ") in Condition. Expected: Boolean.");
+			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}
 
 		this.evaluatableExpression = (Expression<BooleanValue>) expr;

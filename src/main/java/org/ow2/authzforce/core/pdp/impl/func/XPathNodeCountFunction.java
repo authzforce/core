@@ -18,27 +18,26 @@ import java.util.List;
 
 import net.sf.saxon.s9api.XdmValue;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Datatype;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.Expressions;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FunctionSignature;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.impl.value.XPathValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.Expressions;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.XPathValue;
 
 /**
  * A class that implements the optional XACML 3.0 xpath-node-count function.
  * <p>
- * From XACML core specification of function 'urn:oasis:names:tc:xacml:3.0:function:xpath-node-count': This function SHALL take an
- * 'urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression' as an argument and evaluates to an 'http://www.w3.org/2001/XMLSchema#integer'. The value returned
- * from the function SHALL be the count of the nodes within the node-set that match the given XPath expression. If the &lt;Content&gt; element of the category
- * to which the XPath expression applies to is not present in the request, this function SHALL return a value of zero.
+ * From XACML core specification of function 'urn:oasis:names:tc:xacml:3.0:function:xpath-node-count': This function SHALL take an 'urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression' as an
+ * argument and evaluates to an 'http://www.w3.org/2001/XMLSchema#integer'. The value returned from the function SHALL be the count of the nodes within the node-set that match the given XPath
+ * expression. If the &lt;Content&gt; element of the category to which the XPath expression applies to is not present in the request, this function SHALL return a value of zero.
  *
  * 
  * @version $Id: $
@@ -59,8 +58,7 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 		{
 			private final List<Expression<?>> checkedArgExpressions;
 
-			private Call(FunctionSignature<IntegerValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
-					throws IllegalArgumentException
+			private Call(FunctionSignature<IntegerValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
@@ -79,15 +77,14 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 						xpathVal = XPathValue.class.cast(remainingArgs[0]);
 					} catch (ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE + remainingArgs[0].getDataType(),
-								StatusHelper.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE + remainingArgs[0].getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 				} else
 				{
 					final Expression<?> arg = checkedArgExpressions.get(0);
 					try
 					{
-						xpathVal = Expressions.eval(arg, context, DatatypeConstants.XPATH.TYPE);
+						xpathVal = Expressions.eval(arg, context, StandardDatatypes.XPATH_FACTORY.getDatatype());
 
 					} catch (IndeterminateEvaluationException e)
 					{
@@ -108,8 +105,7 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 			}
 		}
 
-		private static final String INVALID_ARG_TYPE_MESSAGE = "Function " + NAME + ": Invalid type (expected = " + DatatypeConstants.XPATH.TYPE
-				+ ") of arg#0: ";
+		private static final String INVALID_ARG_TYPE_MESSAGE = "Function " + NAME + ": Invalid type (expected = " + StandardDatatypes.XPATH_FACTORY.getDatatype() + ") of arg#0: ";
 		private static final String INDETERMINATE_ARG_MESSAGE = "Function " + NAME + ": Indeterminate arg #0";
 		private static final String INDETERMINATE_ARG_EVAL_MESSAGE = "Function " + NAME + ": Error evaluating xpathExpression arg #0";
 
@@ -130,7 +126,7 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 
 	private XPathNodeCountFunction()
 	{
-		super(NAME, DatatypeConstants.INTEGER.TYPE, true, Arrays.asList(DatatypeConstants.XPATH.TYPE));
+		super(NAME, StandardDatatypes.INTEGER_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.XPATH_FACTORY.getDatatype()));
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
 
@@ -141,8 +137,7 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<IntegerValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
-			throws IllegalArgumentException
+	public FirstOrderFunctionCall<IntegerValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return this.funcCallFactory.getInstance(argExpressions, remainingArgTypes);
 	}

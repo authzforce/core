@@ -17,31 +17,30 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Datatype;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.Expressions;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FunctionSignature;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.Expressions;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 
 /**
- * A class that implements the n-of function. From the XACML spec (urn:oasis:names:tc:xacml:1.0:function:n-of): the first argument to this function SHALL be of
- * data-type http://www.w3.org/2001/XMLSchema#integer. The remaining arguments SHALL be of data-type http://www.w3.org/2001/XMLSchema#boolean. The first
- * argument specifies the minimum number of the remaining arguments that MUST evaluate to "True" for the expression to be considered "True". If the first
- * argument is 0, the result SHALL be "True". If the number of arguments after the first one is less than the value of the first argument, then the expression
- * SHALL result in "Indeterminate". The order of evaluation SHALL be: first evaluate the integer value, and then evaluate each subsequent argument. The
- * evaluation SHALL stop and return "True" if the specified number of arguments evaluate to "True". The evaluation of arguments SHALL stop if it is determined
- * that evaluating the remaining arguments will not satisfy the requirement.
+ * A class that implements the n-of function. From the XACML spec (urn:oasis:names:tc:xacml:1.0:function:n-of): the first argument to this function SHALL be of data-type
+ * http://www.w3.org/2001/XMLSchema#integer. The remaining arguments SHALL be of data-type http://www.w3.org/2001/XMLSchema#boolean. The first argument specifies the minimum number of the remaining
+ * arguments that MUST evaluate to "True" for the expression to be considered "True". If the first argument is 0, the result SHALL be "True". If the number of arguments after the first one is less
+ * than the value of the first argument, then the expression SHALL result in "Indeterminate". The order of evaluation SHALL be: first evaluate the integer value, and then evaluate each subsequent
+ * argument. The evaluation SHALL stop and return "True" if the specified number of arguments evaluate to "True". The evaluation of arguments SHALL stop if it is determined that evaluating the
+ * remaining arguments will not satisfy the requirement.
  * <p>
- * This function evaluates the arguments one at a time, starting with the first one. As soon as the result of the function can be determined, evaluation stops
- * and that result is returned. During this process, if any argument evaluates to indeterminate, an indeterminate result is returned.
+ * This function evaluates the arguments one at a time, starting with the first one. As soon as the result of the function can be determined, evaluation stops and that result is returned. During this
+ * process, if any argument evaluates to indeterminate, an indeterminate result is returned.
  *
  * 
  * @version $Id: $
@@ -51,19 +50,15 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 
 	private static final class Call extends FirstOrderFunctionCall<BooleanValue>
 	{
-		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_N_OF + ": Invalid type (expected = " + DatatypeConstants.BOOLEAN.TYPE
-				+ ") of arg#";
+		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_N_OF + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
 		private static final String INDETERMINATE_ARG_MSG_PREFIX = "Function " + NAME_N_OF + ": Indeterminate arg #";
-		private static final String INVALID_ARG0_MSG_PREFIX = "Function " + NAME_N_OF
-				+ ": Invalid arg #0 (number of required Trues): expected: (integer) >= 0; actual: ";
-		private static final String INVALID_ARGS_MSG_PREFIX = "Function " + NAME_N_OF
-				+ ": Invalid arguments to n-of function: value of arg #0 (number of required Trues) > number of boolean args: ";
+		private static final String INVALID_ARG0_MSG_PREFIX = "Function " + NAME_N_OF + ": Invalid arg #0 (number of required Trues): expected: (integer) >= 0; actual: ";
+		private static final String INVALID_ARGS_MSG_PREFIX = "Function " + NAME_N_OF + ": Invalid arguments to n-of function: value of arg #0 (number of required Trues) > number of boolean args: ";
 		private static final IndeterminateEvaluationException INDETERMINATE_ARG_EXCEPTION = new IndeterminateEvaluationException("Function " + NAME_N_OF
 				+ ": evaluation failed because of indeterminate arg", StatusHelper.STATUS_PROCESSING_ERROR);
 		private final List<Expression<?>> checkedArgExpressions;
 
-		private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> checkedArgExpressions, Datatype<?>[] remainingArgTypes)
-				throws IllegalArgumentException
+		private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> checkedArgExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, checkedArgExpressions, remainingArgTypes);
 			this.checkedArgExpressions = checkedArgExpressions;
@@ -73,19 +68,16 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 		public BooleanValue evaluate(EvaluationContext context, AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
 		{
 			/*
-			 * Arg datatypes and number is already checked in superclass but we need to do further checks specific to this function such as the first argument
-			 * which must be a positive integer
+			 * Arg datatypes and number is already checked in superclass but we need to do further checks specific to this function such as the first argument which must be a positive integer
 			 */
 
 			/**
 			 * TODO: optimize this function call by checking the following:
 			 * <ol>
-			 * <li>If eval(null, checkedArgExpressions, null) returns a result (no IndeterminateEvaluationException thrown), then it will always return this
-			 * result</li>
+			 * <li>If eval(null, checkedArgExpressions, null) returns a result (no IndeterminateEvaluationException thrown), then it will always return this result</li>
 			 * <li>
-			 * Else If any argument expression is constant BooleanAttributeValue False, remove it from the arguments and always decrement the first integer
-			 * argument by one, as it has no effect on the final result. Indeed, n-of function is commutative except for the first argument, and n-of(N, false,
-			 * x, y...) = n-of(N, x, y...).</li>
+			 * Else If any argument expression is constant BooleanAttributeValue False, remove it from the arguments and always decrement the first integer argument by one, as it has no effect on the
+			 * final result. Indeed, n-of function is commutative except for the first argument, and n-of(N, false, x, y...) = n-of(N, x, y...).</li>
 			 * </ol>
 			 */
 
@@ -99,7 +91,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 			final IntegerValue intAttrVal;
 			try
 			{
-				intAttrVal = Expressions.eval(input0, context, DatatypeConstants.INTEGER.TYPE);
+				intAttrVal = Expressions.eval(input0, context, StandardDatatypes.INTEGER_FACTORY.getDatatype());
 			} catch (IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(INDETERMINATE_ARG_MSG_PREFIX + 0, StatusHelper.STATUS_PROCESSING_ERROR, e);
@@ -128,8 +120,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 			int nOfRemainingArgs = checkedArgExpressions.size() + (checkedRemainingArgs == null ? 0 : checkedRemainingArgs.length) - 1;
 			if (nOfRequiredTrues > nOfRemainingArgs)
 			{
-				throw new IndeterminateEvaluationException(INVALID_ARGS_MSG_PREFIX + nOfRequiredTrues + " > " + nOfRemainingArgs,
-						StatusHelper.STATUS_PROCESSING_ERROR);
+				throw new IndeterminateEvaluationException(INVALID_ARGS_MSG_PREFIX + nOfRequiredTrues + " > " + nOfRemainingArgs, StatusHelper.STATUS_PROCESSING_ERROR);
 			}
 
 			IndeterminateEvaluationException lastIndeterminateException = null;
@@ -143,7 +134,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 				final BooleanValue attrVal;
 				try
 				{
-					attrVal = Expressions.eval(input, context, DatatypeConstants.BOOLEAN.TYPE);
+					attrVal = Expressions.eval(input, context, StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
 					if (attrVal.getUnderlyingValue())
 					{
 						// we're one closer to our goal...see if we met it
@@ -180,8 +171,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 				{
 					// keep the indeterminate arg error to throw later, in case there was not enough
 					// TRUEs in the remaining args
-					lastIndeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MSG_PREFIX + argIndex,
-							StatusHelper.STATUS_PROCESSING_ERROR, e);
+					lastIndeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MSG_PREFIX + argIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
 					nOfIndeterminateArgs++;
 				}
 
@@ -200,8 +190,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 						attrVal = BooleanValue.class.cast(arg);
 					} catch (ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(),
-								StatusHelper.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 
 					if (attrVal.getUnderlyingValue())
@@ -258,7 +247,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 
 	private LogicalNOfFunction()
 	{
-		super(NAME_N_OF, DatatypeConstants.BOOLEAN.TYPE, true, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.BOOLEAN.TYPE));
+		super(NAME_N_OF, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
 	}
 
 	/*
@@ -268,8 +257,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, Datatype<?>... remainingArgTypes)
-			throws IllegalArgumentException
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call(functionSignature, checkedArgExpressions, remainingArgTypes);
 	}

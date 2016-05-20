@@ -28,22 +28,22 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Bag;
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.Function;
-import org.ow2.authzforce.core.pdp.api.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
 import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunctionRegistry;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 
 import com.sun.xacml.UnknownIdentifierException;
@@ -133,7 +133,7 @@ public abstract class FunctionTest
 	private static <V extends AttributeValue> Expression<?> createValueExpression(Datatype<V> datatype, AttributeValue rawValue)
 	{
 		// static expression only if not xpathExpression
-		return new PrimitiveValueExpression<>(datatype, datatype.cast(rawValue), datatype != DatatypeConstants.XPATH.TYPE);
+		return new PrimitiveValueExpression<>(datatype, datatype.cast(rawValue), datatype != StandardDatatypes.XPATH_FACTORY.getDatatype());
 	}
 
 	private static <V extends Bag<?>> Expression<?> createValueExpression(Datatype<V> datatype, Bag<?> rawValue)

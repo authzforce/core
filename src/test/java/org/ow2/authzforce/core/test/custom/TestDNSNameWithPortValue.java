@@ -13,13 +13,15 @@
  */
 package org.ow2.authzforce.core.test.custom;
 
+import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import org.ow2.authzforce.core.pdp.impl.value.SimpleValue;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 
 /**
  * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David Brossard,
@@ -45,7 +47,7 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 
 		public Factory()
 		{
-			super(TestDNSNameWithPortValue.class, ID);
+			super(TestDNSNameWithPortValue.class, ID, URI.create(Function.XACML_NS_3_0 + "dnsName-value"));
 		}
 
 		@Override

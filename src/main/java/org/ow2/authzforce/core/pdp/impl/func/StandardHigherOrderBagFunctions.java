@@ -21,23 +21,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Bag;
-import org.ow2.authzforce.core.pdp.api.BagDatatype;
-import org.ow2.authzforce.core.pdp.api.Datatype;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.Expressions;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.Function;
-import org.ow2.authzforce.core.pdp.api.FunctionCall;
-import org.ow2.authzforce.core.pdp.api.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.Value;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.Expressions;
+import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.HigherOrderBagFunction;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.Value;
 
 /**
  * Set of higher-order bag functions
@@ -45,7 +47,7 @@ import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
  * 
  * @version $Id: $
  */
-public final class HigherOrderBagFunctionSet
+public final class StandardHigherOrderBagFunctions
 {
 	/**
 	 * Standard identifier for the any-of function. WARNING: XACML 1.0 any-of planned for deprecation as of XACML 3.0. Only 3.0 version supported henceforth.
@@ -81,7 +83,7 @@ public final class HigherOrderBagFunctionSet
 	{
 		private BooleanHigherOrderBagFunction(String functionId)
 		{
-			super(functionId, DatatypeConstants.BOOLEAN.TYPE, DatatypeConstants.BOOLEAN.TYPE);
+			super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
 		}
 	}
 
@@ -168,7 +170,7 @@ public final class HigherOrderBagFunctionSet
 			@Override
 			public final Datatype<BooleanValue> getReturnType()
 			{
-				return DatatypeConstants.BOOLEAN.TYPE;
+				return StandardDatatypes.BOOLEAN_FACTORY.getDatatype();
 			}
 
 		}
@@ -377,7 +379,7 @@ public final class HigherOrderBagFunctionSet
 
 		protected BooleanOneBagOnlyFunction(String functionId, CallFactory functionCallFactory)
 		{
-			super(functionId, DatatypeConstants.BOOLEAN.TYPE, DatatypeConstants.BOOLEAN.TYPE);
+			super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
 			this.funcCallFactory = functionCallFactory;
 		}
 
@@ -401,7 +403,7 @@ public final class HigherOrderBagFunctionSet
 		@Override
 		public OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue> getInstance(FirstOrderFunction<BooleanValue> subFunc, List<Expression<?>> primitiveInputs, Expression<?> lastInputBag)
 		{
-			return new OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue>(NAME_ANY_OF, DatatypeConstants.BOOLEAN.TYPE, subFunc, primitiveInputs, lastInputBag)
+			return new OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue>(NAME_ANY_OF, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), subFunc, primitiveInputs, lastInputBag)
 			{
 
 				@Override
@@ -443,7 +445,7 @@ public final class HigherOrderBagFunctionSet
 		@Override
 		public OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue> getInstance(FirstOrderFunction<BooleanValue> subFunc, List<Expression<?>> primitiveInputs, Expression<?> lastInputBag)
 		{
-			return new OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue>(NAME_ALL_OF, DatatypeConstants.BOOLEAN.TYPE, subFunc, primitiveInputs, lastInputBag)
+			return new OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue>(NAME_ALL_OF, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), subFunc, primitiveInputs, lastInputBag)
 			{
 
 				@Override
@@ -667,7 +669,7 @@ public final class HigherOrderBagFunctionSet
 			@Override
 			public Datatype<BooleanValue> getReturnType()
 			{
-				return DatatypeConstants.BOOLEAN.TYPE;
+				return StandardDatatypes.BOOLEAN_FACTORY.getDatatype();
 			}
 
 		}
@@ -878,15 +880,15 @@ public final class HigherOrderBagFunctionSet
 		}
 	}
 
-	private HigherOrderBagFunctionSet()
+	private StandardHigherOrderBagFunctions()
 	{
-
+		// empty private constructor to prevent instantiation
 	}
 
 	/**
 	 * Function cluster
 	 */
-	public static final FunctionSet INSTANCE = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "higher-order-bag",
+	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "higher-order-bag",
 	//
 			new BooleanOneBagOnlyFunction(NAME_ANY_OF, new AnyOfCallFactory()),//
 			new BooleanOneBagOnlyFunction(NAME_ALL_OF, new AllOfCallFactory()),//

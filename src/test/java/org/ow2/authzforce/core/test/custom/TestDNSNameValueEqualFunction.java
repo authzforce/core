@@ -13,7 +13,7 @@
  */
 package org.ow2.authzforce.core.test.custom;
 
-import org.ow2.authzforce.core.pdp.impl.func.EqualTypeMatchFunction;
+import org.ow2.authzforce.core.pdp.api.func.EqualTypeMatchFunction;
 
 /**
  * Implements the dnsName-value-equal function from <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David

@@ -19,6 +19,7 @@
 package org.ow2.authzforce.core.test.custom;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +29,8 @@ import javax.xml.namespace.QName;
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.BaseDatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.BaseDatatypeFactory;
 
 /**
  * Represents a XACML Policy datatype (from XACML schema), to be used as AttributeValue.
@@ -44,6 +45,8 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 	 * Datatype ID
 	 */
 	public static final String ID = "urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy";
+
+	private static final String FUNCTION_ID_PREFIX = "urn:ow2:authzforce:feature:pdp:function:test-xacml-policy";
 
 	private static final IllegalArgumentException NO_CONTENT_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + ID + "': empty");
 	private static final IllegalArgumentException NO_ELEMENT_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + ID + "': no XML element");
@@ -114,7 +117,7 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 	{
 		public Factory()
 		{
-			super(TestXACMLPolicyAttributeValue.class, ID);
+			super(TestXACMLPolicyAttributeValue.class, ID, URI.create(FUNCTION_ID_PREFIX));
 		}
 
 		private static final IllegalArgumentException NON_NULL_OTHER_XML_ATTRIBUTES_ARG_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + ID

@@ -23,11 +23,11 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.Value;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.RFC822NameValue;
-import org.ow2.authzforce.core.pdp.impl.value.StringValue;
-import org.ow2.authzforce.core.pdp.impl.value.X500NameValue;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.api.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
 import org.ow2.authzforce.core.test.utils.FunctionTest;
 
 @RunWith(Parameterized.class)

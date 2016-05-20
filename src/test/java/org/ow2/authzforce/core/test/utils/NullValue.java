@@ -13,7 +13,7 @@
  */
 package org.ow2.authzforce.core.test.utils;
 
-import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.api.value.Value;
 
 /**
  * Special value to be interpreted as Indeterminate. (Mapped to IndeterminateExpression in FunctionTest class.) For testing only.

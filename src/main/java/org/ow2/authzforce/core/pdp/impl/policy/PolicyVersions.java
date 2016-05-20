@@ -23,8 +23,8 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.ow2.authzforce.core.pdp.api.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.VersionPatterns;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
+import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
 
 /**
  * Policy versions
