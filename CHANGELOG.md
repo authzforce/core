@@ -1,6 +1,21 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
+
+## Unreleased
+### Added
+- New PdpExtensionLoader method providing the list of available extensions of a given type: datatype, function, combining algorithm, etc.
+
+### Removed
+- dnsName-equal and ipAddress-equal functions, which are not to be used because they are not in XACML spec (regexp-match equivalent must be used instead)
+
+### Fixed
+- NullPointerException when defining unknown combining algorithm ID in PDP configuration
+- PdpExtensionLoader throwing IllegalArgumentException if no extension found of this type, instead of returning an empty list when the extension type is actually valid but no extension found
+
+### Tests
+- New tests for custom extensions: result filter (implements CombinedDecision from XACML Multiple Decision Profile), simple datatype (dnsname-value from XACML DLP/NAC Profile), complex datatype (XACML Policy), function (dnsname-value-equal from XACML DLP/NAC Profile), combining algorithm (on-permit-apply-second from XACML Additional Combining Algorithms Profile)
+
 ## 3.8.3
 ### Fixed 
 - Removing Javadoc @author tag added automatically by maven Javadoc plugin without us knowing
