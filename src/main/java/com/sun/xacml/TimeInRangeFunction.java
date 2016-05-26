@@ -29,15 +29,15 @@ import java.util.Deque;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FunctionSignature;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 
 /**
  * This class implements the time-in-range function, which takes three time values and returns true if the first value falls between the second and the third value. This function was introduced in
@@ -71,7 +71,8 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 		/**
 		 * boolean timeInRange(time,time,time)
 		 */
-		super(NAME, DatatypeConstants.BOOLEAN.TYPE, false, Arrays.asList(DatatypeConstants.TIME.TYPE, DatatypeConstants.TIME.TYPE, DatatypeConstants.TIME.TYPE));
+		super(NAME, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Arrays.asList(StandardDatatypes.TIME_FACTORY.getDatatype(), StandardDatatypes.TIME_FACTORY.getDatatype(),
+				StandardDatatypes.TIME_FACTORY.getDatatype()));
 	}
 
 	private static final class Call extends FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, TimeValue>

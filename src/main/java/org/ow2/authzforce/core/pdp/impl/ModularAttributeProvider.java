@@ -23,13 +23,13 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.AttributeProviderModule;
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Bag;
-import org.ow2.authzforce.core.pdp.api.Bags;
-import org.ow2.authzforce.core.pdp.api.Datatype;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.Bags;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

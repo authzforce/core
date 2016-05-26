@@ -19,18 +19,18 @@ import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
-import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
- * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to
- * take precedence over any number of deny, not applicable or indeterminate results. Note that since this implementation
- * does an ordered evaluation, this class also supports the Ordered-Permit-Overrides algorithm.
+ * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take precedence over any number of deny, not applicable or indeterminate results.
+ * Note that since this implementation does an ordered evaluation, this class also supports the Ordered-Permit-Overrides algorithm.
  *
  * 
  * @version $Id: $
@@ -51,8 +51,7 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 		public DecisionResult eval(EvaluationContext context)
 		{
 			/*
-			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult !=
-			 * null
+			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
 			 */
 			DecisionResult firstIndeterminateDPResult = null;
 			/*
@@ -65,8 +64,7 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 			DecisionResult firstIndeterminatePResult = null;
 
 			/*
-			 * Replaces and enhances atLeastOneDeny from XACML spec. atLeastOneDeny == true <=> combinedDenyResult !=
-			 * null
+			 * Replaces and enhances atLeastOneDeny from XACML spec. atLeastOneDeny == true <=> combinedDenyResult != null
 			 */
 			DecisionResult combinedDenyResult = null;
 
@@ -90,8 +88,7 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 					break;
 				case INDETERMINATE:
 					/*
-					 * Save Extended Indeterminate value if this is a new type of such value, till the end because
-					 * needed to compute final Extended Indeterminate value
+					 * Save Extended Indeterminate value if this is a new type of such value, till the end because needed to compute final Extended Indeterminate value
 					 */
 					switch (result.getExtendedIndeterminate())
 					{
@@ -132,13 +129,11 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 			}
 
 			/*
-			 * Else if any Indeterminate{P}, then: if ( any Indeterminate{D} or any Deny ) -> Indeterminate{DP}; else ->
-			 * Indeterminate{P} (this is a simplified equivalent of the algo in the spec)
+			 * Else if any Indeterminate{P}, then: if ( any Indeterminate{D} or any Deny ) -> Indeterminate{DP}; else -> Indeterminate{P} (this is a simplified equivalent of the algo in the spec)
 			 */
 			if (firstIndeterminatePResult != null)
 			{
-				return new BaseDecisionResult(firstIndeterminatePResult.getStatus(), firstIndeterminateDResult != null
-						|| combinedDenyResult != null ? DecisionType.INDETERMINATE : DecisionType.PERMIT);
+				return new BaseDecisionResult(firstIndeterminatePResult.getStatus(), firstIndeterminateDResult != null || combinedDenyResult != null ? DecisionType.INDETERMINATE : DecisionType.PERMIT);
 			}
 
 			/*
@@ -161,8 +156,7 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params,
-			List<? extends Decidable> combinedElements)
+	public Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
 	{
 		return new Evaluator(combinedElements);
 	}
@@ -170,10 +164,8 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * The standard URN used to identify this algorithm
 	 */
-	static final String[] SUPPORTED_IDENTIFIERS = {
-			"urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides",
-			"urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides",
+	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides",
 			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides" };
 
 	/**

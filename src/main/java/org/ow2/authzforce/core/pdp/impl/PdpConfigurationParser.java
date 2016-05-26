@@ -24,17 +24,17 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.Function;
-import org.ow2.authzforce.core.pdp.api.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.impl.combining.BaseCombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
@@ -84,28 +84,34 @@ public class PdpConfigurationParser
 	 * @param confLocation
 	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD import for each extension, where the 'schemaLocation'
-	 *            attribute value must be ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}. xsd, for example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
+	 *            configuration, for example:
 	 *
 	 *            <pre>
 	 * {@literal
 	 * 		  <?xml version="1.0" encoding="UTF-8"?>
-	 * 		  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	 *            targetNamespace="http://thalesgroup.com/authzforce/model/3.0"
-	 *            xmlns:tns="http://thalesgroup.com/authzforce/model/3.0"
-	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
-	 * 
-	 *            <xs:import
-	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest"
-	 *            schemaLocation=
-	 *            "com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeProvider.xsd"
-	 *            />
-	 * 
-	 *            </xs:schema>
+	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	 * 	<xs:annotation>
+	 * 		<xs:documentation xml:lang="en">
+	 * 			Import here the schema(s) of any XSD-defined PDP extension that you want to use in a PDP configuration: attribute finders, policy finders, etc.
+	 * 			Indicate only the namespace here and use the XML catalog to resolve the schema location.
+	 * 		</xs:documentation>
+	 * 	</xs:annotation>
+	 * 	<!-- Do not specify schema locations here. Define the schema locations in the XML catalog instead (see file 'catalog.xml'). -->
+	 * 	<!--  Adding TestAttributeProvider extension for example -->
+	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
+	 * </xs:schema>
 	 * 			}
 	 * </pre>
 	 *
-	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest .RESTfulAttributeFinde r ' is the JAXB-annotated class bound to XML type 'RESTfulAttributeProvider'.
+	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
+	 * 
+	 *            <pre>
+	 *            {@literal
+	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri="classpath:org.ow2.authzforce.core.test.xsd" />
+	 *            }
+	 * </pre>
+	 * 
 	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
 	 *            types) in this case.
 	 * @param catalogLocation
@@ -130,28 +136,34 @@ public class PdpConfigurationParser
 	 * @param confFile
 	 *            PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD import for each extension, where the 'schemaLocation'
-	 *            attribute value must be ${fully_qualidifed_jaxb_class_bound_to_extension_XML_type}. xsd, for example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
+	 *            configuration, for example:
 	 *
 	 *            <pre>
 	 * {@literal
 	 * 		  <?xml version="1.0" encoding="UTF-8"?>
-	 * 		  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	 *            targetNamespace="http://thalesgroup.com/authzforce/model/3.0"
-	 *            xmlns:tns="http://thalesgroup.com/authzforce/model/3.0"
-	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
-	 * 
-	 *            <xs:import
-	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest"
-	 *            schemaLocation=
-	 *            "com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest.RESTfulAttributeProvider.xsd"
-	 *            />
-	 * 
-	 *            </xs:schema>
+	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	 * 	<xs:annotation>
+	 * 		<xs:documentation xml:lang="en">
+	 * 			Import here the schema(s) of any XSD-defined PDP extension that you want to use in a PDP configuration: attribute finders, policy finders, etc.
+	 * 			Indicate only the namespace here and use the XML catalog to resolve the schema location.
+	 * 		</xs:documentation>
+	 * 	</xs:annotation>
+	 * 	<!-- Do not specify schema locations here. Define the schema locations in the XML catalog instead (see file 'catalog.xml'). -->
+	 * 	<!--  Adding TestAttributeProvider extension for example -->
+	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
+	 * </xs:schema>
 	 * 			}
 	 * </pre>
 	 *
-	 *            In this example, 'com.thalesgroup.authzforce.model._3_0.Provider.attribute.rest .RESTfulAttributeFinde r ' is the JAXB-annotated class bound to XML type 'RESTfulAttributeProvider'.
+	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
+	 * 
+	 *            <pre>
+	 *            {@literal
+	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri="classpath:org.ow2.authzforce.core.test.xsd" />
+	 *            }
+	 * </pre>
+	 * 
 	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
 	 *            types) in this case.
 	 * @param catalogLocation
@@ -309,7 +321,15 @@ public class PdpConfigurationParser
 		final CombiningAlgRegistry combiningAlgRegistry = new BaseCombiningAlgRegistry(pdpJaxbConf.isUseStandardCombiningAlgorithms() ? StandardCombiningAlgRegistry.INSTANCE : null);
 		for (final String algId : pdpJaxbConf.getCombiningAlgorithms())
 		{
-			final CombiningAlg<?> alg = PdpExtensionLoader.getExtension(CombiningAlg.class, algId);
+			final CombiningAlg<?> alg;
+			try
+			{
+				alg = PdpExtensionLoader.getExtension(CombiningAlg.class, algId);
+			} catch (IllegalArgumentException e)
+			{
+				throw new IllegalArgumentException("Unsupported combining algorithm: " + algId, e);
+			}
+
 			combiningAlgRegistry.addExtension(alg);
 		}
 
@@ -324,7 +344,7 @@ public class PdpConfigurationParser
 		final int maxVarRefDepth;
 		try
 		{
-			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.impl.value.IntegerValue.intValueExact(bigMaxVarRefDepth);
+			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.api.value.IntegerValue.intValueExact(bigMaxVarRefDepth);
 		} catch (ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxVariableRefDepth: " + bigMaxVarRefDepth, e);
@@ -334,7 +354,7 @@ public class PdpConfigurationParser
 		final int maxPolicyRefDepth;
 		try
 		{
-			maxPolicyRefDepth = bigMaxPolicyRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.impl.value.IntegerValue.intValueExact(bigMaxPolicyRefDepth);
+			maxPolicyRefDepth = bigMaxPolicyRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.api.value.IntegerValue.intValueExact(bigMaxPolicyRefDepth);
 		} catch (ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxPolicyRefDepth: " + bigMaxPolicyRefDepth, e);

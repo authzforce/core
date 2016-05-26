@@ -23,9 +23,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.ow2.authzforce.core.pdp.api.ExtraPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.TopLevelPolicyElementType;
+import org.ow2.authzforce.core.pdp.api.policy.ExtraPolicyMetadata;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
+import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 
 /**
  * View of all statically resolved policies applicable by the PDP or specific

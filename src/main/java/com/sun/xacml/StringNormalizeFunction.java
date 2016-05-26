@@ -28,17 +28,17 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.pdp.api.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.FunctionSignature;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.func.BaseFunctionSet;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.StringValue;
 
 /**
  * string-normalize-* function
@@ -78,8 +78,7 @@ public final class StringNormalizeFunction extends FirstOrderFunction.SinglePara
 			this.strNormalizer = stringNormalizer;
 		}
 
-		private FirstOrderFunctionCall<StringValue> getInstance(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
-				throws IllegalArgumentException
+		private FirstOrderFunctionCall<StringValue> getInstance(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
 			return new EagerSinglePrimitiveTypeEval<StringValue, StringValue>(funcSig, argExpressions, remainingArgTypes)
 			{
@@ -110,9 +109,8 @@ public final class StringNormalizeFunction extends FirstOrderFunction.SinglePara
 		public StringValue normalize(StringValue value)
 		{
 			/*
-			 * Specified by fn:lower-case function in [XF]. Looking at Saxon HE as our reference for Java open source implementation of XPath functions, we can
-			 * check in Saxon implementation of fn:lower-case (LowerCase class), that this is equivalent to String#toLowerCase(); English locale to be used for
-			 * Locale-insensitive strings, see String.toLowerCase()
+			 * Specified by fn:lower-case function in [XF]. Looking at Saxon HE as our reference for Java open source implementation of XPath functions, we can check in Saxon implementation of
+			 * fn:lower-case (LowerCase class), that this is equivalent to String#toLowerCase(); English locale to be used for Locale-insensitive strings, see String.toLowerCase()
 			 */
 			return value.toLowerCase(Locale.ENGLISH);
 		}
@@ -130,14 +128,14 @@ public final class StringNormalizeFunction extends FirstOrderFunction.SinglePara
 	 */
 	private StringNormalizeFunction(String functionName, StringNormalizer stringNormalizer)
 	{
-		super(functionName, DatatypeConstants.STRING.TYPE, false, Collections.singletonList(DatatypeConstants.STRING.TYPE));
+		super(functionName, StandardDatatypes.STRING_FACTORY.getDatatype(), false, Collections.singletonList(StandardDatatypes.STRING_FACTORY.getDatatype()));
 		this.funcCallFactory = new CallFactory(functionSignature, stringNormalizer);
 	}
 
 	/**
 	 * *-string-normalize-* function cluster
 	 */
-	public static final FunctionSet CLUSTER = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "string-normalize", //
+	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "string-normalize", //
 			new StringNormalizeFunction(NAME_STRING_NORMALIZE_SPACE, STRING_NORMALIZE_SPACE_FUNCTION_CALL_FACTORY), //
 			new StringNormalizeFunction(NAME_STRING_NORMALIZE_TO_LOWER_CASE, STRING_NORMALIZE_TO_LOWER_CASE_FUNCTION_CALL_FACTORY));
 

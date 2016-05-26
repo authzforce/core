@@ -29,10 +29,10 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIdentifierList;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
-import org.ow2.authzforce.core.pdp.api.Bag;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
 
 /**

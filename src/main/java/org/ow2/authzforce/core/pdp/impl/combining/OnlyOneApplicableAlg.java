@@ -15,14 +15,14 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.List;
 
-import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

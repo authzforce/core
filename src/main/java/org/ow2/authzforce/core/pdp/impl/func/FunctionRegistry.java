@@ -16,9 +16,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
-import org.ow2.authzforce.core.pdp.api.Function;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 
 /**

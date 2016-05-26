@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <Result>
+      <Decision>Deny</Decision>
+      <Obligations>
+         <Obligation ObligationId="urn:ow2:authzforce:core:pdp:test:policy:custom-datatype:obligation1">
+            <AttributeAssignment AttributeId="urn:ow2:authzforce:core:pdp:test:policy:custom-datatype:assignment1" DataType="urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy">
+               <Policy PolicyId="urn:ow2:authzforce:core:pdp:test:policy:custom-datatype:assignment1:value" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
+                  <Description>Policy in attribute assignment value</Description>
+                  <Target />
+               </Policy>
+            </AttributeAssignment>
+         </Obligation>
+      </Obligations>
+   </Result>
+</Response>

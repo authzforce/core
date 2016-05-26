@@ -68,21 +68,36 @@ public class PdpModelHandler
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
 	 *
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD import for each extension schema. Only import the namespace,
-	 *            do not define the actual schema location here. Use the catalog specified by the <code>catalogLocation</code> parameter to specify the schema location. For example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
+	 *            configuration, for example:
 	 *
 	 *            <pre>
 	 * {@literal
 	 * 		  <?xml version="1.0" encoding="UTF-8"?>
-	 * 		  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	 *            targetNamespace="http://thalesgroup.com/authzforce/model/3.0"
-	 *            xmlns:tns="http://thalesgroup.com/authzforce/model/3.0"
-	 *            elementFormDefault="qualified" attributeFormDefault="unqualified">
-	 *            <xs:import
-	 *            namespace="http://thalesgroup.com/authzforce/model/3.0/Provider/attribute/rest" />
-	 *            </xs:schema>
+	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	 * 	<xs:annotation>
+	 * 		<xs:documentation xml:lang="en">
+	 * 			Import here the schema(s) of any XSD-defined PDP extension that you want to use in a PDP configuration: attribute finders, policy finders, etc.
+	 * 			Indicate only the namespace here and use the XML catalog to resolve the schema location.
+	 * 		</xs:documentation>
+	 * 	</xs:annotation>
+	 * 	<!-- Do not specify schema locations here. Define the schema locations in the XML catalog instead (see file 'catalog.xml'). -->
+	 * 	<!--  Adding TestAttributeProvider extension for example -->
+	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
+	 * </xs:schema>
 	 * 			}
 	 * </pre>
+	 *
+	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
+	 * 
+	 *            <pre>
+	 *            {@literal
+	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri="classpath:org.ow2.authzforce.core.test.xsd" />
+	 *            }
+	 * </pre>
+	 * 
+	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
+	 *            types) in this case.
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extensions XSD specified as 'extensionXsdLocation' argument (may be null)
 	 */

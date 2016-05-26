@@ -31,11 +31,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
-import org.ow2.authzforce.core.pdp.api.Bag;
-import org.ow2.authzforce.core.pdp.api.Bags;
 import org.ow2.authzforce.core.pdp.api.CloseablePDP;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.DecisionCache;
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
@@ -44,13 +40,17 @@ import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.XMLUtils;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.Bags;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.api.value.DateValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.impl.policy.StaticApplicablePolicyView;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
-import org.ow2.authzforce.core.pdp.impl.value.DateValue;
-import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
 import org.ow2.authzforce.xacml.identifiers.XACMLCategory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
@@ -315,13 +315,13 @@ public class PDPImpl implements CloseablePDP
 		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>();
 		// current datetime
 		final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(DatatypeConstants.DATETIME.TYPE, currentDateTimeValue));
+		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(StandardDatatypes.DATETIME_FACTORY.getDatatype(), currentDateTimeValue));
 		// current date
 		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID,
-				Bags.singleton(DatatypeConstants.DATE.TYPE, DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+				Bags.singleton(StandardDatatypes.DATE_FACTORY.getDatatype(), DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 		// current time
 		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID,
-				Bags.singleton(DatatypeConstants.TIME.TYPE, TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+				Bags.singleton(StandardDatatypes.TIME_FACTORY.getDatatype(), TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
 
 		// evaluate the individual decision requests with the extra common
 		// attributes set previously

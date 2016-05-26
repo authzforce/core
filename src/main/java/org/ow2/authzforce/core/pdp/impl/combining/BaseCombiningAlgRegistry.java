@@ -15,9 +15,9 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.Set;
 
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 
 /**
@@ -67,6 +67,11 @@ public class BaseCombiningAlgRegistry extends BasePdpExtensionRegistry<Combining
 	public <T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedEltType) throws IllegalArgumentException
 	{
 		final CombiningAlg<? extends Decidable> alg = this.getExtension(algId);
+		if (alg == null)
+		{
+			throw new IllegalArgumentException("Unsupported combining algorithm: '" + algId + "'");
+		}
+
 		if (alg.getCombinedElementType().isAssignableFrom(combinedEltType))
 		{
 			return (CombiningAlg<T>) alg;

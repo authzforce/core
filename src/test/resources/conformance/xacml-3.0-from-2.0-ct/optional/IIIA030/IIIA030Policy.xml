@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- FIXED: original missing xmlns for md prefix declaration used in xpathExpression evaluation  -->
-<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:md="http://www.medico.com/schemas/record" PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA030:policy" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides" Version="1.0" xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os access_control-xacml-2.0-policy-schema-os.xsd">
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:md="http://www.medico.com/schemas/record" PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIA030:policy" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides" Version="1.0" >
     <Description>
         Policy for Conformance Test IIIA030.
         Purpose: Test Obligations on Policy, Case: Permit: RuleCombiningAlgorithm DenyOverrides Testing XPathExpressions in Obligations

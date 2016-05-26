@@ -17,23 +17,24 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
-import org.ow2.authzforce.core.pdp.api.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.FunctionSignature;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.impl.value.BaseTimeValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
-import org.ow2.authzforce.core.pdp.impl.value.DateValue;
-import org.ow2.authzforce.core.pdp.impl.value.DayTimeDurationValue;
-import org.ow2.authzforce.core.pdp.impl.value.DurationValue;
-import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.BaseTimeValue;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.api.value.DateValue;
+import org.ow2.authzforce.core.pdp.api.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.api.value.DurationValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
@@ -90,8 +91,8 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 		private final Class<TV> timeParamClass;
 		private final StaticOperation<TV, DV> op;
 
-		private Call(FunctionSignature<TV> functionSig, Datatype<TV> timeParamType, Datatype<DV> durationParamType, StaticOperation<TV, DV> op,
-				List<Expression<?>> args, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		private Call(FunctionSignature<TV> functionSig, Datatype<TV> timeParamType, Datatype<DV> durationParamType, StaticOperation<TV, DV> op, List<Expression<?>> args,
+				Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
 			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + timeParamType + "," + durationParamType + "): ";
@@ -114,8 +115,7 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 				arg1 = durationParamClass.cast(rawArg1);
 			} catch (ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(),
-						StatusHelper.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			return op.eval(arg0, arg1);
@@ -182,24 +182,24 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 	/**
 	 * Temporal arithmetic function cluster
 	 */
-	public static final FunctionSet CLUSTER = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-arithmetic",
+	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-arithmetic",
 	//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_DAYTIMEDURATION, DatatypeConstants.DATETIME.TYPE, DatatypeConstants.DAYTIMEDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_DAYTIMEDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.DAYTIMEDURATION_FACTORY.getDatatype(),
 					new TimeAddDurationOperation<DateTimeValue, DayTimeDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, DatatypeConstants.DATETIME.TYPE, DatatypeConstants.DAYTIMEDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.DAYTIMEDURATION_FACTORY.getDatatype(),
 					new TimeSubtractDurationOperation<DateTimeValue, DayTimeDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_YEARMONTHDURATION, DatatypeConstants.DATETIME.TYPE, DatatypeConstants.YEARMONTHDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_YEARMONTHDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
 					new TimeAddDurationOperation<DateTimeValue, YearMonthDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, DatatypeConstants.DATETIME.TYPE,
-					DatatypeConstants.YEARMONTHDURATION.TYPE, new TimeSubtractDurationOperation<DateTimeValue, YearMonthDurationValue>()),
+			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
+					new TimeSubtractDurationOperation<DateTimeValue, YearMonthDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATE_ADD_YEARMONTHDURATION, DatatypeConstants.DATE.TYPE, DatatypeConstants.YEARMONTHDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATE_ADD_YEARMONTHDURATION, StandardDatatypes.DATE_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
 					new TimeAddDurationOperation<DateValue, YearMonthDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATE_SUBTRACT_YEARMONTHDURATION, DatatypeConstants.DATE.TYPE, DatatypeConstants.YEARMONTHDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATE_SUBTRACT_YEARMONTHDURATION, StandardDatatypes.DATE_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
 					new TimeSubtractDurationOperation<DateValue, YearMonthDurationValue>()));
 
 }

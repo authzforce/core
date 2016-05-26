@@ -1,14 +1,32 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
+
+## 3.9.0 
+### Added
+- New PdpExtensionLoader method providing the list of available extensions of a given type: datatype, function, combining algorithm, etc.
+
+### Removed
+- dnsName-equal and ipAddress-equal functions, which are not to be used because they are not in XACML spec (regexp-match equivalent must be used instead)
+
+### Fixed
+- NullPointerException when defining unknown combining algorithm ID in PDP configuration
+- PdpExtensionLoader throwing IllegalArgumentException if no extension found of this type, instead of returning an empty list when the extension type is actually valid but no extension found
+
+### Tests
+- New tests for custom extensions: result filter (implements CombinedDecision from XACML Multiple Decision Profile), simple datatype (dnsname-value from XACML DLP/NAC Profile), complex datatype (XACML Policy), function (dnsname-value-equal from XACML DLP/NAC Profile), combining algorithm (on-permit-apply-second from XACML Additional Combining Algorithms Profile)
+
+
 ## 3.8.3
 ### Fixed 
 - Removing Javadoc @author tag added automatically by maven Javadoc plugin without us knowing
 - PDP schema: removed limits (100) for maxVarRefDepth and maxPolicyRefDepth attributes. Hard arbitrary limits should not be in the XML schema.
 
+
 ## 3.8.2
 ### Fixed
 - Javadoc comments
+
 
 ## 3.8.1
 ### Fixed
@@ -83,6 +101,7 @@ All notable changes to this project are documented in this file following the [K
 - Misleading IllegalArgumentException error for XML-schema-valid anyURI but not valid for `java.net.URI` class. Fixed by using `java.lang.String` instead and validating strings according to anyURI definition with Saxon library
 - RuntimeException when no subject and no resource and no action attributes in the XACML request
 
+
 ## 3.5.8 - 2015-04-01
 ### Added
 - New XACML 3.0 versions of (ordered-)deny-overrides and (ordered-)permit-overrides combining algorithms (ALGORITHM IS NOT THE SAME as in XACML 2.0)
@@ -93,9 +112,11 @@ All notable changes to this project are documented in this file following the [K
 ### Fixed
 - Empty StatusDetail tag in Response when no StatusDetail (which is always the case as of now). Fix: remove the tag completely.
 
+
 ## 3.5.7 - 2015-03-13
 ### Changed
 - Upraded version of maven-jaxb2-plugin to 0.12.3 for JAXB-annotated java class generation from OASIS XACML model
+
 
 ## 3.5.6 - 2015-02-27
 ### Added
@@ -112,6 +133,7 @@ All notable changes to this project are documented in this file following the [K
 - NullPointerException when no resource-id attribute in XACML Request: 
 - XACML Apply element marshalling (some elements were lost)
 
+
 ## 3.5.5 - 2015-01-26
 ### Added
 - PDP configuration XML schema for configuration loading with JAXB and schema validation
@@ -127,6 +149,7 @@ All notable changes to this project are documented in this file following the [K
 - Thread-local memory leak
 - Empty Obligations/Associated Advice with permit|deny-unless-deny|permit combining algorithms
 
+
 ## 3.5.4 - 2014-12-23
 ### Added
 - Unit tests for various match functions introduced in XACML 2.0 on strings, x509Names, rfc822Names, date/time, IP address
@@ -140,19 +163,23 @@ All notable changes to this project are documented in this file following the [K
 ### Changed
 - Log formats
 
+
 ## 3.5.3 - 2013-12-16
 ### Added
 - Support of Policy(Set)IdReference with StaticRefPolicyFinder class
 - Support of dynamic obligations/advices containing AttributeDesignators or other expressions evaluated in the request context
 - Enhanced debug logs in evaluation of Target, Policy(Set), Rule
 
+
 ## 3.5.2 - 2013-11-29
 ### Fixed
 - Fixed bug when there were more than one AnyOf and AllOf: only the Match element was evaluated with the "match(context)" function
 
+
 ## 3.4.2 - 2013-07-03
 ### Fixed
 - Fixing bugs on deny-unless-permit and permit-unless-deny rule combining algorithms (misplaced cast)
+
 
 ## 3.4.0 - 2013-05-30
 ### Added
@@ -166,19 +193,23 @@ All notable changes to this project are documented in this file following the [K
 - First implementation of XACML 3.0 Combining algorithms: deny-unless-permit, deny-unless-permit, permit-unless-deny, permit-unless-deny
 - First implementation of XACML 3.0 Functions: string-starts-with, string-ends-with, string-contains, string-substring
 
+
 ## 3.3.1 - 2013-05-14
 ### Added
 - New license headers and file for Apache 2 license
+
 
 ## 3.2.0 - 2013-05-13
 ### Added
 - Support of XACML 3.0 Obligations/Advices in Rules
 - Compliance with new conformance tests for 3.0 (converted from XACML 2.0 official category III.A)
 
+
 ## 3.1.0 - 2013-05-13
 ### Added
 - Beta support of Multiple Decision profile, on repeated attribute categories only
 - Beta support of XACML 3.0 Policy(Set)s and Obligations/Advices in Policy(Set)s
+
 
 ## 3.0.0 - 2013-04-05
 ### Added

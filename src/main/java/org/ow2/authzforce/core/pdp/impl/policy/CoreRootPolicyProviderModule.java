@@ -19,18 +19,18 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import org.ow2.authzforce.core.pdp.api.BaseStaticRootPolicyProviderModule;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
-import org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule;
-import org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule;
-import org.ow2.authzforce.core.pdp.api.StaticTopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.BaseStaticRootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.springframework.util.ResourceUtils;
