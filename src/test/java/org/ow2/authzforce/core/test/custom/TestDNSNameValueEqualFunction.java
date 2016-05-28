@@ -16,12 +16,13 @@ package org.ow2.authzforce.core.test.custom;
 import org.ow2.authzforce.core.pdp.api.func.EqualTypeMatchFunction;
 
 /**
- * Implements the dnsName-value-equal function from <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David
- * Brossard, Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01. http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html. Latest
- * version: http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html.
+ * Implements the dnsName-value-equal function from <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John
+ * Tolbert, Richard Hill, Crystal Hayes, David Brossard, Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01.
+ * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html. Latest version:
+ * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html.
  * <p>
  * Used here for testing Authzforce function extension mechanism, i.e. plugging a custom function into the PDP engine.
- * */
+ */
 public class TestDNSNameValueEqualFunction extends EqualTypeMatchFunction<TestDNSNameWithPortValue>
 {
 	/**
@@ -29,10 +30,6 @@ public class TestDNSNameValueEqualFunction extends EqualTypeMatchFunction<TestDN
 	 */
 	public static final String ID = "urn:oasis:names:tc:xacml:3.0:function:dnsName-value-equal";
 
-	/**
-	 * x500Name-match function matcher
-	 * 
-	 */
 	private static final Matcher<TestDNSNameWithPortValue> MATCHER = new Matcher<TestDNSNameWithPortValue>()
 	{
 		@Override

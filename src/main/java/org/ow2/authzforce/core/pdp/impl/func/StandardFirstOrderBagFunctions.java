@@ -21,14 +21,12 @@ import org.ow2.authzforce.core.pdp.api.func.FirstOrderBagFunctions;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.HigherOrderBagFunction;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 
 /**
- * Standard first-order bag functions, as opposed to the higher-order bag functions (see {@link HigherOrderBagFunction}); standard first-order bag functions are the Bag functions of section A.3.10,
- * and the Set functions of A.3.11 of the XACML spec.
+ * Standard first-order bag functions, as opposed to the higher-order bag functions (see {@link HigherOrderBagFunction}); standard first-order bag functions are
+ * the Bag functions of section A.3.10, and the Set functions of A.3.11 of the XACML spec.
  * 
  * @version $Id: $
  */
@@ -39,17 +37,12 @@ public final class StandardFirstOrderBagFunctions
 		// empty private constructor to prevent instantiation
 	}
 
-	private static <AV extends AttributeValue> Set<Function<?>> getFunctions(DatatypeFactory<AV> typeFactory)
-	{
-		return FirstOrderBagFunctions.getFunctions(typeFactory.getDatatype().getFuncIdPrefix(), typeFactory.getDatatype(), typeFactory.getBagDatatype(), typeFactory.getArrayClass());
-	}
-
 	private static Set<Function<?>> getFunctions()
 	{
 		final Set<Function<?>> mutableSet = new HashSet<>();
 		for (final SimpleValue.Factory<? extends SimpleValue<? extends Object>> typeFactory : StandardDatatypes.MANDATORY_DATATYPE_SET)
 		{
-			mutableSet.addAll(getFunctions(typeFactory));
+			mutableSet.addAll(FirstOrderBagFunctions.getFunctions(typeFactory));
 		}
 
 		return mutableSet;

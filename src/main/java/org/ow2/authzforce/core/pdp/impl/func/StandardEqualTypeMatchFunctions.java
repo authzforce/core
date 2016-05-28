@@ -27,7 +27,6 @@ import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
-import org.ow2.authzforce.core.pdp.api.func.NonEqualTypeMatchFunction;
 import org.ow2.authzforce.core.pdp.api.func.RegexpMatchFunctionHelper;
 import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
 import org.ow2.authzforce.core.pdp.api.value.Base64BinaryValue;
@@ -47,10 +46,11 @@ import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
 import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
 
 /**
- * Standard match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates and special match function x500Name-match
+ * Standard match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates, special match function x500Name-match,
+ * string-starts-with/contains/ends-with.
  * <p>
- * Note that there are no such functions as ipAddress-equal and dnsName-equal functions in the XACML core specification. Regexp-match alternatives should be used intead. More info:
- * https://lists.oasis-open.org/archives/xacml-comment/200411/msg00002.html
+ * Note that there are no such functions as ipAddress-equal and dnsName-equal functions in the XACML core specification. Regexp-match alternatives should be
+ * used intead. More info: https://lists.oasis-open.org/archives/xacml-comment/200411/msg00002.html
  *
  * @version $Id: $
  */
@@ -175,7 +175,7 @@ public final class StandardEqualTypeMatchFunctions
 	};
 
 	/**
-	 * string-starts-with function matcher. For other *-starts-with functions, see {@link NonEqualTypeMatchFunction} class.
+	 * string-starts-with function matcher. For other *-starts-with functions, see {@link org.ow2.authzforce.core.pdp.api.func.NonEqualTypeMatchFunction} class.
 	 */
 	private static final Matcher<StringValue> STRING_STARTS_WITH_MATCHER = new Matcher<StringValue>()
 	{
@@ -246,8 +246,8 @@ public final class StandardEqualTypeMatchFunctions
 		{
 			final FirstOrderFunctionCall<BooleanValue> compiledRegexFuncCall = regexFuncHelper.getCompiledRegexMatchCall(argExpressions, remainingArgTypes);
 			/*
-			 * compiledRegexFuncCall == null means no optimization using a pre-compiled regex could be done; in this case, use super.newCall() as usual, which will call match() down below, compiling
-			 * the regex on-the-fly for each evaluation.
+			 * compiledRegexFuncCall == null means no optimization using a pre-compiled regex could be done; in this case, use super.newCall() as usual, which
+			 * will call match() down below, compiling the regex on-the-fly for each evaluation.
 			 */
 			return compiledRegexFuncCall == null ? super.getInstance(argExpressions, remainingArgTypes) : compiledRegexFuncCall;
 		}
@@ -269,7 +269,7 @@ public final class StandardEqualTypeMatchFunctions
 	 * Function set
 	 */
 	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "equal-type-match",
-	//
+			//
 			new EqualTypeMatchFunction<>(NAME_STRING_EQUAL, StandardDatatypes.STRING_FACTORY.getDatatype(), new EqualMatcher<StringValue>()),
 			//
 			new EqualTypeMatchFunction<>(NAME_BOOLEAN_EQUAL, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), new EqualMatcher<BooleanValue>()),
