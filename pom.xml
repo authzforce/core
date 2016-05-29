@@ -122,14 +122,14 @@
                   <id>format-sources-license</id>
                   <phase>process-sources</phase>
                   <goals>
-                     <goal>update</goal>
+                     <goal>format</goal>
                   </goals>
                </execution>
                <execution>
                   <id>format-test-sources-license</id>
                   <phase>process-test-sources</phase>
                   <goals>
-                     <goal>update</goal>
+                     <goal>format</goal>
                   </goals>
                </execution>
             </executions>
