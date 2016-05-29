@@ -50,7 +50,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		/**
 		 * Request filter ID, as returned by {@link #getId()}
 		 */
-		public static final String ID = "urn:ow2:authzforce:xacml:request-filter:default-lax";
+		public static final String ID = "urn:ow2:authzforce:feature:pdp:request-filter:default-lax";
 
 		@Override
 		public String getId()
@@ -79,7 +79,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 	 */
 	public static final class StrictFilterFactory implements RequestFilter.Factory
 	{
-		private static final String ID = "urn:ow2:authzforce:xacml:request-filter:default-strict";
+		private static final String ID = "urn:ow2:authzforce:feature:pdp:request-filter:default-strict";
 
 		@Override
 		public String getId()

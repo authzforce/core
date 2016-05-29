@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Testing parameter 'maxPolicySetRefDepth' -->
 <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/3.6" version="3.6.4"
-   requestFilter="urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax" resultFilter="urn:ow2:authzforce:xacml:result-filter:multiple:test-combined-decision">
+   requestFilter="urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-lax" resultFilter="urn:ow2:authzforce:feature:pdp:result-filter:multiple:test-combined-decision">
    <rootPolicyProvider id="rootPolicyProvider" xsi:type="StaticRootPolicyProvider" policyLocation="${PARENT_DIR}/policy.xml" />
 </pdp>

@@ -53,7 +53,7 @@ public final class MultiDecisionRequestFilter extends BaseRequestFilter
 		/**
 		 * Request filter ID, returned by {@link #getId()}
 		 */
-		public static final String ID = "urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax";
+		public static final String ID = "urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-lax";
 
 		@Override
 		public String getId()
@@ -79,7 +79,7 @@ public final class MultiDecisionRequestFilter extends BaseRequestFilter
 		/**
 		 * Request filter ID, returned by {@link #getId()}
 		 */
-		public static final String ID = "urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-strict";
+		public static final String ID = "urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-strict";
 
 		@Override
 		public String getId()

@@ -188,7 +188,7 @@ public class PDPImpl implements CloseablePDP
 
 	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
 	{
-		private static final String ID = "urn:ow2:authzforce:xacml:result-filter:default";
+		private static final String ID = "urn:ow2:authzforce:feature:pdp:result-filter:default";
 
 		@Override
 		public String getId()
