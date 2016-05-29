@@ -1,6 +1,19 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
+## 4.0.0
+### Changed
+- Native PDP request filter IDs (values of `pdp` configuration element's `requestFilter` attribute):
+	- `urn:ow2:authzforce:xacml:request-filter:default-lax` changed to `urn:ow2:authzforce:feature:pdp:request-filter:default-lax`;
+	- `urn:ow2:authzforce:xacml:request-filter:default-strict` changed to `urn:ow2:authzforce:feature:pdp:request-filter:default-strict`;
+	- `urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-strict` changed to `urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-strict`;
+	- `urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax` changed to `urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-lax`.
+
+### Fixed
+- Maven dependency: authzforce-ce-core-pdp-api upgraded to v4.0.0 fixing license headers 
+- Fixed license headers (current year)
+- Fixed out-of-date documentation in pdp.xsd on PDP extensions
+
 
 ## 3.9.0 
 ### Added

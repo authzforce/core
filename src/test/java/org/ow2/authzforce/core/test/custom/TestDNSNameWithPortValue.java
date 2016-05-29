@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2012-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.test.custom;
 
@@ -24,11 +29,13 @@ import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 
 /**
- * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David Brossard,
- * Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01. http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html. Latest version:
- * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html..
+ * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert,
+ * Richard Hill, Crystal Hayes, David Brossard, Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01.
+ * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html. Latest version:
+ * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html.
  * <p>
- * It is basically the same as XACML Core dnsName datatype except that the hostname may use a wildcard as left-most subdomain, and the part after ':' is limited to a port number only.
+ * It is basically the same as XACML Core dnsName datatype except that the hostname may use a wildcard as left-most subdomain, and the part after ':' is limited
+ * to a port number only.
  * <p>
  * Used here for testing Authzforce datatype extension mechanism, i.e. plugging a custom simple datatype into the PDP engine.
  *
@@ -84,8 +91,8 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 	}
 
 	/*
-	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom functions dealing with network access
-	 * control for instance.
+	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom
+	 * functions dealing with network access control for instance.
 	 */
 	// the required hostname
 	private final transient String hostname;
@@ -96,7 +103,8 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 	/**
 	 * Private helper that tests whether the given string is valid.
 	 * 
-	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead, but first make sure this issue is fixed: https://issues.apache.org/jira/browse/VALIDATOR-366
+	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead, but first make sure this issue is fixed:
+	 * https://issues.apache.org/jira/browse/VALIDATOR-366
 	 */
 	private static boolean isValidHostName(String hostname)
 	{
@@ -189,7 +197,8 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 * 
-	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange attribute (more optimal than String equals)
+	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange
+	 * attribute (more optimal than String equals)
 	 */
 	/** {@inheritDoc} */
 	@Override

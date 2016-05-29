@@ -40,7 +40,7 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
  */
 public class TestCombinedDecisionResultFilter implements DecisionResultFilter
 {
-	public static final String ID = "urn:ow2:authzforce:xacml:result-filter:multiple:test-combined-decision";
+	public static final String ID = "urn:ow2:authzforce:feature:pdp:result-filter:multiple:test-combined-decision";
 
 	private static final List<Result> INDETERMINATE_RESULT_SINGLETON_LIST = Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
 			null), null, null, null, null));

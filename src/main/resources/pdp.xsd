@@ -23,7 +23,7 @@
 	<element name="attributeProvider" type="authz-ext:AbstractAttributeProvider">
 		<annotation>
 			<documentation>Attribute Provider that provides attributes not already provided in the XACML request by PEP, e.g. from external sources. There must be one and only one Java class - say
-				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.AttributeProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor,
+				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.CloseableAttributeProviderModule.FactoryBuilder&lt;CONF_T&gt;' with zero-arg constructor,
 				where
 				CONF_T is the JAXB type bound to this XML element type. This attribute Provider may also depend on previously defined 'attributeProviders', to find dependency attributes, i.e. attributes that
 				this
@@ -39,28 +39,28 @@
 				<element name="attributeDatatype" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of an attribute datatype to be added to supported datatypes. There must be one and only one Java class - say 'com.example.FooValueFactory' - on the classpath implementing
-							interface 'org.ow2.authzforce.core.value.DatatypeFactory' with zero-arg constructor, such that this URI equals: new com.example.FooValueFactory().getId().
+							interface ' org.ow2.authzforce.core.pdp.api.value.DatatypeFactory' with zero-arg constructor, such that this URI equals: new com.example.FooValueFactory().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="function" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of a function to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunction' - on the classpath implementing interface
-							'com.sun.xacml.Function' with zero-arg constructor, such that this URI equals: new com.example.FooFunction().getId().
+							'org.ow2.authzforce.core.pdp.api.func.Function' with zero-arg constructor, such that this URI equals: new com.example.FooFunction().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="functionSet" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of a set of functions to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunctionSet' - on the classpath implementing
-							interface 'org.ow2.authzforce.core.func.FunctionSet' with zero-arg constructor, such that this URI equals: new com.example.FooFunctionSet().getId().
+							interface 'org.ow2.authzforce.core.pdp.api.func.FunctionSet' with zero-arg constructor, such that this URI equals: new com.example.FooFunctionSet().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="combiningAlgorithm" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of a policy/rule-combining algorithm to be added to supported algorithms. There must be one and only one Java class - say 'com.example.FooCombiningAlg' - on the classpath
-							implementing interface 'org.ow2.authzforce.core.pdp.api.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
+							implementing interface 'org.ow2.authzforce.core.pdp.api.combining.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
 						</documentation>
 					</annotation>
 				</element>
@@ -68,7 +68,7 @@
 				<element name="refPolicyProvider" type="authz-ext:AbstractPolicyProvider" minOccurs="0" maxOccurs="1">
 					<annotation>
 						<documentation>Referenced policy Provider that resolves Policy(Set)IdReferences. There must be one and only one Java class - say 'com.example.FooRefPolicyProviderModuleFactory' - on the
-							classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
+							classpath implementing interface 'org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
 							this XML
 							element type. This referenced policy Provider may also use any of the 'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution; as some IdReferences may
 							not be
@@ -79,9 +79,9 @@
 				<element name="rootPolicyProvider" type="authz-ext:AbstractPolicyProvider">
 					<annotation>
 						<documentation>Root/top-level policy Provider that provides the root/top-level Policy(Set) to PDP for evaluation. There must be one and only one Java class - say
-							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
+							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
 							constructor, where CONF_T is the JAXB type bound to this XML element type. This class may also implement
-							'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' to
+							'org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' to
 							be used
 							as 'refPolicyProvider' as well. This policy Provider may also use any of the
 							'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution.
@@ -147,7 +147,7 @@
 					<documentation>Maximum depth of Policy(Set) reference chaining: PolicySet1 -&gt; PolicySet2 -&gt; ... -&gt; Policy(Set)N; where '-&gt;' represents a Policy(Set)IdReference.					</documentation>
 				</annotation>
 			</attribute>
-			<attribute name="requestFilter" type="anyURI" use="optional" default="urn:ow2:authzforce:xacml:request-filter:default-lax">
+			<attribute name="requestFilter" type="anyURI" use="optional" default="urn:ow2:authzforce:feature:pdp:request-filter:default-lax">
 				<annotation>
 					<documentation>
 						<p>URI of a XACML Request filter to be enabled. A XACML Request filter is a PDP extension that applies some processing of the request, such as validation and transformation, prior to the policy
@@ -166,13 +166,13 @@
 							map returned by getNamedAttributes() on
 							the IndividualDecisionRequests produced by the RequestFilter.</p>
 						<p>The following values of 'requestFilter' are natively supported:</p>
-						<p>"urn:ow2:authzforce:xacml:request-filter:default-lax": implements only XACML 3.0 Core (NO support for Multiple Decision) and allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
+						<p>"urn:ow2:authzforce:feature:pdp:request-filter:default-lax": implements only XACML 3.0 Core (NO support for Multiple Decision) and allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
 							(complying with XACML 3.0 core spec, §7.3.3)</p>
-						<p>"urn:ow2:authzforce:xacml:request-filter:default-strict": implements only XACML 3.0 Core (NO support for Multiple Decision) and does not allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
+						<p>"urn:ow2:authzforce:feature:pdp:request-filter:default-strict": implements only XACML 3.0 Core (NO support for Multiple Decision) and does not allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request
 							(NOT complying with XACML 3.0 core spec, §7.3.3, but better performances)</p>
-						<p>"urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax": implements Multiple Decision Profile, section 2.3 (repeated attribute categories), and allows duplicate &lt;Attribute&gt; with same meta-data in the same
+						<p>"urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-lax": implements Multiple Decision Profile, section 2.3 (repeated attribute categories), and allows duplicate &lt;Attribute&gt; with same meta-data in the same
 							&lt;Attributes&gt; element of a Request (complying with XACML 3.0 core spec, §7.3.3)</p>
-						<p>"urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-strict": same as previous one, except it does not allow duplicate &lt;Attribute&gt; with same meta-data in the same
+						<p>"urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-strict": same as previous one, except it does not allow duplicate &lt;Attribute&gt; with same meta-data in the same
 							&lt;Attributes&gt; element of a Request (NOT complying with XACML 3.0 core spec, §7.3.3, but better performances)</p>
 					</documentation>
 				</annotation>
