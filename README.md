@@ -12,7 +12,7 @@ See the [change log file](CHANGELOG.md) according to the *Keep a CHANGELOG* [con
 See the [license file](LICENSE.txt).
 
 ## Getting started
-To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.PdpConfigurationParser#getPDP(...)`. The parameters are:
+To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.PdpConfigurationParser#getPDP(...)`. The parameters are:
 
 1. Location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file.
 1. Location of the XML catalog (optional, required only if using one or more XML-schema-defined PDP extensions): used to resolve the PDP configuration schema and other imported schemas/DTDs, and schemas of any PDP extension namespace used in the configuration file. You may use the [catalog](src/main/resources/catalog.xml) in the sources as an example. This is the one used by default if none specified.
