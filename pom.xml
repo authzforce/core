@@ -6,7 +6,7 @@
       <version>3.3.7</version>
    </parent>
    <artifactId>authzforce-ce-core</artifactId>
-   <version>4.0.0</version>
+   <version>4.0.1-SNAPSHOT</version>
    <name>${project.groupId}:${project.artifactId}</name>
    <description>AuthZForce Community Edition - XACML-compliant Core Engine</description>
    <url>https://tuleap.ow2.org/projects/authzforce</url>
