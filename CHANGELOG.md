@@ -1,7 +1,7 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
-## Unreleased
+## 4.0.0
 ### Changed
 - Native PDP request filter IDs (values of `pdp` configuration element's `requestFilter` attribute):
 	- `urn:ow2:authzforce:xacml:request-filter:default-lax` changed to `urn:ow2:authzforce:feature:pdp:request-filter:default-lax`;
