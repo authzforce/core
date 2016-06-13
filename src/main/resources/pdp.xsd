@@ -122,7 +122,7 @@
 			</attribute>
 			<attribute name="enableXPath" type="boolean" use="optional" default="false">
 				<annotation>
-					<documentation>Enable support for AttributeSelectors and xpathExpression datatype. This overrides 'useStandardDatatypes' parameter, i.e. xpathExpression is not supported anyway if 'enableXpath'
+					<documentation>Enable support for AttributeSelectors, xpathExpression datatype and xpath-node-count function. This overrides 'useStandardDatatypes' parameter, i.e. xpathExpression is not supported anyway if 'enableXpath'
 						is false. This feature is experimental (not to be used in production) and may have a negative impact on performance. Use with caution. For your information, AttributeSelector and xpathExpression
 						datatype support is marked as optional in XACML 3.0 core specification.
 					</documentation>
