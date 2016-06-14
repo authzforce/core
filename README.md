@@ -3,7 +3,7 @@ Authorization PDP (Policy Decision Point) engine implementing the [OASIS XACML v
 
 Java projects may use AuthZForce Core to access an embedded Java PDP. 
 
-*For more information on how to use AuthZForce as a server (with a RESTful API), see the* `server` *project.*
+*If you wish to use AuthZForce as a server (with a RESTful API), see the* `server` *project.*
 
 ## Features
 * Compliance with the following OASIS XACML 3.0 standards:
