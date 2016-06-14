@@ -1,9 +1,9 @@
 # AuthZForce Core
 Authorization PDP (Policy Decision Point) engine implementing the [OASIS XACML v3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html).
 
-Java projects may use AuthZForce Core to access an embedded Java PDP. 
+Java projects may use AuthZForce Core to instantiate an embedded Java PDP. 
 
-*If you wish to use AuthZForce as a server (with a RESTful API), see the* `server` *project.*
+*If you are interested in using a XACML PDP/PAP as a server with a RESTful API, go to the [AuthZForce server project](http://github.com/authzforce/server).*
 
 ## Features
 * Compliance with the following OASIS XACML 3.0 standards:
@@ -40,6 +40,12 @@ See the [change log file](CHANGELOG.md) according to the *Keep a CHANGELOG* [con
 See the [license file](LICENSE.txt).
 
 ## Getting started
+You can either build Authzforce PDP library from the source code after cloning this git repository, or use the latest release from Maven Central with this information:
+* groupId: `org.ow2.authzforce`;
+* artifactId: `authzforce-ce-core`;
+* packaging: `jar`.
+If you want to use the experimental features (see previous section) as well, you need to use an extra Maven dependency that has the same groupId/artifactId/packaging but a specific classifier: `tests`.
+
 To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.PdpConfigurationParser#getPDP(...)`. The parameters are:
 
 1. Location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file.
