@@ -19,8 +19,8 @@ Java projects may use AuthZForce Core to instantiate an embedded Java PDP.
 
   *For further details on what is actually supported with regards to the XACML specifications, please refer to the conformance tests [README](src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
 * Detection of circular XACML policy references (PolicyIdReference/PolicySetIdReference); 
-* Control of the **maximum XACML VariableReference depth**;
 * Control of the **maximum XACML PolicyIdReference/PolicySetIdReference depth**;
+* Control of the **maximum XACML VariableReference depth**;
 * Optional **strict multivalued attribute parsing**: if enabled, multivalued attributes must be formed by grouping all `AttributeValue` elements in the same Attribute element (instead of duplicate Attribute elements); this does not fully comply with [XACML 3.0 Core specification of Multivalued attributes (§7.3.3)](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047176), but it usually performs better than the default mode since it simplifies the parsing of attribute values in the request.
 * Optional **strict attribute Issuer matching**: if enabled, `AttributeDesignators` without Issuer only match request Attributes without Issuer (and same AttributeId, Category...); this option is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it is the recommended option when all AttributeDesignators have an Issuer (the XACML 3.0 specification (5.29) says: *If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone.*);
 * Extensibility points:
