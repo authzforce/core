@@ -18,6 +18,7 @@ Java projects may use AuthZForce Core to instantiate an embedded Java PDP.
     * [XACML v3.0 Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision`). 
 
   *For further details on what is actually supported with regards to the XACML specifications, please refer to the conformance tests [README](src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
+* Detection of circular XACML policy references (PolicyIdReference/PolicySetIdReference); 
 * Control of the **maximum XACML VariableReference depth**;
 * Control of the **maximum XACML PolicyIdReference/PolicySetIdReference depth**;
 * Optional **strict multivalued attribute parsing**: if enabled, multivalued attributes must be formed by grouping all `AttributeValue` elements in the same Attribute element (instead of duplicate Attribute elements); this does not fully comply with [XACML 3.0 Core specification of Multivalued attributes (§7.3.3)](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047176), but it usually performs better than the default mode since it simplifies the parsing of attribute values in the request.
