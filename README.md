@@ -1,4 +1,4 @@
-# AuthZForce Core
+# AuthZForce PDP Core (Community Edition) 
 Authorization PDP (Policy Decision Point) engine implementing the [OASIS XACML v3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html).
 
 Java projects may use AuthZForce Core to instantiate an embedded Java PDP. 
