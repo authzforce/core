@@ -46,6 +46,7 @@ You can either build Authzforce PDP library from the source code after cloning t
 * groupId: `org.ow2.authzforce`;
 * artifactId: `authzforce-ce-core`;
 * packaging: `jar`.
+
 If you want to use the experimental features (see previous section) as well, you need to use an extra Maven dependency that has the same groupId/artifactId/packaging but a specific classifier: `tests`.
 
 To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.PdpConfigurationParser#getPDP(...)`. The parameters are:
