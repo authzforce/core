@@ -38,8 +38,7 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
  * AttributeDesignator
  *
  * <p>
- * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI
- * [1], not in java.net.URI.
+ * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
  * </p>
  * <p>
  * [1] http://www.w3.org/TR/xmlschema-2/#anyURI That's why we use String instead.
@@ -64,23 +63,22 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute designator datatype");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_Provider_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
+	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("DataType field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeId field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Category field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_ISSUER_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Issuer field is read-only");
 
 	private final transient String missingAttributeMessage;
-	private final AttributeGUID attrGUID;
+	private final transient AttributeGUID attrGUID;
 	private final transient AttributeProvider attrProvider;
 	private final transient BagDatatype<AV> returnType;
 	private final transient IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
-	private final Datatype<AV> attributeType;
+	private final transient Datatype<AV> attributeType;
 
-	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"DataType field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"AttributeId field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"Category field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_ISSUER_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"Issuer field is read-only");
+	// lazy initialization
+	private transient volatile String toString = null;
+	private transient volatile int hashCode = 0;
 
 	/*
 	 * (non-Javadoc)
@@ -197,11 +195,9 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 
 		// error messages/exceptions
 		this.missingAttributeMessage = this + " not found in context";
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage
-				+ " for unknown reason");
-		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException(
-				"Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined",
-				StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
+				+ "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
 	/**
@@ -247,10 +243,6 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator(this);
 	}
 
-	// lazy initialization
-	private transient volatile String toString = null;
-	private transient volatile int hashCode = 0;
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -262,8 +254,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	{
 		if (toString == null)
 		{
-			toString = "AttributeDesignator [category=" + category + ", attributeId=" + attributeId + ", dataType=" + dataType + ", issuer=" + issuer
-					+ ", mustBePresent=" + mustBePresent + "]";
+			toString = "AttributeDesignator [category=" + category + ", attributeId=" + attributeId + ", dataType=" + dataType + ", issuer=" + issuer + ", mustBePresent=" + mustBePresent + "]";
 		}
 
 		return toString;

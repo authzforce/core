@@ -40,10 +40,6 @@ import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
  */
 public final class StandardNonEqualTypeMatchFunctions
 {
-	private StandardNonEqualTypeMatchFunctions()
-	{
-		// empty private constructor to prevent instantiation
-	}
 
 	/**
 	 * Standard identifier for the rfc822Name-match function (different from rfc822Name-regexp-match down below).
@@ -193,5 +189,10 @@ public final class StandardNonEqualTypeMatchFunctions
 			//
 			new NonEqualTypeMatchFunction<>(NAME_X500NAME_REGEXP_MATCH, StandardDatatypes.STRING_FACTORY.getDatatype(), StandardDatatypes.X500NAME_FACTORY.getDatatype(),
 					new RegexpMatchCallFactoryBuilder<X500NameValue>()));
+
+	private StandardNonEqualTypeMatchFunctions()
+	{
+		// empty private constructor to prevent instantiation
+	}
 
 }

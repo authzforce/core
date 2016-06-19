@@ -41,6 +41,13 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  */
 public final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 {
+
+	/**
+	 * The standard URN used to identify this algorithm
+	 */
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny" };
+
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
@@ -75,7 +82,7 @@ public final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 					}
 					break;
 				default:
-					continue;
+					break;
 				}
 			}
 
@@ -91,11 +98,10 @@ public final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 		return new Evaluator(combinedElements);
 	}
 
-	/**
-	 * The standard URN used to identify this algorithm
-	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-unless-deny",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-unless-deny" };
+	private PermitUnlessDenyAlg(String algId)
+	{
+		super(algId, Decidable.class);
+	}
 
 	/**
 	 * Supported algorithms
@@ -110,11 +116,6 @@ public final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		SET = new CombiningAlgSet(algSet);
-	}
-
-	private PermitUnlessDenyAlg(String algId)
-	{
-		super(algId, Decidable.class);
 	}
 
 }

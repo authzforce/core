@@ -241,7 +241,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	{
 		// Map: Policy(Set)Id -> Version -> Policy(Set), versions sorted from
 		// latest to earliest
-		final Map<String, PolicyVersions<P>> policiesById = new HashMap<>();
+		private final Map<String, PolicyVersions<P>> policiesById = new HashMap<>();
 
 		/**
 		 * Adds policy

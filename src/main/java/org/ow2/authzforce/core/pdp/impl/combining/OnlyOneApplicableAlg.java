@@ -39,6 +39,11 @@ import org.slf4j.LoggerFactory;
  */
 public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 {
+	/**
+	 * The standard URI used to identify this algorithm
+	 */
+	public static final String ID = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable";
+
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(Evaluator.class);
@@ -104,11 +109,6 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 	{
 		return new Evaluator(combinedElements);
 	}
-
-	/**
-	 * The standard URI used to identify this algorithm
-	 */
-	public static final String ID = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable";
 
 	/**
 	 * Standard constructor.

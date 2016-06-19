@@ -41,8 +41,9 @@ public final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:ordered-deny-overrides", "urn:oasis:names:tc:xacml:1.1:rule-combining-algorithm:ordered-deny-overrides" };
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides",
+			"urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:ordered-deny-overrides",
+			"urn:oasis:names:tc:xacml:1.1:rule-combining-algorithm:ordered-deny-overrides" };
 
 	/**
 	 * Supported algorithms

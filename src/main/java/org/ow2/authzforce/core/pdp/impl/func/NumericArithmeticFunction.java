@@ -26,11 +26,11 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
@@ -46,7 +46,7 @@ import org.ow2.authzforce.core.pdp.api.value.Value;
  * 
  * @version $Id: $
  */
-public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends FirstOrderFunction.SingleParameterTyped<AV, AV>
+public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends SingleParameterTypedFirstOrderFunction<AV, AV>
 {
 	/**
 	 * Standard integer-abs function URI
@@ -135,7 +135,8 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 		private final String invalidArgsErrMsg;
 		private final StaticOperation<V> op;
 
-		private Call(FunctionSignature.SingleParameterTyped<V, V> functionSig, StaticOperation<V> op, List<Expression<?>> args, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		private Call(SingleParameterTypedFirstOrderFunctionSignature<V, V> functionSig, StaticOperation<V> op, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
+				throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
 			this.op = op;

@@ -41,7 +41,7 @@ public final class LegacyPermitOverridesAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides",
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:permit-overrides",
 			"urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:ordered-permit-overrides",
 			"urn:oasis:names:tc:xacml:1.1:rule-combining-algorithm:ordered-permit-overrides" };
 

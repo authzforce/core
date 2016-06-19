@@ -38,6 +38,12 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  */
 public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 {
+	/**
+	 * The standard URIs used to identify this algorithm
+	 */
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable",
+			"urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable" };
+
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
@@ -80,20 +86,14 @@ public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 		return new Evaluator(combinedElements);
 	}
 
-	/**
-	 * The standard URIs used to identify this algorithm
-	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable",
-			"urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable" };
+	private FirstApplicableAlg(String algId)
+	{
+		super(algId, Decidable.class);
+	}
 
 	/**
 	 * Supported algorithms
 	 */
 	public static final CombiningAlgSet SET = new CombiningAlgSet(new FirstApplicableAlg(SUPPORTED_IDENTIFIERS[0]), new FirstApplicableAlg(SUPPORTED_IDENTIFIERS[1]));
-
-	private FirstApplicableAlg(String algId)
-	{
-		super(algId, Decidable.class);
-	}
 
 }

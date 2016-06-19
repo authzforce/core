@@ -31,11 +31,11 @@ import java.util.Locale;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
@@ -48,7 +48,7 @@ import org.ow2.authzforce.core.pdp.api.value.StringValue;
  * @author Seth Proctor
  * @version $Id: $
  */
-public final class StringNormalizeFunction extends FirstOrderFunction.SingleParameterTyped<StringValue, StringValue>
+public final class StringNormalizeFunction extends SingleParameterTypedFirstOrderFunction<StringValue, StringValue>
 {
 
 	/**
@@ -70,9 +70,9 @@ public final class StringNormalizeFunction extends FirstOrderFunction.SinglePara
 	{
 
 		private final StringNormalizer strNormalizer;
-		private final FunctionSignature.SingleParameterTyped<StringValue, StringValue> funcSig;
+		private final SingleParameterTypedFirstOrderFunctionSignature<StringValue, StringValue> funcSig;
 
-		public CallFactory(FunctionSignature.SingleParameterTyped<StringValue, StringValue> functionSignature, StringNormalizer stringNormalizer)
+		public CallFactory(SingleParameterTypedFirstOrderFunctionSignature<StringValue, StringValue> functionSignature, StringNormalizer stringNormalizer)
 		{
 			this.funcSig = functionSignature;
 			this.strNormalizer = stringNormalizer;

@@ -31,9 +31,9 @@ import java.util.TimeZone;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
@@ -50,7 +50,7 @@ import org.ow2.authzforce.core.pdp.api.value.TimeValue;
  * @author seth proctor
  * @version $Id: $
  */
-public final class TimeInRangeFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, TimeValue>
+public final class TimeInRangeFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, TimeValue>
 {
 
 	/**
@@ -180,7 +180,7 @@ public final class TimeInRangeFunction extends FirstOrderFunction.SingleParamete
 			return !calCheckedWhetherInRange.after(endCal);
 		}
 
-		private Call(FunctionSignature.SingleParameterTyped<BooleanValue, TimeValue> functionSignature, List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+		private Call(SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, TimeValue> functionSignature, List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
 		{
 			super(functionSignature, argExpressions, remainingArgTypes);
 		}

@@ -27,9 +27,9 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -50,7 +50,7 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
  * 
  * @version $Id: $
  */
-public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterTyped<BooleanValue>
+public final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<BooleanValue>
 {
 
 	private static final class Call extends FirstOrderFunctionCall<BooleanValue>
@@ -63,7 +63,7 @@ public final class LogicalNOfFunction extends FirstOrderFunction.MultiParameterT
 				+ ": evaluation failed because of indeterminate arg", StatusHelper.STATUS_PROCESSING_ERROR);
 		private final List<Expression<?>> checkedArgExpressions;
 
-		private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> checkedArgExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		private Call(FirstOrderFunctionSignature<BooleanValue> functionSig, List<Expression<?>> checkedArgExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, checkedArgExpressions, remainingArgTypes);
 			this.checkedArgExpressions = checkedArgExpressions;

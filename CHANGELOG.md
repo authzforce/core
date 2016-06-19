@@ -1,6 +1,11 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
+## 4.0.2
+### Fixed
+- Issues reported by Codacyi (including fixed issues in upgraded dependency core-pdp-api 4.0.2)
+
+
 ## 4.0.0
 ### Changed
 - Native PDP request filter IDs (values of `pdp` configuration element's `requestFilter` attribute):

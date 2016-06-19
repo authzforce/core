@@ -42,6 +42,14 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  */
 public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 {
+
+	/**
+	 * The standard URN used to identify this algorithm
+	 */
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides" };
+
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
@@ -166,12 +174,10 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 		return new Evaluator(combinedElements);
 	}
 
-	/**
-	 * The standard URN used to identify this algorithm
-	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides" };
+	private PermitOverridesAlg(String algId)
+	{
+		super(algId, Decidable.class);
+	}
 
 	/**
 	 * Supported algorithms
@@ -186,10 +192,5 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		SET = new CombiningAlgSet(algSet);
-	}
-
-	private PermitOverridesAlg(String algId)
-	{
-		super(algId, Decidable.class);
 	}
 }

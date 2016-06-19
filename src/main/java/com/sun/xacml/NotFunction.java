@@ -29,8 +29,8 @@ import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
@@ -44,7 +44,7 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
  * @author Seth Proctor
  * @version $Id: $
  */
-public final class NotFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, BooleanValue>
+public final class NotFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
 {
 
 	/**

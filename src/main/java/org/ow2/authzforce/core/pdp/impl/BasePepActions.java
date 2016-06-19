@@ -87,6 +87,8 @@ public final class BasePepActions implements PepActions
 	private final List<Obligation> obligationList;
 	private final List<Advice> adviceList;
 
+	private transient volatile int hashCode = 0;
+
 	/**
 	 * Instantiates PEP action set from obligations/advice
 	 *
@@ -122,8 +124,6 @@ public final class BasePepActions implements PepActions
 	{
 		return Collections.unmodifiableList(adviceList);
 	}
-
-	private transient volatile int hashCode = 0;
 
 	/** {@inheritDoc} */
 	@Override

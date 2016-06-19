@@ -1107,6 +1107,7 @@ public final class PolicyEvaluators
 
 	private static final class DynamicPolicyRefEvaluator extends PolicyRefEvaluator
 	{
+		private static final Logger LOGGER = LoggerFactory.getLogger(DynamicPolicyRefEvaluator.class);
 
 		private static final class RefResolvedResult
 		{
@@ -1131,8 +1132,6 @@ public final class PolicyEvaluators
 				this.extraMetadata = null;
 			}
 		}
-
-		private static final Logger LOGGER = LoggerFactory.getLogger(DynamicPolicyRefEvaluator.class);
 
 		// this policyProvider to use in finding the referenced policy
 		private final RefPolicyProvider refPolicyProvider;

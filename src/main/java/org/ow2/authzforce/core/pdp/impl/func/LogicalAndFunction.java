@@ -26,9 +26,10 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -44,17 +45,14 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
  * 
  * @version $Id: $
  */
-public final class LogicalAndFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, BooleanValue>
+public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
 {
 	/**
 	 * XACML standard identifier for the "and" logical function
 	 */
 	public static final String NAME_AND = XACML_NS_1_0 + "and";
-
-	/**
-	 * Singleton instance of "and" logical function
-	 */
-	public static final LogicalAndFunction INSTANCE = new LogicalAndFunction();
+	private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
+	private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_AND + ": Indeterminate arg #";
 
 	private static final class CallFactory
 	{
@@ -74,7 +72,7 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 		{
 			private final List<Expression<?>> checkedArgExpressions;
 
-			private Call(FunctionSignature<BooleanValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+			private Call(FirstOrderFunctionSignature<BooleanValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
@@ -142,12 +140,9 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 			}
 		}
 
-		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
-		private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_AND + ": Indeterminate arg #";
+		private final SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, BooleanValue> funcSig;
 
-		private final FunctionSignature.SingleParameterTyped<BooleanValue, BooleanValue> funcSig;
-
-		private CallFactory(FunctionSignature.SingleParameterTyped<BooleanValue, BooleanValue> functionSignature)
+		private CallFactory(SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, BooleanValue> functionSignature)
 		{
 			this.funcSig = functionSignature;
 		}
@@ -166,6 +161,11 @@ public final class LogicalAndFunction extends FirstOrderFunction.SingleParameter
 		super(NAME_AND, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
+
+	/**
+	 * Singleton instance of "and" logical function
+	 */
+	public static final LogicalAndFunction INSTANCE = new LogicalAndFunction();
 
 	/*
 	 * (non-Javadoc)

@@ -26,11 +26,11 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BaseTimeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -51,7 +51,7 @@ import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
  * 
  * @version $Id: $
  */
-public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends FirstOrderFunction.MultiParameterTyped<T>
+public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends MultiParameterTypedFirstOrderFunction<T>
 {
 	/**
 	 * Standard identifier for the dateTime-add-dayTimeDuration function.
@@ -96,7 +96,7 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 		private final Class<TV> timeParamClass;
 		private final StaticOperation<TV, DV> op;
 
-		private Call(FunctionSignature<TV> functionSig, Datatype<TV> timeParamType, Datatype<DV> durationParamType, StaticOperation<TV, DV> op, List<Expression<?>> args,
+		private Call(FirstOrderFunctionSignature<TV> functionSig, Datatype<TV> timeParamType, Datatype<DV> durationParamType, StaticOperation<TV, DV> op, List<Expression<?>> args,
 				Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
@@ -125,6 +125,29 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 
 			return op.eval(arg0, arg1);
 		}
+	}
+
+	private static final class TimeAddDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
+	{
+
+		@Override
+		public T eval(T time, D duration)
+		{
+			return time.add(duration);
+
+		}
+
+	}
+
+	private static final class TimeSubtractDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
+	{
+
+		@Override
+		public T eval(T time, D duration)
+		{
+			return time.subtract(duration);
+		}
+
 	}
 
 	private final StaticOperation<T, D> op;
@@ -159,29 +182,6 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 	public FirstOrderFunctionCall<T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call<>(functionSignature, timeParamType, durationParamType, op, argExpressions, remainingArgTypes);
-	}
-
-	private static final class TimeAddDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
-	{
-
-		@Override
-		public T eval(T time, D duration)
-		{
-			return time.add(duration);
-
-		}
-
-	}
-
-	private static final class TimeSubtractDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
-	{
-
-		@Override
-		public T eval(T time, D duration)
-		{
-			return time.subtract(duration);
-		}
-
 	}
 
 	/**

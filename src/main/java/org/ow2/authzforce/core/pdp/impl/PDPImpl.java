@@ -72,6 +72,50 @@ import org.slf4j.LoggerFactory;
  */
 public class PDPImpl implements CloseablePDP
 {
+	private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("No input Individual Decision Request");
+
+	// the logger we'll use for all messages
+	private static final Logger LOGGER = LoggerFactory.getLogger(PDPImpl.class);
+
+	/**
+	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any scheme from MultipleDecisionProfile section 2.
+	 */
+	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
+			StatusHelper.STATUS_SYNTAX_ERROR, "Unsupported feature: CombinedDecision='true'"), null, null, null, null)));
+
+	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
+			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
+
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
+			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value());
+
+	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
+			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
+
+	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
+	{
+		private static final String ID = "urn:ow2:authzforce:feature:pdp:result-filter:default";
+
+		@Override
+		public String getId()
+		{
+			return ID;
+		}
+
+		@Override
+		public List<Result> filter(List<Result> results)
+		{
+			return results;
+		}
+
+		@Override
+		public boolean supportsMultipleDecisionCombining()
+		{
+			return false;
+		}
+
+	};
+
 	private static class NonCachingIndividualDecisionRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
 		private NonCachingIndividualDecisionRequestEvaluator(RootPolicyEvaluator rootPolicyEvaluator)
@@ -170,50 +214,6 @@ public class PDPImpl implements CloseablePDP
 			return results;
 		}
 	}
-
-	private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("No input Individual Decision Request");
-
-	// the logger we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(PDPImpl.class);
-
-	/**
-	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any scheme from MultipleDecisionProfile section 2.
-	 */
-	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
-			StatusHelper.STATUS_SYNTAX_ERROR, "Unsupported feature: CombinedDecision='true'"), null, null, null, null)));
-
-	private static final AttributeGUID ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
-			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value());
-
-	private static final AttributeGUID ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
-			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value());
-
-	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
-			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
-
-	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
-	{
-		private static final String ID = "urn:ow2:authzforce:feature:pdp:result-filter:default";
-
-		@Override
-		public String getId()
-		{
-			return ID;
-		}
-
-		@Override
-		public List<Result> filter(List<Result> results)
-		{
-			return results;
-		}
-
-		@Override
-		public boolean supportsMultipleDecisionCombining()
-		{
-			return false;
-		}
-
-	};
 
 	private final RootPolicyEvaluator rootPolicyEvaluator;
 	private final DecisionCache decisionCache;
