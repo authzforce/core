@@ -41,6 +41,13 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  */
 public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 {
+	/**
+	 * The standard URIs used to identify this algorithm
+	 */
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
+
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
@@ -155,12 +162,10 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 	}
 
-	/**
-	 * The standard URIs used to identify this algorithm
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
+	private DenyOverridesAlg(String algId)
+	{
+		super(algId, Decidable.class);
+	}
 
 	/**
 	 * Supported algorithms
@@ -175,11 +180,6 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		SET = new CombiningAlgSet(algSet);
-	}
-
-	private DenyOverridesAlg(String algId)
-	{
-		super(algId, Decidable.class);
 	}
 
 	/** {@inheritDoc} */

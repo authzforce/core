@@ -38,6 +38,11 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  */
 public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 {
+	/**
+	 * The standard URIs used to identify this algorithm; first one is for policy combinging, second one for rule combining.
+	 */
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
 
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
@@ -89,12 +94,6 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 	{
 		return new Evaluator(combinedElements);
 	}
-
-	/**
-	 * The standard URIs used to identify this algorithm; first one is for policy combinging, second one for rule combining.
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
 
 	/**
 	 * Supported algorithms

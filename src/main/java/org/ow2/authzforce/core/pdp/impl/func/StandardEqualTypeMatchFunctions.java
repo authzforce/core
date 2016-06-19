@@ -60,11 +60,6 @@ import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
  */
 public final class StandardEqualTypeMatchFunctions
 {
-	private StandardEqualTypeMatchFunctions()
-	{
-		// empty private constructor to prevent instantiation
-	}
-
 	/**
 	 * Standard identifier for the string-equal function.
 	 */
@@ -313,5 +308,10 @@ public final class StandardEqualTypeMatchFunctions
 			new EqualTypeMatchFunction<>(NAME_STRING_CONTAINS, StandardDatatypes.STRING_FACTORY.getDatatype(), STRING_CONTAINS_MATCHER),
 			//
 			new EqualTypeMatchFunction<>(NAME_STRING_REGEXP_MATCH, StandardDatatypes.STRING_FACTORY.getDatatype(), STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER));
+
+	private StandardEqualTypeMatchFunctions()
+	{
+		// empty private constructor to prevent instantiation
+	}
 
 }

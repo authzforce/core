@@ -51,7 +51,6 @@ public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunc
 	 * XACML standard identifier for the "and" logical function
 	 */
 	public static final String NAME_AND = XACML_NS_1_0 + "and";
-
 	private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
 	private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_AND + ": Indeterminate arg #";
 
