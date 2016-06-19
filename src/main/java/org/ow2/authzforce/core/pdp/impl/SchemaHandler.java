@@ -143,7 +143,8 @@ public class SchemaHandler
 	 */
 	private static class OASISCatalogManager
 	{
-		private static final IllegalArgumentException ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION = new IllegalArgumentException("Error creating org.apache.xml.resolver.tools.CatalogResolver for OASIS CatalogManager");
+		private static final IllegalArgumentException ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION = new IllegalArgumentException(
+				"Error creating org.apache.xml.resolver.tools.CatalogResolver for OASIS CatalogManager");
 
 		private final static Logger _LOGGER = LoggerFactory.getLogger(OASISCatalogManager.class);
 
@@ -429,13 +430,6 @@ public class SchemaHandler
 
 	private Schema schema;
 	private String catalogLocation;
-
-	/**
-	 * Default empty constructor, needed for instantiation by Spring framework
-	 */
-	public SchemaHandler()
-	{
-	}
 
 	/**
 	 * Sets (Spring-supported) locations to XML schema files

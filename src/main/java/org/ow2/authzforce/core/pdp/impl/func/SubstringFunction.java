@@ -26,11 +26,11 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
@@ -46,7 +46,7 @@ import org.ow2.authzforce.core.pdp.api.value.StringValue;
  * 
  * @version $Id: $
  */
-public final class SubstringFunction<AV extends SimpleValue<String>> extends FirstOrderFunction.MultiParameterTyped<StringValue>
+public final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParameterTypedFirstOrderFunction<StringValue>
 {
 
 	/**
@@ -66,7 +66,7 @@ public final class SubstringFunction<AV extends SimpleValue<String>> extends Fir
 		private final String argsOutOfBoundsErrorMessage;
 		private final Class<? extends SimpleValue<String>> firstParamClass;
 
-		private Call(FunctionSignature<StringValue> functionSig, Datatype<? extends SimpleValue<String>> param0Type, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
+		private Call(FirstOrderFunctionSignature<StringValue> functionSig, Datatype<? extends SimpleValue<String>> param0Type, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
 				throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);

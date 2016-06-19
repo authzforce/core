@@ -28,9 +28,10 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
@@ -47,7 +48,7 @@ import org.ow2.authzforce.core.pdp.api.value.XPathValue;
  * 
  * @version $Id: $
  */
-public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParameterTyped<IntegerValue, XPathValue>
+public final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunction<IntegerValue, XPathValue>
 {
 	private static final String NAME = XACML_NS_3_0 + "xpath-node-count";
 
@@ -58,12 +59,15 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 
 	private static final class CallFactory
 	{
+		private static final String INVALID_ARG_TYPE_MESSAGE = "Function " + NAME + ": Invalid type (expected = " + StandardDatatypes.XPATH_FACTORY.getDatatype() + ") of arg#0: ";
+		private static final String INDETERMINATE_ARG_MESSAGE = "Function " + NAME + ": Indeterminate arg #0";
+		private static final String INDETERMINATE_ARG_EVAL_MESSAGE = "Function " + NAME + ": Error evaluating xpathExpression arg #0";
 
 		private static final class Call extends FirstOrderFunctionCall<IntegerValue>
 		{
 			private final List<Expression<?>> checkedArgExpressions;
 
-			private Call(FunctionSignature<IntegerValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+			private Call(FirstOrderFunctionSignature<IntegerValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
@@ -110,13 +114,9 @@ public final class XPathNodeCountFunction extends FirstOrderFunction.SingleParam
 			}
 		}
 
-		private static final String INVALID_ARG_TYPE_MESSAGE = "Function " + NAME + ": Invalid type (expected = " + StandardDatatypes.XPATH_FACTORY.getDatatype() + ") of arg#0: ";
-		private static final String INDETERMINATE_ARG_MESSAGE = "Function " + NAME + ": Indeterminate arg #0";
-		private static final String INDETERMINATE_ARG_EVAL_MESSAGE = "Function " + NAME + ": Error evaluating xpathExpression arg #0";
+		private final SingleParameterTypedFirstOrderFunctionSignature<IntegerValue, XPathValue> funcSig;
 
-		private final FunctionSignature.SingleParameterTyped<IntegerValue, XPathValue> funcSig;
-
-		private CallFactory(FunctionSignature.SingleParameterTyped<IntegerValue, XPathValue> functionSignature)
+		private CallFactory(SingleParameterTypedFirstOrderFunctionSignature<IntegerValue, XPathValue> functionSignature)
 		{
 			this.funcSig = functionSignature;
 		}

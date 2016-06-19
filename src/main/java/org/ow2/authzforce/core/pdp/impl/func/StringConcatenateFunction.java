@@ -24,10 +24,10 @@ import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
@@ -53,7 +53,7 @@ public final class StringConcatenateFunction
 	/**
 	 * Instance of string-concatenate function (singleton)
 	 */
-	public static final FirstOrderFunction.SingleParameterTyped<StringValue, StringValue> INSTANCE = new FirstOrderFunction.SingleParameterTyped<StringValue, StringValue>(NAME_STRING_CONCATENATE,
+	public static final SingleParameterTypedFirstOrderFunction<StringValue, StringValue> INSTANCE = new SingleParameterTypedFirstOrderFunction<StringValue, StringValue>(NAME_STRING_CONCATENATE,
 			StandardDatatypes.STRING_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.STRING_FACTORY.getDatatype(), StandardDatatypes.STRING_FACTORY.getDatatype(),
 					StandardDatatypes.STRING_FACTORY.getDatatype()))
 	{

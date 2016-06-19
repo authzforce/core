@@ -56,12 +56,6 @@ public final class StandardComparisonFunctions
 		return mutableSet;
 	}
 
-	/**
-	 * Set of functions implementing comparison of {@link Comparable} values, i.e. imposing total ordering of compared objects. In particular, this applies to all numeric types (integers, doubles...)
-	 * and string, but not to XML schema date/times that may have indeterminate relationship to each other (see {@link #TEMPORAL_SET}).
-	 */
-	public static final FunctionSet TOTAL_ORDER_SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "total-order-comparison", getTotalComparisonFunctions());
-
 	private static Set<Function<?>> getTemporalFunctions()
 	{
 		final Set<Function<?>> mutableSet = new HashSet<>();
@@ -74,6 +68,12 @@ public final class StandardComparisonFunctions
 
 		return mutableSet;
 	}
+
+	/**
+	 * Set of functions implementing comparison of {@link Comparable} values, i.e. imposing total ordering of compared objects. In particular, this applies to all numeric types (integers, doubles...)
+	 * and string, but not to XML schema date/times that may have indeterminate relationship to each other (see {@link #TEMPORAL_SET}).
+	 */
+	public static final FunctionSet TOTAL_ORDER_SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "total-order-comparison", getTotalComparisonFunctions());
 
 	/**
 	 * Set of functions comparing XML schema date/time values, i.e. not imposing total ordering of compared objects, as such date/times may have indeterminate relationship to each other.

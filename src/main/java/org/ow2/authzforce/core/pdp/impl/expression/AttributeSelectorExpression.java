@@ -164,21 +164,15 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 		return new AttributeValueType(content, attrDatatype, otherAttributes);
 	}
 
+	private final transient AttributeSelectorId id;
+	private final transient Datatype<AV> attributeType;
 	private final transient String missingAttributeMessage;
-
 	private final transient AttributeProvider attrProvider;
-
 	private final transient AttributeGUID contextSelectorGUID;
-
 	private final transient XPathCompiler xpathCompiler;
 	private final transient XMLUtils.XPathEvaluator xpathEvaluator;
-
 	private final transient DatatypeFactory<?> attrFactory;
-
-	private final AttributeSelectorId id;
-
 	private final transient BagDatatype<AV> returnType;
-
 	private final transient IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
 	private final transient IndeterminateEvaluationException missingAttributesContentException;
@@ -188,7 +182,6 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	// cached method results
 	private transient volatile String toString = null;
 	private transient volatile int hashCode = 0;
-	private final Datatype<AV> attributeType;
 
 	/*
 	 * (non-Javadoc)

@@ -47,11 +47,6 @@ import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
  */
 public final class StandardDatatypeConversionFunctions
 {
-	private StandardDatatypeConversionFunctions()
-	{
-		// empty private constructor to prevent instantiation
-	}
-
 	/**
 	 * Standard identifier for the double-to-integer function.
 	 */
@@ -345,4 +340,8 @@ public final class StandardDatatypeConversionFunctions
 	//
 	);
 
+	private StandardDatatypeConversionFunctions()
+	{
+		// empty private constructor to prevent instantiation
+	}
 }

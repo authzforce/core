@@ -73,7 +73,7 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 					}
 					break;
 				default:
-					continue;
+					break;
 				}
 			}
 
@@ -93,7 +93,7 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm; first one is for policy combinging, second one for rule combining.
 	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit",
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit",
 			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
 
 	/**

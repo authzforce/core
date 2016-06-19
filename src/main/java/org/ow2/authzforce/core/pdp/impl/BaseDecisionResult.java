@@ -228,18 +228,8 @@ public final class BaseDecisionResult implements DecisionResult
 
 		// this.getObligations() derived from this.pepActions
 		// pepActions never null
-		if (!this.pepActions.equals(other.getPepActions()))
-		{
-			return false;
-		}
-
 		// applicablePolicyIdList never null
-		if (!this.applicablePolicyIdList.equals(other.getApplicablePolicyIdList()))
-		{
-			return false;
-		}
-
-		return true;
+		return this.pepActions.equals(other.getPepActions()) && this.applicablePolicyIdList.equals(other.getApplicablePolicyIdList());
 	}
 
 	/**

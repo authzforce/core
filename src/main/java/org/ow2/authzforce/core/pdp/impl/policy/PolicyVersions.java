@@ -40,7 +40,7 @@ public class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>>
 	 * Version-to-policy map with reverse ordering, to have the latest version first, since, by default, the latest version is always preferred. See §5.10 of XACML core spec:
 	 * "In the case that more than one matching version can be obtained, then the most recent one SHOULD be used."
 	 */
-	final TreeMap<PolicyVersion, P> policiesByVersion = new TreeMap<>(Collections.reverseOrder());
+	private final TreeMap<PolicyVersion, P> policiesByVersion = new TreeMap<>(Collections.reverseOrder());
 
 	/**
 	 * Registers policy in a specific version

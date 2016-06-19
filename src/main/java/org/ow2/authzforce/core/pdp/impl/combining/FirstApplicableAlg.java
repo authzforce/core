@@ -83,7 +83,7 @@ public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 	/**
 	 * The standard URIs used to identify this algorithm
 	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable",
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable",
 			"urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable" };
 
 	/**
