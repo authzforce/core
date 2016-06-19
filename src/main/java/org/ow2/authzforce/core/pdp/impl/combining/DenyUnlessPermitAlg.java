@@ -95,14 +95,14 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 		return new Evaluator(combinedElements);
 	}
 
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgSet SET = new CombiningAlgSet(new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[0]), new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[1]));
-
 	private DenyUnlessPermitAlg(String algId)
 	{
 		super(algId, Decidable.class);
 	}
+
+	/**
+	 * Supported algorithms
+	 */
+	public static final CombiningAlgSet SET = new CombiningAlgSet(new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[0]), new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[1]));
 
 }

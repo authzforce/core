@@ -46,6 +46,11 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
  */
 public final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
 {
+	/**
+	 * XACML standard identifier for the "or" logical function
+	 */
+	public static final String NAME_OR = XACML_NS_1_0 + "or";
+
 	private static final class Call extends FirstOrderFunctionCall<BooleanValue>
 	{
 		private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_OR + ": Indeterminate arg #";
@@ -132,11 +137,6 @@ public final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunct
 			return BooleanValue.FALSE;
 		}
 	}
-
-	/**
-	 * XACML standard identifier for the "or" logical function
-	 */
-	public static final String NAME_OR = XACML_NS_1_0 + "or";
 
 	private LogicalOrFunction()
 	{

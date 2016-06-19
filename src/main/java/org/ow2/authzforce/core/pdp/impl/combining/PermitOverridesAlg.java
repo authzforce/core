@@ -174,6 +174,11 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 		return new Evaluator(combinedElements);
 	}
 
+	private PermitOverridesAlg(String algId)
+	{
+		super(algId, Decidable.class);
+	}
+
 	/**
 	 * Supported algorithms
 	 */
@@ -187,10 +192,5 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		SET = new CombiningAlgSet(algSet);
-	}
-
-	private PermitOverridesAlg(String algId)
-	{
-		super(algId, Decidable.class);
 	}
 }

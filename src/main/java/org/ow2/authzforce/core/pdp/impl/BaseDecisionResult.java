@@ -81,6 +81,8 @@ public final class BaseDecisionResult implements DecisionResult
 	// initialized non-null
 	private final List<JAXBElement<IdReferenceType>> applicablePolicyIdList;
 
+	private transient volatile int hashCode = 0;
+
 	private BaseDecisionResult(DecisionType decision, DecisionType extendedIndeterminate, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
 		if (decision == null)
@@ -174,8 +176,6 @@ public final class BaseDecisionResult implements DecisionResult
 	{
 		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList);
 	}
-
-	private transient volatile int hashCode = 0;
 
 	/** {@inheritDoc} */
 	@Override
