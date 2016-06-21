@@ -23,7 +23,7 @@
 	<element name="attributeProvider" type="authz-ext:AbstractAttributeProvider">
 		<annotation>
 			<documentation>Attribute Provider that provides attributes not already provided in the XACML request by PEP, e.g. from external sources. There must be one and only one Java class - say
-				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.CloseableAttributeProviderModule.FactoryBuilder&lt;CONF_T&gt;' with zero-arg constructor,
+				'com.example.FooAttributeProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.AttributeProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor,
 				where
 				CONF_T is the JAXB type bound to this XML element type. This attribute Provider may also depend on previously defined 'attributeProviders', to find dependency attributes, i.e. attributes that
 				this
@@ -39,28 +39,28 @@
 				<element name="attributeDatatype" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of an attribute datatype to be added to supported datatypes. There must be one and only one Java class - say 'com.example.FooValueFactory' - on the classpath implementing
-							interface ' org.ow2.authzforce.core.pdp.api.value.DatatypeFactory' with zero-arg constructor, such that this URI equals: new com.example.FooValueFactory().getId().
+							interface 'org.ow2.authzforce.core.value.DatatypeFactory' with zero-arg constructor, such that this URI equals: new com.example.FooValueFactory().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="function" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of a function to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunction' - on the classpath implementing interface
-							'org.ow2.authzforce.core.pdp.api.func.Function' with zero-arg constructor, such that this URI equals: new com.example.FooFunction().getId().
+							'com.sun.xacml.Function' with zero-arg constructor, such that this URI equals: new com.example.FooFunction().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="functionSet" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of a set of functions to be added to supported functions. There must be one and only one Java class - say 'com.example.FooFunctionSet' - on the classpath implementing
-							interface 'org.ow2.authzforce.core.pdp.api.func.FunctionSet' with zero-arg constructor, such that this URI equals: new com.example.FooFunctionSet().getId().
+							interface 'org.ow2.authzforce.core.func.FunctionSet' with zero-arg constructor, such that this URI equals: new com.example.FooFunctionSet().getId().
 						</documentation>
 					</annotation>
 				</element>
 				<element name="combiningAlgorithm" type="anyURI" minOccurs="0" maxOccurs="unbounded">
 					<annotation>
 						<documentation>URI of a policy/rule-combining algorithm to be added to supported algorithms. There must be one and only one Java class - say 'com.example.FooCombiningAlg' - on the classpath
-							implementing interface 'org.ow2.authzforce.core.pdp.api.combining.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
+							implementing interface 'org.ow2.authzforce.core.pdp.api.CombiningAlg' with zero-arg constructor, such that this URI equals: new com.example.FooCombiningAlg().getId().
 						</documentation>
 					</annotation>
 				</element>
@@ -68,7 +68,7 @@
 				<element name="refPolicyProvider" type="authz-ext:AbstractPolicyProvider" minOccurs="0" maxOccurs="1">
 					<annotation>
 						<documentation>Referenced policy Provider that resolves Policy(Set)IdReferences. There must be one and only one Java class - say 'com.example.FooRefPolicyProviderModuleFactory' - on the
-							classpath implementing interface 'org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
+							classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg constructor, where CONF_T is the JAXB type bound to
 							this XML
 							element type. This referenced policy Provider may also use any of the 'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution; as some IdReferences may
 							not be
@@ -79,9 +79,9 @@
 				<element name="rootPolicyProvider" type="authz-ext:AbstractPolicyProvider">
 					<annotation>
 						<documentation>Root/top-level policy Provider that provides the root/top-level Policy(Set) to PDP for evaluation. There must be one and only one Java class - say
-							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
+							'com.example.FooRootPolicyProviderModuleFactory' - on the classpath implementing interface 'org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory&lt;CONF_T&gt;' with zero-arg
 							constructor, where CONF_T is the JAXB type bound to this XML element type. This class may also implement
-							'org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' to
+							'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;' to
 							be used
 							as 'refPolicyProvider' as well. This policy Provider may also use any of the
 							'refPolicyProvider' previously defined, if any, for Policy(Set)IdReference resolution.
