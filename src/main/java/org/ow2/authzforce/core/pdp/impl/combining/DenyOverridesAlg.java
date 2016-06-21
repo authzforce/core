@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
@@ -17,21 +22,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.ow2.authzforce.core.pdp.api.BaseCombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.CombiningAlgParameter;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
- * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of
- * permit, not applicable or indeterminate results. Note that since this implementation does an ordered evaluation, this class also supports the
- * Ordered-Deny-Overrides-algorithm.
+ * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of permit, not applicable or indeterminate
+ * results. Note that since this implementation does an ordered evaluation, this class also supports the Ordered-Deny-Overrides-algorithm.
+ *
+ * @version $Id: $
  */
 public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 {
+	/**
+	 * The standard URIs used to identify this algorithm
+	 */
+	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
+
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
@@ -46,9 +62,17 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		public DecisionResult eval(EvaluationContext context)
 		{
 			/*
-			 * Replaces atLeastOneError from XACML spec. atLeastOneError == true <=> firstIndeterminateResult != null
+			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
 			 */
-			DecisionResult firstIndeterminateResult = null;
+			DecisionResult firstIndeterminateDPResult = null;
+			/*
+			 * Replaces atLeastOneErrorD from XACML spec. atLeastOneErrorD == true <=> firstIndeterminateDResult != null
+			 */
+			DecisionResult firstIndeterminateDResult = null;
+			/*
+			 * Replaces atLeastOneErrorP from XACML spec. atLeastOneErrorP == true <=> firstIndeterminatePResult != null
+			 */
+			DecisionResult firstIndeterminatePResult = null;
 
 			/*
 			 * Replaces atLeastOnePermit from XACML spec. atLeastOnePermit == true <=> combinedPermitResult != null
@@ -74,9 +98,32 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 					break;
 				case INDETERMINATE:
 					/*
-					 * FIXME: implement extended Indeterminate decisions (result differs if Indeterminate{P} or Indeterminate{D})
+					 * Save Extended Indeterminate value if this is a new type of such value, till the end because needed to compute final Extended Indeterminate value
 					 */
-					firstIndeterminateResult = result;
+					switch (result.getExtendedIndeterminate())
+					{
+					case INDETERMINATE:
+						if (firstIndeterminateDPResult == null)
+						{
+							firstIndeterminateDPResult = result;
+						}
+						break;
+					case DENY:
+						if (firstIndeterminateDResult == null)
+						{
+							firstIndeterminateDResult = result;
+						}
+						break;
+					case PERMIT:
+						if (firstIndeterminatePResult == null)
+						{
+							firstIndeterminatePResult = result;
+						}
+						break;
+					default:
+
+					}
+
 					break;
 				default:
 					break;
@@ -84,31 +131,41 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 			}
 
 			/*
-			 * FIXME: implement extended Indeterminate decisions as the algorithm distinguishes them.
+			 * There was no Deny, else: if any Indeterminate{DP}, then Indeterminate{DP}
 			 */
-			if (firstIndeterminateResult != null)
+			if (firstIndeterminateDPResult != null)
 			{
-				return firstIndeterminateResult;
+				// at least one Indeterminate{DP}
+				return firstIndeterminateDPResult;
 			}
 
-			// if we got a PERMIT, return it, otherwise it's NOT_APPLICABLE
+			/*
+			 * Else if any Indeterminate{D}, then: if ( any Indeterminate{P} or any Permit ) -> Indeterminate{DP}; else -> Indeterminate{D} (this is a simplified equivalent of the algo in the spec)
+			 */
+			if (firstIndeterminateDResult != null)
+			{
+				return new BaseDecisionResult(firstIndeterminateDResult.getStatus(), firstIndeterminatePResult != null || combinedPermitResult != null ? DecisionType.INDETERMINATE : DecisionType.DENY);
+			}
+
+			// if we got a PERMIT or Indeterminate{P}, return it, otherwise it's NOT_APPLICABLE
 			if (combinedPermitResult != null)
 			{
 				return combinedPermitResult;
 			}
 
+			if (firstIndeterminatePResult != null)
+			{
+				return firstIndeterminatePResult;
+			}
+
 			return BaseDecisionResult.NOT_APPLICABLE;
 		}
-
 	}
 
-	/**
-	 * The standard URIs used to identify this algorithm
-	 */
-	static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
+	private DenyOverridesAlg(String algId)
+	{
+		super(algId, Decidable.class);
+	}
 
 	/**
 	 * Supported algorithms
@@ -125,14 +182,10 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		SET = new CombiningAlgSet(algSet);
 	}
 
-	private DenyOverridesAlg(String algId)
-	{
-		super(algId, Decidable.class);
-	}
-
+	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
-			throws UnsupportedOperationException, IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
+			IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}

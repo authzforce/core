@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2012-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl;
 
@@ -23,8 +28,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +38,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <JAXB_PEP_ACTION>
  *            PEP action type in XACML/JAXB model (Obligation/Advice)
+ * @version $Id: $
  */
 public final class PepActionExpression<JAXB_PEP_ACTION>
 {
@@ -50,10 +56,9 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 
 	/**
 	 * Constructor that takes all the data associated with an PEP action (obligation/advice) expression.
-	 * 
+	 *
 	 * @param pepActionFactory
 	 *            PEP action factory
-	 * 
 	 * @param pepActionId
 	 *            the obligation's id
 	 * @param appliesTo
@@ -64,11 +69,11 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory for parsing/instantiating AttributeAssignment expressions
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             one of the AttributeAssignmentExpressions' Expression is invalid
 	 */
-	public PepActionExpression(PepActionFactory<JAXB_PEP_ACTION> pepActionFactory, String pepActionId, EffectType appliesTo,
-			List<AttributeAssignmentExpression> jaxbAssignmentExps, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
+	public PepActionExpression(PepActionFactory<JAXB_PEP_ACTION> pepActionFactory, String pepActionId, EffectType appliesTo, List<AttributeAssignmentExpression> jaxbAssignmentExps,
+			XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		this.actionId = pepActionId;
 		this.appliesTo = appliesTo;
@@ -89,8 +94,7 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 					attrAssignExp = new AttributeAssignmentExpressionEvaluator(jaxbAttrAssignExp, xPathCompiler, expFactory);
 				} catch (IllegalArgumentException e)
 				{
-					throw new IllegalArgumentException("Invalid AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId()
-							+ "]/Expression", e);
+					throw new IllegalArgumentException("Invalid AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId() + "]/Expression", e);
 				}
 
 				this.evaluatableAttributeAssignmentExpressions.add(attrAssignExp);
@@ -103,7 +107,7 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 
 	/**
 	 * The type of decision to which the PEP action applies (ObligationExpression's FulfillOn / AdviceExpression's AppliesTo)
-	 * 
+	 *
 	 * @return appliesTo/fulfillOn property
 	 */
 	public EffectType getAppliesTo()
@@ -113,7 +117,7 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 
 	/**
 	 * ID of the PEP action (ObligationId / AdviceId)
-	 * 
+	 *
 	 * @return action ID
 	 */
 	public String getActionId()
@@ -123,13 +127,11 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 
 	/**
 	 * Evaluates to a PEP action (obligation/advice).
-	 * 
+	 *
 	 * @param context
 	 *            evaluation context
-	 * 
 	 * @return an instance of a PEP action in JAXB model (JAXB Obligation/Advice)
-	 * 
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if any of the attribute assignment expressions evaluates to "Indeterminate" (see XACML 3.0 core spec, section 7.18)
 	 */
 	public JAXB_PEP_ACTION evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -154,8 +156,8 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 				LOGGER.debug("{}/{} -> {}", this.infoPrefix, attrAssignmentExpr, attrAssignsFromExpr);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(infoPrefix + ": Error evaluating AttributeAssignmentExpression[@AttributeId="
-						+ attrAssignmentExpr.getAttributeId() + "]/Expression", e.getStatusCode(), e);
+				throw new IndeterminateEvaluationException(infoPrefix + ": Error evaluating AttributeAssignmentExpression[@AttributeId=" + attrAssignmentExpr.getAttributeId() + "]/Expression",
+						e.getStatusCode(), e);
 			}
 
 			assignments.addAll(attrAssignsFromExpr);

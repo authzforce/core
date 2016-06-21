@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
@@ -17,34 +22,36 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
-import org.ow2.authzforce.core.pdp.api.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.FunctionSignature;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.impl.value.BaseTimeValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
-import org.ow2.authzforce.core.pdp.impl.value.DateValue;
-import org.ow2.authzforce.core.pdp.impl.value.DayTimeDurationValue;
-import org.ow2.authzforce.core.pdp.impl.value.DurationValue;
-import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.BaseTimeValue;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.api.value.DateValue;
+import org.ow2.authzforce.core.pdp.api.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.api.value.DurationValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
- * 
+ *
  * @param <T>
  *            type of first parameter and returned value (date/time)
  * @param <D>
  *            type of second parameter (duration)
  * 
+ * @version $Id: $
  */
-public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends FirstOrderFunction.MultiParameterTyped<T>
+public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends MultiParameterTypedFirstOrderFunction<T>
 {
 	/**
 	 * Standard identifier for the dateTime-add-dayTimeDuration function.
@@ -89,8 +96,8 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 		private final Class<TV> timeParamClass;
 		private final StaticOperation<TV, DV> op;
 
-		private Call(FunctionSignature<TV> functionSig, Datatype<TV> timeParamType, Datatype<DV> durationParamType, StaticOperation<TV, DV> op,
-				List<Expression<?>> args, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		private Call(FirstOrderFunctionSignature<TV> functionSig, Datatype<TV> timeParamType, Datatype<DV> durationParamType, StaticOperation<TV, DV> op, List<Expression<?>> args,
+				Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
 			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + timeParamType + "," + durationParamType + "): ";
@@ -113,12 +120,34 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 				arg1 = durationParamClass.cast(rawArg1);
 			} catch (ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(),
-						StatusHelper.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			return op.eval(arg0, arg1);
 		}
+	}
+
+	private static final class TimeAddDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
+	{
+
+		@Override
+		public T eval(T time, D duration)
+		{
+			return time.add(duration);
+
+		}
+
+	}
+
+	private static final class TimeSubtractDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
+	{
+
+		@Override
+		public T eval(T time, D duration)
+		{
+			return time.subtract(duration);
+		}
+
 	}
 
 	private final StaticOperation<T, D> op;
@@ -148,56 +177,34 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 		this.op = op;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call<>(functionSignature, timeParamType, durationParamType, op, argExpressions, remainingArgTypes);
 	}
 
-	private static final class TimeAddDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
-	{
-
-		@Override
-		public T eval(T time, D duration)
-		{
-			return time.add(duration);
-
-		}
-
-	}
-
-	private static final class TimeSubtractDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
-	{
-
-		@Override
-		public T eval(T time, D duration)
-		{
-			return time.subtract(duration);
-		}
-
-	}
-
 	/**
 	 * Temporal arithmetic function cluster
 	 */
-	public static final FunctionSet CLUSTER = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-arithmetic",
+	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-arithmetic",
 	//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_DAYTIMEDURATION, DatatypeConstants.DATETIME.TYPE, DatatypeConstants.DAYTIMEDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_DAYTIMEDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.DAYTIMEDURATION_FACTORY.getDatatype(),
 					new TimeAddDurationOperation<DateTimeValue, DayTimeDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, DatatypeConstants.DATETIME.TYPE, DatatypeConstants.DAYTIMEDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.DAYTIMEDURATION_FACTORY.getDatatype(),
 					new TimeSubtractDurationOperation<DateTimeValue, DayTimeDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_YEARMONTHDURATION, DatatypeConstants.DATETIME.TYPE, DatatypeConstants.YEARMONTHDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_YEARMONTHDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
 					new TimeAddDurationOperation<DateTimeValue, YearMonthDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, DatatypeConstants.DATETIME.TYPE,
-					DatatypeConstants.YEARMONTHDURATION.TYPE, new TimeSubtractDurationOperation<DateTimeValue, YearMonthDurationValue>()),
+			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
+					new TimeSubtractDurationOperation<DateTimeValue, YearMonthDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATE_ADD_YEARMONTHDURATION, DatatypeConstants.DATE.TYPE, DatatypeConstants.YEARMONTHDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATE_ADD_YEARMONTHDURATION, StandardDatatypes.DATE_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
 					new TimeAddDurationOperation<DateValue, YearMonthDurationValue>()),
 			//
-			new TemporalArithmeticFunction<>(NAME_DATE_SUBTRACT_YEARMONTHDURATION, DatatypeConstants.DATE.TYPE, DatatypeConstants.YEARMONTHDURATION.TYPE,
+			new TemporalArithmeticFunction<>(NAME_DATE_SUBTRACT_YEARMONTHDURATION, StandardDatatypes.DATE_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
 					new TimeSubtractDurationOperation<DateValue, YearMonthDurationValue>()));
 
 }

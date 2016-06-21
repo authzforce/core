@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.test.conformance;
 
@@ -35,12 +40,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * XACML 3.0 conformance tests (published on OASIS xacml-comments mailing list). For tests testing validation of XACML policy syntax, the PDP is expected to
- * reject the policy before receiving any Request. For these tests, the original Request.xml and Response.xml must be renamed to Request.xml.ignore and
- * Response.xml.ignore to indicate to this test class, that an invalid policy syntax is expected.
+ * XACML 3.0 conformance tests (published on OASIS xacml-comments mailing list). For tests testing validation of XACML policy syntax, the PDP is expected to reject the policy before receiving any
+ * Request. For these tests, the original Request.xml and Response.xml must be renamed to Request.xml.ignore and Response.xml.ignore to indicate to this test class, that an invalid policy syntax is
+ * expected.
  * <p>
- * For tests testing validation of XACML Request syntax, the PDP is expected to reject the request before evaluation. For these tests, the original Policy.xml
- * and Response.xml must be renamed to Policy.xml.ignore and Response.xml.ignore to indicate to this test class, that an invalid Request syntax is expected.
+ * For tests testing validation of XACML Request syntax, the PDP is expected to reject the request before evaluation. For these tests, the original Policy.xml and Response.xml must be renamed to
+ * Policy.xml.ignore and Response.xml.ignore to indicate to this test class, that an invalid Request syntax is expected.
  */
 @RunWith(value = Parameterized.class)
 public class ConformanceV3FromV2
@@ -60,8 +65,8 @@ public class ConformanceV3FromV2
 	 */
 	public static final String EXPECTED_RESPONSE_FILENAME_SUFFIX = "Response.xml";
 	/**
-	 * Suffix of name of directory containing files of XACML Policy(Set) that can be referenced from root policy via Policy(Set)IdReference. The actual
-	 * directory name is the concatenation of the test ID and this suffix.
+	 * Suffix of name of directory containing files of XACML Policy(Set) that can be referenced from root policy via Policy(Set)IdReference. The actual directory name is the concatenation of the test
+	 * ID and this suffix.
 	 */
 	public final static String REF_POLICIES_DIRNAME_SUFFIX = "Repository";
 
@@ -81,20 +86,25 @@ public class ConformanceV3FromV2
 	}
 
 	/**
-	 * For each test folder {@code rootDirectoryPath}/{@code testSubDirectoryName}/{@code tesFilenamePrefixBeforeNum}NUM, where NUM is in range [
-	 * {@code startTestNum}, {@code endTestNum}] padded with leading zeros if needed to form a 3-digit number, it creates the following data: path prefix to the
-	 * test files (Request.xml, Response.xml, etc.), and the input request filter ID
+	 * For each test folder {@code rootDirectoryPath}/{@code testSubDirectoryName}/{@code tesFilenamePrefixBeforeNum}NUM, where NUM is in range [ {@code startTestNum}, {@code endTestNum}] padded with
+	 * leading zeros if needed to form a 3-digit number, it creates the following data: path prefix to the test files (Request.xml, Response.xml, etc.), and the input request filter ID
 	 * 
 	 * @param rootDirectoryPath
+	 *            path to root directory of all test data
 	 * @param testSubDirectoryName
-	 * @param tesFilenamePrefixBeforeNum
+	 *            name of a specific test subfolder
+	 * @param testFilenamePrefixBeforeNum
+	 *            prefix in test filename, before the test number part
 	 * @param startTestNum
+	 *            starting number of tests in the test subdirectory
 	 * @param endTestNum
+	 *            ending number of tests in the test subdirectory
 	 * @param requestFilterId
-	 * @return
+	 *            PDP request filter ID to be used for the tests
+	 * @return test data
 	 */
-	protected static Collection<? extends Object[]> getTestData(String rootDirectoryPath, String testSubDirectoryName, String tesFilenamePrefixBeforeNum,
-			int startTestNum, int endTestNum, String requestFilterId)
+	protected static Collection<? extends Object[]> getTestData(String rootDirectoryPath, String testSubDirectoryName, String testFilenamePrefixBeforeNum, int startTestNum, int endTestNum,
+			String requestFilterId)
 	{
 		final Collection<Object[]> testData = new ArrayList<>();
 		for (int testNum = startTestNum; testNum <= endTestNum; testNum++)
@@ -111,7 +121,7 @@ public class ConformanceV3FromV2
 				paddedTestNumber = Integer.toString(testNum);
 			}
 
-			testData.add(new Object[] { rootDirectoryPath + "/" + testSubDirectoryName + "/" + tesFilenamePrefixBeforeNum + paddedTestNumber, requestFilterId });
+			testData.add(new Object[] { rootDirectoryPath + "/" + testSubDirectoryName + "/" + testFilenamePrefixBeforeNum + paddedTestNumber, requestFilterId });
 		}
 
 		return testData;
@@ -193,11 +203,10 @@ public class ConformanceV3FromV2
 			} else if (expectedResponse == null)
 			{
 				/*
-				 * No expected response, so it is not a PDP evaluation test, but request or policy syntax error check. We got here, so request and policy OK.
-				 * This is unexpected.
+				 * No expected response, so it is not a PDP evaluation test, but request or policy syntax error check. We got here, so request and policy OK. This is unexpected.
 				 */
-				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '"
-						+ expectedReqFilepath + "' or policy located at '" + rootPolicyFilepath + "'");
+				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '" + expectedReqFilepath
+						+ "' or policy located at '" + rootPolicyFilepath + "'");
 
 			} else
 			{

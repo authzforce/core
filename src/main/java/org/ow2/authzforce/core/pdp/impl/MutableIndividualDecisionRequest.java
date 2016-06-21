@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl;
 
@@ -23,15 +28,19 @@ import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
-import org.ow2.authzforce.core.pdp.api.Bag;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
 
 /**
  * Mutable Individual Decision Request
+ *
+ * @version $Id: $
  */
 public class MutableIndividualDecisionRequest implements IndividualDecisionRequest
 {
+	private static final IllegalArgumentException UNDEF_ATTRIBUTES_EXCEPTION = new IllegalArgumentException("Undefined attributes");
+	private static final IllegalArgumentException UNDEF_ATTRIBUTE_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute category");
 	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 	private final Map<String, XdmNode> extraContentsByCategory;
 	private final List<Attributes> attributesToIncludeInResult;
@@ -39,7 +48,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 
 	/**
 	 * Creates empty request (no attribute)
-	 * 
+	 *
 	 * @param returnPolicyIdList
 	 *            equivalent of XACML ReturnPolicyIdList
 	 */
@@ -54,7 +63,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 
 	/**
 	 * Create new instance as a clone of an existing request.
-	 * 
+	 *
 	 * @param baseRequest
 	 *            replicated existing request. Further changes to it are not reflected back to this new instance.
 	 */
@@ -72,29 +81,29 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 
 	/**
 	 * Put attributes of a specific category in request.
-	 * 
+	 *
 	 * @param categoryName
 	 *            category URI
 	 * @param categorySpecificAttributes
 	 *            attributes in category {@code categoryName}
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code categoryName} or {@code attributes} is null
 	 */
 	public void put(String categoryName, SingleCategoryAttributes<?> categorySpecificAttributes) throws IllegalArgumentException
 	{
 		if (categoryName == null)
 		{
-			throw new IllegalArgumentException("Undefined attribute category");
+			throw UNDEF_ATTRIBUTE_CATEGORY_EXCEPTION;
 		}
 
 		if (categorySpecificAttributes == null)
 		{
-			throw new IllegalArgumentException("Undefined attributes");
+			throw UNDEF_ATTRIBUTES_EXCEPTION;
 		}
 
 		/*
-		 * Convert growable (therefore mutable) bag of attribute values to immutable ones. Indeed, we must guarantee that attribute values remain constant
-		 * during the evaluation of the request, as mandated by the XACML spec, section 7.3.5: <p> <i>
+		 * Convert growable (therefore mutable) bag of attribute values to immutable ones. Indeed, we must guarantee that attribute values remain constant during the evaluation of the request, as
+		 * mandated by the XACML spec, section 7.3.5: <p> <i>
 		 * "Regardless of any dynamic modifications of the request context during policy evaluation, the PDP SHALL behave as if each bag of attribute values is fully populated in the context before it is first tested, and is thereafter immutable during evaluation. (That is, every subsequent test of that attribute shall use the same bag of values that was initially tested.)"
 		 * </i></p>
 		 */
@@ -117,6 +126,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * 
 	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getNamedAttributes()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public Map<AttributeGUID, Bag<?>> getNamedAttributes()
 	{
@@ -128,6 +138,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * 
 	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getAttributesIncludedInResult()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public List<Attributes> getReturnedAttributes()
 	{
@@ -139,15 +150,14 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * 
 	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getExtraContentsByCategory()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public Map<String, XdmNode> getExtraContentsByCategory()
 	{
 		return this.extraContentsByCategory;
 	}
 
-	/**
-	 * @return the returnApplicablePolicyIdList
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isApplicablePolicyIdentifiersReturned()
 	{

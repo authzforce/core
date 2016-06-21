@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
@@ -17,20 +22,21 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.pdp.api.Function;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.StringValue;
 
 /**
  * Implements string-concatenate function
+ *
  * 
- * 
+ * @version $Id: $
  */
 public final class StringConcatenateFunction
 {
@@ -47,9 +53,9 @@ public final class StringConcatenateFunction
 	/**
 	 * Instance of string-concatenate function (singleton)
 	 */
-	public static final FirstOrderFunction.SingleParameterTyped<StringValue, StringValue> INSTANCE = new FirstOrderFunction.SingleParameterTyped<StringValue, StringValue>(
-			NAME_STRING_CONCATENATE, DatatypeConstants.STRING.TYPE, true, Arrays.asList(DatatypeConstants.STRING.TYPE, DatatypeConstants.STRING.TYPE,
-					DatatypeConstants.STRING.TYPE))
+	public static final SingleParameterTypedFirstOrderFunction<StringValue, StringValue> INSTANCE = new SingleParameterTypedFirstOrderFunction<StringValue, StringValue>(NAME_STRING_CONCATENATE,
+			StandardDatatypes.STRING_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.STRING_FACTORY.getDatatype(), StandardDatatypes.STRING_FACTORY.getDatatype(),
+					StandardDatatypes.STRING_FACTORY.getDatatype()))
 	{
 		/*
 		 * (non-Javadoc)

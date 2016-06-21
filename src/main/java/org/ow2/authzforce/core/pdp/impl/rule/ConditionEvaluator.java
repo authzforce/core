@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
@@ -18,15 +23,17 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 
 /**
  * Evaluates a XACML ConditionEvaluator. It contains exactly one child expression that is boolean and returns a single value.
+ *
  * 
+ * @version $Id: $
  */
 public class ConditionEvaluator
 {
@@ -35,15 +42,14 @@ public class ConditionEvaluator
 
 	/**
 	 * Constructs a Condition evaluator
-	 * 
+	 *
 	 * @param condition
 	 *            Condition in JAXB model
 	 * @param expFactory
 	 *            expression factory
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
-	 * 
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if the expression is not a valid boolean expression
 	 */
 	public ConditionEvaluator(Condition condition, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -52,10 +58,9 @@ public class ConditionEvaluator
 		final Expression<?> expr = expFactory.getInstance(exprElt, xPathCompiler, null);
 
 		// make sure it's a boolean expression...
-		if (!(expr.getReturnType().equals(DatatypeConstants.BOOLEAN.TYPE)))
+		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN_FACTORY.getDatatype())))
 		{
-			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName()
-					+ ") in Condition. Expected: Boolean.");
+			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}
 
 		this.evaluatableExpression = (Expression<BooleanValue>) expr;
@@ -63,12 +68,11 @@ public class ConditionEvaluator
 
 	/**
 	 * Evaluates the <code>Condition</code> to boolean by evaluating its child boolean <code>Expression</code>.
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true if and only if condition is true, i.e. its expression evaluates to True
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if error evaluating the condition
 	 */
 	public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException

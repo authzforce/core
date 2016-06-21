@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Request xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17 http://docs.oasis-open.org/xacml/3.0/xacml-core-v3-schema-wd-17.xsd" 
+<Request  
 		ReturnPolicyIdList="true" 
 		CombinedDecision="false" 
 		xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" 

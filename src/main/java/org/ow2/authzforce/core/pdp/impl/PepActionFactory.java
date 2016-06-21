@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -27,12 +27,13 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
  *
  * @param <JAXB_T>
  *            JAXB-annotated PEP action type
+ * @version $Id: $
  */
 public interface PepActionFactory<JAXB_T>
 {
 	/**
 	 * Creates instance of PEP action (obligation/advice)
-	 * 
+	 *
 	 * @param attributeAssignments
 	 *            XML/JAXB AttributeAssignments in the PEP action
 	 * @param actionId
@@ -43,7 +44,7 @@ public interface PepActionFactory<JAXB_T>
 
 	/**
 	 * Get name of PEP Action element in XACML model, e.g. 'Obligation'
-	 * 
+	 *
 	 * @return action element name
 	 */
 	String getActionXmlElementName();

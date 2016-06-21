@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl;
 
@@ -22,19 +27,20 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
 
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.Function;
-import org.ow2.authzforce.core.pdp.api.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.func.HigherOrderBagFunctionSet;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions;
 
 /**
- * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding
- * attribute values in the request context.
+ * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding attribute values in the request context.
+ *
+ * @version $Id: $
  */
 public class MatchEvaluator
 {
@@ -48,14 +54,14 @@ public class MatchEvaluator
 
 	/**
 	 * Instantiates Match evaluator from XACML-Schema-derived JAXB Match
-	 * 
+	 *
 	 * @param jaxbMatch
 	 *            XACML-Schema-derived JAXB Match
 	 * @param expFactory
 	 *            bagExpression factory
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             invalid <code>jaxbMatch</code>
 	 */
 	public MatchEvaluator(Match jaxbMatch, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -87,10 +93,10 @@ public class MatchEvaluator
 
 		// Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction,
 		// attributeValue, bagExpression)
-		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory.getFunction(HigherOrderBagFunctionSet.NAME_ANY_OF);
+		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory.getFunction(StandardHigherOrderBagFunctions.NAME_ANY_OF);
 		if (anyOfFunc == null)
 		{
-			throw new IllegalArgumentException("Unsupported function '" + HigherOrderBagFunctionSet.NAME_ANY_OF + "' required for Match evaluation");
+			throw new IllegalArgumentException("Unsupported function '" + StandardHigherOrderBagFunctions.NAME_ANY_OF + "' required for Match evaluation");
 		}
 
 		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr, bagExpression);
@@ -99,19 +105,18 @@ public class MatchEvaluator
 			this.anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
 		} catch (IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException(
-					"Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): " + anyOfFuncInputs, e);
+			throw new IllegalArgumentException("Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): " + anyOfFuncInputs, e);
 		}
 	}
 
 	/**
 	 * Determines whether this <code>Match</code> matches the input request (whether it is applicable)
-	 * 
+	 *
 	 * @param context
 	 *            the evaluation context
-	 * 
 	 * @return true iff the context matches
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
+	 *             error occurred evaluating the Match element in this evaluation {@code context}
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
 	{

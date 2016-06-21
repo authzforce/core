@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
@@ -22,9 +27,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
 import org.slf4j.Logger;
@@ -32,6 +37,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Evaluates a XACML Rule to a Decision.
+ *
+ * 
+ * @version $Id: $
  */
 public class RuleEvaluator implements Decidable
 {
@@ -48,17 +56,17 @@ public class RuleEvaluator implements Decidable
 
 	/**
 	 * Instantiates rule from XACML RuleType
-	 * 
+	 *
 	 * @param ruleElt
+	 *            Rule element definition
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expressionFactory
 	 *            Expression parser/factory
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid Target, Condition or Obligation/Advice expressions
 	 */
 	public RuleEvaluator(Rule ruleElt, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory) throws IllegalArgumentException
-	// throws ParsingException
 	{
 		// JAXB fields initialization
 		this.ruleId = ruleElt.getRuleId();
@@ -87,8 +95,7 @@ public class RuleEvaluator implements Decidable
 
 		try
 		{
-			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(),
-					xPathCompiler, expressionFactory, effect);
+			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), xPathCompiler, expressionFactory, effect);
 		} catch (IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": Invalid ObligationExpressions/AdviceExpressions", e);
@@ -106,7 +113,7 @@ public class RuleEvaluator implements Decidable
 
 	/**
 	 * Get evaluated rule ID
-	 * 
+	 *
 	 * @return evaluated rule ID
 	 */
 	public String getRuleId()
@@ -115,18 +122,14 @@ public class RuleEvaluator implements Decidable
 	}
 
 	/**
-	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to evaluate the condition. If the target and
-	 * condition apply, then the rule's effect is returned in the result.
+	 * {@inheritDoc}
+	 *
+	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to evaluate the condition. If the target and condition apply, then the rule's effect is
+	 * returned in the result.
 	 * <p>
-	 * Note that rules are not required to have targets. If no target is specified, then the rule inherits its parent's target. In the event that this
-	 * <code>RuleEvaluator</code> has no <code>Target</code> then the match is assumed to be true, since evaluating a policy tree to this level required the
-	 * parent's target to match. In debug level, this method logs the evaluation result before return. Indeterminate results are logged in warn level only
-	 * (which "includes" debug level).
-	 * 
-	 * @param context
-	 *            the representation of the request we're evaluating
-	 * 
-	 * @return the result of the evaluation
+	 * Note that rules are not required to have targets. If no target is specified, then the rule inherits its parent's target. In the event that this <code>RuleEvaluator</code> has no
+	 * <code>Target</code> then the match is assumed to be true, since evaluating a policy tree to this level required the parent's target to match. In debug level, this method logs the evaluation
+	 * result before return. Indeterminate results are logged in warn level only (which "includes" debug level).
 	 */
 	@Override
 	public DecisionResult evaluate(EvaluationContext context)
@@ -152,25 +155,24 @@ public class RuleEvaluator implements Decidable
 				LOGGER.debug("{}/Target -> Match", this);
 			} catch (IndeterminateEvaluationException e)
 			{
+				// Target is Indeterminate
 				/*
-				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error,
-				 * therefore lower level than error)
+				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than error)
 				 */
 				LOGGER.info("{}/Target -> Indeterminate", this, e);
 
 				/*
-				 * FIXME: implement Extended Indeterminate: "Indeterminate{P}" if the Rule's Effect is Permit, or "Indeterminate{D}" if the Rule's Effect is
-				 * Deny
+				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
 				 */
-				final DecisionResult result = new BaseDecisionResult(e.getStatus());
+				final DecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
 		}
 
 		/*
-		 * Target matches -> check condition Rule's condition considered as True if condition = null or condition's expression evaluated to true. See section
-		 * 7.9 of XACML core spec, so result is the Rule's Effect, unless condition is not null AND it evaluates to False or throws Indeterminate exception.
+		 * Target matches -> check condition Rule's condition considered as True if condition = null or condition's expression evaluated to true. See section 7.9 of XACML core spec, so result is the
+		 * Rule's Effect, unless condition is not null AND it evaluates to False or throws Indeterminate exception.
 		 */
 		if (evaluatableCondition == null)
 		{
@@ -184,13 +186,14 @@ public class RuleEvaluator implements Decidable
 				isConditionTrue = evaluatableCondition.evaluate(context);
 			} catch (IndeterminateEvaluationException e)
 			{
-				// if it was INDETERMINATE, then that's what we return
 				/*
-				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error,
-				 * therefore lower level than Error level)
+				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
+				 */
+				/*
+				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but not a critical application error, therefore lower level than Error level)
 				 */
 				LOGGER.info("{}/Condition -> Indeterminate", this, e);
-				final DecisionResult result = new BaseDecisionResult(e.getStatus());
+				final DecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -217,9 +220,8 @@ public class RuleEvaluator implements Decidable
 		}
 
 		/*
-		 * Evaluate obligations/advice we have already filtered out obligations/advice that do not apply to Rule's effect, after calling
-		 * PepActionExpressionsEvaluator.getInstance(..., effect) in the constructor. So no need to do it again, that's why Effect not used as argument to
-		 * evaluate() here.
+		 * Evaluate obligations/advice we have already filtered out obligations/advice that do not apply to Rule's effect, after calling PepActionExpressionsEvaluator.getInstance(..., effect) in the
+		 * constructor. So no need to do it again, that's why Effect not used as argument to evaluate() here.
 		 */
 		final PepActions pepActions;
 		try
@@ -228,16 +230,16 @@ public class RuleEvaluator implements Decidable
 		} catch (IndeterminateEvaluationException e)
 		{
 			/*
-			 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error,
-			 * therefore lower level than Error level)
+			 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than Error level)
 			 */
 			LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", this, e);
 
 			/*
-			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates
-			 * to "Indeterminate", then the whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18).
+			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then the whole rule,
+			 * policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18). For the Extended Indeterminate, we do like for Target or Condition evaluation in section 7.11
+			 * (same as the rule's Effect).
 			 */
-			final BaseDecisionResult result = new BaseDecisionResult(e.getStatus());
+			final BaseDecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
 			LOGGER.debug("{} -> {}", this, result);
 			return result;
 		}
@@ -247,6 +249,7 @@ public class RuleEvaluator implements Decidable
 		return result;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{

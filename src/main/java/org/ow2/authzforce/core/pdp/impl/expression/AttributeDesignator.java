@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2012-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
- * AuthZForce CE is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce CE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce CE. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.expression;
 
@@ -19,22 +24,21 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Bag;
-import org.ow2.authzforce.core.pdp.api.BagDatatype;
-import org.ow2.authzforce.core.pdp.api.Datatype;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
 
 /**
  * AttributeDesignator
- * 
+ *
  * <p>
- * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI
- * [1], not in java.net.URI.
+ * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
  * </p>
  * <p>
  * [1] http://www.w3.org/TR/xmlschema-2/#anyURI That's why we use String instead.
@@ -45,10 +49,11 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
  * <p>
  * https://java.net/projects/jaxb/lists/users/archive/2011-07/message/16
  * </p>
- * 
+ *
  * @param <AV>
  *            AttributeDesignator evaluation result value's primitive datatype
  * 
+ * @version $Id: $
  */
 public class AttributeDesignator<AV extends AttributeValue> extends AttributeDesignatorType implements Expression<Bag<AV>>
 {
@@ -58,29 +63,29 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute designator datatype");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
 	private static final IllegalArgumentException NULL_ATTRIBUTE_Provider_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
+	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("DataType field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("AttributeId field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Category field is read-only");
+	private static final UnsupportedOperationException UNSUPPORTED_ISSUER_SET_OPERATION_EXCEPTION = new UnsupportedOperationException("Issuer field is read-only");
 
 	private final transient String missingAttributeMessage;
-	private final AttributeGUID attrGUID;
+	private final transient AttributeGUID attrGUID;
 	private final transient AttributeProvider attrProvider;
 	private final transient BagDatatype<AV> returnType;
 	private final transient IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
-	private final Datatype<AV> attributeType;
+	private final transient Datatype<AV> attributeType;
 
-	private static final UnsupportedOperationException UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"DataType field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_ATTRIBUTE_ID_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"AttributeId field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_CATEGORY_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"Category field is read-only");
-	private static final UnsupportedOperationException UNSUPPORTED_ISSUER_SET_OPERATION_EXCEPTION = new UnsupportedOperationException(
-			"Issuer field is read-only");
+	// lazy initialization
+	private transient volatile String toString = null;
+	private transient volatile int hashCode = 0;
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setCategory(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setCategory(String value)
 	{
@@ -93,6 +98,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setAttributeId(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setAttributeId(String value)
 	{
@@ -105,6 +111,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setIssuer(java.lang.String )
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setIssuer(String value)
 	{
@@ -117,6 +124,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType#setDataType(java.lang .String)
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public final void setDataType(String value)
 	{
@@ -129,6 +137,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 	 * 
 	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isStatic()
 	{
@@ -138,7 +147,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 
 	/**
 	 * Return an instance of an AttributeDesignator based on an AttributeDesignatorType
-	 * 
+	 *
 	 * @param attrDesignator
 	 *            the AttributeDesignatorType we want to convert
 	 * @param resultDatatype
@@ -186,20 +195,15 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 
 		// error messages/exceptions
 		this.missingAttributeMessage = this + " not found in context";
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage
-				+ " for unknown reason");
-		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException(
-				"Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined",
-				StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
+				+ "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Evaluates the pre-assigned meta-data against the given context, trying to find some matching values.
-	 * 
-	 * @param context
-	 *            the representation of the request
-	 * 
-	 * @return a result containing a bag either empty because no values were found or containing at least one value
 	 */
 	@Override
 	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
@@ -225,39 +229,38 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		return bag;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Datatype<Bag<AV>> getReturnType()
 	{
 		return this.returnType;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public JAXBElement<AttributeDesignatorType> getJAXBElement()
 	{
 		return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createAttributeDesignator(this);
 	}
 
-	// lazy initialization
-	private transient volatile String toString = null;
-	private transient volatile int hashCode = 0;
-
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{
 		if (toString == null)
 		{
-			toString = "AttributeDesignator [category=" + category + ", attributeId=" + attributeId + ", dataType=" + dataType + ", issuer=" + issuer
-					+ ", mustBePresent=" + mustBePresent + "]";
+			toString = "AttributeDesignator [category=" + category + ", attributeId=" + attributeId + ", dataType=" + dataType + ", issuer=" + issuer + ", mustBePresent=" + mustBePresent + "]";
 		}
 
 		return toString;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -269,6 +272,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{

@@ -27,23 +27,24 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 
 /**
- * A class that implements the not function. This function takes one boolean argument and returns the logical negation of that value. If the argument evaluates
- * to indeterminate, an indeterminate result is returned.
- * 
+ * A class that implements the not function. This function takes one boolean argument and returns the logical negation of that value. If the argument evaluates to indeterminate, an indeterminate
+ * result is returned.
+ *
  * @since 1.0
  * @author Steve Hanna
  * @author Seth Proctor
+ * @version $Id: $
  */
-public final class NotFunction extends FirstOrderFunction.SingleParameterTyped<BooleanValue, BooleanValue>
+public final class NotFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
 {
 
 	/**
@@ -58,9 +59,10 @@ public final class NotFunction extends FirstOrderFunction.SingleParameterTyped<B
 
 	private NotFunction()
 	{
-		super(NAME_NOT, DatatypeConstants.BOOLEAN.TYPE, false, Collections.singletonList(DatatypeConstants.BOOLEAN.TYPE));
+		super(NAME_NOT, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Collections.singletonList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{

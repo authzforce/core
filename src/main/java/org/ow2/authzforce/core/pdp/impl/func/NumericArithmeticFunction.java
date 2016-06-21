@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
@@ -17,29 +22,31 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.pdp.api.FunctionSet;
-import org.ow2.authzforce.core.pdp.api.FunctionSignature;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.Value;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
-import org.ow2.authzforce.core.pdp.impl.value.DoubleValue;
-import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.impl.value.NumericValue;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
+import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
+import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
+import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
+import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.api.value.NumericValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.Value;
 
 /**
  * A class that implements all the numeric *-add functions (as opposed to date/time *-add-* functions).
- * 
+ *
  * @param <AV>
  *            return and parameter type
  * 
+ * @version $Id: $
  */
-public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends FirstOrderFunction.SingleParameterTyped<AV, AV>
+public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends SingleParameterTypedFirstOrderFunction<AV, AV>
 {
 	/**
 	 * Standard integer-abs function URI
@@ -128,7 +135,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 		private final String invalidArgsErrMsg;
 		private final StaticOperation<V> op;
 
-		private Call(FunctionSignature.SingleParameterTyped<V, V> functionSig, StaticOperation<V> op, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
+		private Call(SingleParameterTypedFirstOrderFunctionSignature<V, V> functionSig, StaticOperation<V> op, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
 				throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
@@ -169,14 +176,14 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 		this.op = op;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		/**
-		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all static/constant arguments and if there are more than one, pre-compute
-		 * their sum (resp. product) and replace these arguments with one argument that is this sum (resp. product) in the function call. Indeed, 'add' function
-		 * is commutative and (constant in upper case, variables in lower case): add(C1, C2, x, y...) = add(C1+C2, x, y...). Similarly, multiply(C1, C2, x,
-		 * y...) = multiply(C1*C2, x, y...)
+		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all static/constant arguments and if there are more than one, pre-compute their sum (resp. product) and replace
+		 * these arguments with one argument that is this sum (resp. product) in the function call. Indeed, 'add' function is commutative and (constant in upper case, variables in lower case): add(C1,
+		 * C2, x, y...) = add(C1+C2, x, y...). Similarly, multiply(C1, C2, x, y...) = multiply(C1*C2, x, y...)
 		 * 
 		 */
 
@@ -275,41 +282,41 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	/**
 	 * Numeric arithmetic function cluster
 	 */
-	public static final FunctionSet CLUSTER = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "numeric-arithmetic",
+	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "numeric-arithmetic",
 	//
-			new NumericArithmeticFunction<>(NAME_INTEGER_ABS, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE), new AbsOperation<IntegerValue>()),
+			new NumericArithmeticFunction<>(NAME_INTEGER_ABS, false, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype()), new AbsOperation<IntegerValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_DOUBLE_ABS, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE), new AbsOperation<DoubleValue>()),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_ABS, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype()), new AbsOperation<DoubleValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_INTEGER_ADD, true, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE,
-					DatatypeConstants.INTEGER.TYPE), new AddOperation<IntegerValue>()),
+			new NumericArithmeticFunction<>(NAME_INTEGER_ADD, true, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+					StandardDatatypes.INTEGER_FACTORY.getDatatype()), new AddOperation<IntegerValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_DOUBLE_ADD, true, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE,
-					DatatypeConstants.DOUBLE.TYPE), new AddOperation<DoubleValue>()),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_ADD, true, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype(), StandardDatatypes.DOUBLE_FACTORY.getDatatype(),
+					StandardDatatypes.DOUBLE_FACTORY.getDatatype()), new AddOperation<DoubleValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_INTEGER_MULTIPLY, true, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE,
-					DatatypeConstants.INTEGER.TYPE), new MultiplyOperation<IntegerValue>()),
+			new NumericArithmeticFunction<>(NAME_INTEGER_MULTIPLY, true, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+					StandardDatatypes.INTEGER_FACTORY.getDatatype()), new MultiplyOperation<IntegerValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_DOUBLE_MULTIPLY, true, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE,
-					DatatypeConstants.DOUBLE.TYPE), new MultiplyOperation<DoubleValue>()),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_MULTIPLY, true, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype(), StandardDatatypes.DOUBLE_FACTORY.getDatatype(),
+					StandardDatatypes.DOUBLE_FACTORY.getDatatype()), new MultiplyOperation<DoubleValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_INTEGER_SUBTRACT, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_SUBTRACT, false, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.INTEGER_FACTORY.getDatatype()),
 					new SubtractOperation<IntegerValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_DOUBLE_SUBTRACT, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_SUBTRACT, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype(), StandardDatatypes.DOUBLE_FACTORY.getDatatype()),
 					new SubtractOperation<DoubleValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_INTEGER_DIVIDE, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_DIVIDE, false, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.INTEGER_FACTORY.getDatatype()),
 					new DivideOperation<IntegerValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_DOUBLE_DIVIDE, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE, DatatypeConstants.DOUBLE.TYPE),
+			new NumericArithmeticFunction<>(NAME_DOUBLE_DIVIDE, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype(), StandardDatatypes.DOUBLE_FACTORY.getDatatype()),
 					new DivideOperation<DoubleValue>()),
 			//
-			new NumericArithmeticFunction<>(NAME_INTEGER_MOD, false, Arrays.asList(DatatypeConstants.INTEGER.TYPE, DatatypeConstants.INTEGER.TYPE),
+			new NumericArithmeticFunction<>(NAME_INTEGER_MOD, false, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.INTEGER_FACTORY.getDatatype()),
 					new IntegerModOperation()),
 			//
-			new NumericArithmeticFunction<>(NAME_FLOOR, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE), new FloorOperation()),
+			new NumericArithmeticFunction<>(NAME_FLOOR, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype()), new FloorOperation()),
 			//
-			new NumericArithmeticFunction<>(NAME_ROUND, false, Arrays.asList(DatatypeConstants.DOUBLE.TYPE), new RoundOperation()));
+			new NumericArithmeticFunction<>(NAME_ROUND, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype()), new RoundOperation()));
 
 }

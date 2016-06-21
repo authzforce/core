@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
@@ -23,21 +28,21 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.Value;
-import org.ow2.authzforce.core.pdp.impl.value.AnyURIValue;
-import org.ow2.authzforce.core.pdp.impl.value.Base64BinaryValue;
-import org.ow2.authzforce.core.pdp.impl.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.value.DateTimeValue;
-import org.ow2.authzforce.core.pdp.impl.value.DateValue;
-import org.ow2.authzforce.core.pdp.impl.value.DayTimeDurationValue;
-import org.ow2.authzforce.core.pdp.impl.value.DoubleValue;
-import org.ow2.authzforce.core.pdp.impl.value.HexBinaryValue;
-import org.ow2.authzforce.core.pdp.impl.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.impl.value.RFC822NameValue;
-import org.ow2.authzforce.core.pdp.impl.value.StringValue;
-import org.ow2.authzforce.core.pdp.impl.value.TimeValue;
-import org.ow2.authzforce.core.pdp.impl.value.X500NameValue;
-import org.ow2.authzforce.core.pdp.impl.value.YearMonthDurationValue;
+import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.api.value.Base64BinaryValue;
+import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
+import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
+import org.ow2.authzforce.core.pdp.api.value.DateValue;
+import org.ow2.authzforce.core.pdp.api.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
+import org.ow2.authzforce.core.pdp.api.value.HexBinaryValue;
+import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
+import org.ow2.authzforce.core.pdp.api.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.api.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.value.TimeValue;
+import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
+import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
 import org.ow2.authzforce.core.test.utils.FunctionTest;
 
 @RunWith(Parameterized.class)

@@ -5,7 +5,7 @@
 		PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIF005:policy" 
 		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides" 
 		Version="1.0" 
-		xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os         access_control-xacml-2.0-policy-schema-os.xsd">
+		>
     <Description>
         Policy for Conformance Test IIIF005.
         Purpose - Attribute Selectors: Case: Syntax error in XPath expression 

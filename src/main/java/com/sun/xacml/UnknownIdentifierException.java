@@ -25,9 +25,10 @@ package com.sun.xacml;
 
 /**
  * Exception that gets thrown if an unknown identifier was used, such as the identifier used in any of the standard factories.
- * 
+ *
  * @since 1.0
  * @author Seth Proctor
+ * @version $Id: $
  */
 public class UnknownIdentifierException extends Exception
 {
@@ -47,7 +48,7 @@ public class UnknownIdentifierException extends Exception
 
 	/**
 	 * Creates an <code>UnknownIdentifierException</code> with a message
-	 * 
+	 *
 	 * @param message
 	 *            the message
 	 */

@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
@@ -24,14 +29,15 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * AnyOf evaluator
- * 
+ *
+ * @version $Id: $
  */
 public class AnyOfEvaluator
 {
@@ -45,15 +51,14 @@ public class AnyOfEvaluator
 
 	/**
 	 * Constructor that creates a new <code>AnyOf</code> evaluator based on the given XACML-schema-derived JAXB AnyOf.
-	 * 
+	 *
 	 * @param jaxbAnyOf
 	 *            JAXB AnyOf
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
-	 * 
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if one of the child AllOf elements is invalid
 	 */
 	public AnyOfEvaluator(AnyOf jaxbAnyOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -83,22 +88,21 @@ public class AnyOfEvaluator
 	}
 
 	/**
-	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is applicable). If all the AllOf values is No_Match so it's a No_Match.
-	 * If all matches it's a Match. If None matches and at least one “Indeterminate�? it's Indeterminate
-	 * 
+	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is applicable). If all the AllOf values is No_Match so it's a No_Match. If all matches it's a Match. If None
+	 * matches and at least one “Indeterminate�? it's Indeterminate
+	 *
 	 * <pre>
-	 * 		AllOf values 						AnyOf value 
-	 * 		At Least one "Match"	 			“Match�? 
-	 * 		None matches and 
+	 * 		AllOf values 						AnyOf value
+	 * 		At Least one "Match"	 			“Match�?
+	 * 		None matches and
 	 * 		at least one Indeterminate 			“Indeterminate�?
 	 * 		All "No Match"						"No Match"
 	 * </pre>
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true if and only if Match (else No-match)
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if Indeterminate
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
@@ -151,8 +155,7 @@ public class AnyOfEvaluator
 		}
 
 		// No Match and at least one Indeterminate (lastIndeterminate != null) -> Indeterminate
-		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
-				lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 
 }

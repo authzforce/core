@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl;
 
@@ -21,14 +26,15 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * XACML AllOf evaluator
- * 
+ *
+ * @version $Id: $
  */
 public class AllOfEvaluator
 {
@@ -42,14 +48,14 @@ public class AllOfEvaluator
 
 	/**
 	 * Instantiates AllOf (evaluator) from XACML-Schema-derived <code>AllOf</code>.
-	 * 
+	 *
 	 * @param jaxbAllOf
 	 *            XACML-schema-derived JAXB AllOf
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             one of the child Match elements is invalid
 	 */
 	public AllOfEvaluator(AllOf jaxbAllOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
@@ -80,18 +86,17 @@ public class AllOfEvaluator
 
 	/**
 	 * Determines whether this <code>AllOf</code> matches the input request (whether it is applicable).Here is the table shown in the specification: <code>
-	 * 		<Match> values 						<AllOf> value 
-	 * 		All True				 			“Match�? 
-	 * 		No False and at least 
+	 * 		<Match> values 						<AllOf> value
+	 * 		All True				 			“Match�?
+	 * 		No False and at least
 	 * 		one "Indeterminate" 				“Indeterminate�?
 	 * 		At least one False					"No Match"
 	 * </code>
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true iff Match, else No match
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             Indeterminate
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
@@ -144,7 +149,6 @@ public class AllOfEvaluator
 		}
 
 		// No False but at least one Indeterminate (lastIndeterminate != null)
-		throw new IndeterminateEvaluationException("Error evaluating <AllOf>'s <Match>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
-				lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <AllOf>'s <Match>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 }

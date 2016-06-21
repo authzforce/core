@@ -1,37 +1,41 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.ow2.authzforce.core.pdp.api.CombiningAlgRegistry;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.IPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
-import org.ow2.authzforce.core.pdp.api.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule;
-import org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.policy.StaticRootPolicyProviderModule;
+import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.PdpExtensionLoader;
 import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
@@ -51,16 +55,19 @@ import org.slf4j.LoggerFactory;
  * no longer need an instance - especially before replacing with a new instance
  * (with different modules) - in order to make sure these resources are released
  * properly by each underlying module (e.g. invalidate the policy caches).
+ *
+ * 
+ * @version $Id: $
  */
-public interface RootPolicyEvaluator extends Closeable {
+public interface RootPolicyEvaluator extends Closeable
+{
 	/**
 	 * Finds one and only one policy applicable to the given request context and
 	 * evaluates the request context against it. This will always do a Target
 	 * match to make sure that the given policy applies.
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request data
-	 * 
 	 * @return the result of evaluating the request against the applicable
 	 *         policy; or NotApplicable if none is applicable; or Indeterminate
 	 *         if error determining an applicable policy or more than one
@@ -70,13 +77,14 @@ public interface RootPolicyEvaluator extends Closeable {
 	DecisionResult findAndEvaluate(EvaluationContext context);
 
 	/**
-	 * Get the evaluated root policy and (directly/indirectly) referenced
-	 * policies, only if statically resolved
-	 * 
+	 * Get the statically applicable policies for this evaluator, i.e. the root
+	 * policy and (directly/indirectly) referenced policies, only if statically
+	 * resolved
+	 *
 	 * @return the static root and referenced policies; null if any of these
 	 *         policies is not statically resolved (once and for all)
 	 */
-	Map<String, PolicyVersion> getStaticRootAndRefPolicies();
+	StaticApplicablePolicyView getStaticApplicablePolicies();
 
 	/**
 	 * 
@@ -84,62 +92,49 @@ public interface RootPolicyEvaluator extends Closeable {
 	 * all at initialization time, and is then used for all evaluation requests.
 	 *
 	 */
-	class StaticView implements RootPolicyEvaluator {
-		private final IPolicyEvaluator staticRootPolicyEvaluator;
+	class StaticView implements RootPolicyEvaluator
+	{
+		private final StaticTopLevelPolicyElementEvaluator staticRootPolicyEvaluator;
 		private final ExpressionFactory expressionFactory;
-		private transient final Map<String, PolicyVersion> staticRootAndRefPolicies;
+		private transient final StaticApplicablePolicyView staticApplicablePolicies;
 
-		private StaticView(
-				RootPolicyProviderModule.Static staticProviderModule,
-				ExpressionFactory expressionFactoryForClosing)
-				throws IOException {
-			assert staticProviderModule != null
-					&& expressionFactoryForClosing != null;
+		private StaticView(StaticRootPolicyProviderModule staticProviderModule, ExpressionFactory expressionFactoryForClosing) throws IOException
+		{
+			assert staticProviderModule != null && expressionFactoryForClosing != null;
 			this.expressionFactory = expressionFactoryForClosing;
-			this.staticRootPolicyEvaluator = staticProviderModule
-					.getRootPolicy();
-			final Map<String, PolicyVersion> staticRefPolicies = staticRootPolicyEvaluator
-					.getStaticRefPolicies();
-			if (staticRefPolicies == null) {
-				// some policy reference is not statically resolved
-				this.staticRootAndRefPolicies = null;
-			} else {
-				this.staticRootAndRefPolicies = new HashMap<>(
-						staticRefPolicies.size() + 1);
-				this.staticRootAndRefPolicies.putAll(staticRefPolicies);
-				this.staticRootAndRefPolicies.put(
-						staticRootPolicyEvaluator.getPolicyId(),
-						staticRootPolicyEvaluator.getPolicyVersion());
-			}
+			this.staticRootPolicyEvaluator = staticProviderModule.getPolicy();
+			staticApplicablePolicies = new StaticApplicablePolicyView(staticRootPolicyEvaluator.getPolicyElementType(), staticRootPolicyEvaluator.getPolicyId(), staticRootPolicyEvaluator.getExtraPolicyMetadata());
 
 			staticProviderModule.close();
 		}
 
 		@Override
-		public DecisionResult findAndEvaluate(EvaluationContext context) {
+		public DecisionResult findAndEvaluate(EvaluationContext context)
+		{
 			return staticRootPolicyEvaluator.evaluate(context);
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() throws IOException
+		{
 			this.expressionFactory.close();
 		}
 
 		@Override
-		public Map<String, PolicyVersion> getStaticRootAndRefPolicies() {
-			return staticRootPolicyEvaluator.getStaticRefPolicies();
+		public StaticApplicablePolicyView getStaticApplicablePolicies()
+		{
+			return staticApplicablePolicies;
 		}
 	}
 
 	/**
 	 * Root Policy Provider base implementation.
 	 */
-	class Base implements RootPolicyEvaluator {
-		private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-				"Invalid arguments to root policy Provider creation: missing one of these args: root policy Provider's XML/JAXB configuration (jaxbRootPolicyProviderConf), XACML Expression parser/factory (expressionFactory), combining algorithm registry (combiningAlgRegistry)");
+	class Base implements RootPolicyEvaluator
+	{
+		private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("Invalid arguments to root policy Provider creation: missing one of these args: root policy Provider's XML/JAXB configuration (jaxbRootPolicyProviderConf), XACML Expression parser/factory (expressionFactory), combining algorithm registry (combiningAlgRegistry)");
 
-		private static final Logger LOGGER = LoggerFactory
-				.getLogger(Base.class);
+		private static final Logger LOGGER = LoggerFactory.getLogger(Base.class);
 
 		private final RootPolicyProviderModule rootPolicyProviderMod;
 
@@ -169,7 +164,8 @@ public interface RootPolicyEvaluator extends Closeable {
 		 * @param maxVariableReferenceDepth
 		 *            max depth of VariableReference chaining:
 		 *            VariableDefinition -> VariableDefinition ->... ('->'
-		 *            represents a VariableReference)
+		 *            represents a VariableReference); strictly negative value
+		 *            means no limit
 		 * @param enableXPath
 		 *            allow XPath evaluation for AttributeSelectors,
 		 *            xpathExpressions, etc. (experimental, not for production,
@@ -186,7 +182,8 @@ public interface RootPolicyEvaluator extends Closeable {
 		 *            Provider; null if no refPolicyProvider specified
 		 * @param maxPolicySetRefDepth
 		 *            max allowed PolicySetIdReference chain: PolicySet1
-		 *            (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...
+		 *            (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...;
+		 *            a strictly negative value means no limit
 		 * @param strictAttributeIssuerMatch
 		 *            true iff strict Attribute Issuer matching is enabled, i.e.
 		 *            AttributeDesignators without Issuer only match request
@@ -218,67 +215,44 @@ public interface RootPolicyEvaluator extends Closeable {
 		 *             not be closed (with {@link Closeable#close()} before
 		 *             throwing the exception)
 		 */
-		public Base(DatatypeFactoryRegistry attributeFactory,
-				FunctionRegistry functionRegistry,
-				List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
-				int maxVariableReferenceDepth, boolean enableXPath,
-				CombiningAlgRegistry combiningAlgRegistry,
-				AbstractPolicyProvider jaxbRootPolicyProviderConf,
-				AbstractPolicyProvider jaxbRefPolicyProviderConf,
-				int maxPolicySetRefDepth, boolean strictAttributeIssuerMatch,
-				EnvironmentProperties environmentProperties)
-				throws IllegalArgumentException, IOException {
-			if (jaxbRootPolicyProviderConf == null
-					|| combiningAlgRegistry == null) {
+		public Base(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVariableReferenceDepth, boolean enableXPath, CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf, int maxPolicySetRefDepth, boolean strictAttributeIssuerMatch, EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
+		{
+			if (jaxbRootPolicyProviderConf == null || combiningAlgRegistry == null)
+			{
 				throw ILLEGAL_ARGUMENT_EXCEPTION;
 			}
 
 			// Initialize ExpressionFactory
-			this.expressionFactory = new ExpressionFactoryImpl(
-					attributeFactory, functionRegistry,
-					jaxbAttributeProviderConfs, maxVariableReferenceDepth,
-					enableXPath, strictAttributeIssuerMatch);
+			this.expressionFactory = new ExpressionFactoryImpl(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth, enableXPath, strictAttributeIssuerMatch);
 
-			final RootPolicyProviderModule.Factory<AbstractPolicyProvider> rootPolicyProviderModFactory = PdpExtensionLoader
-					.getJaxbBoundExtension(
-							RootPolicyProviderModule.Factory.class,
-							jaxbRootPolicyProviderConf.getClass());
+			final RootPolicyProviderModule.Factory<AbstractPolicyProvider> rootPolicyProviderModFactory = PdpExtensionLoader.getJaxbBoundExtension(RootPolicyProviderModule.Factory.class, jaxbRootPolicyProviderConf.getClass());
 
-			final RefPolicyProviderModule.Factory<AbstractPolicyProvider> refPolicyProviderModFactory = jaxbRefPolicyProviderConf == null ? null
-					: PdpExtensionLoader.getJaxbBoundExtension(
-							RefPolicyProviderModule.Factory.class,
-							jaxbRefPolicyProviderConf.getClass());
-			rootPolicyProviderMod = rootPolicyProviderModFactory.getInstance(
-					jaxbRootPolicyProviderConf,
-					JaxbXACMLUtils.getXACMLParserFactory(enableXPath),
-					this.expressionFactory, combiningAlgRegistry,
-					jaxbRefPolicyProviderConf, refPolicyProviderModFactory,
-					maxPolicySetRefDepth, environmentProperties);
-			isRootPolicyProviderStatic = rootPolicyProviderMod instanceof RootPolicyProviderModule.Static;
+			final RefPolicyProviderModule.Factory<AbstractPolicyProvider> refPolicyProviderModFactory = jaxbRefPolicyProviderConf == null ? null : PdpExtensionLoader.getJaxbBoundExtension(RefPolicyProviderModule.Factory.class, jaxbRefPolicyProviderConf.getClass());
+			rootPolicyProviderMod = rootPolicyProviderModFactory.getInstance(jaxbRootPolicyProviderConf, JaxbXACMLUtils.getXACMLParserFactory(enableXPath), this.expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf, refPolicyProviderModFactory, maxPolicySetRefDepth, environmentProperties);
+			isRootPolicyProviderStatic = rootPolicyProviderMod instanceof StaticRootPolicyProviderModule;
 
 		}
 
 		@Override
-		public DecisionResult findAndEvaluate(EvaluationContext context) {
-			final IPolicyEvaluator policy;
-			try {
+		public DecisionResult findAndEvaluate(EvaluationContext context)
+		{
+			final PolicyEvaluator policy;
+			try
+			{
 				policy = rootPolicyProviderMod.getPolicy(context);
-			} catch (IndeterminateEvaluationException e) {
-				LOGGER.info(
-						"Root policy Provider module {} could not find an applicable root policy to evaluate",
-						rootPolicyProviderMod, e);
+			} catch (IndeterminateEvaluationException e)
+			{
+				LOGGER.info("Root policy Provider module {} could not find an applicable root policy to evaluate", rootPolicyProviderMod, e);
 				return new BaseDecisionResult(e.getStatus());
-			} catch (IllegalArgumentException e) {
-				LOGGER.warn(
-						"One of the possible root policies (resolved by the root policy provider module {}) is invalid",
-						rootPolicyProviderMod, e);
+			} catch (IllegalArgumentException e)
+			{
+				LOGGER.warn("One of the possible root policies (resolved by the root policy provider module {}) is invalid", rootPolicyProviderMod, e);
 				// we consider that
-				return new BaseDecisionResult(new StatusHelper(
-						StatusHelper.STATUS_PROCESSING_ERROR,
-						"No applicable policy found due to internal error"));
+				return new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, e.getMessage()));
 			}
 
-			if (policy == null) {
+			if (policy == null)
+			{
 				return BaseDecisionResult.NOT_APPLICABLE;
 			}
 
@@ -286,7 +260,8 @@ public interface RootPolicyEvaluator extends Closeable {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() throws IOException
+		{
 			this.expressionFactory.close();
 			this.rootPolicyProviderMod.close();
 		}
@@ -313,22 +288,22 @@ public interface RootPolicyEvaluator extends Closeable {
 		 *             finding the policy in
 		 *             {@link #findAndEvaluate(EvaluationContext)}
 		 */
-		public RootPolicyEvaluator toStatic() throws IOException {
+		public RootPolicyEvaluator toStatic() throws IOException
+		{
 			// If staticView not yet initialized and root policy provider module
 			// is actually static (in which case staticView can be initialized)
-			if (staticView == null && isRootPolicyProviderStatic) {
-				staticView = new StaticView(
-						(RootPolicyProviderModule.Static) rootPolicyProviderMod,
-						this.expressionFactory);
+			if (staticView == null && isRootPolicyProviderStatic)
+			{
+				staticView = new StaticView((StaticRootPolicyProviderModule) rootPolicyProviderMod, this.expressionFactory);
 			}
 
 			return staticView;
 		}
 
 		@Override
-		public Map<String, PolicyVersion> getStaticRootAndRefPolicies() {
-			return staticView == null ? null : staticView
-					.getStaticRootAndRefPolicies();
+		public StaticApplicablePolicyView getStaticApplicablePolicies()
+		{
+			return staticView == null ? null : staticView.getStaticApplicablePolicies();
 		}
 
 	}

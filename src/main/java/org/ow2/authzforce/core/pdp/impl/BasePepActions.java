@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
@@ -29,7 +34,8 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
 
 /**
  * Base PEP actions (obligations/advice)
- * 
+ *
+ * @version $Id: $
  */
 public final class BasePepActions implements PepActions
 {
@@ -81,9 +87,11 @@ public final class BasePepActions implements PepActions
 	private final List<Obligation> obligationList;
 	private final List<Advice> adviceList;
 
+	private transient volatile int hashCode = 0;
+
 	/**
 	 * Instantiates PEP action set from obligations/advice
-	 * 
+	 *
 	 * @param obligations
 	 *            obligation list; null if no obligation
 	 * @param advices
@@ -96,9 +104,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get the internal obligation list
-	 * 
-	 * @return obligations; empty if no obligation (always non-null)
 	 */
 	@Override
 	public List<Obligation> getObligations()
@@ -107,9 +115,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get the internal advice list
-	 * 
-	 * @return advice; empty if no obligation (always non-null)
 	 */
 	@Override
 	public List<Advice> getAdvices()
@@ -117,8 +125,7 @@ public final class BasePepActions implements PepActions
 		return Collections.unmodifiableList(adviceList);
 	}
 
-	private transient volatile int hashCode = 0;
-
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
@@ -130,6 +137,7 @@ public final class BasePepActions implements PepActions
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -148,13 +156,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
-	 * 
-	 * @param newObligations
-	 *            new obligation list
-	 * @param newAdvices
-	 *            new advice list
-	 * 
 	 */
 	@Override
 	public void merge(List<Obligation> newObligations, List<Advice> newAdvices)
@@ -171,10 +175,9 @@ public final class BasePepActions implements PepActions
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
-	 * 
-	 * @param pepActions
-	 *            PEP actions
 	 */
 	@Override
 	public void merge(PepActions pepActions)
@@ -187,6 +190,7 @@ public final class BasePepActions implements PepActions
 		merge(pepActions.getObligations(), pepActions.getAdvices());
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{

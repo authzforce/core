@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
@@ -31,7 +36,8 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
 
 /**
  * Base implementation of DecisionResult
- * 
+ *
+ * @version $Id: $
  */
 public final class BaseDecisionResult implements DecisionResult
 {
@@ -54,6 +60,19 @@ public final class BaseDecisionResult implements DecisionResult
 
 	private final DecisionType decision;
 
+	/**
+	 * Extended Indeterminate value, as defined in section 7.10 of XACML 3.0 core: <i>potential effect value which could have occurred if there would not have been an error causing the
+	 * “Indeterminate”</i>. We use the following convention:
+	 * <ul>
+	 * <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
+	 * <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
+	 * <li>Null means "Indeterminate{DP}"</li>
+	 * <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 * </ul>
+	 * 
+	 */
+	private final DecisionType extIndeterminate;
+
 	private final Status status;
 
 	// initialized non-null
@@ -62,19 +81,9 @@ public final class BaseDecisionResult implements DecisionResult
 	// initialized non-null
 	private final List<JAXBElement<IdReferenceType>> applicablePolicyIdList;
 
-	/**
-	 * Instantiates a generic Decision result
-	 * 
-	 * @param decision
-	 *            decision
-	 * @param status
-	 *            status
-	 * @param pepActions
-	 *            PEP actions (obligations/advices)
-	 * @param policyIdentifierList
-	 *            list of matched policy identifiers
-	 */
-	public BaseDecisionResult(DecisionType decision, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	private transient volatile int hashCode = 0;
+
+	private BaseDecisionResult(DecisionType decision, DecisionType extendedIndeterminate, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
 		if (decision == null)
 		{
@@ -82,6 +91,7 @@ public final class BaseDecisionResult implements DecisionResult
 		}
 
 		this.decision = decision;
+		this.extIndeterminate = extendedIndeterminate;
 		this.status = status;
 		this.pepActions = pepActions == null ? new BasePepActions(null, null) : pepActions;
 		this.applicablePolicyIdList = policyIdentifierList == null ? new ArrayList<JAXBElement<IdReferenceType>>() : policyIdentifierList;
@@ -89,20 +99,59 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * Instantiates a generic Decision result
+	 *
+	 * @param extendedIndeterminate
+	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10). We use the following convention:
+	 *            <ul>
+	 *            <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
+	 *            <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
+	 *            <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
+	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 *            </ul>
+	 * @param status
+	 *            status
+	 * @param policyIdentifierList
+	 *            list of matched policy identifiers
+	 */
+	public BaseDecisionResult(Status status, DecisionType extendedIndeterminate, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	{
+		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, policyIdentifierList);
+	}
+
+	/**
 	 * Instantiates a Indeterminate Decision result with a given error status
-	 * 
+	 *
+	 * @param extendedIndeterminate
+	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10). We use the following convention:
+	 *            <ul>
+	 *            <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
+	 *            <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
+	 *            <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
+	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 *            </ul>
+	 * @param status
+	 *            reason/code for Indeterminate
+	 */
+	public BaseDecisionResult(Status status, DecisionType extendedIndeterminate)
+	{
+		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, null);
+	}
+
+	/**
+	 * Instantiates a Indeterminate Decision result with a given error status and extended Indeterminate set to Indeterminate{DP}
+	 *
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
 	public BaseDecisionResult(Status status)
 	{
-		this(DecisionType.INDETERMINATE, status, null, null);
+		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null);
 	}
 
 	/**
-	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #BaseDecisionResult(Status)} for Indeterminate, and
-	 * {@link #NOT_APPLICABLE} for NotApplicable.
-	 * 
+	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #BaseDecisionResult(Status, DecisionType)} for Indeterminate, and {@link #NOT_APPLICABLE} for NotApplicable.
+	 *
 	 * @param decision
 	 *            decision
 	 * @param pepActions
@@ -110,22 +159,37 @@ public final class BaseDecisionResult implements DecisionResult
 	 */
 	public BaseDecisionResult(DecisionType decision, PepActions pepActions)
 	{
-		this(decision, null, pepActions, null);
+		this(decision, DecisionType.NOT_APPLICABLE, null, pepActions, null);
 	}
 
-	private transient volatile int hashCode = 0;
+	/**
+	 * Instantiates a decision result reusing the decision, extended Indeterminate and status from a given result
+	 * 
+	 * @param algResult
+	 *            decision result giving the decision, extended Indeterminate result and status to the new instance
+	 * @param pepActions
+	 *            PEP actions (obligations/advices) to be added to the result
+	 * @param applicablePolicyIdList
+	 *            list of matched policy identifiers to be added to the result
+	 */
+	public BaseDecisionResult(DecisionResult algResult, PepActions pepActions, List<JAXBElement<IdReferenceType>> applicablePolicyIdList)
+	{
+		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList);
+	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode()
 	{
 		if (hashCode == 0)
 		{
-			hashCode = Objects.hash(this.decision, this.status, this.pepActions, this.applicablePolicyIdList);
+			hashCode = Objects.hash(this.decision, this.extIndeterminate, this.status, this.pepActions, this.applicablePolicyIdList);
 		}
 
 		return hashCode;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object obj)
 	{
@@ -145,6 +209,11 @@ public final class BaseDecisionResult implements DecisionResult
 			return false;
 		}
 
+		if (this.extIndeterminate != other.getExtendedIndeterminate())
+		{
+			return false;
+		}
+
 		// Status is optional in XACML
 		if (this.status == null)
 		{
@@ -159,24 +228,14 @@ public final class BaseDecisionResult implements DecisionResult
 
 		// this.getObligations() derived from this.pepActions
 		// pepActions never null
-		if (!this.pepActions.equals(other.getPepActions()))
-		{
-			return false;
-		}
-
 		// applicablePolicyIdList never null
-		if (!this.applicablePolicyIdList.equals(other.getApplicablePolicyIdList()))
-		{
-			return false;
-		}
-
-		return true;
+		return this.pepActions.equals(other.getPepActions()) && this.applicablePolicyIdList.equals(other.getApplicablePolicyIdList());
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get identifiers of policies found applicable for the decision request
-	 * 
-	 * @return identifiers of policies found applicable for the decision request
 	 */
 	@Override
 	public List<JAXBElement<IdReferenceType>> getApplicablePolicyIdList()
@@ -185,9 +244,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get XACML Decision
-	 * 
-	 * @return decision
 	 */
 	@Override
 	public DecisionType getDecision()
@@ -196,9 +255,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Get PEP actions (Obligations/Advices)
-	 * 
-	 * @return PEP actions
 	 */
 	@Override
 	public PepActions getPepActions()
@@ -207,9 +266,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Status code/message/detail
-	 * 
-	 * @return status
 	 */
 	@Override
 	public Status getStatus()
@@ -218,12 +277,9 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Merge extra PEP actions and/or matched policy identifiers. Used when combining results from child Rules of Policy or child Policies of PolicySet
-	 * 
-	 * @param newPepActions
-	 *            new PEP actions
-	 * @param newMatchedPolicyIdList
-	 *            new matched policy identifiers
 	 */
 	@Override
 	public void merge(PepActions newPepActions, List<JAXBElement<IdReferenceType>> newMatchedPolicyIdList)
@@ -239,11 +295,18 @@ public final class BaseDecisionResult implements DecisionResult
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString()
 	{
-		return "Result [decision=" + decision + ", status=" + status + ", pepActions=" + pepActions + ", applicablePolicyIdList=" + applicablePolicyIdList
-				+ "]";
+		return "Result [decision=" + decision + ", status=" + status + ", pepActions=" + pepActions + ", applicablePolicyIdList=" + applicablePolicyIdList + "]";
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public DecisionType getExtendedIndeterminate()
+	{
+		return this.extIndeterminate;
 	}
 
 }

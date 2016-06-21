@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl;
 
@@ -21,14 +26,15 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Represents the TargetType XML type in XACML.
- * 
+ *
+ * @version $Id: $
  */
 public class TargetEvaluator
 {
@@ -43,16 +49,15 @@ public class TargetEvaluator
 
 	/**
 	 * Instantiates Target (evaluator) from XACML-Schema-derived <code>Target</code>.
-	 * 
+	 *
 	 * @param jaxbTarget
 	 *            XACML-schema-derived JAXB Target
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
 	 *            Expression factory
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if one of the child AnyOf elements is invalid
-	 * 
 	 */
 	public TargetEvaluator(Target jaxbTarget, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
@@ -82,19 +87,18 @@ public class TargetEvaluator
 	}
 
 	/**
-	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context
-	 * so it's a NO_MATCH result. Here is the table shown in the specification: <code> 
+	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context so it's a NO_MATCH result. Here is the
+	 * table shown in the specification: <code>
 	 * 		<AnyOf> values 				<Target> value
 	 * 		All Match?					Match?
 	 * 		At Least one "No Match"		No Match?
 	 * 		Otherwise					Indeterminate?
 	 * </code> Also if Target empty (no AnyOf), return "Match"
-	 * 
+	 *
 	 * @param context
 	 *            the representation of the request
-	 * 
 	 * @return true if and only if Match (else No-match)
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if Indetermiante (error evaluating target)
 	 */
 	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
@@ -154,8 +158,7 @@ public class TargetEvaluator
 		}
 
 		// No False but at least one Indeterminate (lastIndeterminate != null)
-		throw new IndeterminateEvaluationException("Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(),
-				lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 
 }

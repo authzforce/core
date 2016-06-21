@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl;
 
@@ -26,15 +31,16 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Low-level interface to a list of PEP action (obligation/advice) expressions
- * 
+ *
+ * @version $Id: $
  */
 public interface PepActionExpressions
 {
@@ -70,12 +76,12 @@ public interface PepActionExpressions
 		}
 
 		/**
-		 * Adds an ObligationExpression to the list only if matching the the effect argument to {@link EffectSpecific#EffectSpecific(EffectType)}
+		 * Adds an ObligationExpression to the list only if matching the {@link EffectType} to which this instance is specific, as defined by the constructor argument
 		 * 
 		 * @param obligationExpressionEvaluator
 		 *            ObligationExpressionEvaluator
-		 * @return true iff {@code obligationExpression} actually added to the expressions, i.e. fulfillOn matches the effect argument to
-		 *         {@link EffectSpecific#EffectSpecific(EffectType)}
+		 * @return true iff {@code obligationExpression} actually added to the expressions, i.e. fulfillOn matches the {@link EffectType} to which this instance is specific, as defined by the
+		 *         constructor argument
 		 */
 		public boolean addObligationExpression(PepActionExpression<Obligation> obligationExpressionEvaluator)
 		{
@@ -88,12 +94,12 @@ public interface PepActionExpressions
 		}
 
 		/**
-		 * Adds an AdviceExpression to the list only if matching the the effect argument to {@link EffectSpecific#EffectSpecific(EffectType)}
+		 * Adds an AdviceExpression to the list only if matching the {@link EffectType} to which this instance is specific, as defined by the constructor argument
 		 * 
 		 * @param adviceExpressionEvaluator
 		 *            AdviceExpressionEvaluator
-		 * @return true iff {@code adviceExpression} actually added to the expressions, i.e. appliesTo matches the effect argument to
-		 *         {@link EffectSpecific#EffectSpecific(EffectType)}
+		 * @return true iff {@code adviceExpression} actually added to the PEP action expressions, i.e. appliesTo matches the {@link EffectType} to which this instance is specific, as defined by the
+		 *         constructor argument
 		 */
 		public boolean addAdviceExpression(PepActionExpression<Advice> adviceExpressionEvaluator)
 		{
@@ -165,9 +171,8 @@ public interface PepActionExpressions
 		 * @throws IllegalArgumentException
 		 *             if there is an invalid obligation/advice expression
 		 */
-		public static <T extends PepActionExpressions> T parseActionExpressions(ObligationExpressions jaxbObligationExpressions,
-				AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler, ExpressionFactory expFactory,
-				PepActionExpressions.Factory<T> actionExpressionsFactory) throws IllegalArgumentException
+		public static <T extends PepActionExpressions> T parseActionExpressions(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions, XPathCompiler xPathCompiler,
+				ExpressionFactory expFactory, PepActionExpressions.Factory<T> actionExpressionsFactory) throws IllegalArgumentException
 		{
 			final T actionExpressions = actionExpressionsFactory.getInstance(xPathCompiler, expFactory);
 			if (jaxbObligationExpressions != null)
@@ -196,8 +201,8 @@ public interface PepActionExpressions
 						actionExpressions.add(jaxbAdviceExp);
 					} catch (IllegalArgumentException e)
 					{
-						throw new IllegalArgumentException("One of the AdviceExpression[@AdviceId='" + jaxbAdviceExp.getAdviceId()
-								+ "']/AttributeAssignmentExpression/Expression elements is invalid", e);
+						throw new IllegalArgumentException("One of the AdviceExpression[@AdviceId='" + jaxbAdviceExp.getAdviceId() + "']/AttributeAssignmentExpression/Expression elements is invalid",
+								e);
 					}
 				}
 			}
@@ -205,8 +210,8 @@ public interface PepActionExpressions
 			return actionExpressions;
 		}
 
-		private static <PEP_ACTION> List<PEP_ACTION> evaluate(List<PepActionExpression<PEP_ACTION>> pepActionExpressions, EvaluationContext context,
-				String pepActionXmlTagName) throws IndeterminateEvaluationException
+		private static <PEP_ACTION> List<PEP_ACTION> evaluate(List<PepActionExpression<PEP_ACTION>> pepActionExpressions, EvaluationContext context, String pepActionXmlTagName)
+				throws IndeterminateEvaluationException
 		{
 			final List<PEP_ACTION> obligations;
 			if (pepActionExpressions.isEmpty())
@@ -227,8 +232,8 @@ public interface PepActionExpressions
 						}
 					} catch (IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException("Error evaluating one of the " + pepActionXmlTagName + "Expression[@" + pepActionXmlTagName
-								+ "Id=" + obligationExp.getActionId() + "]/AttributeAssignmentExpression/Expression elements", e.getStatusCode(), e);
+						throw new IndeterminateEvaluationException("Error evaluating one of the " + pepActionXmlTagName + "Expression[@" + pepActionXmlTagName + "Id=" + obligationExp.getActionId()
+								+ "]/AttributeAssignmentExpression/Expression elements", e.getStatusCode(), e);
 					}
 
 					obligations.add(obligation);
@@ -238,13 +243,10 @@ public interface PepActionExpressions
 			return obligations;
 		}
 
-		public static PepActions evaluate(PepActionExpressions.EffectSpecific pepActionExpressions, EvaluationContext context, PepActions pepActionsToUpdate)
-				throws IndeterminateEvaluationException
+		public static PepActions evaluate(PepActionExpressions.EffectSpecific pepActionExpressions, EvaluationContext context, PepActions pepActionsToUpdate) throws IndeterminateEvaluationException
 		{
-			final List<Obligation> newObligations = evaluate(pepActionExpressions.getObligationExpressions(), context,
-					BasePepActions.OBLIGATION_FACTORY.getActionXmlElementName());
-			final List<Advice> newAdvices = evaluate(pepActionExpressions.getAdviceExpressions(), context,
-					BasePepActions.ADVICE_FACTORY.getActionXmlElementName());
+			final List<Obligation> newObligations = evaluate(pepActionExpressions.getObligationExpressions(), context, BasePepActions.OBLIGATION_FACTORY.getActionXmlElementName());
+			final List<Advice> newAdvices = evaluate(pepActionExpressions.getAdviceExpressions(), context, BasePepActions.ADVICE_FACTORY.getActionXmlElementName());
 			if (pepActionsToUpdate == null)
 			{
 				return new BasePepActions(newObligations, newAdvices);
@@ -257,34 +259,34 @@ public interface PepActionExpressions
 
 	/**
 	 * Adds a XACML ObligationExpression to the list
-	 * 
+	 *
 	 * @param jaxbObligationExp
 	 *            XACML ObligationExpression
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if invalid expression
 	 */
 	void add(ObligationExpression jaxbObligationExp) throws IllegalArgumentException;
 
 	/**
 	 * Adds a XACML AdviceExpression to the list
-	 * 
+	 *
 	 * @param jaxbAdviceExp
 	 *            XACML ObligationExpression
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if invalid expression
 	 */
 	void add(AdviceExpression jaxbAdviceExp) throws IllegalArgumentException;
 
 	/**
 	 * Gets all the expressions added with {@link #add(oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression)}
-	 * 
+	 *
 	 * @return list of ObligationExpressions
 	 */
 	List<PepActionExpression<Obligation>> getObligationExpressionList();
 
 	/**
 	 * Gets all the expressions added with {@link #add(oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression)}
-	 * 
+	 *
 	 * @return list of AdviceExpressions
 	 */
 	List<PepActionExpression<Advice>> getAdviceExpressionList();

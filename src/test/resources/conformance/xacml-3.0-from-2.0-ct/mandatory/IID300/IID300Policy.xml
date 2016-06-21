@@ -4,7 +4,7 @@
 		PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides" 
 		PolicySetId="urn:oasis:names:tc:xacml:2.0:conformance-test:IID300:policyset" 
 		Version="1.0" 
-		xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:policy:schema:os access_control-xacml-2.0-policy-schema-os.xsd">
+		>
     <Description>
         PolicySet for Conformance Test IID300.
         Test derived from IID008 which does this test for deny-overrides, and related to IID300d which tests the 1.0 response.

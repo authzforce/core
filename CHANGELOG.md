@@ -1,9 +1,69 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
-## Unreleased
+## 4.0.2
+### Fixed
+- Issues reported by Codacyi (including fixed issues in upgraded dependency core-pdp-api 4.0.2)
+
+
+## 4.0.0
+### Changed
+- Native PDP request filter IDs (values of `pdp` configuration element's `requestFilter` attribute):
+	- `urn:ow2:authzforce:xacml:request-filter:default-lax` changed to `urn:ow2:authzforce:feature:pdp:request-filter:default-lax`;
+	- `urn:ow2:authzforce:xacml:request-filter:default-strict` changed to `urn:ow2:authzforce:feature:pdp:request-filter:default-strict`;
+	- `urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-strict` changed to `urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-strict`;
+	- `urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax` changed to `urn:ow2:authzforce:feature:pdp:request-filter:multiple:repeated-attribute-categories-lax`.
+
+### Fixed
+- Maven dependency: authzforce-ce-core-pdp-api upgraded to v4.0.0 fixing license headers 
+- Fixed license headers (current year)
+- Fixed out-of-date documentation in pdp.xsd on PDP extensions
+
+
+## 3.9.0 
 ### Added
-- PdpImpl#getStaticRootAndRefPolicies() that provides all the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved. This allows PDP clients to know all the policies (if statically resolved) possibly used by the PDP during the evaluation.
+- New PdpExtensionLoader method providing the list of available extensions of a given type: datatype, function, combining algorithm, etc.
+
+### Removed
+- dnsName-equal and ipAddress-equal functions, which are not to be used because they are not in XACML spec (regexp-match equivalent must be used instead)
+
+### Fixed
+- NullPointerException when defining unknown combining algorithm ID in PDP configuration
+- PdpExtensionLoader throwing IllegalArgumentException if no extension found of this type, instead of returning an empty list when the extension type is actually valid but no extension found
+
+### Tests
+- New tests for custom extensions: result filter (implements CombinedDecision from XACML Multiple Decision Profile), simple datatype (dnsname-value from XACML DLP/NAC Profile), complex datatype (XACML Policy), function (dnsname-value-equal from XACML DLP/NAC Profile), combining algorithm (on-permit-apply-second from XACML Additional Combining Algorithms Profile)
+
+
+## 3.8.3
+### Fixed 
+- Removing Javadoc @author tag added automatically by maven Javadoc plugin without us knowing
+- PDP schema: removed limits (100) for maxVarRefDepth and maxPolicyRefDepth attributes. Hard arbitrary limits should not be in the XML schema.
+
+
+## 3.8.2
+### Fixed
+- Javadoc comments
+
+
+## 3.8.1
+### Fixed
+- Removed use of SAXON StandardURIChecker for validating anyURI XACML AttributeValues causing "possible memory leak" errors in Tomcat, as confirmed by: https://sourceforge.net/p/saxon/mailman/message/27043134 and https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/. Although XACML 3.0 still refers to XSD 1.0 which has a stricter definition of anyURI than XSD 1.1, the fix consisted to use XSD 1.1 anyURI definition for XACML anyURI AttributeValues. In this definition, anyURI and string datatypes have same value space (refer to XSD 1.1 Datatypes document or SAXON note http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html or mailing list: https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/) , therefore anyURI-specific validation is removed and anyURI values are accepted like string values by the program. However, this does not affect XML schema validation of Policy/PolicySet/Request documents against OASIS XACML 3.0 schema, where the XSD 1.0 definition of anyURI still applies.
+
+
+## 3.8.0
+### Changed
+- PDP XML schema: maxVariableRefDepth and maxPolicyRefDepth attributes made optional (instead of required)
+
+### Added
+- PDP XML schema: 'requestFilter' attribute (RequestFilter extension): 
+	- Added documentation about natively supported values, with '-lax' suffix meaning that duplicate <Attribute> with same meta-data in the same <Attributes> element of a Request is allowed (in compliance with XACML 3.0 core spec, §7.3.3), and '-strict' suffix meaning that it is not allowed (not strictly compliant with XACML 3.0 Core, section 7.3.3):
+		- 'urn:ow2:authzforce:xacml:request-filter:default-lax' and 'urn:ow2:authzforce:xacml:request-filter:default-strict': default requestFilter limited to what is specified in XACML 3.0 Core specification
+		- 'urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-lax' and 'urn:ow2:authzforce:xacml:request-filter:multiple:repeated-attribute-categories-strict': implement Multiple Decision Profile, section 2.3 (repeated attribute categories)
+	- Added XSD-defined default value for this 'requestFilter' attribute: 'urn:ow2:authzforce:xacml:request-filter:default-lax'
+- Support for Extended Indeterminate values (XACML 3.0 Core specification, section 7.10-7.14, appendix C: combining algorithms)
+- PdpImpl#getStaticApplicablePolicies() method that provides all the PDP's applicable policies (root and referenced - directly or indirectly - from the root policy) if all are statically resolved. This allows PDP clients to know all the policies (if statically resolved) possibly used by the PDP during the evaluation.
+
 
 ## 3.7.0
 ### Added
@@ -21,7 +81,7 @@ All notable changes to this project are documented in this file following the [K
 
 ## 3.6.0
 ### Added
-- Support all [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, except IIA010, IIA012, IIA024, IID029, IID030, III.C.2, III.C.3, IIIE301, IIIE303, II.G.2-6 (see also [README](src\test\resources\conformance\xacml-3.0-from-2.0-ct\README.md) ); with specific adaptations and anhancements:
+- Support all [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, except IIA010, IIA012, IIA024, IID029, IID030, III.C.2, III.C.3, IIIE301, IIIE303, II.G.2-6 (see also [README](src\test\resources\conformance\xacml-3.0-from-2.0-ct\README.md) ); with specific adaptations and enhancements:
   1. XACML 3.0 Schema validation in all conformance tests (original files are not all compliant with XACML 3.0). 
   1. The original conformance test folder contains hundreds of files; for better readability and management, the folder is split in *mandatory* folder for tests on supported mandatory features (XACMl 3.0 core), *optional* folder for supported optional features (XACML 3.0 core and profiles), and *unsupported* for unsupported features.
   1. For tests requiring a custom attribute finder, added a file with suffix `AttributeProvider.xml` that configures the `TestAttributeProviderModule`. This configuration file must contain a list of `Attributes` elements defining the attributes that this attribute provider is able to provide, with their constant values.
@@ -59,6 +119,7 @@ All notable changes to this project are documented in this file following the [K
 - Misleading IllegalArgumentException error for XML-schema-valid anyURI but not valid for `java.net.URI` class. Fixed by using `java.lang.String` instead and validating strings according to anyURI definition with Saxon library
 - RuntimeException when no subject and no resource and no action attributes in the XACML request
 
+
 ## 3.5.8 - 2015-04-01
 ### Added
 - New XACML 3.0 versions of (ordered-)deny-overrides and (ordered-)permit-overrides combining algorithms (ALGORITHM IS NOT THE SAME as in XACML 2.0)
@@ -69,9 +130,11 @@ All notable changes to this project are documented in this file following the [K
 ### Fixed
 - Empty StatusDetail tag in Response when no StatusDetail (which is always the case as of now). Fix: remove the tag completely.
 
+
 ## 3.5.7 - 2015-03-13
 ### Changed
 - Upraded version of maven-jaxb2-plugin to 0.12.3 for JAXB-annotated java class generation from OASIS XACML model
+
 
 ## 3.5.6 - 2015-02-27
 ### Added
@@ -88,6 +151,7 @@ All notable changes to this project are documented in this file following the [K
 - NullPointerException when no resource-id attribute in XACML Request: 
 - XACML Apply element marshalling (some elements were lost)
 
+
 ## 3.5.5 - 2015-01-26
 ### Added
 - PDP configuration XML schema for configuration loading with JAXB and schema validation
@@ -103,6 +167,7 @@ All notable changes to this project are documented in this file following the [K
 - Thread-local memory leak
 - Empty Obligations/Associated Advice with permit|deny-unless-deny|permit combining algorithms
 
+
 ## 3.5.4 - 2014-12-23
 ### Added
 - Unit tests for various match functions introduced in XACML 2.0 on strings, x509Names, rfc822Names, date/time, IP address
@@ -116,19 +181,23 @@ All notable changes to this project are documented in this file following the [K
 ### Changed
 - Log formats
 
+
 ## 3.5.3 - 2013-12-16
 ### Added
 - Support of Policy(Set)IdReference with StaticRefPolicyFinder class
 - Support of dynamic obligations/advices containing AttributeDesignators or other expressions evaluated in the request context
 - Enhanced debug logs in evaluation of Target, Policy(Set), Rule
 
+
 ## 3.5.2 - 2013-11-29
 ### Fixed
 - Fixed bug when there were more than one AnyOf and AllOf: only the Match element was evaluated with the "match(context)" function
 
+
 ## 3.4.2 - 2013-07-03
 ### Fixed
 - Fixing bugs on deny-unless-permit and permit-unless-deny rule combining algorithms (misplaced cast)
+
 
 ## 3.4.0 - 2013-05-30
 ### Added
@@ -142,19 +211,23 @@ All notable changes to this project are documented in this file following the [K
 - First implementation of XACML 3.0 Combining algorithms: deny-unless-permit, deny-unless-permit, permit-unless-deny, permit-unless-deny
 - First implementation of XACML 3.0 Functions: string-starts-with, string-ends-with, string-contains, string-substring
 
+
 ## 3.3.1 - 2013-05-14
 ### Added
 - New license headers and file for Apache 2 license
+
 
 ## 3.2.0 - 2013-05-13
 ### Added
 - Support of XACML 3.0 Obligations/Advices in Rules
 - Compliance with new conformance tests for 3.0 (converted from XACML 2.0 official category III.A)
 
+
 ## 3.1.0 - 2013-05-13
 ### Added
 - Beta support of Multiple Decision profile, on repeated attribute categories only
 - Beta support of XACML 3.0 Policy(Set)s and Obligations/Advices in Policy(Set)s
+
 
 ## 3.0.0 - 2013-04-05
 ### Added

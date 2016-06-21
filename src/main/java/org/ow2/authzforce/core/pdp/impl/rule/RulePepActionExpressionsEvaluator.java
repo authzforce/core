@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
@@ -25,9 +30,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.BasePepActions;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
@@ -36,7 +41,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Evaluator of a Rule's PEP action (Obligation/Advice) expressions
+ *
  * 
+ * @version $Id: $
  */
 public class RulePepActionExpressionsEvaluator
 {
@@ -49,6 +56,8 @@ public class RulePepActionExpressionsEvaluator
 	 */
 	private static class ActionExpressionsParser implements PepActionExpressions
 	{
+		private static final IllegalArgumentException UNDEF_RULE_EFFECT_ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Rule's Effect to which obligations/advice must apply");
+
 		private static final Logger LOGGER = LoggerFactory.getLogger(ActionExpressionsParser.class);
 
 		private final XPathCompiler xPathCompiler;
@@ -69,7 +78,7 @@ public class RulePepActionExpressionsEvaluator
 		{
 			if (ruleEffect == null)
 			{
-				throw new IllegalArgumentException("Undefined Rule's Effect to which obligations/advice must apply");
+				throw UNDEF_RULE_EFFECT_ILLEGAL_ARGUMENT_EXCEPTION;
 			}
 
 			this.ruleEffectMatchingActionExpressions = new EffectSpecific(ruleEffect);
@@ -147,7 +156,7 @@ public class RulePepActionExpressionsEvaluator
 	/**
 	 * Instantiates the evaluator with given XACML-schema-derived ObligationExpressions/AdviceExpressions an Effect to be match by these expressions (a priori
 	 * specific to a Rule)
-	 * 
+	 *
 	 * @param jaxbObligationExpressions
 	 *            XACML-schema-derived ObligationExpressions
 	 * @param jaxbAdviceExpressions
@@ -159,7 +168,7 @@ public class RulePepActionExpressionsEvaluator
 	 * @param effect
 	 *            rule's Effect to be matched by ObligationExpressions/FulfillOn and AdviceExpressions/AppliesTo
 	 * @return Rule's Obligation/Advice expressions evaluator
-	 * @throws IllegalArgumentException
+	 * @throws java.lang.IllegalArgumentException
 	 *             if one of the AttributeAssignmentExpressions is invalid
 	 */
 	public static RulePepActionExpressionsEvaluator getInstance(ObligationExpressions jaxbObligationExpressions, AdviceExpressions jaxbAdviceExpressions,
@@ -176,11 +185,11 @@ public class RulePepActionExpressionsEvaluator
 
 	/**
 	 * Evaluates the PEP action (obligations/Advice) expressions in a given evaluation context
-	 * 
+	 *
 	 * @param context
 	 *            evaluation context
 	 * @return PEP actions (obligations/advices) or null if none
-	 * @throws IndeterminateEvaluationException
+	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error evaluating one of ObligationExpression/AdviceExpressions' AttributeAssignmentExpressions' expressions
 	 */
 	public PepActions evaluate(EvaluationContext context) throws IndeterminateEvaluationException

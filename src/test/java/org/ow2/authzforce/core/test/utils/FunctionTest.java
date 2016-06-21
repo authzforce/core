@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
  * 
@@ -28,29 +33,29 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ow2.authzforce.core.pdp.api.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.Bag;
-import org.ow2.authzforce.core.pdp.api.Datatype;
-import org.ow2.authzforce.core.pdp.api.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.Expression;
-import org.ow2.authzforce.core.pdp.api.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.Function;
-import org.ow2.authzforce.core.pdp.api.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.Value;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
 import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunctionRegistry;
-import org.ow2.authzforce.core.pdp.impl.value.DatatypeConstants;
 import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 
 import com.sun.xacml.UnknownIdentifierException;
 
 /**
- * An abstract class to easily test a function evaluation, according to a given function name, a list of arguments, and expected result. In order to perform a
- * function test, simply extend this class and give the test values on construction.
+ * An abstract class to easily test a function evaluation, according to a given function name, a list of arguments, and expected result. In order to perform a function test, simply extend this class
+ * and give the test values on construction.
  * 
  */
 public abstract class FunctionTest
@@ -65,8 +70,7 @@ public abstract class FunctionTest
 	{
 		try
 		{
-			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES, StandardFunctionRegistry.getInstance(true),
-					null, 0, false, false);
+			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES, StandardFunctionRegistry.getInstance(true), null, 0, false, false);
 		} catch (IllegalArgumentException | IOException e)
 		{
 			throw new RuntimeException(e);
@@ -86,8 +90,7 @@ public abstract class FunctionTest
 	 * @param inputs
 	 *            The list of the function arguments as expressions, in order.
 	 * @param expectedResult
-	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error
-	 *            (IndeterminateEvaluationException)
+	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error (IndeterminateEvaluationException)
 	 * @param compareBagsAsSets
 	 *            true iff result bags should be compared as sets for equality check
 	 * @throws UnknownIdentifierException
@@ -114,8 +117,7 @@ public abstract class FunctionTest
 		final Function<?> function = STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
 		if (function == null)
 		{
-			throw new IllegalArgumentException("Function " + functionName
-					+ (subFuncReturnType == null ? "" : "(sub-function return type = " + subFuncReturnType + ")") + " not valid/supported");
+			throw new IllegalArgumentException("Function " + functionName + (subFuncReturnType == null ? "" : "(sub-function return type = " + subFuncReturnType + ")") + " not valid/supported");
 		}
 
 		funcCall = function.newCall(inputs);
@@ -136,7 +138,7 @@ public abstract class FunctionTest
 	private static <V extends AttributeValue> Expression<?> createValueExpression(Datatype<V> datatype, AttributeValue rawValue)
 	{
 		// static expression only if not xpathExpression
-		return new PrimitiveValueExpression<>(datatype, datatype.cast(rawValue), datatype != DatatypeConstants.XPATH.TYPE);
+		return new PrimitiveValueExpression<>(datatype, datatype.cast(rawValue), datatype != StandardDatatypes.XPATH_FACTORY.getDatatype());
 	}
 
 	private static <V extends Bag<?>> Expression<?> createValueExpression(Datatype<V> datatype, Bag<?> rawValue)
@@ -200,11 +202,16 @@ public abstract class FunctionTest
 			if (val instanceof NullValue)
 			{
 				/*
-				 * Undefined arg -> wrap in a special expression that always return Indeterminate (useful for testing functions that do not need all arguments
-				 * to return a result, such as logical or/and/n-o
+				 * Undefined arg -> wrap in a special expression that always return Indeterminate (useful for testing functions that do not need all arguments to return a result, such as logical
+				 * or/and/n-o
 				 */
 				final NullValue nullVal = (NullValue) val;
 				final DatatypeFactory<?> datatypeFactory = StandardDatatypeFactoryRegistry.ALL_DATATYPES.getExtension(nullVal.getDatatypeId());
+				if (datatypeFactory == null)
+				{
+					throw new UnsupportedOperationException("Unsupported attribute datatype: '" + nullVal.getDatatypeId() + "'");
+				}
+
 				valExpr = new IndeterminateExpression<>(nullVal.isBag() ? datatypeFactory.getBagDatatype() : datatypeFactory.getDatatype());
 			} else if (val instanceof AttributeValue)
 			{
@@ -235,13 +242,11 @@ public abstract class FunctionTest
 	 * @param subFunctionName
 	 *            (optional) sub-function specified iff {@code functionName} corresponds to a higher-order function; else null
 	 * @param inputs
-	 *            The list of the function arguments as constant values, in order. Specify a null argument to indicate it is undefined. It will be considered as
-	 *            Indeterminate (wrapped in a Expression that always evaluate to Indeterminate result). This is useful to test specific function behavior when
-	 *            one (or more) of the arguments is indeterminate; e.g. logical or/and/n-of functions are able to return False/True even if some of the
-	 *            arguments are Indeterminate.
+	 *            The list of the function arguments as constant values, in order. Specify a null argument to indicate it is undefined. It will be considered as Indeterminate (wrapped in a Expression
+	 *            that always evaluate to Indeterminate result). This is useful to test specific function behavior when one (or more) of the arguments is indeterminate; e.g. logical or/and/n-of
+	 *            functions are able to return False/True even if some of the arguments are Indeterminate.
 	 * @param expectedResult
-	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error
-	 *            (IndeterminateEvaluationException)
+	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error (IndeterminateEvaluationException)
 	 * @param compareBagsAsSets
 	 *            true iff result bags should be compared as sets for equality check
 	 */
@@ -260,8 +265,7 @@ public abstract class FunctionTest
 	 * @param inputs
 	 *            The list of the function arguments, as constant values, in order.
 	 * @param expectedResult
-	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error
-	 *            (IndeterminateEvaluationException)
+	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error (IndeterminateEvaluationException)
 	 */
 	public FunctionTest(final String functionName, String subFunctionName, final List<Value> inputs, final Value expectedResult)
 	{

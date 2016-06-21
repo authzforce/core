@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl;
 
@@ -49,10 +54,10 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
 
 /**
- * 
- * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by
- * {@link ResourceUtils} as well.
- * 
+ *
+ * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by {@link ResourceUtils} as well.
+ *
+ * @version $Id: $
  */
 public class SchemaHandler
 {
@@ -100,8 +105,8 @@ public class SchemaHandler
 				}
 			} catch (IOException ex)
 			{
-				final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='" + catalogLocation + "'): type=" + type
-						+ ", namespaceURI=" + namespaceURI + ", publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
+				final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='" + catalogLocation + "'): type=" + type + ", namespaceURI=" + namespaceURI
+						+ ", publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
 				throw new RuntimeException(errMsg, ex);
 			}
 
@@ -132,12 +137,15 @@ public class SchemaHandler
 	}
 
 	/**
-	 * This is quite similar to org.apache.cxf.catalog.OASISCatalogManager, except it is much simplified as we don't need as many features. We are not using
-	 * CXF's OASISCatalogManager class directly because it is part of cxf-core which drags many classes and dependencies on CXF we don't need. It would make
-	 * more sense if OASISCatalogManager was part of a cxf common utility package, but it is not the case as of writing (December 2014).
+	 * This is quite similar to org.apache.cxf.catalog.OASISCatalogManager, except it is much simplified as we don't need as many features. We are not using CXF's OASISCatalogManager class directly
+	 * because it is part of cxf-core which drags many classes and dependencies on CXF we don't need. It would make more sense if OASISCatalogManager was part of a cxf common utility package, but it
+	 * is not the case as of writing (December 2014).
 	 */
 	private static class OASISCatalogManager
 	{
+		private static final IllegalArgumentException ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION = new IllegalArgumentException(
+				"Error creating org.apache.xml.resolver.tools.CatalogResolver for OASIS CatalogManager");
+
 		private final static Logger _LOGGER = LoggerFactory.getLogger(OASISCatalogManager.class);
 
 		private final CatalogResolver resolver;
@@ -149,7 +157,7 @@ public class SchemaHandler
 			resolver = getResolver();
 			if (resolver == null)
 			{
-				throw new IllegalArgumentException("Error creating org.apache.xml.resolver.tools.CatalogResolver for OASIS CatalogManager");
+				throw ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION;
 			}
 
 			catalog = getCatalog(resolver);
@@ -199,8 +207,7 @@ public class SchemaHandler
 								}
 							} catch (IOException e)
 							{
-								_LOGGER.warn(
-										"Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}", e);
+								_LOGGER.warn("Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}", e);
 							}
 						}
 						return s;
@@ -235,8 +242,7 @@ public class SchemaHandler
 
 				if (catalog == null)
 				{
-					_LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.",
-							catalogURL);
+					_LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.", catalogURL);
 				} else
 				{
 					catalog.parseCatalog(catalogURL);
@@ -330,8 +336,7 @@ public class SchemaHandler
 		public final Reader getCharacterStream()
 		{
 			/*
-			 * No character stream, only byte streams are allowed. Do not throw exception, otherwise the resolution of the resource fails, even if byte stream
-			 * OK
+			 * No character stream, only byte streams are allowed. Do not throw exception, otherwise the resolution of the resource fails, even if byte stream OK
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
@@ -381,8 +386,7 @@ public class SchemaHandler
 		public final String getBaseURI()
 		{
 			/*
-			 * No base URI, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even for
-			 * absolute URIs
+			 * No base URI, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even for absolute URIs
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
@@ -398,8 +402,7 @@ public class SchemaHandler
 		public final String getEncoding()
 		{
 			/*
-			 * No encoding override, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even
-			 * if encoding specified in other way
+			 * No encoding override, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even if encoding specified in other way
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
@@ -429,16 +432,10 @@ public class SchemaHandler
 	private String catalogLocation;
 
 	/**
-	 * Default empty constructor, needed for instanciation by Spring framework
-	 */
-	public SchemaHandler()
-	{
-	}
-
-	/**
 	 * Sets (Spring-supported) locations to XML schema files
-	 * 
+	 *
 	 * @param locations
+	 *            XML schema locations
 	 */
 	public void setSchemaLocations(List<String> locations)
 	{
@@ -447,8 +444,9 @@ public class SchemaHandler
 
 	/**
 	 * Sets (Spring-supported) locations to XML catalog files
-	 * 
+	 *
 	 * @param location
+	 *            XML catalog location
 	 */
 	public void setCatalogLocation(String location)
 	{
@@ -457,7 +455,7 @@ public class SchemaHandler
 
 	/**
 	 * Get schema used by this handler
-	 * 
+	 *
 	 * @return XML schema
 	 */
 	public Schema getSchema()
@@ -467,19 +465,19 @@ public class SchemaHandler
 
 	/**
 	 * Creates schema from locations to XML schema files and catalog file
-	 * 
-	 * 
+	 *
 	 * @param schemaLocations
+	 *            XML schema locations
 	 * @param catalogLocation
+	 *            XML catalog location
 	 * @return XML validation schema
 	 */
 	public static Schema createSchema(List<String> schemaLocations, final String catalogLocation)
 	{
 		/*
-		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring ResourceUtils class to get
-		 * Resource URLs and we don't use any Bus object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which
-		 * drags many dependencies on CXF we don't need, the full CXF JAX-RS framework actually. It would make more sense if SchemaHandler was part of some cxf
-		 * common utility package, but it is not the case as of writing (December 2014).
+		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring ResourceUtils class to get Resource URLs and we don't use any Bus
+		 * object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF we don't need, the full CXF JAX-RS framework
+		 * actually. It would make more sense if SchemaHandler was part of some cxf common utility package, but it is not the case as of writing (December 2014).
 		 */
 
 		final SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

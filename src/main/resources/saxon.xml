@@ -1,110 +1,114 @@
 <?xml version="1.0"?>
-<!-- This is an example configuration file. Many of the options included here are defaults, and do not need to be specified in a real configuration file. They are provided for convenience of editing, so
-	it is easy to set up a configuration file with non-default options. For documentation on the contents of a Saxon configuration file, see http://www.saxonica.com/documentation/index/configuration-file.html -->
-<!-- WARNING: 1) for AuthZForce compatibility, do not set xInclude property here (do not even set xInclude="false")
-	This would cause an error with XACML Request Attributes/Content XML parsing:
-	net.sf.saxon.s9api.SaxonApiException: Selected XML parser javax.xml.bind.util.JAXBSource$1 does not recognize request for XInclude processing
-	at net.sf.saxon.s9api.DocumentBuilder.build(DocumentBuilder.java:374) ~[Saxon-HE-9.6.0-5.jar:na]
-	at org.ow2.authzforce.core.XACMLParsers$FullJaxbXACMLAttributesParserFactory$FullJaxbXACMLAttributesParser.parseContent(XACMLParsers.java:909) ~[classes/:na]
--->
+<!-- This is an example configuration file. Many of the options included here are defaults, and do not need to be specified in a real configuration file. They are provided for convenience of editing, so 
+   it is easy to set up a configuration file with non-default options. For documentation on the contents of a Saxon configuration file, see http://www.saxonica.com/documentation9.6/index.html#!configuration/configuration-file -->
+<!-- WARNING: 1) for AuthZForce compatibility, do not set xInclude property here (do not even set xInclude="false") This would cause an error with XACML Request Attributes/Content XML parsing: net.sf.saxon.s9api.SaxonApiException: 
+   Selected XML parser javax.xml.bind.util.JAXBSource$1 does not recognize request for XInclude processing at net.sf.saxon.s9api.DocumentBuilder.build(DocumentBuilder.java:374) ~[Saxon-HE-9.6.0-5.jar:na] 
+   at org.ow2.authzforce.core.XACMLParsers$FullJaxbXACMLAttributesParserFactory$FullJaxbXACMLAttributesParser.parseContent(XACMLParsers.java:909) ~[classes/:na] -->
 <configuration
-	edition="HE"
-	xmlns="http://saxon.sf.net/ns/configuration"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://saxon.sf.net/ns/configuration config.xsd">
-	<global
-		dtdValidation="false"
-		dtdValidationRecoverable="true"
-		lineNumbering="true"
-		treeModel="tinyTree"
-		stripSpace="all"
-		expandAttributeDefaults="true"
-		versionOfXml="1.0"
-		preferJaxpParser="true"
-		sourceResolver=""
-		uriResolver="net.sf.saxon.lib.StandardURIResolver"
-		collectionUriResolver="net.sf.saxon.lib.StandardCollectionURIResolver"
-		defaultCollection="file:///e:/temp"
-		recognizeUriQueryParameters="true"
-		useTypedValueCache="false"
-		parser=""
-		timing="false"
-		allowExternalFunctions="false"
-		traceExternalFunctions="false"
-		optimizationLevel="10"
-		traceOptimizerDecisions="false"
-		collationUriResolver="net.sf.saxon.lib.StandardCollationURIResolver"
-		lazyConstructionMode="false"
-		preEvaluateDoc="false"
-		serializerFactory=""
-		errorListener="net.sf.saxon.lib.StandardErrorListener"
-		traceListener="net.sf.saxon.trace.XSLTTraceListener"
-		usePiDisableOutputEscaping="false"
-		validationWarnings="true" />
-	<serialization
-		method="xml"
-		indent="yes" />
-	<collations>
-		<collation
-			uri="http://codepoint/"
-			class="net.sf.saxon.expr.sort.CodepointCollator" />
-		<collation
-			uri="http://www.microsoft.com/collation/caseblind"
-			lang="en"
-			ignore-case="yes" />
-	</collations>
-	<localizations
-		defaultLanguage="en"
-		defaultCountry="US">
-		<localization
-			lang="da"
-			class="net.sf.saxon.option.local.Numberer_da" />
-		<localization
-			lang="de"
-			class="net.sf.saxon.option.local.Numberer_de" />
-		<localization
-			lang="en"
-			class="net.sf.saxon.expr.number.Numberer_en" />
-		<localization
-			lang="fr"
-			class="net.sf.saxon.option.local.Numberer_fr" />
-		<localization
-			lang="fr-BE"
-			class="net.sf.saxon.option.local.Numberer_frBE" />
-		<localization
-			lang="it"
-			class="net.sf.saxon.option.local.Numberer_it" />
-		<localization
-			lang="nl"
-			class="net.sf.saxon.option.local.Numberer_nl" />
-		<localization
-			lang="nl-BE"
-			class="net.sf.saxon.option.local.Numberer_nlBE" />
-		<localization
-			lang="sv"
-			class="net.sf.saxon.option.local.Numberer_sv" />
-	</localizations>
-	<xslt
-		recoveryPolicy="recoverWithWarnings"
-		version="2.0"
-		versionWarning="false"
-		schemaAware="false"
-		messageReceiver=""
-		errorListener="net.sf.saxon.StandardErrorListener"
-		outputUriResolver=""
-		stylesheetParser="">
-	</xslt>
-	<xquery
-		version="1.1"
-		allowUpdate="false"
-		errorListener="net.sf.saxon.StandardErrorListener"
-		moduleUriResolver="net.sf.saxon.lib.StandardModuleURIResolver"
-		inheritNamespaces="true"
-		preserveNamespaces="true"
-		constructionMode="preserve"
-		defaultFunctionNamespace="http://www.w3.org/2005/xpath-functions"
-		defaultElementNamespace=""
-		preserveBoundarySpace="false"
-		requiredContextItemType="document-node()"
-		emptyLeast="true" />
+   edition="HE"
+   xmlns="http://saxon.sf.net/ns/configuration"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://saxon.sf.net/ns/configuration config.xsd">
+   <global
+      dtdValidation="false"
+      dtdValidationRecoverable="true"
+      lineNumbering="true"
+      treeModel="tinyTree"
+      stripSpace="all"
+      expandAttributeDefaults="true"
+      versionOfXml="1.0"
+      preferJaxpParser="true"
+      sourceResolver=""
+      uriResolver="net.sf.saxon.lib.StandardURIResolver"
+      collectionUriResolver="net.sf.saxon.lib.StandardCollectionURIResolver"
+      defaultCollection="file:///e:/temp"
+      recognizeUriQueryParameters="true"
+      useTypedValueCache="false"
+      parser=""
+      timing="false"
+      allowExternalFunctions="false"
+      traceExternalFunctions="false"
+      optimizationLevel="10"
+      traceOptimizerDecisions="false"
+      collationUriResolver="net.sf.saxon.lib.StandardCollationURIResolver"
+      lazyConstructionMode="false"
+      preEvaluateDoc="false"
+      serializerFactory=""
+      errorListener="net.sf.saxon.lib.StandardErrorListener"
+      traceListener="net.sf.saxon.trace.XSLTTraceListener"
+      usePiDisableOutputEscaping="false"
+      validationWarnings="true" />
+   <serialization
+      method="xml"
+      indent="yes" />
+   <collations>
+      <collation
+         uri="http://codepoint/"
+         class="net.sf.saxon.expr.sort.CodepointCollator" />
+      <collation
+         uri="http://www.microsoft.com/collation/caseblind"
+         lang="en"
+         ignore-case="yes" />
+   </collations>
+   <localizations
+      defaultLanguage="en"
+      defaultCountry="US">
+      <localization
+         lang="da"
+         class="net.sf.saxon.option.local.Numberer_da" />
+      <localization
+         lang="de"
+         class="net.sf.saxon.option.local.Numberer_de" />
+      <localization
+         lang="en"
+         class="net.sf.saxon.expr.number.Numberer_en" />
+      <localization
+         lang="fr"
+         class="net.sf.saxon.option.local.Numberer_fr" />
+      <localization
+         lang="fr-BE"
+         class="net.sf.saxon.option.local.Numberer_frBE" />
+      <localization
+         lang="it"
+         class="net.sf.saxon.option.local.Numberer_it" />
+      <localization
+         lang="nl"
+         class="net.sf.saxon.option.local.Numberer_nl" />
+      <localization
+         lang="nl-BE"
+         class="net.sf.saxon.option.local.Numberer_nlBE" />
+      <localization
+         lang="sv"
+         class="net.sf.saxon.option.local.Numberer_sv" />
+   </localizations>
+   <xslt
+      recoveryPolicy="recoverWithWarnings"
+      version="2.0"
+      versionWarning="false"
+      schemaAware="false"
+      messageReceiver=""
+      errorListener="net.sf.saxon.StandardErrorListener"
+      outputUriResolver=""
+      stylesheetParser="">
+   </xslt>
+   <xquery
+      version="1.1"
+      allowUpdate="false"
+      errorListener="net.sf.saxon.StandardErrorListener"
+      moduleUriResolver="net.sf.saxon.lib.StandardModuleURIResolver"
+      inheritNamespaces="true"
+      preserveNamespaces="true"
+      constructionMode="preserve"
+      defaultFunctionNamespace="http://www.w3.org/2005/xpath-functions"
+      defaultElementNamespace=""
+      preserveBoundarySpace="false"
+      requiredContextItemType="document-node()"
+      emptyLeast="true" />
+      
+      <!-- XSD occurrenceLimits property is not considered valid by SAXON 9.6 although it is in the doc:
+      http://www.saxonica.com/documentation9.6/index.html#!configuration/configuration-file/config-xsd 
+      Bug reported here: https://saxonica.plan.io/issues/2731
+      -->
+  <xsd
+      version="1.1" />    
 </configuration>

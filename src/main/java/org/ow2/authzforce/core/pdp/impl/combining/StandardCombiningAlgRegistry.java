@@ -1,15 +1,20 @@
 /**
- * Copyright (C) 2011-2015 Thales Services SAS.
+ * Copyright (C) 2012-2016 Thales Services SAS.
  *
- * This file is part of AuthZForce.
+ * This file is part of AuthZForce CE.
  *
- * AuthZForce is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * AuthZForce CE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * AuthZForce is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * AuthZForce CE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with AuthZForce. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
@@ -17,8 +22,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.ow2.authzforce.core.pdp.api.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +33,9 @@ import org.slf4j.LoggerFactory;
  * Note that because this supports only the standard algorithms, this factory does not allow the addition of any other algorithms. If you need a standard
  * factory that is modifiable, you should create a new <code>BaseCombiningAlgRegistry</code> by passing this to
  * {@link BaseCombiningAlgRegistry#BaseCombiningAlgRegistry(org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry)}.
+ *
  * 
+ * @version $Id: $
  */
 public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 {
@@ -77,6 +84,7 @@ public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 		super(standardExtensions);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void addExtension(CombiningAlg<? extends Decidable> alg)
 	{

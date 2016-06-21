@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+
+  PolicyId="urn.oasis.names.tc.xacml.dlp_nac.policies.useCase416"
+
+  RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable"
+
+  Version="1.0">
+
+  <Description>4.1.6 Prevent sensitive data from being transferred to disallowed URLs</Description>
+
+  <Target>
+
+    <AnyOf>
+
+      <AllOf>
+
+        <Match MatchId="urn:oasis:names:tc:xacml:3.0:function:dnsName-value-equal">
+
+         <AttributeValue DataType="urn:oasis:names:tc:xacml:3.0:data-type:dnsName-value">webserver1.acme.com</AttributeValue>
+
+              <AttributeDesignator
+
+                AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-location"
+
+                DataType="urn:oasis:names:tc:xacml:3.0:data-type:dnsName-value"
+
+                Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+
+                MustBePresent="false"/>
+
+        </Match>
+
+      </AllOf>
+
+    </AnyOf>
+
+  </Target>
+
+  <Rule
+
+    Effect="Deny"
+
+    RuleId="urn.oasis.names.tc.xacml.dlp_nac.policies.useCase416.confidentialDomain">
+
+    <Description>This rule is only applicable if Resource-ID contains "confidential.acme.com"</Description>
+
+    <Target>
+
+      <AnyOf>
+
+        <AllOf>
+
+            <Match MatchId="urn:oasis:names:tc:xacml:3.0:function:anyURI-contains">
+
+              <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">confidential.acme.com</AttributeValue>
+
+                <AttributeDesignator
+
+                  AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+
+                  DataType="http://www.w3.org/2001/XMLSchema#anyURI"
+
+                  Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+
+                  MustBePresent="false"
+
+                />
+
+            </Match>
+
+        </AllOf>
+
+      </AnyOf>
+
+      <AnyOf>
+
+        <AllOf>
+
+          <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+
+            <AttributeValue
+
+              DataType="http://www.w3.org/2001/XMLSchema#string">HTTP</AttributeValue>
+
+              <AttributeDesignator
+
+               AttributeId="urn:oasis:names:tc:xacml:3.0:dlp-nac:action:action-protocol"
+
+                DataType="http://www.w3.org/2001/XMLSchema#string"
+
+                Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
+
+                MustBePresent="false"
+
+              />
+
+          </Match>
+
+        </AllOf>
+
+        <AllOf>
+
+          <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+
+            <AttributeValue
+
+              DataType="http://www.w3.org/2001/XMLSchema#string">FTP</AttributeValue>
+
+              <AttributeDesignator
+
+                AttributeId="urn:oasis:names:tc:xacml:3.0:dlp-nac:action:action-protocol"
+
+                DataType="http://www.w3.org/2001/XMLSchema#string"
+
+                Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
+
+                MustBePresent="false"
+
+            />
+
+          </Match>
+
+        </AllOf>
+
+      </AnyOf>
+
+    </Target>
+
+<!--     <ObligationExpressions> -->
+
+<!--       <ObligationExpression -->
+
+<!--        ObligationId="urn:oasis:names:tc:xacml:3.0:dlp-nac:obligation:log-transfer-attempt" -->
+
+<!--         FulfillOn="Deny"> -->
+
+<!--         <AttributeAssignmentExpression -->
+
+<!--             AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" -->
+
+<!--             Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"> -->
+
+<!--           <AttributeDesignator -->
+
+<!--             AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" -->
+
+<!--             DataType="http://www.w3.org/2001/XMLSchema#anyURI" -->
+
+<!--             Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource" -->
+
+<!--             MustBePresent="false" -->
+
+<!--           /> -->
+
+<!--         </AttributeAssignmentExpression> -->
+
+<!--         <AttributeAssignmentExpression -->
+
+<!--             AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" -->
+
+<!--             Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"> -->
+
+<!--             <AttributeValue -->
+
+<!--             DataType="http://www.w3.org/2001/XMLSchema#string">Transfer</AttributeValue> -->
+
+<!--         </AttributeAssignmentExpression> -->
+
+<!--       </ObligationExpression> -->
+
+<!--     </ObligationExpressions> -->
+
+  </Rule>
+
+</Policy>
