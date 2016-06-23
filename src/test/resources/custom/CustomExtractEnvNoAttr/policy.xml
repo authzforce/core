@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+	xmlns:ns2="http://thalesgroup.com/authzforce/pdp/model/2014/12"
+	PolicySetId="default" Version="1.0"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides">
+	<Target />
+	<Policy PolicyId="networkFilter" Version="1.0"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides">
+		<Target />
+		<Rule RuleId="networkFilter" Effect="Permit">
+			<Description>User with from network 10.63 auth can deploy vapp, it's
+				a secured network</Description>
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-regexp-match">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">10.*</AttributeValue>
+							<AttributeDesignator
+								Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment"
+								AttributeId="network" DataType="http://www.w3.org/2001/XMLSchema#string"
+								MustBePresent="true" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+		</Rule>
+	</Policy>
+	<Policy PolicyId="deny-all" Version="1.0"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides">
+		<Target />
+		<Rule RuleId="deny-all" Effect="Deny" />
+	</Policy>
+</PolicySet>
