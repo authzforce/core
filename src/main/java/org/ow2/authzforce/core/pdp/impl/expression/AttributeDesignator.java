@@ -195,7 +195,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 
 		// error messages/exceptions
 		this.missingAttributeMessage = this + " not found in context";
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
 				+ "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
@@ -221,7 +221,7 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 
 		if (mustBePresent && bag.isEmpty())
 		{
-			throw new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, bag.getReasonWhyEmpty());
+			throw new IndeterminateEvaluationException(missingAttributeMessage, StatusHelper.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
 		}
 
 		// if we got here the bag wasn't empty, or mustBePresent was false,

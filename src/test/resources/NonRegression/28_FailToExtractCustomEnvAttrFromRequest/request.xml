@@ -18,7 +18,7 @@
          <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">deploy</AttributeValue>
       </Attribute>
    </Attributes>
-   <Attributes Category=" urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+   <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
       <Attribute AttributeId="AuthType" IncludeInResult="false">
          <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">basic</AttributeValue>
       </Attribute>

@@ -323,7 +323,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 				+ "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 		this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + category, StatusHelper.STATUS_SYNTAX_ERROR);
 		this.missingAttributeMessage = this + " not found in context";
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage + " for unknown reason");
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
 	/**
@@ -341,7 +341,7 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	{
 		if (mustBePresent && result.isEmpty())
 		{
-			throw new IndeterminateEvaluationException(StatusHelper.STATUS_MISSING_ATTRIBUTE, missingAttributeMessage, result.getReasonWhyEmpty());
+			throw new IndeterminateEvaluationException(missingAttributeMessage, StatusHelper.STATUS_MISSING_ATTRIBUTE, result.getReasonWhyEmpty());
 		}
 	}
 

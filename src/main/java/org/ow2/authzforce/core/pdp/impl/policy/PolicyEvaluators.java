@@ -1087,7 +1087,7 @@ public final class PolicyEvaluators
 				return referredPolicy.isApplicable(context);
 			} catch (IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException("Error checking whether Policy(Set) referenced by " + this, e.getStatusCode() + " is applicable to the request context", e);
+				throw new IndeterminateEvaluationException("Error checking whether Policy(Set) referenced by " + this + " is applicable to the request context", e.getStatusCode(), e);
 			}
 		}
 
