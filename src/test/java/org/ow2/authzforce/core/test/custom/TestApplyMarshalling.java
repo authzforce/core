@@ -50,7 +50,7 @@ public class TestApplyMarshalling
 		try
 		{
 			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.MANDATORY_DATATYPES, StandardFunctionRegistry.getInstance(true),
-					null, 0, false, false);
+					null, 0, false, false, null);
 		} catch (IllegalArgumentException | IOException e)
 		{
 			throw new RuntimeException(e);
