@@ -175,6 +175,17 @@ public final class BaseDecisionResult implements DecisionResult
 	}
 
 	/**
+	 * Instantiates a Indeterminate Decision result with a given error status and extended Indeterminate set to Indeterminate{DP}
+	 *
+	 * @param status
+	 *            reason/code for Indeterminate
+	 */
+	public BaseDecisionResult(final Status status)
+	{
+		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, null, null);
+	}
+
+	/**
 	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #BaseDecisionResult(Status, DecisionType)} for Indeterminate, and {@link #NOT_APPLICABLE} for NotApplicable.
 	 *
 	 * @param decision

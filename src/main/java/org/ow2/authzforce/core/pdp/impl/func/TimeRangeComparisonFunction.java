@@ -1,27 +1,4 @@
-/**
- *
- * Copyright 2003-2004 Sun Microsystems, Inc. All Rights Reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistribution of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistribution in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of Sun Microsystems, Inc. or the names of contributors may be used to endorse or promote products derived from this software without
- * specific prior written permission.
- *
- * This software is provided "AS IS," without a warranty of any kind. ALL EXPRESS OR IMPLIED CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY IMPLIED
- * WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT, ARE HEREBY EXCLUDED. SUN MICROSYSTEMS, INC. ("SUN") AND ITS LICENSORS
- * SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES. IN NO EVENT WILL
- * SUN OR ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR DATA, OR FOR DIRECT, INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES, HOWEVER
- * CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY, ARISING OUT OF THE USE OF OR INABILITY TO USE THIS SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGES.
- *
- * You acknowledge that this software is not designed or intended for use in the design, construction, operation or maintenance of any nuclear facility.
- */
-package com.sun.xacml;
+package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -40,38 +17,28 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 
 /**
- * This class implements the time-in-range function, which takes three time values and returns true if the first value falls between the second and the third value. This function was introduced in
- * XACML 2.0.
+ * Time range comparison function (XACML 2.0: time-in-range), which takes three time values and returns true if the first value falls between the second and the third value
  * <p>
- * Note that this function allows any time ranges less than 24 hours. In other words, it is not bound by normal day boundries (midnight GMT), but by the minimum time in the range. This means that
+ * Note that this function allows any time ranges less than 24 hours. In other words, it is not bound by normal day boundaries (midnight GMT), but by the minimum time in the range. This means that
  * ranges like 9am-5pm are supported, as are ranges like 5pm-9am.
- *
- * @since 2.0
- * @author seth proctor
+ * 
  * @version $Id: $
  */
-public final class TimeInRangeFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, TimeValue>
+final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, TimeValue>
 {
 
 	/**
-	 * The identifier for this function
-	 */
-	public static final String NAME = XACML_NS_2_0 + "time-in-range";
-
-	/**
-	 * Singleton instance: Effective Java, item 3
-	 */
-	public static final TimeInRangeFunction INSTANCE = new TimeInRangeFunction();
-
-	/**
 	 * Default constructor.
+	 * 
+	 * @param functionId
+	 *            function ID
 	 */
-	private TimeInRangeFunction()
+	TimeRangeComparisonFunction(final String functionId)
 	{
 		/**
 		 * boolean timeInRange(time,time,time)
 		 */
-		super(NAME, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Arrays.asList(StandardDatatypes.TIME_FACTORY.getDatatype(), StandardDatatypes.TIME_FACTORY.getDatatype(),
+		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Arrays.asList(StandardDatatypes.TIME_FACTORY.getDatatype(), StandardDatatypes.TIME_FACTORY.getDatatype(),
 				StandardDatatypes.TIME_FACTORY.getDatatype()));
 	}
 
@@ -85,7 +52,7 @@ public final class TimeInRangeFunction extends SingleParameterTypedFirstOrderFun
 		 * @param cal
 		 * @param ref
 		 */
-		private static void setSameDate(Calendar cal, Calendar ref)
+		private static void setSameDate(final Calendar cal, final Calendar ref)
 		{
 			cal.set(Calendar.YEAR, ref.get(Calendar.YEAR));
 			cal.set(Calendar.DAY_OF_YEAR, ref.get(Calendar.DAY_OF_YEAR));
@@ -106,7 +73,7 @@ public final class TimeInRangeFunction extends SingleParameterTypedFirstOrderFun
 		 * 
 		 * 
 		 */
-		public static boolean eval(TimeValue arg, TimeValue lowerBound, TimeValue upperBound)
+		public static boolean eval(final TimeValue arg, final TimeValue lowerBound, final TimeValue upperBound)
 		{
 			// get the three time values
 			final Calendar calCheckedWhetherInRange = arg.getUnderlyingValue().toGregorianCalendar();
@@ -180,13 +147,13 @@ public final class TimeInRangeFunction extends SingleParameterTypedFirstOrderFun
 			return !calCheckedWhetherInRange.after(endCal);
 		}
 
-		private Call(SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, TimeValue> functionSignature, List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+		private Call(final SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, TimeValue> functionSignature, final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 		{
 			super(functionSignature, argExpressions, remainingArgTypes);
 		}
 
 		@Override
-		protected BooleanValue evaluate(Deque<TimeValue> argStack) throws IndeterminateEvaluationException
+		protected BooleanValue evaluate(final Deque<TimeValue> argStack) throws IndeterminateEvaluationException
 		{
 			/*
 			 * args.poll() returns the first element and remove it from the stack, so that next poll() returns the next element (and removes it from the stack), etc.
@@ -197,7 +164,7 @@ public final class TimeInRangeFunction extends SingleParameterTypedFirstOrderFun
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<BooleanValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call(functionSignature, argExpressions, remainingArgTypes);
 	}

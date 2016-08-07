@@ -26,7 +26,6 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
@@ -38,52 +37,41 @@ import org.ow2.authzforce.core.pdp.api.value.StringValue;
  * 
  * @version $Id: $
  */
-public final class StringConcatenateFunction
+final class StringConcatenateFunction extends SingleParameterTypedFirstOrderFunction<StringValue, StringValue>
 {
 
-	/**
-	 * Standard identifier for the string-concatenate function.
-	 */
-	public static final String NAME_STRING_CONCATENATE = Function.XACML_NS_2_0 + "string-concatenate";
-
-	private StringConcatenateFunction()
+	StringConcatenateFunction(final String functionId)
 	{
+		super(functionId, StandardDatatypes.STRING_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.STRING_FACTORY.getDatatype(), StandardDatatypes.STRING_FACTORY.getDatatype(),
+				StandardDatatypes.STRING_FACTORY.getDatatype()));
 	}
 
-	/**
-	 * Instance of string-concatenate function (singleton)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
 	 */
-	public static final SingleParameterTypedFirstOrderFunction<StringValue, StringValue> INSTANCE = new SingleParameterTypedFirstOrderFunction<StringValue, StringValue>(NAME_STRING_CONCATENATE,
-			StandardDatatypes.STRING_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.STRING_FACTORY.getDatatype(), StandardDatatypes.STRING_FACTORY.getDatatype(),
-					StandardDatatypes.STRING_FACTORY.getDatatype()))
+	@Override
+	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-		 */
-		@Override
-		public FirstOrderFunctionCall<StringValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+
+		return new EagerSinglePrimitiveTypeEval<StringValue, StringValue>(functionSignature, argExpressions, remainingArgTypes)
 		{
 
-			return new EagerSinglePrimitiveTypeEval<StringValue, StringValue>(functionSignature, argExpressions, remainingArgTypes)
+			@Override
+			protected StringValue evaluate(final Deque<StringValue> args) throws IndeterminateEvaluationException
 			{
-
-				@Override
-				protected StringValue evaluate(Deque<StringValue> args) throws IndeterminateEvaluationException
+				// string-concatenate(str1, str2, str3, ...)
+				final StringBuilder strBuilder = new StringBuilder();
+				while (!args.isEmpty())
 				{
-					// string-concatenate(str1, str2, str3, ...)
-					final StringBuilder strBuilder = new StringBuilder();
-					while (!args.isEmpty())
-					{
-						strBuilder.append(args.poll().getUnderlyingValue());
-					}
-
-					return new StringValue(strBuilder.toString());
+					strBuilder.append(args.poll().getUnderlyingValue());
 				}
 
-			};
-		}
-	};
+				return new StringValue(strBuilder.toString());
+			}
+
+		};
+	}
 
 }

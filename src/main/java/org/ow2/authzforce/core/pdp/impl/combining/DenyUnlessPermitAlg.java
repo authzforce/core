@@ -28,7 +28,6 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
@@ -36,29 +35,24 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  *
  * @version $Id: $
  */
-public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
+final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 {
-	/**
-	 * The standard URIs used to identify this algorithm; first one is for policy combinging, second one for rule combining.
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
 
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
 		private final List<? extends Decidable> combinedElements;
 
-		private Evaluator(List<? extends Decidable> combinedElements)
+		private Evaluator(final List<? extends Decidable> combinedElements)
 		{
 			this.combinedElements = combinedElements;
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context)
 		{
 			DecisionResult combinedDenyResult = null;
-			for (Decidable combinedElement : combinedElements)
+			for (final Decidable combinedElement : combinedElements)
 			{
 				// make sure that the policy matches the context
 				final DecisionResult policyResult = combinedElement.evaluate(context);
@@ -89,20 +83,15 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
+	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params, final List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
 			IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}
 
-	private DenyUnlessPermitAlg(String algId)
+	DenyUnlessPermitAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 	}
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgSet SET = new CombiningAlgSet(new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[0]), new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[1]));
 
 }

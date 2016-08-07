@@ -26,7 +26,6 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
 import org.ow2.authzforce.core.pdp.api.func.HigherOrderBagFunction;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -44,13 +43,8 @@ import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions.One
  * 
  * @version $Id: $
  */
-public final class MapFunctionFactory
+final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 {
-
-	/**
-	 * Standard identifier for the map function.
-	 */
-	public static final String NAME_MAP = Function.XACML_NS_3_0 + "map";
 
 	/**
 	 * 
@@ -68,16 +62,16 @@ public final class MapFunctionFactory
 			private final Datatype<SUB_RETURN> returnBagElementType;
 			private final String indeterminateSubFuncEvalMessagePrefix;
 
-			private Call(Datatype<Bag<SUB_RETURN>> returnType, FirstOrderFunction<SUB_RETURN> subFunction, List<Expression<?>> primitiveInputs,
-					Expression<?> lastInputBag)
+			private Call(final String functionId, final Datatype<Bag<SUB_RETURN>> returnType, final FirstOrderFunction<SUB_RETURN> subFunction, final List<Expression<?>> primitiveInputs,
+					final Expression<?> lastInputBag)
 			{
-				super(NAME_MAP, returnType, subFunction, primitiveInputs, lastInputBag);
+				super(functionId, returnType, subFunction, primitiveInputs, lastInputBag);
 				this.returnBagElementType = subFunction.getReturnType();
-				this.indeterminateSubFuncEvalMessagePrefix = "Function " + NAME_MAP + ": Error calling sub-function (first argument) with last arg=";
+				this.indeterminateSubFuncEvalMessagePrefix = "Function " + functionId + ": Error calling sub-function (first argument) with last arg=";
 			}
 
 			@Override
-			protected Bag<SUB_RETURN> evaluate(Bag<?> lastArgBag, EvaluationContext context) throws IndeterminateEvaluationException
+			protected Bag<SUB_RETURN> evaluate(final Bag<?> lastArgBag, final EvaluationContext context) throws IndeterminateEvaluationException
 			{
 				final Collection<SUB_RETURN> results = new ArrayDeque<>(lastArgBag.size());
 				for (final AttributeValue lastArgBagVal : lastArgBag)
@@ -86,7 +80,8 @@ public final class MapFunctionFactory
 					try
 					{
 						subResult = subFuncCall.evaluate(context, lastArgBagVal);
-					} catch (IndeterminateEvaluationException e)
+					}
+					catch (final IndeterminateEvaluationException e)
 					{
 						throw new IndeterminateEvaluationException(indeterminateSubFuncEvalMessagePrefix + lastArgBagVal, e.getStatusCode(), e);
 					}
@@ -104,39 +99,37 @@ public final class MapFunctionFactory
 		 * @param subFunctionReturnType
 		 *            sub-function return type
 		 */
-		private MapFunction(BagDatatype<SUB_RETURN_T> returnType)
+		private MapFunction(final String functionId, final BagDatatype<SUB_RETURN_T> returnType)
 		{
-			super(NAME_MAP, returnType, returnType.getElementType());
+			super(functionId, returnType, returnType.getElementType());
 		}
 
 		@Override
-		protected OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN_T>, SUB_RETURN_T> newFunctionCall(FirstOrderFunction<SUB_RETURN_T> subFunc,
-				List<Expression<?>> primitiveInputs, Expression<?> lastInputBag)
+		protected OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN_T>, SUB_RETURN_T> newFunctionCall(final FirstOrderFunction<SUB_RETURN_T> subFunc, final List<Expression<?>> primitiveInputs,
+				final Expression<?> lastInputBag)
 		{
-			return new Call<>(this.getReturnType(), subFunc, primitiveInputs, lastInputBag);
+			return new Call<>(this.getId(), this.getReturnType(), subFunc, primitiveInputs, lastInputBag);
 		}
 
 	}
 
-	/**
-	 * Instance of generic factory for standard 'map' function (singleton)
-	 */
-	public static final GenericHigherOrderFunctionFactory INSTANCE = new GenericHigherOrderFunctionFactory()
+	private final String functionId;
+
+	MapFunctionFactory(final String functionId)
 	{
+		this.functionId = functionId;
+	}
 
-		@Override
-		public final String getId()
-		{
-			return NAME_MAP;
-		}
+	@Override
+	public final String getId()
+	{
+		return functionId;
+	}
 
-		@Override
-		public final <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(
-				DatatypeFactory<SUB_RETURN> subFunctionReturnTypeFactory)
-		{
-			return new MapFunction<>(subFunctionReturnTypeFactory.getBagDatatype());
-		}
-
-	};
+	@Override
+	public final <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(final DatatypeFactory<SUB_RETURN> subFunctionReturnTypeFactory)
+	{
+		return new MapFunction<>(functionId, subFunctionReturnTypeFactory.getBagDatatype());
+	}
 
 }

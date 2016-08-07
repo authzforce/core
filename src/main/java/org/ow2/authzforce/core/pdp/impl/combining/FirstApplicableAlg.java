@@ -28,7 +28,6 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
@@ -36,26 +35,21 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  *
  * @version $Id: $
  */
-public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
+final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 {
-	/**
-	 * The standard URIs used to identify this algorithm
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:first-applicable",
-			"urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:first-applicable" };
 
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
 		private final List<? extends Decidable> combinedElements;
 
-		private Evaluator(List<? extends Decidable> combinedElements)
+		private Evaluator(final List<? extends Decidable> combinedElements)
 		{
 			this.combinedElements = combinedElements;
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context)
 		{
 			for (final Decidable combinedElement : combinedElements)
 			{
@@ -80,20 +74,15 @@ public final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
+	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params, final List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
 			IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}
 
-	private FirstApplicableAlg(String algId)
+	FirstApplicableAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 	}
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgSet SET = new CombiningAlgSet(new FirstApplicableAlg(SUPPORTED_IDENTIFIERS[0]), new FirstApplicableAlg(SUPPORTED_IDENTIFIERS[1]));
 
 }

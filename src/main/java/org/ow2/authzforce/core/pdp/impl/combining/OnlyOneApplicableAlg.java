@@ -37,29 +37,26 @@ import org.slf4j.LoggerFactory;
  *
  * @version $Id: $
  */
-public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
+final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 {
-	/**
-	 * The standard URI used to identify this algorithm
-	 */
-	public static final String ID = "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable";
 
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(Evaluator.class);
 
-		private static final BaseDecisionResult TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT = new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
-				"Too many (more than one) applicable policies for algorithm: " + ID));
+		private final BaseDecisionResult tooManyApplicablePoliciesIndeterminateResult;
 
 		private final List<? extends PolicyEvaluator> policyElements;
 
-		private Evaluator(List<? extends PolicyEvaluator> policyElements)
+		private Evaluator(final String algId, final List<? extends PolicyEvaluator> policyElements)
 		{
 			this.policyElements = policyElements;
+			this.tooManyApplicablePoliciesIndeterminateResult = new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
+					"Too many (more than one) applicable policies for algorithm: " + algId));
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context)
 		{
 			// atLeastOne == true iff selectedPolicy != null
 			PolicyEvaluator selectedPolicy = null;
@@ -71,7 +68,7 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 				try
 				{
 					isApplicable = policy.isApplicable(context);
-				} catch (IndeterminateEvaluationException e)
+				} catch (final IndeterminateEvaluationException e)
 				{
 					LOGGER.info("Error checking whether {} is applicable", policy, e);
 					return new BaseDecisionResult(e.getStatus());
@@ -82,7 +79,7 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 					// if one selected (found applicable) already
 					if (selectedPolicy != null)
 					{
-						return TOO_MANY_APPLICABLE_POLICIES_INDETERMINATE_RESULT;
+						return tooManyApplicablePoliciesIndeterminateResult;
 					}
 
 					// if this was the first applicable policy in the set, then
@@ -105,17 +102,17 @@ public class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(List<CombiningAlgParameter<? extends PolicyEvaluator>> params, List<? extends PolicyEvaluator> combinedElements)
+	public Evaluator getInstance(final List<CombiningAlgParameter<? extends PolicyEvaluator>> params, final List<? extends PolicyEvaluator> combinedElements)
 	{
-		return new Evaluator(combinedElements);
+		return new Evaluator(this.getId(), combinedElements);
 	}
 
 	/**
 	 * Standard constructor.
 	 */
-	public OnlyOneApplicableAlg()
+	OnlyOneApplicableAlg(final String algId)
 	{
-		super(ID, PolicyEvaluator.class);
+		super(algId, PolicyEvaluator.class);
 	}
 
 }

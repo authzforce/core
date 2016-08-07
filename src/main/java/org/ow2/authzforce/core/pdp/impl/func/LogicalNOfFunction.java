@@ -50,27 +50,33 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
  * 
  * @version $Id: $
  */
-public final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<BooleanValue>
+final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<BooleanValue>
 {
 
 	private static final class Call extends FirstOrderFunctionCall<BooleanValue>
 	{
-		private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_N_OF + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
-		private static final String INDETERMINATE_ARG_MSG_PREFIX = "Function " + NAME_N_OF + ": Indeterminate arg #";
-		private static final String INVALID_ARG0_MSG_PREFIX = "Function " + NAME_N_OF + ": Invalid arg #0 (number of required Trues): expected: (integer) >= 0; actual: ";
-		private static final String INVALID_ARGS_MSG_PREFIX = "Function " + NAME_N_OF + ": Invalid arguments to n-of function: value of arg #0 (number of required Trues) > number of boolean args: ";
-		private static final IndeterminateEvaluationException INDETERMINATE_ARG_EXCEPTION = new IndeterminateEvaluationException("Function " + NAME_N_OF
-				+ ": evaluation failed because of indeterminate arg", StatusHelper.STATUS_PROCESSING_ERROR);
+		private final String INVALID_ARG_TYPE_MESSAGE_PREFIX;
+		private final String INDETERMINATE_ARG_MSG_PREFIX;
+		private final String INVALID_ARG0_MSG_PREFIX;
+		private final String INVALID_ARGS_MSG_PREFIX;
+		private final IndeterminateEvaluationException INDETERMINATE_ARG_EXCEPTION;
 		private final List<Expression<?>> checkedArgExpressions;
 
-		private Call(FirstOrderFunctionSignature<BooleanValue> functionSig, List<Expression<?>> checkedArgExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		private Call(final FirstOrderFunctionSignature<BooleanValue> functionSig, final List<Expression<?>> checkedArgExpressions, final Datatype<?>[] remainingArgTypes)
+				throws IllegalArgumentException
 		{
 			super(functionSig, checkedArgExpressions, remainingArgTypes);
 			this.checkedArgExpressions = checkedArgExpressions;
+			INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
+			INDETERMINATE_ARG_MSG_PREFIX = "Function " + functionSig.getName() + ": Indeterminate arg #";
+			INVALID_ARG0_MSG_PREFIX = "Function " + functionSig.getName() + ": Invalid arg #0 (number of required Trues): expected: (integer) >= 0; actual: ";
+			INVALID_ARGS_MSG_PREFIX = "Function " + functionSig.getName() + ": Invalid arguments to n-of function: value of arg #0 (number of required Trues) > number of boolean args: ";
+			INDETERMINATE_ARG_EXCEPTION = new IndeterminateEvaluationException("Function " + functionSig.getName() + ": evaluation failed because of indeterminate arg",
+					StatusHelper.STATUS_PROCESSING_ERROR);
 		}
 
 		@Override
-		public BooleanValue evaluate(EvaluationContext context, AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
+		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
 		{
 			/*
 			 * Arg datatypes and number is already checked in superclass but we need to do further checks specific to this function such as the first argument which must be a positive integer
@@ -97,7 +103,7 @@ public final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunct
 			try
 			{
 				intAttrVal = Expressions.eval(input0, context, StandardDatatypes.INTEGER_FACTORY.getDatatype());
-			} catch (IndeterminateEvaluationException e)
+			} catch (final IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(INDETERMINATE_ARG_MSG_PREFIX + 0, StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
@@ -172,7 +178,7 @@ public final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunct
 							return BooleanValue.FALSE;
 						}
 					}
-				} catch (IndeterminateEvaluationException e)
+				} catch (final IndeterminateEvaluationException e)
 				{
 					// keep the indeterminate arg error to throw later, in case there was not enough
 					// TRUEs in the remaining args
@@ -193,7 +199,7 @@ public final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunct
 					try
 					{
 						attrVal = BooleanValue.class.cast(arg);
-					} catch (ClassCastException e)
+					} catch (final ClassCastException e)
 					{
 						throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
@@ -240,19 +246,9 @@ public final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunct
 		}
 	}
 
-	/**
-	 * Standard identifier for the n-of function.
-	 */
-	public static final String NAME_N_OF = XACML_NS_1_0 + "n-of";
-
-	/**
-	 * Singleton instance of "n-of" logical function
-	 */
-	public static final LogicalNOfFunction INSTANCE = new LogicalNOfFunction();
-
-	private LogicalNOfFunction()
+	LogicalNOfFunction(final String functionId)
 	{
-		super(NAME_N_OF, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
 	}
 
 	/*
@@ -262,7 +258,7 @@ public final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunct
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> checkedArgExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call(functionSignature, checkedArgExpressions, remainingArgTypes);
 	}

@@ -18,9 +18,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
@@ -38,7 +36,7 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  *
  * @version $Id: $
  */
-public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
+final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 {
 
 	private static class Evaluator implements CombiningAlg.Evaluator
@@ -155,24 +153,9 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 	}
 
-	private DenyOverridesAlg(final String algId)
+	DenyOverridesAlg(final String algId)
 	{
 		super(algId, Decidable.class);
-	}
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgSet SET;
-	static
-	{
-		final Set<CombiningAlg<?>> algSet = new HashSet<>();
-		for (final String algId : SUPPORTED_IDENTIFIERS)
-		{
-			algSet.add(new DenyOverridesAlg(algId));
-		}
-
-		SET = new CombiningAlgSet(algSet);
 	}
 
 	/** {@inheritDoc} */

@@ -17,22 +17,12 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
  *
  * @version $Id: $
  */
-public final class LogicalNotFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
+final class LogicalNotFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
 {
 
-	/**
-	 * Standard identifier for the not function.
-	 */
-	public static final String NAME_NOT = XACML_NS_1_0 + "not";
-
-	/**
-	 * Singleton instance of "not" logical function
-	 */
-	public static final LogicalNotFunction INSTANCE = new LogicalNotFunction();
-
-	private LogicalNotFunction()
+	LogicalNotFunction(final String functionId)
 	{
-		super(NAME_NOT, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Collections.singletonList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Collections.singletonList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
 	}
 
 	/** {@inheritDoc} */

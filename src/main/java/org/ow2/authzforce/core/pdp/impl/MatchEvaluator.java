@@ -35,7 +35,7 @@ import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions;
+import org.ow2.authzforce.core.pdp.impl.func.StandardFunctionRegistry;
 
 /**
  * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding attribute values in the request context.
@@ -64,7 +64,7 @@ public class MatchEvaluator
 	 * @throws java.lang.IllegalArgumentException
 	 *             invalid <code>jaxbMatch</code>
 	 */
-	public MatchEvaluator(Match jaxbMatch, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
+	public MatchEvaluator(final Match jaxbMatch, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		// get the matchFunction type, making sure that it's really a correct
 		// Target matchFunction
@@ -86,24 +86,26 @@ public class MatchEvaluator
 		try
 		{
 			attrValueExpr = expFactory.getInstance(attributeValue, xPathCompiler);
-		} catch (IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Invalid <Match>'s <AttributeValue>", e);
 		}
 
 		// Match(matchFunction, attributeValue, bagExpression) = anyOf(matchFunction,
 		// attributeValue, bagExpression)
-		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory.getFunction(StandardHigherOrderBagFunctions.NAME_ANY_OF);
+		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory.getFunction(StandardFunctionRegistry.StdFunction.ANY_OF.getId());
 		if (anyOfFunc == null)
 		{
-			throw new IllegalArgumentException("Unsupported function '" + StandardHigherOrderBagFunctions.NAME_ANY_OF + "' required for Match evaluation");
+			throw new IllegalArgumentException("Unsupported function '" + StandardFunctionRegistry.StdFunction.ANY_OF.getId() + "' required for Match evaluation");
 		}
 
 		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr, bagExpression);
 		try
 		{
 			this.anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
-		} catch (IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): " + anyOfFuncInputs, e);
 		}
@@ -118,13 +120,14 @@ public class MatchEvaluator
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error occurred evaluating the Match element in this evaluation {@code context}
 	 */
-	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
+	public boolean match(final EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final BooleanValue anyOfFuncCallResult;
 		try
 		{
 			anyOfFuncCallResult = anyOfFuncCall.evaluate(context);
-		} catch (IndeterminateEvaluationException e)
+		}
+		catch (final IndeterminateEvaluationException e)
 		{
 			throw new IndeterminateEvaluationException("Error evaluating Match (with equivalent 'any-of' function)", e.getStatusCode(), e);
 		}

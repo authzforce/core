@@ -18,9 +18,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
@@ -30,7 +28,6 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
@@ -40,28 +37,21 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  * 
  * @version $Id: $
  */
-public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
+final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 {
-
-	/**
-	 * The standard URN used to identify this algorithm
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-permit-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides" };
 
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
 		private final List<? extends Decidable> combinedElements;
 
-		private Evaluator(List<? extends Decidable> combinedElements)
+		private Evaluator(final List<? extends Decidable> combinedElements)
 		{
 			this.combinedElements = combinedElements;
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context)
 		{
 			/*
 			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
@@ -169,28 +159,13 @@ public final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
+	public Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params, final List<? extends Decidable> combinedElements)
 	{
 		return new Evaluator(combinedElements);
 	}
 
-	private PermitOverridesAlg(String algId)
+	PermitOverridesAlg(final String algId)
 	{
 		super(algId, Decidable.class);
-	}
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgSet SET;
-	static
-	{
-		final Set<CombiningAlg<?>> algSet = new HashSet<>();
-		for (final String algId : SUPPORTED_IDENTIFIERS)
-		{
-			algSet.add(new PermitOverridesAlg(algId));
-		}
-
-		SET = new CombiningAlgSet(algSet);
 	}
 }
