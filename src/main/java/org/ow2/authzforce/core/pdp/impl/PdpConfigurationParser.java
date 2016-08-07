@@ -36,7 +36,6 @@ import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.Function;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
@@ -75,7 +74,7 @@ public class PdpConfigurationParser
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PDPImpl getPDP(String confLocation) throws IOException, IllegalArgumentException
+	public static PDPImpl getPDP(final String confLocation) throws IOException, IllegalArgumentException
 	{
 		return getPDP(confLocation, null, null);
 	}
@@ -127,7 +126,7 @@ public class PdpConfigurationParser
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PDPImpl getPDP(String confLocation, String catalogLocation, String extensionXsdLocation) throws IOException, IllegalArgumentException
+	public static PDPImpl getPDP(final String confLocation, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
 		return getPDP(confLocation, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
@@ -179,7 +178,7 @@ public class PdpConfigurationParser
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PDPImpl getPDP(File confFile, String catalogLocation, String extensionXsdLocation) throws IOException, IllegalArgumentException
+	public static PDPImpl getPDP(final File confFile, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
 		return getPDP(confFile, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
@@ -202,13 +201,13 @@ public class PdpConfigurationParser
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PDPImpl getPDP(String confLocation, PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
+	public static PDPImpl getPDP(final String confLocation, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
 	{
 		File confFile = null;
 		try
 		{
 			confFile = ResourceUtils.getFile(confLocation);
-		} catch (FileNotFoundException e)
+		} catch (final FileNotFoundException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration location: " + confLocation, e);
 		}
@@ -233,7 +232,7 @@ public class PdpConfigurationParser
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration in {@code confFile}
 	 */
-	public static PDPImpl getPDP(File confFile, PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
+	public static PDPImpl getPDP(final File confFile, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
 	{
 		if (confFile == null || !confFile.exists())
 		{
@@ -251,7 +250,7 @@ public class PdpConfigurationParser
 		try
 		{
 			pdpJaxbConf = modelHandler.unmarshal(new StreamSource(confFile), Pdp.class);
-		} catch (JAXBException e)
+		} catch (final JAXBException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration file", e);
 		}
@@ -278,7 +277,7 @@ public class PdpConfigurationParser
 	 * @throws java.io.IOException
 	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
 	 */
-	public static PDPImpl getPDP(Pdp pdpJaxbConf, EnvironmentProperties envProps) throws IllegalArgumentException, IOException
+	public static PDPImpl getPDP(final Pdp pdpJaxbConf, final EnvironmentProperties envProps) throws IllegalArgumentException, IOException
 	{
 		/*
 		 * Initialize all parameters of ExpressionFactoryImpl: attribute datatype factories, functions, etc.
@@ -308,20 +307,6 @@ public class PdpConfigurationParser
 			functionRegistry.addFunction(function);
 		}
 
-		for (final String funcSetId : pdpJaxbConf.getFunctionSets())
-		{
-			final FunctionSet functionSet = PdpExtensionLoader.getExtension(FunctionSet.class, funcSetId);
-			for (final Function<?> function : functionSet.getSupportedFunctions())
-			{
-				if (!enableXPath && isXpathBased(function))
-				{
-					throw new IllegalArgumentException("XPath-based function not allowed (because configuration parameter 'enableXPath' = false): " + function);
-				}
-
-				functionRegistry.addFunction(function);
-			}
-		}
-
 		// Combining Algorithms
 		final CombiningAlgRegistry combiningAlgRegistry = new BaseCombiningAlgRegistry(pdpJaxbConf.isUseStandardCombiningAlgorithms() ? StandardCombiningAlgRegistry.INSTANCE : null);
 		for (final String algId : pdpJaxbConf.getCombiningAlgorithms())
@@ -330,7 +315,7 @@ public class PdpConfigurationParser
 			try
 			{
 				alg = PdpExtensionLoader.getExtension(CombiningAlg.class, algId);
-			} catch (IllegalArgumentException e)
+			} catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Unsupported combining algorithm: " + algId, e);
 			}
@@ -350,7 +335,7 @@ public class PdpConfigurationParser
 		try
 		{
 			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.api.value.IntegerValue.intValueExact(bigMaxVarRefDepth);
-		} catch (ArithmeticException e)
+		} catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxVariableRefDepth: " + bigMaxVarRefDepth, e);
 		}
@@ -360,7 +345,7 @@ public class PdpConfigurationParser
 		try
 		{
 			maxPolicyRefDepth = bigMaxPolicyRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.api.value.IntegerValue.intValueExact(bigMaxPolicyRefDepth);
-		} catch (ArithmeticException e)
+		} catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxPolicyRefDepth: " + bigMaxPolicyRefDepth, e);
 		}
@@ -369,7 +354,7 @@ public class PdpConfigurationParser
 				pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache, envProps);
 	}
 
-	private static boolean isXpathBased(Function<?> function)
+	private static boolean isXpathBased(final Function<?> function)
 	{
 		/*
 		 * A function is said "XPath-based" iff it takes at least one XPathExpression parameter. Regarding higher-order function, as of now, we only provide higher-order functions defined in the XACML

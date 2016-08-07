@@ -22,15 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBElement;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIdentifierList;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
@@ -47,9 +38,6 @@ import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
  */
 public abstract class IndividualDecisionRequestEvaluator
 {
-	private static final Result PERMIT = new Result(DecisionType.PERMIT, null, null, null, null, null);
-	private static final Result DENY = new Result(DecisionType.DENY, null, null, null, null, null);
-
 	private final RootPolicyEvaluator rootPolicyEvaluator;
 
 	/**
@@ -58,7 +46,7 @@ public abstract class IndividualDecisionRequestEvaluator
 	 * @param rootPolicyEvaluator
 	 *            root policy evaluator that this request evaluator uses to evaluate individual decision request
 	 */
-	protected IndividualDecisionRequestEvaluator(RootPolicyEvaluator rootPolicyEvaluator)
+	protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator)
 	{
 		assert rootPolicyEvaluator != null;
 		this.rootPolicyEvaluator = rootPolicyEvaluator;
@@ -73,9 +61,11 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *            a {@link org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest} object.
 	 * @param pdpIssuedAttributes
 	 *            a {@link java.util.Map} object.
+	 * @param returnUsedAttributes
+	 *            true iff the list of attributes used for evaluation must be included in the result
 	 * @return a {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.Result} object.
 	 */
-	protected final Result evaluate(IndividualDecisionRequest request, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+	protected final DecisionResult evaluate(final IndividualDecisionRequest request, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final boolean returnUsedAttributes)
 	{
 		assert request != null;
 
@@ -90,25 +80,9 @@ public abstract class IndividualDecisionRequestEvaluator
 			pdpEnhancedNamedAttributes.putAll(reqNamedAttributes);
 		}
 
-		final EvaluationContext ctx = new IndividualDecisionRequestContext(pdpEnhancedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdentifiersReturned());
-		final DecisionResult result = rootPolicyEvaluator.findAndEvaluate(ctx);
-		if (result == BaseDecisionResult.PERMIT)
-		{
-			return PERMIT;
-		}
-
-		if (result == BaseDecisionResult.DENY)
-		{
-			return DENY;
-		}
-
-		final List<Obligation> obligationList = result.getPepActions().getObligations();
-		final List<Advice> adviceList = result.getPepActions().getAdvices();
-		final List<JAXBElement<IdReferenceType>> applicablePolicyIdList = result.getApplicablePolicyIdList();
-
-		return new Result(result.getDecision(), result.getStatus(), obligationList == null || obligationList.isEmpty() ? null : new Obligations(obligationList), adviceList == null
-				|| adviceList.isEmpty() ? null : new AssociatedAdvice(adviceList), request.getReturnedAttributes(), applicablePolicyIdList == null || applicablePolicyIdList.isEmpty() ? null
-				: new PolicyIdentifierList(applicablePolicyIdList));
+		final EvaluationContext ctx = new IndividualDecisionRequestContext(pdpEnhancedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdListReturned(),
+				returnUsedAttributes);
+		return rootPolicyEvaluator.findAndEvaluate(ctx);
 	}
 
 	/**
@@ -122,5 +96,6 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *            a {@link java.util.Map} object.
 	 * @return a {@link java.util.List} object.
 	 */
-	protected abstract List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
+	protected abstract <INDIVIDUAL_DECISION_REQ_T extends IndividualDecisionRequest> List<Result> evaluate(List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests,
+			Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
 }

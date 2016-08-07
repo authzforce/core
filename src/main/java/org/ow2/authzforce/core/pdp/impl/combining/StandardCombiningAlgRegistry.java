@@ -42,6 +42,16 @@ public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 	private static final Logger LOGGER = LoggerFactory.getLogger(StandardCombiningAlgRegistry.class);
 
 	private static final PdpExtensionComparator<CombiningAlg<?>> COMPARATOR = new PdpExtensionComparator<>();
+	
+	/**
+	 * The standard URIs used to identify this algorithm
+	 */
+	
+	public enum AlgorithmIDs { 
+		XACML_3_0_DENY_OVERRIDES("urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides"),
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
+			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" 
+			}
 
 	/**
 	 * Singleton function registry instance for standard functions
@@ -79,14 +89,14 @@ public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 		}
 	}
 
-	private StandardCombiningAlgRegistry(Set<CombiningAlg<?>> standardExtensions)
+	private StandardCombiningAlgRegistry(final Set<CombiningAlg<?>> standardExtensions)
 	{
 		super(standardExtensions);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public void addExtension(CombiningAlg<? extends Decidable> alg)
+	public void addExtension(final CombiningAlg<? extends Decidable> alg)
 	{
 		throw new UnsupportedOperationException("a standard factory cannot be modified");
 	}

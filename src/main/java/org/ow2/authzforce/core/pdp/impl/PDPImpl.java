@@ -38,6 +38,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.CloseablePDP;
 import org.ow2.authzforce.core.pdp.api.DecisionCache;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -103,7 +104,7 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		@Override
-		public List<Result> filter(List<Result> results)
+		public List<Result> filter(final List<Result> results)
 		{
 			return results;
 		}
@@ -118,13 +119,14 @@ public class PDPImpl implements CloseablePDP
 
 	private static class NonCachingIndividualDecisionRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
-		private NonCachingIndividualDecisionRequestEvaluator(RootPolicyEvaluator rootPolicyEvaluator)
+		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator)
 		{
 			super(rootPolicyEvaluator);
 		}
 
 		@Override
-		protected List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		protected <INDIVIDUAL_DECISION_REQ_T extends IndividualDecisionRequest> List<Result> evaluate(final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests,
+				final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
 			final List<Result> results = new ArrayList<>(individualDecisionRequests.size());
 			for (final IndividualDecisionRequest individuaDecisionRequest : individualDecisionRequests)
@@ -134,8 +136,8 @@ public class PDPImpl implements CloseablePDP
 					throw new RuntimeException("One of the individual decision requests returned by the request filter is invalid (null).");
 				}
 
-				final Result result = evaluate(individuaDecisionRequest, pdpIssuedAttributes);
-				results.add(result);
+				final DecisionResult decisionResult = evaluate(individuaDecisionRequest, pdpIssuedAttributes, false);
+				results.add(decisionResult.toXACMLResult(individuaDecisionRequest.getReturnedAttributes()));
 			}
 
 			return results;
@@ -153,7 +155,7 @@ public class PDPImpl implements CloseablePDP
 
 		private final DecisionCache decisionCache;
 
-		private CachingIndividualRequestEvaluator(RootPolicyEvaluator rootPolicyEvaluator, DecisionCache decisionCache)
+		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final DecisionCache decisionCache)
 		{
 			super(rootPolicyEvaluator);
 			assert decisionCache != null;
@@ -161,9 +163,10 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		@Override
-		public final List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests, Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		public final <INDIVIDUAL_DECISION_REQ_T extends IndividualDecisionRequest> List<Result> evaluate(final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests,
+				final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
-			final Map<IndividualDecisionRequest, Result> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
+			final Map<INDIVIDUAL_DECISION_REQ_T, DecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
 				// error, return indeterminate result as only result
@@ -184,30 +187,30 @@ public class PDPImpl implements CloseablePDP
 				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
 			}
 
-			final Set<Entry<IndividualDecisionRequest, Result>> cachedRequestResultEntries = cachedResultsByRequest.entrySet();
+			final Set<Entry<INDIVIDUAL_DECISION_REQ_T, DecisionResult>> cachedRequestResultEntries = cachedResultsByRequest.entrySet();
 			final List<Result> results = new ArrayList<>(cachedRequestResultEntries.size());
-			final Map<IndividualDecisionRequest, Result> newResultsByRequest = new HashMap<>();
-			for (final Entry<IndividualDecisionRequest, Result> cachedRequestResultPair : cachedRequestResultEntries)
+			final Map<INDIVIDUAL_DECISION_REQ_T, DecisionResult> newResultsByRequest = new HashMap<>();
+			for (final Entry<INDIVIDUAL_DECISION_REQ_T, DecisionResult> cachedRequestResultPair : cachedRequestResultEntries)
 			{
-				final Result finalResult;
-				final Result cachedResult = cachedRequestResultPair.getValue();
+				final DecisionResult finalResult;
+				final INDIVIDUAL_DECISION_REQ_T individuaDecisionRequest = cachedRequestResultPair.getKey();
+				final DecisionResult cachedResult = cachedRequestResultPair.getValue();
 				if (cachedResult == null)
 				{
 					// result not in cache -> evaluate request
-					final IndividualDecisionRequest individuaDecisionRequest = cachedRequestResultPair.getKey();
 					if (individuaDecisionRequest == null)
 					{
 						throw new RuntimeException("One of the entry keys (individual decision request) returned by the decision cache implementation '" + decisionCache + "' is invalid (null).");
 					}
 
-					finalResult = super.evaluate(individuaDecisionRequest, pdpIssuedAttributes);
+					finalResult = evaluate(individuaDecisionRequest, pdpIssuedAttributes, true);
 					newResultsByRequest.put(individuaDecisionRequest, finalResult);
 				} else
 				{
 					finalResult = cachedResult;
 				}
 
-				results.add(finalResult);
+				results.add(finalResult.toXACMLResult(individuaDecisionRequest.getReturnedAttributes()));
 			}
 
 			decisionCache.putAll(newResultsByRequest);
@@ -265,10 +268,11 @@ public class PDPImpl implements CloseablePDP
 	 *             error closing the root policy Provider when static resolution is to be used; or error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when
 	 *             and before an {@link IllegalArgumentException} is raised
 	 */
-	public PDPImpl(DatatypeFactoryRegistry attributeFactory, FunctionRegistry functionRegistry, List<AbstractAttributeProvider> jaxbAttributeProviderConfs, int maxVariableReferenceDepth,
-			boolean enableXPath, CombiningAlgRegistry combiningAlgRegistry, AbstractPolicyProvider jaxbRootPolicyProviderConf, AbstractPolicyProvider jaxbRefPolicyProviderConf,
-			int maxPolicySetRefDepth, String requestFilterId, boolean strictAttributeIssuerMatch, DecisionResultFilter decisionResultFilter, AbstractDecisionCache jaxbDecisionCacheConf,
-			EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
+	public PDPImpl(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
+			final int maxVariableReferenceDepth, final boolean enableXPath, final CombiningAlgRegistry combiningAlgRegistry, final AbstractPolicyProvider jaxbRootPolicyProviderConf,
+			final AbstractPolicyProvider jaxbRefPolicyProviderConf, final int maxPolicySetRefDepth, final String requestFilterId, final boolean strictAttributeIssuerMatch,
+			final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf, final EnvironmentProperties environmentProperties) throws IllegalArgumentException,
+			IOException
 	{
 		final RequestFilter.Factory requestFilterFactory = requestFilterId == null ? DefaultRequestFilter.LaxFilterFactory.INSTANCE : PdpExtensionLoader.getExtension(RequestFilter.Factory.class,
 				requestFilterId);
@@ -306,7 +310,7 @@ public class PDPImpl implements CloseablePDP
 
 	/** {@inheritDoc} */
 	@Override
-	public List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests)
+	public <R extends IndividualDecisionRequest> List<Result> evaluate(final List<R> individualDecisionRequests)
 	{
 		if (individualDecisionRequests == null)
 		{
@@ -336,7 +340,7 @@ public class PDPImpl implements CloseablePDP
 
 	/** {@inheritDoc} */
 	@Override
-	public Response evaluate(Request request, Map<String, String> namespaceURIsByPrefix)
+	public Response evaluate(final Request request, final Map<String, String> namespaceURIsByPrefix)
 	{
 		if (request == null)
 		{
@@ -363,7 +367,7 @@ public class PDPImpl implements CloseablePDP
 		try
 		{
 			individualDecisionRequests = reqFilter.filter(request, namespaceURIsByPrefix);
-		} catch (IndeterminateEvaluationException e)
+		} catch (final IndeterminateEvaluationException e)
 		{
 			LOGGER.info("Invalid or unsupported input XACML Request syntax", e);
 			return new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, e.getStatus(), null, null, null, null)));
@@ -386,7 +390,7 @@ public class PDPImpl implements CloseablePDP
 
 	/** {@inheritDoc} */
 	@Override
-	public Response evaluate(Request request)
+	public Response evaluate(final Request request)
 	{
 		return evaluate(request, null);
 	}

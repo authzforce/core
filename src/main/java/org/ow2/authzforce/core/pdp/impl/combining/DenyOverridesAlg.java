@@ -30,7 +30,6 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
 
 /**
@@ -41,25 +40,19 @@ import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
  */
 public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 {
-	/**
-	 * The standard URIs used to identify this algorithm
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides" };
 
 	private static class Evaluator implements CombiningAlg.Evaluator
 	{
 
 		private final List<? extends Decidable> combinedElements;
 
-		private Evaluator(List<? extends Decidable> combinedElements)
+		private Evaluator(final List<? extends Decidable> combinedElements)
 		{
 			this.combinedElements = combinedElements;
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context)
 		{
 			/*
 			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
@@ -162,7 +155,7 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 	}
 
-	private DenyOverridesAlg(String algId)
+	private DenyOverridesAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 	}
@@ -184,7 +177,7 @@ public final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
+	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params, final List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
 			IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);

@@ -25,10 +25,8 @@ import java.util.List;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -115,7 +113,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 
 	private static final IllegalArgumentException UNDEF_PARAMETER_TYPES_EXCEPTION = new IllegalArgumentException("Undefined function parameter types");
 
-	private static <AV extends Value> List<Datatype<AV>> validate(List<Datatype<AV>> paramTypes)
+	private static <AV extends Value> List<Datatype<AV>> validate(final List<Datatype<AV>> paramTypes)
 	{
 		if (paramTypes == null || paramTypes.isEmpty())
 		{
@@ -135,7 +133,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 		private final String invalidArgsErrMsg;
 		private final StaticOperation<V> op;
 
-		private Call(SingleParameterTypedFirstOrderFunctionSignature<V, V> functionSig, StaticOperation<V> op, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
+		private Call(final SingleParameterTypedFirstOrderFunctionSignature<V, V> functionSig, final StaticOperation<V> op, final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes)
 				throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
@@ -144,7 +142,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 		}
 
 		@Override
-		protected V evaluate(Deque<V> args) throws IndeterminateEvaluationException
+		protected V evaluate(final Deque<V> args) throws IndeterminateEvaluationException
 		{
 			try
 			{
@@ -170,7 +168,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	 *            whether this is a varargs function (like Java varargs method), i.e. last arg has variable-length
 	 * 
 	 */
-	private NumericArithmeticFunction(String funcURI, boolean varArgs, List<Datatype<AV>> paramTypes, StaticOperation<AV> op) throws IllegalArgumentException
+	private NumericArithmeticFunction(final String funcURI, final boolean varArgs, final List<Datatype<AV>> paramTypes, final StaticOperation<AV> op) throws IllegalArgumentException
 	{
 		super(funcURI, validate(paramTypes).get(0), varArgs, paramTypes);
 		this.op = op;
@@ -178,7 +176,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<AV> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<AV> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		/**
 		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all static/constant arguments and if there are more than one, pre-compute their sum (resp. product) and replace
@@ -194,7 +192,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	{
 
 		@Override
-		public NAV eval(Deque<NAV> args)
+		public NAV eval(final Deque<NAV> args)
 		{
 			return args.getFirst().abs();
 		}
@@ -204,7 +202,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	private static final class AddOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
 		@Override
-		public NAV eval(Deque<NAV> args)
+		public NAV eval(final Deque<NAV> args)
 		{
 			final NAV arg0 = args.poll();
 			return arg0.add(args);
@@ -216,7 +214,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	{
 
 		@Override
-		public NAV eval(Deque<NAV> args)
+		public NAV eval(final Deque<NAV> args)
 		{
 			final NAV arg0 = args.poll();
 			return arg0.multiply(args);
@@ -227,7 +225,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	private static final class SubtractOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
 		@Override
-		public NAV eval(Deque<NAV> args)
+		public NAV eval(final Deque<NAV> args)
 		{
 			final NAV arg0 = args.poll();
 			final NAV arg1 = args.poll();
@@ -239,7 +237,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	private static final class DivideOperation<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
 		@Override
-		public NAV eval(Deque<NAV> args) throws ArithmeticException
+		public NAV eval(final Deque<NAV> args) throws ArithmeticException
 		{
 			final NAV arg0 = args.poll();
 			final NAV arg1 = args.poll();
@@ -251,7 +249,7 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 	private static final class IntegerModOperation implements StaticOperation<IntegerValue>
 	{
 		@Override
-		public IntegerValue eval(Deque<IntegerValue> args) throws ArithmeticException
+		public IntegerValue eval(final Deque<IntegerValue> args) throws ArithmeticException
 		{
 			final IntegerValue arg0 = args.poll();
 			final IntegerValue arg1 = args.poll();
@@ -259,25 +257,25 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 		}
 	}
 
-	private static final class FloorOperation implements StaticOperation<DoubleValue>
+	private static final StaticOperation<DoubleValue> FLOOR_OPERATION = new StaticOperation<DoubleValue>()
 	{
 
 		@Override
-		public DoubleValue eval(Deque<DoubleValue> args)
+		public DoubleValue eval(final Deque<DoubleValue> args)
 		{
 			return args.getFirst().floor();
 		}
 
-	}
+	};
 
-	private static class RoundOperation implements StaticOperation<DoubleValue>
+	private static final StaticOperation<DoubleValue> ROUND_OPERATION = new StaticOperation<DoubleValue>()
 	{
 		@Override
-		public DoubleValue eval(Deque<DoubleValue> args)
+		public DoubleValue eval(final Deque<DoubleValue> args)
 		{
 			return args.getFirst().roundIEEE754Default();
 		}
-	}
+	};
 
 	/**
 	 * Numeric arithmetic function cluster
@@ -315,8 +313,8 @@ public final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> ext
 			new NumericArithmeticFunction<>(NAME_INTEGER_MOD, false, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.INTEGER_FACTORY.getDatatype()),
 					new IntegerModOperation()),
 			//
-			new NumericArithmeticFunction<>(NAME_FLOOR, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype()), new FloorOperation()),
+			new NumericArithmeticFunction<>(NAME_FLOOR, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype()), FLOOR_OPERATION),
 			//
-			new NumericArithmeticFunction<>(NAME_ROUND, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype()), new RoundOperation()));
+			new NumericArithmeticFunction<>(NAME_ROUND, false, Arrays.asList(StandardDatatypes.DOUBLE_FACTORY.getDatatype()), ROUND_OPERATION));
 
 }

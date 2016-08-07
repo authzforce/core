@@ -65,7 +65,7 @@ public final class PdpBean implements PDP
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
-	public void setConfigFile(String filePath) throws IllegalArgumentException
+	public void setConfigFile(final String filePath) throws IllegalArgumentException
 	{
 		confLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
@@ -80,7 +80,7 @@ public final class PdpBean implements PDP
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
-	public void setSchemaFile(String filePath) throws IllegalArgumentException
+	public void setSchemaFile(final String filePath) throws IllegalArgumentException
 	{
 		extSchemaLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
@@ -95,7 +95,7 @@ public final class PdpBean implements PDP
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is an unresolvable placeholder in {@code filePath}
 	 */
-	public void setCatalogFile(String filePath) throws IllegalArgumentException
+	public void setCatalogFile(final String filePath) throws IllegalArgumentException
 	{
 		catalogLocation = SystemPropertyUtils.resolvePlaceholders(filePath);
 		init();
@@ -122,7 +122,7 @@ public final class PdpBean implements PDP
 
 	/** {@inheritDoc} */
 	@Override
-	public Response evaluate(Request request)
+	public Response evaluate(final Request request)
 	{
 		return evaluate(request, null);
 	}
@@ -152,7 +152,7 @@ public final class PdpBean implements PDP
 
 	/** {@inheritDoc} */
 	@Override
-	public List<Result> evaluate(List<? extends IndividualDecisionRequest> individualDecisionRequests)
+	public <INDIVIDUAL_DECISION_REQUEST_T extends IndividualDecisionRequest> List<Result> evaluate(final List<INDIVIDUAL_DECISION_REQUEST_T> individualDecisionRequests)
 	{
 		checkInit();
 		return pdp.evaluate(individualDecisionRequests);
@@ -160,7 +160,7 @@ public final class PdpBean implements PDP
 
 	/** {@inheritDoc} */
 	@Override
-	public Response evaluate(Request request, Map<String, String> namespaceURIsByPrefix)
+	public Response evaluate(final Request request, final Map<String, String> namespaceURIsByPrefix)
 	{
 		checkInit();
 		return pdp.evaluate(request, namespaceURIsByPrefix);

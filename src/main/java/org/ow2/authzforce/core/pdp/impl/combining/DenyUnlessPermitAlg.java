@@ -82,7 +82,7 @@ public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 				}
 			}
 
-			return combinedDenyResult == null ? BaseDecisionResult.DENY : combinedDenyResult;
+			return combinedDenyResult == null ? BaseDecisionResult.SIMPLE_DENY : combinedDenyResult;
 		}
 
 	}

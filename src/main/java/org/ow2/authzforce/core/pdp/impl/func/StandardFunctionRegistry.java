@@ -30,7 +30,6 @@ import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.NotFunction;
 import com.sun.xacml.StringNormalizeFunction;
 import com.sun.xacml.TimeInRangeFunction;
 
@@ -89,7 +88,7 @@ public final class StandardFunctionRegistry extends FunctionRegistry
 		nonGenericFunctions.add(LogicalOrFunction.INSTANCE);
 		nonGenericFunctions.add(LogicalAndFunction.INSTANCE);
 		nonGenericFunctions.add(LogicalNOfFunction.INSTANCE);
-		nonGenericFunctions.add(NotFunction.INSTANCE);
+		nonGenericFunctions.add(LogicalNotFunction.INSTANCE);
 
 		/*
 		 * Total-ordering comparison functions (all elements of a given type can be compared to each other), i.e. numeric (A.3.6) and string comparison functions (first part of A.3.8)

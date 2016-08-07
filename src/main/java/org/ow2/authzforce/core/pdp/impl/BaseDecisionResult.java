@@ -24,13 +24,23 @@ package org.ow2.authzforce.core.pdp.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIdentifierList;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.PepActions;
 
@@ -51,12 +61,15 @@ public final class BaseDecisionResult implements DecisionResult
 	/**
 	 * Deny result with no obligation/advice/Included attribute/policy identifiers. Deny decision and nothing else.
 	 */
-	public static final DecisionResult DENY = new BaseDecisionResult(DecisionType.DENY, null);
+	public static final DecisionResult SIMPLE_DENY = new BaseDecisionResult(DecisionType.DENY, null);
 
 	/**
 	 * Permit result with no obligation/advice/Included attribute/policy identifiers. Permit decision and nothing else.
 	 */
-	public static final DecisionResult PERMIT = new BaseDecisionResult(DecisionType.PERMIT, null);
+	public static final DecisionResult SIMPLE_PERMIT = new BaseDecisionResult(DecisionType.PERMIT, null);
+
+	private static final Result SIMPLE_PERMIT_XACML = new Result(DecisionType.PERMIT, null, null, null, null, null);
+	private static final Result SIMPLE_DENY_XACML = new Result(DecisionType.DENY, null, null, null, null, null);
 
 	private final DecisionType decision;
 
@@ -81,9 +94,16 @@ public final class BaseDecisionResult implements DecisionResult
 	// initialized non-null
 	private final List<JAXBElement<IdReferenceType>> applicablePolicyIdList;
 
+	// null if not required
+	private final Set<AttributeGUID> usedNamedAttributeIdList;
+
+	// null if not required
+	private final Set<AttributeSelectorId> usedExtraContentSelectorList;
+
 	private transient volatile int hashCode = 0;
 
-	private BaseDecisionResult(DecisionType decision, DecisionType extendedIndeterminate, Status status, PepActions pepActions, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	private BaseDecisionResult(final DecisionType decision, final DecisionType extendedIndeterminate, final Status status, final PepActions pepActions,
+			final List<JAXBElement<IdReferenceType>> policyIdList, final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
 	{
 		if (decision == null)
 		{
@@ -94,8 +114,9 @@ public final class BaseDecisionResult implements DecisionResult
 		this.extIndeterminate = extendedIndeterminate;
 		this.status = status;
 		this.pepActions = pepActions == null ? new BasePepActions(null, null) : pepActions;
-		this.applicablePolicyIdList = policyIdentifierList == null ? new ArrayList<JAXBElement<IdReferenceType>>() : policyIdentifierList;
-
+		this.applicablePolicyIdList = policyIdList == null ? new ArrayList<JAXBElement<IdReferenceType>>() : policyIdList;
+		this.usedNamedAttributeIdList = usedNamedAttributes;
+		this.usedExtraContentSelectorList = usedExtraAttributeContents;
 	}
 
 	/**
@@ -114,9 +135,9 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param policyIdentifierList
 	 *            list of matched policy identifiers
 	 */
-	public BaseDecisionResult(Status status, DecisionType extendedIndeterminate, List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	public BaseDecisionResult(final Status status, final DecisionType extendedIndeterminate, final List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
-		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, policyIdentifierList);
+		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, policyIdentifierList, null, null);
 	}
 
 	/**
@@ -133,9 +154,9 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
-	public BaseDecisionResult(Status status, DecisionType extendedIndeterminate)
+	public BaseDecisionResult(final Status status, final DecisionType extendedIndeterminate)
 	{
-		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, null);
+		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, null, null, null);
 	}
 
 	/**
@@ -143,10 +164,14 @@ public final class BaseDecisionResult implements DecisionResult
 	 *
 	 * @param status
 	 *            reason/code for Indeterminate
+	 * @param usedNamedAttributes
+	 *            list of identifiers of the named attributes actually used for evaluating this decision
+	 * @param usedExtraAttributeContents
+	 *            extra Attributes/Content(s) actually used for evaluating this decision
 	 */
-	public BaseDecisionResult(Status status)
+	public BaseDecisionResult(final Status status, final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
 	{
-		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null);
+		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, usedNamedAttributes, usedExtraAttributeContents);
 	}
 
 	/**
@@ -157,9 +182,9 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param pepActions
 	 *            PEP actions (obligations/advices)
 	 */
-	public BaseDecisionResult(DecisionType decision, PepActions pepActions)
+	public BaseDecisionResult(final DecisionType decision, final PepActions pepActions)
 	{
-		this(decision, DecisionType.NOT_APPLICABLE, null, pepActions, null);
+		this(decision, DecisionType.NOT_APPLICABLE, null, pepActions, null, null, null);
 	}
 
 	/**
@@ -171,10 +196,15 @@ public final class BaseDecisionResult implements DecisionResult
 	 *            PEP actions (obligations/advices) to be added to the result
 	 * @param applicablePolicyIdList
 	 *            list of matched policy identifiers to be added to the result
+	 * @param usedNamedAttributes
+	 *            list of identifiers of the named attributes actually used for evaluating this decision
+	 * @param usedExtraAttributeContents
+	 *            extra Attributes/Content(s) actually used for evaluating this decision
 	 */
-	public BaseDecisionResult(DecisionResult algResult, PepActions pepActions, List<JAXBElement<IdReferenceType>> applicablePolicyIdList)
+	public BaseDecisionResult(final DecisionResult algResult, final PepActions pepActions, final List<JAXBElement<IdReferenceType>> applicablePolicyIdList,
+			final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
 	{
-		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList);
+		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList, usedNamedAttributes, usedExtraAttributeContents);
 	}
 
 	/** {@inheritDoc} */
@@ -191,7 +221,7 @@ public final class BaseDecisionResult implements DecisionResult
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -235,17 +265,6 @@ public final class BaseDecisionResult implements DecisionResult
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Get identifiers of policies found applicable for the decision request
-	 */
-	@Override
-	public List<JAXBElement<IdReferenceType>> getApplicablePolicyIdList()
-	{
-		return this.applicablePolicyIdList;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 *
 	 * Get XACML Decision
 	 */
 	@Override
@@ -279,10 +298,28 @@ public final class BaseDecisionResult implements DecisionResult
 	/**
 	 * {@inheritDoc}
 	 *
+	 * Get identifiers of policies found applicable for the decision request
+	 */
+	@Override
+	public List<JAXBElement<IdReferenceType>> getApplicablePolicyIdList()
+	{
+		return this.applicablePolicyIdList;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public DecisionType getExtendedIndeterminate()
+	{
+		return this.extIndeterminate;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
 	 * Merge extra PEP actions and/or matched policy identifiers. Used when combining results from child Rules of Policy or child Policies of PolicySet
 	 */
 	@Override
-	public void merge(PepActions newPepActions, List<JAXBElement<IdReferenceType>> newMatchedPolicyIdList)
+	public void merge(final PepActions newPepActions, final List<JAXBElement<IdReferenceType>> newMatchedPolicyIdList)
 	{
 		if (newPepActions != null)
 		{
@@ -302,11 +339,35 @@ public final class BaseDecisionResult implements DecisionResult
 		return "Result [decision=" + decision + ", status=" + status + ", pepActions=" + pepActions + ", applicablePolicyIdList=" + applicablePolicyIdList + "]";
 	}
 
-	/** {@inheritDoc} */
 	@Override
-	public DecisionType getExtendedIndeterminate()
+	public Result toXACMLResult(final List<Attributes> returnedAttributes)
 	{
-		return this.extIndeterminate;
+		if (this == SIMPLE_PERMIT)
+		{
+			return SIMPLE_PERMIT_XACML;
+		}
+
+		if (this == SIMPLE_DENY)
+		{
+			return SIMPLE_DENY_XACML;
+		}
+
+		final List<Obligation> obligationList = this.pepActions.getObligations();
+		final List<Advice> adviceList = this.pepActions.getAdvices();
+		return new Result(this.decision, this.status, obligationList == null || obligationList.isEmpty() ? null : new Obligations(obligationList), adviceList == null || adviceList.isEmpty() ? null
+				: new AssociatedAdvice(adviceList), returnedAttributes, applicablePolicyIdList == null || applicablePolicyIdList.isEmpty() ? null : new PolicyIdentifierList(applicablePolicyIdList));
+	}
+
+	@Override
+	public Set<AttributeGUID> getUsedNamedAttributes()
+	{
+		return usedNamedAttributeIdList;
+	}
+
+	@Override
+	public Set<AttributeSelectorId> getUsedExtraAttributeContents()
+	{
+		return usedExtraContentSelectorList;
 	}
 
 }

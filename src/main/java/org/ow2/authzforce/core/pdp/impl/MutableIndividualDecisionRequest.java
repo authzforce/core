@@ -52,7 +52,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * @param returnPolicyIdList
 	 *            equivalent of XACML ReturnPolicyIdList
 	 */
-	public MutableIndividualDecisionRequest(boolean returnPolicyIdList)
+	public MutableIndividualDecisionRequest(final boolean returnPolicyIdList)
 	{
 		// these maps/lists may be updated later by put(...) method defined in this class
 		namedAttributes = new HashMap<>();
@@ -67,7 +67,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * @param baseRequest
 	 *            replicated existing request. Further changes to it are not reflected back to this new instance.
 	 */
-	public MutableIndividualDecisionRequest(IndividualDecisionRequest baseRequest)
+	public MutableIndividualDecisionRequest(final IndividualDecisionRequest baseRequest)
 	{
 		// these maps/lists may be updated later by put(...) method defined in this class
 		final Map<AttributeGUID, Bag<?>> baseNamedAttributes = baseRequest.getNamedAttributes();
@@ -76,7 +76,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 		namedAttributes = baseNamedAttributes == null ? new HashMap<AttributeGUID, Bag<?>>() : new HashMap<>(baseNamedAttributes);
 		extraContentsByCategory = baseExtraContentsByCategory == null ? new HashMap<String, XdmNode>() : new HashMap<>(baseExtraContentsByCategory);
 		attributesToIncludeInResult = baseReturnedAttributes == null ? new ArrayList<Attributes>() : new ArrayList<>(baseRequest.getReturnedAttributes());
-		returnApplicablePolicyIdList = baseRequest.isApplicablePolicyIdentifiersReturned();
+		returnApplicablePolicyIdList = baseRequest.isApplicablePolicyIdListReturned();
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code categoryName} or {@code attributes} is null
 	 */
-	public void put(String categoryName, SingleCategoryAttributes<?> categorySpecificAttributes) throws IllegalArgumentException
+	public void put(final String categoryName, final SingleCategoryAttributes<?> categorySpecificAttributes) throws IllegalArgumentException
 	{
 		if (categoryName == null)
 		{
@@ -159,7 +159,7 @@ public class MutableIndividualDecisionRequest implements IndividualDecisionReque
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isApplicablePolicyIdentifiersReturned()
+	public boolean isApplicablePolicyIdListReturned()
 	{
 		return returnApplicablePolicyIdList;
 	}
