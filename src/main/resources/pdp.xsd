@@ -162,21 +162,45 @@
                <documentation>Enable support for XACML core standard combining algorithms.					</documentation>
             </annotation>
          </attribute>
-         <attribute name="pdpStdTimeEnvOverrides" type="boolean" use="optional" default="false">
+         <attribute name="stdEnvTimeProvider" use="optional" default="REQUEST_ELSE_PDP">
             <annotation>
-               <documentation>True iff the PDP's values for the standard environment attributes specified in §10.2.5 (current-time, current-date and current-dateTime) must always be set and override
-                  values from the Request, if any.
-                  WARNING: note that the XACML standard (§10.2.5) says: "If values for these attributes are not present in the decision request, then their values MUST
-                  be supplied by the context handler"
-                  but it does NOT say "If AND ONLY IF values..." So setting this flag to true could still be considered XACML compliant in a strict sense.
-                  Besides,
-                  what if the decision request only specifies current-time but not current-dateTime, and the policy requires both? Should the PDP provides its own value for current-dateTime?
-                  This could
-                  cause some inconsistencies since current-time and current-dateTime would come from two different sources/environments.
-                  Currently, the PDP's default behavior (this flag set to false)
-                  on this matter is a strict interpretation of the spec, i.e. if any of these attribute is not set in the request, the PDP uses its own value instead. So BEWARE.
+               <documentation>
+                  Defines the source for the standard environment attributes specified in §10.2.5: current-time, current-date and current-dateTime.
+                  The options are:
+                  <ul>
+                     <li>REQUEST_ELSE_PDP: the default choice, that complies with the XACML standard (§10.2.5): "If
+                        values for these attributes are not present in the decision request, then their
+                        values MUST be supplied
+                        by the context handler", in our case, "context handler" means the PDP. In other words, the attribute values come from request by default, or from the PDP
+                        if (and *only if* in this case) they are not set in the request.
+                        Issue: what if the decision request only specifies current-time but not current-dateTime, and the policy
+                        requires both? Should the PDP provides its own value
+                        for current-dateTime? This could cause some
+                        inconsistencies since current-time and current-dateTime would come from two
+                        different sources/environments. With this option, we have
+                        a strict interpretation of the spec,
+                        i.e. if any of these attribute is not set in the request, the PDP uses its own
+                        value instead. So BEWARE. Else you have the other options below.</li>
+                     <li>REQUEST_ONLY: always use the value from the request, or nothing if the value is not set in the request, in which case this results in Indeterminate (missing attribute) if the
+                        policy evaluation requires it.</li>
+                     <li>PDP_ONLY: always use the values from the PDP. In other words, Request values are simply ignored; PDP values systematically override the ones from the request.
+                        This also guarantees that they are always set (by the PDP).
+                        NB: note that the XACML standard (§10.2.5) says: "If
+                        values for these attributes are not present in the decision request, then their
+                        values MUST be supplied
+                        by the context handler" but it does NOT
+                        say "If AND ONLY IF values..." So
+                        this option could still be considered XACML compliant in a strict sense.</li>
+                  </ul>
                </documentation>
             </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="REQUEST_ELSE_PDP"></enumeration>
+                  <enumeration value="REQUEST_ONLY"></enumeration>
+                  <enumeration value="PDP_ONLY"></enumeration>
+               </restriction>
+            </simpleType>
          </attribute>
          <attribute name="enableXPath" type="boolean" use="optional" default="false">
             <annotation>
@@ -360,4 +384,8 @@
          </extension>
       </complexContent>
    </complexType>
+
+   <simpleType name="NewSimpleType">
+      <restriction base="string"></restriction>
+   </simpleType>
 </schema>
