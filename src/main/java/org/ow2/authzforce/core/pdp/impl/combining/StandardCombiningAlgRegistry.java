@@ -209,7 +209,7 @@ public final class StandardCombiningAlgRegistry extends BaseCombiningAlgRegistry
 		// first-applicable
 		for (final StdAlgorithm alg : EnumSet.range(StdAlgorithm.XACML_1_0_POLICY_COMBINING_FIRST_APPLICABLE, StdAlgorithm.XACML_1_0_RULE_COMBINING_FIRST_APPLICABLE))
 		{
-			standardAlgorithms.add(new PermitUnlessDenyAlg(alg.id));
+			standardAlgorithms.add(new FirstApplicableAlg(alg.id));
 		}
 
 		// only-one-applicable
