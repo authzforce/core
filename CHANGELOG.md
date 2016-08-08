@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file following the [K
 
 ## 4.0.2
 ### Fixed
-- Issues reported by Codacyi (including fixed issues in upgraded dependency core-pdp-api 4.0.2)
+- Issues reported by Codacy (including fixed issues in upgraded dependency core-pdp-api 4.0.2)
 
 
 ## 4.0.0

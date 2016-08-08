@@ -207,7 +207,8 @@ public class PdpConfigurationParser
 		try
 		{
 			confFile = ResourceUtils.getFile(confLocation);
-		} catch (final FileNotFoundException e)
+		}
+		catch (final FileNotFoundException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration location: " + confLocation, e);
 		}
@@ -250,7 +251,8 @@ public class PdpConfigurationParser
 		try
 		{
 			pdpJaxbConf = modelHandler.unmarshal(new StreamSource(confFile), Pdp.class);
-		} catch (final JAXBException e)
+		}
+		catch (final JAXBException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration file", e);
 		}
@@ -315,7 +317,8 @@ public class PdpConfigurationParser
 			try
 			{
 				alg = PdpExtensionLoader.getExtension(CombiningAlg.class, algId);
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Unsupported combining algorithm: " + algId, e);
 			}
@@ -335,7 +338,8 @@ public class PdpConfigurationParser
 		try
 		{
 			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.api.value.IntegerValue.intValueExact(bigMaxVarRefDepth);
-		} catch (final ArithmeticException e)
+		}
+		catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxVariableRefDepth: " + bigMaxVarRefDepth, e);
 		}
@@ -345,13 +349,15 @@ public class PdpConfigurationParser
 		try
 		{
 			maxPolicyRefDepth = bigMaxPolicyRefDepth == null ? -1 : org.ow2.authzforce.core.pdp.api.value.IntegerValue.intValueExact(bigMaxPolicyRefDepth);
-		} catch (final ArithmeticException e)
+		}
+		catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxPolicyRefDepth: " + bigMaxPolicyRefDepth, e);
 		}
 
 		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), maxVarRefDepth, enableXPath, combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(),
-				pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), decisionResultFilter, jaxbDecisionCache, envProps);
+				pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), pdpJaxbConf.isPdpStdTimeEnvOverrides(),
+				decisionResultFilter, jaxbDecisionCache, envProps);
 	}
 
 	private static boolean isXpathBased(final Function<?> function)

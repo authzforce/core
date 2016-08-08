@@ -119,9 +119,9 @@ public class PDPImpl implements CloseablePDP
 
 	private static class NonCachingIndividualDecisionRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
-		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator)
+		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final boolean pdpStdTimeEnvOverrides)
 		{
-			super(rootPolicyEvaluator);
+			super(rootPolicyEvaluator, pdpStdTimeEnvOverrides);
 		}
 
 		@Override
@@ -155,9 +155,9 @@ public class PDPImpl implements CloseablePDP
 
 		private final DecisionCache decisionCache;
 
-		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final DecisionCache decisionCache)
+		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final boolean pdpStdTimeEnvOverrides, final DecisionCache decisionCache)
 		{
-			super(rootPolicyEvaluator);
+			super(rootPolicyEvaluator, pdpStdTimeEnvOverrides);
 			assert decisionCache != null;
 			this.decisionCache = decisionCache;
 		}
@@ -205,7 +205,8 @@ public class PDPImpl implements CloseablePDP
 
 					finalResult = evaluate(individuaDecisionRequest, pdpIssuedAttributes, true);
 					newResultsByRequest.put(individuaDecisionRequest, finalResult);
-				} else
+				}
+				else
 				{
 					finalResult = cachedResult;
 				}
@@ -218,10 +219,10 @@ public class PDPImpl implements CloseablePDP
 		}
 	}
 
-	private final RootPolicyEvaluator rootPolicyEvaluator;
-	private final DecisionCache decisionCache;
 	private final RequestFilter reqFilter;
 	private final IndividualDecisionRequestEvaluator individualReqEvaluator;
+	private final DecisionCache decisionCache;
+	private final RootPolicyEvaluator rootPolicyEvaluator;
 	private final DecisionResultFilter resultFilter;
 
 	/**
@@ -236,6 +237,7 @@ public class PDPImpl implements CloseablePDP
 	 *            AttributeSelectors/AttributeDesignators are not supported
 	 * @param maxVariableReferenceDepth
 	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference); strictly negative value means no limit
+	 * 
 	 * @param enableXPath
 	 *            allow XPath evaluation, i.e. AttributeSelectors and xpathExpressions (experimental, not for production, use with caution)
 	 * @param requestFilterId
@@ -258,6 +260,12 @@ public class PDPImpl implements CloseablePDP
 	 *            AttributeDesignators have an Issuer (best practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the
 	 *            attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone." if one of the mandatory arguments is
 	 *            null
+	 * @param pdpStdTimeEnvOverrides
+	 *            True iff the PDP's values for the standard environment attributes specified in §10.2.5 (current-time, current-date and current-dateTime) must always be set and override values from
+	 *            the Request, if any. WARNING: note that the XACML standard (§10.2.5) says: "If values for these attributes are not present in the decision request, then their values MUST be supplied
+	 *            by the context handler" but it does NOT say "If AND ONLY IF values..." So setting this flag to true could still be considered XACML compliant in a strict sense. Besides, what if the
+	 *            decision request only specifies current-time but not current-dateTime, and the policy requires both? Should the PDP provides its own value for current-dateTime? This could cause some
+	 *            inconsistencies since current-time and current-dateTime would come from two different sources/environments. So BEWARE.
 	 * @param environmentProperties
 	 *            PDP configuration environment properties
 	 * @throws java.lang.IllegalArgumentException
@@ -271,8 +279,8 @@ public class PDPImpl implements CloseablePDP
 	public PDPImpl(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
 			final int maxVariableReferenceDepth, final boolean enableXPath, final CombiningAlgRegistry combiningAlgRegistry, final AbstractPolicyProvider jaxbRootPolicyProviderConf,
 			final AbstractPolicyProvider jaxbRefPolicyProviderConf, final int maxPolicySetRefDepth, final String requestFilterId, final boolean strictAttributeIssuerMatch,
-			final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf, final EnvironmentProperties environmentProperties) throws IllegalArgumentException,
-			IOException
+			final boolean pdpStdTimeEnvOverrides, final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf, final EnvironmentProperties environmentProperties)
+			throws IllegalArgumentException, IOException
 	{
 		final RequestFilter.Factory requestFilterFactory = requestFilterId == null ? DefaultRequestFilter.LaxFilterFactory.INSTANCE : PdpExtensionLoader.getExtension(RequestFilter.Factory.class,
 				requestFilterId);
@@ -286,7 +294,8 @@ public class PDPImpl implements CloseablePDP
 		if (staticRootPolicyEvaluator == null)
 		{
 			this.rootPolicyEvaluator = candidateRootPolicyEvaluator;
-		} else
+		}
+		else
 		{
 			this.rootPolicyEvaluator = staticRootPolicyEvaluator;
 		}
@@ -297,14 +306,15 @@ public class PDPImpl implements CloseablePDP
 		if (jaxbDecisionCacheConf == null)
 		{
 			this.decisionCache = null;
-		} else
+		}
+		else
 		{
 			final DecisionCache.Factory<AbstractDecisionCache> responseCacheStoreFactory = PdpExtensionLoader.getJaxbBoundExtension(DecisionCache.Factory.class, jaxbDecisionCacheConf.getClass());
 			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
 		}
 
-		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator) : new CachingIndividualRequestEvaluator(rootPolicyEvaluator,
-				this.decisionCache);
+		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, pdpStdTimeEnvOverrides)
+				: new CachingIndividualRequestEvaluator(rootPolicyEvaluator, pdpStdTimeEnvOverrides, this.decisionCache);
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
@@ -318,10 +328,13 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		/*
-		 * Every request context (named attributes) is completed with common current date/time attribute (same values) set/"issued" locally (here by the PDP engine) according to XACML core spec:
-		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (� B.7).
+		 * Every request context (named attributes) is completed with common standard current date/time attribute (same values) set/"issued" locally (here by the PDP engine) according to XACML core
+		 * spec: "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (§B.7). XACML standard (§10.2.5) says: "If
+		 * values for these attributes are not present in the decision request, then their values MUST be supplied by the context handler". <p> These current date/time values are set here once before
+		 * every individual request is evaluated to make sure they all use the same value for current-time/current-date/current-dateTime if no value supplied in the decision request, or if the request
+		 * evaluator is set to pdp-overrides mode (PDP issued attribute values override request values). More info in IndividualDecisionRequestEvaluator class.
 		 */
-		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>();
+		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>(3);
 		// current datetime
 		final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
 		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(StandardDatatypes.DATETIME_FACTORY.getDatatype(), currentDateTimeValue));
@@ -367,7 +380,8 @@ public class PDPImpl implements CloseablePDP
 		try
 		{
 			individualDecisionRequests = reqFilter.filter(request, namespaceURIsByPrefix);
-		} catch (final IndeterminateEvaluationException e)
+		}
+		catch (final IndeterminateEvaluationException e)
 		{
 			LOGGER.info("Invalid or unsupported input XACML Request syntax", e);
 			return new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, e.getStatus(), null, null, null, null)));
