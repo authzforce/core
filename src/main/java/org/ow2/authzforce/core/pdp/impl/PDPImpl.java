@@ -57,6 +57,7 @@ import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.impl.policy.StaticApplicablePolicyView;
+import org.ow2.authzforce.core.xmlns.pdp.StandardCurrentTimeProvider;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
 import org.ow2.authzforce.xacml.identifiers.XACMLCategory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
@@ -119,9 +120,9 @@ public class PDPImpl implements CloseablePDP
 
 	private static class NonCachingIndividualDecisionRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
-		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final boolean pdpStdTimeEnvOverrides)
+		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardCurrentTimeProvider standardCurrentTimeProvider)
 		{
-			super(rootPolicyEvaluator, pdpStdTimeEnvOverrides);
+			super(rootPolicyEvaluator, standardCurrentTimeProvider);
 		}
 
 		@Override
@@ -260,12 +261,8 @@ public class PDPImpl implements CloseablePDP
 	 *            AttributeDesignators have an Issuer (best practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the
 	 *            attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone." if one of the mandatory arguments is
 	 *            null
-	 * @param pdpStdTimeEnvOverrides
-	 *            True iff the PDP's values for the standard environment attributes specified in §10.2.5 (current-time, current-date and current-dateTime) must always be set and override values from
-	 *            the Request, if any. WARNING: note that the XACML standard (§10.2.5) says: "If values for these attributes are not present in the decision request, then their values MUST be supplied
-	 *            by the context handler" but it does NOT say "If AND ONLY IF values..." So setting this flag to true could still be considered XACML compliant in a strict sense. Besides, what if the
-	 *            decision request only specifies current-time but not current-dateTime, and the policy requires both? Should the PDP provides its own value for current-dateTime? This could cause some
-	 *            inconsistencies since current-time and current-dateTime would come from two different sources/environments. So BEWARE.
+	 * @param standardCurrentTimeProvider
+	 *            provider for standard environment current-time/current-date/current-dateTime attribute values (request or PDP, etc.)
 	 * @param environmentProperties
 	 *            PDP configuration environment properties
 	 * @throws java.lang.IllegalArgumentException
@@ -279,7 +276,7 @@ public class PDPImpl implements CloseablePDP
 	public PDPImpl(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
 			final int maxVariableReferenceDepth, final boolean enableXPath, final CombiningAlgRegistry combiningAlgRegistry, final AbstractPolicyProvider jaxbRootPolicyProviderConf,
 			final AbstractPolicyProvider jaxbRefPolicyProviderConf, final int maxPolicySetRefDepth, final String requestFilterId, final boolean strictAttributeIssuerMatch,
-			final boolean pdpStdTimeEnvOverrides, final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf, final EnvironmentProperties environmentProperties)
+			final StandardCurrentTimeProvider standardCurrentTimeProvider, final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf, final EnvironmentProperties environmentProperties)
 			throws IllegalArgumentException, IOException
 	{
 		final RequestFilter.Factory requestFilterFactory = requestFilterId == null ? DefaultRequestFilter.LaxFilterFactory.INSTANCE : PdpExtensionLoader.getExtension(RequestFilter.Factory.class,
@@ -313,8 +310,8 @@ public class PDPImpl implements CloseablePDP
 			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
 		}
 
-		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, pdpStdTimeEnvOverrides)
-				: new CachingIndividualRequestEvaluator(rootPolicyEvaluator, pdpStdTimeEnvOverrides, this.decisionCache);
+		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, standardCurrentTimeProvider)
+				: new CachingIndividualRequestEvaluator(rootPolicyEvaluator, standardCurrentTimeProvider, this.decisionCache);
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 

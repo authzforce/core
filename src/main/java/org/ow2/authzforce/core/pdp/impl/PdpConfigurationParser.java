@@ -356,7 +356,7 @@ public class PdpConfigurationParser
 		}
 
 		return new PDPImpl(attributeFactory, functionRegistry, pdpJaxbConf.getAttributeProviders(), maxVarRefDepth, enableXPath, combiningAlgRegistry, pdpJaxbConf.getRootPolicyProvider(),
-				pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), pdpJaxbConf.isPdpStdTimeEnvOverrides(),
+				pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(), pdpJaxbConf.getStdEnvTimeProvider(),
 				decisionResultFilter, jaxbDecisionCache, envProps);
 	}
 

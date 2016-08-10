@@ -30,6 +30,7 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
+import org.ow2.authzforce.core.xmlns.pdp.StandardCurrentTimeProvider;
 
 /**
  * Individual decision request evaluator
@@ -89,18 +90,19 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *
 	 * @param rootPolicyEvaluator
 	 *            root policy evaluator that this request evaluator uses to evaluate individual decision request
-	 * @param pdpStdTimeEnvOverrides
-	 *            True iff the PDP's values for the standard environment attributes specified in §10.2.5 (current-time, current-date and current-dateTime) must always be set and override values from
-	 *            the Request, if any. WARNING: note that the XACML standard (§10.2.5) says: "If values for these attributes are not present in the decision request, then their values MUST be supplied
-	 *            by the context handler" but it does NOT say "If AND ONLY IF values..." So setting this flag to true could still be considered XACML compliant in a strict sense. Besides, what if the
-	 *            decision request only specifies current-time but not current-dateTime, and the policy requires both? Should the PDP provides its own value for current-dateTime? This could cause some
-	 *            inconsistencies since current-time and current-dateTime would come from two different sources/environments. So BEWARE.
+	 * @param standardCurrentTimeProvider
+	 *            provider for standard environment current-time/current-date/current-dateTime attribute values (request or PDP, etc.)
 	 */
-	protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final boolean pdpStdTimeEnvOverrides)
+	protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardCurrentTimeProvider standardCurrentTimeProvider)
 	{
 		assert rootPolicyEvaluator != null;
 		this.rootPolicyEvaluator = rootPolicyEvaluator;
-		this.reqAndPdpIssuedAttributesMerger = pdpStdTimeEnvOverrides ? PDP_OVERRIDES_ATTRIBUTES_MERGER : REQUEST_OVERRIDES_ATTRIBUTES_MERGER;
+		switch(standardCurrentTimeProvider) {
+		case REQUEST_ELSE_PDP:
+		this.reqAndPdpIssuedAttributesMerger = standardCurrentTimeProvider ? PDP_OVERRIDES_ATTRIBUTES_MERGER : REQUEST_OVERRIDES_ATTRIBUTES_MERGER;
+		break;
+		case REQUEST_ONLY
+		}
 	}
 
 	/**
