@@ -28,7 +28,7 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 
 /**
  * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of permit, not applicable or indeterminate
@@ -135,7 +135,7 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 			 */
 			if (firstIndeterminateDResult != null)
 			{
-				return new BaseDecisionResult(firstIndeterminateDResult.getStatus(), firstIndeterminatePResult != null || combinedPermitResult != null ? DecisionType.INDETERMINATE : DecisionType.DENY);
+				return new MutableDecisionResult(firstIndeterminateDResult.getStatus(), firstIndeterminatePResult != null || combinedPermitResult != null ? DecisionType.INDETERMINATE : DecisionType.DENY);
 			}
 
 			// if we got a PERMIT or Indeterminate{P}, return it, otherwise it's NOT_APPLICABLE
@@ -149,7 +149,7 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 				return firstIndeterminatePResult;
 			}
 
-			return BaseDecisionResult.NOT_APPLICABLE;
+			return MutableDecisionResult.NOT_APPLICABLE;
 		}
 	}
 

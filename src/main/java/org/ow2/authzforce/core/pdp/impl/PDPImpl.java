@@ -57,7 +57,7 @@ import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.impl.policy.StaticApplicablePolicyView;
-import org.ow2.authzforce.core.xmlns.pdp.StandardCurrentTimeProvider;
+import org.ow2.authzforce.core.xmlns.pdp.StandardEnvironmentAttributeSource;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
 import org.ow2.authzforce.xacml.identifiers.XACMLCategory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
@@ -79,6 +79,12 @@ public class PDPImpl implements CloseablePDP
 	// the logger we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(PDPImpl.class);
 
+	/*
+	 * The default behavior for getting the standard environment attributes (current date/time) is the one complying strictly with the XACML spec: if request does not have values for these attributes,
+	 * the "context handler" (PDP in this case) must provide them. So we use PDP values if it does not override any existing value in the request.
+	 */
+	private static final StandardEnvironmentAttributeSource DEFAULT_STD_ENV_ATTRIBUTE_SOURCE = StandardEnvironmentAttributeSource.REQUEST_ELSE_PDP;
+
 	/**
 	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any scheme from MultipleDecisionProfile section 2.
 	 */
@@ -93,6 +99,46 @@ public class PDPImpl implements CloseablePDP
 
 	private static final AttributeGUID ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID = new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null,
 			XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value());
+
+	private interface StandardEnvironmentAttributeIssuer
+	{
+		Map<AttributeGUID, Bag<?>> get();
+	}
+
+	private static final StandardEnvironmentAttributeIssuer NULL_STD_ENV_ATTRIBUTE_ISSUER = new StandardEnvironmentAttributeIssuer()
+	{
+
+		@Override
+		public Map<AttributeGUID, Bag<?>> get()
+		{
+			return null;
+		}
+	};
+
+	private static final StandardEnvironmentAttributeIssuer DEFAULT_TZ_BASED_STD_ENV_ATTRIBUTE_ISSUER = new StandardEnvironmentAttributeIssuer()
+	{
+
+		@Override
+		public Map<AttributeGUID, Bag<?>> get()
+		{
+			/*
+			 * Set the standard current date/time attribute according to XACML core spec:
+			 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (§B.7). XACML standard (§10.2.5) says: "If
+			 * values for these attributes are not present in the decision request, then their values MUST be supplied by the context handler".
+			 */
+			final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>(3);
+			// current datetime in default timezone
+			final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
+			pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(StandardDatatypes.DATETIME_FACTORY.getDatatype(), currentDateTimeValue));
+			// current date
+			pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID,
+					Bags.singleton(StandardDatatypes.DATE_FACTORY.getDatatype(), DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+			// current time
+			pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID,
+					Bags.singleton(StandardDatatypes.TIME_FACTORY.getDatatype(), TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
+			return pdpIssuedAttributes;
+		}
+	};
 
 	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
 	{
@@ -120,9 +166,9 @@ public class PDPImpl implements CloseablePDP
 
 	private static class NonCachingIndividualDecisionRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
-		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardCurrentTimeProvider standardCurrentTimeProvider)
+		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource)
 		{
-			super(rootPolicyEvaluator, standardCurrentTimeProvider);
+			super(rootPolicyEvaluator, stdEnvAttributeSource);
 		}
 
 		@Override
@@ -156,9 +202,9 @@ public class PDPImpl implements CloseablePDP
 
 		private final DecisionCache decisionCache;
 
-		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final boolean pdpStdTimeEnvOverrides, final DecisionCache decisionCache)
+		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource, final DecisionCache decisionCache)
 		{
-			super(rootPolicyEvaluator, pdpStdTimeEnvOverrides);
+			super(rootPolicyEvaluator, stdEnvAttributeSource);
 			assert decisionCache != null;
 			this.decisionCache = decisionCache;
 		}
@@ -226,6 +272,8 @@ public class PDPImpl implements CloseablePDP
 	private final RootPolicyEvaluator rootPolicyEvaluator;
 	private final DecisionResultFilter resultFilter;
 
+	private final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer;
+
 	/**
 	 * Constructs a new <code>PDP</code> object with the given configuration information.
 	 *
@@ -261,8 +309,8 @@ public class PDPImpl implements CloseablePDP
 	 *            AttributeDesignators have an Issuer (best practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the
 	 *            attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone." if one of the mandatory arguments is
 	 *            null
-	 * @param standardCurrentTimeProvider
-	 *            provider for standard environment current-time/current-date/current-dateTime attribute values (request or PDP, etc.)
+	 * @param stdEnvAttributeSource
+	 *            source for standard environment current-time/current-date/current-dateTime attribute values (request or PDP, etc.)
 	 * @param environmentProperties
 	 *            PDP configuration environment properties
 	 * @throws java.lang.IllegalArgumentException
@@ -276,8 +324,8 @@ public class PDPImpl implements CloseablePDP
 	public PDPImpl(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
 			final int maxVariableReferenceDepth, final boolean enableXPath, final CombiningAlgRegistry combiningAlgRegistry, final AbstractPolicyProvider jaxbRootPolicyProviderConf,
 			final AbstractPolicyProvider jaxbRefPolicyProviderConf, final int maxPolicySetRefDepth, final String requestFilterId, final boolean strictAttributeIssuerMatch,
-			final StandardCurrentTimeProvider standardCurrentTimeProvider, final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf, final EnvironmentProperties environmentProperties)
-			throws IllegalArgumentException, IOException
+			final StandardEnvironmentAttributeSource stdEnvAttributeSource, final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf,
+			final EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
 	{
 		final RequestFilter.Factory requestFilterFactory = requestFilterId == null ? DefaultRequestFilter.LaxFilterFactory.INSTANCE : PdpExtensionLoader.getExtension(RequestFilter.Factory.class,
 				requestFilterId);
@@ -310,8 +358,10 @@ public class PDPImpl implements CloseablePDP
 			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
 		}
 
-		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, standardCurrentTimeProvider)
-				: new CachingIndividualRequestEvaluator(rootPolicyEvaluator, standardCurrentTimeProvider, this.decisionCache);
+		final StandardEnvironmentAttributeSource validStdEnvAttrSrc = stdEnvAttributeSource == null ? DEFAULT_STD_ENV_ATTRIBUTE_SOURCE : stdEnvAttributeSource;
+		this.pdpStdEnvAttributeIssuer = validStdEnvAttrSrc == StandardEnvironmentAttributeSource.REQUEST_ONLY ? NULL_STD_ENV_ATTRIBUTE_ISSUER : DEFAULT_TZ_BASED_STD_ENV_ATTRIBUTE_ISSUER;
+		this.individualReqEvaluator = this.decisionCache == null ? new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, validStdEnvAttrSrc) : new CachingIndividualRequestEvaluator(
+				rootPolicyEvaluator, validStdEnvAttrSrc, this.decisionCache);
 		this.resultFilter = decisionResultFilter == null ? DEFAULT_RESULT_FILTER : decisionResultFilter;
 	}
 
@@ -325,26 +375,11 @@ public class PDPImpl implements CloseablePDP
 		}
 
 		/*
-		 * Every request context (named attributes) is completed with common standard current date/time attribute (same values) set/"issued" locally (here by the PDP engine) according to XACML core
-		 * spec: "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (§B.7). XACML standard (§10.2.5) says: "If
-		 * values for these attributes are not present in the decision request, then their values MUST be supplied by the context handler". <p> These current date/time values are set here once before
-		 * every individual request is evaluated to make sure they all use the same value for current-time/current-date/current-dateTime if no value supplied in the decision request, or if the request
-		 * evaluator is set to pdp-overrides mode (PDP issued attribute values override request values). More info in IndividualDecisionRequestEvaluator class.
+		 * Evaluate the individual decision requests with extra common attributes set by the PDP once for all: standard environment attributes, i.e. current-time, etc. XACML standard (§10.2.5) says:
+		 * "If values for these attributes are not present in the decision request, then their values MUST be supplied by the context handler". These current date/time values must be set here once
+		 * before every individual request is evaluated to make sure they all use the same value for current-time/current-date/current-dateTime, if they use the one from PDP.
 		 */
-		final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes = new HashMap<>(3);
-		// current datetime
-		final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATETIME_ATTRIBUTE_GUID, Bags.singleton(StandardDatatypes.DATETIME_FACTORY.getDatatype(), currentDateTimeValue));
-		// current date
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_DATE_ATTRIBUTE_GUID,
-				Bags.singleton(StandardDatatypes.DATE_FACTORY.getDatatype(), DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
-		// current time
-		pdpIssuedAttributes.put(ENVIRONMENT_CURRENT_TIME_ATTRIBUTE_GUID,
-				Bags.singleton(StandardDatatypes.TIME_FACTORY.getDatatype(), TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone())));
-
-		// evaluate the individual decision requests with the extra common
-		// attributes set previously
-		final List<Result> results = individualReqEvaluator.evaluate(individualDecisionRequests, pdpIssuedAttributes);
+		final List<Result> results = individualReqEvaluator.evaluate(individualDecisionRequests, this.pdpStdEnvAttributeIssuer.get());
 		return resultFilter.filter(results);
 	}
 

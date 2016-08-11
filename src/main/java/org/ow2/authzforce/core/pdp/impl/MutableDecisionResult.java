@@ -49,27 +49,9 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
  *
  * @version $Id: $
  */
-public final class BaseDecisionResult implements DecisionResult
+public final class MutableDecisionResult implements DecisionResult
 {
 	private static final IllegalArgumentException ILLEGAL_DECISION_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Decision");
-
-	/**
-	 * NotApplicable decision result
-	 */
-	public static final DecisionResult NOT_APPLICABLE = new BaseDecisionResult(DecisionType.NOT_APPLICABLE, null);
-
-	/**
-	 * Deny result with no obligation/advice/Included attribute/policy identifiers. Deny decision and nothing else.
-	 */
-	public static final DecisionResult SIMPLE_DENY = new BaseDecisionResult(DecisionType.DENY, null);
-
-	/**
-	 * Permit result with no obligation/advice/Included attribute/policy identifiers. Permit decision and nothing else.
-	 */
-	public static final DecisionResult SIMPLE_PERMIT = new BaseDecisionResult(DecisionType.PERMIT, null);
-
-	private static final Result SIMPLE_PERMIT_XACML = new Result(DecisionType.PERMIT, null, null, null, null, null);
-	private static final Result SIMPLE_DENY_XACML = new Result(DecisionType.DENY, null, null, null, null, null);
 
 	private final DecisionType decision;
 
@@ -102,7 +84,7 @@ public final class BaseDecisionResult implements DecisionResult
 
 	private transient volatile int hashCode = 0;
 
-	private BaseDecisionResult(final DecisionType decision, final DecisionType extendedIndeterminate, final Status status, final PepActions pepActions,
+	private MutableDecisionResult(final DecisionType decision, final DecisionType extendedIndeterminate, final Status status, final PepActions pepActions,
 			final List<JAXBElement<IdReferenceType>> policyIdList, final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
 	{
 		if (decision == null)
@@ -135,7 +117,7 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param policyIdentifierList
 	 *            list of matched policy identifiers
 	 */
-	public BaseDecisionResult(final Status status, final DecisionType extendedIndeterminate, final List<JAXBElement<IdReferenceType>> policyIdentifierList)
+	public MutableDecisionResult(final Status status, final DecisionType extendedIndeterminate, final List<JAXBElement<IdReferenceType>> policyIdentifierList)
 	{
 		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, policyIdentifierList, null, null);
 	}
@@ -154,7 +136,7 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
-	public BaseDecisionResult(final Status status, final DecisionType extendedIndeterminate)
+	public MutableDecisionResult(final Status status, final DecisionType extendedIndeterminate)
 	{
 		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, null, null, null);
 	}
@@ -169,7 +151,7 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param usedExtraAttributeContents
 	 *            extra Attributes/Content(s) actually used for evaluating this decision
 	 */
-	public BaseDecisionResult(final Status status, final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
+	public MutableDecisionResult(final Status status, final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
 	{
 		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, usedNamedAttributes, usedExtraAttributeContents);
 	}
@@ -180,20 +162,21 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
-	public BaseDecisionResult(final Status status)
+	public MutableDecisionResult(final Status status)
 	{
 		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, null, null);
 	}
 
 	/**
-	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #BaseDecisionResult(Status, DecisionType)} for Indeterminate, and {@link #NOT_APPLICABLE} for NotApplicable.
+	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #MutableDecisionResult(Status, DecisionType)} for Indeterminate, and {@link DecisionResults#NOT_APPLICABLE}
+	 * for NotApplicable.
 	 *
 	 * @param decision
 	 *            decision
 	 * @param pepActions
 	 *            PEP actions (obligations/advices)
 	 */
-	public BaseDecisionResult(final DecisionType decision, final PepActions pepActions)
+	public MutableDecisionResult(final DecisionType decision, final PepActions pepActions)
 	{
 		this(decision, DecisionType.NOT_APPLICABLE, null, pepActions, null, null, null);
 	}
@@ -212,7 +195,7 @@ public final class BaseDecisionResult implements DecisionResult
 	 * @param usedExtraAttributeContents
 	 *            extra Attributes/Content(s) actually used for evaluating this decision
 	 */
-	public BaseDecisionResult(final DecisionResult algResult, final PepActions pepActions, final List<JAXBElement<IdReferenceType>> applicablePolicyIdList,
+	public MutableDecisionResult(final DecisionResult algResult, final PepActions pepActions, final List<JAXBElement<IdReferenceType>> applicablePolicyIdList,
 			final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
 	{
 		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList, usedNamedAttributes, usedExtraAttributeContents);
@@ -262,7 +245,8 @@ public final class BaseDecisionResult implements DecisionResult
 			{
 				return false;
 			}
-		} else if (!this.status.equals(other.getStatus()))
+		}
+		else if (!this.status.equals(other.getStatus()))
 		{
 			return false;
 		}
@@ -353,16 +337,6 @@ public final class BaseDecisionResult implements DecisionResult
 	@Override
 	public Result toXACMLResult(final List<Attributes> returnedAttributes)
 	{
-		if (this == SIMPLE_PERMIT)
-		{
-			return SIMPLE_PERMIT_XACML;
-		}
-
-		if (this == SIMPLE_DENY)
-		{
-			return SIMPLE_DENY_XACML;
-		}
-
 		final List<Obligation> obligationList = this.pepActions.getObligations();
 		final List<Advice> adviceList = this.pepActions.getAdvices();
 		return new Result(this.decision, this.status, obligationList == null || obligationList.isEmpty() ? null : new Obligations(obligationList), adviceList == null || adviceList.isEmpty() ? null

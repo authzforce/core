@@ -28,7 +28,7 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 
 /**
  * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take precedence over any number of deny, not applicable or indeterminate results.
@@ -136,7 +136,7 @@ final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 			 */
 			if (firstIndeterminatePResult != null)
 			{
-				return new BaseDecisionResult(firstIndeterminatePResult.getStatus(), firstIndeterminateDResult != null || combinedDenyResult != null ? DecisionType.INDETERMINATE : DecisionType.PERMIT);
+				return new MutableDecisionResult(firstIndeterminatePResult.getStatus(), firstIndeterminateDResult != null || combinedDenyResult != null ? DecisionType.INDETERMINATE : DecisionType.PERMIT);
 			}
 
 			/*
@@ -152,7 +152,7 @@ final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 				return firstIndeterminateDResult;
 			}
 
-			return BaseDecisionResult.NOT_APPLICABLE;
+			return MutableDecisionResult.NOT_APPLICABLE;
 		}
 
 	}

@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActions;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class RuleEvaluator implements Decidable
 	private final transient TargetEvaluator evaluatableTarget;
 	private final transient ConditionEvaluator evaluatableCondition;
 	private final transient RulePepActionExpressionsEvaluator effectMatchPepActionExps;
-	private final transient BaseDecisionResult nullActionsRuleDecisionResult;
+	private final transient MutableDecisionResult nullActionsRuleDecisionResult;
 	private final String toString;
 	private final String ruleId;
 
@@ -66,7 +66,7 @@ public class RuleEvaluator implements Decidable
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid Target, Condition or Obligation/Advice expressions
 	 */
-	public RuleEvaluator(Rule ruleElt, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory) throws IllegalArgumentException
+	public RuleEvaluator(final Rule ruleElt, final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory) throws IllegalArgumentException
 	{
 		// JAXB fields initialization
 		this.ruleId = ruleElt.getRuleId();
@@ -79,7 +79,8 @@ public class RuleEvaluator implements Decidable
 		try
 		{
 			this.evaluatableTarget = targetElt == null ? null : new TargetEvaluator(targetElt, xPathCompiler, expressionFactory);
-		} catch (IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": Invalid Target", e);
 		}
@@ -88,7 +89,8 @@ public class RuleEvaluator implements Decidable
 		try
 		{
 			this.evaluatableCondition = condElt == null ? null : new ConditionEvaluator(condElt, xPathCompiler, expressionFactory);
-		} catch (IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": invalid Condition", e);
 		}
@@ -96,7 +98,8 @@ public class RuleEvaluator implements Decidable
 		try
 		{
 			this.effectMatchPepActionExps = RulePepActionExpressionsEvaluator.getInstance(ruleElt.getObligationExpressions(), ruleElt.getAdviceExpressions(), xPathCompiler, expressionFactory, effect);
-		} catch (IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException(this + ": Invalid ObligationExpressions/AdviceExpressions", e);
 		}
@@ -104,8 +107,9 @@ public class RuleEvaluator implements Decidable
 		if (this.effectMatchPepActionExps == null)
 		{
 
-			this.nullActionsRuleDecisionResult = new BaseDecisionResult(this.effectAsDecision, null);
-		} else
+			this.nullActionsRuleDecisionResult = new MutableDecisionResult(this.effectAsDecision, null);
+		}
+		else
 		{
 			this.nullActionsRuleDecisionResult = null;
 		}
@@ -132,7 +136,7 @@ public class RuleEvaluator implements Decidable
 	 * result before return. Indeterminate results are logged in warn level only (which "includes" debug level).
 	 */
 	@Override
-	public DecisionResult evaluate(EvaluationContext context)
+	public DecisionResult evaluate(final EvaluationContext context)
 	{
 		/*
 		 * Null or empty Target matches all So we just check if target non-null matches
@@ -140,20 +144,22 @@ public class RuleEvaluator implements Decidable
 		if (evaluatableTarget == null)
 		{
 			LOGGER.debug("{}/Target (none/empty) -> Match", this);
-		} else
+		}
+		else
 		{
 			try
 			{
 				if (!evaluatableTarget.match(context))
 				{
 					LOGGER.debug("{}/Target -> No-match", this);
-					final DecisionResult result = BaseDecisionResult.NOT_APPLICABLE;
+					final DecisionResult result = MutableDecisionResult.NOT_APPLICABLE;
 					LOGGER.debug("{} -> {}", this, result);
 					return result;
 				}
 
 				LOGGER.debug("{}/Target -> Match", this);
-			} catch (IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				// Target is Indeterminate
 				/*
@@ -164,7 +170,7 @@ public class RuleEvaluator implements Decidable
 				/*
 				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
 				 */
-				final DecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
+				final DecisionResult result = new MutableDecisionResult(e.getStatus(), this.effectAsDecision);
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -177,14 +183,16 @@ public class RuleEvaluator implements Decidable
 		if (evaluatableCondition == null)
 		{
 			LOGGER.debug("{}/Condition (none/empty) -> True", this);
-		} else
+		}
+		else
 		{
 			// ...otherwise we evaluate the condition
 			final boolean isConditionTrue;
 			try
 			{
 				isConditionTrue = evaluatableCondition.evaluate(context);
-			} catch (IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				/*
 				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
@@ -193,7 +201,7 @@ public class RuleEvaluator implements Decidable
 				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but not a critical application error, therefore lower level than Error level)
 				 */
 				LOGGER.info("{}/Condition -> Indeterminate", this, e);
-				final DecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
+				final DecisionResult result = new MutableDecisionResult(e.getStatus(), this.effectAsDecision);
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -201,7 +209,7 @@ public class RuleEvaluator implements Decidable
 			if (!isConditionTrue)
 			{
 				LOGGER.debug("{}/Condition -> False", this);
-				final DecisionResult result = BaseDecisionResult.NOT_APPLICABLE;
+				final DecisionResult result = MutableDecisionResult.NOT_APPLICABLE;
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -227,7 +235,8 @@ public class RuleEvaluator implements Decidable
 		try
 		{
 			pepActions = this.effectMatchPepActionExps.evaluate(context);
-		} catch (IndeterminateEvaluationException e)
+		}
+		catch (final IndeterminateEvaluationException e)
 		{
 			/*
 			 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than Error level)
@@ -239,12 +248,12 @@ public class RuleEvaluator implements Decidable
 			 * policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18). For the Extended Indeterminate, we do like for Target or Condition evaluation in section 7.11
 			 * (same as the rule's Effect).
 			 */
-			final BaseDecisionResult result = new BaseDecisionResult(e.getStatus(), this.effectAsDecision);
+			final MutableDecisionResult result = new MutableDecisionResult(e.getStatus(), this.effectAsDecision);
 			LOGGER.debug("{} -> {}", this, result);
 			return result;
 		}
 
-		final BaseDecisionResult result = new BaseDecisionResult(this.effectAsDecision, pepActions);
+		final ImmutableDecisionResult result = new ImmutableDecisionResult(this.effectAsDecision, pepActions);
 		LOGGER.debug("{} -> {}", this, result);
 		return result;
 	}

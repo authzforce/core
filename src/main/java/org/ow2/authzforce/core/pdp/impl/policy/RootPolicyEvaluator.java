@@ -36,7 +36,7 @@ import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.StaticRootPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.PdpExtensionLoader;
 import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
@@ -209,17 +209,17 @@ public interface RootPolicyEvaluator extends Closeable
 			} catch (final IndeterminateEvaluationException e)
 			{
 				LOGGER.info("Root policy Provider module {} could not find an applicable root policy to evaluate", rootPolicyProviderMod, e);
-				return new BaseDecisionResult(e.getStatus(), context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
+				return new MutableDecisionResult(e.getStatus(), context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
 			} catch (final IllegalArgumentException e)
 			{
 				LOGGER.warn("One of the possible root policies (resolved by the root policy provider module {}) is invalid", rootPolicyProviderMod, e);
 				// we consider that
-				return new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, e.getMessage()), context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
+				return new MutableDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, e.getMessage()), context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
 			}
 
 			if (policy == null)
 			{
-				return BaseDecisionResult.NOT_APPLICABLE;
+				return MutableDecisionResult.NOT_APPLICABLE;
 			}
 
 			return policy.evaluate(context, true);

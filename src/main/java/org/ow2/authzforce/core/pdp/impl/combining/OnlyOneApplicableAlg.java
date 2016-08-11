@@ -28,7 +28,7 @@ import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +44,14 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(Evaluator.class);
 
-		private final BaseDecisionResult tooManyApplicablePoliciesIndeterminateResult;
+		private final MutableDecisionResult tooManyApplicablePoliciesIndeterminateResult;
 
 		private final List<? extends PolicyEvaluator> policyElements;
 
 		private Evaluator(final String algId, final List<? extends PolicyEvaluator> policyElements)
 		{
 			this.policyElements = policyElements;
-			this.tooManyApplicablePoliciesIndeterminateResult = new BaseDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
+			this.tooManyApplicablePoliciesIndeterminateResult = new MutableDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
 					"Too many (more than one) applicable policies for algorithm: " + algId));
 		}
 
@@ -71,7 +71,7 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 				} catch (final IndeterminateEvaluationException e)
 				{
 					LOGGER.info("Error checking whether {} is applicable", policy, e);
-					return new BaseDecisionResult(e.getStatus());
+					return new MutableDecisionResult(e.getStatus());
 				}
 
 				if (isApplicable)
@@ -95,7 +95,7 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 				return selectedPolicy.evaluate(context, true);
 			}
 
-			return BaseDecisionResult.NOT_APPLICABLE;
+			return MutableDecisionResult.NOT_APPLICABLE;
 		}
 
 	}

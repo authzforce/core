@@ -292,7 +292,7 @@
 					</documentation>
 				</annotation>
 			</attribute>
-			<attribute name="stdEnvTimeProvider" type="tns:StandardCurrentTimeProvider"
+			<attribute name="standardEnvAttributeSource" type="tns:StandardEnvironmentAttributeSource"
 				use="optional" default="REQUEST_ELSE_PDP" />
 			<attribute name="enableXPath" type="boolean" use="optional"
 				default="false">
@@ -498,7 +498,7 @@
 			<field xpath="@id" />
 		</key>
 	</element>
-	<simpleType name="StandardCurrentTimeProvider">
+	<simpleType name="StandardEnvironmentAttributeSource">
 		<annotation>
 			<documentation>
 				Defines the source for the standard environment attributes specified

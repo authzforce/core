@@ -28,7 +28,7 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 
 /**
  * permit-unless-deny policy algorithm
@@ -77,7 +77,7 @@ final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 				}
 			}
 
-			return combinedPermitResult == null ? BaseDecisionResult.SIMPLE_PERMIT : combinedPermitResult;
+			return combinedPermitResult == null ? MutableDecisionResult.SIMPLE_PERMIT : combinedPermitResult;
 		}
 
 	}

@@ -28,7 +28,7 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 
 /**
  * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
@@ -67,7 +67,7 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 			}
 
 			// if we got here, then none of the rules applied
-			return BaseDecisionResult.NOT_APPLICABLE;
+			return MutableDecisionResult.NOT_APPLICABLE;
 		}
 
 	}

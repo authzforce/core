@@ -74,7 +74,7 @@ import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluat
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.ow2.authzforce.xacml.identifiers.XACMLNodeName;
@@ -446,7 +446,7 @@ public final class PolicyEvaluators
 						if (!isApplicable(context))
 						{
 							LOGGER.debug("{} -> NotApplicable", policyId);
-							newResult = BaseDecisionResult.NOT_APPLICABLE;
+							newResult = MutableDecisionResult.NOT_APPLICABLE;
 							return newResult;
 						}
 					} catch (final IndeterminateEvaluationException e)
@@ -477,10 +477,10 @@ public final class PolicyEvaluators
 							break;
 						case PERMIT:
 						case DENY:
-							newResult = new BaseDecisionResult(targetMatchIndeterminateException.getStatus(), algDecision);
+							newResult = new MutableDecisionResult(targetMatchIndeterminateException.getStatus(), algDecision);
 							break;
 						default: // INDETERMINATE
-							newResult = new BaseDecisionResult(targetMatchIndeterminateException.getStatus(), algResult.getExtendedIndeterminate());
+							newResult = new MutableDecisionResult(targetMatchIndeterminateException.getStatus(), algResult.getExtendedIndeterminate());
 							break;
 						}
 
@@ -555,13 +555,13 @@ public final class PolicyEvaluators
 							 * error)
 							 */
 							LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyId, e);
-							newResult = new BaseDecisionResult(e.getStatus(), algResultDecision, applicablePolicyIdList);
+							newResult = new MutableDecisionResult(e.getStatus(), algResultDecision, applicablePolicyIdList);
 							return newResult;
 						}
 					}
 				}
 
-				newResult = new BaseDecisionResult(algResult, pepActions, applicablePolicyIdList, context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
+				newResult = new MutableDecisionResult(algResult, pepActions, applicablePolicyIdList, context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
 				return newResult;
 			} finally
 			{
@@ -1221,7 +1221,7 @@ public final class PolicyEvaluators
 			} catch (final IndeterminateEvaluationException e)
 			{
 				LOGGER.info("", e);
-				return new BaseDecisionResult(e.getStatus(), context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
+				return new MutableDecisionResult(e.getStatus(), context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
 			}
 
 			return refResolvedResult.resolvedPolicy.evaluate(context, skipTarget);

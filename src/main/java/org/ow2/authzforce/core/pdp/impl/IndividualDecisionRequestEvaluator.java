@@ -18,6 +18,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
-import org.ow2.authzforce.core.xmlns.pdp.StandardCurrentTimeProvider;
+import org.ow2.authzforce.core.xmlns.pdp.StandardEnvironmentAttributeSource;
 
 /**
  * Individual decision request evaluator
@@ -51,12 +52,24 @@ public abstract class IndividualDecisionRequestEvaluator
 		@Override
 		public Map<AttributeGUID, Bag<?>> merge(final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final Map<AttributeGUID, Bag<?>> requestAttributes)
 		{
-			assert pdpIssuedAttributes != null && requestAttributes != null;
-
 			/*
-			 * Request attribute values override PDP issued ones Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well
+			 * Request attribute values override PDP issued ones. Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must not
+			 * modify it but clone it before individual decision request processing.
 			 */
-			final Map<AttributeGUID, Bag<?>> mergedAttributes = new HashMap<>(pdpIssuedAttributes);
+			final Map<AttributeGUID, Bag<?>> mergedAttributes;
+			if (pdpIssuedAttributes != null)
+			{
+				mergedAttributes = new HashMap<>(pdpIssuedAttributes);
+			}
+			else if (requestAttributes != null) // pdpIssuedAttributes == null
+			{
+				return new HashMap<>(requestAttributes);
+			}
+			else
+			{ // pdpIssuedAttributes == null && requestAttributes == null
+				return null;
+			}
+
 			mergedAttributes.putAll(requestAttributes);
 			return mergedAttributes;
 		}
@@ -69,15 +82,41 @@ public abstract class IndividualDecisionRequestEvaluator
 		@Override
 		public Map<AttributeGUID, Bag<?>> merge(final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final Map<AttributeGUID, Bag<?>> requestAttributes)
 		{
-			assert pdpIssuedAttributes != null && requestAttributes != null;
 
 			// PDP issued attribute values override request attribute values
 			/*
-			 * Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well
+			 * Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must not modify it but clone it before individual decision
+			 * request processing.
 			 */
-			final Map<AttributeGUID, Bag<?>> mergedAttributes = new HashMap<>(requestAttributes);
+			final Map<AttributeGUID, Bag<?>> mergedAttributes;
+			if (requestAttributes != null)
+			{
+				mergedAttributes = new HashMap<>(requestAttributes);
+			}
+			else if (pdpIssuedAttributes != null) // requestAttributes == null
+			{
+				return new HashMap<>(pdpIssuedAttributes);
+			}
+			else
+			{ // requestAttributes == null && pdpIssuedAttributes == null
+				return null;
+			}
+
 			mergedAttributes.putAll(pdpIssuedAttributes);
 			return mergedAttributes;
+
+		}
+
+	};
+
+	private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_ONLY_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
+	{
+
+		@Override
+		public Map<AttributeGUID, Bag<?>> merge(final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final Map<AttributeGUID, Bag<?>> requestAttributes)
+		{
+			// PDP values completely ignored
+			return requestAttributes == null ? null : new HashMap<>(requestAttributes);
 		}
 
 	};
@@ -90,18 +129,41 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *
 	 * @param rootPolicyEvaluator
 	 *            root policy evaluator that this request evaluator uses to evaluate individual decision request
-	 * @param standardCurrentTimeProvider
-	 *            provider for standard environment current-time/current-date/current-dateTime attribute values (request or PDP, etc.)
+	 * @param stdEnvAttributeSource
+	 *            (mandatory) Defines the source for the standard environment attributes specified in §10.2.5: current-time, current-date and current-dateTime. The options are:
+	 *            <ul>
+	 *            <li>REQUEST_ELSE_PDP: the default choice, that complies with the XACML standard (§10.2.5): "If values for these attributes are not present in the decision request, then their values
+	 *            MUST be supplied by the context handler", in our case, "context handler" means the PDP. In other words, the attribute values come from request by default, or from the PDP if (and
+	 *            *only if* in this case) they are not set in the request. Issue: what if the decision request only specifies current-time but not current-dateTime, and the policy requires both?
+	 *            Should the PDP provides its own value for current-dateTime? This could cause some inconsistencies since current-time and current-dateTime would come from two different
+	 *            sources/environments. With this option, we have a strict interpretation of the spec, i.e. if any of these attribute is not set in the request, the PDP uses its own value instead. So
+	 *            BEWARE. Else you have the other options below.</li>
+	 *            <li>REQUEST_ONLY: always use the value from the request, or nothing if the value is not set in the request, in which case this results in Indeterminate (missing attribute) if the
+	 *            policy evaluation requires it.</li>
+	 *            <li>PDP_ONLY: always use the values from the PDP. In other words, Request values are simply ignored; PDP values systematically override the ones from the request. This also
+	 *            guarantees that they are always set (by the PDP). NB: note that the XACML standard (§10.2.5) says: "If values for these attributes are not present in the decision request, then their
+	 *            values MUST be supplied by the context handler" but it does NOT say "If AND ONLY IF values..." So this option could still be considered XACML compliant in a strict sense.</li>
+	 *            </ul>
+	 * @throws IllegalArgumentException
+	 *             if {@code stdEnvAttributeSource} is null or not supported
 	 */
-	protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardCurrentTimeProvider standardCurrentTimeProvider)
+	protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource) throws IllegalArgumentException
 	{
-		assert rootPolicyEvaluator != null;
+		assert rootPolicyEvaluator != null && stdEnvAttributeSource != null;
 		this.rootPolicyEvaluator = rootPolicyEvaluator;
-		switch(standardCurrentTimeProvider) {
-		case REQUEST_ELSE_PDP:
-		this.reqAndPdpIssuedAttributesMerger = standardCurrentTimeProvider ? PDP_OVERRIDES_ATTRIBUTES_MERGER : REQUEST_OVERRIDES_ATTRIBUTES_MERGER;
-		break;
-		case REQUEST_ONLY
+		switch (stdEnvAttributeSource)
+		{
+			case PDP_ONLY:
+				this.reqAndPdpIssuedAttributesMerger = PDP_OVERRIDES_ATTRIBUTES_MERGER;
+				break;
+			case REQUEST_ONLY:
+				this.reqAndPdpIssuedAttributesMerger = REQUEST_ONLY_ATTRIBUTES_MERGER;
+				break;
+			case REQUEST_ELSE_PDP:
+				this.reqAndPdpIssuedAttributesMerger = REQUEST_OVERRIDES_ATTRIBUTES_MERGER;
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported standardEnvAttributeSource: " + stdEnvAttributeSource + ". Expected: " + Arrays.toString(StandardEnvironmentAttributeSource.values()));
 		}
 	}
 
@@ -111,32 +173,19 @@ public abstract class IndividualDecisionRequestEvaluator
 	 * </p>
 	 *
 	 * @param request
-	 *            a {@link org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest} object.
+	 *            a non-null {@link org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest} object.
 	 * @param pdpIssuedAttributes
 	 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 	 * @param returnUsedAttributes
 	 *            true iff the list of attributes used for evaluation must be included in the result
-	 * @return a {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.Result} object.
+	 * @return the evaluation result.
 	 */
 	protected final DecisionResult evaluate(final IndividualDecisionRequest request, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final boolean returnUsedAttributes)
 	{
-		assert request != null && pdpIssuedAttributes != null;
+		assert request != null;
 
 		// convert to EvaluationContext
-		/*
-		 * The pdpIssuedAttributes may be re-used for many individual requests, so we must not modify it but clone it before individual decision request processing
-		 */
-		final Map<AttributeGUID, Bag<?>> mergedNamedAttributes;
-		final Map<AttributeGUID, Bag<?>> reqNamedAttributes = request.getNamedAttributes();
-		if (reqNamedAttributes == null)
-		{
-			mergedNamedAttributes = new HashMap<>(pdpIssuedAttributes);
-		}
-		else
-		{
-			mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, reqNamedAttributes);
-		}
-
+		final Map<AttributeGUID, Bag<?>> mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, request.getNamedAttributes());
 		final EvaluationContext ctx = new IndividualDecisionRequestContext(mergedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdListReturned(),
 				returnUsedAttributes);
 		return rootPolicyEvaluator.findAndEvaluate(ctx);

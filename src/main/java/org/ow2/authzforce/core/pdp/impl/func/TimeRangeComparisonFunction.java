@@ -62,6 +62,9 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 
 	private static final class Call extends FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, TimeValue>
 	{
+		/**
+		 * XACML says: "If no time zone is provided for the first argument, it SHALL use the default time zone at the context handler."
+		 */
 		private static final TimeZone DEFAULT_TZ = TimeZone.getDefault();
 
 		/**
