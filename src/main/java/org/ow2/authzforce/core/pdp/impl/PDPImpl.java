@@ -43,6 +43,7 @@ import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.XMLUtils;
@@ -183,7 +184,7 @@ public class PDPImpl implements CloseablePDP
 					throw new RuntimeException("One of the individual decision requests returned by the request filter is invalid (null).");
 				}
 
-				final DecisionResult decisionResult = evaluate(individuaDecisionRequest, pdpIssuedAttributes, false);
+				final PdpDecisionResult decisionResult = evaluate(individuaDecisionRequest, pdpIssuedAttributes, false);
 				results.add(decisionResult.toXACMLResult(individuaDecisionRequest.getReturnedAttributes()));
 			}
 

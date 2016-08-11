@@ -21,104 +21,92 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIdentifierList;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
-
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.PepActions;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 
 /**
  * Base implementation of DecisionResult
  *
  * @version $Id: $
  */
-public final class MutableDecisionResult implements DecisionResult
-{
-	private static final IllegalArgumentException ILLEGAL_DECISION_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Decision");
+public final class MutableDecisionResult implements DecisionResult {
+	private static final IllegalArgumentException ILLEGAL_DECISION_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"Undefined Decision");
 
 	private final DecisionType decision;
 
+	private final Status status;
+
+	// initialized non-null
+	private final MutablePepActions pepActions;
+
 	/**
-	 * Extended Indeterminate value, as defined in section 7.10 of XACML 3.0 core: <i>potential effect value which could have occurred if there would not have been an error causing the
-	 * “Indeterminate”</i>. We use the following convention:
+	 * Extended Indeterminate value, as defined in section 7.10 of XACML 3.0
+	 * core: <i>potential effect value which could have occurred if there would
+	 * not have been an error causing the “Indeterminate”</i>. We use the
+	 * following convention:
 	 * <ul>
 	 * <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
 	 * <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
 	 * <li>Null means "Indeterminate{DP}"</li>
-	 * <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 * <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means
+	 * the decision is not Indeterminate, and therefore any extended
+	 * Indeterminate value should be ignored</li>
 	 * </ul>
 	 * 
 	 */
 	private final DecisionType extIndeterminate;
 
-	private final Status status;
-
-	// initialized non-null
-	private final PepActions pepActions;
-
-	// initialized non-null
-	private final List<JAXBElement<IdReferenceType>> applicablePolicyIdList;
-
-	// null if not required
-	private final Set<AttributeGUID> usedNamedAttributeIdList;
-
-	// null if not required
-	private final Set<AttributeSelectorId> usedExtraContentSelectorList;
-
 	private transient volatile int hashCode = 0;
 
-	private MutableDecisionResult(final DecisionType decision, final DecisionType extendedIndeterminate, final Status status, final PepActions pepActions,
-			final List<JAXBElement<IdReferenceType>> policyIdList, final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
-	{
-		if (decision == null)
-		{
+	private MutableDecisionResult(final DecisionType decision, final DecisionType extendedIndeterminate,
+			final Status status, final MutablePepActions pepActions, final List<JAXBElement<IdReferenceType>> policyIdList,
+			final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents) {
+		if (decision == null) {
 			throw ILLEGAL_DECISION_ARGUMENT_EXCEPTION;
 		}
 
 		this.decision = decision;
 		this.extIndeterminate = extendedIndeterminate;
 		this.status = status;
-		this.pepActions = pepActions == null ? new BasePepActions(null, null) : pepActions;
-		this.applicablePolicyIdList = policyIdList == null ? new ArrayList<JAXBElement<IdReferenceType>>() : policyIdList;
-		this.usedNamedAttributeIdList = usedNamedAttributes;
-		this.usedExtraContentSelectorList = usedExtraAttributeContents;
+		this.pepActions = pepActions == null ? new MutablePepActions(null, null) : pepActions;
 	}
 
 	/**
 	 * Instantiates a generic Decision result
 	 *
 	 * @param extendedIndeterminate
-	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10). We use the following convention:
+	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10).
+	 *            We use the following convention:
 	 *            <ul>
 	 *            <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
 	 *            <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
-	 *            <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
-	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 *            <li>{@link DecisionType#INDETERMINATE} means
+	 *            "Indeterminate{DP}"</li>
+	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value
+	 *            and means the decision is not Indeterminate, and therefore any
+	 *            extended Indeterminate value should be ignored</li>
 	 *            </ul>
 	 * @param status
 	 *            status
 	 * @param policyIdentifierList
 	 *            list of matched policy identifiers
 	 */
-	public MutableDecisionResult(final Status status, final DecisionType extendedIndeterminate, final List<JAXBElement<IdReferenceType>> policyIdentifierList)
-	{
+	public MutableDecisionResult(final Status status, final DecisionType extendedIndeterminate,
+			final List<JAXBElement<IdReferenceType>> policyIdentifierList) {
 		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, policyIdentifierList, null, null);
 	}
 
@@ -126,88 +114,99 @@ public final class MutableDecisionResult implements DecisionResult
 	 * Instantiates a Indeterminate Decision result with a given error status
 	 *
 	 * @param extendedIndeterminate
-	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10). We use the following convention:
+	 *            Extended Indeterminate value (XACML 3.0 Core, section 7.10).
+	 *            We use the following convention:
 	 *            <ul>
 	 *            <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
 	 *            <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
-	 *            <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
-	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
+	 *            <li>{@link DecisionType#INDETERMINATE} means
+	 *            "Indeterminate{DP}"</li>
+	 *            <li>{@link DecisionType#NOT_APPLICABLE} is the default value
+	 *            and means the decision is not Indeterminate, and therefore any
+	 *            extended Indeterminate value should be ignored</li>
 	 *            </ul>
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
-	public MutableDecisionResult(final Status status, final DecisionType extendedIndeterminate)
-	{
+	public MutableDecisionResult(final Status status, final DecisionType extendedIndeterminate) {
 		this(DecisionType.INDETERMINATE, extendedIndeterminate, status, null, null, null, null);
 	}
 
 	/**
-	 * Instantiates a Indeterminate Decision result with a given error status and extended Indeterminate set to Indeterminate{DP}
+	 * Instantiates a Indeterminate Decision result with a given error status
+	 * and extended Indeterminate set to Indeterminate{DP}
 	 *
 	 * @param status
 	 *            reason/code for Indeterminate
 	 * @param usedNamedAttributes
-	 *            list of identifiers of the named attributes actually used for evaluating this decision
+	 *            list of identifiers of the named attributes actually used for
+	 *            evaluating this decision
 	 * @param usedExtraAttributeContents
-	 *            extra Attributes/Content(s) actually used for evaluating this decision
+	 *            extra Attributes/Content(s) actually used for evaluating this
+	 *            decision
 	 */
-	public MutableDecisionResult(final Status status, final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
-	{
-		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, usedNamedAttributes, usedExtraAttributeContents);
+	public MutableDecisionResult(final Status status, final Set<AttributeGUID> usedNamedAttributes,
+			final Set<AttributeSelectorId> usedExtraAttributeContents) {
+		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, usedNamedAttributes,
+				usedExtraAttributeContents);
 	}
 
 	/**
-	 * Instantiates a Indeterminate Decision result with a given error status and extended Indeterminate set to Indeterminate{DP}
+	 * Instantiates a Indeterminate Decision result with a given error status
+	 * and extended Indeterminate set to Indeterminate{DP}
 	 *
 	 * @param status
 	 *            reason/code for Indeterminate
 	 */
-	public MutableDecisionResult(final Status status)
-	{
+	public MutableDecisionResult(final Status status) {
 		this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, null, null);
 	}
 
 	/**
-	 * Instantiates a Permit/Deny decision with optional obligations and advice. See {@link #MutableDecisionResult(Status, DecisionType)} for Indeterminate, and {@link DecisionResults#NOT_APPLICABLE}
-	 * for NotApplicable.
+	 * Instantiates a Permit/Deny decision with optional obligations and advice.
+	 * See {@link #MutableDecisionResult(Status, DecisionType)} for
+	 * Indeterminate, and {@link DecisionResults#NOT_APPLICABLE} for
+	 * NotApplicable.
 	 *
 	 * @param decision
 	 *            decision
 	 * @param pepActions
 	 *            PEP actions (obligations/advices)
 	 */
-	public MutableDecisionResult(final DecisionType decision, final PepActions pepActions)
-	{
+	public MutableDecisionResult(final DecisionType decision, final MutablePepActions pepActions) {
 		this(decision, DecisionType.NOT_APPLICABLE, null, pepActions, null, null, null);
 	}
 
 	/**
-	 * Instantiates a decision result reusing the decision, extended Indeterminate and status from a given result
+	 * Instantiates a decision result reusing the decision, extended
+	 * Indeterminate and status from a given result
 	 * 
 	 * @param algResult
-	 *            decision result giving the decision, extended Indeterminate result and status to the new instance
+	 *            decision result giving the decision, extended Indeterminate
+	 *            result and status to the new instance
 	 * @param pepActions
 	 *            PEP actions (obligations/advices) to be added to the result
 	 * @param applicablePolicyIdList
 	 *            list of matched policy identifiers to be added to the result
 	 * @param usedNamedAttributes
-	 *            list of identifiers of the named attributes actually used for evaluating this decision
+	 *            list of identifiers of the named attributes actually used for
+	 *            evaluating this decision
 	 * @param usedExtraAttributeContents
-	 *            extra Attributes/Content(s) actually used for evaluating this decision
+	 *            extra Attributes/Content(s) actually used for evaluating this
+	 *            decision
 	 */
-	public MutableDecisionResult(final DecisionResult algResult, final PepActions pepActions, final List<JAXBElement<IdReferenceType>> applicablePolicyIdList,
-			final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents)
-	{
-		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions, applicablePolicyIdList, usedNamedAttributes, usedExtraAttributeContents);
+	public MutableDecisionResult(final DecisionResult algResult, final MutablePepActions pepActions,
+			final List<JAXBElement<IdReferenceType>> applicablePolicyIdList,
+			final Set<AttributeGUID> usedNamedAttributes, final Set<AttributeSelectorId> usedExtraAttributeContents) {
+		this(algResult.getDecision(), algResult.getExtendedIndeterminate(), algResult.getStatus(), pepActions,
+				applicablePolicyIdList, usedNamedAttributes, usedExtraAttributeContents);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public int hashCode()
-	{
-		if (hashCode == 0)
-		{
-			hashCode = Objects.hash(this.decision, this.extIndeterminate, this.status, this.pepActions, this.applicablePolicyIdList);
+	public int hashCode() {
+		if (hashCode == 0) {
+			hashCode = Objects.hash(this.decision, this.extIndeterminate, this.status, this.pepActions);
 		}
 
 		return hashCode;
@@ -215,46 +214,37 @@ public final class MutableDecisionResult implements DecisionResult
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
 		}
 
-		if (!(obj instanceof DecisionResult))
-		{
+		if (!(obj instanceof DecisionResult)) {
 			return false;
 		}
 
 		final DecisionResult other = (DecisionResult) obj;
-		if (this.decision != other.getDecision())
-		{
+		if (this.decision != other.getDecision()) {
 			return false;
 		}
 
-		if (this.extIndeterminate != other.getExtendedIndeterminate())
-		{
+		if (this.extIndeterminate != other.getExtendedIndeterminate()) {
 			return false;
 		}
 
 		// Status is optional in XACML
-		if (this.status == null)
-		{
-			if (other.getStatus() != null)
-			{
+		if (this.status == null) {
+			if (other.getStatus() != null) {
 				return false;
 			}
-		}
-		else if (!this.status.equals(other.getStatus()))
-		{
+		} else if (!this.status.equals(other.getStatus())) {
 			return false;
 		}
 
 		// this.getObligations() derived from this.pepActions
 		// pepActions never null
 		// applicablePolicyIdList never null
-		return this.pepActions.equals(other.getPepActions()) && this.applicablePolicyIdList.equals(other.getApplicablePolicyIdList());
+		return this.pepActions.equals(other.getPepActions());
 	}
 
 	/**
@@ -263,8 +253,7 @@ public final class MutableDecisionResult implements DecisionResult
 	 * Get XACML Decision
 	 */
 	@Override
-	public DecisionType getDecision()
-	{
+	public DecisionType getDecision() {
 		return this.decision;
 	}
 
@@ -274,8 +263,7 @@ public final class MutableDecisionResult implements DecisionResult
 	 * Get PEP actions (Obligations/Advices)
 	 */
 	@Override
-	public PepActions getPepActions()
-	{
+	public PepActions getPepActions() {
 		return this.pepActions;
 	}
 
@@ -285,74 +273,28 @@ public final class MutableDecisionResult implements DecisionResult
 	 * Status code/message/detail
 	 */
 	@Override
-	public Status getStatus()
-	{
+	public Status getStatus() {
 		return this.status;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get identifiers of policies found applicable for the decision request
-	 */
-	@Override
-	public List<JAXBElement<IdReferenceType>> getApplicablePolicyIdList()
-	{
-		return this.applicablePolicyIdList;
-	}
-
 	/** {@inheritDoc} */
 	@Override
-	public DecisionType getExtendedIndeterminate()
-	{
+	public DecisionType getExtendedIndeterminate() {
 		return this.extIndeterminate;
 	}
-
+	
 	/**
-	 * {@inheritDoc}
-	 *
-	 * Merge extra PEP actions and/or matched policy identifiers. Used when combining results from child Rules of Policy or child Policies of PolicySet
+	 * Add PEP actions to this result
+	 * @param newPepActions PEP actions to be added
 	 */
-	@Override
-	public void merge(final PepActions newPepActions, final List<JAXBElement<IdReferenceType>> newMatchedPolicyIdList)
-	{
-		if (newPepActions != null)
-		{
-			this.pepActions.merge(newPepActions);
-		}
-
-		if (newMatchedPolicyIdList != null)
-		{
-			this.applicablePolicyIdList.addAll(newMatchedPolicyIdList);
-		}
+	public void addPepActions(PepActions newPepActions) {
+		this.pepActions.add(pepActions);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public String toString()
-	{
-		return "Result [decision=" + decision + ", status=" + status + ", pepActions=" + pepActions + ", applicablePolicyIdList=" + applicablePolicyIdList + "]";
-	}
-
-	@Override
-	public Result toXACMLResult(final List<Attributes> returnedAttributes)
-	{
-		final List<Obligation> obligationList = this.pepActions.getObligations();
-		final List<Advice> adviceList = this.pepActions.getAdvices();
-		return new Result(this.decision, this.status, obligationList == null || obligationList.isEmpty() ? null : new Obligations(obligationList), adviceList == null || adviceList.isEmpty() ? null
-				: new AssociatedAdvice(adviceList), returnedAttributes, applicablePolicyIdList == null || applicablePolicyIdList.isEmpty() ? null : new PolicyIdentifierList(applicablePolicyIdList));
-	}
-
-	@Override
-	public Set<AttributeGUID> getUsedNamedAttributes()
-	{
-		return usedNamedAttributeIdList;
-	}
-
-	@Override
-	public Set<AttributeSelectorId> getUsedExtraAttributeContents()
-	{
-		return usedExtraContentSelectorList;
+	public String toString() {
+		return "Result [decision=" + decision + ", status=" + status + ", pepActions=" + pepActions + "]";
 	}
 
 }

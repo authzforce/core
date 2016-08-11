@@ -29,6 +29,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActions;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	private final transient JAXB_PEP_ACTION emptyPepAction;
 	private final transient List<AttributeAssignmentExpressionEvaluator> evaluatableAttributeAssignmentExpressions;
 
-	private final PepActionFactory<JAXB_PEP_ACTION> pepActionFactory;
+	private final PepActions.Factory<JAXB_PEP_ACTION> pepActionFactory;
 
 	private final String infoPrefix;
 
@@ -72,7 +73,7 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	 * @throws java.lang.IllegalArgumentException
 	 *             one of the AttributeAssignmentExpressions' Expression is invalid
 	 */
-	public PepActionExpression(PepActionFactory<JAXB_PEP_ACTION> pepActionFactory, String pepActionId, EffectType appliesTo, List<AttributeAssignmentExpression> jaxbAssignmentExps,
+	public PepActionExpression(PepActions.Factory<JAXB_PEP_ACTION> pepActionFactory, String pepActionId, EffectType appliesTo, List<AttributeAssignmentExpression> jaxbAssignmentExps,
 			XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		this.actionId = pepActionId;

@@ -18,22 +18,26 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
+import java.util.Objects;
+
+import org.ow2.authzforce.core.pdp.api.Decidable;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.DecisionResults;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.impl.ImmutablePepActions;
+import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule;
-
-import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PepActions;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
-import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 
 /**
  * Evaluates a XACML Rule to a Decision.
@@ -43,6 +47,122 @@ import org.slf4j.LoggerFactory;
  */
 public class RuleEvaluator implements Decidable
 {
+	private static class RuleDecisionResult implements DecisionResult {
+		
+		private final DecisionType decision;
+		
+		/**
+		 * Extended Indeterminate value, as defined in section 7.10 of XACML 3.0 core:
+		 * <i>potential effect value which could have occurred if there would not
+		 * have been an error causing the “Indeterminate”</i>. We use the following
+		 * convention:
+		 * <ul>
+		 * <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
+		 * <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
+		 * <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
+		 * <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means
+		 * the decision is not Indeterminate, and therefore any extended
+		 * Indeterminate value should be ignored</li>
+		 * </ul>
+		 * 
+		 */
+		private final DecisionType extIndeterminate;
+		
+		private final Status status;
+
+		// initialized non-null
+		private final ImmutablePepActions pepActions;
+
+		private transient volatile int hashCode = 0;
+
+		private RuleDecisionResult(final DecisionType decision, final DecisionType extendedIndeterminate, final Status status, final ImmutablePepActions pepActions)
+		{
+			assert decision != null && extendedIndeterminate != null;
+
+			this.decision = decision;
+			this.extIndeterminate = extendedIndeterminate;
+			this.status = status;
+			this.pepActions = pepActions == null ? new ImmutablePepActions(null, null) : pepActions;
+		}
+		
+		/** {@inheritDoc} */
+		@Override
+		public int hashCode()
+		{
+			if (hashCode == 0)
+			{
+				hashCode = Objects.hash(this.decision, this.extIndeterminate, this.status, this.pepActions);
+			}
+
+			return hashCode;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+
+			if (!(obj instanceof DecisionResult))
+			{
+				return false;
+			}
+
+			final RuleDecisionResult other = (RuleDecisionResult) obj;
+			if (this.decision != other.getDecision())
+			{
+				return false;
+			}
+
+			if (this.extIndeterminate != other.getExtendedIndeterminate())
+			{
+				return false;
+			}
+
+			// Status is optional in XACML
+			if (this.status == null)
+			{
+				if (other.getStatus() != null)
+				{
+					return false;
+				}
+			}
+			else if (!this.status.equals(other.getStatus()))
+			{
+				return false;
+			}
+
+			// this.getObligations() derived from this.pepActions
+			// pepActions never null
+			// applicablePolicyIdList never null
+			return this.pepActions.equals(other.getPepActions());
+		}
+
+
+		@Override
+		public DecisionType getDecision() {
+			return this.decision;
+		}
+
+		@Override
+		public DecisionType getExtendedIndeterminate() {
+			return DecisionType.NOT_APPLICABLE;
+		}
+
+		@Override
+		public PepActions getPepActions() {
+			return this.pepActions;
+		}
+
+		@Override
+		public Status getStatus() {
+			return this.status;
+		}
+		
+	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RuleEvaluator.class);
 
@@ -50,8 +170,8 @@ public class RuleEvaluator implements Decidable
 	private final transient TargetEvaluator evaluatableTarget;
 	private final transient ConditionEvaluator evaluatableCondition;
 	private final transient RulePepActionExpressionsEvaluator effectMatchPepActionExps;
-	private final transient MutableDecisionResult nullActionsRuleDecisionResult;
-	private final String toString;
+	private final transient DecisionResult nullActionsRuleDecisionResult;
+	private final transient String toString;
 	private final String ruleId;
 
 	/**
@@ -107,7 +227,7 @@ public class RuleEvaluator implements Decidable
 		if (this.effectMatchPepActionExps == null)
 		{
 
-			this.nullActionsRuleDecisionResult = new MutableDecisionResult(this.effectAsDecision, null);
+			this.nullActionsRuleDecisionResult = new RuleDecisionResult(this.effectAsDecision, DecisionType.NOT_APPLICABLE, null, null);
 		}
 		else
 		{
@@ -123,6 +243,17 @@ public class RuleEvaluator implements Decidable
 	public String getRuleId()
 	{
 		return this.ruleId;
+	}
+	
+	/**
+	 * Create an Indeterminate Decision Result
+	 * For the Extended Indeterminate, we do like for Target or Condition evaluation in section 7.11
+			  (same as the rule's Effect).
+	 * @param e
+	 * @return
+	 */
+	private RuleDecisionResult newIndeterminateResult(final IndeterminateEvaluationException e) {
+		return new RuleDecisionResult(DecisionType.INDETERMINATE, this.effectAsDecision, e.getStatus(), null);
 	}
 
 	/**
@@ -152,7 +283,7 @@ public class RuleEvaluator implements Decidable
 				if (!evaluatableTarget.match(context))
 				{
 					LOGGER.debug("{}/Target -> No-match", this);
-					final DecisionResult result = MutableDecisionResult.NOT_APPLICABLE;
+					final DecisionResult result = DecisionResults.SIMPLE_NOT_APPLICABLE;
 					LOGGER.debug("{} -> {}", this, result);
 					return result;
 				}
@@ -170,7 +301,7 @@ public class RuleEvaluator implements Decidable
 				/*
 				 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
 				 */
-				final DecisionResult result = new MutableDecisionResult(e.getStatus(), this.effectAsDecision);
+				final DecisionResult result = newIndeterminateResult(e);
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -201,7 +332,7 @@ public class RuleEvaluator implements Decidable
 				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but not a critical application error, therefore lower level than Error level)
 				 */
 				LOGGER.info("{}/Condition -> Indeterminate", this, e);
-				final DecisionResult result = new MutableDecisionResult(e.getStatus(), this.effectAsDecision);
+				final DecisionResult result = newIndeterminateResult(e);
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -209,7 +340,7 @@ public class RuleEvaluator implements Decidable
 			if (!isConditionTrue)
 			{
 				LOGGER.debug("{}/Condition -> False", this);
-				final DecisionResult result = MutableDecisionResult.NOT_APPLICABLE;
+				final DecisionResult result = DecisionResults.SIMPLE_NOT_APPLICABLE;
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -231,11 +362,12 @@ public class RuleEvaluator implements Decidable
 		 * Evaluate obligations/advice we have already filtered out obligations/advice that do not apply to Rule's effect, after calling PepActionExpressionsEvaluator.getInstance(..., effect) in the
 		 * constructor. So no need to do it again, that's why Effect not used as argument to evaluate() here.
 		 */
-		final PepActions pepActions;
+		final ImmutablePepActions pepActions;
 		try
 		{
 			pepActions = this.effectMatchPepActionExps.evaluate(context);
 		}
+		
 		catch (final IndeterminateEvaluationException e)
 		{
 			/*
@@ -248,12 +380,12 @@ public class RuleEvaluator implements Decidable
 			 * policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18). For the Extended Indeterminate, we do like for Target or Condition evaluation in section 7.11
 			 * (same as the rule's Effect).
 			 */
-			final MutableDecisionResult result = new MutableDecisionResult(e.getStatus(), this.effectAsDecision);
+			final DecisionResult result = newIndeterminateResult(e);
 			LOGGER.debug("{} -> {}", this, result);
 			return result;
 		}
 
-		final ImmutableDecisionResult result = new ImmutableDecisionResult(this.effectAsDecision, pepActions);
+		final DecisionResult result = new RuleDecisionResult(this.effectAsDecision, DecisionType.NOT_APPLICABLE, null, pepActions);
 		LOGGER.debug("{} -> {}", this, result);
 		return result;
 	}

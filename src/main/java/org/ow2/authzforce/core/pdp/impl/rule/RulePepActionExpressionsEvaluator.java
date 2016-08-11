@@ -20,6 +20,16 @@ package org.ow2.authzforce.core.pdp.impl.rule;
 
 import java.util.List;
 
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.impl.ImmutablePepActions;
+import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
+import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
+import org.ow2.authzforce.core.pdp.impl.PepActionFactories;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
@@ -28,16 +38,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
-
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PepActions;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.impl.BasePepActions;
-import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
-import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Evaluator of a Rule's PEP action (Obligation/Advice) expressions
@@ -89,7 +89,7 @@ public class RulePepActionExpressionsEvaluator
 		@Override
 		public void add(ObligationExpression jaxbObligationExp) throws IllegalArgumentException
 		{
-			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(BasePepActions.OBLIGATION_FACTORY,
+			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(PepActionFactories.OBLIGATION_FACTORY,
 					jaxbObligationExp.getObligationId(), jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(),
 					xPathCompiler, expFactory);
 			final boolean isMatching = ruleEffectMatchingActionExpressions.addObligationExpression(obligationExp);
@@ -103,7 +103,7 @@ public class RulePepActionExpressionsEvaluator
 		@Override
 		public void add(AdviceExpression jaxbAdviceExp) throws IllegalArgumentException
 		{
-			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(BasePepActions.ADVICE_FACTORY, jaxbAdviceExp.getAdviceId(),
+			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(PepActionFactories.ADVICE_FACTORY, jaxbAdviceExp.getAdviceId(),
 					jaxbAdviceExp.getAppliesTo(), jaxbAdviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
 			final boolean isMatching = ruleEffectMatchingActionExpressions.addAdviceExpression(adviceExp);
 			if (LOGGER.isWarnEnabled() && !isMatching)
@@ -192,9 +192,9 @@ public class RulePepActionExpressionsEvaluator
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error evaluating one of ObligationExpression/AdviceExpressions' AttributeAssignmentExpressions' expressions
 	 */
-	public PepActions evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public ImmutablePepActions evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		return PepActionExpressions.Helper.evaluate(this.ruleEffectMatchingActionExpressions, context, null);
+		return PepActionExpressions.Helper.evaluate(this.ruleEffectMatchingActionExpressions, context);
 	}
 
 }

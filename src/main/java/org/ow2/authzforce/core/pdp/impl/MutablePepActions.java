@@ -26,62 +26,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
-
 import org.ow2.authzforce.core.pdp.api.PepActions;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 
 /**
  * Base PEP actions (obligations/advice)
  *
  * @version $Id: $
  */
-public final class BasePepActions implements PepActions
+public final class MutablePepActions implements PepActions
 {
 	private static final IllegalArgumentException UNDEF_MERGED_PEP_ACTIONS_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined PEP actions");
-
-	/**
-	 * Obligation factory
-	 *
-	 */
-	public static final PepActionFactory<Obligation> OBLIGATION_FACTORY = new PepActionFactory<Obligation>()
-	{
-
-		@Override
-		public Obligation getInstance(List<AttributeAssignment> attributeAssignments, String actionId)
-		{
-			return new Obligation(attributeAssignments, actionId);
-		}
-
-		@Override
-		public String getActionXmlElementName()
-		{
-			return "Obligation";
-		}
-
-	};
-
-	/**
-	 * Advice factory
-	 *
-	 */
-	public static final PepActionFactory<Advice> ADVICE_FACTORY = new PepActionFactory<Advice>()
-	{
-
-		@Override
-		public Advice getInstance(List<AttributeAssignment> attributeAssignments, String actionId)
-		{
-			return new Advice(attributeAssignments, actionId);
-		}
-
-		@Override
-		public String getActionXmlElementName()
-		{
-			return "Advice";
-		}
-
-	};
 
 	// always non-null fields
 	private final List<Obligation> obligationList;
@@ -97,7 +54,7 @@ public final class BasePepActions implements PepActions
 	 * @param advices
 	 *            advice list; null if no advice
 	 */
-	public BasePepActions(List<Obligation> obligations, List<Advice> advices)
+	public MutablePepActions(List<Obligation> obligations, List<Advice> advices)
 	{
 		this.obligationList = obligations == null ? new ArrayList<Obligation>() : obligations;
 		this.adviceList = advices == null ? new ArrayList<Advice>() : advices;
@@ -109,7 +66,7 @@ public final class BasePepActions implements PepActions
 	 * Get the internal obligation list
 	 */
 	@Override
-	public List<Obligation> getObligations()
+	public List<Obligation> getObligatory()
 	{
 		return Collections.unmodifiableList(obligationList);
 	}
@@ -120,7 +77,7 @@ public final class BasePepActions implements PepActions
 	 * Get the internal advice list
 	 */
 	@Override
-	public List<Advice> getAdvices()
+	public List<Advice> getAdvisory()
 	{
 		return Collections.unmodifiableList(adviceList);
 	}
@@ -146,48 +103,46 @@ public final class BasePepActions implements PepActions
 			return true;
 		}
 
-		if (!(obj instanceof BasePepActions))
+		if (!(obj instanceof MutablePepActions))
 		{
 			return false;
 		}
 
-		final BasePepActions other = (BasePepActions) obj;
+		final MutablePepActions other = (MutablePepActions) obj;
 		return this.obligationList.equals(other.obligationList) && this.adviceList.equals(other.adviceList);
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
 	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
+	 * @param newObligations extra obligations
+	 * @param newAdviceList extra advice elements
 	 */
-	@Override
-	public void merge(List<Obligation> newObligations, List<Advice> newAdvices)
+	public void addAll(List<Obligation> newObligations, List<Advice> newAdviceList)
 	{
 		if (newObligations != null)
 		{
 			this.obligationList.addAll(newObligations);
 		}
 
-		if (newAdvices != null)
+		if (newAdviceList != null)
 		{
-			this.adviceList.addAll(newAdvices);
+			this.adviceList.addAll(newAdviceList);
 		}
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
+	 * 
 	 * Merge extra PEP actions. Used when combining results from child Rules of Policy or child Policies of PolicySet
+	 * @param pepActions extra PEP actions (obligations/advice)
 	 */
-	@Override
-	public void merge(PepActions pepActions)
+	public void add(PepActions pepActions)
 	{
 		if (pepActions == null)
 		{
 			throw UNDEF_MERGED_PEP_ACTIONS_ARGUMENT_EXCEPTION;
 		}
 
-		merge(pepActions.getObligations(), pepActions.getAdvices());
+		addAll(pepActions.getObligatory(), pepActions.getAdvisory());
 	}
 
 	/** {@inheritDoc} */

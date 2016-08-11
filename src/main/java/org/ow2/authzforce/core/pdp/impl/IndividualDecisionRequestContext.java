@@ -18,15 +18,17 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.saxon.s9api.XdmNode;
+import javax.xml.bind.JAXBElement;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
@@ -41,6 +43,9 @@ import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.sf.saxon.s9api.XdmNode;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
+
 /**
  * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple Decision Profile spec for more
  * information on Individual Decision Request as opposed to Multiple Decision Request).
@@ -49,6 +54,12 @@ import org.slf4j.LoggerFactory;
  */
 public class IndividualDecisionRequestContext implements EvaluationContext
 {
+	private interface ApplicablePolicyListUpdater {
+		boolean addPolicyRef(JAXBElement<IdReferenceType> policyRef);
+
+		List<JAXBElement<IdReferenceType>> getApplicablePolicyRefs();
+	}
+
 	/**
 	 * Logger used for all classes
 	 */
@@ -57,13 +68,42 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	private static final IndeterminateEvaluationException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IndeterminateEvaluationException("Unsupported XACML feature (optional): <AttributeSelector>",
 			StatusHelper.STATUS_SYNTAX_ERROR);
 
+	private static final ApplicablePolicyListUpdater APPLICABLE_POLICY_LIST_COLLECTOR = new ApplicablePolicyListUpdater() {
+		private final List<JAXBElement<IdReferenceType>> applicablePolicyRefs = new ArrayList<>();
+
+		@Override
+		public boolean addPolicyRef(JAXBElement<IdReferenceType> policyRef) {
+			return applicablePolicyRefs.add(policyRef);
+		}
+
+		@Override
+		public List<JAXBElement<IdReferenceType>> getApplicablePolicyRefs() {
+			return Collections.<JAXBElement<IdReferenceType>>unmodifiableList(applicablePolicyRefs);
+		}
+		
+	};
+
+	private static final ApplicablePolicyListUpdater VOID_APPLICABLE_POLICY_COLLECTOR = new ApplicablePolicyListUpdater() {
+
+		@Override
+		public boolean addPolicyRef(JAXBElement<IdReferenceType> policyRef) {
+			return false;
+		}
+
+		@Override
+		public List<JAXBElement<IdReferenceType>> getApplicablePolicyRefs() {
+			return null;
+		}
+		
+	};
+
 	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 
 	private final Map<String, Value> varValsById = new HashMap<>();
 
 	private final Map<String, Object> updatableProperties = new HashMap<>();
 
-	private final boolean isApplicablePolicyIdListReturned;
+	private final ApplicablePolicyListUpdater applicablePolicyListUpdater;
 
 	/*
 	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based functions, etc. This may be null if no
@@ -100,7 +140,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	{
 		this.namedAttributes = namedAttributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : namedAttributeMap;
 		this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
-		this.isApplicablePolicyIdListReturned = returnApplicablePolicyIdList;
+		this.applicablePolicyListUpdater = returnApplicablePolicyIdList? APPLICABLE_POLICY_LIST_COLLECTOR: VOID_APPLICABLE_POLICY_COLLECTOR;
 		this.usedNamedAttributeIdSet = returnUsedAttributes ? new HashSet<AttributeGUID>() : null;
 
 		if (extraContentsByAttributeCategory == null)
@@ -316,22 +356,25 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return immutableAttributeSet.iterator();
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public boolean isApplicablePolicyIdListReturned()
-	{
-		return isApplicablePolicyIdListReturned;
-	}
-
 	@Override
 	public Set<AttributeGUID> getUsedNamedAttributes()
 	{
-		return this.usedNamedAttributeIdSet;
+		return Collections.unmodifiableSet(this.usedNamedAttributeIdSet);
 	}
 
 	@Override
 	public Set<AttributeSelectorId> getUsedExtraAttributeContents()
 	{
-		return this.usedAttributeSelectorIdSet;
+		return Collections.unmodifiableSet(this.usedAttributeSelectorIdSet);
+	}
+
+	@Override
+	public boolean addApplicablePolicy(JAXBElement<IdReferenceType> policyRef) {
+		return this.applicablePolicyListUpdater.addPolicyRef(policyRef);
+	}
+
+	@Override
+	public List<JAXBElement<IdReferenceType>> getApplicablePolicies() {
+		return this.applicablePolicyListUpdater.getApplicablePolicyRefs();
 	}
 }
