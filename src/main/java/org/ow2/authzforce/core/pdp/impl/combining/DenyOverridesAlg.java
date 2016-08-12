@@ -24,7 +24,9 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.MutablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
@@ -50,8 +52,10 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		@Override
-		public DecisionResult eval(final EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context, final MutablePepActions mutablePepActions)
 		{
+			assert mutablePepActions != null;
+
 			/*
 			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
 			 */
@@ -65,59 +69,67 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 			 */
 			DecisionResult firstIndeterminatePResult = null;
 
-			/*
-			 * Replaces atLeastOnePermit from XACML spec. atLeastOnePermit == true <=> combinedPermitResult != null
-			 */
-			DecisionResult combinedPermitResult = null;
+			boolean atLeastOnePermit = false;
+			MutablePepActions permitPepActions = null;
 
 			for (final Decidable combinedElement : combinedElements)
 			{
 				// evaluate the policy
 				final DecisionResult result = combinedElement.evaluate(context);
+
+				/*
+				 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing
+				 * policy set
+				 */
+
 				switch (result.getDecision())
 				{
-				case DENY:
-					return result;
-				case PERMIT:
-					if (combinedPermitResult == null)
-					{
-						combinedPermitResult = result;
-					} else
-					{
-						combinedPermitResult.merge(result.getPepActions(), result.getApplicablePolicyIdList());
-					}
-					break;
-				case INDETERMINATE:
-					/*
-					 * Save Extended Indeterminate value if this is a new type of such value, till the end because needed to compute final Extended Indeterminate value
-					 */
-					switch (result.getExtendedIndeterminate())
-					{
-					case INDETERMINATE:
-						if (firstIndeterminateDPResult == null)
-						{
-							firstIndeterminateDPResult = result;
-						}
-						break;
 					case DENY:
-						if (firstIndeterminateDResult == null)
-						{
-							firstIndeterminateDResult = result;
-						}
-						break;
+						mutablePepActions.add(result.getPepActions());
+						return DecisionResults.SIMPLE_DENY;
 					case PERMIT:
-						if (firstIndeterminatePResult == null)
+						if (atLeastOnePermit)
 						{
-							firstIndeterminatePResult = result;
+							assert permitPepActions != null;
+							// not the first permit, pepActionsList already initialized
+							permitPepActions.add(result.getPepActions());
+							break;
 						}
+
+						atLeastOnePermit = true;
+						permitPepActions = new MutablePepActions();
+						break;
+					case INDETERMINATE:
+						/*
+						 * Save Extended Indeterminate value if this is a new type of such value, till the end because needed to compute final Extended Indeterminate value
+						 */
+						switch (result.getExtendedIndeterminate())
+						{
+							case INDETERMINATE:
+								if (firstIndeterminateDPResult == null)
+								{
+									firstIndeterminateDPResult = result;
+								}
+								break;
+							case DENY:
+								if (firstIndeterminateDResult == null)
+								{
+									firstIndeterminateDResult = result;
+								}
+								break;
+							case PERMIT:
+								if (firstIndeterminatePResult == null)
+								{
+									firstIndeterminatePResult = result;
+								}
+								break;
+							default:
+
+						}
+
 						break;
 					default:
-
-					}
-
-					break;
-				default:
-					break;
+						break;
 				}
 			}
 
@@ -135,13 +147,14 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 			 */
 			if (firstIndeterminateDResult != null)
 			{
-				return new MutableDecisionResult(firstIndeterminateDResult.getStatus(), firstIndeterminatePResult != null || combinedPermitResult != null ? DecisionType.INDETERMINATE : DecisionType.DENY);
+				return new MutableDecisionResult(firstIndeterminateDResult.getStatus(), firstIndeterminatePResult != null || atLeastOnePermit ? DecisionType.INDETERMINATE : DecisionType.DENY);
 			}
 
 			// if we got a PERMIT or Indeterminate{P}, return it, otherwise it's NOT_APPLICABLE
-			if (combinedPermitResult != null)
+			if (atLeastOnePermit)
 			{
-				return combinedPermitResult;
+				mutablePepActions.add(permitPepActions);
+				return DecisionResults.SIMPLE_PERMIT;
 			}
 
 			if (firstIndeterminatePResult != null)
@@ -149,7 +162,7 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 				return firstIndeterminatePResult;
 			}
 
-			return MutableDecisionResult.NOT_APPLICABLE;
+			return DecisionResults.SIMPLE_NOT_APPLICABLE;
 		}
 	}
 

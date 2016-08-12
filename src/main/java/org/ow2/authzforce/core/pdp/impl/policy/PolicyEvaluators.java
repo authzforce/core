@@ -52,10 +52,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
-import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.MutablePepActions;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.XMLUtils;
 import org.ow2.authzforce.core.pdp.api.combining.CombinerParameterEvaluator;
@@ -74,6 +76,7 @@ import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluat
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
+import org.ow2.authzforce.core.pdp.impl.ImmutableDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
@@ -131,7 +134,8 @@ public final class PolicyEvaluators
 			if (jaxbCombinerParameters == null)
 			{
 				this.parameters = Collections.emptyList();
-			} else
+			}
+			else
 			{
 				final List<CombinerParameterEvaluator> modifiableParamList = new ArrayList<>();
 				int paramIndex = 0;
@@ -141,7 +145,8 @@ public final class PolicyEvaluators
 					{
 						final CombinerParameterEvaluator combinerParam = new CombinerParameterEvaluator(jaxbCombinerParam, expFactory, xPathCompiler);
 						modifiableParamList.add(combinerParam);
-					} catch (final IllegalArgumentException e)
+					}
+					catch (final IllegalArgumentException e)
 					{
 						throw new IllegalArgumentException("Error parsing CombinerParameters/CombinerParameter#" + paramIndex, e);
 					}
@@ -278,7 +283,8 @@ public final class PolicyEvaluators
 					}
 
 					resultWithoutTarget = result;
-				} else
+				}
+				else
 				{
 					if (resultWithoutTarget != null)
 					{
@@ -341,7 +347,8 @@ public final class PolicyEvaluators
 			{
 				this.policyType = TopLevelPolicyElementType.POLICY;
 				this.refToSelf = JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createPolicyIdReference(idRef);
-			} else
+			}
+			else
 			{
 				this.policyType = TopLevelPolicyElementType.POLICY_SET;
 				this.refToSelf = JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createPolicySetIdReference(idRef);
@@ -356,7 +363,8 @@ public final class PolicyEvaluators
 			try
 			{
 				this.targetEvaluator = new TargetEvaluator(policyTarget, defaultXPathCompiler, expressionFactory);
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(this + ": Invalid Target", e);
 			}
@@ -365,7 +373,8 @@ public final class PolicyEvaluators
 			try
 			{
 				combiningAlg = combiningAlgRegistry.getAlgorithm(combiningAlgId, combinedElementClass);
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(this + ": Unknown combining algorithm ID = " + combiningAlgId, e);
 			}
@@ -374,7 +383,8 @@ public final class PolicyEvaluators
 			try
 			{
 				this.pepActionExps = PolicyPepActionExpressionsEvaluator.getInstance(obligationExps, adviceExps, defaultXPathCompiler, expressionFactory);
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(this + ": Invalid AttributeAssignmentExpressions", e);
 			}
@@ -409,12 +419,14 @@ public final class PolicyEvaluators
 			if (cachedValue instanceof EvalResults)
 			{
 				cachedResults = (EvalResults) cachedValue;
-			} else
+			}
+			else
 			{
 				cachedResults = null;
 			}
 
 			DecisionResult newResult = null;
+			final MutablePepActions mutablePepActions;
 
 			try
 			{
@@ -429,9 +441,11 @@ public final class PolicyEvaluators
 					}
 
 					// evaluate with combining algorithm
-					algResult = combiningAlgEvaluator.eval(context);
+					mutablePepActions = new MutablePepActions();
+					algResult = combiningAlgEvaluator.eval(context, mutablePepActions);
 					LOGGER.debug("{}/Algorithm -> {}", policyId, algResult);
-				} else
+				}
+				else
 				{
 					if (cachedResults != null && cachedResults.resultWithTarget != null)
 					{
@@ -445,11 +459,16 @@ public final class PolicyEvaluators
 					{
 						if (!isApplicable(context))
 						{
+							LOGGER.debug("{}/Target -> No-match", policyId);
 							LOGGER.debug("{} -> NotApplicable", policyId);
-							newResult = MutableDecisionResult.NOT_APPLICABLE;
+							newResult = DecisionResults.SIMPLE_NOT_APPLICABLE;
 							return newResult;
 						}
-					} catch (final IndeterminateEvaluationException e)
+
+						// Target Match
+						LOGGER.debug("{}/Target -> Match", policyId);
+					}
+					catch (final IndeterminateEvaluationException e)
 					{
 						targetMatchIndeterminateException = e;
 						/*
@@ -459,12 +478,13 @@ public final class PolicyEvaluators
 					}
 
 					// evaluate with combining algorithm
-					algResult = combiningAlgEvaluator.eval(context);
+					mutablePepActions = new MutablePepActions();
+					algResult = combiningAlgEvaluator.eval(context, mutablePepActions);
 					LOGGER.debug("{}/Algorithm -> {}", policyId, algResult);
 
 					if (targetMatchIndeterminateException != null)
 					{
-						// Target is indeterminate
+						// Target is Indeterminate
 						/*
 						 * Implement Extended Indeterminate according to table 7 of section 7.14 (XACML 3.0 Core). If the combining alg value is Indeterminate, use its extended Indeterminate value as
 						 * this evaluation result's extended Indeterminate value; else (Permit or Deny) as our extended indeterminate value (part between {} in XACML notation).
@@ -472,58 +492,52 @@ public final class PolicyEvaluators
 						final DecisionType algDecision = algResult.getDecision();
 						switch (algDecision)
 						{
-						case NOT_APPLICABLE:
-							newResult = algResult;
-							break;
-						case PERMIT:
-						case DENY:
-							newResult = new MutableDecisionResult(targetMatchIndeterminateException.getStatus(), algDecision);
-							break;
-						default: // INDETERMINATE
-							newResult = new MutableDecisionResult(targetMatchIndeterminateException.getStatus(), algResult.getExtendedIndeterminate());
-							break;
+							case NOT_APPLICABLE:
+								newResult = algResult;
+								break;
+							case PERMIT:
+							case DENY:
+								newResult = new MutableDecisionResult(targetMatchIndeterminateException.getStatus(), algDecision);
+								break;
+							default: // INDETERMINATE
+								newResult = new MutableDecisionResult(targetMatchIndeterminateException.getStatus(), algResult.getExtendedIndeterminate());
+								break;
 						}
 
 						return newResult;
 					}
+
+					// Target Match
 				}
 
-				// target match not indeterminate
+				/*
+				 * Target Match (or assumed Match if skipTarget=true) -> the policy decision is the one from the combining algorithm
+				 */
 				final DecisionType algResultDecision = algResult.getDecision();
-				final PepActions pepActions;
-				final List<JAXBElement<IdReferenceType>> applicablePolicyIdList;
 				switch (algResultDecision)
 				{
-				case NOT_APPLICABLE:
-					newResult = algResult;
-					return newResult;
-				case INDETERMINATE:
-					if (context.isApplicablePolicyIdListReturned())
-					{
-						applicablePolicyIdList = algResult.getApplicablePolicyIdList();
-						applicablePolicyIdList.add(this.refToSelf);
-						// PEP actions not returned with Indeterminate
-						pepActions = null;
-					} else
-					{
+					case NOT_APPLICABLE:
+						/*
+						 * Final evaluation result is NotApplicable, so we don't add to applicable policy identifier list
+						 */
 						newResult = algResult;
 						return newResult;
-					}
-					break;
-				default:
-					if (context.isApplicablePolicyIdListReturned())
-					{
-						applicablePolicyIdList = algResult.getApplicablePolicyIdList();
-						applicablePolicyIdList.add(this.refToSelf);
-					} else
-					{
-						// applicable policy identifiers are NOT requested
-						applicablePolicyIdList = null;
-					}
 
-					if (pepActionExps == null)
-					{
-						if (applicablePolicyIdList == null)
+					case INDETERMINATE:
+						// Not NotApplicable -> applicable
+						context.addApplicablePolicy(refToSelf);
+						// Final result is the Indeterminate from algResult (no PEP actions), XACML §7.12, 7.13
+						newResult = algResult;
+						return newResult;
+
+					default:
+						// Permit/Deny decision
+						// So it is not NotApplicable -> applicable
+						context.addApplicablePolicy(refToSelf);
+						/*
+						 * Final result is algResult + PEP actions of this policy! So we can reuse algResult as final result only if there are no PEP actions
+						 */
+						if (pepActionExps == null)
 						{
 							/*
 							 * nothing to add to the combining alg eval result
@@ -532,38 +546,32 @@ public final class PolicyEvaluators
 							return newResult;
 						}
 
-						/*
-						 * no PEP actions on this Policy(Set) explicitly but maybe on the children evaluated by combining algorithm so we take the PEP actions resulting of algorithm evaluation as the
-						 * result PEP actions
-						 */
-						pepActions = algResult.getPepActions();
-					} else
-					{
-						// pepActionExps != null -> evaluate pepActionExps
-
+						// there are PEP actions (pepActionExps != null -> evaluate pepActionExps)
 						/*
 						 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then the
 						 * whole rule, policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18).
 						 */
+						final ImmutablePepActions pepActions;
 						try
 						{
-							pepActions = pepActionExps.evaluate(algResult, context);
-						} catch (final IndeterminateEvaluationException e)
+							pepActions = pepActionExps.evaluate(algResult.getDecision(), context, mutablePepActions);
+						}
+						catch (final IndeterminateEvaluationException e)
 						{
 							/*
 							 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than
 							 * error)
 							 */
 							LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyId, e);
-							newResult = new MutableDecisionResult(e.getStatus(), algResultDecision, applicablePolicyIdList);
+							newResult = new ImmutableDecisionResult(e.getStatus(), algResultDecision);
 							return newResult;
 						}
-					}
-				}
 
-				newResult = new MutableDecisionResult(algResult, pepActions, applicablePolicyIdList, context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
-				return newResult;
-			} finally
+						newResult = new ImmutableDecisionResult(algResult.getDecision(), pepActions);
+						return newResult;
+				}
+			}
+			finally
 			{
 				// remove local variables from context
 				for (final String varId : this.localVariableIds)
@@ -579,7 +587,8 @@ public final class PolicyEvaluators
 						final EvalResults newCachedResults = new EvalResults(this.policyId);
 						newCachedResults.setResult(skipTarget, newResult);
 						context.putOther(this.requestScopedEvalResultsCacheKey, newCachedResults);
-					} else
+					}
+					else
 					{
 						cachedResults.setResult(skipTarget, newResult);
 					}
@@ -848,7 +857,8 @@ public final class PolicyEvaluators
 		if (referredPolicy.getPolicyElementType() == TopLevelPolicyElementType.POLICY)
 		{
 			refPolicies.put(referredPolicy.getPolicyId(), referredPolicyMetadata.getVersion());
-		} else
+		}
+		else
 		{
 			refPolicySets.put(referredPolicy.getPolicyId(), referredPolicyMetadata.getVersion());
 		}
@@ -1073,7 +1083,8 @@ public final class PolicyEvaluators
 			try
 			{
 				this.extraMetadata = getPolicyRefExtraMetadata(referredPolicy, null);
-			} catch (final IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				throw new RuntimeException(this + ": unexpected error: could not get extra metadata of statically defined policy: " + referredPolicy, e);
 			}
@@ -1091,7 +1102,8 @@ public final class PolicyEvaluators
 			try
 			{
 				return referredPolicy.isApplicable(context);
-			} catch (final IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException("Error checking whether Policy(Set) referenced by " + this + " is applicable to the request context", e.getStatusCode(), e);
 			}
@@ -1195,14 +1207,16 @@ public final class PolicyEvaluators
 				final RefResolvedResult newCacheValue = new RefResolvedResult(policy, evalCtx);
 				evalCtx.putOther(requestScopedCacheKey, newCacheValue);
 				return newCacheValue;
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				final IndeterminateEvaluationException resolutionException = new IndeterminateEvaluationException("Error resolving " + this + " to the policy to evaluate in the request context",
 						StatusHelper.STATUS_PROCESSING_ERROR, e);
 				final RefResolvedResult newCacheValue = new RefResolvedResult(resolutionException);
 				evalCtx.putOther(requestScopedCacheKey, newCacheValue);
 				throw resolutionException;
-			} catch (final IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				final RefResolvedResult newCacheValue = new RefResolvedResult(e);
 				evalCtx.putOther(requestScopedCacheKey, newCacheValue);
@@ -1218,10 +1232,11 @@ public final class PolicyEvaluators
 			try
 			{
 				refResolvedResult = resolve(context);
-			} catch (final IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				LOGGER.info("", e);
-				return new MutableDecisionResult(e.getStatus(), context.getUsedNamedAttributes(), context.getUsedExtraAttributeContents());
+				return new ImmutableDecisionResult(e.getStatus(), DecisionType.INDETERMINATE);
 			}
 
 			return refResolvedResult.resolvedPolicy.evaluate(context, skipTarget);
@@ -1285,12 +1300,14 @@ public final class PolicyEvaluators
 		if (policyDefaults == null)
 		{
 			defaultXPathCompiler = parentDefaultXPathCompiler;
-		} else
+		}
+		else
 		{
 			try
 			{
 				defaultXPathCompiler = XMLUtils.newXPathCompiler(policyDefaults.getXPathVersion(), namespacePrefixesByURI);
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(policyFriendlyId + ": Invalid PolicyDefaults/XPathVersion or XML namespace prefix/URI undefined", e);
 			}
@@ -1330,13 +1347,15 @@ public final class PolicyEvaluators
 				try
 				{
 					combinerElt = new BaseCombiningAlgParameter<>(combinedRule, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (RuleCombinerParameters)", e);
 				}
 
 				ruleCombinerParameters.add(combinerElt);
-			} else if (policyChildElt instanceof CombinerParametersType)
+			}
+			else if (policyChildElt instanceof CombinerParametersType)
 			{
 				/*
 				 * CombinerParameters that is not RuleCombinerParameters already tested before
@@ -1345,13 +1364,15 @@ public final class PolicyEvaluators
 				try
 				{
 					combinerElt = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (CombinerParameters)", e);
 				}
 
 				ruleCombinerParameters.add(combinerElt);
-			} else if (policyChildElt instanceof VariableDefinition)
+			}
+			else if (policyChildElt instanceof VariableDefinition)
 			{
 				final VariableDefinition varDef = (VariableDefinition) policyChildElt;
 				final Deque<String> varDefLongestVarRefChain = new ArrayDeque<>();
@@ -1359,7 +1380,8 @@ public final class PolicyEvaluators
 				try
 				{
 					var = expressionFactory.addVariable(varDef, defaultXPathCompiler, varDefLongestVarRefChain);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (VariableDefinition)", e);
 				}
@@ -1381,13 +1403,15 @@ public final class PolicyEvaluators
 				{
 					sizeOfPolicyLongestVarRefChain = sizeOfVarDefLongestVarRefChain;
 				}
-			} else if (policyChildElt instanceof Rule)
+			}
+			else if (policyChildElt instanceof Rule)
 			{
 				final RuleEvaluator ruleEvaluator;
 				try
 				{
 					ruleEvaluator = new RuleEvaluator((Rule) policyChildElt, defaultXPathCompiler, expressionFactory);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ": Error parsing child #" + childIndex + " (Rule)", e);
 				}
@@ -1446,7 +1470,8 @@ public final class PolicyEvaluators
 			try
 			{
 				policy = refPolicyProvider.get(refPolicyType, policyId, versionConstraints, parentPolicySetRefChain);
-			} catch (final IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				throw new IllegalArgumentException("Error resolving statically or parsing " + PolicyRefEvaluator.toString(refPolicyType, policyId, versionConstraints)
 						+ " into its referenced policy (via static policy provider)", e);
@@ -1566,12 +1591,14 @@ public final class PolicyEvaluators
 			if (policyDefaults == null)
 			{
 				defaultXPathCompiler = parentDefaultXPathCompiler;
-			} else
+			}
+			else
 			{
 				try
 				{
 					defaultXPathCompiler = XMLUtils.newXPathCompiler(policyDefaults.getXPathVersion(), namespacePrefixesByURI);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ": Invalid PolicySetDefaults/XPathVersion or XML namespace prefix/URI undefined", e);
 				}
@@ -1614,7 +1641,8 @@ public final class PolicyEvaluators
 			try
 			{
 				childElement = PolicyEvaluators.getInstance(policyChildElt, defaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(extraMetadataProvider.friendlyId + ": invalid child #" + childIndex + " (Policy)", e);
 			}
@@ -1630,7 +1658,8 @@ public final class PolicyEvaluators
 			{
 				childElement = PolicyEvaluators.getInstanceStatic(policySetChildElt, defaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry, refPolicyProvider,
 						policySetRefChain == null ? null : new ArrayDeque<>(policySetRefChain));
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(extraMetadataProvider.friendlyId + ": Invalid child #" + childIndex + " (PolicySet)", e);
 			}
@@ -1687,7 +1716,8 @@ public final class PolicyEvaluators
 			try
 			{
 				childElement = PolicyEvaluators.getInstance(policyChildElt, defaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(extraMetadataProvider.friendlyId + ": invalid child #" + childIndex + " (Policy)", e);
 			}
@@ -1703,7 +1733,8 @@ public final class PolicyEvaluators
 			{
 				childElement = PolicyEvaluators.getInstance(policySetChildElt, defaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry, refPolicyProvider,
 						policySetRefChain == null ? null : new ArrayDeque<>(policySetRefChain));
-			} catch (final IllegalArgumentException e)
+			}
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(extraMetadataProvider.friendlyId + ": Invalid child #" + childIndex + " (PolicySet)", e);
 			}
@@ -1778,14 +1809,16 @@ public final class PolicyEvaluators
 				{
 					combinerElt = new BaseCombiningAlgParameter<>(combinedPolicy, ((CombinerParametersType) policyChildElt).getCombinerParameters(), policyEvaluatorFactory.expressionFactory,
 							policyEvaluatorFactory.defaultXPathCompiler);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + " (PolicyCombinerParameters)", e);
 				}
 
 				policyCombinerParameters.add(combinerElt);
 
-			} else if (policyChildElt instanceof PolicySetCombinerParameters)
+			}
+			else if (policyChildElt instanceof PolicySetCombinerParameters)
 			{
 				final String combinedPolicySetId = ((PolicySetCombinerParameters) policyChildElt).getPolicySetIdRef();
 				final COMBINED_ELT combinedPolicySet = childPolicySetsById.get(combinedPolicySetId);
@@ -1800,13 +1833,15 @@ public final class PolicyEvaluators
 				{
 					combinerElt = new BaseCombiningAlgParameter<>(combinedPolicySet, ((CombinerParametersType) policyChildElt).getCombinerParameters(), policyEvaluatorFactory.expressionFactory,
 							policyEvaluatorFactory.defaultXPathCompiler);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + " (PolicySetCombinerParameters)", e);
 				}
 
 				policyCombinerParameters.add(combinerElt);
-			} else if (policyChildElt instanceof JAXBElement)
+			}
+			else if (policyChildElt instanceof JAXBElement)
 			{
 				final JAXBElement<?> jaxbElt = (JAXBElement<?>) policyChildElt;
 				final String eltNameLocalPart = jaxbElt.getName().getLocalPart();
@@ -1815,12 +1850,14 @@ public final class PolicyEvaluators
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
 					final COMBINED_ELT childElement = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY, idRef, null);
 					combinedChildElements.add(childElement);
-				} else if (eltNameLocalPart.equals(XACMLNodeName.POLICYSET_ID_REFERENCE.value()))
+				}
+				else if (eltNameLocalPart.equals(XACMLNodeName.POLICYSET_ID_REFERENCE.value()))
 				{
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
 					final COMBINED_ELT childElement = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY_SET, idRef, policySetRefChain);
 					combinedChildElements.add(childElement);
-				} else if (eltNameLocalPart.equals(XACMLNodeName.COMBINER_PARAMETERS.value()))
+				}
+				else if (eltNameLocalPart.equals(XACMLNodeName.COMBINER_PARAMETERS.value()))
 				{
 					/*
 					 * CombinerParameters that is not Policy(Set)CombinerParameters already tested before
@@ -1830,14 +1867,16 @@ public final class PolicyEvaluators
 					{
 						combinerElt = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) jaxbElt.getValue()).getCombinerParameters(), policyEvaluatorFactory.expressionFactory,
 								policyEvaluatorFactory.defaultXPathCompiler);
-					} catch (final IllegalArgumentException e)
+					}
+					catch (final IllegalArgumentException e)
 					{
 						throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + " (CombinerParameters)", e);
 					}
 
 					policyCombinerParameters.add(combinerElt);
 				}
-			} else if (policyChildElt instanceof PolicySet)
+			}
+			else if (policyChildElt instanceof PolicySet)
 			{
 				/*
 				 * This child PolicySet may have PoliSetIdReferences as well and therefore update the policySetRefChain and staticallyReferencedPolicies. However, if the current policySetRefChain is
@@ -1848,7 +1887,8 @@ public final class PolicyEvaluators
 						policySetRefChain));
 				childPolicySetsById.put(childElement.getPolicyId(), childElement);
 				combinedChildElements.add(childElement);
-			} else if (policyChildElt instanceof Policy)
+			}
+			else if (policyChildElt instanceof Policy)
 			{
 				final COMBINED_ELT childPolicy = policyEvaluatorFactory.getChildPolicyEvaluator(childIndex, (Policy) policyChildElt);
 				childPoliciesById.put(childPolicy.getPolicyId(), childPolicy);

@@ -24,11 +24,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.MutablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 
 /**
  * Deny-unless-permit combining algorithm
@@ -49,34 +50,44 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		@Override
-		public DecisionResult eval(final EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context, final MutablePepActions mutablePepActions)
 		{
-			DecisionResult combinedDenyResult = null;
+			boolean atLeastOneDeny = false;
+			MutablePepActions denyPepActions = null;
+
 			for (final Decidable combinedElement : combinedElements)
 			{
 				// make sure that the policy matches the context
 				final DecisionResult policyResult = combinedElement.evaluate(context);
 				final DecisionType decision = policyResult.getDecision();
+				/*
+				 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing
+				 * policy set
+				 */
 				switch (decision)
 				{
-				case PERMIT:
-					return policyResult;
-				case DENY:
-					// merge result (obligations/advice/mached policy IDs)
-					if (combinedDenyResult == null)
-					{
-						combinedDenyResult = policyResult;
-					} else
-					{
-						combinedDenyResult.merge(policyResult.getPepActions(), policyResult.getApplicablePolicyIdList());
-					}
-					break;
-				default:
-					break;
+					case PERMIT:
+						mutablePepActions.add(policyResult.getPepActions());
+						return DecisionResults.SIMPLE_PERMIT;
+					case DENY:
+						// merge result (obligations/advice/mached policy IDs)
+						if (atLeastOneDeny)
+						{
+							assert denyPepActions != null;
+							denyPepActions.add(policyResult.getPepActions());
+							break;
+						}
+
+						atLeastOneDeny = true;
+						denyPepActions = new MutablePepActions();
+						break;
+					default:
+						break;
 				}
 			}
 
-			return combinedDenyResult == null ? MutableDecisionResult.SIMPLE_DENY : combinedDenyResult;
+			mutablePepActions.add(denyPepActions);
+			return DecisionResults.SIMPLE_DENY;
 		}
 
 	}

@@ -24,11 +24,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
+import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.MutablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 
 /**
  * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
@@ -49,7 +50,7 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		@Override
-		public DecisionResult eval(final EvaluationContext context)
+		public DecisionResult eval(final EvaluationContext context, final MutablePepActions mutablePepActions)
 		{
 			for (final Decidable combinedElement : combinedElements)
 			{
@@ -58,16 +59,26 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 				final DecisionType decision = result.getDecision();
 
 				// in the case of PERMIT, DENY, or INDETERMINATE, we always
-				// just return that result, so only on a rule that doesn't
+				// just return that decision, so only on a rule that doesn't
 				// apply do we keep going...
-				if (decision != DecisionType.NOT_APPLICABLE)
+				switch (decision)
 				{
-					return result;
+					case PERMIT:
+						mutablePepActions.add(result.getPepActions());
+						return DecisionResults.SIMPLE_PERMIT;
+					case DENY:
+						mutablePepActions.add(result.getPepActions());
+						return DecisionResults.SIMPLE_DENY;
+					case INDETERMINATE:
+						return result;
+					default:
+						break;
 				}
+
 			}
 
 			// if we got here, then none of the rules applied
-			return MutableDecisionResult.NOT_APPLICABLE;
+			return DecisionResults.SIMPLE_NOT_APPLICABLE;
 		}
 
 	}

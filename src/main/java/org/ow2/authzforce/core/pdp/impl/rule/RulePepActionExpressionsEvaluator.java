@@ -21,9 +21,9 @@ package org.ow2.authzforce.core.pdp.impl.rule;
 import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.impl.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
 import org.ow2.authzforce.core.pdp.impl.PepActionFactories;
