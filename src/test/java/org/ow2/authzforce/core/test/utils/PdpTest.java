@@ -190,6 +190,7 @@ public abstract class PdpTest
 	@Test
 	public void test() throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
+		LOGGER.debug("******************************");
 		LOGGER.debug("Starting PDP test of directory '{}'", testDirPath);
 		final String testResourceLocationPrefix = testDirPath + "/";
 		// Parse request

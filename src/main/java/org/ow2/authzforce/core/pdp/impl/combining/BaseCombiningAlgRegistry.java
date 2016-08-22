@@ -26,7 +26,7 @@ import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 
 /**
- * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>CombiningAlgRegistry</code>.
+ * This is a basic implementation of <code>CombiningAlgRegistry</code>.
  *
  * @version $Id: $
  */

@@ -271,11 +271,6 @@ final class StandardHigherOrderBagFunctions
 			super(functionName, returnType, subFunctionReturnType);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see com.thalesgroup.authzforce.core.func.HigherOrderBagFunction#checkNumberOfArgs(int)
-		 */
 		@Override
 		protected final void checkNumberOfArgs(final int numInputs)
 		{
@@ -298,11 +293,6 @@ final class StandardHigherOrderBagFunctions
 		 */
 		protected abstract Call<RETURN_T, SUB_RETURN_T> newFunctionCall(FirstOrderFunction<SUB_RETURN_T> subFunc, List<Expression<?>> primitiveInputs, Expression<?> lastInputBag);
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see com.thalesgroup.authzforce.core.func.HigherOrderBagFunction# createFunctionCallFromSubFunction (com.thalesgroup.authzforce.core.func.FirstOrderFunction, java.util.List, java.util.List)
-		 */
 		@Override
 		protected final FunctionCall<RETURN_T> createFunctionCallFromSubFunction(final FirstOrderFunction<SUB_RETURN_T> subFunc, final List<Expression<?>> inputsAfterSubFunc)
 		{

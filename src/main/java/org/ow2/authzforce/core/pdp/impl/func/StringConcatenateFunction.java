@@ -46,11 +46,6 @@ final class StringConcatenateFunction extends SingleParameterTypedFirstOrderFunc
 				StandardDatatypes.STRING_FACTORY.getDatatype()));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
 	@Override
 	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{

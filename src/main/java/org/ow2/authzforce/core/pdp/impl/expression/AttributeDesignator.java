@@ -132,11 +132,6 @@ public class AttributeDesignator<AV extends AttributeValue> extends AttributeDes
 		throw UNSUPPORTED_DATATYPE_SET_OPERATION_EXCEPTION;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
-	 */
 	/** {@inheritDoc} */
 	@Override
 	public boolean isStatic()

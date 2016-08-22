@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>PdpExtensionRegistry</code>.
+ * This is an implementation of <code>PdpExtensionRegistry</code>.
  *
  * @param <T>
  *            type of extension in this registry

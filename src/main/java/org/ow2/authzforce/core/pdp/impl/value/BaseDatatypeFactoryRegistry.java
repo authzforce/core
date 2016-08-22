@@ -131,11 +131,6 @@ public class BaseDatatypeFactoryRegistry extends BasePdpExtensionRegistry<Dataty
 		return createValueExpression(datatypeFactory, jaxbAttrVal, xPathCompiler, datatypeFactory.isExpressionStatic());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.BasePdpExtensionRegistry#addExtension(com.thalesgroup.authzforce .core.PdpExtension)
-	 */
 	/** {@inheritDoc} */
 	@Override
 	public void addExtension(DatatypeFactory<?> datatypeFactory) throws IllegalArgumentException

@@ -135,11 +135,6 @@ public final class XPathNodeCountFunction extends SingleParameterTypedFirstOrder
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
 	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<IntegerValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException

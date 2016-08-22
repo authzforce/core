@@ -136,11 +136,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		this.param0Type = param0Type;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
+
 	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)

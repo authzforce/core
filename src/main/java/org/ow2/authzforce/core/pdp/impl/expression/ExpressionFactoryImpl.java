@@ -312,14 +312,6 @@ public class ExpressionFactoryImpl implements ExpressionFactory {
 		return this.functionRegistry.getFunction(functionId, subFuncReturnTypeFactory);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.thalesgroup.authzforce.core.eval.ExpressionFactory#getInstance(oasis.
-	 * names.tc.xacml._3_0 .core.schema.wd_17.ExpressionType,
-	 * oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType, java.util.List)
-	 */
 	/** {@inheritDoc} */
 	@Override
 	public Expression<?> getInstance(ExpressionType expr, XPathCompiler xPathCompiler, Deque<String> longestVarRefChain)
@@ -402,13 +394,6 @@ public class ExpressionFactoryImpl implements ExpressionFactory {
 		return expression;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.eval.ExpressionFactory#
-	 * createAttributeValueExpression(oasis
-	 * .names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType)
-	 */
 	/** {@inheritDoc} */
 	@Override
 	public ValueExpression<? extends AttributeValue> getInstance(AttributeValueType jaxbAttrVal,

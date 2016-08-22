@@ -235,11 +235,6 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 		throw UNSUPPORTED_PATH_SET_OPERATION_EXCEPTION;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
-	 */
 	/** {@inheritDoc} */
 	@Override
 	public boolean isStatic()
@@ -348,9 +343,6 @@ public class AttributeSelectorExpression<AV extends AttributeValue> extends Attr
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Invokes the <code>AttributeProvider</code> used by the given <code>EvaluationContext</code> to try to resolve an attribute value. If the selector is defined with MustBePresent as true, then
-	 * failure to find a matching value will result in Indeterminate, otherwise it will result in an empty bag. To support the com.thalesgroup.authzforce.core.test.basic selector functionality defined
-	 * in the XACML specification, use a Provider that has only the <code>SelectorModule</code> as a module that supports selector finding.
 	 */
 	@Override
 	public Bag<AV> evaluate(EvaluationContext context) throws IndeterminateEvaluationException

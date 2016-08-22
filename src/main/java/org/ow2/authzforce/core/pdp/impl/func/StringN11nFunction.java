@@ -52,19 +52,24 @@ final class StringN11nFunction extends SingleParameterTypedFirstOrderFunction<St
 		private final StringNormalizer strNormalizer;
 		private final SingleParameterTypedFirstOrderFunctionSignature<StringValue, StringValue> funcSig;
 
-		public CallFactory(final SingleParameterTypedFirstOrderFunctionSignature<StringValue, StringValue> functionSignature, final StringNormalizer stringNormalizer)
+		public CallFactory(
+				final SingleParameterTypedFirstOrderFunctionSignature<StringValue, StringValue> functionSignature,
+				final StringNormalizer stringNormalizer)
 		{
 			this.funcSig = functionSignature;
 			this.strNormalizer = stringNormalizer;
 		}
 
-		private FirstOrderFunctionCall<StringValue> getInstance(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+		private FirstOrderFunctionCall<StringValue> getInstance(final List<Expression<?>> argExpressions,
+				final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 		{
-			return new EagerSinglePrimitiveTypeEval<StringValue, StringValue>(funcSig, argExpressions, remainingArgTypes)
+			return new EagerSinglePrimitiveTypeEval<StringValue, StringValue>(funcSig, argExpressions,
+					remainingArgTypes)
 			{
 
 				@Override
-				protected StringValue evaluate(final Deque<StringValue> argStack) throws IndeterminateEvaluationException
+				protected StringValue evaluate(final Deque<StringValue> argStack)
+						throws IndeterminateEvaluationException
 				{
 					return strNormalizer.normalize(argStack.getFirst());
 				}
@@ -89,8 +94,10 @@ final class StringN11nFunction extends SingleParameterTypedFirstOrderFunction<St
 		public StringValue normalize(final StringValue value)
 		{
 			/*
-			 * Specified by fn:lower-case function in [XF]. Looking at Saxon HE as our reference for Java open source implementation of XPath functions, we can check in Saxon implementation of
-			 * fn:lower-case (LowerCase class), that this is equivalent to String#toLowerCase(); English locale to be used for Locale-insensitive strings, see String.toLowerCase()
+			 * Specified by fn:lower-case function in [XF]. Looking at Saxon HE as our reference for Java open source
+			 * implementation of XPath functions, we can check in Saxon implementation of fn:lower-case (LowerCase
+			 * class), that this is equivalent to String#toLowerCase(); English locale to be used for Locale-insensitive
+			 * strings, see String.toLowerCase()
 			 */
 			return value.toLowerCase(Locale.ENGLISH);
 		}
@@ -108,18 +115,15 @@ final class StringN11nFunction extends SingleParameterTypedFirstOrderFunction<St
 	 */
 	StringN11nFunction(final String functionId, final StringNormalizer stringNormalizer)
 	{
-		super(functionId, StandardDatatypes.STRING_FACTORY.getDatatype(), false, Collections.singletonList(StandardDatatypes.STRING_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.STRING_FACTORY.getDatatype(), false,
+				Collections.singletonList(StandardDatatypes.STRING_FACTORY.getDatatype()));
 		this.funcCallFactory = new CallFactory(functionSignature, stringNormalizer);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions,
+			final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return funcCallFactory.getInstance(argExpressions, remainingArgTypes);
 	}
