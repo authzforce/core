@@ -1,0 +1,71 @@
+﻿<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+	<Result>
+		<Decision>Deny</Decision>
+		<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+			<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date" IncludeInResult="true">
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">1970-01-01Z</AttributeValue>
+			</Attribute>
+		</Attributes>
+		<PolicyIdentifierList>
+			<PolicySetIdReference Version="1.0">root</PolicySetIdReference>
+		</PolicyIdentifierList>
+	</Result>
+	<Result>
+		<Decision>Deny</Decision>
+		<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+			<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time" IncludeInResult="true">
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">00:00:00Z</AttributeValue>
+			</Attribute>
+		</Attributes>
+		<PolicyIdentifierList>
+			<PolicySetIdReference Version="1.0">root</PolicySetIdReference>
+		</PolicyIdentifierList>
+	</Result>
+	<Result>
+		<Decision>Deny</Decision>
+		<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+			<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime" IncludeInResult="true">
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">1980-01-01T01:00:00Z</AttributeValue>
+			</Attribute>
+		</Attributes>
+		<PolicyIdentifierList>
+			<PolicySetIdReference Version="1.0">root</PolicySetIdReference>
+		</PolicyIdentifierList>
+	</Result>
+	<Result>
+		<Decision>Permit</Decision>
+		<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+			<Attribute AttributeId="test-id" IncludeInResult="true">
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-date</AttributeValue>
+			</Attribute>
+		</Attributes>
+		<PolicyIdentifierList>
+				<PolicyIdReference Version="1.0">PolicyMatchingPDPDate</PolicyIdReference>
+			<PolicySetIdReference Version="1.0">root</PolicySetIdReference>
+		</PolicyIdentifierList>
+	</Result>
+	<Result>
+		<Decision>Permit</Decision>
+		<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+			<Attribute AttributeId="test-id" IncludeInResult="true">
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-time</AttributeValue>
+			</Attribute>
+		</Attributes>
+		<PolicyIdentifierList>
+			<PolicyIdReference Version="1.0">PolicyMatchingPDPTime</PolicyIdReference>
+						<PolicySetIdReference Version="1.0">root</PolicySetIdReference>
+		</PolicyIdentifierList>
+	</Result>
+	<Result>
+		<Decision>Permit</Decision>
+		<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+			<Attribute AttributeId="test-id" IncludeInResult="true">
+				<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-dateTime</AttributeValue>
+			</Attribute>
+		</Attributes>
+		<PolicyIdentifierList>
+					<PolicyIdReference Version="1.0">PolicyMatchingPDPDateTime</PolicyIdReference>
+			<PolicySetIdReference Version="1.0">root</PolicySetIdReference>
+		</PolicyIdentifierList>
+	</Result>
+</Response>

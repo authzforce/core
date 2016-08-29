@@ -22,14 +22,8 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import javax.xml.bind.JAXBElement;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -41,45 +35,34 @@ import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
+
 /**
  * XACML AttributeAssignmentExpression evaluator
  *
  * @version $Id: $
  */
-public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentExpression
+public final class AttributeAssignmentExpressionEvaluator
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeAssignmentExpressionEvaluator.class);
 
-	private final transient Expression<?> evaluatableExpression;
+	private final Expression<?> evaluatableExpression;
 
-	private static final UnsupportedOperationException UNSUPPORTED_SET_EXPRESSION_OPERATION_EXCEPTION = new UnsupportedOperationException("Unsupported operation: 'Expression' attribute is read-only");
+	private final String attributeId;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression#getExpression()
-	 */
-	/** {@inheritDoc} */
-	@Override
-	public final JAXBElement<? extends ExpressionType> getExpression()
-	{
-		return evaluatableExpression.getJAXBElement();
-	}
+	private final String category;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression#setExpression(javax .xml.bind.JAXBElement)
-	 */
-	/** {@inheritDoc} */
-	@Override
-	public final void setExpression(JAXBElement<? extends ExpressionType> value)
-	{
-		throw UNSUPPORTED_SET_EXPRESSION_OPERATION_EXCEPTION;
-	}
+	private final String issuer;
+
+	private transient volatile String toString = null; // Effective Java - Item 71
 
 	/**
-	 * Instantiates evaluatable AttributeAssignment expression from XACML-Schema-derived JAXB {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
+	 * Instantiates evaluatable AttributeAssignment expression evaluator from XACML-Schema-derived JAXB
+	 * {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
 	 *
 	 * @param jaxbAttrAssignExp
 	 *            XACML-schema-derived JAXB AttributeAssignmentExpression
@@ -90,25 +73,33 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	 * @throws java.lang.IllegalArgumentException
 	 *             invalid AttributeAssignmentExpression's Expression
 	 */
-	public AttributeAssignmentExpressionEvaluator(AttributeAssignmentExpression jaxbAttrAssignExp, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
+	public AttributeAssignmentExpressionEvaluator(final AttributeAssignmentExpression jaxbAttrAssignExp,
+			final XPathCompiler xPathCompiler, final ExpressionFactory expFactory) throws IllegalArgumentException
 	{
-		// JAXB fields
-		this.attributeId = jaxbAttrAssignExp.getAttributeId();
+		/*
+		 * Cannot used AttributeGUID class to handle metadata because AttributeAssignment Category is not required like
+		 * in AttributeDesignator which is what the AttributeGUID is used for
+		 */
+		this.attributeId = Preconditions.checkNotNull(jaxbAttrAssignExp.getAttributeId(),
+				"Undefined AttributeAssignment/AttributeId");
 		this.category = jaxbAttrAssignExp.getCategory();
 		this.issuer = jaxbAttrAssignExp.getIssuer();
-		/*
-		 * Set JAXB field to null, getExpression() overridden and setExpression() not allowed instead
-		 */
-		this.expression = null;
-		// END OF JAXB fields
+		this.evaluatableExpression = expFactory.getInstance(jaxbAttrAssignExp.getExpression().getValue(), xPathCompiler,
+				null);
+	}
 
-		this.evaluatableExpression = expFactory.getInstance(jaxbAttrAssignExp.getExpression().getValue(), xPathCompiler, null);
+	private AttributeAssignment newAttributeAssignment(final AttributeValue attrVal)
+	{
+		return new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(),
+				this.attributeId, this.category, this.issuer);
 	}
 
 	/**
-	 * Evaluates to AttributeAssignments Section 5.39 and 5.40 of XACML 3.0 core spec: If an AttributeAssignmentExpression evaluates to an atomic attribute value, then there MUST be one resulting
-	 * AttributeAssignment which MUST contain this single attribute value. If the AttributeAssignmentExpression evaluates to a bag, then there MUST be a resulting AttributeAssignment for each of the
-	 * values in the bag. If the bag is empty, there shall be no AttributeAssignment from this AttributeAssignmentExpression
+	 * Evaluates to AttributeAssignments Section 5.39 and 5.40 of XACML 3.0 core spec: If an
+	 * AttributeAssignmentExpression evaluates to an atomic attribute value, then there MUST be one resulting
+	 * AttributeAssignment which MUST contain this single attribute value. If the AttributeAssignmentExpression
+	 * evaluates to a bag, then there MUST be a resulting AttributeAssignment for each of the values in the bag. If the
+	 * bag is empty, there shall be no AttributeAssignment from this AttributeAssignmentExpression
 	 *
 	 * @param context
 	 *            evaluation context
@@ -116,42 +107,54 @@ public class AttributeAssignmentExpressionEvaluator extends AttributeAssignmentE
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if evaluation of the Expression in this context fails (Indeterminate)
 	 */
-	public List<AttributeAssignment> evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public List<AttributeAssignment> evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final Value result = this.evaluatableExpression.evaluate(context);
-		LOGGER.debug("AttributeAssignmentExpression[Category={},Issuer={},Id={}]/Expression -> {}", this.category, this.issuer, this.attributeId, result);
+		LOGGER.debug("{}/Expression -> {}", this, result);
 
-		final List<AttributeAssignment> attrAssignList = new ArrayList<>();
+		final List<AttributeAssignment> attrAssignList;
 		if (result instanceof Bag)
 		{
 			// result is a bag
 			final Bag<?> bag = (Bag<?>) result;
+			attrAssignList = new ArrayList<>(bag.size());
 			/*
-			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
+			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False
+			 * evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
 			 * "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
 			 */
 			for (final AttributeValue attrVal : bag)
 			{
-				final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category,
-						this.issuer);
-				attrAssignList.add(attrAssignment);
+				attrAssignList.add(newAttributeAssignment(attrVal));
 			}
-		} else
+		}
+		else
 		{
 			// atomic (see spec §5.30, 5.40) / primitive attribute value
-			final AttributeValue attrVal = (AttributeValue) result;
-			final AttributeAssignment attrAssignment = new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category, this.issuer);
-			attrAssignList.add(attrAssignment);
+			attrAssignList = Collections.singletonList(newAttributeAssignment((AttributeValue) result));
 		}
 
 		return attrAssignList;
 	}
 
+	@Override
+	public String toString()
+	{
+		if (toString == null)
+		{
+			toString = "AttributeAssignmentExpression [attributeId=" + attributeId + ", category=" + category
+					+ ", issuer=" + issuer + "]";
+		}
+		return toString;
+	}
+
 	// public static void main(String[] args) throws JAXBException
 	// {
-	// THIS WILL FAIL: com.sun.istack.internal.SAXException2: unable to marshal type "java.lang.Double" as an element because it is missing an
+	// THIS WILL FAIL: com.sun.istack.internal.SAXException2: unable to marshal type "java.lang.Double" as an element
+	// because it is missing an
 	// @XmlRootElement annotation; but it succeeds with java.lang.String
-	// final AttributeAssignment attrAssignment = new AttributeAssignment(Collections.<Serializable> singletonList("1.0"), "mytype", null, "myattribute1",
+	// final AttributeAssignment attrAssignment = new AttributeAssignment(Collections.<Serializable>
+	// singletonList("1.0"), "mytype", null, "myattribute1",
 	// "mycategory", null);
 	//
 	// Marshaller marshaller = XACMLBindingUtils.createXacml3Marshaller();

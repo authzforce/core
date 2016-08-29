@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Non-regression testing. Each test addresses a bug reported in the issue management system (e.g. Gitlab). There should be a folder for test data of each issue in folder:
- * src/test/resources/NonRegression.
+ * Non-regression testing. Each test addresses a bug reported in the issue management system (e.g. Gitlab). There should
+ * be a folder for test data of each issue in folder: src/test/resources/NonRegression.
  */
 @RunWith(value = Parameterized.class)
 public class NonRegression extends PdpTest
@@ -56,7 +56,7 @@ public class NonRegression extends PdpTest
 	 * @throws IOException
 	 *             if {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} location could not be accessed
 	 */
-	@Parameters
+	@Parameters(name = "{0}")
 	public static Collection<Object[]> params() throws URISyntaxException, IOException
 	{
 		return PdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
@@ -67,7 +67,7 @@ public class NonRegression extends PdpTest
 	 * @param testDir
 	 *            subdirectory of {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} where test data are located
 	 */
-	public NonRegression(String testDir)
+	public NonRegression(final String testDir)
 	{
 		super(testDir);
 	}

@@ -21,26 +21,26 @@ package org.ow2.authzforce.core.pdp.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
+
 /**
  * XACML AllOf evaluator
  *
  * @version $Id: $
  */
-public class AllOfEvaluator
+public final class AllOfEvaluator
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AllOfEvaluator.class);
 
-	private static final IllegalArgumentException NO_MATCH_EXCEPTION = new IllegalArgumentException("<AllOf> empty. Must contain at least one <Match>");
+	private static final IllegalArgumentException NO_MATCH_EXCEPTION = new IllegalArgumentException(
+			"<AllOf> empty. Must contain at least one <Match>");
 
 	// Store the list of Matches as evaluatable Match types to avoid casting from JAXB MatchType
 	// during evaluation
@@ -49,8 +49,8 @@ public class AllOfEvaluator
 	/**
 	 * Instantiates AllOf (evaluator) from XACML-Schema-derived <code>AllOf</code>.
 	 *
-	 * @param jaxbAllOf
-	 *            XACML-schema-derived JAXB AllOf
+	 * @param jaxbMatches
+	 *            XACML-schema-derived JAXB Match elements
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
@@ -58,10 +58,10 @@ public class AllOfEvaluator
 	 * @throws java.lang.IllegalArgumentException
 	 *             one of the child Match elements is invalid
 	 */
-	public AllOfEvaluator(AllOf jaxbAllOf, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
+	public AllOfEvaluator(List<Match> jaxbMatches, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
+			throws IllegalArgumentException
 	{
-		final List<Match> jaxbMatches = jaxbAllOf.getMatches();
-		if (jaxbMatches.isEmpty())
+		if (jaxbMatches == null || jaxbMatches.isEmpty())
 		{
 			throw NO_MATCH_EXCEPTION;
 		}
@@ -74,7 +74,8 @@ public class AllOfEvaluator
 			try
 			{
 				matchEvaluator = new MatchEvaluator(jaxbMatch, xPathCompiler, expFactory);
-			} catch (IllegalArgumentException e)
+			}
+			catch (IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Invalid <AllOf>'s <Match>#" + matchIndex, e);
 			}
@@ -85,7 +86,8 @@ public class AllOfEvaluator
 	}
 
 	/**
-	 * Determines whether this <code>AllOf</code> matches the input request (whether it is applicable).Here is the table shown in the specification: <code>
+	 * Determines whether this <code>AllOf</code> matches the input request (whether it is applicable).Here is the table
+	 * shown in the specification: <code>
 	 * 		<Match> values 						<AllOf> value
 	 * 		All True				 			“Match�?
 	 * 		No False and at least
@@ -119,10 +121,19 @@ public class AllOfEvaluator
 			try
 			{
 				isMatched = matchEvaluator.match(context);
-				LOGGER.debug("AllOf/Match#{} -> {}", childIndex, isMatched);
-			} catch (IndeterminateEvaluationException e)
+				if (LOGGER.isDebugEnabled())
+				{
+					// Beware of autoboxing which causes call to Boolean.valueOf(...), Integer.valueOf(...)
+					LOGGER.debug("AllOf/Match#{} -> {}", childIndex, isMatched);
+				}
+			}
+			catch (IndeterminateEvaluationException e)
 			{
-				LOGGER.debug("AllOf/Match#{} -> Indeterminate", childIndex, e);
+				if (LOGGER.isDebugEnabled())
+				{
+					// Beware of autoboxing which causes call to Integer.valueOf(...)
+					LOGGER.debug("AllOf/Match#{} -> Indeterminate", childIndex, e);
+				}
 				lastIndeterminate = e;
 				lastIndeterminateChildIndex = childIndex;
 				continue;
@@ -149,6 +160,7 @@ public class AllOfEvaluator
 		}
 
 		// No False but at least one Indeterminate (lastIndeterminate != null)
-		throw new IndeterminateEvaluationException("Error evaluating <AllOf>'s <Match>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <AllOf>'s <Match>#" + lastIndeterminateChildIndex,
+				lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 }

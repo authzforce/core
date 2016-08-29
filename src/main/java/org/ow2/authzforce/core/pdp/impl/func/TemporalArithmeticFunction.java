@@ -44,7 +44,8 @@ import org.ow2.authzforce.core.pdp.api.value.DurationValue;
  * 
  * @version $Id: $
  */
-final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends MultiParameterTypedFirstOrderFunction<T>
+final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>>
+		extends MultiParameterTypedFirstOrderFunction<T>
 {
 	interface StaticOperation<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>>
 	{
@@ -52,18 +53,21 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 		TV eval(TV time, DV duration);
 	}
 
-	private static final class Call<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>> extends EagerMultiPrimitiveTypeEval<TV>
+	private static final class Call<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>>
+			extends EagerMultiPrimitiveTypeEval<TV>
 	{
 		private final String invalidArgTypesErrorMsg;
 		private final Class<DV> durationParamClass;
 		private final Class<TV> timeParamClass;
 		private final StaticOperation<TV, DV> op;
 
-		private Call(final FirstOrderFunctionSignature<TV> functionSig, final Datatype<TV> timeParamType, final Datatype<DV> durationParamType, final StaticOperation<TV, DV> op,
-				final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		private Call(final FirstOrderFunctionSignature<TV> functionSig, final Datatype<TV> timeParamType,
+				final Datatype<DV> durationParamType, final StaticOperation<TV, DV> op, final List<Expression<?>> args,
+				final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + timeParamType + "," + durationParamType + "): ";
+			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + timeParamType
+					+ "," + durationParamType + "): ";
 			this.timeParamClass = timeParamType.getValueClass();
 			this.durationParamClass = durationParamType.getValueClass();
 			this.op = op;
@@ -84,7 +88,9 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 			}
 			catch (final ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(
+						invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(),
+						StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			return op.eval(arg0, arg1);
@@ -109,7 +115,8 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 	 * @param op
 	 *            temporal arithmetic operation
 	 */
-	TemporalArithmeticFunction(final String functionName, final Datatype<T> timeParamType, final Datatype<D> durationParamType, final StaticOperation<T, D> op)
+	TemporalArithmeticFunction(final String functionName, final Datatype<T> timeParamType,
+			final Datatype<D> durationParamType, final StaticOperation<T, D> op)
 	{
 		super(functionName, timeParamType, false, Arrays.asList(timeParamType, durationParamType));
 		this.timeParamType = timeParamType;
@@ -120,7 +127,8 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<T> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<T> newCall(final List<Expression<?>> argExpressions,
+			final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call<>(functionSignature, timeParamType, durationParamType, op, argExpressions, remainingArgTypes);
 	}

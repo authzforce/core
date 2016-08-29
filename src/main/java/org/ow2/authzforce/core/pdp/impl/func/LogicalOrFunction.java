@@ -92,7 +92,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 				try
 				{
 					attrVal = Expressions.eval(arg, context, StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
-					if (attrVal.getUnderlyingValue())
+					if (attrVal.getUnderlyingValue().booleanValue())
 					{
 						return BooleanValue.TRUE;
 					}
@@ -127,7 +127,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 								StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 
-					if (attrVal.getUnderlyingValue())
+					if (attrVal.getUnderlyingValue().booleanValue())
 					{
 						return BooleanValue.TRUE;
 					}

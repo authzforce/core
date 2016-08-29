@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Request  ReturnPolicyIdList="false" CombinedDecision="false" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" />
+</Request>

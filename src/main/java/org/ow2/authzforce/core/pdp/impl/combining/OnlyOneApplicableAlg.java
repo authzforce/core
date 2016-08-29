@@ -20,17 +20,24 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
+import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
-import org.ow2.authzforce.core.pdp.impl.MutableDecisionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 /**
  * This is the standard only-one-applicable policy combining algorithm.
@@ -40,41 +47,44 @@ import org.slf4j.LoggerFactory;
 final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 {
 
-	private static class Evaluator implements CombiningAlg.Evaluator
+	private static final class Evaluator extends BaseCombiningAlg.Evaluator<PolicyEvaluator>
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(Evaluator.class);
 
-		private final MutableDecisionResult tooManyApplicablePoliciesIndeterminateResult;
-
-		private final List<? extends PolicyEvaluator> policyElements;
+		private final ExtendedDecision tooManyApplicablePoliciesIndeterminateResult;
 
 		private Evaluator(final String algId, final List<? extends PolicyEvaluator> policyElements)
 		{
-			this.policyElements = policyElements;
-			this.tooManyApplicablePoliciesIndeterminateResult = new MutableDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
-					"Too many (more than one) applicable policies for algorithm: " + algId));
+			super(policyElements);
+			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions
+					.newIndeterminate(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
+							"Too many (more than one) applicable policies for algorithm: " + algId));
 		}
 
 		@Override
-		public DecisionResult eval(final EvaluationContext context)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions,
+				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 		{
+			assert outPepActions != null;
+
 			// atLeastOne == true iff selectedPolicy != null
 			PolicyEvaluator selectedPolicy = null;
 
-			for (final PolicyEvaluator policy : policyElements)
+			for (final PolicyEvaluator policy : getCombinedElements())
 			{
 				// see if the policy applies to the context
-				final boolean isApplicable;
+				final boolean isApplicableByTarget;
 				try
 				{
-					isApplicable = policy.isApplicable(context);
-				} catch (final IndeterminateEvaluationException e)
+					isApplicableByTarget = policy.isApplicableByTarget(context);
+				}
+				catch (final IndeterminateEvaluationException e)
 				{
 					LOGGER.info("Error checking whether {} is applicable", policy, e);
-					return new MutableDecisionResult(e.getStatus());
+					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, e.getStatus());
 				}
 
-				if (isApplicable)
+				if (isApplicableByTarget)
 				{
 					// if one selected (found applicable) already
 					if (selectedPolicy != null)
@@ -88,21 +98,45 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 				}
 			}
 
-			// if we got through the loop, it means we found at most one match, then
-			// we return the evaluation result of that policy if there is a match
+			/*
+			 * If we got through the loop, it means we found at most one match, then we return the evaluation result of
+			 * that policy if there is a match
+			 */
 			if (selectedPolicy != null)
 			{
-				return selectedPolicy.evaluate(context, true);
+				final DecisionResult result = selectedPolicy.evaluate(context, true);
+				switch (result.getDecision()) {
+					case PERMIT:
+					case DENY:
+						outPepActions.add(result.getPepActions());
+						if (outApplicablePolicyIdList != null)
+						{
+							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+						}
+
+						break;
+					case INDETERMINATE:
+						if (outApplicablePolicyIdList != null)
+						{
+							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+						}
+
+						break;
+					default: // NotApplicable
+						break;
+				}
+
+				return result;
 			}
 
-			return MutableDecisionResult.NOT_APPLICABLE;
+			return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
 		}
-
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(final List<CombiningAlgParameter<? extends PolicyEvaluator>> params, final List<? extends PolicyEvaluator> combinedElements)
+	public Evaluator getInstance(final List<CombiningAlgParameter<? extends PolicyEvaluator>> params,
+			final List<? extends PolicyEvaluator> combinedElements)
 	{
 		return new Evaluator(this.getId(), combinedElements);
 	}

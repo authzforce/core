@@ -38,6 +38,9 @@ For a description of the tests, see file `ConformanceTests.html` which is the or
 1. IIIF001 is using invalid PolicyDefaults/XPathVersion: "http://www.w3.org/TR/1999/Rec-xpath-19991116". Fixed: http://www.w3.org/TR/1999/REC-xpath-19991116
 1. IIIG001 is using invalid PolicyDefaults/XPathVersion: "http://www.w3.org/TR/1999/Rec-xpath-19991116". Fixed: http://www.w3.org/TR/1999/REC-xpath-19991116
 1. IIIG302 does not exist, but IIIG300 does. Fix: re-numbered 301 to 302, and 300 to 301.
+1. IIIG301 and IIIG302: tests for ReturnPolicyIdList: the XACML specification is ambiguous about what is considered an "applicable" policy, and therefore what should be included in the PolicyIdentifierList. See the discussion here for more info: https://lists.oasis-open.org/archives/xacml-comment/201605/msg00004.html. In our (Authzforce definition), for instance, even if a policy evaluates to Indeterminate, it may still be considered applicable, which makes it different from what was intended in the original conformance tests. More generally, we define here an "applicable" policy as follows: a policy is "applicable" if and only if its evaluation result is different from NotApplicable (not NotApplicable means Applicable, shouldn't it?), and one of these two conditions is met:
+  * The policy/policy reference has no enclosing policy, i.e. it is the root policy in PDP's evaluation.
+  * The policy has an enclosing policy and the enclosing policy is "applicable". (This definition is recursive.) 
 
 **WARNING**: There are conformance tests which are intentionally not supported (in `unsupported` directory):
 

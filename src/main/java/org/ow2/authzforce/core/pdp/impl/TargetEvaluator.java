@@ -21,37 +21,40 @@ package org.ow2.authzforce.core.pdp.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
+
 /**
  * Represents the TargetType XML type in XACML.
  *
  * @version $Id: $
  */
-public class TargetEvaluator
+public final class TargetEvaluator implements BooleanEvaluator
 {
+
+	private static final IllegalArgumentException NULL_OR_EMPTY_XACML_ANYOF_LIST_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"Cannot create Target evaluator: no input XACML/JAXB AnyOf element");
 
 	/**
 	 * Logger used for all classes
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(TargetEvaluator.class);
 
-	// Have a copy of evaluatable AnyOfs to avoid cast from JAXB AnyOf in super JAXB type
-	private final transient List<AnyOfEvaluator> evaluatableAnyOfList;
+	// Have a copy of AnyOf evaluators to avoid cast from JAXB AnyOf in super JAXB type
+	// non-null
+	private final List<AnyOfEvaluator> anyOfEvaluatorList;
 
 	/**
 	 * Instantiates Target (evaluator) from XACML-Schema-derived <code>Target</code>.
 	 *
-	 * @param jaxbTarget
-	 *            XACML-schema-derived JAXB Target
+	 * @param jaxbAnyOfList
+	 *            XACML-schema-derived JAXB AnyOf elements
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @param expFactory
@@ -59,36 +62,37 @@ public class TargetEvaluator
 	 * @throws java.lang.IllegalArgumentException
 	 *             if one of the child AnyOf elements is invalid
 	 */
-	public TargetEvaluator(Target jaxbTarget, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
+	public TargetEvaluator(List<AnyOf> jaxbAnyOfList, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
+			throws IllegalArgumentException
 	{
-		final List<AnyOf> jaxbAnyOfList = jaxbTarget.getAnyOves();
-		if (jaxbAnyOfList.isEmpty())
+		if (jaxbAnyOfList == null || jaxbAnyOfList.isEmpty())
 		{
-			evaluatableAnyOfList = null;
-			return;
+			throw NULL_OR_EMPTY_XACML_ANYOF_LIST_ARGUMENT_EXCEPTION;
 		}
 
-		evaluatableAnyOfList = new ArrayList<>(jaxbAnyOfList.size());
+		anyOfEvaluatorList = new ArrayList<>(jaxbAnyOfList.size());
 		int childIndex = 0;
 		for (final AnyOf jaxbAnyOf : jaxbAnyOfList)
 		{
 			final AnyOfEvaluator anyOfEvaluator;
 			try
 			{
-				anyOfEvaluator = new AnyOfEvaluator(jaxbAnyOf, xPathCompiler, expFactory);
-			} catch (IllegalArgumentException e)
+				anyOfEvaluator = new AnyOfEvaluator(jaxbAnyOf.getAllOves(), xPathCompiler, expFactory);
+			}
+			catch (IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Invalid <Target>'s <AnyOf>#" + childIndex, e);
 			}
 
-			evaluatableAnyOfList.add(anyOfEvaluator);
+			anyOfEvaluatorList.add(anyOfEvaluator);
 			childIndex++;
 		}
 	}
 
 	/**
-	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the AnyOf doesn't match the request context so it's a NO_MATCH result. Here is the
-	 * table shown in the specification: <code>
+	 * Determines whether this <code>Target</code> matches the input request (whether it is applicable). If any of the
+	 * AnyOf doesn't match the request context so it's a NO_MATCH result. Here is the table shown in the specification:
+	 * <code>
 	 * 		<AnyOf> values 				<Target> value
 	 * 		All Match?					Match?
 	 * 		At Least one "No Match"		No Match?
@@ -99,16 +103,11 @@ public class TargetEvaluator
 	 *            the representation of the request
 	 * @return true if and only if Match (else No-match)
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
-	 *             if Indetermiante (error evaluating target)
+	 *             if Indeterminate (error evaluating target)
 	 */
-	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
+	@Override
+	public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		// Target empty matches all
-		if (evaluatableAnyOfList == null)
-		{
-			return true;
-		}
-
 		// logic is quite similar to AllOf evaluation
 		// at the end, lastIndeterminate == null iff no Indeterminate occurred
 		IndeterminateEvaluationException lastIndeterminate = null;
@@ -122,16 +121,25 @@ public class TargetEvaluator
 		/*
 		 * By construction, there must be at least one Match
 		 */
-		for (final AnyOfEvaluator anyOfEvaluator : evaluatableAnyOfList)
+		for (final AnyOfEvaluator anyOfEvaluator : anyOfEvaluatorList)
 		{
 			final boolean isMatched;
 			try
 			{
 				isMatched = anyOfEvaluator.match(context);
-				LOGGER.debug("Target/AnyOf#{} -> {}", childIndex, isMatched);
-			} catch (IndeterminateEvaluationException e)
+				if (LOGGER.isDebugEnabled())
+				{
+					// Beware of autoboxing which causes call to Boolean.valueOf(...), Integer.valueOf(...)
+					LOGGER.debug("Target/AnyOf#{} -> {}", childIndex, isMatched);
+				}
+			}
+			catch (IndeterminateEvaluationException e)
 			{
-				LOGGER.debug("Target/AnyOf#{} -> Indeterminate", childIndex, e);
+				if (LOGGER.isDebugEnabled())
+				{
+					// Beware of autoboxing which causes call to Integer.valueOf(...)
+					LOGGER.debug("Target/AnyOf#{} -> Indeterminate", childIndex, e);
+				}
 				lastIndeterminate = e;
 				lastIndeterminateChildIndex = childIndex;
 				continue;
@@ -158,7 +166,8 @@ public class TargetEvaluator
 		}
 
 		// No False but at least one Indeterminate (lastIndeterminate != null)
-		throw new IndeterminateEvaluationException("Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex, lastIndeterminate.getStatusCode(), lastIndeterminate);
+		throw new IndeterminateEvaluationException("Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex,
+				lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
 
 }

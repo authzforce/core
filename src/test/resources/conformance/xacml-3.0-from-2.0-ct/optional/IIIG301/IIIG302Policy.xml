@@ -7,7 +7,7 @@
 		>
     <Description>
         PolicySet for Conformance Test IIIG302.
-        Purpose: ReturnPolicyIdList test with PolicySet result (no Policys)
+        Purpose: ReturnPolicyIdList test with PolicySet result 
     </Description>
     <Target/>
 

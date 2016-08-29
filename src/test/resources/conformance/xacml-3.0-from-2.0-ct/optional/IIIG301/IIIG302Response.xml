@@ -17,13 +17,12 @@
                  DataType="http://www.w3.org/2001/XMLSchema#string">assignment1</AttributeAssignment>
          </Obligation>
         </Obligations>
-        
         <PolicyIdentifierList>
-
-        	<PolicyIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicy4</PolicyIdReference>
-        	<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicyset</PolicySetIdReference>
-        	<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:policyset</PolicySetIdReference>
-
+        	<PolicyIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InteralPolicy3</PolicyIdReference>
+			<PolicyIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicy4</PolicyIdReference>
+			<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicyset</PolicySetIdReference>
+			<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:policyset</PolicySetIdReference>
         </PolicyIdentifierList>
     </Result>
 </Response>
+

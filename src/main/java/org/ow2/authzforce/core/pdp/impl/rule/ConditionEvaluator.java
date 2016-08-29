@@ -18,25 +18,32 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
+
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 /**
- * Evaluates a XACML ConditionEvaluator. It contains exactly one child expression that is boolean and returns a single value.
+ * Evaluates a XACML Condition. It contains exactly one child expression that is boolean and returns a single value.
  *
  * 
  * @version $Id: $
  */
-public class ConditionEvaluator
+public final class ConditionEvaluator implements BooleanEvaluator
 {
+	private static final IllegalArgumentException NULL_XACML_CONDITION_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"Cannot create Condition evaluator: undefined input XACML/JAXB Condition element");
+
+	private static final IllegalArgumentException NULL_EXPR_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"Cannot create Condition evaluator: undefined input XACML expression parser (expressionFactory)");
+
 	// the condition's evaluatable expression
 	private transient final Expression<BooleanValue> evaluatableExpression;
 
@@ -45,22 +52,34 @@ public class ConditionEvaluator
 	 *
 	 * @param condition
 	 *            Condition in JAXB model
-	 * @param expFactory
+	 * @param expressionFactory
 	 *            expression factory
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @throws java.lang.IllegalArgumentException
 	 *             if the expression is not a valid boolean expression
 	 */
-	public ConditionEvaluator(Condition condition, XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
+	public ConditionEvaluator(Condition condition, XPathCompiler xPathCompiler, ExpressionFactory expressionFactory)
+			throws IllegalArgumentException
 	{
+		if (condition == null)
+		{
+			throw NULL_XACML_CONDITION_ARGUMENT_EXCEPTION;
+		}
+
+		if (expressionFactory == null)
+		{
+			throw NULL_EXPR_FACTORY_ARGUMENT_EXCEPTION;
+		}
+
 		final ExpressionType exprElt = condition.getExpression().getValue();
-		final Expression<?> expr = expFactory.getInstance(exprElt, xPathCompiler, null);
+		final Expression<?> expr = expressionFactory.getInstance(exprElt, xPathCompiler, null);
 
 		// make sure it's a boolean expression...
 		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN_FACTORY.getDatatype())))
 		{
-			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
+			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression ("
+					+ expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}
 
 		this.evaluatableExpression = (Expression<BooleanValue>) expr;
@@ -74,11 +93,14 @@ public class ConditionEvaluator
 	 * @return true if and only if condition is true, i.e. its expression evaluates to True
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if error evaluating the condition
+	 * 
+	 * 
 	 */
+	@Override
 	public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final BooleanValue boolVal = evaluatableExpression.evaluate(context);
-		return boolVal.getUnderlyingValue();
+		return boolVal.getUnderlyingValue().booleanValue();
 	}
 
 }

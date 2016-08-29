@@ -70,8 +70,8 @@
             <configuration>
                <verbose>true</verbose>
                <excludeRoots>
-                  <excludeRoot>target/generated-sources</excludeRoot>
-                  <excludeRoot>target/generated-test-sources</excludeRoot>
+                  <excludeRoot>target/generated-sources/xjc</excludeRoot>
+                  <excludeRoot>target/generated-test-sources/xjc</excludeRoot>
                </excludeRoots>
             </configuration>
             <executions>

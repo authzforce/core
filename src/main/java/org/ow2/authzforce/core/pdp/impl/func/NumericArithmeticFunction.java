@@ -40,10 +40,12 @@ import org.ow2.authzforce.core.pdp.api.value.Value;
  * 
  * @version $Id: $
  */
-final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends SingleParameterTypedFirstOrderFunction<AV, AV>
+final class NumericArithmeticFunction<AV extends NumericValue<?, AV>>
+		extends SingleParameterTypedFirstOrderFunction<AV, AV>
 {
 
-	private static final IllegalArgumentException UNDEF_PARAMETER_TYPES_EXCEPTION = new IllegalArgumentException("Undefined function parameter types");
+	private static final IllegalArgumentException UNDEF_PARAMETER_TYPES_EXCEPTION = new IllegalArgumentException(
+			"Undefined function parameter types");
 
 	private static <AV extends Value> List<Datatype<AV>> validate(final List<Datatype<AV>> paramTypes)
 	{
@@ -65,7 +67,8 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 		private final String invalidArgsErrMsg;
 		private final StaticOperation<V> op;
 
-		private Call(final SingleParameterTypedFirstOrderFunctionSignature<V, V> functionSig, final StaticOperation<V> op, final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes)
+		private Call(final SingleParameterTypedFirstOrderFunctionSignature<V, V> functionSig,
+				final StaticOperation<V> op, final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes)
 				throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
@@ -101,7 +104,8 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 	 *            whether this is a varargs function (like Java varargs method), i.e. last arg has variable-length
 	 * 
 	 */
-	NumericArithmeticFunction(final String funcURI, final boolean varArgs, final List<Datatype<AV>> paramTypes, final StaticOperation<AV> op) throws IllegalArgumentException
+	NumericArithmeticFunction(final String funcURI, final boolean varArgs, final List<Datatype<AV>> paramTypes,
+			final StaticOperation<AV> op) throws IllegalArgumentException
 	{
 		super(funcURI, validate(paramTypes).get(0), varArgs, paramTypes);
 		this.op = op;
@@ -109,12 +113,15 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<AV> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<AV> newCall(final List<Expression<?>> argExpressions,
+			final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		/**
-		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all static/constant arguments and if there are more than one, pre-compute their sum (resp. product) and replace
-		 * these arguments with one argument that is this sum (resp. product) in the function call. Indeed, 'add' function is commutative and (constant in upper case, variables in lower case): add(C1,
-		 * C2, x, y...) = add(C1+C2, x, y...). Similarly, multiply(C1, C2, x, y...) = multiply(C1*C2, x, y...)
+		 * TODO: optimize call to "add" (resp. "multiply") function call by checking all static/constant arguments and
+		 * if there are more than one, pre-compute their sum (resp. product) and replace these arguments with one
+		 * argument that is this sum (resp. product) in the function call. Indeed, 'add' function is commutative and
+		 * (constant in upper case, variables in lower case): add(C1, C2, x, y...) = add(C1+C2, x, y...). Similarly,
+		 * multiply(C1, C2, x, y...) = multiply(C1*C2, x, y...)
 		 * 
 		 */
 

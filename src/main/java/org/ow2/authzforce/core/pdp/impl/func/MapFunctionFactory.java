@@ -54,24 +54,29 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 	 *            subfunction return type
 	 * 
 	 */
-	private static final class MapFunction<SUB_RETURN_T extends AttributeValue> extends OneBagOnlyHigherOrderFunction<Bag<SUB_RETURN_T>, SUB_RETURN_T>
+	private static final class MapFunction<SUB_RETURN_T extends AttributeValue>
+			extends OneBagOnlyHigherOrderFunction<Bag<SUB_RETURN_T>, SUB_RETURN_T>
 	{
 
-		private static final class Call<SUB_RETURN extends AttributeValue> extends OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN>, SUB_RETURN>
+		private static final class Call<SUB_RETURN extends AttributeValue>
+				extends OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN>, SUB_RETURN>
 		{
 			private final Datatype<SUB_RETURN> returnBagElementType;
 			private final String indeterminateSubFuncEvalMessagePrefix;
 
-			private Call(final String functionId, final Datatype<Bag<SUB_RETURN>> returnType, final FirstOrderFunction<SUB_RETURN> subFunction, final List<Expression<?>> primitiveInputs,
+			private Call(final String functionId, final Datatype<Bag<SUB_RETURN>> returnType,
+					final FirstOrderFunction<SUB_RETURN> subFunction, final List<Expression<?>> primitiveInputs,
 					final Expression<?> lastInputBag)
 			{
 				super(functionId, returnType, subFunction, primitiveInputs, lastInputBag);
 				this.returnBagElementType = subFunction.getReturnType();
-				this.indeterminateSubFuncEvalMessagePrefix = "Function " + functionId + ": Error calling sub-function (first argument) with last arg=";
+				this.indeterminateSubFuncEvalMessagePrefix = "Function " + functionId
+						+ ": Error calling sub-function (first argument) with last arg=";
 			}
 
 			@Override
-			protected Bag<SUB_RETURN> evaluate(final Bag<?> lastArgBag, final EvaluationContext context) throws IndeterminateEvaluationException
+			protected Bag<SUB_RETURN> evaluate(final Bag<?> lastArgBag, final EvaluationContext context)
+					throws IndeterminateEvaluationException
 			{
 				final Collection<SUB_RETURN> results = new ArrayDeque<>(lastArgBag.size());
 				for (final AttributeValue lastArgBagVal : lastArgBag)
@@ -83,7 +88,8 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 					}
 					catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(indeterminateSubFuncEvalMessagePrefix + lastArgBagVal, e.getStatusCode(), e);
+						throw new IndeterminateEvaluationException(
+								indeterminateSubFuncEvalMessagePrefix + lastArgBagVal, e.getStatusCode(), e);
 					}
 
 					results.add(subResult);
@@ -105,7 +111,8 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 		}
 
 		@Override
-		protected OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN_T>, SUB_RETURN_T> newFunctionCall(final FirstOrderFunction<SUB_RETURN_T> subFunc, final List<Expression<?>> primitiveInputs,
+		protected OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN_T>, SUB_RETURN_T> newFunctionCall(
+				final FirstOrderFunction<SUB_RETURN_T> subFunc, final List<Expression<?>> primitiveInputs,
 				final Expression<?> lastInputBag)
 		{
 			return new Call<>(this.getId(), this.getReturnType(), subFunc, primitiveInputs, lastInputBag);
@@ -121,13 +128,14 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 	}
 
 	@Override
-	public final String getId()
+	public String getId()
 	{
 		return functionId;
 	}
 
 	@Override
-	public final <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(final DatatypeFactory<SUB_RETURN> subFunctionReturnTypeFactory)
+	public <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(
+			final DatatypeFactory<SUB_RETURN> subFunctionReturnTypeFactory)
 	{
 		return new MapFunction<>(functionId, subFunctionReturnTypeFactory.getBagDatatype());
 	}

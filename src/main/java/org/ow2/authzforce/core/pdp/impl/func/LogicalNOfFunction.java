@@ -165,7 +165,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 				try
 				{
 					attrVal = Expressions.eval(input, context, StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
-					if (attrVal.getUnderlyingValue())
+					if (attrVal.getUnderlyingValue().booleanValue())
 					{
 						// we're one closer to our goal...see if we met it
 						nOfRequiredTrues--;
@@ -228,7 +228,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 								StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 
-					if (attrVal.getUnderlyingValue())
+					if (attrVal.getUnderlyingValue().booleanValue())
 					{
 						// we're one closer to our goal...see if we met it
 						nOfRequiredTrues--;
