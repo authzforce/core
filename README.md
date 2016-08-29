@@ -66,7 +66,7 @@ If you are using **Java 8**, make sure you set the following JVM system property
 
 ## Support
 
-If you are experiencing problems using AuthzForce, please report your problem via the [Issue Tracker](https://github.com/authzforce/core/issues).
+If you are experiencing problems using AuthzForce, please report your problem on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/).
 Please include as much information as possible; the more we know, the better the chance of a quicker resolution:
 
 * Software version
