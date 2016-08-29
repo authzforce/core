@@ -75,4 +75,4 @@ Please include as much information as possible; the more we know, the better the
 * Log output can be useful too; sometimes enabling DEBUG logging can help;
 * Your code & configuration files are often useful.
 
-If you wish to contact the developers for other reasons, use [Authzforce contact mailing list](http://scr.im/az).
+If you wish to contact the developers for other reasons, use [Authzforce contact mailing list](http://scr.im/azteam).
