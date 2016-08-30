@@ -13,7 +13,7 @@
 			<AnyOf>
 				<AllOf>
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">22X</AttributeValue>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">XXX</AttributeValue>
 						<AttributeDesignator
 							AttributeId="urn:ow2:authzforce:xacml:attribute:id:not-in-the-request"
 							Category="urn:ow2:authzforce:xacml:attribute:category:not-in-the-request"
