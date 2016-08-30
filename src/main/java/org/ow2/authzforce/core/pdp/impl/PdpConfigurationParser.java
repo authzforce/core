@@ -41,10 +41,10 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.impl.combining.ImmutableCombiningAlgRegistry;
-import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgorithms;
+import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgorithm;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.ImmutableFunctionRegistry;
-import org.ow2.authzforce.core.pdp.impl.func.StandardFunctions;
+import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.value.ImmutableDatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
@@ -371,7 +371,7 @@ public final class PdpConfigurationParser
 		final FunctionRegistry functionRegistry;
 		if (pdpJaxbConf.isUseStandardFunctions())
 		{
-			final FunctionRegistry stdRegistry = StandardFunctions.getRegistry(enableXPath);
+			final FunctionRegistry stdRegistry = StandardFunction.getRegistry(enableXPath);
 			if (nonGenericFunctionExtensionIdentifiers.isEmpty())
 			{
 				functionRegistry = stdRegistry;
@@ -406,12 +406,12 @@ public final class PdpConfigurationParser
 		{
 			if (algExtensions.isEmpty())
 			{
-				combiningAlgRegistry = StandardCombiningAlgorithms.REGISTRY;
+				combiningAlgRegistry = StandardCombiningAlgorithm.REGISTRY;
 			}
 			else
 			{
 				combiningAlgRegistry = new ImmutableCombiningAlgRegistry(HashObjSets
-						.newImmutableSet(StandardCombiningAlgorithms.REGISTRY.getExtensions(), algExtensions));
+						.newImmutableSet(StandardCombiningAlgorithm.REGISTRY.getExtensions(), algExtensions));
 			}
 		}
 		else

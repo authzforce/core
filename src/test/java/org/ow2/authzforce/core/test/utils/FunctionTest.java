@@ -47,7 +47,7 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
 import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
-import org.ow2.authzforce.core.pdp.impl.func.StandardFunctions;
+import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 
 import com.sun.xacml.UnknownIdentifierException;
@@ -73,7 +73,7 @@ public abstract class FunctionTest
 		try
 		{
 			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.getRegistry(true),
-					StandardFunctions.getRegistry(true), null, 0, false, false, null);
+					StandardFunction.getRegistry(true), null, 0, false, false, null);
 		}
 		catch (IllegalArgumentException | IOException e)
 		{

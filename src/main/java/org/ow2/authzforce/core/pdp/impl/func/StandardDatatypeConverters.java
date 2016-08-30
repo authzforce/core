@@ -33,7 +33,7 @@ import org.ow2.authzforce.core.pdp.api.value.StringValue;
 final class StandardDatatypeConverters
 {
 
-	static final TypeConverter<IntegerValue, DoubleValue> DOUBLE_TO_INTEGER_CONVERTER = new TypeConverter<IntegerValue, DoubleValue>()
+	static final TypeConverter<IntegerValue, DoubleValue> DOUBLE_TO_INTEGER = new TypeConverter<IntegerValue, DoubleValue>()
 	{
 
 		@Override
@@ -46,7 +46,7 @@ final class StandardDatatypeConverters
 
 	private static final IllegalArgumentException INTEGER_OUT_OF_RANGE_EXCEPTION = new IllegalArgumentException("Integer argument is outside the range which can be represented by a double");
 
-	static final TypeConverter<DoubleValue, IntegerValue> INTEGER_TO_DOUBLE_CONVERTER = new TypeConverter<DoubleValue, IntegerValue>()
+	static final TypeConverter<DoubleValue, IntegerValue> INTEGER_TO_DOUBLE = new TypeConverter<DoubleValue, IntegerValue>()
 	{
 
 		@Override
@@ -92,7 +92,7 @@ final class StandardDatatypeConverters
 
 	}
 
-	static final ToStringConverter<BooleanValue> BOOLEAN_TO_STRING_CONVERTER = new ToStringConverter<BooleanValue>()
+	static final ToStringConverter<BooleanValue> BOOLEAN_TO_STRING = new ToStringConverter<BooleanValue>()
 	{
 		@Override
 		public final StringValue convert(final BooleanValue arg)
