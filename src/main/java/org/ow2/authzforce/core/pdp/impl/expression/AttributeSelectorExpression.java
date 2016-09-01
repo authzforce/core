@@ -162,7 +162,7 @@ public final class AttributeSelectorExpression<AV extends AttributeValue> implem
 						StatusHelper.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
 			}
 
-			final String contextSelectorPath = bag.getSingleValue().getUnderlyingValue();
+			final String contextSelectorPath = bag.getSingleElement().getUnderlyingValue();
 			final XdmItem contextNode;
 			try
 			{

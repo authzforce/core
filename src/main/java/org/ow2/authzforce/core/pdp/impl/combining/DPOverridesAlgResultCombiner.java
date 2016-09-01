@@ -25,57 +25,66 @@ import javax.xml.bind.JAXBElement;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
 import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
-import org.ow2.authzforce.core.pdp.impl.UpdatableLists;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 /**
- * Helper for making Deny/Permit-overrides combining algorithm results, centralizing common behavior
+ * Helper for making Deny/Permit-overrides combining algorithm results,
+ * centralizing common behavior
  */
 class DPOverridesAlgResultCombiner
 {
 	private final UpdatableList<JAXBElement<IdReferenceType>> combinedApplicablePolicyIdList;
 	/*
-	 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
+	 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=>
+	 * firstIndeterminateDPResult != null
 	 */
 	private ExtendedDecision firstIndeterminateDPResult = null;
 	/*
-	 * Replaces atLeastOneErrorD from XACML spec. atLeastOneErrorD == true <=> firstIndeterminateDResult != null
+	 * Replaces atLeastOneErrorD from XACML spec. atLeastOneErrorD == true <=>
+	 * firstIndeterminateDResult != null
 	 */
 	private ExtendedDecision firstIndeterminateDResult = null;
 	/*
-	 * Replaces atLeastOneErrorP from XACML spec. atLeastOneErrorP == true <=> firstIndeterminatePResult != null
+	 * Replaces atLeastOneErrorP from XACML spec. atLeastOneErrorP == true <=>
+	 * firstIndeterminatePResult != null
 	 */
 	private ExtendedDecision firstIndeterminatePResult = null;
 	/**
-	 * Replaces atLeastOnePermit (resp. atLeastOneDeny) from description of permit-overrides (resp. deny-overrides) in
-	 * the XACML spec.
+	 * Replaces atLeastOnePermit (resp. atLeastOneDeny) from description of
+	 * permit-overrides (resp. deny-overrides) in the XACML spec.
 	 * <p>
-	 * atLeastOnePermit (resp. atLeastOneDeny) == false <=> combinedPepActions == null.
+	 * atLeastOnePermit (resp. atLeastOneDeny) == false <=> combinedPepActions
+	 * == null.
 	 * <p>
-	 * At this point, we don't know yet whether the PEP actions of combined/children's Permit/Deny decisions will be
-	 * added to the final result's PEP actions, since we don't know yet whether the final decision is Permit/Deny.
+	 * At this point, we don't know yet whether the PEP actions of
+	 * combined/children's Permit/Deny decisions will be added to the final
+	 * result's PEP actions, since we don't know yet whether the final decision
+	 * is Permit/Deny.
 	 */
 	private UpdatablePepActions combinedPepActions = null;
 
 	DPOverridesAlgResultCombiner(final boolean returnApplicablePolicyIdList)
 	{
 		/*
-		 * Since we may combine multiple elements before returning a final decision, we have to collect them in a list;
-		 * and since we don't know yet whether the final decision is NotApplicable, we cannot add collected applicable
-		 * policies straight to outApplicablePolicyIdList. So we create a temporary list until we know the final
-		 * decision applies.
+		 * Since we may combine multiple elements before returning a final
+		 * decision, we have to collect them in a list; and since we don't know
+		 * yet whether the final decision is NotApplicable, we cannot add
+		 * collected applicable policies straight to outApplicablePolicyIdList.
+		 * So we create a temporary list until we know the final decision
+		 * applies.
 		 */
 		combinedApplicablePolicyIdList = returnApplicablePolicyIdList
-				? UpdatableLists.<JAXBElement<IdReferenceType>>newUpdatableList()
-				: UpdatableLists.<JAXBElement<IdReferenceType>>empty();
+				? UpdatableCollections.<JAXBElement<IdReferenceType>> newUpdatableList()
+				: UpdatableCollections.<JAXBElement<IdReferenceType>> emptyList();
 	}
 
 	/**
-	 * Return new result's applicable policies combined (added last) with the ones previously found, or only the ones
-	 * combined so far if result == null
+	 * Return new result's applicable policies combined (added last) with the
+	 * ones previously found, or only the ones combined so far if result == null
 	 * 
 	 */
 	List<JAXBElement<IdReferenceType>> getApplicablePolicies(final DecisionResult result)
@@ -88,8 +97,9 @@ class DPOverridesAlgResultCombiner
 	}
 
 	/**
-	 * Add intermediate (not final a priori) Deny/Permit result (update applicable policies and PEP actions), i.e. a
-	 * Permit (resp. Deny) result for deny-overrides (resp. permit-overrides)
+	 * Add intermediate (not final a priori) Deny/Permit result (update
+	 * applicable policies and PEP actions), i.e. a Permit (resp. Deny) result
+	 * for deny-overrides (resp. permit-overrides)
 	 */
 	void addSubResultDP(final DecisionResult result)
 	{
@@ -104,12 +114,14 @@ class DPOverridesAlgResultCombiner
 	}
 
 	/**
-	 * Add intermediate (not final a priori) Indeterminate result (update applicable policies, etc.)
+	 * Add intermediate (not final a priori) Indeterminate result (update
+	 * applicable policies, etc.)
 	 */
 	void addSubResultIndeterminate(final DecisionResult result)
 	{
 		combinedApplicablePolicyIdList.addAll(result.getApplicablePolicies());
-		switch (result.getExtendedIndeterminate()) {
+		switch (result.getExtendedIndeterminate())
+		{
 			case INDETERMINATE:
 				if (firstIndeterminateDPResult == null)
 				{

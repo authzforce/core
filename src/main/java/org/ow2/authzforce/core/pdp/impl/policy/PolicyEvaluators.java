@@ -41,6 +41,7 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResults;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.XMLUtils;
@@ -65,7 +66,6 @@ import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpressions;
 import org.ow2.authzforce.core.pdp.impl.PepActionFactories;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluator;
-import org.ow2.authzforce.core.pdp.impl.UpdatableLists;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.ow2.authzforce.xacml.identifiers.XACMLNodeName;
 import org.slf4j.Logger;
@@ -101,7 +101,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 
 /**
- * This class consists exclusively of static methods that operate on or return {@link PolicyEvaluator}s
+ * This class consists exclusively of static methods that operate on or return
+ * {@link PolicyEvaluator}s
  *
  * 
  * @version $Id: $
@@ -121,8 +122,8 @@ public final class PolicyEvaluators
 	private static final Logger LOGGER = LoggerFactory.getLogger(PolicyEvaluators.class);
 
 	/**
-	 * Policy(Set)-associated PEP action (obligation/advice) expressions parser used to initialize the evaluator's
-	 * fields
+	 * Policy(Set)-associated PEP action (obligation/advice) expressions parser
+	 * used to initialize the evaluator's fields
 	 * 
 	 */
 	private static final class PolicyPepActionExpressions implements PepActionExpressions
@@ -139,7 +140,8 @@ public final class PolicyEvaluators
 		 * Creates instance
 		 * 
 		 * @param xPathCompiler
-		 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+		 *            XPath compiler corresponding to enclosing policy(set)
+		 *            default XPath version
 		 * @param expressionFactory
 		 *            expression factory for parsing expressions
 		 */
@@ -204,9 +206,10 @@ public final class PolicyEvaluators
 	};
 
 	/**
-	 * Factory for returning Deny/Permit policy decision based on combining algorithm evaluation result, evaluation
-	 * context, initial PEP actions (filled from results of evaluation of child elements by combining algorithm) and
-	 * applicable Policy identifiers
+	 * Factory for returning Deny/Permit policy decision based on combining
+	 * algorithm evaluation result, evaluation context, initial PEP actions
+	 * (filled from results of evaluation of child elements by combining
+	 * algorithm) and applicable Policy identifiers
 	 */
 	private interface DPResultFactory
 	{
@@ -224,7 +227,8 @@ public final class PolicyEvaluators
 				final EvaluationContext evaluationContext, final UpdatablePepActions basePepActions,
 				final ImmutableList<JAXBElement<IdReferenceType>> applicablePolicies)
 		{
-			// No Policy-defined PEP actions to add/merge, we can create the result right away
+			// No Policy-defined PEP actions to add/merge, we can create the
+			// result right away
 			return DecisionResults.getInstance(combiningAlgResult, ImmutablePepActions.getInstance(basePepActions),
 					applicablePolicies);
 		}
@@ -233,7 +237,8 @@ public final class PolicyEvaluators
 
 	private static final class PepActionAppendingDPResultFactory implements DPResultFactory
 	{
-		private final String policyToString; // policy fully qualifying name for logs: Policy(Set)[ID#vXXX]
+		private final String policyToString; // policy fully qualifying name for
+												// logs: Policy(Set)[ID#vXXX]
 		private final PepActionExpressions.EffectSpecific denyActionExpressions;
 		private final PepActionExpressions.EffectSpecific permitActionExpressions;
 
@@ -254,7 +259,8 @@ public final class PolicyEvaluators
 		{
 			final PepActionExpressions.EffectSpecific matchingActionExpressions;
 			final DecisionType combiningAlgDecision = combiningAlgResult.getDecision();
-			switch (combiningAlgDecision) {
+			switch (combiningAlgDecision)
+			{
 				case DENY:
 					matchingActionExpressions = this.denyActionExpressions;
 					break;
@@ -267,9 +273,11 @@ public final class PolicyEvaluators
 			}
 
 			/*
-			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching
-			 * FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then the whole rule, policy, or policy set
-			 * SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18).
+			 * If any of the attribute assignment expressions in an obligation
+			 * or advice expression with a matching FulfillOn or AppliesTo
+			 * attribute evaluates to "Indeterminate", then the whole rule,
+			 * policy, or policy set SHALL be "Indeterminate" (see XACML 3.0
+			 * core spec, section 7.18).
 			 */
 
 			final ImmutablePepActions resultPepActions;
@@ -281,8 +289,9 @@ public final class PolicyEvaluators
 			catch (final IndeterminateEvaluationException e)
 			{
 				/*
-				 * Before we lose the exception information, log it at a higher level because it is an evaluation error
-				 * (but no critical application error, therefore lower level than error)
+				 * Before we lose the exception information, log it at a higher
+				 * level because it is an evaluation error (but no critical
+				 * application error, therefore lower level than error)
 				 */
 				LOGGER.info("{}/{Obligation|Advice}Expressions -> Indeterminate", policyToString, e);
 				return DecisionResults.newIndeterminate(combiningAlgDecision, e.getStatus(), applicablePolicies);
@@ -293,11 +302,12 @@ public final class PolicyEvaluators
 	}
 
 	/**
-	 * Represents a set of CombinerParameters to a combining algorithm that may or may not be associated with a
-	 * policy/rule
+	 * Represents a set of CombinerParameters to a combining algorithm that may
+	 * or may not be associated with a policy/rule
 	 * 
 	 * @param <T>
-	 *            Type of combined element (Policy, Rule...) with which the CombinerParameters are associated
+	 *            Type of combined element (Policy, Rule...) with which the
+	 *            CombinerParameters are associated
 	 */
 	public static final class BaseCombiningAlgParameter<T extends Decidable> implements CombiningAlgParameter<T>
 	{
@@ -309,17 +319,19 @@ public final class PolicyEvaluators
 		private final List<CombinerParameterEvaluator> parameters;
 
 		/**
-		 * Constructor that takes both the element to combine and its associated combiner parameters.
+		 * Constructor that takes both the element to combine and its associated
+		 * combiner parameters.
 		 * 
 		 * @param element
 		 *            combined element; null if
 		 * 
 		 * @param jaxbCombinerParameters
-		 *            a (possibly empty) non-null <code>List</code> of <code>CombinerParameter<code>s provided for
-		 *            general use
+		 *            a (possibly empty) non-null <code>List</code> of
+		 *            <code>CombinerParameter<code>s provided for general use
 		 * @param xPathCompiler
-		 *            Policy(Set) default XPath compiler, corresponding to the Policy(Set)'s default XPath version
-		 *            specified in {@link DefaultsType} element; null if none specified
+		 *            Policy(Set) default XPath compiler, corresponding to the
+		 *            Policy(Set)'s default XPath version specified in
+		 *            {@link DefaultsType} element; null if none specified
 		 * @param expFactory
 		 *            attribute value factory
 		 * @throws IllegalArgumentException
@@ -360,8 +372,9 @@ public final class PolicyEvaluators
 		}
 
 		/**
-		 * Returns the combined element. If null, it means, this CombinerElement (i.e. all its CombinerParameters) is
-		 * not associated with a particular rule
+		 * Returns the combined element. If null, it means, this CombinerElement
+		 * (i.e. all its CombinerParameters) is not associated with a particular
+		 * rule
 		 * 
 		 * @return the combined element
 		 */
@@ -372,9 +385,11 @@ public final class PolicyEvaluators
 		}
 
 		/**
-		 * Returns the <code>CombinerParameterEvaluator</code>s associated with this element.
+		 * Returns the <code>CombinerParameterEvaluator</code>s associated with
+		 * this element.
 		 * 
-		 * @return a <code>List</code> of <code>CombinerParameterEvaluator</code>s
+		 * @return a <code>List</code> of
+		 *         <code>CombinerParameterEvaluator</code>s
 		 */
 		@Override
 		public List<CombinerParameterEvaluator> getParameters()
@@ -392,15 +407,16 @@ public final class PolicyEvaluators
 		private final List<String> longestPolicyRefChain;
 
 		/**
-		 * This constructor will make all fields immutable, so do you need to make args immutable before passing them to
-		 * this.
+		 * This constructor will make all fields immutable, so do you need to
+		 * make args immutable before passing them to this.
 		 * 
 		 * @param version
 		 *            policy version
 		 * @param refPolicies
 		 *            policies referenced from the policy
 		 * @param longestPolicyRefChain
-		 *            longest chain of policy references (Policy(Set)IdReferences) originating from the policy
+		 *            longest chain of policy references
+		 *            (Policy(Set)IdReferences) originating from the policy
 		 */
 		protected BaseExtraPolicyMetadata(final PolicyVersion version, final Map<String, PolicyVersion> refPolicies,
 				final Map<String, PolicyVersion> refPolicySets, final List<String> longestPolicyRefChain)
@@ -537,11 +553,13 @@ public final class PolicyEvaluators
 		 * @param policyTarget
 		 *            policy(Set) Target
 		 * @param combinedElements
-		 *            child elements combined in the policy(set) by {@code combiningAlg}
+		 *            child elements combined in the policy(set) by
+		 *            {@code combiningAlg}
 		 * @param combinerParameters
 		 *            combining algorithm parameters
 		 * @param localVariableIds
-		 *            IDs of variables defined locally (in policy {@code policyId})
+		 *            IDs of variables defined locally (in policy
+		 *            {@code policyId})
 		 * @param combiningAlgId
 		 *            (policy/rule-)combining algorithm ID
 		 * @param obligationExps
@@ -549,7 +567,8 @@ public final class PolicyEvaluators
 		 * @param adviceExps
 		 *            AdviceExpressions
 		 * @param defaultXPathCompiler
-		 *            Default XPath compiler corresponding to the Policy(Set) default XPath version
+		 *            Default XPath compiler corresponding to the Policy(Set)
+		 *            default XPath version
 		 * @param expressionFactory
 		 *            Expression factory/parser
 		 * @param combiningAlgRegistry
@@ -564,7 +583,7 @@ public final class PolicyEvaluators
 				final ObligationExpressions obligationExps, final AdviceExpressions adviceExps,
 				final Set<String> localVariableIds, final XPathCompiler defaultXPathCompiler,
 				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
-				throws IllegalArgumentException
+						throws IllegalArgumentException
 		{
 			if (policyId == null)
 			{
@@ -597,8 +616,9 @@ public final class PolicyEvaluators
 
 			this.toString = policyType + "[" + policyId + "#v" + this.policyVersion + "]";
 			/*
-			 * Note that we ignore the PolicyIssuer in the hashCode because it is ignored/unused as well in
-			 * PolicyIdReferences. So we consider it is useless for identification in the XACML model.
+			 * Note that we ignore the PolicyIssuer in the hashCode because it
+			 * is ignored/unused as well in PolicyIdReferences. So we consider
+			 * it is useless for identification in the XACML model.
 			 */
 			this.hashCode = Objects.hash(this.policyType, policyId, this.policyVersion);
 
@@ -654,19 +674,22 @@ public final class PolicyEvaluators
 						policyPepActionExpressions);
 			}
 
-			this.localVariableIds = localVariableIds == null ? Collections.<String>emptySet() : localVariableIds;
+			this.localVariableIds = localVariableIds == null ? Collections.<String> emptySet() : localVariableIds;
 
 			/*
-			 * Define keys for caching the result of #evaluate() in the request context (see Object#toString())
+			 * Define keys for caching the result of #evaluate() in the request
+			 * context (see Object#toString())
 			 */
 			this.requestScopedEvalResultsCacheKey = this.getClass().getName() + '@' + Integer.toHexString(hashCode());
 
 		}
 
 		/**
-		 * Policy(Set) evaluation which option to skip Target evaluation. The option is to be used by
-		 * Only-one-applicable algorithm with value 'true', after calling
-		 * {@link TopLevelPolicyElementEvaluator#isApplicableByTarget(EvaluationContext)} in particular.
+		 * Policy(Set) evaluation which option to skip Target evaluation. The
+		 * option is to be used by Only-one-applicable algorithm with value
+		 * 'true', after calling
+		 * {@link TopLevelPolicyElementEvaluator#isApplicableByTarget(EvaluationContext)}
+		 * in particular.
 		 * 
 		 * @param context
 		 *            evaluation context
@@ -678,7 +701,8 @@ public final class PolicyEvaluators
 		public final DecisionResult evaluate(final EvaluationContext context, final boolean skipTarget)
 		{
 			/*
-			 * check whether the result is already cached in the evaluation context
+			 * check whether the result is already cached in the evaluation
+			 * context
 			 */
 			final Object cachedValue = context.getOther(this.requestScopedEvalResultsCacheKey);
 			final EvalResults cachedResults;
@@ -695,8 +719,9 @@ public final class PolicyEvaluators
 			final UpdatablePepActions updatablePepActions;
 
 			/*
-			 * We add the current policy (this.refToSelf) to the applicablePolicyIdList only at the end when we know for
-			 * sure the result is different from NotApplicable
+			 * We add the current policy (this.refToSelf) to the
+			 * applicablePolicyIdList only at the end when we know for sure the
+			 * result is different from NotApplicable
 			 */
 			final UpdatableList<JAXBElement<IdReferenceType>> updatableApplicablePolicyIdList;
 
@@ -716,8 +741,8 @@ public final class PolicyEvaluators
 					// evaluate with combining algorithm
 					updatablePepActions = new UpdatablePepActions();
 					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested()
-							? UpdatableLists.<JAXBElement<IdReferenceType>>newUpdatableList()
-							: UpdatableLists.<JAXBElement<IdReferenceType>>empty();
+							? UpdatableCollections.<JAXBElement<IdReferenceType>> newUpdatableList()
+							: UpdatableCollections.<JAXBElement<IdReferenceType>> emptyList();
 					algResult = combiningAlgEvaluator.evaluate(context, updatablePepActions,
 							updatableApplicablePolicyIdList);
 					LOGGER.debug("{}/Algorithm -> {}", this, algResult);
@@ -750,8 +775,10 @@ public final class PolicyEvaluators
 					{
 						targetMatchIndeterminateException = e;
 						/*
-						 * Before we lose the exception information, log it at a higher level because it is an
-						 * evaluation error (but no critical application error, therefore lower level than error)
+						 * Before we lose the exception information, log it at a
+						 * higher level because it is an evaluation error (but
+						 * no critical application error, therefore lower level
+						 * than error)
 						 */
 						LOGGER.info("{}/Target -> Indeterminate", this, e);
 					}
@@ -759,8 +786,8 @@ public final class PolicyEvaluators
 					// evaluate with combining algorithm
 					updatablePepActions = new UpdatablePepActions();
 					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested()
-							? UpdatableLists.<JAXBElement<IdReferenceType>>newUpdatableList()
-							: UpdatableLists.<JAXBElement<IdReferenceType>>empty();
+							? UpdatableCollections.<JAXBElement<IdReferenceType>> newUpdatableList()
+							: UpdatableCollections.<JAXBElement<IdReferenceType>> emptyList();
 					algResult = combiningAlgEvaluator.evaluate(context, updatablePepActions,
 							updatableApplicablePolicyIdList);
 					LOGGER.debug("{}/Algorithm -> {}", this, algResult);
@@ -769,21 +796,26 @@ public final class PolicyEvaluators
 					{
 						// Target is Indeterminate
 						/*
-						 * Implement Extended Indeterminate according to table 7 of section 7.14 (XACML 3.0 Core). If
-						 * the combining alg value is Indeterminate, use its extended Indeterminate value as this
-						 * evaluation result's extended Indeterminate value; else (Permit or Deny) as our extended
-						 * indeterminate value (part between {} in XACML notation).
+						 * Implement Extended Indeterminate according to table 7
+						 * of section 7.14 (XACML 3.0 Core). If the combining
+						 * alg value is Indeterminate, use its extended
+						 * Indeterminate value as this evaluation result's
+						 * extended Indeterminate value; else (Permit or Deny)
+						 * as our extended indeterminate value (part between {}
+						 * in XACML notation).
 						 */
 						final DecisionType algDecision = algResult.getDecision();
 
-						switch (algDecision) {
+						switch (algDecision)
+						{
 							case NOT_APPLICABLE:
 								newResult = DecisionResults.getNotApplicable(algResult.getStatus());
 								break;
 							case PERMIT:
 							case DENY:
 								/*
-								 * Result != NotApplicable -> consider current policy as applicable
+								 * Result != NotApplicable -> consider current
+								 * policy as applicable
 								 */
 								updatableApplicablePolicyIdList.add(refToSelf);
 								newResult = DecisionResults.newIndeterminate(algDecision,
@@ -792,7 +824,8 @@ public final class PolicyEvaluators
 								break;
 							default: // INDETERMINATE
 								/*
-								 * Result != NotApplicable -> consider current policy as applicable
+								 * Result != NotApplicable -> consider current
+								 * policy as applicable
 								 */
 								updatableApplicablePolicyIdList.add(refToSelf);
 								newResult = DecisionResults.newIndeterminate(algResult.getExtendedIndeterminate(),
@@ -802,8 +835,9 @@ public final class PolicyEvaluators
 						}
 
 						/*
-						 * newResult must be initialized and used as return variable at this point, in order to be used
-						 * in finally{} block below
+						 * newResult must be initialized and used as return
+						 * variable at this point, in order to be used in
+						 * finally{} block below
 						 */
 						return newResult;
 					}
@@ -811,30 +845,36 @@ public final class PolicyEvaluators
 				} // End of Target evaluation
 
 				/*
-				 * Target Match (or assumed Match if skipTarget=true) -> the policy decision is the one from the
-				 * combining algorithm
+				 * Target Match (or assumed Match if skipTarget=true) -> the
+				 * policy decision is the one from the combining algorithm
 				 */
 				/*
-				 * The spec is unclear about what is considered an "applicable" policy, therefore in what case should we
-				 * add the policy to the PolicyIdentifierList in the final XACML Result. See the discussion here for
-				 * more info: https://lists.oasis-open.org/archives/xacml-comment/201605/msg00004.html. Here we choose
-				 * to consider a policy applicable if and only if its evaluation does not return NotApplicable.
+				 * The spec is unclear about what is considered an "applicable"
+				 * policy, therefore in what case should we add the policy to
+				 * the PolicyIdentifierList in the final XACML Result. See the
+				 * discussion here for more info:
+				 * https://lists.oasis-open.org/archives/xacml-comment/201605/
+				 * msg00004.html. Here we choose to consider a policy applicable
+				 * if and only if its evaluation does not return NotApplicable.
 				 */
 				final DecisionType algResultDecision = algResult.getDecision();
 				final Status algResultStatus = algResult.getStatus();
-				switch (algResultDecision) {
+				switch (algResultDecision)
+				{
 					case NOT_APPLICABLE:
 						/*
-						 * Final evaluation result is NotApplicable, so we don't add to applicable policy identifier
-						 * list
+						 * Final evaluation result is NotApplicable, so we don't
+						 * add to applicable policy identifier list
 						 */
 						newResult = DecisionResults.getNotApplicable(algResultStatus);
 						return newResult;
 
 					case INDETERMINATE:
-						// Final result is the Indeterminate from algResult (no PEP actions), XACML §7.12, 7.13
+						// Final result is the Indeterminate from algResult (no
+						// PEP actions), XACML §7.12, 7.13
 						/*
-						 * Result != NotApplicable -> consider current policy as applicable
+						 * Result != NotApplicable -> consider current policy as
+						 * applicable
 						 */
 						updatableApplicablePolicyIdList.add(refToSelf);
 						newResult = DecisionResults.newIndeterminate(algResultDecision, algResultStatus,
@@ -844,7 +884,8 @@ public final class PolicyEvaluators
 					default:
 						// Permit/Deny decision
 						/*
-						 * Result != NotApplicable -> consider current policy as applicable
+						 * Result != NotApplicable -> consider current policy as
+						 * applicable
 						 */
 						updatableApplicablePolicyIdList.add(refToSelf);
 						newResult = this.decisionResultFactory.getInstance(algResult, context, updatablePepActions,
@@ -884,7 +925,8 @@ public final class PolicyEvaluators
 			final boolean isMatched = targetEvaluator.evaluate(context);
 			if (LOGGER.isDebugEnabled())
 			{
-				// Beware of autoboxing which causes call to Boolean.valueOf(...) on isMatched
+				// Beware of autoboxing which causes call to
+				// Boolean.valueOf(...) on isMatched
 				LOGGER.debug("{}/Target -> Match= {}", this, isMatched);
 			}
 			return isMatched;
@@ -924,8 +966,9 @@ public final class PolicyEvaluators
 
 			final TopLevelPolicyElementEvaluator other = (TopLevelPolicyElementEvaluator) obj;
 			/*
-			 * We ignore the policyIssuer because it is no part of PolicyReferences, therefore we consider it is not
-			 * part of the Policy uniqueness
+			 * We ignore the policyIssuer because it is no part of
+			 * PolicyReferences, therefore we consider it is not part of the
+			 * Policy uniqueness
 			 */
 			return this.policyType.equals(other.getPolicyElementType()) && this.policyId.equals(other.getPolicyId())
 					&& this.policyVersion.equals(other.getPolicyVersion());
@@ -969,7 +1012,7 @@ public final class PolicyEvaluators
 				final ObligationExpressions obligationExps, final AdviceExpressions adviceExps,
 				final Set<String> localVariableIds, final XPathCompiler defaultXPathCompiler,
 				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
-				throws IllegalArgumentException
+						throws IllegalArgumentException
 		{
 			super(combinedElementClass, policyId, validate(extraPolicyMetadata).getVersion(), policyTarget,
 					combiningAlgId, combinedElements, combinerParameters, obligationExps, adviceExps, localVariableIds,
@@ -1010,7 +1053,8 @@ public final class PolicyEvaluators
 		 * Get Policy reference description
 		 * 
 		 * @param refPolicyType
-		 *            type of referenced policy (PolicySet for PolicySetIdReference or Policy for PolicyIdReference)
+		 *            type of referenced policy (PolicySet for
+		 *            PolicySetIdReference or Policy for PolicyIdReference)
 		 * @param policyRefId
 		 *            referenced policy ID
 		 * @param versionConstraints
@@ -1087,8 +1131,9 @@ public final class PolicyEvaluators
 
 			final PolicyRefEvaluator other = (PolicyRefEvaluator) obj;
 			/*
-			 * We ignore the policyIssuer because it is no part of PolicyReferences, therefore we consider it is not
-			 * part of the Policy uniqueness
+			 * We ignore the policyIssuer because it is no part of
+			 * PolicyReferences, therefore we consider it is not part of the
+			 * Policy uniqueness
 			 */
 			return this.referredPolicyType.equals(other.referredPolicyType)
 					&& this.refPolicyId.equals(other.refPolicyId)
@@ -1146,8 +1191,10 @@ public final class PolicyEvaluators
 	 * @param referredPolicy
 	 * @return extra policy metadata
 	 * @throws IndeterminateEvaluationException
-	 *             if the extra policy metadata of {@code referredPolicy} could not be determined in {@code evalCtx}
-	 *             (with {@link TopLevelPolicyElementEvaluator#getExtraPolicyMetadata(EvaluationContext)} )
+	 *             if the extra policy metadata of {@code referredPolicy} could
+	 *             not be determined in {@code evalCtx} (with
+	 *             {@link TopLevelPolicyElementEvaluator#getExtraPolicyMetadata(EvaluationContext)}
+	 *             )
 	 */
 	private static ExtraPolicyMetadata getPolicyRefExtraMetadata(final TopLevelPolicyElementEvaluator referredPolicy,
 			final EvaluationContext evalCtx) throws IndeterminateEvaluationException
@@ -1248,7 +1295,8 @@ public final class PolicyEvaluators
 			// Modify refPolicies
 			updateStaticRefPolicies(friendlyId, refPolicies, childMetadata.getRefPolicies());
 			/*
-			 * update longest policy ref chain depending on the length of the longest in this child policy element
+			 * update longest policy ref chain depending on the length of the
+			 * longest in this child policy element
 			 */
 			final List<String> childLongestPolicyRefChain = childMetadata.getLongestPolicyRefChain();
 			if (childLongestPolicyRefChain.size() > longestPolicyRefChain.size())
@@ -1292,7 +1340,8 @@ public final class PolicyEvaluators
 		{
 			super(policyFriendlyId, version);
 			/*
-			 * Define a key for caching the result of #getMetadata() in the request context (see Object#toString())
+			 * Define a key for caching the result of #getMetadata() in the
+			 * request context (see Object#toString())
 			 */
 			this.requestScopedCacheKey = this.getClass().getName() + '@' + Integer.toHexString(hashCode());
 		}
@@ -1305,7 +1354,8 @@ public final class PolicyEvaluators
 		private ExtraPolicyMetadata getMetadata(final EvaluationContext evalCtx) throws IndeterminateEvaluationException
 		{
 			/*
-			 * check whether the result is already cached in the evaluation context
+			 * check whether the result is already cached in the evaluation
+			 * context
 			 */
 			final Object cachedValue = evalCtx.getOther(requestScopedCacheKey);
 			if (cachedValue instanceof GetMetadataResult)
@@ -1320,8 +1370,9 @@ public final class PolicyEvaluators
 			}
 
 			/*
-			 * cachedValue == null, i.e. result not cached yet; or cachedValue of the wrong type (unexpected), so we
-			 * just overwrite with proper type
+			 * cachedValue == null, i.e. result not cached yet; or cachedValue
+			 * of the wrong type (unexpected), so we just overwrite with proper
+			 * type
 			 */
 			final Map<String, PolicyVersion> refPolicies = HashObjObjMaps.newUpdatableMap();
 			final Map<String, PolicyVersion> refPolicySets = HashObjObjMaps.newUpdatableMap();
@@ -1366,7 +1417,7 @@ public final class PolicyEvaluators
 				final ObligationExpressions obligationExps, final AdviceExpressions adviceExps,
 				final Set<String> localVariableIds, final XPathCompiler defaultXPathCompiler,
 				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
-				throws IllegalArgumentException
+						throws IllegalArgumentException
 		{
 			super(PolicyEvaluator.class, policyId, validate(extraPolicyMetadataProvider).getVersion(), policyTarget,
 					combiningAlgId, combinedElements, combinerParameters, obligationExps, adviceExps, localVariableIds,
@@ -1386,7 +1437,8 @@ public final class PolicyEvaluators
 	private static final class StaticPolicyRefEvaluator extends PolicyRefEvaluator implements StaticPolicyEvaluator
 	{
 		/*
-		 * statically defined policy referenced by this policy reference evaluator
+		 * statically defined policy referenced by this policy reference
+		 * evaluator
 		 */
 		private final StaticTopLevelPolicyElementEvaluator referredPolicy;
 		private transient final ExtraPolicyMetadata extraMetadata;
@@ -1482,8 +1534,9 @@ public final class PolicyEvaluators
 		private final String requestScopedCacheKey;
 
 		/*
-		 * Chain of Policy Reference leading from root policy down to this reference (excluded) (Do not use a Queue as
-		 * it is FIFO, and we need LIFO and iteration in order of insertion, so different from
+		 * Chain of Policy Reference leading from root policy down to this
+		 * reference (excluded) (Do not use a Queue as it is FIFO, and we need
+		 * LIFO and iteration in order of insertion, so different from
 		 * Collections.asLifoQueue(Deque) as well.)
 		 */
 		private final Deque<String> ancestorPolicyRefChain;
@@ -1497,7 +1550,8 @@ public final class PolicyEvaluators
 			this.refPolicyProvider = refPolicyProvider;
 			this.ancestorPolicyRefChain = ancestorPolicyRefChain;
 			/*
-			 * define a key for caching the resolved policy in the request context (see Object#toString())
+			 * define a key for caching the resolved policy in the request
+			 * context (see Object#toString())
 			 */
 			this.requestScopedCacheKey = this.getClass().getName() + '@' + Integer.toHexString(hashCode());
 		}
@@ -1506,10 +1560,12 @@ public final class PolicyEvaluators
 		 * Resolves this to the actual Policy
 		 * 
 		 * @throws IllegalArgumentException
-		 *             Error parsing the policy referenced by this. The referenced policy may be parsed on the fly, when
-		 *             calling this method.
+		 *             Error parsing the policy referenced by this. The
+		 *             referenced policy may be parsed on the fly, when calling
+		 *             this method.
 		 * @throws IndeterminateEvaluationException
-		 *             if error determining the policy referenced by this, e.g. if more than one policy is found
+		 *             if error determining the policy referenced by this, e.g.
+		 *             if more than one policy is found
 		 */
 		private RefResolvedResult resolve(final EvaluationContext evalCtx)
 				throws IndeterminateEvaluationException, IllegalArgumentException
@@ -1528,8 +1584,9 @@ public final class PolicyEvaluators
 			}
 
 			/*
-			 * cachedValue == null, i.e. ref resolution result not cached yet; or cachedValue of the wrong type
-			 * (unexpected), so we just overwrite with proper type
+			 * cachedValue == null, i.e. ref resolution result not cached yet;
+			 * or cachedValue of the wrong type (unexpected), so we just
+			 * overwrite with proper type
 			 */
 			try
 			{
@@ -1569,7 +1626,8 @@ public final class PolicyEvaluators
 			{
 				LOGGER.info("", e);
 				/*
-				 * Dynamic policy ref could not be resolved to an actual policy (-> no applicable policy found)
+				 * Dynamic policy ref could not be resolved to an actual policy
+				 * (-> no applicable policy found)
 				 */
 				return DecisionResults.newIndeterminate(DecisionType.INDETERMINATE, e.getStatus(), null);
 			}
@@ -1600,13 +1658,16 @@ public final class PolicyEvaluators
 	 * @param policyElement
 	 *            Policy (XACML)
 	 * @param parentDefaultXPathCompiler
-	 *            XPath compiler corresponding to parent PolicyDefaults/XPathVersion; null if this Policy has no parent
+	 *            XPath compiler corresponding to parent
+	 *            PolicyDefaults/XPathVersion; null if this Policy has no parent
 	 *            Policy (root), or none defined in parent
 	 * @param namespacePrefixesByURI
-	 *            namespace prefix-URI mappings from the original XACML Policy (XML) document, to be used for
-	 *            namespace-aware XPath evaluation; null or empty iff XPath support disabled
+	 *            namespace prefix-URI mappings from the original XACML Policy
+	 *            (XML) document, to be used for namespace-aware XPath
+	 *            evaluation; null or empty iff XPath support disabled
 	 * @param expressionFactory
-	 *            Expression factory/parser; may be null iff {@code policyElement} does not contain any XACML
+	 *            Expression factory/parser; may be null iff
+	 *            {@code policyElement} does not contain any XACML
 	 *            {@link ExpressionType}
 	 * @param combiningAlgRegistry
 	 *            rule/policy combining algorithm registry
@@ -1617,7 +1678,7 @@ public final class PolicyEvaluators
 	public static StaticTopLevelPolicyElementEvaluator getInstance(final Policy policyElement,
 			final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
-			throws IllegalArgumentException
+					throws IllegalArgumentException
 	{
 		if (policyElement == null)
 		{
@@ -1640,7 +1701,8 @@ public final class PolicyEvaluators
 		final DefaultsType policyDefaults = policyElement.getPolicyDefaults();
 
 		/*
-		 * Inherited PolicyDefaults is this.policyDefaults if not null, the parentPolicyDefaults otherwise
+		 * Inherited PolicyDefaults is this.policyDefaults if not null, the
+		 * parentPolicyDefaults otherwise
 		 */
 		final XPathCompiler defaultXPathCompiler;
 		if (policyDefaults == null)
@@ -1666,17 +1728,20 @@ public final class PolicyEvaluators
 		final List<CombiningAlgParameter<? extends RuleEvaluator>> ruleCombinerParameters = new ArrayList<>();
 
 		/*
-		 * Keep a copy of locally-defined variable IDs defined in this policy, to remove them from the global manager at
-		 * the end of parsing this policy. They should not be visible outside the scope of this policy.
+		 * Keep a copy of locally-defined variable IDs defined in this policy,
+		 * to remove them from the global manager at the end of parsing this
+		 * policy. They should not be visible outside the scope of this policy.
 		 */
 		final Set<String> localVariableIds = HashObjSets.newUpdatableSet();
 		/*
-		 * We keep a record of the size of the longest chain of VariableReference in this policy, and update it when a
+		 * We keep a record of the size of the longest chain of
+		 * VariableReference in this policy, and update it when a
 		 * VariableDefinition occurs
 		 */
 		int sizeOfPolicyLongestVarRefChain = 0;
 		/*
-		 * Map to get rules by their ID so that we can resolve rules associated with CombinerParameters
+		 * Map to get rules by their ID so that we can resolve rules associated
+		 * with CombinerParameters
 		 */
 		final Map<String, RuleEvaluator> rulesById = HashObjObjMaps.newUpdatableMap();
 		int childIndex = 0;
@@ -1712,7 +1777,8 @@ public final class PolicyEvaluators
 			else if (policyChildElt instanceof CombinerParametersType)
 			{
 				/*
-				 * CombinerParameters that is not RuleCombinerParameters already tested before
+				 * CombinerParameters that is not RuleCombinerParameters already
+				 * tested before
 				 */
 				final BaseCombiningAlgParameter<RuleEvaluator> combinerElt;
 				try
@@ -1747,8 +1813,9 @@ public final class PolicyEvaluators
 				if (var != null)
 				{
 					/*
-					 * Conflicts can occur between variables defined in this policy but also with others already in a
-					 * wider scope, i.e. defined in parent/ancestor policy
+					 * Conflicts can occur between variables defined in this
+					 * policy but also with others already in a wider scope,
+					 * i.e. defined in parent/ancestor policy
 					 */
 					throw new IllegalArgumentException(
 							policyFriendlyId + ": Duplicable VariableDefinition for VariableId=" + var.getVariableId());
@@ -1756,8 +1823,8 @@ public final class PolicyEvaluators
 
 				localVariableIds.add(varDef.getVariableId());
 				/*
-				 * check whether the longest VariableReference chain in the VariableDefinition is longer than what we've
-				 * got so far
+				 * check whether the longest VariableReference chain in the
+				 * VariableDefinition is longer than what we've got so far
 				 */
 				final int sizeOfVarDefLongestVarRefChain = varDefLongestVarRefChain.size();
 				if (sizeOfVarDefLongestVarRefChain > sizeOfPolicyLongestVarRefChain)
@@ -1791,12 +1858,13 @@ public final class PolicyEvaluators
 				RuleEvaluator.class, policyId, extraPolicyMetadata, policyElement.getTarget(),
 				policyElement.getRuleCombiningAlgId(), ruleEvaluators, ruleCombinerParameters,
 				policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(),
-				Collections.<String>unmodifiableSet(localVariableIds), defaultXPathCompiler, expressionFactory,
+				Collections.<String> unmodifiableSet(localVariableIds), defaultXPathCompiler, expressionFactory,
 				combiningAlgRegistry);
 
 		/*
-		 * We are done parsing expressions in this policy, including VariableReferences, it's time to remove variables
-		 * scoped to this policy from the variable manager
+		 * We are done parsing expressions in this policy, including
+		 * VariableReferences, it's time to remove variables scoped to this
+		 * policy from the variable manager
 		 */
 		for (final String varId : localVariableIds)
 		{
@@ -1881,34 +1949,43 @@ public final class PolicyEvaluators
 		final VersionPatterns versionConstraints = new VersionPatterns(idRef.getVersion(), idRef.getEarliestVersion(),
 				idRef.getLatestVersion());
 		/*
-		 * REMINDER: parentPolicySetRefChain is handled/updated by the refPolicyProvider. So do not modify it here, just
-		 * pass the parameter. modify it here.
+		 * REMINDER: parentPolicySetRefChain is handled/updated by the
+		 * refPolicyProvider. So do not modify it here, just pass the parameter.
+		 * modify it here.
 		 */
 		return policyRefEvaluatorFactory.getInstance(refPolicyType, idRef.getValue(), versionConstraints,
 				parentPolicySetRefChain);
 	}
 
 	/**
-	 * Instantiates Policy(Set) Reference evaluator from XACML Policy(Set)IdReference
+	 * Instantiates Policy(Set) Reference evaluator from XACML
+	 * Policy(Set)IdReference
 	 *
 	 * @param idRef
 	 *            Policy(Set)IdReference
 	 * @param refPolicyProvider
 	 *            Policy(Set)IdReference resolver/Provider
 	 * @param refPolicyType
-	 *            type of policy referenced, i.e. whether it refers to Policy or PolicySet
+	 *            type of policy referenced, i.e. whether it refers to Policy or
+	 *            PolicySet
 	 * @param parentPolicySetRefChain
-	 *            chain of ancestor PolicySetIdReferences leading to the reference identified here by {@code idRef}
-	 *            (exclusive): PolicySet Ref 1 -> PolicySet Ref 2 -> ... -> Ref n -> {@code idRef}. This allows to
-	 *            detect circular references and validate the size of the chain against the max depth enforced by
-	 *            {@code policyProvider}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level
-	 *            PolicySet. Beware that we only keep the IDs in the chain, and not the version, because we consider
-	 *            that a reference loop on the same policy ID is not allowed, no matter what the version is.
+	 *            chain of ancestor PolicySetIdReferences leading to the
+	 *            reference identified here by {@code idRef} (exclusive):
+	 *            PolicySet Ref 1 -> PolicySet Ref 2 -> ... -> Ref n ->
+	 *            {@code idRef}. This allows to detect circular references and
+	 *            validate the size of the chain against the max depth enforced
+	 *            by {@code policyProvider}. This may be null if no ancestor,
+	 *            e.g. a PolicySetIdReference in a top-level PolicySet. Beware
+	 *            that we only keep the IDs in the chain, and not the version,
+	 *            because we consider that a reference loop on the same policy
+	 *            ID is not allowed, no matter what the version is.
 	 * @return instance instance of PolicyReference
 	 * @throws java.lang.IllegalArgumentException
-	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching
-	 *             {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference loop detected or
-	 *             PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
+	 *             if {@code refPolicyProvider} undefined, or there is no policy
+	 *             of type {@code refPolicyType} matching {@code idRef} to be
+	 *             found by {@code refPolicyProvider}, or PolicySetIdReference
+	 *             loop detected or PolicySetIdReference depth exceeds the max
+	 *             enforced by {@code policyProvider}
 	 */
 	public static PolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType,
 			final IdReferenceType idRef, final RefPolicyProvider refPolicyProvider,
@@ -1921,27 +1998,36 @@ public final class PolicyEvaluators
 	}
 
 	/**
-	 * Instantiates Static Policy(Set) Reference evaluator from XACML Policy(Set)IdReference, "static" meaning that
-	 * given {@code idRef} and {@code refPolicyType}, the returned policy is always the sam statically defined policy
+	 * Instantiates Static Policy(Set) Reference evaluator from XACML
+	 * Policy(Set)IdReference, "static" meaning that given {@code idRef} and
+	 * {@code refPolicyType}, the returned policy is always the sam statically
+	 * defined policy
 	 *
 	 * @param idRef
 	 *            Policy(Set)IdReference
 	 * @param refPolicyProvider
 	 *            Policy(Set)IdReference resolver/Provider
 	 * @param refPolicyType
-	 *            type of policy referenced, i.e. whether it refers to Policy or PolicySet
+	 *            type of policy referenced, i.e. whether it refers to Policy or
+	 *            PolicySet
 	 * @param parentPolicySetRefChain
-	 *            chain of ancestor PolicySetIdReferences leading to the reference identified here by {@code idRef}
-	 *            (exclusive): PolicySet Ref 1 -> PolicySet Ref 2 -> ... -> Ref n -> {@code idRef}. This allows to
-	 *            detect circular references and validate the size of the chain against the max depth enforced by
-	 *            {@code policyProvider}. This may be null if no ancestor, e.g. a PolicySetIdReference in a top-level
-	 *            PolicySet. Beware that we only keep the IDs in the chain, and not the version, because we consider
-	 *            that a reference loop on the same policy ID is not allowed, no matter what the version is.
+	 *            chain of ancestor PolicySetIdReferences leading to the
+	 *            reference identified here by {@code idRef} (exclusive):
+	 *            PolicySet Ref 1 -> PolicySet Ref 2 -> ... -> Ref n ->
+	 *            {@code idRef}. This allows to detect circular references and
+	 *            validate the size of the chain against the max depth enforced
+	 *            by {@code policyProvider}. This may be null if no ancestor,
+	 *            e.g. a PolicySetIdReference in a top-level PolicySet. Beware
+	 *            that we only keep the IDs in the chain, and not the version,
+	 *            because we consider that a reference loop on the same policy
+	 *            ID is not allowed, no matter what the version is.
 	 * @return instance instance of PolicyReference
 	 * @throws java.lang.IllegalArgumentException
-	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching
-	 *             {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference loop detected or
-	 *             PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
+	 *             if {@code refPolicyProvider} undefined, or there is no policy
+	 *             of type {@code refPolicyType} matching {@code idRef} to be
+	 *             found by {@code refPolicyProvider}, or PolicySetIdReference
+	 *             loop detected or PolicySetIdReference depth exceeds the max
+	 *             enforced by {@code policyProvider}
 	 */
 	public static StaticPolicyRefEvaluator getInstanceStatic(final TopLevelPolicyElementType refPolicyType,
 			final IdReferenceType idRef, final StaticRefPolicyProvider refPolicyProvider,
@@ -1969,7 +2055,8 @@ public final class PolicyEvaluators
 			this.policyVersion = new PolicyVersion(policyVersionId);
 			this.policyFriendlyId = "Policy[" + policyId + "#v" + policyVersionId + "]";
 			/*
-			 * Inherited PolicyDefaults is policyDefaults if not null, the parentPolicyDefaults otherwise
+			 * Inherited PolicyDefaults is policyDefaults if not null, the
+			 * parentPolicyDefaults otherwise
 			 */
 			if (policyDefaults == null)
 			{
@@ -2064,8 +2151,9 @@ public final class PolicyEvaluators
 			}
 
 			/*
-			 * This child PolicySet may have extra metadata such as nested policy references that we need to merge into
-			 * the parent PolicySet's metadata
+			 * This child PolicySet may have extra metadata such as nested
+			 * policy references that we need to merge into the parent
+			 * PolicySet's metadata
 			 */
 			extraMetadataProvider.updateMetadata(childElement.getExtraPolicyMetadata());
 			return childElement;
@@ -2155,8 +2243,9 @@ public final class PolicyEvaluators
 			}
 
 			/*
-			 * This child PolicySet may have extra metadata such as nested policy references that we need to merge into
-			 * the parent PolicySet's metadata
+			 * This child PolicySet may have extra metadata such as nested
+			 * policy references that we need to merge into the parent
+			 * PolicySet's metadata
 			 */
 			extraMetadataProvider.addChildPolicySetElementOrRef(childElement);
 			return childElement;
@@ -2199,20 +2288,24 @@ public final class PolicyEvaluators
 		assert policyEvaluatorFactory != null && policyElement != null;
 
 		/**
-		 * Why isn't there any VariableDefinition in XACML PolicySet like in Policy? If there were, we would keep a copy
-		 * of variable IDs defined in this policy, to remove them from the global manager at the end of parsing this
-		 * PolicySet. They should not be visible outside the scope of this.
+		 * Why isn't there any VariableDefinition in XACML PolicySet like in
+		 * Policy? If there were, we would keep a copy of variable IDs defined
+		 * in this policy, to remove them from the global manager at the end of
+		 * parsing this PolicySet. They should not be visible outside the scope
+		 * of this.
 		 * <p>
 		 * final Set<String> variableIds = new HashSet<>();
 		 */
 
 		/*
-		 * Map to get child Policies by their ID so that we can resolve Policies associated with CombinerParameters
+		 * Map to get child Policies by their ID so that we can resolve Policies
+		 * associated with CombinerParameters
 		 */
 		final Map<String, COMBINED_ELT> childPoliciesById = HashObjObjMaps.newUpdatableMap();
 
 		/*
-		 * Map to get child PolicySets by their ID so that we can resolve PolicySets associated with CombinerParameters
+		 * Map to get child PolicySets by their ID so that we can resolve
+		 * PolicySets associated with CombinerParameters
 		 */
 		final Map<String, COMBINED_ELT> childPolicySetsById = HashObjObjMaps.newUpdatableMap();
 
@@ -2296,7 +2389,8 @@ public final class PolicyEvaluators
 				else if (eltNameLocalPart.equals(XACMLNodeName.COMBINER_PARAMETERS.value()))
 				{
 					/*
-					 * CombinerParameters that is not Policy(Set)CombinerParameters already tested before
+					 * CombinerParameters that is not
+					 * Policy(Set)CombinerParameters already tested before
 					 */
 					final BaseCombiningAlgParameter<COMBINED_ELT> combinerElt;
 					try
@@ -2317,10 +2411,13 @@ public final class PolicyEvaluators
 			else if (policyChildElt instanceof PolicySet)
 			{
 				/*
-				 * This child PolicySet may have PoliSetIdReferences as well and therefore update the policySetRefChain
-				 * and staticallyReferencedPolicies. However, if the current policySetRefChain is updated directly by a
-				 * child PolicySet instantiation, then it is no longer valid for the other child PolicySets of this same
-				 * PolicySet. So we need to pass a copy to PolicySetEvaluator.getInstance(() to avoid that
+				 * This child PolicySet may have PoliSetIdReferences as well and
+				 * therefore update the policySetRefChain and
+				 * staticallyReferencedPolicies. However, if the current
+				 * policySetRefChain is updated directly by a child PolicySet
+				 * instantiation, then it is no longer valid for the other child
+				 * PolicySets of this same PolicySet. So we need to pass a copy
+				 * to PolicySetEvaluator.getInstance(() to avoid that
 				 * inconsistency.
 				 */
 				final COMBINED_ELT childElement = policyEvaluatorFactory.getChildPolicySetEvaluator(childIndex,
@@ -2338,8 +2435,9 @@ public final class PolicyEvaluators
 			}
 
 			/*
-			 * Why isn't there any VariableDefinition in XACML PolicySet defined by OASIS XACML 3.0 spec, like in
-			 * Policy? If there were, the following code would be used (same as in PolicyEvaluator class).
+			 * Why isn't there any VariableDefinition in XACML PolicySet defined
+			 * by OASIS XACML 3.0 spec, like in Policy? If there were, the
+			 * following code would be used (same as in PolicyEvaluator class).
 			 */
 			// else if (policySetChildElt instanceof VariableDefinition)
 			// {
@@ -2385,9 +2483,11 @@ public final class PolicyEvaluators
 		}
 
 		/*
-		 * Why isn't there any VariableDefinition in XACML PolicySet like in Policy? If there were, the final following
-		 * code would be used: We are done parsing expressions in this policy, including VariableReferences, it's time
-		 * to remove variables scoped to this policy from the variable manager
+		 * Why isn't there any VariableDefinition in XACML PolicySet like in
+		 * Policy? If there were, the final following code would be used: We are
+		 * done parsing expressions in this policy, including
+		 * VariableReferences, it's time to remove variables scoped to this
+		 * policy from the variable manager
 		 */
 		// for (final String varId : variableIds)
 		// {
@@ -2405,25 +2505,32 @@ public final class PolicyEvaluators
 	 * @param policyElement
 	 *            PolicySet (XACML) without any dynamic policy references
 	 * @param parentDefaultXPathCompiler
-	 *            XPath compiler corresponding to parent PolicySet's default XPath version, or null if either no parent
-	 *            or no default XPath version defined in parent
+	 *            XPath compiler corresponding to parent PolicySet's default
+	 *            XPath version, or null if either no parent or no default XPath
+	 *            version defined in parent
 	 * @param namespacePrefixesByURI
-	 *            namespace prefix-URI mappings from the original XACML PolicySet (XML) document, to be used for
-	 *            namespace-aware XPath evaluation; null or empty iff XPath support disabled
+	 *            namespace prefix-URI mappings from the original XACML
+	 *            PolicySet (XML) document, to be used for namespace-aware XPath
+	 *            evaluation; null or empty iff XPath support disabled
 	 * @param expressionFactory
 	 *            Expression factory/parser
 	 * @param combiningAlgorithmRegistry
 	 *            policy/rule combining algorithm registry
 	 * @param refPolicyProvider
-	 *            static policy-by-reference (Policy(Set)IdReference) Provider - all references statically resolved - to
-	 *            find references used in this policyset
+	 *            static policy-by-reference (Policy(Set)IdReference) Provider -
+	 *            all references statically resolved - to find references used
+	 *            in this policyset
 	 * @param policySetRefChain
-	 *            chain of ancestor PolicySetIdReferences leading to this PolicySet, if any: PolicySet Ref 1 ->
-	 *            PolicySet Ref 2 -> ... -> Ref n -> this. This allows to detect circular references and validate the
-	 *            size of the chain against the max depth enforced by {@code refPolicyProvider}. This may be null if no
-	 *            ancestor, e.g. a PolicySetIdReference in a top-level PolicySet. Beware that we only keep the IDs in
-	 *            the chain, and not the version, because we consider that a reference loop on the same policy ID is not
-	 *            allowed, no matter what the version is.
+	 *            chain of ancestor PolicySetIdReferences leading to this
+	 *            PolicySet, if any: PolicySet Ref 1 -> PolicySet Ref 2 -> ...
+	 *            -> Ref n -> this. This allows to detect circular references
+	 *            and validate the size of the chain against the max depth
+	 *            enforced by {@code refPolicyProvider}. This may be null if no
+	 *            ancestor, e.g. a PolicySetIdReference in a top-level
+	 *            PolicySet. Beware that we only keep the IDs in the chain, and
+	 *            not the version, because we consider that a reference loop on
+	 *            the same policy ID is not allowed, no matter what the version
+	 *            is.
 	 * @return instance
 	 * @throws java.lang.IllegalArgumentException
 	 *             if any argument (e.g. {@code policyElement}) is invalid
@@ -2432,7 +2539,7 @@ public final class PolicyEvaluators
 			final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry,
 			final StaticRefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain)
-			throws IllegalArgumentException
+					throws IllegalArgumentException
 	{
 		if (policyElement == null)
 		{
@@ -2452,24 +2559,31 @@ public final class PolicyEvaluators
 	 * @param policyElement
 	 *            PolicySet (XACML)
 	 * @param parentDefaultXPathCompiler
-	 *            XPath compiler corresponding to parent PolicySet's default XPath version, or null if either no parent
-	 *            or no default XPath version defined in parent
+	 *            XPath compiler corresponding to parent PolicySet's default
+	 *            XPath version, or null if either no parent or no default XPath
+	 *            version defined in parent
 	 * @param namespacePrefixesByURI
-	 *            namespace prefix-URI mappings from the original XACML PolicySet (XML) document, to be used for
-	 *            namespace-aware XPath evaluation; null or empty iff XPath support disabled
+	 *            namespace prefix-URI mappings from the original XACML
+	 *            PolicySet (XML) document, to be used for namespace-aware XPath
+	 *            evaluation; null or empty iff XPath support disabled
 	 * @param expressionFactory
 	 *            Expression factory/parser
 	 * @param combiningAlgorithmRegistry
 	 *            policy/rule combining algorithm registry
 	 * @param refPolicyProvider
-	 *            policy-by-reference (Policy(Set)IdReference) Provider to find references used in this policyset
+	 *            policy-by-reference (Policy(Set)IdReference) Provider to find
+	 *            references used in this policyset
 	 * @param policySetRefChain
-	 *            chain of ancestor PolicySetIdReferences leading to this PolicySet, if any: PolicySet Ref 1 ->
-	 *            PolicySet Ref 2 -> ... -> Ref n -> this. This allows to detect circular references and validate the
-	 *            size of the chain against the max depth enforced by {@code refPolicyProvider}. This may be null if no
-	 *            ancestor, e.g. a PolicySetIdReference in a top-level PolicySet. Beware that we only keep the IDs in
-	 *            the chain, and not the version, because we consider that a reference loop on the same policy ID is not
-	 *            allowed, no matter what the version is.
+	 *            chain of ancestor PolicySetIdReferences leading to this
+	 *            PolicySet, if any: PolicySet Ref 1 -> PolicySet Ref 2 -> ...
+	 *            -> Ref n -> this. This allows to detect circular references
+	 *            and validate the size of the chain against the max depth
+	 *            enforced by {@code refPolicyProvider}. This may be null if no
+	 *            ancestor, e.g. a PolicySetIdReference in a top-level
+	 *            PolicySet. Beware that we only keep the IDs in the chain, and
+	 *            not the version, because we consider that a reference loop on
+	 *            the same policy ID is not allowed, no matter what the version
+	 *            is.
 	 * @return instance
 	 * @throws java.lang.IllegalArgumentException
 	 *             if any argument (e.g. {@code policyElement}) is invalid
@@ -2478,7 +2592,7 @@ public final class PolicyEvaluators
 			final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry,
 			final RefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain)
-			throws IllegalArgumentException
+					throws IllegalArgumentException
 	{
 		if (policyElement == null)
 		{
