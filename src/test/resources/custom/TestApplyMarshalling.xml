@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
-    <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
-        <AttributeDesignator AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role"
-            Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
-            DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
-    </Apply>
-    <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">doctor</AttributeValue>
-</Apply>
