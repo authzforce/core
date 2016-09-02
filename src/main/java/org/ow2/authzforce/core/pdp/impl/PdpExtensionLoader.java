@@ -33,6 +33,8 @@ import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.koloboke.collect.map.hash.HashObjObjMaps;
 import com.koloboke.collect.set.hash.HashObjSets;
 
@@ -46,42 +48,34 @@ public final class PdpExtensionLoader
 	// private static final Logger LOGGER = LoggerFactory.getLogger(PdpExtensionLoader.class);
 
 	/*
-	 * For each type of extension, we build the maps allowing to get the compatible/supporting extension class, using
-	 * {@link ServiceLoader} API, to discover these classes from files
-	 * 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' on the classpath, in the format described by
-	 * {@link ServiceLoader} API documentation.
+	 * For each type of extension, we build the maps allowing to get the compatible/supporting extension class, using {@link ServiceLoader} API, to discover these classes from files
+	 * 'META-INF/services/org.ow2.authzforce.core.pdp.api.PdpExtension' on the classpath, in the format described by {@link ServiceLoader} API documentation.
 	 */
 
 	/**
 	 * Types of zero-conf (non-JAXB-bound) extension
 	 */
-	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = HashObjSets
-			.newImmutableSet(Arrays.asList(DatatypeFactory.class, Function.class, CombiningAlg.class,
-					RequestFilter.Factory.class, DecisionResultFilter.class));
+	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = HashObjSets.newImmutableSet(Arrays.asList(DatatypeFactory.class, Function.class, CombiningAlg.class,
+			RequestFilter.Factory.class, DecisionResultFilter.class));
 
 	/*
-	 * For each type of zero-conf (non-JAXB-bound) extension, have a map (extension ID -> extension instance), so that
-	 * the extension ID is scoped to the extension type among the ones listed in NON_JAXB_BOUND_EXTENSION_CLASSES (you
-	 * can have same ID but for different types of extensions).
+	 * For each type of zero-conf (non-JAXB-bound) extension, have a map (extension ID -> extension instance), so that the extension ID is scoped to the extension type among the ones listed in
+	 * NON_JAXB_BOUND_EXTENSION_CLASSES (you can have same ID but for different types of extensions).
 	 */
 	private final static Map<Class<? extends PdpExtension>, Map<String, PdpExtension>> NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID;
 
 	/*
-	 * For each type of XML/JAXB-bound extension, map XML/JAXB configuration class to corresponding extension (we assume
-	 * a one-to-one relationship between the XML/JAXB type and the extension class)
+	 * For each type of XML/JAXB-bound extension, map XML/JAXB configuration class to corresponding extension (we assume a one-to-one relationship between the XML/JAXB type and the extension class)
 	 */
 	private final static Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS;
 
 	static
 	{
-		final Map<Class<? extends PdpExtension>, Map<String, PdpExtension>> mutableNonJaxbBoundExtMapByClassAndId = HashObjObjMaps
-				.newUpdatableMap();
-		final Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> mutableJaxbBoundExtMapByClass = HashObjObjMaps
-				.newUpdatableMap();
+		final Table<Class<? extends PdpExtension>, String, PdpExtension> mutableNonJaxbBoundExtMapByClassAndId = HashBasedTable.create();
+		final Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> mutableJaxbBoundExtMapByClass = HashObjObjMaps.newUpdatableMap();
 
 		/*
-		 * REMINDER: every service provider (implementation class) loaded by ServiceLoader MUST HAVE a ZERO-ARGUMENT
-		 * CONSTRUCTOR.
+		 * REMINDER: every service provider (implementation class) loaded by ServiceLoader MUST HAVE a ZERO-ARGUMENT CONSTRUCTOR.
 		 */
 		final ServiceLoader<PdpExtension> extensionLoader = ServiceLoader.load(PdpExtension.class);
 		for (final PdpExtension extension : extensionLoader)
@@ -90,12 +84,10 @@ public final class PdpExtensionLoader
 			if (extension instanceof JaxbBoundPdpExtension<?>)
 			{
 				final JaxbBoundPdpExtension<?> jaxbBoundExt = (JaxbBoundPdpExtension<?>) extension;
-				final JaxbBoundPdpExtension<?> conflictingExt = mutableJaxbBoundExtMapByClass
-						.put(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
+				final JaxbBoundPdpExtension<?> conflictingExt = mutableJaxbBoundExtMapByClass.put(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
 				if (conflictingExt != null)
 				{
-					throw new IllegalArgumentException("Extension " + jaxbBoundExt + " (" + jaxbBoundExt.getClass()
-							+ ") is conflicting with " + conflictingExt + "(" + conflictingExt.getClass()
+					throw new IllegalArgumentException("Extension " + jaxbBoundExt + " (" + jaxbBoundExt.getClass() + ") is conflicting with " + conflictingExt + "(" + conflictingExt.getClass()
 							+ ") for the same XML/JAXB configuration class: " + jaxbBoundExt.getJaxbClass());
 				}
 
@@ -107,23 +99,10 @@ public final class PdpExtensionLoader
 				{
 					if (extClass.isInstance(extension))
 					{
-						final Map<String, PdpExtension> oldMap = mutableNonJaxbBoundExtMapByClassAndId.get(extClass);
-						final Map<String, PdpExtension> newMap;
-						if (oldMap == null)
-						{
-							newMap = HashObjObjMaps.newUpdatableMap();
-							mutableNonJaxbBoundExtMapByClassAndId.put(extClass, newMap);
-						}
-						else
-						{
-							newMap = oldMap;
-						}
-
-						final PdpExtension conflictingExt = newMap.put(extension.getId(), extension);
+						final PdpExtension conflictingExt = mutableNonJaxbBoundExtMapByClassAndId.put(extClass, extension.getId(), extension);
 						if (conflictingExt != null)
 						{
-							throw new IllegalArgumentException("Extension " + extension + " is conflicting with "
-									+ conflictingExt + " registered with same ID: " + extension.getId());
+							throw new IllegalArgumentException("Extension " + extension + " is conflicting with " + conflictingExt + " registered with same ID: " + extension.getId());
 						}
 
 						isValidExt = true;
@@ -134,13 +113,11 @@ public final class PdpExtensionLoader
 
 			if (!isValidExt)
 			{
-				throw new UnsupportedOperationException("Unsupported/invalid type of PDP extension: "
-						+ extension.getClass() + " (extension ID = " + extension.getId() + ")");
+				throw new UnsupportedOperationException("Unsupported/invalid type of PDP extension: " + extension.getClass() + " (extension ID = " + extension.getId() + ")");
 			}
 		}
 
-		NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID = HashObjObjMaps
-				.newImmutableMap(mutableNonJaxbBoundExtMapByClassAndId);
+		NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID = HashObjObjMaps.newImmutableMap(mutableNonJaxbBoundExtMapByClassAndId.rowMap());
 		JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS = HashObjObjMaps.newImmutableMap(mutableJaxbBoundExtMapByClass);
 	}
 
@@ -155,27 +132,22 @@ public final class PdpExtensionLoader
 	}
 
 	/**
-	 * Get non-JAXB-bound (aka zero-configuration) extension identifiers. Used by PAPs for instance, to get the list of
-	 * extensions supported by the PDP before modifying PDP's configuration
+	 * Get non-JAXB-bound (aka zero-configuration) extension identifiers. Used by PAPs for instance, to get the list of extensions supported by the PDP before modifying PDP's configuration
 	 *
 	 * @param extensionType
 	 *            type of extension: {@link DatatypeFactory }, {@link Function}, {@link CombiningAlg}, etc.
-	 * @return unmodifiable set of supported non-JAXB bound extension IDs; may be empty (not null) if no extension
-	 *         available for this type
+	 * @return unmodifiable set of supported non-JAXB bound extension IDs; may be empty (not null) if no extension available for this type
 	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code extensionType} is not a valid extension type
 	 */
-	public static <T extends PdpExtension> Set<String> getNonJaxbBoundExtensionIDs(final Class<T> extensionType)
-			throws IllegalArgumentException
+	public static <T extends PdpExtension> Set<String> getNonJaxbBoundExtensionIDs(final Class<T> extensionType) throws IllegalArgumentException
 	{
 		if (!NON_JAXB_BOUND_EXTENSION_CLASSES.contains(extensionType))
 		{
-			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType
-					+ ". Expected types: " + NON_JAXB_BOUND_EXTENSION_CLASSES);
+			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: " + NON_JAXB_BOUND_EXTENSION_CLASSES);
 		}
 
-		final Map<String, PdpExtension> typeSpecificExtsById = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID
-				.get(extensionType);
+		final Map<String, PdpExtension> typeSpecificExtsById = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.get(extensionType);
 		if (typeSpecificExtsById == null)
 		{
 			return Collections.emptySet();
@@ -191,22 +163,18 @@ public final class PdpExtensionLoader
 	 *            type of extension: {@link DatatypeFactory}, {@link Function}, etc.
 	 * @param id
 	 *            extension ID
-	 * @return PDP extension instance of class {@code extensionType} and such that its method
-	 *         {@link PdpExtension#getId()} returns {@code id}
+	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link PdpExtension#getId()} returns {@code id}
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is not any extension found for type {@code extensionType} with ID {@code id}
 	 */
-	public static <T extends PdpExtension> T getExtension(final Class<T> extensionType, final String id)
-			throws IllegalArgumentException
+	public static <T extends PdpExtension> T getExtension(final Class<T> extensionType, final String id) throws IllegalArgumentException
 	{
 		if (!NON_JAXB_BOUND_EXTENSION_CLASSES.contains(extensionType))
 		{
-			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType
-					+ ". Expected types: " + NON_JAXB_BOUND_EXTENSION_CLASSES);
+			throw new IllegalArgumentException("Invalid (non-JAXB-bound) PDP extension type: " + extensionType + ". Expected types: " + NON_JAXB_BOUND_EXTENSION_CLASSES);
 		}
 
-		final Map<String, PdpExtension> typeSpecificExtsById = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID
-				.get(extensionType);
+		final Map<String, PdpExtension> typeSpecificExtsById = NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID.get(extensionType);
 		if (typeSpecificExtsById == null)
 		{
 			throw new IllegalArgumentException("No PDP extension of type '" + extensionType + "' found");
@@ -215,8 +183,7 @@ public final class PdpExtensionLoader
 		final PdpExtension ext = typeSpecificExtsById.get(id);
 		if (ext == null)
 		{
-			throw new IllegalArgumentException("No PDP extension of type '" + extensionType + "' found with ID: " + id
-					+ ". Expected IDs: " + typeSpecificExtsById.keySet());
+			throw new IllegalArgumentException("No PDP extension of type '" + extensionType + "' found with ID: " + id + ". Expected IDs: " + typeSpecificExtsById.keySet());
 		}
 
 		return extensionType.cast(ext);
@@ -226,23 +193,21 @@ public final class PdpExtensionLoader
 	 * Get XML/JAXB-bound extension
 	 *
 	 * @param extensionType
-	 *            type of extension, e.g.
-	 *            {@link org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule.Factory}, etc.
+	 *            type of extension, e.g. {@link org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule.Factory}, etc.
 	 * @param jaxbPdpExtensionClass
 	 *            JAXB class representing XML configuration type that the extension must support
-	 * @return PDP extension instance of class {@code extensionType} and such that its method
-	 *         {@link JaxbBoundPdpExtension#getClass()} returns {@code jaxbPdpExtensionClass}
+	 * @return PDP extension instance of class {@code extensionType} and such that its method {@link JaxbBoundPdpExtension#getClass()} returns {@code jaxbPdpExtensionClass}
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is no extension supporting {@code jaxbPdpExtensionClass}
 	 */
-	public static <JAXB_T extends AbstractPdpExtension, T extends JaxbBoundPdpExtension<JAXB_T>> T getJaxbBoundExtension(
-			final Class<T> extensionType, final Class<JAXB_T> jaxbPdpExtensionClass) throws IllegalArgumentException
+	public static <JAXB_T extends AbstractPdpExtension, T extends JaxbBoundPdpExtension<JAXB_T>> T getJaxbBoundExtension(final Class<T> extensionType, final Class<JAXB_T> jaxbPdpExtensionClass)
+			throws IllegalArgumentException
 	{
 		final JaxbBoundPdpExtension<?> ext = JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbPdpExtensionClass);
 		if (ext == null)
 		{
-			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: "
-					+ jaxbPdpExtensionClass + ". Expected types: " + JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
+			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: " + jaxbPdpExtensionClass + ". Expected types: "
+					+ JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
 		}
 
 		return extensionType.cast(ext);

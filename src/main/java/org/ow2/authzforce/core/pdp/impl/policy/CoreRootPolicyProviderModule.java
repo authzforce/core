@@ -146,13 +146,30 @@ public class CoreRootPolicyProviderModule implements StaticRootPolicyProviderMod
 	 *            global PDP configuration environment properties
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if {@code jaxbPolicySet} is null/invalid, or if {@code jaxbRefPolicyProviderConf != null || expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null}
-	 *             or no PolicySet matching {@code policySetRef} could be resolved by the refPolicyProvider
+	 *             if {@code jaxbPolicySet } null/invalid, or {@code expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null}; OR ({@©code
+	 *             jaxbRefPolicyProviderConf != null} AND (refPolicyProviderModFactory == null OR xacmlParserFactory == null OR no PolicySet matching {@code policySetRef} could be resolved by the
+	 *             refPolicyProvider OR policy reference too deep (longer than maxPolicySetRefDepth))
 	 */
 	public <CONF extends AbstractPolicyProvider> CoreRootPolicyProviderModule(final PolicySet jaxbPolicySet, final Map<String, String> namespacePrefixesByURI,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final XACMLParserFactory xacmlParserFactory, final CONF jaxbRefPolicyProviderConf,
 			final RefPolicyProviderModule.Factory<CONF> refPolicyProviderModFactory, final int maxPolicySetRefDepth, final EnvironmentProperties environmentProperties) throws IllegalArgumentException
 	{
+		if (jaxbRefPolicyProviderConf == null)
+		{
+			// refPolicyProvider null
+			try
+			{
+				rootPolicy = PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry, null, null);
+			}
+			catch (final IllegalArgumentException e)
+			{
+				throw new IllegalArgumentException("Invalid PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
+			}
+
+			return;
+		}
+
+		// jaxbRefPolicyProviderConf != null
 		try (final CloseableStaticRefPolicyProvider refPolicyProvider = new BaseStaticRefPolicyProvider(jaxbRefPolicyProviderConf, refPolicyProviderModFactory, xacmlParserFactory, expressionFactory,
 				combiningAlgRegistry, maxPolicySetRefDepth, environmentProperties))
 		{

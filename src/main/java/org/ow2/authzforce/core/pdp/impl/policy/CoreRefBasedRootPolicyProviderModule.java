@@ -45,6 +45,8 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
  */
 public class CoreRefBasedRootPolicyProviderModule implements StaticRootPolicyProviderModule
 {
+	private static final IllegalArgumentException NULL_REF_POLICY_PROVIDER_CONF = new IllegalArgumentException("Undefined refPolicyProvider. Root policy provider module '"
+			+ CoreRefBasedRootPolicyProviderModule.class + "' requires a refPolicyProvider module configuration to be defined.");
 	private static final IllegalArgumentException ILLEGAL_XML_CONF_ARG_EXCEPTION = new IllegalArgumentException("Undefined XML/JAXB configuration");
 	private static final IllegalArgumentException ILLEGAL_XACML_POLICY_REF_ARG_EXCEPTION = new IllegalArgumentException("Undefined XACML PolicySetIdReference");
 
@@ -101,13 +103,18 @@ public class CoreRefBasedRootPolicyProviderModule implements StaticRootPolicyPro
 	 * @param environmentProperties
 	 *            PDP configuration environment properties
 	 * @throws IllegalArgumentException
-	 *             if {@code policySetRef} is null/invalid, or if {@code jaxbRefPolicyProviderConf != null && (expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null)}
+	 *             if {@code policySetRef} is null/invalid, or if {@code jaxbRefPolicyProviderConf == null || expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null}
 	 *             or no PolicySet matching {@code policySetRef} could be resolved by the refPolicyProvider
 	 */
 	public <CONF extends AbstractPolicyProvider> CoreRefBasedRootPolicyProviderModule(final IdReferenceType policyRef, final ExpressionFactory expressionFactory,
 			final CombiningAlgRegistry combiningAlgRegistry, final XACMLParserFactory xacmlParserFactory, final CONF jaxbRefPolicyProviderConf,
 			final RefPolicyProviderModule.Factory<CONF> refPolicyProviderModFactory, final int maxPolicySetRefDepth, final EnvironmentProperties environmentProperties) throws IllegalArgumentException
 	{
+		if (jaxbRefPolicyProviderConf == null)
+		{
+			throw NULL_REF_POLICY_PROVIDER_CONF;
+		}
+
 		/*
 		 * The refPolicyProviderModule is not instantiated here but in the BaseRefPolicyProvider since it is the one using this resource (refPolicyProviderModule), therefore responsible for closing it
 		 * (call Closeable#close()) when it is done using them. We apply the basic principle that is the class creating the resource, that manages/closes it.

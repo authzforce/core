@@ -24,14 +24,15 @@ import java.util.Set;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry;
 
-import com.koloboke.collect.map.ObjObjMap;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.koloboke.collect.map.hash.HashObjObjMaps;
 import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
- * This is a base implementation of <code>PdpExtensionRegistry</code>. This should be used as basis to implement (in a
- * final class) an immutable PDP extension registry of a specific type. If you need a generic immutable PDP extension
- * registry, see {
+ * This is a base implementation of <code>PdpExtensionRegistry</code>. This should be used as basis to implement (in a final class) an immutable PDP extension registry of a specific type. If you need
+ * a generic immutable PDP extension registry, see {
  *
  * @param <T>
  *            type of extension in this registry
@@ -49,11 +50,10 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 	 *
 	 * @param extensionClass
 	 *            extension class
-	 * @param extensions
-	 *            extensions input map; the registry actually creates and uses an immutable copy of this map internally
-	 *            to avoid external modifications on the internal map
+	 * @param extensionsById
+	 *            extensions input map; the registry actually creates and uses an immutable copy of this map internally to avoid external modifications on the internal map
 	 */
-	protected BasePdpExtensionRegistry(Class<? super T> extensionClass, Map<String, T> extensionsById)
+	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Map<String, T> extensionsById)
 	{
 		assert extensionClass != null && extensionsById != null;
 
@@ -64,7 +64,7 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 
 	/** {@inheritDoc} */
 	@Override
-	public final T getExtension(String identity)
+	public final T getExtension(final String identity)
 	{
 		return extensionsById.get(identity);
 	}
@@ -76,15 +76,24 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 		return HashObjSets.newImmutableSet(extensionsById.values());
 	}
 
-	private static <E extends PdpExtension> Map<String, E> newImmutableMap(Set<E> extensions)
+	private static final class ExtensionToIdFunction<E extends PdpExtension> implements Function<E, String>
 	{
-		final ObjObjMap<String, E> mutableMap = HashObjObjMaps.newUpdatableMap(extensions.size());
-		for (final E extension : extensions)
+
+		@Override
+		public String apply(final E extension) throws NullPointerException
 		{
-			mutableMap.put(extension.getId(), extension);
+			assert extension != null;
+			return Preconditions.checkNotNull(extension, "One of the input extensions is invalid (null)").getId();
 		}
 
-		return HashObjObjMaps.newImmutableMap(mutableMap);
+	}
+
+	private static final Function<? extends PdpExtension, String> EXTENSION_TO_ID_FUNCTION = new ExtensionToIdFunction<>();
+
+	@SuppressWarnings("unchecked")
+	private static <E extends PdpExtension> Map<String, E> newImmutableMap(final Set<E> extensions)
+	{
+		return Maps.uniqueIndex(extensions, (Function<E, String>) EXTENSION_TO_ID_FUNCTION);
 	}
 
 	/**
@@ -95,7 +104,7 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 	 * @param extensions
 	 *            extensions (required not null)
 	 */
-	protected BasePdpExtensionRegistry(Class<? super T> extensionClass, Set<T> extensions)
+	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Set<T> extensions)
 	{
 		this(extensionClass, newImmutableMap(extensions));
 	}
