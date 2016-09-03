@@ -1,7 +1,7 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
-## 5.0.0
+## 5.0.1
 ### Fixed
 - #22 (OW2): When handling the same XACML Request twice in the same JVM with the root PolicySet using deny-unless-permit algorithm over a Policy returning simple Deny (no status/obligation/advice) and a Policy returning Permit/Deny with obligations/advice, the obligation is duplicated in the final result at the second time this situation occurs. 
 - XACML StatusCode XML serialization/marshalling error when Missing Attribute info that is no valid anyURI is returned by PDP in a Indeterminate Result
@@ -14,7 +14,7 @@ All notable changes to this project are documented in this file following the [K
 ### Changed
 - PDP XML configuration schema namespace: http://authzforce.github.io/core/xmlns/pdp/5.0 (previous namespace: http://authzforce.github.io/core/xmlns/pdp/3.6). See *Removed* section for non-backward-compatible changes to the schema.
 - Parent project version: authzforce-ce-parent: 3.4.0
-- Dependency version: authzforce-ce-core-pdp-api: ???: requires to pass new EnvironmentProperties parameter to AttributeProvider module factories for using global PDP environment properties (such as PDP configuration file's parent directory)
+- Dependency version: authzforce-ce-core-pdp-api: 7.1.0: requires to pass new EnvironmentProperties parameter to AttributeProvider module factories for using global PDP environment properties (such as PDP configuration file's parent directory)
 - Interpretation of XACML Request flag ReturnPolicyId=true, considering a policy "applicable" if and only if the decision is not NotApplicable and if it is not a root policy, the same goes for the enclosing policy. See also the discussion on the xacml-comment mailing list: https://lists.oasis-open.org/archives/xacml-comment/201605/msg00004.html
 
 ### Added
