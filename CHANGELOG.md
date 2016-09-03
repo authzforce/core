@@ -12,12 +12,15 @@ All notable changes to this project are documented in this file following the [K
 - 'functionSet' element no longer supported in PDP XML configuration schema
 
 ### Changed
+- PDP XML configuration schema namespace: http://authzforce.github.io/core/xmlns/pdp/5.0 (previous namespace: http://authzforce.github.io/core/xmlns/pdp/3.6). See *Removed* section for non-backward-compatible changes to the schema.
 - Parent project version: authzforce-ce-parent: 3.4.0
 - Dependency version: authzforce-ce-core-pdp-api: ???: requires to pass new EnvironmentProperties parameter to AttributeProvider module factories for using global PDP environment properties (such as PDP configuration file's parent directory)
 - Interpretation of XACML Request flag ReturnPolicyId=true, considering a policy "applicable" if and only if the decision is not NotApplicable and if it is not a root policy, the same goes for the enclosing policy. See also the discussion on the xacml-comment mailing list: https://lists.oasis-open.org/archives/xacml-comment/201605/msg00004.html
 
 ### Added
-- New feature enabled by PDP configuration parameter:  enum 'standardEnvAttributeSource' to set the source for the Standard Current Time Environment Attribute values (current-date, current-time, current-dateTime): PDP_ONLY, REQUEST_ELSE_PDP, REQUEST_ONLY
+- New PDP configuration parameter: 'standardEnvAttributeSource' (enum) sets the source for the Standard Current Date/Time Environment Attribute values (current-date, current-time, current-dateTime), possible values: PDP_ONLY, REQUEST_ELSE_PDP, REQUEST_ONLY
+- New PDP configuration parameter: 'badRequestStatusDetailLevel': Level of detail in the StatusDetail returned in Indeterminate Results when the XACML Request syntax/content is invalid. Increasing this value usually helps better pinpoint the issue with the Request.
+- 
 - enum StandardFunction that enumerates all standard XACML function IDs
 - enum StandardEnvironmentAttribute that enumerates all XACML standard environment attribute identifiers
 - enum StandardCombiningAlgoritm that enumerates all standard XACML combining algorithms
