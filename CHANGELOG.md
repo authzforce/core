@@ -20,7 +20,6 @@ All notable changes to this project are documented in this file following the [K
 ### Added
 - New PDP configuration parameter: 'standardEnvAttributeSource' (enum) sets the source for the Standard Current Date/Time Environment Attribute values (current-date, current-time, current-dateTime), possible values: PDP_ONLY, REQUEST_ELSE_PDP, REQUEST_ONLY
 - New PDP configuration parameter: 'badRequestStatusDetailLevel': Level of detail in the StatusDetail returned in Indeterminate Results when the XACML Request syntax/content is invalid. Increasing this value usually helps better pinpoint the issue with the Request.
-- 
 - enum StandardFunction that enumerates all standard XACML function IDs
 - enum StandardEnvironmentAttribute that enumerates all XACML standard environment attribute identifiers
 - enum StandardCombiningAlgoritm that enumerates all standard XACML combining algorithms
