@@ -44,7 +44,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
  *
  * @version $Id: $
  */
-public final class MatchEvaluator {
+public final class MatchEvaluator
+{
 
 	private static final IllegalArgumentException NULL_XACML_MATCH_ARGUMENT_EXCEPTION = new IllegalArgumentException(
 			"Undefined input XACML Match element");
@@ -70,15 +71,18 @@ public final class MatchEvaluator {
 	 *            XPath compiler corresponding to enclosing policy(set) default
 	 *            XPath version
 	 * @throws java.lang.IllegalArgumentException
-	 *             invalid <code>jaxbMatch</code>
+	 *             null {@code expFactory} or null/empty {@code jaxbMatch}
 	 */
 	public MatchEvaluator(final Match jaxbMatch, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory)
-			throws IllegalArgumentException {
-		if (jaxbMatch == null) {
+			throws IllegalArgumentException
+	{
+		if (jaxbMatch == null)
+		{
 			throw NULL_XACML_MATCH_ARGUMENT_EXCEPTION;
 		}
 
-		if (expFactory == null) {
+		if (expFactory == null)
+		{
 			throw NULL_XACML_EXPRESSION_FACTORY_ARGUMENT_EXCEPTION;
 		}
 
@@ -86,7 +90,8 @@ public final class MatchEvaluator {
 		// Target matchFunction
 		final String matchId = jaxbMatch.getMatchId();
 		final Function<?> matchFunction = expFactory.getFunction(matchId);
-		if (matchFunction == null) {
+		if (matchFunction == null)
+		{
 			throw new IllegalArgumentException("Unsupported function for MatchId: " + matchId);
 		}
 
@@ -99,9 +104,12 @@ public final class MatchEvaluator {
 
 		final AttributeValueType attributeValue = jaxbMatch.getAttributeValue();
 		final Expression<? extends AttributeValue> attrValueExpr;
-		try {
+		try
+		{
 			attrValueExpr = expFactory.getInstance(attributeValue, xPathCompiler);
-		} catch (final IllegalArgumentException e) {
+		}
+		catch (final IllegalArgumentException e)
+		{
 			throw new IllegalArgumentException("Invalid <Match>'s <AttributeValue>", e);
 		}
 
@@ -110,16 +118,20 @@ public final class MatchEvaluator {
 		// attributeValue, bagExpression)
 		final Function<BooleanValue> anyOfFunc = (Function<BooleanValue>) expFactory
 				.getFunction(StandardFunction.ANY_OF.getId());
-		if (anyOfFunc == null) {
+		if (anyOfFunc == null)
+		{
 			throw new IllegalArgumentException(
 					"Unsupported function '" + StandardFunction.ANY_OF.getId() + "' required for Match evaluation");
 		}
 
 		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr,
 				bagExpression);
-		try {
+		try
+		{
 			this.anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
-		} catch (final IllegalArgumentException e) {
+		}
+		catch (final IllegalArgumentException e)
+		{
 			throw new IllegalArgumentException(
 					"Invalid inputs (Expressions) to the Match (validated using the equivalent standard 'any-of' function definition): "
 							+ anyOfFuncInputs,
@@ -138,11 +150,15 @@ public final class MatchEvaluator {
 	 *             error occurred evaluating the Match element in this
 	 *             evaluation {@code context}
 	 */
-	public boolean match(final EvaluationContext context) throws IndeterminateEvaluationException {
+	public boolean match(final EvaluationContext context) throws IndeterminateEvaluationException
+	{
 		final BooleanValue anyOfFuncCallResult;
-		try {
+		try
+		{
 			anyOfFuncCallResult = anyOfFuncCall.evaluate(context);
-		} catch (final IndeterminateEvaluationException e) {
+		}
+		catch (final IndeterminateEvaluationException e)
+		{
 			throw new IndeterminateEvaluationException("Error evaluating Match (with equivalent 'any-of' function)",
 					e.getStatusCode(), e);
 		}

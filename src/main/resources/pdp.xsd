@@ -125,7 +125,7 @@
 							'com.example.FooFunction' -
 							on the classpath implementing
 							interface
-							'com.sun.xacml.Function' with zero-arg constructor, such
+							'org.ow2.authzforce.core.pdp.api.func.Function' with zero-arg constructor, such
 							that this URI equals: new
 							com.example.FooFunction().getId().
 						</documentation>
@@ -139,7 +139,7 @@
 							'com.example.FooCombiningAlg' - on the
 							classpath
 							implementing interface
-							'org.ow2.authzforce.core.pdp.api.CombiningAlg' with
+							'org.ow2.authzforce.core.pdp.api.combining.CombiningAlg' with
 							zero-arg
 							constructor,
 							such that this URI equals: new
@@ -157,7 +157,7 @@
 							the
 							classpath
 							implementing interface
-							'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;'
+							'org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule.Factory&lt;CONF_T&gt;'
 							with zero-arg constructor, where CONF_T is the JAXB type bound
 							to
 							this XML
@@ -180,7 +180,7 @@
 								PDP
 								configuration file, so that Policy Provider
 								implementations can use
-								org.ow2.authzforce.pd.api.EnvironmentProperties#replacePlaceholders()
+								org.ow2.authzforce.pdp.api.EnvironmentProperties#replacePlaceholders()
 								to
 								replace ${PARENT_DIR} placeholder with this
 								value, and
@@ -212,13 +212,13 @@
 							say
 							'com.example.FooRootPolicyProviderModuleFactory' - on the
 							classpath implementing interface
-							'org.ow2.authzforce.core.pdp.api.RootPolicyProviderModule.Factory&lt;CONF_T&gt;'
+							'org.ow2.authzforce.core.pdp.api.policy.RootPolicyProviderModule.Factory&lt;CONF_T&gt;'
 							with
 							zero-arg
 							constructor, where CONF_T is the JAXB type bound to
 							this XML element type.
 							This class may also implement
-							'org.ow2.authzforce.core.pdp.api.RefPolicyProviderModule.Factory&lt;CONF_T&gt;'
+							'org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule.Factory&lt;CONF_T&gt;'
 							to
 							be used
 							as
@@ -236,7 +236,7 @@
 								PDP
 								configuration file, so that Policy Provider
 								implementations can use
-								org.ow2.authzforce.pd.api.EnvironmentProperties#replacePlaceholders()
+								org.ow2.authzforce.pdp.api.EnvironmentProperties#replacePlaceholders()
 								to
 								replace ${PARENT_DIR} placeholder with this
 								value, and
@@ -345,7 +345,7 @@
 	             it performs better and is recommended when all AttributeDesignators have an Issuer (best practice). Indeed, the XACML 3.0 Attribute Evaluation section
 	             §5.29 says: "If the Issuer is not present in the AttributeDesignator, then the matching of the
 	             attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone." 
-	             Therefore, if strictAttributeIssuerMatch is false, since policies may use AttributeDesignators without Issuer,
+	             Therefore, if 'strictAttributeIssuerMatch' is false, since policies may use AttributeDesignators without Issuer,
 	             if the requests are using matching Attributes but with none, one or more different Issuers, this PDP
 	             engine has to gather all the values from all the attributes with matching Category/AttributeId but
 	             with any Issuer or no Issuer. Therefore, in order to stay compliant with §5.29 and still enforce best
@@ -401,8 +401,8 @@
 							Request. At
 							the end,
 							the results (one per Individual Decision
-							Request) may be combined by a DecisionCombiner specified by next
-							attribute 'decisionCombiner'.
+							Request) may be combined by a ResultFilter specified by next
+							attribute 'resultFilter'.
 						</p>
 						<p>There must be one and only one Java class - say
 							'com.example.FooRequestFilter' - on the classpath implementing

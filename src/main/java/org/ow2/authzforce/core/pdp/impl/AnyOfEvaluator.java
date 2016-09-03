@@ -45,24 +45,29 @@ public final class AnyOfEvaluator
 	private static final IllegalArgumentException NO_ALL_OF_EXCEPTION = new IllegalArgumentException(
 			"<AnyOf> empty. Must contain at least one <AllOf>");
 
-	// Store the list of AllOf as evaluatable AllOf types to avoid casting from JAXB AllOfType
+	// Store the list of AllOf as evaluatable AllOf types to avoid casting from
+	// JAXB AllOfType
 	// during evaluation
 	private final transient List<AllOfEvaluator> evaluatableAllOfList;
 
 	/**
-	 * Constructor that creates a new <code>AnyOf</code> evaluator based on the given XACML-schema-derived JAXB AnyOf.
+	 * Constructor that creates a new <code>AnyOf</code> evaluator based on the
+	 * given XACML-schema-derived JAXB AnyOf.
 	 *
 	 * @param jaxbAllOfList
 	 *            JAXB AllOf elements
 	 * @param xPathCompiler
-	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+	 *            XPath compiler corresponding to enclosing policy(set) default
+	 *            XPath version
 	 * @param expFactory
 	 *            Expression factory
 	 * @throws java.lang.IllegalArgumentException
-	 *             if one of the child AllOf elements is invalid
+	 *             null {@code expFactory} or null/empty {@code jaxbAllOfList}
+	 *             or one of the child Match elements in one of the AllOf
+	 *             elements of {@code jaxbAllOfList} is invalid
 	 */
-	public AnyOfEvaluator(List<AllOf> jaxbAllOfList, XPathCompiler xPathCompiler, ExpressionFactory expFactory)
-			throws IllegalArgumentException
+	public AnyOfEvaluator(final List<AllOf> jaxbAllOfList, final XPathCompiler xPathCompiler,
+			final ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		if (jaxbAllOfList == null || jaxbAllOfList.isEmpty())
 		{
@@ -78,7 +83,7 @@ public final class AnyOfEvaluator
 			{
 				allOfEvaluator = new AllOfEvaluator(jaxbAllOf.getMatches(), xPathCompiler, expFactory);
 			}
-			catch (IllegalArgumentException e)
+			catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Invalid <AnyOf>'s <AllOf>#" + matchIndex, e);
 			}
@@ -89,8 +94,9 @@ public final class AnyOfEvaluator
 	}
 
 	/**
-	 * Determines whether this <code>AnyOf</code> matches the input request (whether it is applicable). If all the AllOf
-	 * values is No_Match so it's a No_Match. If all matches it's a Match. If None matches and at least one
+	 * Determines whether this <code>AnyOf</code> matches the input request
+	 * (whether it is applicable). If all the AllOf values is No_Match so it's a
+	 * No_Match. If all matches it's a Match. If None matches and at least one
 	 * “Indeterminate�? it's Indeterminate
 	 *
 	 * <pre>
@@ -107,7 +113,7 @@ public final class AnyOfEvaluator
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if Indeterminate
 	 */
-	public boolean match(EvaluationContext context) throws IndeterminateEvaluationException
+	public boolean match(final EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		// atLeastOneIndeterminate = true iff lastIndeterminate != null
 		IndeterminateEvaluationException lastIndeterminate = null;
@@ -129,15 +135,17 @@ public final class AnyOfEvaluator
 				isMatched = allOfEvaluator.match(context);
 				if (LOGGER.isDebugEnabled())
 				{
-					// Beware of autoboxing which causes call to Boolean.valueOf(...), Integer.valueOf(...)
+					// Beware of autoboxing which causes call to
+					// Boolean.valueOf(...), Integer.valueOf(...)
 					LOGGER.debug("AnyOf/AllOf#{} -> {}", childIndex, isMatched);
 				}
 			}
-			catch (IndeterminateEvaluationException e)
+			catch (final IndeterminateEvaluationException e)
 			{
 				if (LOGGER.isDebugEnabled())
 				{
-					// Beware of autoboxing which causes call to Integer.valueOf(...)
+					// Beware of autoboxing which causes call to
+					// Integer.valueOf(...)
 					LOGGER.debug("AnyOf/AllOf#{} -> Indeterminate", childIndex, e);
 				}
 				lastIndeterminate = e;
@@ -165,7 +173,8 @@ public final class AnyOfEvaluator
 			return false;
 		}
 
-		// No Match and at least one Indeterminate (lastIndeterminate != null) -> Indeterminate
+		// No Match and at least one Indeterminate (lastIndeterminate != null)
+		// -> Indeterminate
 		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex,
 				lastIndeterminate.getStatusCode(), lastIndeterminate);
 	}
