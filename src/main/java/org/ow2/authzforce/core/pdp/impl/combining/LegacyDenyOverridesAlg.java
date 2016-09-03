@@ -18,15 +18,12 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
 
 /**
  * This is the standard Deny-Overrides and Ordered-Deny-Overrides combining algorithm. It allows a single evaluation of Deny to take precedence over any number of permit, not applicable or
@@ -34,35 +31,13 @@ import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
  *
  * @version $Id: $
  */
-public final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
+final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
 {
 	private static final String LEGACY_ALG_WARNING = "%s is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
 
-	/**
-	 * The standard URIs used to identify this algorithm
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:deny-overrides",
-			"urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:deny-overrides", "urn:oasis:names:tc:xacml:1.1:policy-combining-algorithm:ordered-deny-overrides",
-			"urn:oasis:names:tc:xacml:1.1:rule-combining-algorithm:ordered-deny-overrides" };
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgSet SET;
-	static
-	{
-		final Set<CombiningAlg<?>> algSet = new HashSet<>();
-		for (final String algId : SUPPORTED_IDENTIFIERS)
-		{
-			algSet.add(new LegacyDenyOverridesAlg(algId));
-		}
-
-		SET = new CombiningAlgSet(algSet);
-	}
-
 	private final UnsupportedOperationException unsupportedLegacyAlgorithmException;
 
-	private LegacyDenyOverridesAlg(String algId)
+	LegacyDenyOverridesAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 		this.unsupportedLegacyAlgorithmException = new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this));
@@ -70,7 +45,7 @@ public final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params, final List<? extends Decidable> combinedElements)
 	{
 		throw this.unsupportedLegacyAlgorithmException;
 		/*

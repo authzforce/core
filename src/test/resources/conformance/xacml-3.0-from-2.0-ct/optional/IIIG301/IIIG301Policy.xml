@@ -128,7 +128,7 @@
         <Rule Effect="Deny" RuleId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG301:rule5">
             <Description>
                 A subject whose name is Julius Hibbert may not
-                perform any action on any resource.  DENY.
+                perform any action on any resource.  DENY. But not evaluated since previous policy returns Deny -> enclosing policy alg deny-overrides returns Deny
             </Description>
             <Condition>
 			  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">

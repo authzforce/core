@@ -38,21 +38,16 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 /**
  * A class that implements the logical function "and".
  * <p>
- * From XACML core specification of function 'urn:oasis:names:tc:xacml:1.0:function:and': This function SHALL return "True" if it has no arguments and SHALL return "False" if one of its arguments
- * evaluates to "False". The order of evaluation SHALL be from first argument to last. The evaluation SHALL stop with a result of "False" if any argument evaluates to "False", leaving the rest of the
- * arguments unevaluated.
+ * From XACML core specification of function 'urn:oasis:names:tc:xacml:1.0:function:and': This function SHALL return
+ * "True" if it has no arguments and SHALL return "False" if one of its arguments evaluates to "False". The order of
+ * evaluation SHALL be from first argument to last. The evaluation SHALL stop with a result of "False" if any argument
+ * evaluates to "False", leaving the rest of the arguments unevaluated.
  *
  * 
  * @version $Id: $
  */
-public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
+final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
 {
-	/**
-	 * XACML standard identifier for the "and" logical function
-	 */
-	public static final String NAME_AND = XACML_NS_1_0 + "and";
-	private static final String INVALID_ARG_TYPE_MESSAGE_PREFIX = "Function " + NAME_AND + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
-	private static final String INDETERMINATE_ARG_MESSAGE_PREFIX = "Function " + NAME_AND + ": Indeterminate arg #";
 
 	private static final class CallFactory
 	{
@@ -62,24 +57,34 @@ public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunc
 		 * <ol>
 		 * <li>If any argument expression is constant BooleanAttributeValue False, return always False.</li>
 		 * <li>Else If all argument expressions are constant BooleanAttributeValue True, return always True.</li>
-		 * <li>
-		 * Else If any argument expression is constant BooleanAttributeValue True, remove it from the arguments, as it has no effect on the final result. Indeed, and function is commutative and
-		 * and(true, x, y...) = and(x, y...).</li>
+		 * <li>Else If any argument expression is constant BooleanAttributeValue True, remove it from the arguments, as
+		 * it has no effect on the final result. Indeed, and function is commutative and and(true, x, y...) = and(x,
+		 * y...).</li>
 		 * </ol>
-		 * The first two optimizations can be achieved by pre-evaluating the function call with context = null and check the result if no IndeterminateEvaluationException is thrown.
+		 * The first two optimizations can be achieved by pre-evaluating the function call with context = null and check
+		 * the result if no IndeterminateEvaluationException is thrown.
 		 */
 		private static final class Call extends FirstOrderFunctionCall<BooleanValue>
 		{
+			private final String invalidArgTypeMsgPrefix;
+			private final String indeterminateArgMsgPrefix;
+
 			private final List<Expression<?>> checkedArgExpressions;
 
-			private Call(FirstOrderFunctionSignature<BooleanValue> functionSig, List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+			private Call(final FirstOrderFunctionSignature<BooleanValue> functionSig,
+					final List<Expression<?>> argExpressions, final Datatype<?>[] remainingArgTypes)
+					throws IllegalArgumentException
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
+				invalidArgTypeMsgPrefix = "Function " + functionSig.getName() + ": Invalid type (expected = "
+						+ StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
+				indeterminateArgMsgPrefix = "Function " + functionSig.getName() + ": Indeterminate arg #";
 			}
 
 			@Override
-			public BooleanValue evaluate(EvaluationContext context, AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+			public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... remainingArgs)
+					throws IndeterminateEvaluationException
 			{
 				IndeterminateEvaluationException indeterminateException = null;
 				int argIndex = 0;
@@ -90,15 +95,17 @@ public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunc
 					try
 					{
 						attrVal = Expressions.eval(arg, context, StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
-						if (!attrVal.getUnderlyingValue())
+						if (!attrVal.getUnderlyingValue().booleanValue())
 						{
 							return BooleanValue.FALSE;
 						}
-					} catch (IndeterminateEvaluationException e)
+					}
+					catch (final IndeterminateEvaluationException e)
 					{
 						// keep the indeterminate error to throw later if there was not any FALSE in
 						// remaining args
-						indeterminateException = new IndeterminateEvaluationException(INDETERMINATE_ARG_MESSAGE_PREFIX + argIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
+						indeterminateException = new IndeterminateEvaluationException(
+								indeterminateArgMsgPrefix + argIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 
 					argIndex++;
@@ -115,12 +122,15 @@ public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunc
 						try
 						{
 							attrVal = BooleanValue.class.cast(arg);
-						} catch (ClassCastException e)
+						}
+						catch (final ClassCastException e)
 						{
-							throw new IndeterminateEvaluationException(INVALID_ARG_TYPE_MESSAGE_PREFIX + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
+							throw new IndeterminateEvaluationException(
+									invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(),
+									StatusHelper.STATUS_PROCESSING_ERROR, e);
 						}
 
-						if (!attrVal.getUnderlyingValue())
+						if (!attrVal.getUnderlyingValue().booleanValue())
 						{
 							return BooleanValue.FALSE;
 						}
@@ -142,12 +152,14 @@ public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunc
 
 		private final SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, BooleanValue> funcSig;
 
-		private CallFactory(SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, BooleanValue> functionSignature)
+		private CallFactory(
+				final SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, BooleanValue> functionSignature)
 		{
 			this.funcSig = functionSignature;
 		}
 
-		protected FirstOrderFunctionCall<BooleanValue> getInstance(final List<Expression<?>> argExpressions, Datatype<?>[] remainingArgTypes)
+		protected FirstOrderFunctionCall<BooleanValue> getInstance(final List<Expression<?>> argExpressions,
+				final Datatype<?>[] remainingArgTypes)
 		{
 			return new Call(funcSig, argExpressions, remainingArgTypes);
 		}
@@ -156,25 +168,17 @@ public final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunc
 
 	private final CallFactory funcCallFactory;
 
-	private LogicalAndFunction()
+	LogicalAndFunction(final String functionId)
 	{
-		super(NAME_AND, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true,
+				Arrays.asList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
 
-	/**
-	 * Singleton instance of "and" logical function
-	 */
-	public static final LogicalAndFunction INSTANCE = new LogicalAndFunction();
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions,
+			final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return this.funcCallFactory.getInstance(argExpressions, remainingArgTypes);
 	}

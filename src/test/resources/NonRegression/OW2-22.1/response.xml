@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+	<Result>
+		<Decision>Deny</Decision>
+		<Obligations>
+			<Obligation ObligationId="urn:ow2:authzforce:xacml:3.0:non-regression-test:22:PS1:policy2:obligation" />
+		</Obligations>
+	</Result>
+</Response>
+

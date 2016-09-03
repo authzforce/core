@@ -27,7 +27,6 @@ import org.ow2.authzforce.core.test.conformance.ConformanceV3FromV2Mandatory;
 import org.ow2.authzforce.core.test.conformance.ConformanceV3FromV2Optional;
 import org.ow2.authzforce.core.test.conformance.ConformanceV3Others;
 import org.ow2.authzforce.core.test.custom.CustomPdpTest;
-import org.ow2.authzforce.core.test.custom.TestApplyMarshalling;
 import org.ow2.authzforce.core.test.custom.TestPdpGetStaticApplicablePolicies;
 import org.ow2.authzforce.core.test.func.BagFunctionsTest;
 import org.ow2.authzforce.core.test.func.DateTimeArithmeticFunctionsTest;
@@ -51,16 +50,21 @@ import org.slf4j.LoggerFactory;
  * 
  * Main PDP core implementation test suite.
  * 
- * NB: {@link AnyURIAttributeTest} no longer useful and removed because we now refer to the definition of anyURI datatype given in XSD 1.1, which has the same value space as the string datatype. More
- * info in the XSD 1.1 datatypes document and SAXON documentation: http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html. Although XACML 3.0 still refers to XSD 1.0 and its
- * stricter definition of anyURI, we prefer to anticipate and use the definition from XSD 1.1 for XACML AttributeValues of datatype anyURI. However, this does not affect XACML schema validation of
- * Policy/PolicySet/Request documents, where the XSD 1.0 definition of anyURI still applies.
+ * NB: {@link AnyURIAttributeTest} no longer useful and removed because we now refer to the definition of anyURI
+ * datatype given in XSD 1.1, which has the same value space as the string datatype. More info in the XSD 1.1 datatypes
+ * document and SAXON documentation: http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html.
+ * Although XACML 3.0 still refers to XSD 1.0 and its stricter definition of anyURI, we prefer to anticipate and use the
+ * definition from XSD 1.1 for XACML AttributeValues of datatype anyURI. However, this does not affect XACML schema
+ * validation of Policy/PolicySet/Request documents, where the XSD 1.0 definition of anyURI still applies.
  */
 @RunWith(Suite.class)
-@SuiteClasses(value = { EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class, NumericConversionFunctionsTest.class, LogicalFunctionsTest.class,
-		NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class, NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class,
-		SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, ConformanceV3FromV2Mandatory.class, ConformanceV3FromV2Optional.class,
-		ConformanceV3Others.class, CustomPdpTest.class, TestApplyMarshalling.class, TestPdpGetStaticApplicablePolicies.class, NonRegression.class })
+@SuiteClasses(value = { EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class,
+		StringConversionFunctionsTest.class, NumericConversionFunctionsTest.class, LogicalFunctionsTest.class,
+		NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class,
+		NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class,
+		SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class,
+		SpecialMatchFunctionsTest.class, ConformanceV3FromV2Mandatory.class, ConformanceV3FromV2Optional.class,
+		ConformanceV3Others.class, CustomPdpTest.class, TestPdpGetStaticApplicablePolicies.class, NonRegression.class })
 public class MainTest
 {
 	/**

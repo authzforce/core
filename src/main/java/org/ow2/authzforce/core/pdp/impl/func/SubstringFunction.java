@@ -25,11 +25,9 @@ import java.util.List;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -46,18 +44,8 @@ import org.ow2.authzforce.core.pdp.api.value.StringValue;
  * 
  * @version $Id: $
  */
-public final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParameterTypedFirstOrderFunction<StringValue>
+final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParameterTypedFirstOrderFunction<StringValue>
 {
-
-	/**
-	 * Standard identifier for the string-substring function.
-	 */
-	public static final String NAME_STRING_SUBSTRING = XACML_NS_3_0 + "string-substring";
-
-	/**
-	 * Standard identifier for the anyURI-substring function.
-	 */
-	public static final String NAME_ANYURI_SUBSTRING = XACML_NS_3_0 + "anyURI-substring";
 
 	private static final class Call extends EagerMultiPrimitiveTypeEval<StringValue>
 	{
@@ -66,8 +54,8 @@ public final class SubstringFunction<AV extends SimpleValue<String>> extends Mul
 		private final String argsOutOfBoundsErrorMessage;
 		private final Class<? extends SimpleValue<String>> firstParamClass;
 
-		private Call(FirstOrderFunctionSignature<StringValue> functionSig, Datatype<? extends SimpleValue<String>> param0Type, List<Expression<?>> args, Datatype<?>[] remainingArgTypes)
-				throws IllegalArgumentException
+		private Call(final FirstOrderFunctionSignature<StringValue> functionSig, final Datatype<? extends SimpleValue<String>> param0Type, final List<Expression<?>> args,
+				final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
 			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types: expected: " + param0Type + ", " + StandardDatatypes.INTEGER_FACTORY.getDatatype() + ", "
@@ -77,7 +65,7 @@ public final class SubstringFunction<AV extends SimpleValue<String>> extends Mul
 		}
 
 		@Override
-		protected StringValue evaluate(Deque<AttributeValue> args) throws IndeterminateEvaluationException
+		protected StringValue evaluate(final Deque<AttributeValue> args) throws IndeterminateEvaluationException
 		{
 			final AttributeValue rawArg0 = args.poll();
 			final AttributeValue rawArg1 = args.poll();
@@ -91,7 +79,8 @@ public final class SubstringFunction<AV extends SimpleValue<String>> extends Mul
 				arg0 = firstParamClass.cast(rawArg0);
 				beginIndex = (IntegerValue) rawArg1;
 				endIndex = (IntegerValue) rawArg2;
-			} catch (ClassCastException e)
+			}
+			catch (final ClassCastException e)
 			{
 				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType() + "," + rawArg2.getDataType(),
 						StatusHelper.STATUS_PROCESSING_ERROR, e);
@@ -120,7 +109,8 @@ public final class SubstringFunction<AV extends SimpleValue<String>> extends Mul
 				final int beginIndexInt = beginIndex.intValueExact();
 				final int endIndexInt = endIndex.intValueExact();
 				substring = endIndexInt == -1 ? arg0.getUnderlyingValue().substring(beginIndexInt) : arg0.getUnderlyingValue().substring(beginIndexInt, endIndexInt);
-			} catch (ArithmeticException | IndexOutOfBoundsException e)
+			}
+			catch (ArithmeticException | IndexOutOfBoundsException e)
 			{
 				throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
@@ -139,32 +129,19 @@ public final class SubstringFunction<AV extends SimpleValue<String>> extends Mul
 	 * @param param0Type
 	 *            First parameter type
 	 */
-	private SubstringFunction(String functionId, Datatype<AV> param0Type)
+	SubstringFunction(final String functionId, final Datatype<AV> param0Type)
 	{
 		super(functionId, StandardDatatypes.STRING_FACTORY.getDatatype(), false, Arrays.asList(param0Type, StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 				StandardDatatypes.INTEGER_FACTORY.getDatatype()));
 		this.param0Type = param0Type;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.thalesgroup.authzforce.core.func.FirstOrderFunction#getFunctionCall(java.util.List, com.thalesgroup.authzforce.core.eval.DatatypeDef[])
-	 */
+
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<StringValue> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes)
+	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{
 		return new Call(functionSignature, param0Type, argExpressions, remainingArgTypes);
 	}
-
-	/**
-	 * Function cluster
-	 */
-	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "substring",
-	//
-			new SubstringFunction<>(NAME_STRING_SUBSTRING, StandardDatatypes.STRING_FACTORY.getDatatype()),
-			//
-			new SubstringFunction<>(NAME_ANYURI_SUBSTRING, StandardDatatypes.ANYURI_FACTORY.getDatatype()));
 
 }

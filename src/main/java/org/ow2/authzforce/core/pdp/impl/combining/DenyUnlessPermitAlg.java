@@ -20,89 +20,109 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.List;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import javax.xml.bind.JAXBElement;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
+import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
+import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgSet;
-import org.ow2.authzforce.core.pdp.impl.BaseDecisionResult;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 /**
  * Deny-unless-permit combining algorithm
  *
  * @version $Id: $
  */
-public final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
+final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 {
-	/**
-	 * The standard URIs used to identify this algorithm; first one is for policy combinging, second one for rule combining.
-	 */
-	private static final String[] SUPPORTED_IDENTIFIERS = { "urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit",
-			"urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" };
 
-	private static class Evaluator implements CombiningAlg.Evaluator
+	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
 	{
-
-		private final List<? extends Decidable> combinedElements;
-
-		private Evaluator(List<? extends Decidable> combinedElements)
+		private Evaluator(final List<? extends Decidable> combinedElements)
 		{
-			this.combinedElements = combinedElements;
+			super(combinedElements);
 		}
 
 		@Override
-		public DecisionResult eval(EvaluationContext context)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions,
+				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 		{
-			DecisionResult combinedDenyResult = null;
-			for (Decidable combinedElement : combinedElements)
+			assert outPepActions != null;
+			/*
+			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to
+			 * outApplicablePolicyIdList
+			 */
+
+			UpdatablePepActions denyPepActions = null;
+
+			for (final Decidable combinedElement : getCombinedElements())
 			{
-				// make sure that the policy matches the context
-				final DecisionResult policyResult = combinedElement.evaluate(context);
-				final DecisionType decision = policyResult.getDecision();
-				switch (decision)
-				{
-				case PERMIT:
-					return policyResult;
-				case DENY:
-					// merge result (obligations/advice/mached policy IDs)
-					if (combinedDenyResult == null)
-					{
-						combinedDenyResult = policyResult;
-					} else
-					{
-						combinedDenyResult.merge(policyResult.getPepActions(), policyResult.getApplicablePolicyIdList());
-					}
-					break;
-				default:
-					break;
+				final DecisionResult result = combinedElement.evaluate(context);
+				final DecisionType decision = result.getDecision();
+				/*
+				 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy
+				 * set that does not match the decision resulting from evaluating the enclosing policy set.
+				 * 
+				 * So if we return Deny, we should add to outPepActions only the PEP actions from Deny decisions
+				 */
+				switch (decision) {
+					case PERMIT:
+						if (outApplicablePolicyIdList != null)
+						{
+							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+						}
+
+						outPepActions.add(result.getPepActions());
+						return ExtendedDecisions.SIMPLE_PERMIT;
+					case DENY:
+						if (outApplicablePolicyIdList != null)
+						{
+							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+						}
+
+						if (denyPepActions == null)
+						{
+							denyPepActions = new UpdatablePepActions();
+						}
+
+						denyPepActions.add(result.getPepActions());
+						break;
+					default:
+						break;
 				}
 			}
 
-			return combinedDenyResult == null ? BaseDecisionResult.DENY : combinedDenyResult;
+			/*
+			 * All applicable policies are already in outApplicablePolicyIdList at this point, so nothing else to do
+			 * with it
+			 */
+
+			outPepActions.add(denyPepActions);
+			return ExtendedDecisions.SIMPLE_DENY;
 		}
 
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(List<CombiningAlgParameter<? extends Decidable>> params, List<? extends Decidable> combinedElements) throws UnsupportedOperationException,
-			IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params,
+			final List<? extends Decidable> combinedElements)
+			throws UnsupportedOperationException, IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}
 
-	private DenyUnlessPermitAlg(String algId)
+	DenyUnlessPermitAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 	}
-
-	/**
-	 * Supported algorithms
-	 */
-	public static final CombiningAlgSet SET = new CombiningAlgSet(new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[0]), new DenyUnlessPermitAlg(SUPPORTED_IDENTIFIERS[1]));
 
 }

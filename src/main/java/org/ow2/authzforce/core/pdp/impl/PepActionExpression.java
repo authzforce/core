@@ -22,16 +22,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActions;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * PEP action (obligation/advice) expression evaluator
@@ -44,11 +45,11 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(PepActionExpression.class);
 
-	private String actionId;
+	private final String actionId;
 	private final transient JAXB_PEP_ACTION emptyPepAction;
 	private final transient List<AttributeAssignmentExpressionEvaluator> evaluatableAttributeAssignmentExpressions;
 
-	private final PepActionFactory<JAXB_PEP_ACTION> pepActionFactory;
+	private final PepActions.Factory<JAXB_PEP_ACTION> pepActionFactory;
 
 	private final String infoPrefix;
 
@@ -62,7 +63,8 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	 * @param pepActionId
 	 *            the obligation's id
 	 * @param appliesTo
-	 *            the type of decision to which the PEP action applies (ObligationExpression's FulfillOn / AdviceExpression's AppliesTo)
+	 *            the type of decision to which the PEP action applies (ObligationExpression's FulfillOn /
+	 *            AdviceExpression's AppliesTo)
 	 * @param jaxbAssignmentExps
 	 *            a <code>List</code> of <code>AttributeAssignmentExpression</code>s
 	 * @param xPathCompiler
@@ -72,8 +74,9 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	 * @throws java.lang.IllegalArgumentException
 	 *             one of the AttributeAssignmentExpressions' Expression is invalid
 	 */
-	public PepActionExpression(PepActionFactory<JAXB_PEP_ACTION> pepActionFactory, String pepActionId, EffectType appliesTo, List<AttributeAssignmentExpression> jaxbAssignmentExps,
-			XPathCompiler xPathCompiler, ExpressionFactory expFactory) throws IllegalArgumentException
+	public PepActionExpression(final PepActions.Factory<JAXB_PEP_ACTION> pepActionFactory, final String pepActionId,
+			final EffectType appliesTo, final List<AttributeAssignmentExpression> jaxbAssignmentExps,
+			final XPathCompiler xPathCompiler, final ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		this.actionId = pepActionId;
 		this.appliesTo = appliesTo;
@@ -82,7 +85,8 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 		{
 			emptyPepAction = pepActionFactory.getInstance(null, pepActionId);
 			this.evaluatableAttributeAssignmentExpressions = Collections.emptyList();
-		} else
+		}
+		else
 		{
 			emptyPepAction = null;
 			this.evaluatableAttributeAssignmentExpressions = new ArrayList<>(jaxbAssignmentExps.size());
@@ -91,10 +95,13 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 				final AttributeAssignmentExpressionEvaluator attrAssignExp;
 				try
 				{
-					attrAssignExp = new AttributeAssignmentExpressionEvaluator(jaxbAttrAssignExp, xPathCompiler, expFactory);
-				} catch (IllegalArgumentException e)
+					attrAssignExp = new AttributeAssignmentExpressionEvaluator(jaxbAttrAssignExp, xPathCompiler,
+							expFactory);
+				}
+				catch (final IllegalArgumentException e)
 				{
-					throw new IllegalArgumentException("Invalid AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId() + "]/Expression", e);
+					throw new IllegalArgumentException("Invalid AttributeAssignmentExpression[@AttributeId="
+							+ jaxbAttrAssignExp.getAttributeId() + "]/Expression", e);
 				}
 
 				this.evaluatableAttributeAssignmentExpressions.add(attrAssignExp);
@@ -102,11 +109,13 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 		}
 
 		this.pepActionFactory = pepActionFactory;
-		this.infoPrefix = pepActionFactory.getActionXmlElementName() + "Expression[@" + pepActionFactory.getActionXmlElementName() + "=" + actionId + "]";
+		this.infoPrefix = pepActionFactory.getActionXmlElementName() + "Expression[@"
+				+ pepActionFactory.getActionXmlElementName() + "=" + actionId + "]";
 	}
 
 	/**
-	 * The type of decision to which the PEP action applies (ObligationExpression's FulfillOn / AdviceExpression's AppliesTo)
+	 * The type of decision to which the PEP action applies (ObligationExpression's FulfillOn / AdviceExpression's
+	 * AppliesTo)
 	 *
 	 * @return appliesTo/fulfillOn property
 	 */
@@ -132,9 +141,10 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 	 *            evaluation context
 	 * @return an instance of a PEP action in JAXB model (JAXB Obligation/Advice)
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
-	 *             if any of the attribute assignment expressions evaluates to "Indeterminate" (see XACML 3.0 core spec, section 7.18)
+	 *             if any of the attribute assignment expressions evaluates to "Indeterminate" (see XACML 3.0 core spec,
+	 *             section 7.18)
 	 */
-	public JAXB_PEP_ACTION evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+	public JAXB_PEP_ACTION evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		// if no assignmentExpression
 		if (this.emptyPepAction != null)
@@ -147,17 +157,19 @@ public final class PepActionExpression<JAXB_PEP_ACTION>
 		for (final AttributeAssignmentExpressionEvaluator attrAssignmentExpr : this.evaluatableAttributeAssignmentExpressions)
 		{
 			/*
-			 * Section 5.39 of XACML 3.0 core spec says there may be multiple AttributeAssignments resulting from one AttributeAssignmentExpression
+			 * Section 5.39 of XACML 3.0 core spec says there may be multiple AttributeAssignments resulting from one
+			 * AttributeAssignmentExpression
 			 */
 			final List<AttributeAssignment> attrAssignsFromExpr;
 			try
 			{
 				attrAssignsFromExpr = attrAssignmentExpr.evaluate(context);
 				LOGGER.debug("{}/{} -> {}", this.infoPrefix, attrAssignmentExpr, attrAssignsFromExpr);
-			} catch (IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(infoPrefix + ": Error evaluating AttributeAssignmentExpression[@AttributeId=" + attrAssignmentExpr.getAttributeId() + "]/Expression",
-						e.getStatusCode(), e);
+				throw new IndeterminateEvaluationException(
+						infoPrefix + ": Error evaluating " + attrAssignmentExpr + "/Expression", e.getStatusCode(), e);
 			}
 
 			assignments.addAll(attrAssignsFromExpr);

@@ -18,135 +18,101 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+import com.koloboke.collect.map.hash.HashObjObjMaps;
+import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
- * This is a com.thalesgroup.authzforce.core.test.basic implementation of <code>PdpExtensionRegistry</code>.
+ * This is a base implementation of <code>PdpExtensionRegistry</code>. This should be used as basis to implement (in a final class) an immutable PDP extension registry of a specific type. If you need
+ * a generic immutable PDP extension registry, see {
  *
  * @param <T>
  *            type of extension in this registry
  * @version $Id: $
  */
-public class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExtensionRegistry<T>
+public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implements PdpExtensionRegistry<T>
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(BasePdpExtensionRegistry.class);
-
-	private static final IllegalArgumentException NULL_EXTENSION_CLASS_EXCEPTION = new IllegalArgumentException("Extension class arg undefined");
-	private static final IllegalArgumentException NULL_EXTENSIONS_EXCEPTION = new IllegalArgumentException("ExtensionsById arg undefined");
 
 	private final Class<? super T> extClass;
-
-	// the backing maps for the Function objects
 	private final Map<String, T> extensionsById;
+	private final transient String toString;
 
 	/**
-	 * Instantiates registry from a map (id -> extension)
-	 * 
+	 * Instantiates immutable registry from a map.
+	 *
 	 * @param extensionClass
 	 *            extension class
-	 * 
 	 * @param extensionsById
-	 *            extensions indexed by ID
+	 *            extensions input map; the registry actually creates and uses an immutable copy of this map internally to avoid external modifications on the internal map
 	 */
-	private BasePdpExtensionRegistry(Class<? super T> extensionClass, Map<String, T> extensionsById)
+	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Map<String, T> extensionsById)
 	{
-		if (extensionClass == null)
-		{
-			throw NULL_EXTENSION_CLASS_EXCEPTION;
-		}
-
-		if (extensionsById == null)
-		{
-			throw NULL_EXTENSIONS_EXCEPTION;
-		}
+		assert extensionClass != null && extensionsById != null;
 
 		this.extClass = extensionClass;
-		this.extensionsById = extensionsById;
+		this.extensionsById = HashObjObjMaps.newImmutableMap(extensionsById);
+		this.toString = this + "( extensionClass= " + extClass.getCanonicalName() + " )";
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final T getExtension(final String identity)
+	{
+		return extensionsById.get(identity);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final Set<T> getExtensions()
+	{
+		return HashObjSets.newImmutableSet(extensionsById.values());
+	}
+
+	private static final class ExtensionToIdFunction<E extends PdpExtension> implements Function<E, String>
+	{
+
+		@Override
+		public String apply(final E extension) throws NullPointerException
+		{
+			assert extension != null;
+			return Preconditions.checkNotNull(extension, "One of the input extensions is invalid (null)").getId();
+		}
+
+	}
+
+	private static final Function<? extends PdpExtension, String> EXTENSION_TO_ID_FUNCTION = new ExtensionToIdFunction<>();
+
+	@SuppressWarnings("unchecked")
+	private static <E extends PdpExtension> Map<String, E> newImmutableMap(final Set<E> extensions)
+	{
+		return Maps.uniqueIndex(extensions, (Function<E, String>) EXTENSION_TO_ID_FUNCTION);
 	}
 
 	/**
 	 * Instantiates immutable registry from a set of extensions
 	 *
 	 * @param extensionClass
-	 *            extension class
+	 *            extension class (required not null)
 	 * @param extensions
-	 *            extensions
+	 *            extensions (required not null)
 	 */
-	public BasePdpExtensionRegistry(Class<? super T> extensionClass, Set<T> extensions)
+	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Set<T> extensions)
 	{
-		if (extensionClass == null)
-		{
-			throw NULL_EXTENSION_CLASS_EXCEPTION;
-		}
-
-		if (extensions == null)
-		{
-			throw NULL_EXTENSIONS_EXCEPTION;
-		}
-
-		this.extClass = extensionClass;
-
-		this.extensionsById = new HashMap<>();
-		for (final T extension : extensions)
-		{
-			final String id = extension.getId();
-
-			this.extensionsById.put(id, extension);
-		}
+		this(extensionClass, newImmutableMap(extensions));
 	}
 
-	/**
-	 * Default constructor. No superset factory is used.
-	 *
-	 * @param extensionClass
-	 *            extension class
-	 */
-	public BasePdpExtensionRegistry(Class<? super T> extensionClass)
-	{
-		this(extensionClass, new HashMap<String, T>());
-	}
-
-	/**
-	 * Constructor that sets a "base registry" from which this inherits all the extensions. Used for instance to build a new registry based on a standard one like the StandardFunctionRegistry for
-	 * standard functions).
-	 *
-	 * @param baseRegistry
-	 *            the base/parent registry on which this one is based or null
-	 * @param extensionClass
-	 *            extension class
-	 */
-	public BasePdpExtensionRegistry(Class<? super T> extensionClass, BasePdpExtensionRegistry<T> baseRegistry)
-	{
-		this(extensionClass, baseRegistry == null ? new HashMap<String, T>() : new HashMap<>(baseRegistry.extensionsById));
-	}
-
-	/** {@inheritDoc} */
 	@Override
-	public void addExtension(T extension) throws IllegalArgumentException
+	public String toString()
 	{
-		final String id = extension.getId();
-		// make sure nothing already registered with same ID
-		if (extensionsById.containsKey(id))
-		{
-			throw new IllegalArgumentException("Conflict: extension (id=" + id + ") already registered");
-		}
-
-		extensionsById.put(id, extension);
-		LOGGER.debug("Added PDP extension of {} to registry: {}", extClass, extension);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public T getExtension(String identity)
-	{
-		return extensionsById.get(identity);
+		return toString;
 	}
 
 }

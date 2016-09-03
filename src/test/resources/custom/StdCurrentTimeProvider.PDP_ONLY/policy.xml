@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="root"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit" Version="1.0">
+	<Description>
+		Policy to test PDP configuration property
+		standardEnvAttributeSource=REQUEST_ELSE_PDP
+	</Description>
+	<Target />
+	<Policy PolicyId="PolicyMatchingRequestDate" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Description>To be matched by any request with
+			current-date=1970-01-01Z.
+		</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:date-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">1970-01-01Z</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date"
+							DataType="http://www.w3.org/2001/XMLSchema#date" MustBePresent="true" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Rule Effect="Permit" RuleId="PermitRuleForPolicyMatchingRequestDate" />
+	</Policy>
+	<Policy PolicyId="PolicyMatchingRequestTime" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Description>To be matched by any request with current-time=00:00:00Z or
+			current-dateTime=...T00:00:00Z , where
+			... may be any time. (Use a date
+			different from 1970-01-01Z in the test
+			request for this
+			case, to prevent matching previous policy.)
+		</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:time-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">00:00:00Z</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time"
+							DataType="http://www.w3.org/2001/XMLSchema#time" MustBePresent="true" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Rule Effect="Permit" RuleId="PermitRuleForPolicyMatchingRequestTime" />
+	</Policy>
+	<Policy PolicyId="PolicyMatchingRequestDateTime" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Description>To be matched by any request with
+			current-dateTime=1980-01-01T01:00:00Z (Use a date different from 1970-01-01Z in
+			the test
+			request for
+			this case, to prevent matching previous policy.)
+		</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:dateTime-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">1980-01-01T01:00:00Z</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime"
+							DataType="http://www.w3.org/2001/XMLSchema#dateTime" MustBePresent="true" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Rule Effect="Permit" RuleId="RuleForPolicyMatchingRequestDateTime" />
+	</Policy>
+	<Policy PolicyId="PolicyMatchingPDPDate" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Description>For checking that the PDP current-date value is used if no standard environment attribute provided in the request
+		</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-date</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="test-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+					</Match>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:date-less-than">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">2016-08-01Z</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date"
+							DataType="http://www.w3.org/2001/XMLSchema#date" MustBePresent="true" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Rule Effect="Permit" RuleId="PermitRuleForPolicyMatchingRequestDate" />
+	</Policy>
+	<Policy PolicyId="PolicyMatchingPDPTime" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Description>For checking that the PDP current-time value is used if no standard environment attribute provided in the request
+		</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-time</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="test-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+					</Match>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:time-less-than-or-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">00:00:00Z</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time"
+							DataType="http://www.w3.org/2001/XMLSchema#time" MustBePresent="true" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Rule Effect="Permit" RuleId="PermitRuleForPolicyMatchingPDPTimeOnly" />
+	</Policy>
+	<Policy PolicyId="PolicyMatchingPDPDateTime" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Description>For checking that the PDP current-dateTime value is used if no standard environment attribute provided in the request
+		</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-dateTime</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="test-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+					</Match>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:dateTime-less-than">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">2016-08-01T00:00:00Z</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime"
+							DataType="http://www.w3.org/2001/XMLSchema#dateTime" MustBePresent="true" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Rule Effect="Permit" RuleId="RuleForPolicyMatchingPDPDateTime" />
+	</Policy>
+</PolicySet>

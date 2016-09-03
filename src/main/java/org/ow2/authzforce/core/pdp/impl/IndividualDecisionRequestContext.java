@@ -19,7 +19,6 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,6 +32,9 @@ import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
+import org.ow2.authzforce.core.pdp.api.UpdatableMap;
+import org.ow2.authzforce.core.pdp.api.UpdatableSet;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -40,58 +42,80 @@ import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.koloboke.collect.map.hash.HashObjObjMaps;
+
 /**
  * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple Decision Profile spec for more
  * information on Individual Decision Request as opposed to Multiple Decision Request).
  *
  * @version $Id: $
  */
-public class IndividualDecisionRequestContext implements EvaluationContext
+public final class IndividualDecisionRequestContext implements EvaluationContext
 {
 	/**
 	 * Logger used for all classes
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(IndividualDecisionRequestContext.class);
 
-	private static final IndeterminateEvaluationException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IndeterminateEvaluationException("Unsupported XACML feature (optional): <AttributeSelector>",
-			StatusHelper.STATUS_SYNTAX_ERROR);
-
 	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 
-	private final Map<String, Value> varValsById = new HashMap<>();
+	private final Map<String, Value> varValsById = HashObjObjMaps.newMutableMap();
 
-	private final Map<String, Object> updatableProperties = new HashMap<>();
-
-	private final boolean isApplicablePolicyIdListReturned;
+	private final Map<String, Object> mutableProperties = HashObjObjMaps.newMutableMap();
 
 	/*
-	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based functions, etc. This may be null if no
+	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based functions, etc. This may be empty if no
 	 * Content in Request or no feature requiring XPath evaluation against Content is supported/enabled.
 	 */
+	// Not null
 	private final Map<String, XdmNode> extraContentsByAttributeCategory;
 
 	/*
-	 * AttributeSelector evaluation results This may be null if no AttributeSelector evaluation disabled/not supported.
+	 * AttributeSelector evaluation results. Not null
 	 */
-	private final Map<AttributeSelectorId, Bag<?>> attributeSelectorResults;
+	private final UpdatableMap<AttributeSelectorId, Bag<?>> attributeSelectorResults;
+
+	// not null
+	private final UpdatableSet<AttributeGUID> usedNamedAttributeIdSet;
+
+	// not null
+	private final UpdatableSet<AttributeSelectorId> usedAttributeSelectorIdSet;
+
+	private final boolean returnApplicablePolicyIdList;
 
 	/**
 	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation against Content element in Attributes
 	 *
 	 * @param namedAttributeMap
-	 *            mutable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on attribute category,issuer,id. An
+	 *            updatable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on attribute category,issuer,id. An
 	 *            attribute value is a bag of primitive values.
 	 * @param extraContentsByAttributeCategory
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
+	 * @param returnUsedAttributes
+	 *            true iff the list of attributes used during evaluation may be requested by
 	 */
-	public IndividualDecisionRequestContext(Map<AttributeGUID, Bag<?>> namedAttributeMap, Map<String, XdmNode> extraContentsByAttributeCategory, boolean returnApplicablePolicyIdList)
+	public IndividualDecisionRequestContext(final Map<AttributeGUID, Bag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByAttributeCategory,
+			final boolean returnApplicablePolicyIdList, final boolean returnUsedAttributes)
 	{
-		this.namedAttributes = namedAttributeMap == null ? new HashMap<AttributeGUID, Bag<?>>() : namedAttributeMap;
-		this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
-		this.attributeSelectorResults = extraContentsByAttributeCategory == null ? null : new HashMap<AttributeSelectorId, Bag<?>>();
-		this.isApplicablePolicyIdListReturned = returnApplicablePolicyIdList;
+		this.namedAttributes = namedAttributeMap == null ? HashObjObjMaps.<AttributeGUID, Bag<?>> newUpdatableMap() : namedAttributeMap;
+		this.returnApplicablePolicyIdList = returnApplicablePolicyIdList;
+		this.usedNamedAttributeIdSet = returnUsedAttributes ? UpdatableCollections.<AttributeGUID> newUpdatableSet() : UpdatableCollections.<AttributeGUID> emptySet();
+		if (extraContentsByAttributeCategory == null)
+		{
+			this.extraContentsByAttributeCategory = Collections.emptyMap();
+			this.attributeSelectorResults = UpdatableCollections.emptyMap();
+			// not used since there is no <Content>
+			// (extraContentsByAttributeCategory == null)
+			this.usedAttributeSelectorIdSet = UpdatableCollections.emptySet();
+		}
+		else
+		{
+			this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
+			this.attributeSelectorResults = UpdatableCollections.newUpdatableMap();
+			this.usedAttributeSelectorIdSet = returnUsedAttributes ? UpdatableCollections.<AttributeSelectorId> newUpdatableSet() : UpdatableCollections.<AttributeSelectorId> emptySet();
+		}
 	}
 
 	/**
@@ -99,16 +123,19 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 	 *
 	 * @param individualDecisionReq
 	 *            individual decision request
+	 * @param returnUsedAttributes
+	 *            true iff the list of attributes used during evaluation may be requested by
 	 */
-	public IndividualDecisionRequestContext(IndividualDecisionRequest individualDecisionReq)
+	public IndividualDecisionRequestContext(final IndividualDecisionRequest individualDecisionReq, final boolean returnUsedAttributes)
 	{
-		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq.isApplicablePolicyIdentifiersReturned());
+		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq.isApplicablePolicyIdListReturned(), returnUsedAttributes);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public <AV extends AttributeValue> Bag<AV> getAttributeDesignatorResult(AttributeGUID attributeGUID, Datatype<AV> attributeDatatype) throws IndeterminateEvaluationException
+	public <AV extends AttributeValue> Bag<AV> getAttributeDesignatorResult(final AttributeGUID attributeGUID, final Datatype<AV> attributeDatatype) throws IndeterminateEvaluationException
 	{
+		this.usedNamedAttributeIdSet.add(attributeGUID);
 		final Bag<?> bagResult = namedAttributes.get(attributeGUID);
 		if (bagResult == null)
 		{
@@ -133,35 +160,35 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean putAttributeDesignatorResultIfAbsent(AttributeGUID attributeGUID, Bag<?> result)
+	public boolean putAttributeDesignatorResultIfAbsent(final AttributeGUID id, final Bag<?> result)
 	{
-		if (namedAttributes.containsKey(attributeGUID))
+		if (namedAttributes.containsKey(id))
 		{
 			/*
 			 * This should never happen, as getAttributeDesignatorResult() should have been called first (for same id) and returned this oldResult, and no further call to
 			 * putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but different datatype URI/datatype class) in the same
 			 * context
 			 */
-			LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", attributeGUID, result);
+			LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", id, result);
 			return false;
 		}
 
 		/*
 		 * Attribute value cannot change during evaluation context, so if old value already there, put it back
 		 */
-		return namedAttributes.put(attributeGUID, result) == null;
+		return namedAttributes.put(id, result) == null;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public XdmNode getAttributesContent(String category)
+	public XdmNode getAttributesContent(final String category)
 	{
-		return extraContentsByAttributeCategory == null ? null : extraContentsByAttributeCategory.get(category);
+		return extraContentsByAttributeCategory.get(category);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public <V extends Value> V getVariableValue(String variableId, Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
+	public <V extends Value> V getVariableValue(final String variableId, final Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
 	{
 		final Value val = varValsById.get(variableId);
 		if (val == null)
@@ -172,7 +199,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		try
 		{
 			return expectedDatatype.cast(val);
-		} catch (ClassCastException e)
+		}
+		catch (final ClassCastException e)
 		{
 			throw new IndeterminateEvaluationException("Datatype of variable '" + variableId + "' in context does not match expected datatype: " + expectedDatatype,
 					StatusHelper.STATUS_PROCESSING_ERROR, e);
@@ -181,7 +209,7 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean putVariableIfAbsent(String variableId, Value value)
+	public boolean putVariableIfAbsent(final String variableId, final Value value)
 	{
 		if (varValsById.containsKey(variableId))
 		{
@@ -194,20 +222,16 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public Value removeVariable(String variableId)
+	public Value removeVariable(final String variableId)
 	{
 		return varValsById.remove(variableId);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(AttributeSelectorId id, Datatype<AV> datatype) throws IndeterminateEvaluationException
+	public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(final AttributeSelectorId id, final Datatype<AV> datatype) throws IndeterminateEvaluationException
 	{
-		if (attributeSelectorResults == null)
-		{
-			throw UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION;
-		}
-
+		this.usedAttributeSelectorIdSet.add(id);
 		final Bag<?> bagResult = attributeSelectorResults.get(id);
 		if (bagResult == null)
 		{
@@ -232,13 +256,8 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean putAttributeSelectorResultIfAbsent(AttributeSelectorId id, Bag<?> result) throws IndeterminateEvaluationException
+	public boolean putAttributeSelectorResultIfAbsent(final AttributeSelectorId id, final Bag<?> result) throws IndeterminateEvaluationException
 	{
-		if (attributeSelectorResults == null)
-		{
-			throw UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION;
-		}
-
 		if (attributeSelectorResults.containsKey(id))
 		{
 			LOGGER.error("Attempt to override value of AttributeSelector {} already set in evaluation context. Overriding value: {}", id, result);
@@ -250,30 +269,30 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public Object getOther(String key)
+	public Object getOther(final String key)
 	{
-		return updatableProperties.get(key);
+		return mutableProperties.get(key);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean containsKey(String key)
+	public boolean containsKey(final String key)
 	{
-		return updatableProperties.containsKey(key);
+		return mutableProperties.containsKey(key);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public void putOther(String key, Object val)
+	public void putOther(final String key, final Object val)
 	{
-		updatableProperties.put(key, val);
+		mutableProperties.put(key, val);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public Object remove(String key)
+	public Object remove(final String key)
 	{
-		return updatableProperties.remove(key);
+		return mutableProperties.remove(key);
 	}
 
 	/** {@inheritDoc} */
@@ -284,10 +303,21 @@ public class IndividualDecisionRequestContext implements EvaluationContext
 		return immutableAttributeSet.iterator();
 	}
 
-	/** {@inheritDoc} */
 	@Override
-	public boolean isApplicablePolicyIdListReturned()
+	public Set<AttributeGUID> getUsedNamedAttributes()
 	{
-		return isApplicablePolicyIdListReturned;
+		return usedNamedAttributeIdSet.copy();
+	}
+
+	@Override
+	public Set<AttributeSelectorId> getUsedExtraAttributeContents()
+	{
+		return usedAttributeSelectorIdSet.copy();
+	}
+
+	@Override
+	public boolean isApplicablePolicyIdListRequested()
+	{
+		return returnApplicablePolicyIdList;
 	}
 }

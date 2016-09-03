@@ -18,24 +18,30 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-
+import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.BaseRequestFilter;
+import org.ow2.authzforce.core.pdp.api.ImmutableIndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.JaxbXACMLAttributesParser;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
+
+import com.koloboke.collect.map.hash.HashObjObjMaps;
+
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XdmNode;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
@@ -46,8 +52,8 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 {
 	/**
 	 *
-	 * Factory for this type of request filter that allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request (complying with XACML 3.0 core spec,
-	 * §7.3.3).
+	 * Factory for this type of request filter that allows duplicate &lt;Attribute&gt; with same meta-data in the same
+	 * &lt;Attributes&gt; element of a Request (complying with XACML 3.0 core spec, §7.3.3).
 	 *
 	 */
 	public static final class LaxFilterFactory implements RequestFilter.Factory
@@ -64,9 +70,12 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		}
 
 		@Override
-		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath, Processor xmlProcessor)
+		public RequestFilter getInstance(final DatatypeFactoryRegistry datatypeFactoryRegistry,
+				final boolean strictAttributeIssuerMatch, final boolean requireContentForXPath,
+				final Processor xmlProcessor)
 		{
-			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, true, requireContentForXPath, xmlProcessor);
+			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, true,
+					requireContentForXPath, xmlProcessor);
 		}
 
 		/**
@@ -78,8 +87,8 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 
 	/**
 	 *
-	 * Factory for this type of request filter that does NOT allow duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request (NOT complying fully with XACML
-	 * 3.0 core spec, §7.3.3).
+	 * Factory for this type of request filter that does NOT allow duplicate &lt;Attribute&gt; with same meta-data in
+	 * the same &lt;Attributes&gt; element of a Request (NOT complying fully with XACML 3.0 core spec, §7.3.3).
 	 *
 	 */
 	public static final class StrictFilterFactory implements RequestFilter.Factory
@@ -93,56 +102,80 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		}
 
 		@Override
-		public RequestFilter getInstance(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean requireContentForXPath, Processor xmlProcessor)
+		public RequestFilter getInstance(final DatatypeFactoryRegistry datatypeFactoryRegistry,
+				final boolean strictAttributeIssuerMatch, final boolean requireContentForXPath,
+				final Processor xmlProcessor)
 		{
-			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, false, requireContentForXPath, xmlProcessor);
+			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, false,
+					requireContentForXPath, xmlProcessor);
 		}
 	}
 
-	private DefaultRequestFilter(DatatypeFactoryRegistry datatypeFactoryRegistry, boolean strictAttributeIssuerMatch, boolean allowAttributeDuplicates, boolean requireContentForXPath,
-			Processor xmlProcessor)
+	private DefaultRequestFilter(final DatatypeFactoryRegistry datatypeFactoryRegistry,
+			final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates,
+			final boolean requireContentForXPath, final Processor xmlProcessor)
 	{
-		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor);
+		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath,
+				xmlProcessor);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public List<? extends IndividualDecisionRequest> filter(List<Attributes> attributesList, JaxbXACMLAttributesParser xacmlAttrsParser, boolean isApplicablePolicyIdListReturned,
-			boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
+	public List<? extends IndividualDecisionRequest> filter(final List<Attributes> attributesList,
+			final JaxbXACMLAttributesParser xacmlAttrsParser, final boolean isApplicablePolicyIdListReturned,
+			final boolean combinedDecision, final XPathCompiler xPathCompiler,
+			final Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{
-
-		/*
-		 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple Decision Profile. So we keep track of attribute categories to check duplicates.
-		 */
-		final Set<String> attrCategoryNames = new HashSet<>();
-		final MutableIndividualDecisionRequest individualDecisionRequest;
-		try
-		{
-			individualDecisionRequest = new MutableIndividualDecisionRequest(isApplicablePolicyIdListReturned);
-		} catch (IllegalArgumentException e)
-		{
-			throw new IndeterminateEvaluationException("Invalid RequestDefaults/XPathVersion", StatusHelper.STATUS_SYNTAX_ERROR, e);
-		}
+		final Map<AttributeGUID, Bag<?>> namedAttributes = HashObjObjMaps.newUpdatableMap(attributesList.size());
+		final Map<String, XdmNode> extraContentsByCategory = HashObjObjMaps.newUpdatableMap(attributesList.size());
+		final List<Attributes> attributesToIncludeInResult = new ArrayList<>();
 
 		for (final Attributes jaxbAttributes : attributesList)
 		{
 			final String categoryName = jaxbAttributes.getCategory();
-			if (!attrCategoryNames.add(categoryName))
-			{
-				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName
-						+ "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
-			}
-
-			final SingleCategoryAttributes<?> categorySpecificAttributes = xacmlAttrsParser.parseAttributes(jaxbAttributes, xPathCompiler);
+			final SingleCategoryAttributes<?> categorySpecificAttributes = xacmlAttrsParser
+					.parseAttributes(jaxbAttributes, xPathCompiler);
 			if (categorySpecificAttributes == null)
 			{
 				// skip this empty Attributes
 				continue;
 			}
 
-			individualDecisionRequest.put(categoryName, categorySpecificAttributes);
+			final XdmNode oldVal = extraContentsByCategory.put(categoryName,
+					categorySpecificAttributes.getExtraContent());
+			/*
+			 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple
+			 * Decision Profile. So we must check duplicate attribute categories.
+			 */
+			if (oldVal != null)
+			{
+				throw new IndeterminateEvaluationException(
+						"Unsupported repetition of Attributes[@Category='" + categoryName
+								+ "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)",
+						StatusHelper.STATUS_SYNTAX_ERROR);
+			}
+
+			/*
+			 * Convert growable (therefore mutable) bag of attribute values to immutable ones. Indeed, we must guarantee
+			 * that attribute values remain constant during the evaluation of the request, as mandated by the XACML
+			 * spec, section 7.3.5: <p> <i>
+			 * "Regardless of any dynamic modifications of the request context during policy evaluation, the PDP SHALL behave as if each bag of attribute values is fully populated in the context before it is first tested, and is thereafter immutable during evaluation. (That is, every subsequent test of that attribute shall use the same bag of values that was initially tested.)"
+			 * </i></p>
+			 */
+			for (final Entry<AttributeGUID, Bag<?>> attrEntry : categorySpecificAttributes)
+			{
+				namedAttributes.put(attrEntry.getKey(), attrEntry.getValue());
+			}
+
+			final Attributes catSpecificAttrsToIncludeInResult = categorySpecificAttributes
+					.getAttributesToIncludeInResult();
+			if (catSpecificAttrsToIncludeInResult != null)
+			{
+				attributesToIncludeInResult.add(catSpecificAttrsToIncludeInResult);
+			}
 		}
 
-		return Collections.singletonList(individualDecisionRequest);
+		return Collections.singletonList(new ImmutableIndividualDecisionRequest(namedAttributes,
+				extraContentsByCategory, attributesToIncludeInResult, isApplicablePolicyIdListReturned));
 	}
 }

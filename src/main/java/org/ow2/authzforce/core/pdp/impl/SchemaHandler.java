@@ -55,11 +55,12 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by {@link ResourceUtils} as well.
+ * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS
+ * catalog at any location supported by {@link ResourceUtils} as well.
  *
  * @version $Id: $
  */
-public class SchemaHandler
+public final class SchemaHandler
 {
 	private static final class XmlSchemaResourceResolver implements LSResourceResolver
 	{
@@ -68,14 +69,15 @@ public class SchemaHandler
 		private final String catalogLocation;
 		private final OASISCatalogManager catalogResolver;
 
-		private XmlSchemaResourceResolver(String catalogLocation, OASISCatalogManager catalogResolver)
+		private XmlSchemaResourceResolver(final String catalogLocation, final OASISCatalogManager catalogResolver)
 		{
 			this.catalogLocation = catalogLocation;
 			this.catalogResolver = catalogResolver;
 		}
 
 		@Override
-		public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI)
+		public LSInput resolveResource(final String type, final String namespaceURI, final String publicId,
+				final String systemId, final String baseURI)
 		{
 			try
 			{
@@ -92,7 +94,8 @@ public class SchemaHandler
 					resolvedLocation = catalogResolver.resolvePublic(publicId, systemId);
 					if (_LOGGER.isDebugEnabled())
 					{
-						_LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}", new Object[] { publicId, systemId, resolvedLocation });
+						_LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}",
+								new Object[] { publicId, systemId, resolvedLocation });
 					}
 				}
 				if (resolvedLocation != null)
@@ -103,10 +106,12 @@ public class SchemaHandler
 						return new LSInputImpl(publicId, systemId, resourceURL.openStream());
 					}
 				}
-			} catch (IOException ex)
+			}
+			catch (final IOException ex)
 			{
-				final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='" + catalogLocation + "'): type=" + type + ", namespaceURI=" + namespaceURI
-						+ ", publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
+				final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='"
+						+ catalogLocation + "'): type=" + type + ", namespaceURI=" + namespaceURI + ", publicId='"
+						+ publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
 				throw new RuntimeException(errMsg, ex);
 			}
 
@@ -114,68 +119,43 @@ public class SchemaHandler
 		}
 	}
 
-	private static class SchemaParsingErrorHandler implements ErrorHandler
+	private static final ErrorHandler SCHEMA_PARSING_ERROR_HANDLER = new ErrorHandler()
 	{
 
 		@Override
-		public final void warning(SAXParseException exception) throws SAXException
+		public final void warning(final SAXParseException exception) throws SAXException
 		{
 			throw exception;
 		}
 
 		@Override
-		public final void error(SAXParseException exception) throws SAXException
+		public final void error(final SAXParseException exception) throws SAXException
 		{
 			throw exception;
 		}
 
 		@Override
-		public final void fatalError(SAXParseException exception) throws SAXException
+		public final void fatalError(final SAXParseException exception) throws SAXException
 		{
 			throw exception;
 		}
-	}
+	};
 
 	/**
-	 * This is quite similar to org.apache.cxf.catalog.OASISCatalogManager, except it is much simplified as we don't need as many features. We are not using CXF's OASISCatalogManager class directly
-	 * because it is part of cxf-core which drags many classes and dependencies on CXF we don't need. It would make more sense if OASISCatalogManager was part of a cxf common utility package, but it
-	 * is not the case as of writing (December 2014).
+	 * This is quite similar to org.apache.cxf.catalog.OASISCatalogManager, except it is much simplified as we don't
+	 * need as many features. We are not using CXF's OASISCatalogManager class directly because it is part of cxf-core
+	 * which drags many classes and dependencies on CXF we don't need. It would make more sense if OASISCatalogManager
+	 * was part of a cxf common utility package, but it is not the case as of writing (December 2014).
+	 * <p>
+	 * WARNING: this is not immutable since getCatalog() gives access to internal catalog which is mutable.
+	 * </p>
 	 */
-	private static class OASISCatalogManager
+	private static final class OASISCatalogManager
 	{
 		private static final IllegalArgumentException ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION = new IllegalArgumentException(
 				"Error creating org.apache.xml.resolver.tools.CatalogResolver for OASIS CatalogManager");
 
-		private final static Logger _LOGGER = LoggerFactory.getLogger(OASISCatalogManager.class);
-
-		private final CatalogResolver resolver;
-		private final Catalog catalog;
-		private final Set<String> loadedCatalogs = new CopyOnWriteArraySet<>();
-
-		private OASISCatalogManager()
-		{
-			resolver = getResolver();
-			if (resolver == null)
-			{
-				throw ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION;
-			}
-
-			catalog = getCatalog(resolver);
-		}
-
-		private static Catalog getCatalog(CatalogResolver resolver)
-		{
-			assert resolver != null;
-			try
-			{
-				return resolver.getCatalog();
-			} catch (Throwable t)
-			{
-				_LOGGER.error("Error getting OASIS org.apache.xml.resolver.Catalog from CatalogResolver", t);
-			}
-
-			return null;
-		}
+		private static final Logger _LOGGER = LoggerFactory.getLogger(OASISCatalogManager.class);
 
 		private static CatalogResolver getResolver()
 		{
@@ -193,7 +173,7 @@ public class SchemaHandler
 				final CatalogResolver catalogResolver = new CatalogResolver(catalogManager)
 				{
 					@Override
-					public String getResolvedEntity(String publicId, String systemId)
+					public String getResolvedEntity(final String publicId, final String systemId)
 					{
 						final String s = super.getResolvedEntity(publicId, systemId);
 						if (s != null && s.startsWith("classpath:"))
@@ -205,23 +185,42 @@ public class SchemaHandler
 								{
 									return resourceURL.toExternalForm();
 								}
-							} catch (IOException e)
+							}
+							catch (final IOException e)
 							{
-								_LOGGER.warn("Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}", e);
+								_LOGGER.warn(
+										"Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}",
+										e);
 							}
 						}
 						return s;
 					}
 				};
 				return catalogResolver;
-			} catch (Throwable t)
+			}
+			catch (final Throwable t)
 			{
 				_LOGGER.error("Error getting org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager", t);
 			}
 			return null;
 		}
 
-		private final void loadCatalog(URL catalogURL) throws IOException
+		private final CatalogResolver resolver;
+		private final Catalog catalog;
+		private final Set<String> loadedCatalogs = new CopyOnWriteArraySet<>();
+
+		private OASISCatalogManager()
+		{
+			resolver = getResolver();
+			if (resolver == null)
+			{
+				throw ERROR_CREATING_CATALOG_RESOLVER_EXCEPTION;
+			}
+
+			catalog = resolver.getCatalog();
+		}
+
+		private void loadCatalog(final URL catalogURL) throws IOException
 		{
 			if (!loadedCatalogs.contains(catalogURL.toString()))
 			{
@@ -234,7 +233,8 @@ public class SchemaHandler
 						{
 							throw new FileNotFoundException(file.getAbsolutePath());
 						}
-					} catch (URISyntaxException e)
+					}
+					catch (final URISyntaxException e)
 					{
 						_LOGGER.warn("Error resolving XML catalog URL ({}) to a file", catalogURL, e);
 					}
@@ -242,37 +242,19 @@ public class SchemaHandler
 
 				if (catalog == null)
 				{
-					_LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.", catalogURL);
-				} else
+					_LOGGER.warn(
+							"Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.",
+							catalogURL);
+				}
+				else
 				{
 					catalog.parseCatalog(catalogURL);
-
 					loadedCatalogs.add(catalogURL.toString());
 				}
 			}
 		}
 
-		/**
-		 * Creates new {@link OASISCatalogManager} with default constructor
-		 * 
-		 * @return new instance of {@link OASISCatalogManager} (so not null)
-		 */
-		private static OASISCatalogManager getContextCatalog()
-		{
-			return new OASISCatalogManager();
-		}
-
-		/**
-		 * Creates new {@link OASISCatalogManager}
-		 * 
-		 * @return new instance of {@link OASISCatalogManager} (so not null)
-		 */
-		private static OASISCatalogManager getCatalogManager()
-		{
-			return getContextCatalog();
-		}
-
-		private String resolveSystem(String sys) throws MalformedURLException, IOException
+		private String resolveSystem(final String sys) throws MalformedURLException, IOException
 		{
 			if (catalog == null)
 			{
@@ -281,7 +263,7 @@ public class SchemaHandler
 			return catalog.resolveSystem(sys);
 		}
 
-		private String resolveURI(String uri) throws MalformedURLException, IOException
+		private String resolveURI(final String uri) throws MalformedURLException, IOException
 		{
 			if (catalog == null)
 			{
@@ -290,7 +272,7 @@ public class SchemaHandler
 			return catalog.resolveURI(uri);
 		}
 
-		private String resolvePublic(String uri, String parent) throws MalformedURLException, IOException
+		private String resolvePublic(final String uri, final String parent) throws MalformedURLException, IOException
 		{
 			if (resolver == null)
 			{
@@ -300,14 +282,15 @@ public class SchemaHandler
 		}
 	}
 
-	private static class LSInputImpl implements LSInput
+	private static final class LSInputImpl implements LSInput
 	{
 
+		private static final UnsupportedOperationException UNSUPPORTED_OPERATION_EXCEPTION = new UnsupportedOperationException();
 		private final String publicId;
 		private final String systemId;
 		private final InputStream byteStream;
 
-		private LSInputImpl(String publicId, String systemId, InputStream byteStream)
+		private LSInputImpl(final String publicId, final String systemId, final InputStream byteStream)
 		{
 			this.publicId = publicId;
 			this.systemId = systemId;
@@ -315,47 +298,48 @@ public class SchemaHandler
 		}
 
 		@Override
-		public final InputStream getByteStream()
+		public InputStream getByteStream()
 		{
 			return byteStream;
 		}
 
 		@Override
-		public final String getSystemId()
+		public String getSystemId()
 		{
 			return systemId;
 		}
 
 		@Override
-		public final String getPublicId()
+		public String getPublicId()
 		{
 			return publicId;
 		}
 
 		@Override
-		public final Reader getCharacterStream()
+		public Reader getCharacterStream()
 		{
 			/*
-			 * No character stream, only byte streams are allowed. Do not throw exception, otherwise the resolution of the resource fails, even if byte stream OK
+			 * No character stream, only byte streams are allowed. Do not throw exception, otherwise the resolution of
+			 * the resource fails, even if byte stream OK
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public final void setCharacterStream(Reader characterStream)
+		public void setCharacterStream(final Reader characterStream)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final void setByteStream(InputStream byteStream)
+		public void setByteStream(final InputStream byteStream)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final String getStringData()
+		public String getStringData()
 		{
 			/*
 			 * Not supported. Do not throw exception, otherwise the resolution of the resource fails.
@@ -365,65 +349,67 @@ public class SchemaHandler
 		}
 
 		@Override
-		public final void setStringData(String stringData)
+		public void setStringData(final String stringData)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final void setSystemId(String systemId)
+		public void setSystemId(final String systemId)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final void setPublicId(String publicId)
+		public void setPublicId(final String publicId)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final String getBaseURI()
+		public String getBaseURI()
 		{
 			/*
-			 * No base URI, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even for absolute URIs
+			 * No base URI, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the
+			 * resolution of the resource fails, even for absolute URIs
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public final void setBaseURI(String baseURI)
+		public void setBaseURI(final String baseURI)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final String getEncoding()
+		public String getEncoding()
 		{
 			/*
-			 * No encoding override, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even if encoding specified in other way
+			 * No encoding override, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise
+			 * the resolution of the resource fails, even if encoding specified in other way
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public final void setEncoding(String encoding)
+		public void setEncoding(final String encoding)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final boolean getCertifiedText()
+		public boolean getCertifiedText()
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 		@Override
-		public final void setCertifiedText(boolean certifiedText)
+		public void setCertifiedText(final boolean certifiedText)
 		{
-			throw new UnsupportedOperationException();
+			throw UNSUPPORTED_OPERATION_EXCEPTION;
 		}
 
 	}
@@ -437,7 +423,7 @@ public class SchemaHandler
 	 * @param locations
 	 *            XML schema locations
 	 */
-	public void setSchemaLocations(List<String> locations)
+	public void setSchemaLocations(final List<String> locations)
 	{
 		schema = createSchema(locations, catalogLocation);
 	}
@@ -448,7 +434,7 @@ public class SchemaHandler
 	 * @param location
 	 *            XML catalog location
 	 */
-	public void setCatalogLocation(String location)
+	public void setCatalogLocation(final String location)
 	{
 		this.catalogLocation = location;
 	}
@@ -472,38 +458,42 @@ public class SchemaHandler
 	 *            XML catalog location
 	 * @return XML validation schema
 	 */
-	public static Schema createSchema(List<String> schemaLocations, final String catalogLocation)
+	public static Schema createSchema(final List<String> schemaLocations, final String catalogLocation)
 	{
 		/*
-		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring ResourceUtils class to get Resource URLs and we don't use any Bus
-		 * object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF we don't need, the full CXF JAX-RS framework
-		 * actually. It would make more sense if SchemaHandler was part of some cxf common utility package, but it is not the case as of writing (December 2014).
+		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are
+		 * using Spring ResourceUtils class to get Resource URLs and we don't use any Bus object. We are not using CXF's
+		 * SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF
+		 * we don't need, the full CXF JAX-RS framework actually. It would make more sense if SchemaHandler was part of
+		 * some cxf common utility package, but it is not the case as of writing (December 2014).
 		 */
 
 		final SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 		try
 		{
 			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		} catch (SAXNotRecognizedException e)
+		}
+		catch (final SAXNotRecognizedException e)
 		{
 			throw new RuntimeException("Error configuring the XML schema factory for secure processing", e);
-		} catch (SAXNotSupportedException e)
+		}
+		catch (final SAXNotSupportedException e)
 		{
 			throw new RuntimeException("Error configuring the XML schema factory for secure processing", e);
 		}
 
-		final ErrorHandler schemaErrorHandler = new SchemaParsingErrorHandler();
-		factory.setErrorHandler(schemaErrorHandler);
+		factory.setErrorHandler(SCHEMA_PARSING_ERROR_HANDLER);
 		final List<Source> sources = new ArrayList<>(schemaLocations.size());
 		try
 		{
-			for (String schemaLocation : schemaLocations)
+			for (final String schemaLocation : schemaLocations)
 			{
 				final URL schemaURL;
 				try
 				{
 					schemaURL = ResourceUtils.getURL(schemaLocation);
-				} catch (FileNotFoundException e)
+				}
+				catch (final FileNotFoundException e)
 				{
 					throw new RuntimeException("No resource found for XML schema location: " + schemaLocation, e);
 				}
@@ -513,7 +503,8 @@ public class SchemaHandler
 				source.setSystemId(schemaURL.toString());
 				sources.add(source);
 			}
-		} catch (IOException ex)
+		}
+		catch (final IOException ex)
 		{
 			throw new RuntimeException("Failed to load XML schemas: " + schemaLocations, ex);
 		}
@@ -525,12 +516,13 @@ public class SchemaHandler
 
 		if (catalogLocation != null)
 		{
-			final OASISCatalogManager catalogResolver = OASISCatalogManager.getCatalogManager();
+			final OASISCatalogManager catalogResolver = new OASISCatalogManager();
 			final URL catalogURL;
 			try
 			{
 				catalogURL = ResourceUtils.getURL(catalogLocation);
-			} catch (FileNotFoundException e)
+			}
+			catch (final FileNotFoundException e)
 			{
 				throw new RuntimeException("No resource found for XML catalog file location: " + catalogLocation, e);
 			}
@@ -539,7 +531,8 @@ public class SchemaHandler
 			{
 				catalogResolver.loadCatalog(catalogURL);
 				factory.setResourceResolver(new XmlSchemaResourceResolver(catalogLocation, catalogResolver));
-			} catch (IOException ex)
+			}
+			catch (final IOException ex)
 			{
 				throw new RuntimeException("Catalog located at '" + catalogLocation + "' can not be loaded", ex);
 			}
@@ -549,7 +542,8 @@ public class SchemaHandler
 		try
 		{
 			s = factory.newSchema(sources.toArray(new Source[sources.size()]));
-		} catch (SAXException e)
+		}
+		catch (final SAXException e)
 		{
 			throw new RuntimeException("Failed to load XML schemas: " + schemaLocations, e);
 		}

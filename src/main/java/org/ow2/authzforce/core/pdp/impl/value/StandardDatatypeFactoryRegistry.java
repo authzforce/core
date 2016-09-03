@@ -18,84 +18,82 @@
  */
 package org.ow2.authzforce.core.pdp.impl.value;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.koloboke.collect.set.hash.HashObjSets;
+
 /**
  * This registry provides the factories for standard attribute datatypes specified in XACML.
- * <p>
- * Note that because this supports only the standard datatypes, this factory does not allow the addition of any other datatypes. If you call <code>addDatatype</code> on an instance of this class, an
- * exception will be thrown. If you need a standard factory that is modifiable, you should create a new <code>BaseDatatypeFactoryRegistry</code> (or some other <code>DatatypeFactoryRegistry</code>)
- * and pass this to {@link BaseDatatypeFactoryRegistry#BaseDatatypeFactoryRegistry(BaseDatatypeFactoryRegistry)}.
  *
  * 
  * @version $Id: $
  */
-public final class StandardDatatypeFactoryRegistry extends BaseDatatypeFactoryRegistry
+public final class StandardDatatypeFactoryRegistry
 {
 	// the LOGGER we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(StandardDatatypeFactoryRegistry.class);
 
-	/**
-	 * Singleton instance of Standard mandatory datatype registry
-	 */
-	public static final StandardDatatypeFactoryRegistry MANDATORY_DATATYPES;
+	private static final PdpExtensionComparator<DatatypeFactory<?>> DATATYPE_EXTENSION_COMPARATOR = new PdpExtensionComparator<>();
 
 	/**
-	 * Singleton instance of registry of all standard datatypes
+	 * Singleton instance of Standard mandatory datatype registry, i.e. not including XPath datatype
 	 */
-	public static final StandardDatatypeFactoryRegistry ALL_DATATYPES;
+	private static final DatatypeFactoryRegistry NON_XPATH_DATATYPES;
+
+	/**
+	 * Singleton instance of registry of all standard datatypes, i.e. including XPath datatype
+	 */
+	private static final DatatypeFactoryRegistry ALL_DATATYPES;
 
 	static
 	{
-		final Set<DatatypeFactory<?>> datatypeFactories = new HashSet<>();
+		final Set<DatatypeFactory<?>> datatypeFactories = HashObjSets
+				.newUpdatableSet(StandardDatatypes.MANDATORY_DATATYPE_SET.size() + 1);
 		for (final SimpleValue.Factory<? extends SimpleValue<? extends Object>> typeFactory : StandardDatatypes.MANDATORY_DATATYPE_SET)
 		{
 			datatypeFactories.add(typeFactory);
 		}
 
-		MANDATORY_DATATYPES = new StandardDatatypeFactoryRegistry(Collections.unmodifiableSet(datatypeFactories));
+		NON_XPATH_DATATYPES = new ImmutableDatatypeFactoryRegistry(datatypeFactories);
 
-		// create another instance with optional xpathExpression datatype, to be used only if XPath support enabled, see getInstance(boolean) method.
+		// create another instance with optional xpathExpression datatype, to be used only if XPath support enabled, see
+		// getInstance(boolean) method.
 		datatypeFactories.add(StandardDatatypes.XPATH_FACTORY);
-		ALL_DATATYPES = new StandardDatatypeFactoryRegistry(Collections.unmodifiableSet(datatypeFactories));
+		ALL_DATATYPES = new ImmutableDatatypeFactoryRegistry(datatypeFactories);
 
 		if (LOGGER.isDebugEnabled())
 		{
-			final TreeSet<DatatypeFactory<?>> sortedFactories = new TreeSet<>(COMPARATOR);
+			final TreeSet<DatatypeFactory<?>> sortedFactories = new TreeSet<>(DATATYPE_EXTENSION_COMPARATOR);
 			sortedFactories.addAll(datatypeFactories);
 			LOGGER.debug("Supported XACML standard datatypes: {}", sortedFactories);
 		}
+
 	}
 
-	/**
-	 * Private constructor
-	 * 
-	 * @param stdDatatypeFactories
-	 *            standard datatype factories
-	 */
-	private StandardDatatypeFactoryRegistry(Set<DatatypeFactory<?>> stdDatatypeFactories)
+	private StandardDatatypeFactoryRegistry()
 	{
-		super(stdDatatypeFactories);
+		// prevent instantiation
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Get standard function registry
 	 *
-	 * Throws an <code>UnsupportedOperationException</code> since you are not allowed to modify what a standard factory supports.
+	 * @param enableXPath
+	 *            true iff XPath-based function(s) support enabled
+	 * @return standard function registry
 	 */
-	@Override
-	public void addExtension(DatatypeFactory<?> attrDatatypeFactory)
+	public static DatatypeFactoryRegistry getRegistry(final boolean enableXPath)
 	{
-		throw new UnsupportedOperationException("This factory does not support custom datatypes but only standard ones.");
+		return enableXPath ? ALL_DATATYPES : NON_XPATH_DATATYPES;
 	}
 
 }

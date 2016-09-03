@@ -25,21 +25,14 @@ import java.util.List;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.func.BaseFunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
-import org.ow2.authzforce.core.pdp.api.func.FunctionSet;
 import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BaseTimeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
-import org.ow2.authzforce.core.pdp.api.value.DateValue;
-import org.ow2.authzforce.core.pdp.api.value.DayTimeDurationValue;
 import org.ow2.authzforce.core.pdp.api.value.DurationValue;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
@@ -51,63 +44,37 @@ import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
  * 
  * @version $Id: $
  */
-public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>> extends MultiParameterTypedFirstOrderFunction<T>
+final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends DurationValue<D>>
+		extends MultiParameterTypedFirstOrderFunction<T>
 {
-	/**
-	 * Standard identifier for the dateTime-add-dayTimeDuration function.
-	 */
-	public static final String NAME_DATETIME_ADD_DAYTIMEDURATION = XACML_NS_3_0 + "dateTime-add-dayTimeDuration";
-
-	/**
-	 * Standard identifier for the dateTime-subtract-dayTimeDuration function.
-	 */
-	public static final String NAME_DATETIME_SUBTRACT_DAYTIMEDURATION = XACML_NS_3_0 + "dateTime-subtract-dayTimeDuration";
-
-	/**
-	 * Standard identifier for the dateTime-add-yearMonthDuration function.
-	 */
-	public static final String NAME_DATETIME_ADD_YEARMONTHDURATION = XACML_NS_3_0 + "dateTime-add-yearMonthDuration";
-
-	/**
-	 * Standard identifier for the dateTime-subtract-yearMonthDuration function.
-	 */
-	public static final String NAME_DATETIME_SUBTRACT_YEARMONTHDURATION = XACML_NS_3_0 + "dateTime-subtract-yearMonthDuration";
-
-	/**
-	 * Standard identifier for the date-add-yearMonthDuration function.
-	 */
-	public static final String NAME_DATE_ADD_YEARMONTHDURATION = XACML_NS_3_0 + "date-add-yearMonthDuration";
-
-	/**
-	 * Standard identifier for the date-subtract-yearMonthDuration function.
-	 */
-	public static final String NAME_DATE_SUBTRACT_YEARMONTHDURATION = XACML_NS_3_0 + "date-subtract-yearMonthDuration";
-
-	private interface StaticOperation<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>>
+	interface StaticOperation<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>>
 	{
 
 		TV eval(TV time, DV duration);
 	}
 
-	private static final class Call<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>> extends EagerMultiPrimitiveTypeEval<TV>
+	private static final class Call<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>>
+			extends EagerMultiPrimitiveTypeEval<TV>
 	{
 		private final String invalidArgTypesErrorMsg;
 		private final Class<DV> durationParamClass;
 		private final Class<TV> timeParamClass;
 		private final StaticOperation<TV, DV> op;
 
-		private Call(FirstOrderFunctionSignature<TV> functionSig, Datatype<TV> timeParamType, Datatype<DV> durationParamType, StaticOperation<TV, DV> op, List<Expression<?>> args,
-				Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		private Call(final FirstOrderFunctionSignature<TV> functionSig, final Datatype<TV> timeParamType,
+				final Datatype<DV> durationParamType, final StaticOperation<TV, DV> op, final List<Expression<?>> args,
+				final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + timeParamType + "," + durationParamType + "): ";
+			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + timeParamType
+					+ "," + durationParamType + "): ";
 			this.timeParamClass = timeParamType.getValueClass();
 			this.durationParamClass = durationParamType.getValueClass();
 			this.op = op;
 		}
 
 		@Override
-		protected TV evaluate(Deque<AttributeValue> args) throws IndeterminateEvaluationException
+		protected TV evaluate(final Deque<AttributeValue> args) throws IndeterminateEvaluationException
 		{
 			final AttributeValue rawArg0 = args.poll();
 			final AttributeValue rawArg1 = args.poll();
@@ -118,36 +85,16 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 			{
 				arg0 = timeParamClass.cast(rawArg0);
 				arg1 = durationParamClass.cast(rawArg1);
-			} catch (ClassCastException e)
+			}
+			catch (final ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(
+						invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(),
+						StatusHelper.STATUS_PROCESSING_ERROR, e);
 			}
 
 			return op.eval(arg0, arg1);
 		}
-	}
-
-	private static final class TimeAddDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
-	{
-
-		@Override
-		public T eval(T time, D duration)
-		{
-			return time.add(duration);
-
-		}
-
-	}
-
-	private static final class TimeSubtractDurationOperation<T extends BaseTimeValue<T>, D extends DurationValue<D>> implements StaticOperation<T, D>
-	{
-
-		@Override
-		public T eval(T time, D duration)
-		{
-			return time.subtract(duration);
-		}
-
 	}
 
 	private final StaticOperation<T, D> op;
@@ -168,7 +115,8 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 	 * @param op
 	 *            temporal arithmetic operation
 	 */
-	private TemporalArithmeticFunction(String functionName, Datatype<T> timeParamType, Datatype<D> durationParamType, StaticOperation<T, D> op)
+	TemporalArithmeticFunction(final String functionName, final Datatype<T> timeParamType,
+			final Datatype<D> durationParamType, final StaticOperation<T, D> op)
 	{
 		super(functionName, timeParamType, false, Arrays.asList(timeParamType, durationParamType));
 		this.timeParamType = timeParamType;
@@ -179,32 +127,10 @@ public final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D exte
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<T> newCall(List<Expression<?>> argExpressions, Datatype<?>... remainingArgTypes) throws IllegalArgumentException
+	public FirstOrderFunctionCall<T> newCall(final List<Expression<?>> argExpressions,
+			final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
 		return new Call<>(functionSignature, timeParamType, durationParamType, op, argExpressions, remainingArgTypes);
 	}
-
-	/**
-	 * Temporal arithmetic function cluster
-	 */
-	public static final FunctionSet SET = new BaseFunctionSet(FunctionSet.DEFAULT_ID_NAMESPACE + "temporal-arithmetic",
-	//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_DAYTIMEDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.DAYTIMEDURATION_FACTORY.getDatatype(),
-					new TimeAddDurationOperation<DateTimeValue, DayTimeDurationValue>()),
-			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_DAYTIMEDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.DAYTIMEDURATION_FACTORY.getDatatype(),
-					new TimeSubtractDurationOperation<DateTimeValue, DayTimeDurationValue>()),
-			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_ADD_YEARMONTHDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
-					new TimeAddDurationOperation<DateTimeValue, YearMonthDurationValue>()),
-			//
-			new TemporalArithmeticFunction<>(NAME_DATETIME_SUBTRACT_YEARMONTHDURATION, StandardDatatypes.DATETIME_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
-					new TimeSubtractDurationOperation<DateTimeValue, YearMonthDurationValue>()),
-			//
-			new TemporalArithmeticFunction<>(NAME_DATE_ADD_YEARMONTHDURATION, StandardDatatypes.DATE_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
-					new TimeAddDurationOperation<DateValue, YearMonthDurationValue>()),
-			//
-			new TemporalArithmeticFunction<>(NAME_DATE_SUBTRACT_YEARMONTHDURATION, StandardDatatypes.DATE_FACTORY.getDatatype(), StandardDatatypes.YEARMONTHDURATION_FACTORY.getDatatype(),
-					new TimeSubtractDurationOperation<DateValue, YearMonthDurationValue>()));
 
 }
