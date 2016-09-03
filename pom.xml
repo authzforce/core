@@ -43,7 +43,7 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
-         <version>7.1.0</version>
+         <version>7.1.1</version>
       </dependency>
       <!-- /Authzforce dependencies -->
 
