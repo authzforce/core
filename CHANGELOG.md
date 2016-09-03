@@ -1,6 +1,11 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
+
+## 5.0.2
+### Changed
+- Dependency version: authzforce-core-pdp-api: 7.1.1 (was: 7.1.0)
+
 ## 5.0.1
 ### Fixed
 - #22 (OW2): When handling the same XACML Request twice in the same JVM with the root PolicySet using deny-unless-permit algorithm over a Policy returning simple Deny (no status/obligation/advice) and a Policy returning Permit/Deny with obligations/advice, the obligation is duplicated in the final result at the second time this situation occurs. 
