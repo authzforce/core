@@ -18,9 +18,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.List;
-
 import javax.xml.bind.JAXBElement;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
@@ -33,9 +34,6 @@ import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 /**
  * Deny-unless-permit combining algorithm
  *
@@ -46,19 +44,17 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
 	{
-		private Evaluator(final List<? extends Decidable> combinedElements)
+		private Evaluator(final Iterable<? extends Decidable> combinedElements)
 		{
 			super(combinedElements);
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 			/*
-			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to
-			 * outApplicablePolicyIdList
+			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to outApplicablePolicyIdList
 			 */
 
 			UpdatablePepActions denyPepActions = null;
@@ -68,12 +64,13 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 				final DecisionResult result = combinedElement.evaluate(context);
 				final DecisionType decision = result.getDecision();
 				/*
-				 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy
-				 * set that does not match the decision resulting from evaluating the enclosing policy set.
+				 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing
+				 * policy set.
 				 * 
 				 * So if we return Deny, we should add to outPepActions only the PEP actions from Deny decisions
 				 */
-				switch (decision) {
+				switch (decision)
+				{
 					case PERMIT:
 						if (outApplicablePolicyIdList != null)
 						{
@@ -101,8 +98,7 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 			}
 
 			/*
-			 * All applicable policies are already in outApplicablePolicyIdList at this point, so nothing else to do
-			 * with it
+			 * All applicable policies are already in outApplicablePolicyIdList at this point, so nothing else to do with it
 			 */
 
 			outPepActions.add(denyPepActions);
@@ -113,8 +109,7 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params,
-			final List<? extends Decidable> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
 			throws UnsupportedOperationException, IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);

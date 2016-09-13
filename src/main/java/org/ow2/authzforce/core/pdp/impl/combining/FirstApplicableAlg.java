@@ -18,9 +18,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.List;
-
 import javax.xml.bind.JAXBElement;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
@@ -33,12 +34,8 @@ import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 /**
- * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules,
- * finds the first one that applies, and returns that evaluation result.
+ * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
  *
  * @version $Id: $
  */
@@ -48,14 +45,13 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
 	{
 
-		private Evaluator(final List<? extends Decidable> combinedElements)
+		private Evaluator(final Iterable<? extends Decidable> combinedElements)
 		{
 			super(combinedElements);
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 		{
 			for (final Decidable combinedElement : getCombinedElements())
 			{
@@ -64,10 +60,10 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 				final DecisionType decision = result.getDecision();
 
 				/*
-				 * In case of PERMIT, DENY, or INDETERMINATE, we always just return that decision, so only on a rule
-				 * that doesn't apply do we keep going...
+				 * In case of PERMIT, DENY, or INDETERMINATE, we always just return that decision, so only on a rule that doesn't apply do we keep going...
 				 */
-				switch (decision) {
+				switch (decision)
+				{
 					case PERMIT:
 						if (outApplicablePolicyIdList != null)
 						{
@@ -105,8 +101,7 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params,
-			final List<? extends Decidable> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
 			throws UnsupportedOperationException, IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);

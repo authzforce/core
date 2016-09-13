@@ -22,6 +22,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
+
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -31,35 +33,28 @@ import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 abstract class DPOverridesAlgEvaluator extends BaseCombiningAlg.Evaluator<Decidable>
 {
 
-	DPOverridesAlgEvaluator(final List<? extends Decidable> combinedElements)
+	DPOverridesAlgEvaluator(final Iterable<? extends Decidable> combinedElements)
 	{
 		super(combinedElements);
 	}
 
 	@Override
-	public final ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions,
-			final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+	public final ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 	{
 		assert outPepActions != null;
-		final DPOverridesAlgResultCombiner resultHelper = new DPOverridesAlgResultCombiner(
-				outApplicablePolicyIdList != null);
+		final DPOverridesAlgResultCombiner resultHelper = new DPOverridesAlgResultCombiner(outApplicablePolicyIdList != null);
 		for (final Decidable combinedElement : getCombinedElements())
 		{
 			// evaluate the policy
 			final DecisionResult result = combinedElement.evaluate(context);
 			/*
-			 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy
-			 * set that does not match the decision resulting from evaluating the enclosing policy set. For example,
-			 * if the final decision is Permit, we should add to outPepActions only the PEP actions from Permit
-			 * decisions (permitPepActions)
+			 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing policy
+			 * set. For example, if the final decision is Permit, we should add to outPepActions only the PEP actions from Permit decisions (permitPepActions)
 			 */
-			final ExtendedDecision finalResult = getOverridingDPResult(result, outPepActions,
-					outApplicablePolicyIdList, resultHelper);
+			final ExtendedDecision finalResult = getOverridingDPResult(result, outPepActions, outApplicablePolicyIdList, resultHelper);
 			if (finalResult != null)
 			{
 				return finalResult;
@@ -67,8 +62,7 @@ abstract class DPOverridesAlgEvaluator extends BaseCombiningAlg.Evaluator<Decida
 		}
 
 		/*
-		 * There was no overriding Deny/Permit decision, i.e. Deny (resp. Permit) in case of deny-overrides (resp.
-		 * permit-overrides) alg, else: if any Indeterminate{DP}, then Indeterminate{DP}
+		 * There was no overriding Deny/Permit decision, i.e. Deny (resp. Permit) in case of deny-overrides (resp. permit-overrides) alg, else: if any Indeterminate{DP}, then Indeterminate{DP}
 		 */
 		final ExtendedDecision firstIndeterminateDP = resultHelper.getFirstIndeterminateDP();
 		if (firstIndeterminateDP != null)
@@ -82,30 +76,23 @@ abstract class DPOverridesAlgEvaluator extends BaseCombiningAlg.Evaluator<Decida
 			return firstIndeterminateDP;
 		}
 
-		return getFinalResult(resultHelper.getPepActions(), outPepActions, resultHelper.getApplicablePolicies(null),
-				outApplicablePolicyIdList, resultHelper.getFirstIndeterminateD(),
+		return getFinalResult(resultHelper.getPepActions(), outPepActions, resultHelper.getApplicablePolicies(null), outApplicablePolicyIdList, resultHelper.getFirstIndeterminateD(),
 				resultHelper.getFirstIndeterminateP());
 	}
 
 	/**
-	 * Get overriding Deny/Permit decision, e.g. first Deny (resp. Permit) returned by a combined element in
-	 * deny-overrides (resp. permit-overrides) algorithm, resulting in the algorithm to return it as final result
-	 * immediately. (This corresponds to the for-loop in XACML spec's pseudo-code describing the algorithm.) Or null
-	 * if no such case occurred (and algorithm must go on, i.e. part after the for-loop in XACML spec)
+	 * Get overriding Deny/Permit decision, e.g. first Deny (resp. Permit) returned by a combined element in deny-overrides (resp. permit-overrides) algorithm, resulting in the algorithm to return it
+	 * as final result immediately. (This corresponds to the for-loop in XACML spec's pseudo-code describing the algorithm.) Or null if no such case occurred (and algorithm must go on, i.e. part after
+	 * the for-loop in XACML spec)
 	 */
-	protected abstract ExtendedDecision getOverridingDPResult(DecisionResult result,
-			UpdatablePepActions outPepActions,
-			UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
+	protected abstract ExtendedDecision getOverridingDPResult(DecisionResult result, UpdatablePepActions outPepActions, UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
 			DPOverridesAlgResultCombiner resultHelper);
 
 	/**
-	 * Finish the algorithm based on all PEP actions and applicable policy lists from all combined elements, and
-	 * previously returned Indeterminate{D}/Indeterminate{P} if any
+	 * Finish the algorithm based on all PEP actions and applicable policy lists from all combined elements, and previously returned Indeterminate{D}/Indeterminate{P} if any
 	 */
-	protected abstract ExtendedDecision getFinalResult(final PepActions combinedPepActions,
-			final UpdatablePepActions outPepActions,
-			final List<JAXBElement<IdReferenceType>> combinedApplicablePolicies,
-			final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
+	protected abstract ExtendedDecision getFinalResult(final PepActions combinedPepActions, final UpdatablePepActions outPepActions,
+			final List<JAXBElement<IdReferenceType>> combinedApplicablePolicies, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
 			final ExtendedDecision firstIndeterminateD, final ExtendedDecision firstIndeterminateP);
 
 }

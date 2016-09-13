@@ -18,10 +18,9 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.List;
-
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
 /**
@@ -44,7 +43,7 @@ final class LegacyPermitOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> parameters, final List<? extends Decidable> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> parameters, final Iterable<? extends Decidable> combinedElements)
 	{
 		throw this.unsupportedLegacyAlgorithmException;
 		/*

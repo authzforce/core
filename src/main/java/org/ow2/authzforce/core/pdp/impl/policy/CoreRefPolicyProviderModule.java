@@ -290,6 +290,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		private final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap;
 		private final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap;
 		private final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> policySetMapToUpdate;
+		private final Set<String> parsedPolicyIds;
+		private final Set<String> parsedPolicySetIds =
 
 		private InitOnlyRefPolicyProvider(final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap,
 				final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap,

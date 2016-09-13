@@ -22,6 +22,9 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
+
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
@@ -30,17 +33,14 @@ import org.ow2.authzforce.core.pdp.api.PepActions;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
 import com.google.common.base.Preconditions;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 /**
- * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to
- * take precedence over any number of deny, not applicable or indeterminate results. Note that since this implementation
- * does an ordered evaluation, this class also supports the Ordered-Permit-Overrides algorithm.
+ * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take precedence over any number of deny, not applicable or indeterminate results.
+ * Note that since this implementation does an ordered evaluation, this class also supports the Ordered-Permit-Overrides algorithm.
  * 
  * @version $Id: $
  */
@@ -48,18 +48,17 @@ final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 {
 	private static final class Evaluator extends DPOverridesAlgEvaluator
 	{
-		private Evaluator(final List<? extends Decidable> combinedElements)
+		private Evaluator(final Iterable<? extends Decidable> combinedElements)
 		{
 			super(combinedElements);
 		}
 
 		@Override
-		protected ExtendedDecision getOverridingDPResult(final DecisionResult result,
-				final UpdatablePepActions outPepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
-				final DPOverridesAlgResultCombiner resultHelper)
+		protected ExtendedDecision getOverridingDPResult(final DecisionResult result, final UpdatablePepActions outPepActions,
+				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList, final DPOverridesAlgResultCombiner resultHelper)
 		{
-			switch (result.getDecision()) {
+			switch (result.getDecision())
+			{
 				case PERMIT:
 					if (outApplicablePolicyIdList != null)
 					{
@@ -82,15 +81,12 @@ final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 		}
 
 		@Override
-		protected ExtendedDecision getFinalResult(final PepActions combinedDenyPepActions,
-				final UpdatablePepActions outPepActions,
-				final List<JAXBElement<IdReferenceType>> combinedApplicablePolicies,
-				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
+		protected ExtendedDecision getFinalResult(final PepActions combinedDenyPepActions, final UpdatablePepActions outPepActions,
+				final List<JAXBElement<IdReferenceType>> combinedApplicablePolicies, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
 				final ExtendedDecision firstIndeterminateD, final ExtendedDecision firstIndeterminateP)
 		{
 			/*
-			 * If any Indeterminate{P}, then: if ( any Indeterminate{D} or any Deny ) -> Indeterminate{DP}; else ->
-			 * Indeterminate{P} (this is a simplified equivalent of the algo in the spec)
+			 * If any Indeterminate{P}, then: if ( any Indeterminate{D} or any Deny ) -> Indeterminate{DP}; else -> Indeterminate{P} (this is a simplified equivalent of the algo in the spec)
 			 */
 			/*
 			 * atLeastOneDeny == true <=> denyPepActions != null
@@ -102,8 +98,8 @@ final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 					outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
 				}
 
-				return ExtendedDecisions.newIndeterminate(firstIndeterminateD != null || combinedDenyPepActions != null
-						? DecisionType.INDETERMINATE : DecisionType.PERMIT, firstIndeterminateP.getStatus());
+				return ExtendedDecisions.newIndeterminate(firstIndeterminateD != null || combinedDenyPepActions != null ? DecisionType.INDETERMINATE : DecisionType.PERMIT,
+						firstIndeterminateP.getStatus());
 			}
 
 			if (combinedDenyPepActions != null)
@@ -134,8 +130,7 @@ final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params,
-			final List<? extends Decidable> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
 	{
 		return new Evaluator(Preconditions.checkNotNull(combinedElements));
 	}
