@@ -34,8 +34,12 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.xml.bind.JAXBException;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -58,51 +62,34 @@ import org.springframework.util.ResourceUtils;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
- * This is the core implementation of <code>RefPolicyProviderModule</code> that
- * supports static retrieval of the policies referenced by
- * Policy(Set)IdReference. It is configured by a list of locations that
- * represent Spring-compatible resource URLs, corresponding to XACML Policy(Set)
- * files - each file content is expected to be a XACML Policy(Set) document -
- * when the module is initialized. Beyond this, there is no modifying or
- * re-loading the policies handled by this class.
+ * This is the core implementation of <code>RefPolicyProviderModule</code> that supports static retrieval of the policies referenced by Policy(Set)IdReference. It is configured by a list of locations
+ * that represent Spring-compatible resource URLs, corresponding to XACML Policy(Set) files - each file content is expected to be a XACML Policy(Set) document - when the module is initialized. Beyond
+ * this, there is no modifying or re-loading the policies handled by this class.
  * <p>
- * A policy location may also be a file pattern in the following form:
- * "file://DIRECTORY_PATH/*SUFFIX" using wilcard character '*'; in which case
- * the location is expanded to all regular files (not subdirectories) in
- * directory located at DIRECTORY_PATH with suffix SUFFIX (SUFFIX may be empty,
- * i.e. no suffix). The files are NOT searched recursively on sub-directories.
+ * A policy location may also be a file pattern in the following form: "file://DIRECTORY_PATH/*SUFFIX" using wilcard character '*'; in which case the location is expanded to all regular files (not
+ * subdirectories) in directory located at DIRECTORY_PATH with suffix SUFFIX (SUFFIX may be empty, i.e. no suffix). The files are NOT searched recursively on sub-directories.
  * <p>
- * Note that this class is designed to complement
- * {@link CoreRootPolicyProviderModule} in charge of the root policy(set) which
- * may refer to policies resolved by this {@link CoreRefPolicyProviderModule}.
+ * Note that this class is designed to complement {@link CoreRootPolicyProviderModule} in charge of the root policy(set) which may refer to policies resolved by this
+ * {@link CoreRefPolicyProviderModule}.
  *
  * 
  * @version $Id: $
  */
 public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModule
 {
-	private static final IllegalArgumentException ILLEGAL_COMBINING_ALG_REGISTRY_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined CombiningAlgorithm registry");
-	private static final IllegalArgumentException ILLEGAL_EXPRESSION_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined Expression factory");
-	private static final IllegalArgumentException ILLEGAL_XACML_PARSER_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined XACML parser factory");
-	private static final IllegalArgumentException ILLEGAL_POLICY_URLS_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined policy URL(s)");
+	private static final IllegalArgumentException ILLEGAL_COMBINING_ALG_REGISTRY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined CombiningAlgorithm registry");
+	private static final IllegalArgumentException ILLEGAL_EXPRESSION_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Expression factory");
+	private static final IllegalArgumentException ILLEGAL_XACML_PARSER_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined XACML parser factory");
+	private static final IllegalArgumentException ILLEGAL_POLICY_URLS_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined policy URL(s)");
 	private static final Logger LOGGER = LoggerFactory.getLogger(CoreRefPolicyProviderModule.class);
 
 	/**
-	 * Policy wrapper to keep the association between the namespace prefix-URIs
-	 * from a XACML policy document and the Java instance of the policy
-	 * resulting from parsing the same document
+	 * Policy wrapper to keep the association between the namespace prefix-URIs from a XACML policy document and the Java instance of the policy resulting from parsing the same document
 	 *
-	 * @param
-	 * 			<P>
+	 * @param <P>
 	 *            policy type
 	 */
 	public static final class PolicyWithNamespaces<P>
@@ -143,12 +130,10 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	 * Module factory
 	 * 
 	 */
-	public static class Factory
-			extends RefPolicyProviderModule.Factory<org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider>
+	public static class Factory extends RefPolicyProviderModule.Factory<org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider>
 	{
 
-		private static final IllegalArgumentException NULL_CONF_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-				"RefPolicyProvider configuration undefined");
+		private static final IllegalArgumentException NULL_CONF_ARGUMENT_EXCEPTION = new IllegalArgumentException("RefPolicyProvider configuration undefined");
 
 		@Override
 		public Class<org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider> getJaxbClass()
@@ -157,10 +142,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		}
 
 		@Override
-		public RefPolicyProviderModule getInstance(final org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider conf,
-				final XACMLParserFactory xacmlParserFactory, final int maxPolicySetRefDepth,
-				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry,
-				final EnvironmentProperties environmentProperties)
+		public RefPolicyProviderModule getInstance(final org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider conf, final XACMLParserFactory xacmlParserFactory, final int maxPolicySetRefDepth,
+				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties)
 		{
 			if (conf == null)
 			{
@@ -185,9 +168,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 						{
 							// Beware of autoboxing which causes call to
 							// Integer.valueOf(...) on policyLocationIndex
-							LOGGER.debug(
-									"Policy location #{} is a filepath pattern (found '/*') -> expanding to all files in directory '{}' with suffix '{}'",
-									policyLocationIndex, directoryLocation, suffix);
+							LOGGER.debug("Policy location #{} is a filepath pattern (found '/*') -> expanding to all files in directory '{}' with suffix '{}'", policyLocationIndex, directoryLocation,
+									suffix);
 						}
 
 						final String dirLocation = environmentProperties.replacePlaceholders(directoryLocation);
@@ -198,8 +180,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 						}
 						catch (final FileNotFoundException e)
 						{
-							throw new IllegalArgumentException("Invalid directory location: '" + dirLocation
-									+ "' extracted from policy location (pattern) '" + policyLocation + "'", e);
+							throw new IllegalArgumentException("Invalid directory location: '" + dirLocation + "' extracted from policy location (pattern) '" + policyLocation + "'", e);
 						}
 
 						final Path directoryPath;
@@ -209,8 +190,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 						}
 						catch (final URISyntaxException e)
 						{
-							throw new RuntimeException("Error converting policy directory URL '" + directoryURL
-									+ "' - extracted from policy location (pattern) '" + policyLocation
+							throw new RuntimeException("Error converting policy directory URL '" + directoryURL + "' - extracted from policy location (pattern) '" + policyLocation
 									+ "' - to a Java Path (via URI)", e);
 						}
 
@@ -232,14 +212,12 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 						{
 							// I/O error encounted during the iteration, the
 							// cause is an IOException
-							throw new RuntimeException("Error iterating over files in directory '" + dirLocation
-									+ "' to get policies at locations matching pattern '" + policyLocation + "'",
+							throw new RuntimeException("Error iterating over files in directory '" + dirLocation + "' to get policies at locations matching pattern '" + policyLocation + "'",
 									ex.getCause());
 						}
 						catch (final IOException e)
 						{
-							throw new RuntimeException("Error getting policy files in '" + dirLocation
-									+ "' according to policy location pattern '" + policyLocation + "'", e);
+							throw new RuntimeException("Error getting policy files in '" + dirLocation + "' according to policy location pattern '" + policyLocation + "'", e);
 						}
 
 						continue;
@@ -256,8 +234,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				}
 				catch (final FileNotFoundException e)
 				{
-					throw new IllegalArgumentException(
-							"Error loading policy (as Spring resource) from the following URL: " + policyLoc, e);
+					throw new IllegalArgumentException("Error loading policy (as Spring resource) from the following URL: " + policyLoc, e);
 				}
 
 				if (policyURL == null)
@@ -269,15 +246,12 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				policyLocationIndex++;
 			}
 
-			return CoreRefPolicyProviderModule.getInstance(policyURLs, xacmlParserFactory, maxPolicySetRefDepth,
-					expressionFactory, combiningAlgRegistry);
+			return CoreRefPolicyProviderModule.getInstance(policyURLs, xacmlParserFactory, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 		}
 	}
 
 	/*
-	 * Ref policy Provider used only for initialization, more particularly for
-	 * parsing the PolicySets when they are referred to by others (in
-	 * PolicySetIdReferences) at initialization time
+	 * Ref policy Provider used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in PolicySetIdReferences) at initialization time
 	 */
 	private static class InitOnlyRefPolicyProvider implements StaticRefPolicyProvider
 	{
@@ -291,48 +265,45 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		private final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap;
 		private final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> policySetMapToUpdate;
 		private final Set<String> parsedPolicyIds;
-		private final Set<String> parsedPolicySetIds =
+		private final Set<String> parsedPolicySetIds;
 
-		private InitOnlyRefPolicyProvider(final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap,
-				final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap,
-				final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> outPolicySetEvaluatorMap,
-				final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory,
-				final CombiningAlgRegistry combiningAlgRegistry)
+		private InitOnlyRefPolicyProvider(final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap, final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap,
+				final Set<String> parsedPolicyIds, final Set<String> parsedPolicySetIds, final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> outPolicySetEvaluatorMap,
+				final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
 		{
+			assert parsedPolicyIds != null && parsedPolicySetIds != null;
+
 			this.policyMap = policyMap;
 			this.policySetMapToUpdate = outPolicySetEvaluatorMap;
 			this.jaxbPolicySetMap = jaxbPolicySetMap;
 			this.maxPolicySetRefDepth = maxPolicySetRefDepth;
 			this.expressionFactory = expressionFactory;
 			this.combiningAlgRegistry = combiningAlgRegistry;
+			this.parsedPolicyIds = parsedPolicyIds;
+			this.parsedPolicySetIds = parsedPolicySetIds;
 		}
 
 		@Override
-		public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id,
-				final VersionPatterns versionConstraints, final Deque<String> ancestorPolicyRefChain,
-				final EvaluationContext evaluationContext)
-						throws IndeterminateEvaluationException, IllegalArgumentException
+		public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final VersionPatterns versionConstraints, final Deque<String> ancestorPolicyRefChain,
+				final EvaluationContext evaluationContext) throws IndeterminateEvaluationException, IllegalArgumentException
 		{
 			return get(policyType, id, versionConstraints, ancestorPolicyRefChain);
 		}
 
 		@Override
-		public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id,
-				final VersionPatterns versionConstraints, final Deque<String> ancestorPolicyRefChain)
+		public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final VersionPatterns versionConstraints,
+				final Deque<String> ancestorPolicyRefChain)
 		{
 			// If this is a request for Policy (from PolicyIdReference)
 			if (policyType == TopLevelPolicyElementType.POLICY)
 			{
-				final Entry<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyEntry = policyMap.get(id,
-						versionConstraints);
+				final Entry<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyEntry = policyMap.get(id, versionConstraints);
 				return policyEntry == null ? null : policyEntry.getValue();
 			}
 
 			// Else this is a request for PolicySet (from PolicySetIdReference)
-			final Deque<String> newPolicySetRefChain = Utils.appendAndCheckPolicyRefChain(ancestorPolicyRefChain,
-					Collections.singletonList(id), maxPolicySetRefDepth);
-			final Entry<PolicyVersion, PolicyWithNamespaces<PolicySet>> jaxbPolicySetEntry = jaxbPolicySetMap.get(id,
-					versionConstraints);
+			final Deque<String> newPolicySetRefChain = Utils.appendAndCheckPolicyRefChain(ancestorPolicyRefChain, Collections.singletonList(id), maxPolicySetRefDepth);
+			final Entry<PolicyVersion, PolicyWithNamespaces<PolicySet>> jaxbPolicySetEntry = jaxbPolicySetMap.get(id, versionConstraints);
 			if (jaxbPolicySetEntry == null)
 			{
 				// no such policy
@@ -341,26 +312,22 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 
 			final PolicyVersion jaxbPolicySetVersion = jaxbPolicySetEntry.getKey();
 			// Check whether already parsed
-			final StaticTopLevelPolicyElementEvaluator policySetEvaluator = policySetMapToUpdate.get(id,
-					jaxbPolicySetVersion);
+			final StaticTopLevelPolicyElementEvaluator policySetEvaluator = policySetMapToUpdate.get(id, jaxbPolicySetVersion);
 			final StaticTopLevelPolicyElementEvaluator resultPolicySetEvaluator;
 			if (policySetEvaluator == null)
 			{
 				/*
-				 * No matching version already parsed. Instantiate the policy
-				 * evaluator
+				 * No matching version already parsed. Instantiate the policy evaluator
 				 */
 				final PolicyWithNamespaces<PolicySet> jaxbPolicySetWithNs = jaxbPolicySetEntry.getValue();
 				try
 				{
-					resultPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null,
-							jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry, this,
-							newPolicySetRefChain);
+					resultPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
+							this.parsedPolicyIds, this.parsedPolicySetIds, this, newPolicySetRefChain);
 				}
 				catch (final IllegalArgumentException e)
 				{
-					throw new IllegalArgumentException(
-							"Invalid PolicySet with PolicySetId=" + id + ", Version=" + jaxbPolicySetVersion, e);
+					throw new IllegalArgumentException("Invalid PolicySet with PolicySetId=" + id + ", Version=" + jaxbPolicySetVersion, e);
 				}
 
 				policySetMapToUpdate.put(id, jaxbPolicySetVersion, resultPolicySetEvaluator);
@@ -370,12 +337,9 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				// policySet already parsed
 				resultPolicySetEvaluator = policySetEvaluator;
 				/*
-				 * check total policy ref depth, i.e. length of
-				 * (newAncestorPolicySetRefChain + parsed policySet's longest
-				 * (nested) policy ref chain) <= maxPolicySetRefDepth
+				 * check total policy ref depth, i.e. length of (newAncestorPolicySetRefChain + parsed policySet's longest (nested) policy ref chain) <= maxPolicySetRefDepth
 				 */
-				Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain,
-						policySetEvaluator.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
+				Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, policySetEvaluator.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
 			}
 
 			return resultPolicySetEvaluator;
@@ -386,48 +350,35 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	private final PolicyMap<StaticTopLevelPolicyElementEvaluator> policySetEvaluatorMap;
 	private final int maxPolicySetRefDepth;
 
-	private CoreRefPolicyProviderModule(final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap,
-			final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap, final int maxPolicySetRefDepth,
-			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
-					throws IllegalArgumentException
+	private CoreRefPolicyProviderModule(final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap, final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap,
+			final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
-		assert policyMap != null && jaxbPolicySetMap != null && expressionFactory != null
-				&& combiningAlgRegistry != null;
+		assert policyMap != null && jaxbPolicySetMap != null && expressionFactory != null && combiningAlgRegistry != null;
 
 		this.maxPolicySetRefDepth = maxPolicySetRefDepth < 0 ? Utils.UNLIMITED_POLICY_REF_DEPTH : maxPolicySetRefDepth;
 		this.policyEvaluatorMap = policyMap;
-		final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablePolicySetEvaluatorTable = HashBasedTable
-				.create();
+		final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablePolicySetEvaluatorTable = HashBasedTable.create();
 		/*
-		 * Ref policy Provider module used only for initialization, more
-		 * particularly for parsing the PolicySets when they are referred to by
-		 * others (in PolicySetIdReferences)
+		 * Ref policy Provider module used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in PolicySetIdReferences)
 		 */
-		final StaticRefPolicyProvider bootstrapRefPolicyProvider = new InitOnlyRefPolicyProvider(
-				this.policyEvaluatorMap, jaxbPolicySetMap, updatablePolicySetEvaluatorTable, this.maxPolicySetRefDepth,
-				expressionFactory, combiningAlgRegistry);
-
-		for (final Entry<String, PolicyVersions<PolicyWithNamespaces<PolicySet>>> jaxbPolicySetWithNsEntry : jaxbPolicySetMap
-				.entrySet())
+		final Set<String> parsedPolicyIds = HashObjSets.newUpdatableSet();
+		final Set<String> parsedPolicySetIds = HashObjSets.newUpdatableSet();
+		final StaticRefPolicyProvider bootstrapRefPolicyProvider = new InitOnlyRefPolicyProvider(this.policyEvaluatorMap, jaxbPolicySetMap, parsedPolicyIds, parsedPolicySetIds,
+				updatablePolicySetEvaluatorTable, this.maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
+		for (final Entry<String, PolicyVersions<PolicyWithNamespaces<PolicySet>>> jaxbPolicySetWithNsEntry : jaxbPolicySetMap.entrySet())
 		{
 			final String policySetId = jaxbPolicySetWithNsEntry.getKey();
 			// instantiate all policy versions for this policyId now
-			final PolicyVersions<PolicyWithNamespaces<PolicySet>> jaxbPolicySetVersions = jaxbPolicySetWithNsEntry
-					.getValue();
+			final PolicyVersions<PolicyWithNamespaces<PolicySet>> jaxbPolicySetVersions = jaxbPolicySetWithNsEntry.getValue();
 			for (final Entry<PolicyVersion, PolicyWithNamespaces<PolicySet>> jaxbPolicySetEntry : jaxbPolicySetVersions)
 			{
 
 				final PolicyVersion policySetVersion = jaxbPolicySetEntry.getKey();
 				/*
-				 * Check corresponding PolicySet evaluator in
-				 * policySetEvaluatorTable to check whether it is not already
-				 * there, i.e. already instantiated by
-				 * refPolicyProvider.get(...) because of Policy references in
-				 * previously instantiated policies (when calling
-				 * PolicyEvaluators.getInstanceStatic() down below)
+				 * Check corresponding PolicySet evaluator in policySetEvaluatorTable to check whether it is not already there, i.e. already instantiated by refPolicyProvider.get(...) because of
+				 * Policy references in previously instantiated policies (when calling PolicyEvaluators.getInstanceStatic() down below)
 				 */
-				final StaticTopLevelPolicyElementEvaluator old = updatablePolicySetEvaluatorTable.get(policySetId,
-						policySetVersion);
+				final StaticTopLevelPolicyElementEvaluator old = updatablePolicySetEvaluatorTable.get(policySetId, policySetVersion);
 				if (old == null)
 				{
 					// no policyset with such ID/Version instantiated yet
@@ -436,15 +387,12 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 					final StaticTopLevelPolicyElementEvaluator newPolicySetEvaluator;
 					try
 					{
-						newPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null,
-								jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
-								bootstrapRefPolicyProvider, null);
+						newPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
+								parsedPolicyIds, parsedPolicySetIds, bootstrapRefPolicyProvider, null);
 					}
 					catch (final IllegalArgumentException e)
 					{
-						throw new IllegalArgumentException(
-								"Invalid PolicySet with PolicySetId=" + policySetId + ", Version=" + policySetVersion,
-								e);
+						throw new IllegalArgumentException("Invalid PolicySet with PolicySetId=" + policySetId + ", Version=" + policySetVersion, e);
 					}
 
 					updatablePolicySetEvaluatorTable.put(policySetId, policySetVersion, newPolicySetEvaluator);
@@ -463,25 +411,18 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	 * @param jaxbPolicySets
 	 *            XACML PolicySets
 	 * @param maxPolicySetRefDepth
-	 *            maximum allowed depth of PolicySet reference chain (via
-	 *            PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...
+	 *            maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...
 	 * @param combiningAlgRegistry
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
-	 *            Expression factory for parsing Expressions used in the
-	 *            policy(set)
+	 *            Expression factory for parsing Expressions used in the policy(set)
 	 * @return instance of this module
 	 * @throws java.lang.IllegalArgumentException
-	 *             if both {@code jaxbPoliciesByIdAndVersion} and
-	 *             {@code jaxbPolicySetsByIdAndVersion} are null/empty, or
-	 *             expressionFactory/combiningAlgRegistry undefined; or one of
-	 *             the Policy(Set)s is not valid or conflicts with another
-	 *             because it has same Policy(Set)Id and Version.
+	 *             if both {@code jaxbPoliciesByIdAndVersion} and {@code jaxbPolicySetsByIdAndVersion} are null/empty, or expressionFactory/combiningAlgRegistry undefined; or one of the Policy(Set)s
+	 *             is not valid or conflicts with another because it has same Policy(Set)Id and Version.
 	 */
-	public static CoreRefPolicyProviderModule getInstance(final List<PolicyWithNamespaces<Policy>> jaxbPolicies,
-			final List<PolicyWithNamespaces<PolicySet>> jaxbPolicySets, final int maxPolicySetRefDepth,
-			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
-					throws IllegalArgumentException
+	public static CoreRefPolicyProviderModule getInstance(final List<PolicyWithNamespaces<Policy>> jaxbPolicies, final List<PolicyWithNamespaces<PolicySet>> jaxbPolicySets,
+			final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		if ((jaxbPolicies == null || jaxbPolicies.isEmpty()) && (jaxbPolicySets == null || jaxbPolicySets.isEmpty()))
 		{
@@ -501,13 +442,11 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap;
 		if (jaxbPolicies == null)
 		{
-			policyMap = new PolicyMap<>(
-					Collections.<String, Map<PolicyVersion, StaticTopLevelPolicyElementEvaluator>> emptyMap());
+			policyMap = new PolicyMap<>(Collections.<String, Map<PolicyVersion, StaticTopLevelPolicyElementEvaluator>> emptyMap());
 		}
 		else
 		{
-			final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablePolicyTable = HashBasedTable
-					.create();
+			final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablePolicyTable = HashBasedTable.create();
 			for (final PolicyWithNamespaces<Policy> jaxbPolicyWithNs : jaxbPolicies)
 			{
 				final Policy jaxbPolicy = jaxbPolicyWithNs.policy;
@@ -516,21 +455,17 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				final StaticTopLevelPolicyElementEvaluator policyEvaluator;
 				try
 				{
-					policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, null, jaxbPolicyWithNs.nsPrefixUriMap,
-							expressionFactory, combiningAlgRegistry);
+					policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, null, jaxbPolicyWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry);
 				}
 				catch (final IllegalArgumentException e)
 				{
-					throw new IllegalArgumentException(
-							"Invalid Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
+					throw new IllegalArgumentException("Invalid Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
 				}
 
-				final StaticTopLevelPolicyElementEvaluator previousValue = updatablePolicyTable.put(policyId,
-						new PolicyVersion(policyVersion), policyEvaluator);
+				final StaticTopLevelPolicyElementEvaluator previousValue = updatablePolicyTable.put(policyId, new PolicyVersion(policyVersion), policyEvaluator);
 				if (previousValue != null)
 				{
-					throw new IllegalArgumentException("Policy conflict: two <Policy>s with same PolicyId=" + policyId
-							+ ", Version=" + policyVersion);
+					throw new IllegalArgumentException("Policy conflict: two <Policy>s with same PolicyId=" + policyId + ", Version=" + policyVersion);
 				}
 			}
 
@@ -540,71 +475,54 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap;
 		if (jaxbPolicySets == null)
 		{
-			jaxbPolicySetMap = new PolicyMap<>(
-					Collections.<String, Map<PolicyVersion, PolicyWithNamespaces<PolicySet>>> emptyMap());
+			jaxbPolicySetMap = new PolicyMap<>(Collections.<String, Map<PolicyVersion, PolicyWithNamespaces<PolicySet>>> emptyMap());
 		}
 		else
 		{
-			final Table<String, PolicyVersion, PolicyWithNamespaces<PolicySet>> updatablePolicySetTable = HashBasedTable
-					.create();
+			final Table<String, PolicyVersion, PolicyWithNamespaces<PolicySet>> updatablePolicySetTable = HashBasedTable.create();
 			for (final PolicyWithNamespaces<PolicySet> jaxbPolicySetWithNs : jaxbPolicySets)
 			{
 				final PolicySet jaxbPolicySet = jaxbPolicySetWithNs.policy;
 				final String policyId = jaxbPolicySet.getPolicySetId();
 				final String policyVersion = jaxbPolicySet.getVersion();
 				// check if any version of the same policy exist in the map
-				final PolicyWithNamespaces<PolicySet> previousValue = updatablePolicySetTable.put(policyId,
-						new PolicyVersion(policyVersion), jaxbPolicySetWithNs);
+				final PolicyWithNamespaces<PolicySet> previousValue = updatablePolicySetTable.put(policyId, new PolicyVersion(policyVersion), jaxbPolicySetWithNs);
 				if (previousValue != null)
 				{
-					throw new IllegalArgumentException("Policy conflict: two PolicySets with same PolicySetId="
-							+ policyId + ", Version=" + policyVersion);
+					throw new IllegalArgumentException("Policy conflict: two PolicySets with same PolicySetId=" + policyId + ", Version=" + policyVersion);
 				}
 
 				/*
-				 * PolicySets cannot be parsed before we have collected them
-				 * all, because each PolicySet may refer to others via
-				 * PolicySetIdReferences
+				 * PolicySets cannot be parsed before we have collected them all, because each PolicySet may refer to others via PolicySetIdReferences
 				 */
 			}
 
 			jaxbPolicySetMap = new PolicyMap<>(updatablePolicySetTable.rowMap());
 		}
 
-		return new CoreRefPolicyProviderModule(policyMap, jaxbPolicySetMap, maxPolicySetRefDepth, expressionFactory,
-				combiningAlgRegistry);
+		return new CoreRefPolicyProviderModule(policyMap, jaxbPolicySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 	}
 
 	/**
 	 * Creates an instance from policy locations
 	 *
 	 * @param policyURLs
-	 *            location of Policy(Set) elements (JAXB) to be parsed for
-	 *            future reference by Policy(Set)IdReferences
+	 *            location of Policy(Set) elements (JAXB) to be parsed for future reference by Policy(Set)IdReferences
 	 * @param xacmlParserFactory
 	 *            XACML parser factory for parsing any XACML Policy(Set)
 	 * @param maxPolicySetRefDepth
-	 *            maximum allowed depth of PolicySet reference chain (via
-	 *            PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...; a
-	 *            strictly negative value means no limit
+	 *            maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...; a strictly negative value means no limit
 	 * @param combiningAlgRegistry
 	 *            registry of policy/rule combining algorithms
 	 * @param expressionFactory
-	 *            Expression factory for parsing Expressions used in the
-	 *            policy(set)
+	 *            Expression factory for parsing Expressions used in the policy(set)
 	 * @return instance of this class
 	 * @throws java.lang.IllegalArgumentException
-	 *             if {@code policyURLs == null || policyURLs.length == 0}, or
-	 *             expressionFactory/combiningAlgRegistry undefined; or one of
-	 *             {@code policyURLs} is null or is not a valid XACML
-	 *             Policy(Set) or conflicts with another because it has same
-	 *             Policy(Set)Id and Version. Beware that the Policy(Set)Issuer
-	 *             is ignored from this check!
+	 *             if {@code policyURLs == null || policyURLs.length == 0}, or expressionFactory/combiningAlgRegistry undefined; or one of {@code policyURLs} is null or is not a valid XACML
+	 *             Policy(Set) or conflicts with another because it has same Policy(Set)Id and Version. Beware that the Policy(Set)Issuer is ignored from this check!
 	 */
-	public static CoreRefPolicyProviderModule getInstance(final Collection<URL> policyURLs,
-			final XACMLParserFactory xacmlParserFactory, final int maxPolicySetRefDepth,
-			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry)
-					throws IllegalArgumentException
+	public static CoreRefPolicyProviderModule getInstance(final Collection<URL> policyURLs, final XACMLParserFactory xacmlParserFactory, final int maxPolicySetRefDepth,
+			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
 		if (policyURLs == null || policyURLs.isEmpty())
 		{
@@ -636,10 +554,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 			throw new IllegalArgumentException("Failed to create JAXB unmarshaller for XML Policy(Set)", e);
 		}
 
-		final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablepolicyTable = HashBasedTable
-				.create();
-		final Table<String, PolicyVersion, PolicyWithNamespaces<PolicySet>> updatablePolicySetTable = HashBasedTable
-				.create();
+		final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablepolicyTable = HashBasedTable.create();
+		final Table<String, PolicyVersion, PolicyWithNamespaces<PolicySet>> updatablePolicySetTable = HashBasedTable.create();
 		int policyUrlIndex = 0;
 		for (final URL policyURL : policyURLs)
 		{
@@ -655,8 +571,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 			}
 			catch (final JAXBException e)
 			{
-				throw new IllegalArgumentException(
-						"Failed to unmarshall Policy(Set) XML document from policy location: " + policyURL, e);
+				throw new IllegalArgumentException("Failed to unmarshall Policy(Set) XML document from policy location: " + policyURL, e);
 			}
 
 			final Map<String, String> nsPrefixUriMap = parser.getNamespacePrefixUriMap();
@@ -668,21 +583,17 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				final StaticTopLevelPolicyElementEvaluator policyEvaluator;
 				try
 				{
-					policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, null, nsPrefixUriMap, expressionFactory,
-							combiningAlgRegistry);
+					policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry);
 				}
 				catch (final IllegalArgumentException e)
 				{
-					throw new IllegalArgumentException(
-							"Invalid Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
+					throw new IllegalArgumentException("Invalid Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
 				}
 
-				final StaticTopLevelPolicyElementEvaluator previousValue = updatablepolicyTable.put(policyId,
-						new PolicyVersion(policyVersion), policyEvaluator);
+				final StaticTopLevelPolicyElementEvaluator previousValue = updatablepolicyTable.put(policyId, new PolicyVersion(policyVersion), policyEvaluator);
 				if (previousValue != null)
 				{
-					throw new IllegalArgumentException("Policy conflict: two policies with same PolicyId=" + policyId
-							+ ", Version=" + policyVersion);
+					throw new IllegalArgumentException("Policy conflict: two policies with same PolicyId=" + policyId + ", Version=" + policyVersion);
 				}
 
 			}
@@ -691,47 +602,38 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				final PolicySet jaxbPolicySet = (PolicySet) jaxbPolicyOrPolicySetObj;
 				final String policyId = jaxbPolicySet.getPolicySetId();
 				final String policyVersion = jaxbPolicySet.getVersion();
-				final PolicyWithNamespaces<PolicySet> previousValue = updatablePolicySetTable.put(policyId,
-						new PolicyVersion(policyVersion), new PolicyWithNamespaces<>(jaxbPolicySet, nsPrefixUriMap));
+				final PolicyWithNamespaces<PolicySet> previousValue = updatablePolicySetTable
+						.put(policyId, new PolicyVersion(policyVersion), new PolicyWithNamespaces<>(jaxbPolicySet, nsPrefixUriMap));
 				if (previousValue != null)
 				{
-					throw new IllegalArgumentException("Policy conflict: two PolicySets with same PolicySetId="
-							+ policyId + ", Version=" + policyVersion);
+					throw new IllegalArgumentException("Policy conflict: two PolicySets with same PolicySetId=" + policyId + ", Version=" + policyVersion);
 				}
 
 				/*
-				 * PolicySets cannot be parsed before we have collected them
-				 * all, because each PolicySet may refer to others via
-				 * PolicySetIdReferences
+				 * PolicySets cannot be parsed before we have collected them all, because each PolicySet may refer to others via PolicySetIdReferences
 				 */
 			}
 			else
 			{
-				throw new IllegalArgumentException("Unexpected element found as root of the policy document: "
-						+ jaxbPolicyOrPolicySetObj.getClass().getSimpleName());
+				throw new IllegalArgumentException("Unexpected element found as root of the policy document: " + jaxbPolicyOrPolicySetObj.getClass().getSimpleName());
 			}
 
 			policyUrlIndex++;
 		}
 
-		final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap = new PolicyMap<>(
-				updatablepolicyTable.rowMap());
-		final PolicyMap<PolicyWithNamespaces<PolicySet>> policySetMap = new PolicyMap<>(
-				updatablePolicySetTable.rowMap());
-		return new CoreRefPolicyProviderModule(policyMap, policySetMap, maxPolicySetRefDepth, expressionFactory,
-				combiningAlgRegistry);
+		final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap = new PolicyMap<>(updatablepolicyTable.rowMap());
+		final PolicyMap<PolicyWithNamespaces<PolicySet>> policySetMap = new PolicyMap<>(updatablePolicySetTable.rowMap());
+		return new CoreRefPolicyProviderModule(policyMap, policySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id,
-			final VersionPatterns constraints, final Deque<String> policySetRefChain)
+	public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final VersionPatterns constraints, final Deque<String> policySetRefChain)
 	{
 		if (policyType == TopLevelPolicyElementType.POLICY)
 		{
 			// Request for Policy (from PolicyIdReference)
-			final Entry<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyEntry = policyEvaluatorMap.get(id,
-					constraints);
+			final Entry<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyEntry = policyEvaluatorMap.get(id, constraints);
 			if (policyEntry == null)
 			{
 				return null;
@@ -741,23 +643,18 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		}
 
 		// Request for PolicySet (from PolicySetIdReference)
-		final Deque<String> newPolicySetRefChain = Utils.appendAndCheckPolicyRefChain(policySetRefChain,
-				Collections.singletonList(id), maxPolicySetRefDepth);
-		final Entry<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyEntry = policySetEvaluatorMap.get(id,
-				constraints);
+		final Deque<String> newPolicySetRefChain = Utils.appendAndCheckPolicyRefChain(policySetRefChain, Collections.singletonList(id), maxPolicySetRefDepth);
+		final Entry<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyEntry = policySetEvaluatorMap.get(id, constraints);
 		if (policyEntry == null)
 		{
 			return null;
 		}
 
 		/*
-		 * check total policy ref depth, i.e. length of
-		 * (newAncestorPolicySetRefChain + parsed policySet's longest (nested)
-		 * policy ref chain) <= maxPolicySetRefDepth
+		 * check total policy ref depth, i.e. length of (newAncestorPolicySetRefChain + parsed policySet's longest (nested) policy ref chain) <= maxPolicySetRefDepth
 		 */
 		final StaticTopLevelPolicyElementEvaluator policy = policyEntry.getValue();
-		Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain,
-				policy.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
+		Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, policy.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
 		return policy;
 	}
 
@@ -770,8 +667,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 
 	/** {@inheritDoc} */
 	@Override
-	public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId,
-			final VersionPatterns policyVersionConstraints, final Deque<String> policySetRefChain,
+	public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId, final VersionPatterns policyVersionConstraints, final Deque<String> policySetRefChain,
 			final EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		return get(policyType, policyId, policyVersionConstraints, policySetRefChain);
