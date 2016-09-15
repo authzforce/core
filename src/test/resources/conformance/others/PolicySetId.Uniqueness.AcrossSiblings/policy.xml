@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="policyset-with-duplicate-PolicySetId-in-PolicySet-branch"
+   PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+   <Description>
+      Purpose: Test detection of duplicate PolicySetId within a branch of PolicySets
+   </Description>
+   <Target />
+   <PolicySet PolicySetId="PS1" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+      <Target />
+      <PolicySet PolicySetId="PS2" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+         <Target />
+         <PolicySet PolicySetId="PS3" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+            <Target />
+            <PolicySet PolicySetId="PS4" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+               <Target />
+               <PolicySet PolicySetId="PS2" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+                  <Target />
+                  <PolicySet PolicySetId="PS5" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+                     <Target />
+                  </PolicySet>
+               </PolicySet>
+            </PolicySet>
+         </PolicySet>
+      </PolicySet>
+   </PolicySet>
+</PolicySet>
+

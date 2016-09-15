@@ -18,6 +18,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -796,14 +797,7 @@ public final class PolicyEvaluators
 		@Override
 		public final boolean isApplicableByTarget(final EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			final boolean isMatched = targetEvaluator.evaluate(context);
-			if (LOGGER.isDebugEnabled())
-			{
-				// Beware of autoboxing which causes call to
-				// Boolean.valueOf(...) on isMatched
-				LOGGER.debug("{}/Target -> Match= {}", this, isMatched);
-			}
-			return isMatched;
+			return targetEvaluator.evaluate(context);
 		}
 
 		@Override
@@ -1526,65 +1520,71 @@ public final class PolicyEvaluators
 
 		}
 
-		final List<CombiningAlgParameter<? extends RuleEvaluator>> ruleCombinerParameters = new ArrayList<>();
+		/*
+		 * Elements defined in xs:choice of XACML schema type PolicyType: Rules/(Rule)CombinerParameters/VariableDefinitions
+		 */
+		final List<Serializable> policyChoiceElements = policyElement.getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions();
+		/*
+		 * There are at most as many combining alg parameters as policyChoiceElements.size().
+		 */
+		final List<CombiningAlgParameter<? extends RuleEvaluator>> combiningAlgParameters = new ArrayList<>(policyChoiceElements.size());
 
 		/*
 		 * Keep a copy of locally-defined variable IDs defined in this policy, to remove them from the global manager at the end of parsing this policy. They should not be visible outside the scope of
-		 * this policy.
+		 * this policy. There are at most as many VariableDefinitions as policyChoiceElements.size().
 		 */
-		final Set<String> localVariableIds = HashObjSets.newUpdatableSet();
+		final Set<String> localVariableIds = HashObjSets.newUpdatableSet(policyChoiceElements.size());
 		/*
 		 * We keep a record of the size of the longest chain of VariableReference in this policy, and update it when a VariableDefinition occurs
 		 */
 		int sizeOfPolicyLongestVarRefChain = 0;
 		/*
-		 * Map to get rules by their ID so that we can resolve rules associated with CombinerParameters, and detect duplicate RuleId
+		 * Map to get rules by their ID so that we can resolve rules associated with RuleCombinerParameters, and detect duplicate RuleId. We want to preserve insertion order, to get map.values() in
+		 * order of declaration, so that ordered-* algorithms have rules in order. There are at most as many Rules as policyChoiceElements.size(). FIXME: use Koloboke equivalent of LinkedHashMap when
+		 * it is supported: https://github.com/leventov/Koloboke/issues/47
 		 */
-		/*
-		 * Koloboke does not yet support equivalent of LinkedHashMap (insertion order preserved): https://github.com/leventov/Koloboke/issues/47
-		 */
-		final Map<String, RuleEvaluator> rulesByIdInOrderOfDeclaration = new LinkedHashMap<>();
+		final Map<String, RuleEvaluator> ruleEvaluatorsByRuleIdInOrderOfDeclaration = new LinkedHashMap<>(policyChoiceElements.size());
 		int childIndex = 0;
-		for (final Object policyChildElt : policyElement.getCombinerParametersAndRuleCombinerParametersAndVariableDefinitions())
+		for (final Serializable policyChildElt : policyChoiceElements)
 		{
 			if (policyChildElt instanceof RuleCombinerParameters)
 			{
 				final String combinedRuleId = ((RuleCombinerParameters) policyChildElt).getRuleIdRef();
-				final RuleEvaluator combinedRule = rulesByIdInOrderOfDeclaration.get(combinedRuleId);
-				if (combinedRule == null)
+				final RuleEvaluator ruleEvaluator = ruleEvaluatorsByRuleIdInOrderOfDeclaration.get(combinedRuleId);
+				if (ruleEvaluator == null)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ":  invalid RuleCombinerParameters: referencing undefined child Rule #" + combinedRuleId
 							+ " (no such rule defined before this element)");
 				}
 
-				final BaseCombiningAlgParameter<RuleEvaluator> combinerElt;
+				final BaseCombiningAlgParameter<RuleEvaluator> combiningAlgParameter;
 				try
 				{
-					combinerElt = new BaseCombiningAlgParameter<>(combinedRule, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
+					combiningAlgParameter = new BaseCombiningAlgParameter<>(ruleEvaluator, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
 				}
 				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (RuleCombinerParameters)", e);
 				}
 
-				ruleCombinerParameters.add(combinerElt);
+				combiningAlgParameters.add(combiningAlgParameter);
 			}
 			else if (policyChildElt instanceof CombinerParametersType)
 			{
 				/*
 				 * CombinerParameters that is not RuleCombinerParameters already tested before
 				 */
-				final BaseCombiningAlgParameter<RuleEvaluator> combinerElt;
+				final BaseCombiningAlgParameter<RuleEvaluator> combiningAlgParameter;
 				try
 				{
-					combinerElt = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
+					combiningAlgParameter = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) policyChildElt).getCombinerParameters(), expressionFactory, defaultXPathCompiler);
 				}
 				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyFriendlyId + ": invalid child #" + childIndex + " (CombinerParameters)", e);
 				}
 
-				ruleCombinerParameters.add(combinerElt);
+				combiningAlgParameters.add(combiningAlgParameter);
 			}
 			else if (policyChildElt instanceof VariableDefinition)
 			{
@@ -1630,7 +1630,7 @@ public final class PolicyEvaluators
 					throw new IllegalArgumentException(policyFriendlyId + ": Error parsing child #" + childIndex + " (Rule)", e);
 				}
 
-				final RuleEvaluator conflictingRuleEvaluator = rulesByIdInOrderOfDeclaration.put(ruleEvaluator.getRuleId(), ruleEvaluator);
+				final RuleEvaluator conflictingRuleEvaluator = ruleEvaluatorsByRuleIdInOrderOfDeclaration.put(ruleEvaluator.getRuleId(), ruleEvaluator);
 				if (conflictingRuleEvaluator != null)
 				{
 					/*
@@ -1645,8 +1645,8 @@ public final class PolicyEvaluators
 
 		final ExtraPolicyMetadata extraPolicyMetadata = new BaseExtraPolicyMetadata(policyVersion, new HashMap<String, PolicyVersion>(), new HashMap<String, PolicyVersion>(), new ArrayList<String>());
 		final StaticTopLevelPolicyElementEvaluator policyEvaluator = new StaticBaseTopLevelPolicyElementEvaluator<>(RuleEvaluator.class, policyId, extraPolicyMetadata, policyElement.getTarget(),
-				policyElement.getRuleCombiningAlgId(), rulesByIdInOrderOfDeclaration.values(), ruleCombinerParameters, policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(),
-				Collections.<String> unmodifiableSet(localVariableIds), defaultXPathCompiler, expressionFactory, combiningAlgRegistry);
+				policyElement.getRuleCombiningAlgId(), ruleEvaluatorsByRuleIdInOrderOfDeclaration.values(), combiningAlgParameters, policyElement.getObligationExpressions(),
+				policyElement.getAdviceExpressions(), Collections.<String> unmodifiableSet(localVariableIds), defaultXPathCompiler, expressionFactory, combiningAlgRegistry);
 
 		/*
 		 * We are done parsing expressions in this policy, including VariableReferences, it's time to remove variables scoped to this policy from the variable manager
@@ -1997,87 +1997,103 @@ public final class PolicyEvaluators
 		}
 	}
 
-	private static <TLPEE extends TopLevelPolicyElementEvaluator, COMBINED_ELT extends PolicyEvaluator> TLPEE getInstanceGeneric(
-			final PolicySetElementEvaluatorFactory<TLPEE, COMBINED_ELT> policyEvaluatorFactory, final PolicySet policyElement, final Set<String> updatableParsedPolicyIds,
+	private static <TLPEE extends TopLevelPolicyElementEvaluator, COMBINED_EVALUATOR extends PolicyEvaluator> TLPEE getInstanceGeneric(
+			final PolicySetElementEvaluatorFactory<TLPEE, COMBINED_EVALUATOR> policyEvaluatorFactory, final PolicySet policyElement, final Set<String> updatableParsedPolicyIds,
 			final Set<String> updatableParsedPolicySetIds, final Deque<String> policySetRefChain) throws IllegalArgumentException
 	{
 		// updatableParsedPolicySetIds must contain at least policyElement.getPolicySetId()
 		assert policyEvaluatorFactory != null && policyElement != null && updatableParsedPolicySetIds != null && !updatableParsedPolicySetIds.isEmpty();
 
+		// we are parsing a new policyset -> update updatableParsedPolicySetIds
+		if (!updatableParsedPolicySetIds.add(policyElement.getPolicySetId()))
+		{
+			throw new IllegalArgumentException("Duplicate PolicySetId = " + policyElement.getPolicySetId());
+		}
+
+		/*
+		 * Make sure we use a non-null set of already parsed policy identifiers (to find duplicates) to avoid checking non-nullity at every iteration of the for loop below where we find a policy
+		 */
 		final Set<String> nonNullParsedPolicyIds = updatableParsedPolicyIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicyIds;
+		/*
+		 * Elements defined in xs:choice of PolicySetType in XACML schema (Policy(Set)/Policy(Set)IdReference/CombinerParameters/Policy(Set)CombinerParameters
+		 */
+		final List<Serializable> jaxbPolicySetChoiceElements = policyElement.getPolicySetsAndPoliciesAndPolicySetIdReferences();
+		/*
+		 * Prepare the list of evaluators combined by the combining algorithm in this PolicySet, i.e. Policy(Set)/Policy(Set)IdReference evaluators. combinedEvaluators.size() <=
+		 * jaxbPolicySetChoiceElements.size() since combinedEvaluators does not include *CombinerParameter evaluators
+		 */
+		final List<COMBINED_EVALUATOR> combinedEvaluators = new ArrayList<>(jaxbPolicySetChoiceElements.size());
 
 		/**
 		 * Why isn't there any VariableDefinition in XACML PolicySet like in Policy? If there were, we would keep a copy of variable IDs defined in this policy, to remove them from the global manager
 		 * at the end of parsing this PolicySet. They should not be visible outside the scope of this.
 		 * <p>
-		 * final Set<String> variableIds = new HashSet<>();
+		 * final Set<String> variableIds = HashObjSets.newUpdatableSet(jaxbPolicySetChoiceElements.size());
 		 */
 
 		/*
-		 * Map to get child Policies by their ID so that we can resolve Policies associated with CombinerParameters
+		 * Map to get child Policies by their ID so that we can resolve Policies associated with PolicyCombinerParameters Size cannot get bigger than jaxbPolicySetChoiceElements.size()
 		 */
-		final Map<String, COMBINED_ELT> childPoliciesById = HashObjObjMaps.newUpdatableMap();
+		final Map<String, COMBINED_EVALUATOR> childPolicyEvaluatorsByPolicyId = HashObjObjMaps.newUpdatableMap(jaxbPolicySetChoiceElements.size());
 
 		/*
-		 * Map to get child PolicySets by their ID so that we can resolve PolicySets/Policies associated with CombinerParameters or Policy(Set)CombinerParameters
+		 * Map to get child PolicySets by their ID so that we can resolve PolicySets associated with PolicySetCombinerParameters Size cannot get bigger than jaxbPolicySetChoiceElements.size()
 		 */
+		final Map<String, COMBINED_EVALUATOR> childPolicySetEvaluatorsByPolicySetId = HashObjObjMaps.newUpdatableMap(jaxbPolicySetChoiceElements.size());
+
 		/*
-		 * Koloboke does not yet support equivalent of LinkedHashMap (insertion order preserved): https://github.com/leventov/Koloboke/issues/47
+		 * *CombinerParameters (combining algorithm parameters), size <= jaxbPolicySetChoiceElements.size()
 		 */
-		final Map<String, COMBINED_ELT> childPolicySetsByIdInOrderOfDeclaration = new LinkedHashMap<>();
-
-		// final List<COMBINED_ELT> combinedChildElements = new ArrayList<>();
-
-		final List<CombiningAlgParameter<? extends COMBINED_ELT>> policyCombinerParameters = new ArrayList<>();
+		final List<CombiningAlgParameter<? extends COMBINED_EVALUATOR>> combiningAlgParameters = new ArrayList<>(jaxbPolicySetChoiceElements.size());
 		int childIndex = 0;
-		for (final Object policyChildElt : policyElement.getPolicySetsAndPoliciesAndPolicySetIdReferences())
+		for (final Serializable policyChildElt : jaxbPolicySetChoiceElements)
 		{
 			if (policyChildElt instanceof PolicyCombinerParameters)
 			{
 				final String combinedPolicyId = ((PolicyCombinerParameters) policyChildElt).getPolicyIdRef();
-				final COMBINED_ELT combinedPolicy = childPoliciesById.get(combinedPolicyId);
-				if (combinedPolicy == null)
+				final COMBINED_EVALUATOR childPolicyEvaluator = childPolicyEvaluatorsByPolicyId.get(combinedPolicyId);
+				if (childPolicyEvaluator == null)
 				{
 					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ":  invalid PolicyCombinerParameters: referencing undefined child Policy #" + combinedPolicyId
 							+ " (no such policy defined before this element)");
 				}
 
-				final BaseCombiningAlgParameter<COMBINED_ELT> combinerElt;
+				final BaseCombiningAlgParameter<COMBINED_EVALUATOR> combiningAlgParameter;
 				try
 				{
-					combinerElt = new BaseCombiningAlgParameter<>(combinedPolicy, ((CombinerParametersType) policyChildElt).getCombinerParameters(), policyEvaluatorFactory.expressionFactory,
-							policyEvaluatorFactory.defaultXPathCompiler);
+					combiningAlgParameter = new BaseCombiningAlgParameter<>(childPolicyEvaluator, ((CombinerParametersType) policyChildElt).getCombinerParameters(),
+							policyEvaluatorFactory.expressionFactory, policyEvaluatorFactory.defaultXPathCompiler);
 				}
 				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + " (PolicyCombinerParameters)", e);
 				}
 
-				policyCombinerParameters.add(combinerElt);
+				combiningAlgParameters.add(combiningAlgParameter);
 
 			}
 			else if (policyChildElt instanceof PolicySetCombinerParameters)
 			{
 				final String combinedPolicySetId = ((PolicySetCombinerParameters) policyChildElt).getPolicySetIdRef();
-				final COMBINED_ELT combinedPolicySet = childPolicySetsByIdInOrderOfDeclaration.get(combinedPolicySetId);
-				if (combinedPolicySet == null)
+				final COMBINED_EVALUATOR combinedPolicySetEvaluator = childPolicySetEvaluatorsByPolicySetId.get(combinedPolicySetId);
+				if (combinedPolicySetEvaluator == null)
 				{
 					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ":  invalid PolicySetCombinerParameters: referencing undefined child PolicySet #"
 							+ combinedPolicySetId + " (no such policySet defined before this element)");
 				}
 
-				final BaseCombiningAlgParameter<COMBINED_ELT> combinerElt;
+				final BaseCombiningAlgParameter<COMBINED_EVALUATOR> combiningAlgParameter;
 				try
 				{
-					combinerElt = new BaseCombiningAlgParameter<>(combinedPolicySet, ((CombinerParametersType) policyChildElt).getCombinerParameters(), policyEvaluatorFactory.expressionFactory,
-							policyEvaluatorFactory.defaultXPathCompiler);
+					combiningAlgParameter = new BaseCombiningAlgParameter<>(combinedPolicySetEvaluator, ((CombinerParametersType) policyChildElt).getCombinerParameters(),
+							policyEvaluatorFactory.expressionFactory, policyEvaluatorFactory.defaultXPathCompiler);
 				}
 				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + " (PolicySetCombinerParameters)", e);
 				}
 
-				policyCombinerParameters.add(combinerElt);
+				combiningAlgParameters.add(combiningAlgParameter);
 			}
 			else if (policyChildElt instanceof JAXBElement)
 			{
@@ -2086,24 +2102,27 @@ public final class PolicyEvaluators
 				if (eltNameLocalPart.equals(XACMLNodeName.POLICY_ID_REFERENCE.value()))
 				{
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
-					final COMBINED_ELT childElement = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY, idRef, null);
-					childPolicySetsByIdInOrderOfDeclaration.put(childElement.getPolicyId(), childElement);
+					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY, idRef, null);
+					combinedEvaluators.add(childEvaluator);
+					childPolicySetEvaluatorsByPolicySetId.put(childEvaluator.getPolicyId(), childEvaluator);
+
 				}
 				else if (eltNameLocalPart.equals(XACMLNodeName.POLICYSET_ID_REFERENCE.value()))
 				{
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
-					final COMBINED_ELT childElement = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY_SET, idRef, policySetRefChain);
-					childPolicySetsByIdInOrderOfDeclaration.put(childElement.getPolicyId(), childElement);
+					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY_SET, idRef, policySetRefChain);
+					combinedEvaluators.add(childEvaluator);
+					childPolicySetEvaluatorsByPolicySetId.put(childEvaluator.getPolicyId(), childEvaluator);
 				}
 				else if (eltNameLocalPart.equals(XACMLNodeName.COMBINER_PARAMETERS.value()))
 				{
 					/*
 					 * CombinerParameters that is not Policy(Set)CombinerParameters already tested before
 					 */
-					final BaseCombiningAlgParameter<COMBINED_ELT> combinerElt;
+					final BaseCombiningAlgParameter<COMBINED_EVALUATOR> combiningAlgParameter;
 					try
 					{
-						combinerElt = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) jaxbElt.getValue()).getCombinerParameters(), policyEvaluatorFactory.expressionFactory,
+						combiningAlgParameter = new BaseCombiningAlgParameter<>(null, ((CombinerParametersType) jaxbElt.getValue()).getCombinerParameters(), policyEvaluatorFactory.expressionFactory,
 								policyEvaluatorFactory.defaultXPathCompiler);
 					}
 					catch (final IllegalArgumentException e)
@@ -2111,7 +2130,7 @@ public final class PolicyEvaluators
 						throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + " (CombinerParameters)", e);
 					}
 
-					policyCombinerParameters.add(combinerElt);
+					combiningAlgParameters.add(combiningAlgParameter);
 				}
 			}
 			else if (policyChildElt instanceof PolicySet)
@@ -2120,20 +2139,17 @@ public final class PolicyEvaluators
 				/*
 				 * XACML spec §5.1: "ensure that no two policies visible to the PDP have the same identifier"
 				 */
-				final String policyId = childPolicy.getPolicySetId();
-				if (!updatableParsedPolicySetIds.add(policyId))
-				{
-					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + ": duplicate PolicySetId = " + policyId);
-				}
+				final String childPolicyId = childPolicy.getPolicySetId();
 
 				/*
 				 * This child PolicySet may have PoliSetIdReferences as well and therefore update the policySetRefChain and staticallyReferencedPolicies. However, if the current policySetRefChain is
 				 * updated directly by a child PolicySet instantiation, then it is no longer valid for the other child PolicySets of this same PolicySet. So we need to pass a copy to
 				 * PolicySetEvaluator.getInstance(() to avoid that inconsistency.
 				 */
-				final COMBINED_ELT childElement = policyEvaluatorFactory.getChildPolicySetEvaluator(childIndex, childPolicy, nonNullParsedPolicyIds, updatableParsedPolicySetIds, policySetRefChain);
-				childPolicySetsByIdInOrderOfDeclaration.put(policyId, childElement);
-
+				final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicySetEvaluator(childIndex, childPolicy, nonNullParsedPolicyIds, updatableParsedPolicySetIds,
+						policySetRefChain);
+				combinedEvaluators.add(childEvaluator);
+				childPolicySetEvaluatorsByPolicySetId.put(childPolicyId, childEvaluator);
 			}
 			else if (policyChildElt instanceof Policy)
 			{
@@ -2141,14 +2157,15 @@ public final class PolicyEvaluators
 				/*
 				 * XACML spec §5.1: "ensure that no two policies visible to the PDP have the same identifier"
 				 */
-				final String policyId = childPolicy.getPolicyId();
-				if (!nonNullParsedPolicyIds.add(policyId))
+				final String childPolicyId = childPolicy.getPolicyId();
+				if (!nonNullParsedPolicyIds.add(childPolicyId))
 				{
-					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + ": duplicate PolicyId = " + policyId);
+					throw new IllegalArgumentException(policyEvaluatorFactory.policyFriendlyId + ": invalid child #" + childIndex + ": duplicate PolicyId = " + childPolicyId);
 				}
 
-				final COMBINED_ELT childElement = policyEvaluatorFactory.getChildPolicyEvaluator(childIndex, childPolicy);
-				childPoliciesById.put(policyId, childElement);
+				final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyEvaluator(childIndex, childPolicy);
+				combinedEvaluators.add(childEvaluator);
+				childPolicyEvaluatorsByPolicyId.put(childPolicyId, childEvaluator);
 			}
 
 			/*
@@ -2207,8 +2224,8 @@ public final class PolicyEvaluators
 		// expFactory.remove(varId);
 		// }
 		final Set<String> localVariableIds = Collections.emptySet();
-		return policyEvaluatorFactory.getInstance(policyElement.getPolicySetId(), policyElement.getTarget(), policyElement.getPolicyCombiningAlgId(), childPolicySetsByIdInOrderOfDeclaration.values(),
-				policyCombinerParameters, policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(), localVariableIds);
+		return policyEvaluatorFactory.getInstance(policyElement.getPolicySetId(), policyElement.getTarget(), policyElement.getPolicyCombiningAlgId(), combinedEvaluators, combiningAlgParameters,
+				policyElement.getObligationExpressions(), policyElement.getAdviceExpressions(), localVariableIds);
 	}
 
 	/**
@@ -2248,14 +2265,9 @@ public final class PolicyEvaluators
 			throw NULL_XACML_POLICYSET_ARG_EXCEPTION;
 		}
 
-		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicySetIds;
-		if (!nonNullParsedPolicySetIds.add(policyElement.getPolicySetId()))
-		{
-			throw new IllegalArgumentException("Duplicate PolicySetId = " + policyElement.getPolicySetId());
-		}
-
 		final StaticPolicySetElementEvaluatorFactory factory = new StaticPolicySetElementEvaluatorFactory(policyElement.getPolicySetId(), policyElement.getVersion(),
 				policyElement.getPolicySetDefaults(), refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
+		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicySetIds;
 		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain);
 	}
 
@@ -2325,16 +2337,11 @@ public final class PolicyEvaluators
 			throw NULL_XACML_POLICYSET_ARG_EXCEPTION;
 		}
 
-		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicySetIds;
-		if (!nonNullParsedPolicySetIds.add(policyElement.getPolicySetId()))
-		{
-			throw new IllegalArgumentException("Duplicate PolicySetId = " + policyElement.getPolicySetId());
-		}
-
 		final PolicySetElementEvaluatorFactory<?, ?> factory = refPolicyProvider instanceof StaticRefPolicyProvider ? new StaticPolicySetElementEvaluatorFactory(policyElement.getPolicySetId(),
 				policyElement.getVersion(), policyElement.getPolicySetDefaults(), (StaticRefPolicyProvider) refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory,
 				combiningAlgorithmRegistry) : new DynamicPolicySetElementEvaluatorFactory(policyElement.getPolicySetId(), policyElement.getVersion(), policyElement.getPolicySetDefaults(),
 				refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
+		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicySetIds;
 		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain);
 	}
 

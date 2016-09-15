@@ -36,6 +36,8 @@ import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
+import com.google.common.base.Preconditions;
+
 /**
  * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of permit, not applicable or indeterminate
  * results. Note that since this implementation does an ordered evaluation, this class also supports the Ordered-Deny-Overrides-algorithm.
@@ -137,7 +139,7 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
 			throws UnsupportedOperationException, IllegalArgumentException
 	{
-		return new Evaluator(combinedElements);
+		return new Evaluator(Preconditions.checkNotNull(combinedElements));
 	}
 
 }

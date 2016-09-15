@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="policyset-with-duplicate-PolicyId"
+   PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-overrides" Version="1.0">
+   <Description>
+      Purpose: Test detection of duplicate PolicyId within PolicySet
+   </Description>
+   <Target />
+   <Policy PolicyId="P1" Version="1.0"
+      RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
+      <Target />
+   </Policy>
+   <Policy PolicyId="P2" Version="1.0"
+      RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
+      <Target />
+   </Policy>
+   <Policy PolicyId="P3" Version="1.0"
+      RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
+      <Target />
+   </Policy>
+   <Policy PolicyId="P4" Version="1.0"
+      RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
+      <Target />
+   </Policy>
+   <Policy PolicyId="P2" Version="1.0"
+      RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
+      <Target />
+   </Policy>
+   <Policy PolicyId="P5" Version="1.0"
+      RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides">
+      <Target />
+   </Policy>
+</PolicySet>
