@@ -18,11 +18,15 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
@@ -35,6 +39,7 @@ import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 
 import com.google.common.base.Preconditions;
 
@@ -139,7 +144,93 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
 	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
 			throws UnsupportedOperationException, IllegalArgumentException
 	{
-		return new Evaluator(Preconditions.checkNotNull(combinedElements));
+		/*
+		 * If combined elements are Rules, we can optimize
+		 */
+		if (!RuleEvaluator.class.isAssignableFrom(getCombinedElementType()))
+		{
+			return new Evaluator(Preconditions.checkNotNull(combinedElements));
+		}
+
+		// combined elements are Rules, we can optimize
+		// if no Rules -> NotApplicable
+		if (combinedElements == null)
+		{
+			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
+		}
+
+		final Iterator<? extends Decidable> combinedEltIterator = combinedElements.iterator();
+		if (!combinedEltIterator.hasNext())
+		{
+			// empty (no Rules)
+			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
+		}
+
+		/*
+		 * Prepare to iterate over Rules we will reorder deny rules before permit rules since order does not matter and deny decision prevails
+		 */
+		final Deque<RuleEvaluator> denyRules = new ArrayDeque<>();
+		final Deque<RuleEvaluator> permitRules = new ArrayDeque<>();
+
+		/*
+		 * 
+		 * If we find any empty Permit Rule, we don't need to look at other Permit rules since it is enough to return Permit if there is no Deny
+		 */
+		final boolean emptyPermitRuleFound = false;
+
+		while (combinedEltIterator.hasNext())
+		{
+			final RuleEvaluator rule = (RuleEvaluator) combinedEltIterator.next();
+			if (rule.getEffect() == EffectType.DENY)
+			{
+				if (rule.isEmpty())
+				{
+					/*
+					 * Rule always evaluates to Deny, which is sufficient for deny-overrides alg evaluation -> ignore/remove all other rules
+					 */
+					// TODO
+				}
+			}
+			else
+			{
+				// rule Effect = Permit
+				// TODO
+			}
+		}
+
+		// TODO
+
+		/*
+		 * 
+		 * - iterate over rules: if rule's effect is deny, if rule has no target/condition/pep_actions, // rule will always return deny if LOGGER.warnEnabled && (!denyRules.isEmpty() or
+		 * !permitRules.isEmpty()), // not the first rule - log WARN
+		 * "Policy XXX's combining alg is deny-overrides and its first declared Rule with Effect=Deny but no target/condition/pep_actions is Rule YYY, result is always Deny, therefore Rule YYY's decision overrides all -> Ignoring/removing all other rules"
+		 * return new CombiningAlg.Evaluator() {return rule.evaluate()} // rule has a target/condition, therefore may not necessarily return Deny denyRules.add(rule); else // rule effect is Permit
+		 * if(emptyPermitRuleFound) // already one empty permit rule found is enough continue; if rule has no target/condition/pep_actions, // rule will always return permit, which is sufficient for
+		 * deny-overrides alg evaluation, ignore/remove all other permit rules if LOGGER.warnEnabled && !permitRules.isEmpty(), // not the first permit rule - log WARN
+		 * "Policy XXX's combining alg is deny-overrides and its first declared Rule with Effect=Permit but no target/condition/pep_action is Rule YYY, result is always Permit therefore all other Permit rules will have no effect -> ignoring/removing all other permit rules"
+		 * permitRules.clear(); emptyPermitRuleFound = true; // there may be other Deny rules, so we go on permitRules.add(rule)
+		 * 
+		 * assert !denyRules.isEmpty || !permitRules.isEmpty
+		 * 
+		 * if(denyRules.isEmpty) // pas de deny rule // !permitRules.isEmpty if(emptyPermitRuleFound) final permitRule = permitRules.get(0) return new CombiningAlg.Evaluator() { return
+		 * permitRule.evaluate(); } // no empty permit rule found (and no deny rule) return new CombiningAlg.Evaluator() { firstIndP = null for(rule: permitRules) if(decision = Permit) return rule's
+		 * permit result (with pep actions) // evalResult = Ind(P) if(firstIndP == null) firstIndP = evalResult
+		 * 
+		 * return firstIndP }
+		 * 
+		 * else // !denyRules.isEmpty if(permitRules.isEmpty) return new CombiningAlg.Evaluator() { firstIndeterminateD = null for(rule: denyRules) if(decision == DENY) return rule's deny result (with
+		 * pep actions)
+		 * 
+		 * // indeterminate(D), no permit rule if(firstIndeterminateD == null) firstIndeterminateD = ...
+		 * 
+		 * // firstIndeterminateD != null return firstIndeterminateD } else // !permitRules.isEmpty return new CombiningAlg.Evaluator() { firstIndeterminateD = null for(rule: denyRules) if(decision ==
+		 * DENY) return rule's deny result (with pep actions)
+		 * 
+		 * // indeterminate(D), result depends on wether at least one Indeterminate(P) or Permit if(firstIndeterminateD == null) firstIndeterminateD = ...
+		 * 
+		 * // firstIndeterminateD != null // !permitRules.isEmpty -> Indeterminate(DP) return Indeterminate(DP) }
+		 */
 	}
 
 }
