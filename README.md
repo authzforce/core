@@ -61,7 +61,7 @@ Once you have a PDP instance. You can evaluate a XACML request by calling one of
 
 Our PDP implementation uses SLF4J for logging so you can use any SLF4J implementation to manage logging. As an example, we use logback for testing, so you can use [logback.xml](src/test/resources/logback.xml) as an example for configuring loggers, appenders, etc.
 
-If you are using **Java 8**, make sure you set the following JVM system property is set before execution:
+If you are using **Java 8**, make sure the following JVM system property is set before execution:
 `javax.xml.accessExternalSchema = http`
 
 ## Support
