@@ -33,10 +33,10 @@ import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 
-abstract class DPOverridesAlgEvaluator extends BaseCombiningAlg.Evaluator<Decidable>
+abstract class DPOverridesPolicyCombiningAlgEvaluator extends BaseCombiningAlg.Evaluator<Decidable>
 {
 
-	DPOverridesAlgEvaluator(final Iterable<? extends Decidable> combinedElements)
+	DPOverridesPolicyCombiningAlgEvaluator(final Iterable<? extends Decidable> combinedElements)
 	{
 		super(combinedElements);
 	}

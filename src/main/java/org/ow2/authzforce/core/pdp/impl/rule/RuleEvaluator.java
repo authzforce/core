@@ -54,18 +54,18 @@ import org.slf4j.LoggerFactory;
  * 
  * @version $Id: $
  */
-public final class RuleEvaluator implements Decidable
-{
-	private static final IllegalArgumentException NULL_XACML_RULE_ARGUMENT_EXCEPTION = new IllegalArgumentException("Cannot create Rule evaluator: undefined input XACML/JAXB Rule element");
+public final class RuleEvaluator implements Decidable {
+	private static final IllegalArgumentException NULL_XACML_RULE_ARGUMENT_EXCEPTION = new IllegalArgumentException(
+			"Cannot create Rule evaluator: undefined input XACML/JAXB Rule element");
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RuleEvaluator.class);
 
 	/**
-	 * Rule-associated PEP action (obligation/advice) expressions parser used to initialize the evaluator's fields
+	 * Rule-associated PEP action (obligation/advice) expressions parser used to
+	 * initialize the evaluator's fields
 	 * 
 	 */
-	private static final class RulePepActionExpressions implements PepActionExpressions
-	{
+	private static final class RulePepActionExpressions implements PepActionExpressions {
 		private final XPathCompiler xPathCompiler;
 		private final ExpressionFactory expFactory;
 		private final PepActionExpressions.EffectSpecific ruleEffectMatchingActionExpressions;
@@ -74,14 +74,15 @@ public final class RuleEvaluator implements Decidable
 		 * Creates instance
 		 * 
 		 * @param xPathCompiler
-		 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+		 *            XPath compiler corresponding to enclosing policy(set)
+		 *            default XPath version
 		 * @param expressionFactory
 		 *            expression factory for parsing expressions
 		 * @param ruleEffect
 		 *            XACML rule's Effect
 		 */
-		private RulePepActionExpressions(final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory, final EffectType ruleEffect)
-		{
+		private RulePepActionExpressions(final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory,
+				final EffectType ruleEffect) {
 			assert ruleEffect != null;
 
 			this.ruleEffectMatchingActionExpressions = new EffectSpecific(ruleEffect);
@@ -90,62 +91,62 @@ public final class RuleEvaluator implements Decidable
 		}
 
 		@Override
-		public void add(final ObligationExpression jaxbObligationExp) throws IllegalArgumentException
-		{
+		public void add(final ObligationExpression jaxbObligationExp) throws IllegalArgumentException {
 			assert jaxbObligationExp != null;
 
-			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(PepActionFactories.OBLIGATION_FACTORY, jaxbObligationExp.getObligationId(),
-					jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
+			final PepActionExpression<Obligation> obligationExp = new PepActionExpression<>(
+					PepActionFactories.OBLIGATION_FACTORY, jaxbObligationExp.getObligationId(),
+					jaxbObligationExp.getFulfillOn(), jaxbObligationExp.getAttributeAssignmentExpressions(),
+					xPathCompiler, expFactory);
 			final boolean isMatching = ruleEffectMatchingActionExpressions.addObligationExpression(obligationExp);
-			if (LOGGER.isWarnEnabled() && !isMatching)
-			{
-				LOGGER.warn("Ignored ObligationExpression[@ObligationId='{}'] because @FulfillOn = {} does not match the rule's Effect = {}", jaxbObligationExp.getObligationId(),
-						jaxbObligationExp.getFulfillOn(), ruleEffectMatchingActionExpressions.getEffect());
-			}
-		}
-
-		@Override
-		public void add(final AdviceExpression jaxbAdviceExp) throws IllegalArgumentException
-		{
-			assert jaxbAdviceExp != null;
-
-			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(PepActionFactories.ADVICE_FACTORY, jaxbAdviceExp.getAdviceId(), jaxbAdviceExp.getAppliesTo(),
-					jaxbAdviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
-			final boolean isMatching = ruleEffectMatchingActionExpressions.addAdviceExpression(adviceExp);
-			if (LOGGER.isWarnEnabled() && !isMatching)
-			{
-				LOGGER.warn("Ignored AdviceExpression[@AdviceId='{}'] because @AppliesTo = {} does not match the rule's Effect = {}", jaxbAdviceExp.getAdviceId(), jaxbAdviceExp.getAppliesTo(),
+			if (LOGGER.isWarnEnabled() && !isMatching) {
+				LOGGER.warn(
+						"Ignored ObligationExpression[@ObligationId='{}'] because @FulfillOn = {} does not match the rule's Effect = {}",
+						jaxbObligationExp.getObligationId(), jaxbObligationExp.getFulfillOn(),
 						ruleEffectMatchingActionExpressions.getEffect());
 			}
 		}
 
 		@Override
-		public List<PepActionExpression<Obligation>> getObligationExpressionList()
-		{
+		public void add(final AdviceExpression jaxbAdviceExp) throws IllegalArgumentException {
+			assert jaxbAdviceExp != null;
+
+			final PepActionExpression<Advice> adviceExp = new PepActionExpression<>(PepActionFactories.ADVICE_FACTORY,
+					jaxbAdviceExp.getAdviceId(), jaxbAdviceExp.getAppliesTo(),
+					jaxbAdviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expFactory);
+			final boolean isMatching = ruleEffectMatchingActionExpressions.addAdviceExpression(adviceExp);
+			if (LOGGER.isWarnEnabled() && !isMatching) {
+				LOGGER.warn(
+						"Ignored AdviceExpression[@AdviceId='{}'] because @AppliesTo = {} does not match the rule's Effect = {}",
+						jaxbAdviceExp.getAdviceId(), jaxbAdviceExp.getAppliesTo(),
+						ruleEffectMatchingActionExpressions.getEffect());
+			}
+		}
+
+		@Override
+		public List<PepActionExpression<Obligation>> getObligationExpressionList() {
 			return ruleEffectMatchingActionExpressions.getObligationExpressions();
 		}
 
 		@Override
-		public List<PepActionExpression<Advice>> getAdviceExpressionList()
-		{
+		public List<PepActionExpression<Advice>> getAdviceExpressionList() {
 			return ruleEffectMatchingActionExpressions.getAdviceExpressions();
 		}
 	}
 
-	private static final class RulePepActionExpressionsFactory implements PepActionExpressions.Factory<RulePepActionExpressions>
-	{
+	private static final class RulePepActionExpressionsFactory
+			implements PepActionExpressions.Factory<RulePepActionExpressions> {
 		private final EffectType ruleEffect;
 
-		private RulePepActionExpressionsFactory(final EffectType ruleEffect)
-		{
+		private RulePepActionExpressionsFactory(final EffectType ruleEffect) {
 			assert ruleEffect != null;
 
 			this.ruleEffect = ruleEffect;
 		}
 
 		@Override
-		public RulePepActionExpressions getInstance(final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory)
-		{
+		public RulePepActionExpressions getInstance(final XPathCompiler xPathCompiler,
+				final ExpressionFactory expressionFactory) {
 			return new RulePepActionExpressions(xPathCompiler, expressionFactory, ruleEffect);
 		}
 
@@ -157,8 +158,7 @@ public final class RuleEvaluator implements Decidable
 	 * 
 	 * @version $Id: $
 	 */
-	private interface DecisionResultFactory
-	{
+	private interface DecisionResultFactory {
 		EffectType getDecisionType();
 
 		DecisionResult getInstance(EvaluationContext context);
@@ -167,64 +167,55 @@ public final class RuleEvaluator implements Decidable
 
 	}
 
-	private static final DecisionResultFactory PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY = new DecisionResultFactory()
-	{
+	private static final DecisionResultFactory PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY = new DecisionResultFactory() {
 
 		@Override
-		public DecisionResult getInstance(final EvaluationContext context)
-		{
+		public DecisionResult getInstance(final EvaluationContext context) {
 			return DecisionResults.SIMPLE_PERMIT;
 		}
 
 		@Override
-		public DecisionResult newIndeterminate(final IndeterminateEvaluationException e)
-		{
+		public DecisionResult newIndeterminate(final IndeterminateEvaluationException e) {
 			assert e != null;
 
 			return DecisionResults.newIndeterminate(DecisionType.PERMIT, e.getStatus(), null);
 		}
 
 		@Override
-		public EffectType getDecisionType()
-		{
+		public EffectType getDecisionType() {
 			return EffectType.PERMIT;
 		}
 
 	};
 
-	private static final DecisionResultFactory DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY = new DecisionResultFactory()
-	{
+	private static final DecisionResultFactory DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY = new DecisionResultFactory() {
 
 		@Override
-		public DecisionResult getInstance(final EvaluationContext context)
-		{
+		public DecisionResult getInstance(final EvaluationContext context) {
 			return DecisionResults.SIMPLE_DENY;
 		}
 
 		@Override
-		public DecisionResult newIndeterminate(final IndeterminateEvaluationException e)
-		{
+		public DecisionResult newIndeterminate(final IndeterminateEvaluationException e) {
 			assert e != null;
 
 			return DecisionResults.newIndeterminate(DecisionType.DENY, e.getStatus(), null);
 		}
 
 		@Override
-		public EffectType getDecisionType()
-		{
+		public EffectType getDecisionType() {
 			return EffectType.DENY;
 		}
 
 	};
 
-	private static abstract class DecisionWithPepActionResultFactory implements DecisionResultFactory
-	{
+	private static abstract class DecisionWithPepActionResultFactory implements DecisionResultFactory {
 		private final String ruleId;
 		private final PepActionExpressions.EffectSpecific rulePepActionExpressions;
 		private final DecisionType ruleEffectAsDecision;
 
-		private DecisionWithPepActionResultFactory(final String ruleId, final PepActionExpressions.EffectSpecific rulePepActionExpressions)
-		{
+		private DecisionWithPepActionResultFactory(final String ruleId,
+				final PepActionExpressions.EffectSpecific rulePepActionExpressions) {
 			assert ruleId != null && rulePepActionExpressions != null;
 
 			this.ruleId = ruleId;
@@ -236,30 +227,35 @@ public final class RuleEvaluator implements Decidable
 		protected abstract DecisionResult getInstance(ImmutablePepActions pepActions);
 
 		@Override
-		public DecisionResult getInstance(final EvaluationContext context)
-		{
+		public DecisionResult getInstance(final EvaluationContext context) {
 			/*
-			 * Evaluate obligations/advice elements. We have already filtered out obligations/advice that do not apply to Rule's effect in the constructor. So no need to do it again, that's why the
-			 * rule's effect is not checked again here.
+			 * Evaluate obligations/advice elements. We have already filtered
+			 * out obligations/advice that do not apply to Rule's effect in the
+			 * constructor. So no need to do it again, that's why the rule's
+			 * effect is not checked again here.
 			 */
 			/*
-			 * If any of the attribute assignment expressions in an obligation or advice expression with a matching FulfillOn or AppliesTo attribute evaluates to "Indeterminate", then the whole rule,
-			 * policy, or policy set SHALL be "Indeterminate" (see XACML 3.0 core spec, section 7.18).
+			 * If any of the attribute assignment expressions in an obligation
+			 * or advice expression with a matching FulfillOn or AppliesTo
+			 * attribute evaluates to "Indeterminate", then the whole rule,
+			 * policy, or policy set SHALL be "Indeterminate" (see XACML 3.0
+			 * core spec, section 7.18).
 			 */
 
 			final ImmutablePepActions pepActions;
-			try
-			{
+			try {
 				pepActions = PepActionExpressions.Helper.evaluate(rulePepActionExpressions, context);
-			}
-			catch (final IndeterminateEvaluationException e)
-			{
+			} catch (final IndeterminateEvaluationException e) {
 				/*
-				 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than error).
+				 * Before we lose the exception information, log it at a higher
+				 * level because it is an evaluation error (but no critical
+				 * application error, therefore lower level than error).
 				 */
-				LOGGER.info("Rule[{}]/{Obligation|Advice}Expressions -> Indeterminate", ruleId, e);
+				LOGGER.info("Rule['{}']/{Obligation|Advice}Expressions -> Indeterminate", ruleId, e);
 				/*
-				 * Create an Indeterminate Decision Result For the Extended Indeterminate, we do like for Target or Condition evaluation in section 7.11 (same as the rule's Effect).
+				 * Create an Indeterminate Decision Result For the Extended
+				 * Indeterminate, we do like for Target or Condition evaluation
+				 * in section 7.11 (same as the rule's Effect).
 				 */
 				return newIndeterminate(e);
 			}
@@ -268,60 +264,51 @@ public final class RuleEvaluator implements Decidable
 		}
 
 		@Override
-		public DecisionResult newIndeterminate(final IndeterminateEvaluationException e)
-		{
+		public DecisionResult newIndeterminate(final IndeterminateEvaluationException e) {
 			return DecisionResults.newIndeterminate(ruleEffectAsDecision, e.getStatus(), null);
 		}
 	}
 
-	private static final class PermitDecisionWithPepActionResutFactory extends DecisionWithPepActionResultFactory
-	{
-		private PermitDecisionWithPepActionResutFactory(final String ruleId, final PepActionExpressions.EffectSpecific rulePepActionExpressions)
-		{
+	private static final class PermitDecisionWithPepActionResutFactory extends DecisionWithPepActionResultFactory {
+		private PermitDecisionWithPepActionResutFactory(final String ruleId,
+				final PepActionExpressions.EffectSpecific rulePepActionExpressions) {
 			super(ruleId, rulePepActionExpressions);
 			assert rulePepActionExpressions.getEffect() == EffectType.PERMIT;
 		}
 
 		@Override
-		protected DecisionResult getInstance(final ImmutablePepActions pepActions)
-		{
+		protected DecisionResult getInstance(final ImmutablePepActions pepActions) {
 			return DecisionResults.getPermit(null, pepActions, null);
 		}
 
 		@Override
-		public EffectType getDecisionType()
-		{
+		public EffectType getDecisionType() {
 			return EffectType.PERMIT;
 		}
 	}
 
-	private static final class DenyDecisionWithPepActionResutFactory extends DecisionWithPepActionResultFactory
-	{
-		private DenyDecisionWithPepActionResutFactory(final String ruleId, final PepActionExpressions.EffectSpecific rulePepActionExpressions)
-		{
+	private static final class DenyDecisionWithPepActionResutFactory extends DecisionWithPepActionResultFactory {
+		private DenyDecisionWithPepActionResutFactory(final String ruleId,
+				final PepActionExpressions.EffectSpecific rulePepActionExpressions) {
 			super(ruleId, rulePepActionExpressions);
 			assert rulePepActionExpressions.getEffect() == EffectType.DENY;
 		}
 
 		@Override
-		protected DecisionResult getInstance(final ImmutablePepActions pepActions)
-		{
+		protected DecisionResult getInstance(final ImmutablePepActions pepActions) {
 			return DecisionResults.getDeny(null, pepActions, null);
 		}
 
 		@Override
-		public EffectType getDecisionType()
-		{
+		public EffectType getDecisionType() {
 			return EffectType.DENY;
 		}
 	}
 
-	private static final BooleanEvaluator TRUE_CONDITION = new BooleanEvaluator()
-	{
+	private static final BooleanEvaluator TRUE_CONDITION = new BooleanEvaluator() {
 
 		@Override
-		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
-		{
+		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException {
 			LOGGER.debug("Condition null -> True");
 			return true;
 		}
@@ -341,29 +328,33 @@ public final class RuleEvaluator implements Decidable
 
 	private final transient String toString;
 
+	private final EffectType effect;
+
+	private final boolean isEmptyEquivalent;
+
 	/**
 	 * Instantiates rule from XACML RuleType
 	 *
 	 * @param ruleElt
 	 *            Rule element definition
 	 * @param xPathCompiler
-	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+	 *            XPath compiler corresponding to enclosing policy(set) default
+	 *            XPath version
 	 * @param expressionFactory
 	 *            Expression parser/factory
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid Target, Condition or Obligation/Advice expressions
 	 */
-	public RuleEvaluator(final Rule ruleElt, final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory) throws IllegalArgumentException
-	{
-		if (ruleElt == null)
-		{
+	public RuleEvaluator(final Rule ruleElt, final XPathCompiler xPathCompiler,
+			final ExpressionFactory expressionFactory) throws IllegalArgumentException {
+		if (ruleElt == null) {
 			throw NULL_XACML_RULE_ARGUMENT_EXCEPTION;
 		}
 
 		// JAXB fields initialization
 		this.ruleId = ruleElt.getRuleId();
 
-		this.toString = "Rule[" + ruleId + "]";
+		this.toString = "Rule['" + ruleId + "']";
 
 		this.targetEvaluator = TargetEvaluators.getInstance(ruleElt.getTarget(), xPathCompiler, expressionFactory);
 
@@ -372,48 +363,48 @@ public final class RuleEvaluator implements Decidable
 		/*
 		 * Rule's condition considered as always True if condElt = null
 		 */
-		if (condElt == null)
-		{
+		if (condElt == null) {
 			this.conditionEvaluator = TRUE_CONDITION;
-		}
-		else
-		{
-			try
-			{
-				this.conditionEvaluator = new ConditionEvaluator(condElt, xPathCompiler, expressionFactory);
-			}
-			catch (final IllegalArgumentException e)
-			{
+		} else {
+			try {
+				this.conditionEvaluator = ConditionEvaluators.getInstance(condElt, xPathCompiler, expressionFactory);
+			} catch (final IllegalArgumentException e) {
 				throw new IllegalArgumentException(this + ": invalid Condition", e);
 			}
 		}
 
 		/*
-		 * Final decision result depends on rule's effect and Obligation/Advice elements
+		 * Final decision result depends on rule's effect and Obligation/Advice
+		 * elements
 		 */
-		final EffectType effect = ruleElt.getEffect();
+		this.effect = ruleElt.getEffect();
 		final ObligationExpressions obligationExps = ruleElt.getObligationExpressions();
 		final AdviceExpressions adviceExps = ruleElt.getAdviceExpressions();
-		if ((obligationExps == null || obligationExps.getObligationExpressions().isEmpty()) && (adviceExps == null || adviceExps.getAdviceExpressions().isEmpty()))
-		{
-			// no PEP obligation/advice
-			this.decisionResultFactory = effect == EffectType.DENY ? DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY : PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY;
-		}
-		else
-		{
+		if ((obligationExps == null || obligationExps.getObligationExpressions().isEmpty())
+				&& (adviceExps == null || adviceExps.getAdviceExpressions().isEmpty())) {
+			/*
+			 * No PEP obligation/advice -> rule is (equivalent to) empty rule if
+			 * also target matches all and condition is null or always True
+			 */
+			this.isEmptyEquivalent = this.targetEvaluator == TargetEvaluators.MATCH_ALL_TARGET_EVALUATOR
+					&& this.conditionEvaluator == ConditionEvaluators.TRUE_CONDITION;
+			this.decisionResultFactory = effect == EffectType.DENY ? DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY
+					: PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY;
+		} else {
+			this.isEmptyEquivalent = false;
 			final RulePepActionExpressions rulePepActionExpressions;
-			try
-			{
-				rulePepActionExpressions = PepActionExpressions.Helper
-						.parseActionExpressions(obligationExps, adviceExps, xPathCompiler, expressionFactory, new RulePepActionExpressionsFactory(effect));
-			}
-			catch (final IllegalArgumentException e)
-			{
+			try {
+				rulePepActionExpressions = PepActionExpressions.Helper.parseActionExpressions(obligationExps,
+						adviceExps, xPathCompiler, expressionFactory, new RulePepActionExpressionsFactory(effect));
+			} catch (final IllegalArgumentException e) {
 				throw new IllegalArgumentException(this + ": Invalid AttributeAssignmentExpression(s)", e);
 			}
 
-			this.decisionResultFactory = effect == EffectType.DENY ? new DenyDecisionWithPepActionResutFactory(ruleId, rulePepActionExpressions.ruleEffectMatchingActionExpressions)
-					: new PermitDecisionWithPepActionResutFactory(ruleId, rulePepActionExpressions.ruleEffectMatchingActionExpressions);
+			this.decisionResultFactory = effect == EffectType.DENY
+					? new DenyDecisionWithPepActionResutFactory(ruleId,
+							rulePepActionExpressions.ruleEffectMatchingActionExpressions)
+					: new PermitDecisionWithPepActionResutFactory(ruleId,
+							rulePepActionExpressions.ruleEffectMatchingActionExpressions);
 		}
 	}
 
@@ -422,28 +413,50 @@ public final class RuleEvaluator implements Decidable
 	 *
 	 * @return evaluated rule ID
 	 */
-	public String getRuleId()
-	{
+	public String getRuleId() {
 		return this.ruleId;
+	}
+
+	/**
+	 * Get evaluated rule Effect (Permit/Deny) when applicable
+	 *
+	 * @return evaluated rule Effect
+	 */
+	public EffectType getEffect() {
+		return this.effect;
+	}
+
+	/**
+	 * Is the rule (equivalent to) an empty rule? I.e. the rule's Target matches
+	 * all, the condition is undefined or always evaluates to True, and there is
+	 * no PEP action (obligation/advice), in other words the rule always
+	 * evaluates to the simple Permit/Deny decision corresponding to its Effect.
+	 * 
+	 * @return true iff it is empty equivalent (empty rule or equivalent to an empty rule)
+	 */
+	public boolean isEmptyEquivalent() {
+		return this.isEmptyEquivalent;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to evaluate the condition. If the target and condition apply, then the rule's effect is
-	 * returned in the result.
+	 * Evaluates the rule against the supplied context. This will check that the
+	 * target matches, and then try to evaluate the condition. If the target and
+	 * condition apply, then the rule's effect is returned in the result.
 	 * <p>
-	 * Note that rules are not required to have targets. If no target is specified, then the rule inherits its parent's target. In the event that this <code>RuleEvaluator</code> has no
-	 * <code>Target</code> then the match is assumed to be true, since evaluating a policy tree to this level required the parent's target to match. In debug level, this method logs the evaluation
-	 * result before return. Indeterminate results are logged in warn level only (which "includes" debug level).
+	 * Note that rules are not required to have targets. If no target is
+	 * specified, then the rule inherits its parent's target. In the event that
+	 * this <code>RuleEvaluator</code> has no <code>Target</code> then the match
+	 * is assumed to be true, since evaluating a policy tree to this level
+	 * required the parent's target to match. In debug level, this method logs
+	 * the evaluation result before return. Indeterminate results are logged in
+	 * warn level only (which "includes" debug level).
 	 */
 	@Override
-	public DecisionResult evaluate(final EvaluationContext context)
-	{
-		try
-		{
-			if (!targetEvaluator.evaluate(context))
-			{
+	public DecisionResult evaluate(final EvaluationContext context) {
+		try {
+			if (!targetEvaluator.evaluate(context)) {
 				LOGGER.debug("{}/Target -> No-match", this);
 				final DecisionResult result = PdpDecisionResults.SIMPLE_NOT_APPLICABLE;
 				LOGGER.debug("{} -> {}", this, result);
@@ -451,17 +464,18 @@ public final class RuleEvaluator implements Decidable
 			}
 
 			LOGGER.debug("{}/Target -> Match", this);
-		}
-		catch (final IndeterminateEvaluationException e)
-		{
+		} catch (final IndeterminateEvaluationException e) {
 			// Target is Indeterminate
 			/*
-			 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but no critical application error, therefore lower level than error)
+			 * Before we lose the exception information, log it at a higher
+			 * level because it is an evaluation error (but no critical
+			 * application error, therefore lower level than error)
 			 */
 			LOGGER.info("{}/Target -> Indeterminate", this, e);
 
 			/*
-			 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
+			 * Condition is Indeterminate, determine Extended Indeterminate
+			 * (section 7.11) which is the value of the Rule's Effect
 			 */
 			final DecisionResult result = decisionResultFactory.newIndeterminate(e);
 			LOGGER.debug("{} -> {}", this, result);
@@ -469,20 +483,22 @@ public final class RuleEvaluator implements Decidable
 		}
 
 		/*
-		 * Target matches -> check Rule's condition. See section 7.9 of XACML core spec, so result is the Rule's Effect, unless condition evaluates to False or throws Indeterminate exception.
+		 * Target matches -> check Rule's condition. See section 7.9 of XACML
+		 * core spec, so result is the Rule's Effect, unless condition evaluates
+		 * to False or throws Indeterminate exception.
 		 */
 		final boolean isConditionTrue;
-		try
-		{
+		try {
 			isConditionTrue = conditionEvaluator.evaluate(context);
-		}
-		catch (final IndeterminateEvaluationException e)
-		{
+		} catch (final IndeterminateEvaluationException e) {
 			/*
-			 * Condition is Indeterminate, determine Extended Indeterminate (section 7.11) which is the value of the Rule's Effect
+			 * Condition is Indeterminate, determine Extended Indeterminate
+			 * (section 7.11) which is the value of the Rule's Effect
 			 */
 			/*
-			 * Before we lose the exception information, log it at a higher level because it is an evaluation error (but not a critical application error, therefore lower level than Error level)
+			 * Before we lose the exception information, log it at a higher
+			 * level because it is an evaluation error (but not a critical
+			 * application error, therefore lower level than Error level)
 			 */
 			LOGGER.info("{}/Condition -> Indeterminate", this, e);
 			final DecisionResult result = decisionResultFactory.newIndeterminate(e);
@@ -490,8 +506,7 @@ public final class RuleEvaluator implements Decidable
 			return result;
 		}
 
-		if (!isConditionTrue)
-		{
+		if (!isConditionTrue) {
 			LOGGER.debug("{}/Condition -> False", this);
 			final DecisionResult result = PdpDecisionResults.SIMPLE_NOT_APPLICABLE;
 			LOGGER.debug("{} -> {}", this, result);
@@ -510,8 +525,7 @@ public final class RuleEvaluator implements Decidable
 
 	/** {@inheritDoc} */
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return toString;
 	}
 

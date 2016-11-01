@@ -46,7 +46,7 @@ import com.google.common.base.Preconditions;
  */
 final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
 {
-	private static final class Evaluator extends DPOverridesAlgEvaluator
+	private static final class Evaluator extends DPOverridesPolicyCombiningAlgEvaluator
 	{
 		private Evaluator(final Iterable<? extends Decidable> combinedElements)
 		{
