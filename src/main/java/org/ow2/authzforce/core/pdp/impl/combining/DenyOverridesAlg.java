@@ -21,17 +21,10 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
-import org.ow2.authzforce.core.pdp.api.PepActions;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
-import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
@@ -41,162 +34,75 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 /**
- * This is the standard XACML 3.0 Deny-Overrides policy/rule combining
- * algorithm. It allows a single evaluation of Deny to take precedence over any
- * number of permit, not applicable or indeterminate results. Note that since
- * this implementation does an ordered evaluation, this class also supports the
+ * This is the standard XACML 3.0 Deny-Overrides policy/rule combining algorithm. It allows a single evaluation of Deny to take precedence over any number of permit, not applicable or indeterminate
+ * results. Note that since this implementation may change the order of evaluation, compared to the order of declaration, for optimization purposes; therefore it is different from the
  * Ordered-Deny-Overrides-algorithm.
  *
  * @version $Id: $
  */
-final class DenyOverridesAlg extends BaseCombiningAlg<Decidable> {
+final class DenyOverridesAlg extends BaseCombiningAlg<Decidable>
+{
 	private static final Logger LOGGER = LoggerFactory.getLogger(DenyOverridesAlg.class);
 
-	private static final class PolicyCombiningAlgEvaluator extends DPOverridesPolicyCombiningAlgEvaluator {
-		private PolicyCombiningAlgEvaluator(final Iterable<? extends Decidable> combinedElements) {
-			super(combinedElements);
-		}
-
-		@Override
-		protected ExtendedDecision getOverridingDPResult(final DecisionResult result,
-				final UpdatablePepActions outPepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
-				final DPOverridesAlgResultCombiner resultHelper) {
-			switch (result.getDecision()) {
-			case DENY:
-				if (outApplicablePolicyIdList != null) {
-					outApplicablePolicyIdList.addAll(resultHelper.getApplicablePolicies(result));
-				}
-
-				outPepActions.add(result.getPepActions());
-				return ExtendedDecisions.SIMPLE_DENY;
-			case PERMIT:
-				resultHelper.addSubResultDP(result);
-				break;
-			case INDETERMINATE:
-				resultHelper.addSubResultIndeterminate(result);
-				break;
-			default:
-				break;
-			}
-
-			return null;
-		}
-
-		@Override
-		protected ExtendedDecision getFinalResult(final PepActions combinedPermitPepActions,
-				final UpdatablePepActions outPepActions,
-				final List<JAXBElement<IdReferenceType>> combinedApplicablePolicies,
-				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList,
-				final ExtendedDecision firstIndeterminateD, final ExtendedDecision firstIndeterminateP) {
-			/*
-			 * If any Indeterminate{D}, then: if ( any Indeterminate{P} or any
-			 * Permit ) -> Indeterminate{DP}; else -> Indeterminate{D} (this is
-			 * a simplified equivalent of the algo in the spec)
-			 */
-			/*
-			 * atLeastOnePermit == true <=> permitPepActions != null
-			 */
-			if (firstIndeterminateD != null) {
-				if (outApplicablePolicyIdList != null) {
-					outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
-				}
-
-				return ExtendedDecisions
-						.newIndeterminate(
-								firstIndeterminateP != null || combinedPermitPepActions != null
-										? DecisionType.INDETERMINATE : DecisionType.DENY,
-								firstIndeterminateD.getStatus());
-			}
-
-			// if we got a PERMIT or Indeterminate{P}, return it, otherwise it's
-			// NOT_APPLICABLE
-			if (combinedPermitPepActions != null) {
-				if (outApplicablePolicyIdList != null) {
-					outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
-				}
-
-				outPepActions.add(combinedPermitPepActions);
-				return ExtendedDecisions.SIMPLE_PERMIT;
-			}
-
-			if (firstIndeterminateP != null) {
-				if (outApplicablePolicyIdList != null) {
-					outApplicablePolicyIdList.addAll(combinedApplicablePolicies);
-				}
-
-				return firstIndeterminateP;
-			}
-
-			return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
-		}
-	}
-
-	DenyOverridesAlg(final String algId) {
+	DenyOverridesAlg(final String algId)
+	{
 		super(algId, Decidable.class);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params,
-			final Iterable<? extends Decidable> combinedElements)
-			throws UnsupportedOperationException, IllegalArgumentException {
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
+			throws UnsupportedOperationException, IllegalArgumentException
+	{
+		// FIXME: refactor in common parent class to this and permit-overrides algorithm
 		/*
 		 * If combined elements are Rules, we can optimize
 		 */
-		if (!RuleEvaluator.class.isAssignableFrom(getCombinedElementType())) {
-			return new PolicyCombiningAlgEvaluator(Preconditions.checkNotNull(combinedElements));
+		if (!RuleEvaluator.class.isAssignableFrom(getCombinedElementType()))
+		{
+			return new DPOverridesPolicyCombiningAlgEvaluator(Preconditions.checkNotNull(combinedElements), EffectType.DENY);
 		}
 
 		// combined elements are Rules, we can optimize
 		// if no Rules -> NotApplicable
-		if (combinedElements == null) {
-			LOGGER.warn(
-					"{}: no rule to combine -> optimization: replacing with equivalent evaluator returning constant NotApplicable decision",
-					this);
+		if (combinedElements == null)
+		{
+			LOGGER.warn("{}: no rule to combine -> optimization: replacing with equivalent evaluator returning constant NotApplicable decision", this);
 			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
 		}
 
 		final Iterator<? extends Decidable> combinedEltIterator = combinedElements.iterator();
-		if (!combinedEltIterator.hasNext()) {
+		if (!combinedEltIterator.hasNext())
+		{
 			// empty (no Rules)
-			LOGGER.warn(
-					"{}: no rule to combine -> optimization: replacing with equivalent evaluator returning constant NotApplicable decision",
-					this);
+			LOGGER.warn("{}: no rule to combine -> optimization: replacing with equivalent evaluator returning constant NotApplicable decision", this);
 			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
 		}
 
 		/*
-		 * There is at least one Rule. Prepare to iterate over Rules, we will
-		 * reorder deny rules before permit rules since order does not matter
-		 * and deny decision prevails
+		 * There is at least one Rule. Prepare to iterate over Rules, we will reorder rules with overriding Effect (e.g. Deny for deny-overrides algorithm) before rules with overridden Effect (e.g.
+		 * Permit for deny-overrides algorithm) since order does not matter and deny decision prevails
 		 */
 		final Deque<RuleEvaluator> nonEmptyDenyRules = new ArrayDeque<>();
 		final Deque<RuleEvaluator> permitRules = new ArrayDeque<>();
 
 		/*
 		 * 
-		 * If we find any empty Permit Rule (no target/condition/pep_action), we
-		 * don't need to look at other Permit rules since it is enough to return
-		 * Permit if there is no Deny
+		 * If we find any empty Permit Rule (no target/condition/pep_action), we don't need to look at other Permit rules since it is enough to return Permit if there is no Deny
 		 */
 		boolean atLeastOneEmptyPermitRule = false;
 
-		while (combinedEltIterator.hasNext()) {
+		while (combinedEltIterator.hasNext())
+		{
 			final RuleEvaluator rule = (RuleEvaluator) combinedEltIterator.next();
-			if (rule.getEffect() == EffectType.DENY) {
+			if (rule.getEffect() == EffectType.DENY)
+			{
 				/*
-				 * If rule's effect is Deny and it has no
-				 * target/condition/pep_actions, then rule will always return
-				 * deny -> deny-overrides alg always evaluates to Deny
-				 * (ignore/remove all other rules)
+				 * If rule's effect is Deny and it has no target/condition/pep_actions, then rule will always return deny -> deny-overrides alg always evaluates to Deny (ignore/remove all other rules)
 				 */
-				if (rule.isEmptyEquivalent()) {
+				if (rule.isEmptyEquivalent())
+				{
 					LOGGER.warn(
 							"{}: {} with effect Deny is empty (no target/condition/pep_actions) => always returns Deny => deny-overrides combining algorithm will always return Deny => other combined rules have no effect => will be ignored/removed.",
 							this, rule);
@@ -204,8 +110,7 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable> {
 				}
 
 				/*
-				 * Rule is not empty, i.e. has a target/condition, therefore may
-				 * not necessarily return Deny
+				 * Rule is not empty, i.e. has a target/condition, therefore may not necessarily return Deny
 				 */
 				nonEmptyDenyRules.add(rule);
 				continue;
@@ -214,13 +119,11 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable> {
 			/*
 			 * Rule Effect = Permit
 			 * 
-			 * Process Permit rule only if no empty Permit Rule found yet.
-			 * Indeed, as mentioned earlier, if there is an empty Permit rule,
-			 * we already know the result is always Permit (so no need to
-			 * process other Permit rules), if there is no Deny rule. Only Deny
-			 * rules may change the final result in this case.
+			 * Process Permit rule only if no empty Permit Rule found yet. Indeed, as mentioned earlier, if there is an empty Permit rule, we already know the result is always Permit (so no need to
+			 * process other Permit rules), if there is no Deny rule. Only Deny rules may change the final result in this case.
 			 */
-			if (atLeastOneEmptyPermitRule) {
+			if (atLeastOneEmptyPermitRule)
+			{
 				// ignore this new Permit Rule
 				LOGGER.warn(
 						"{}: Ignoring/removing {} with effect Permit because does not affect the result, only affected by empty Permit Rule ({}) found previously (always returns Permit), and Deny rule(s).",
@@ -230,11 +133,10 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable> {
 			}
 
 			// No empty Permit Rule found yet; what about this one?
-			if (rule.isEmptyEquivalent()) {
+			if (rule.isEmptyEquivalent())
+			{
 				/*
-				 * This is the first declared empty Permit Rule -> always
-				 * returns Permit; we can ignore/remove other Permit Rules (have
-				 * no effect anymore)
+				 * This is the first declared empty Permit Rule -> always returns Permit; we can ignore/remove other Permit Rules (have no effect anymore)
 				 */
 				LOGGER.warn(
 						"{}: {} with effect Permit is empty (no target/condition/pep_actions) => always returns Permit => deny-overrides combining algorithm will always return this Permit unless some Deny rule applies => other combined Permit rules have no effect => will be ignored/removed.",
@@ -255,15 +157,15 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable> {
 		/*
 		 * There is at least one rule and there is no empty Deny Rule
 		 */
-		if (nonEmptyDenyRules.isEmpty()) {
+		if (nonEmptyDenyRules.isEmpty())
+		{
 			/*
-			 * no Deny Rule (whether empty or not) -> at least one Permit Rule
-			 * and all rules are Permit rules
+			 * no Deny Rule (whether empty or not) -> at least one Permit Rule and all rules are Permit rules
 			 */
-			if (atLeastOneEmptyPermitRule) {
+			if (atLeastOneEmptyPermitRule)
+			{
 				/*
-				 * no Deny Rule but one empty Permit rule -> final result is
-				 * Permit always
+				 * no Deny Rule but one empty Permit rule -> final result is Permit always
 				 */
 				LOGGER.warn(
 						"{}: the only combined rule is empty Permit Rule ({}) => deny-overrides combining algorithm will always return this Permit => optimization: replacing with equivalent evaluator returning constant Permit decision",
@@ -278,7 +180,8 @@ final class DenyOverridesAlg extends BaseCombiningAlg<Decidable> {
 		}
 
 		// There is at least one non-empty Deny rule
-		if (permitRules.isEmpty()) {
+		if (permitRules.isEmpty())
+		{
 			/*
 			 * No Permit rule -> only non-empty Deny rules
 			 */

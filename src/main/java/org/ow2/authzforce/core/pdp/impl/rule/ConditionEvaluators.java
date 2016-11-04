@@ -18,6 +18,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -28,16 +32,13 @@ import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 /**
  * XACML Condition evaluators.
  *
  * @version $Id: $
  */
-public final class ConditionEvaluators {
+public final class ConditionEvaluators
+{
 
 	private static final IllegalArgumentException INVALID_CONSTANT_FALSE_EXPRESSION_EXCEPTION = new IllegalArgumentException("Invalid condition: Expression is equivalent to constant False");
 
@@ -45,47 +46,50 @@ public final class ConditionEvaluators {
 	 * Logger used for all classes
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConditionEvaluators.class);
-	
+
 	private static final IllegalArgumentException NULL_EXPR_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException(
 			"Cannot create Condition evaluator: undefined input XACML expression parser (expressionFactory)");
 
 	/**
 	 * Condition that always evaluates to True
 	 */
-	public static final BooleanEvaluator TRUE_CONDITION = new BooleanEvaluator() {
+	public static final BooleanEvaluator TRUE_CONDITION = new BooleanEvaluator()
+	{
 
 		@Override
-		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException {
+		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		{
 			LOGGER.debug("Condition is null or Expression equals constant True -> True");
 			return true;
 		}
 	};
 
-	private static final class BooleanExpressionEvaluator implements BooleanEvaluator {
+	private static final class BooleanExpressionEvaluator implements BooleanEvaluator
+	{
 
 		private transient final Expression<BooleanValue> evaluatableBoolExpression;
 
-		private BooleanExpressionEvaluator(Expression<BooleanValue> boolExpression) throws IllegalArgumentException {
-			
+		private BooleanExpressionEvaluator(final Expression<BooleanValue> boolExpression) throws IllegalArgumentException
+		{
+
 			assert boolExpression != null;
 			this.evaluatableBoolExpression = boolExpression;
 		}
 
 		/**
-		 * Evaluates the <code>Condition</code> to boolean by evaluating its
-		 * child boolean <code>Expression</code>.
+		 * Evaluates the <code>Condition</code> to boolean by evaluating its child boolean <code>Expression</code>.
 		 *
 		 * @param context
 		 *            the representation of the request
-		 * @return true if and only if condition is true, i.e. its expression
-		 *         evaluates to True
+		 * @return true if and only if condition is true, i.e. its expression evaluates to True
 		 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 		 *             if error evaluating the condition
 		 * 
 		 * 
 		 */
 		@Override
-		public boolean evaluate(EvaluationContext context) throws IndeterminateEvaluationException {
+		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		{
 			final BooleanValue boolVal = evaluatableBoolExpression.evaluate(context);
 			return boolVal.getUnderlyingValue().booleanValue();
 		}
@@ -93,41 +97,40 @@ public final class ConditionEvaluators {
 	}
 
 	/**
-	 * Instantiates a Condition evaluator from XACML-Schema-derived
-	 * <code>Condition</code>
+	 * Instantiates a Condition evaluator from XACML-Schema-derived <code>Condition</code>
 	 *
 	 * @param condition
 	 *            XACML-schema-derived JAXB Condition element
 	 * @param expressionFactory
 	 *            expression factory
 	 * @param xPathCompiler
-	 *            XPath compiler corresponding to enclosing policy(set) default
-	 *            XPath version
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
 	 * @return instance of Condition evaluator
 	 * @throws java.lang.IllegalArgumentException
 	 *             if the expression is not a valid boolean Expression
 	 */
-	public static BooleanEvaluator getInstance(final Condition condition, final XPathCompiler xPathCompiler,
-			final ExpressionFactory expressionFactory) throws IllegalArgumentException {
-		if (condition == null) {
+	public static BooleanEvaluator getInstance(final Condition condition, final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory) throws IllegalArgumentException
+	{
+		if (condition == null)
+		{
 			return TRUE_CONDITION;
 		}
-		
+
 		/*
 		 * condition != null -> condition's Expression is not null (by definition of XACML schema), therefore expressionFactory is needed
 		 */
 		final ExpressionType exprElt = condition.getExpression().getValue();
-		if (expressionFactory == null) {
+		if (expressionFactory == null)
+		{
 			throw NULL_EXPR_FACTORY_ARGUMENT_EXCEPTION;
 		}
-		
+
 		final Expression<?> expr = expressionFactory.getInstance(exprElt, xPathCompiler, null);
 
 		// make sure it's a boolean expression...
-		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()))) {
-			throw new IllegalArgumentException(
-					"Invalid return datatype (" + expr.getReturnType() + ") for Expression ("
-							+ expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
+		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN_FACTORY.getDatatype())))
+		{
+			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}
 
 		// WARNING: unchecked cast
@@ -135,23 +138,29 @@ public final class ConditionEvaluators {
 		/*
 		 * Try eager evaluation in case this is actually a constant expression (True/False)
 		 */
-		try {
+		try
+		{
 			final BooleanValue result = evaluatableExpression.evaluate(null);
-			if(result.getUnderlyingValue().booleanValue()) {
+			if (result.getUnderlyingValue().booleanValue())
+			{
 				LOGGER.warn("Condition's expression is equivalent to constant True -> optimization: replacing with constant True condition");
 				return TRUE_CONDITION;
 			}
-			
+
 			// result is constant False -> unacceptable
 			throw INVALID_CONSTANT_FALSE_EXPRESSION_EXCEPTION;
-		} catch(IndeterminateEvaluationException e) {
+		}
+		catch (final IndeterminateEvaluationException e)
+		{
 			// the expression is variable (depends on context)
+			LOGGER.debug("Condition's Expression is not constant (evaluation without context failed)");
 		}
 
 		return new BooleanExpressionEvaluator(evaluatableExpression);
 	}
 
-	private ConditionEvaluators() {
+	private ConditionEvaluators()
+	{
 		// prevent instantiation
 	}
 }
