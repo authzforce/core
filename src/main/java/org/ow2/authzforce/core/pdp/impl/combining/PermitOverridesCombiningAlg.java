@@ -20,32 +20,18 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
-import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
-
-import com.google.common.base.Preconditions;
-
 /**
  * This is the standard Permit-Overrides policy/rule combining algorithm. It allows a single evaluation of Permit to take precedence over any number of deny, not applicable or indeterminate results.
- * Note that since this implementation may change the order of evaluation, compared to the order of declaration, for optimization purposes; therefore it is different from the
+ * Note that this implementation may change the order of evaluation, compared to the order of declaration, for optimization purposes; therefore it is different from the
  * Ordered-Permit-Overrides-algorithm.
  * 
  * @version $Id: $
  */
-final class PermitOverridesAlg extends BaseCombiningAlg<Decidable>
+final class PermitOverridesCombiningAlg extends DPOverridesCombiningAlg
 {
 
-	/** {@inheritDoc} */
-	@Override
-	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
+	PermitOverridesCombiningAlg(final String algId)
 	{
-		return new DPOverridesPolicyCombiningAlgEvaluator(Preconditions.checkNotNull(combinedElements), EffectType.PERMIT);
-	}
-
-	PermitOverridesAlg(final String algId)
-	{
-		super(algId, Decidable.class);
+		super(algId, EffectType.PERMIT);
 	}
 }

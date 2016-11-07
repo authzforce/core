@@ -31,15 +31,15 @@ import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
 /**
- * Deny-unless-permit combining algorithm
+ * permit-unless-deny policy algorithm
  *
+ * 
  * @version $Id: $
  */
-final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
+final class PermitUnlessDenyCombiningAlg extends BaseCombiningAlg<Decidable>
 {
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
@@ -57,7 +57,7 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to outApplicablePolicyIdList
 			 */
 
-			UpdatablePepActions denyPepActions = null;
+			UpdatablePepActions permitPepActions = null;
 
 			for (final Decidable combinedElement : getCombinedElements())
 			{
@@ -71,26 +71,26 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 				 */
 				switch (decision)
 				{
-					case PERMIT:
-						if (outApplicablePolicyIdList != null)
-						{
-							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
-						}
-
-						outPepActions.add(result.getPepActions());
-						return ExtendedDecisions.SIMPLE_PERMIT;
 					case DENY:
 						if (outApplicablePolicyIdList != null)
 						{
 							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
 						}
 
-						if (denyPepActions == null)
+						outPepActions.add(result.getPepActions());
+						return result;
+					case PERMIT:
+						if (outApplicablePolicyIdList != null)
 						{
-							denyPepActions = new UpdatablePepActions();
+							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
 						}
 
-						denyPepActions.add(result.getPepActions());
+						if (permitPepActions == null)
+						{
+							permitPepActions = new UpdatablePepActions();
+						}
+
+						permitPepActions.add(result.getPepActions());
 						break;
 					default:
 						break;
@@ -101,21 +101,20 @@ final class DenyUnlessPermitAlg extends BaseCombiningAlg<Decidable>
 			 * All applicable policies are already in outApplicablePolicyIdList at this point, so nothing else to do with it
 			 */
 
-			outPepActions.add(denyPepActions);
-			return ExtendedDecisions.SIMPLE_DENY;
+			outPepActions.add(permitPepActions);
+			return ExtendedDecisions.SIMPLE_PERMIT;
 		}
 
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
-			throws UnsupportedOperationException, IllegalArgumentException
+	public Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
 	{
 		return new Evaluator(combinedElements);
 	}
 
-	DenyUnlessPermitAlg(final String algId)
+	PermitUnlessDenyCombiningAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 	}

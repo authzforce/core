@@ -192,39 +192,39 @@ public enum StandardCombiningAlgorithm
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_OVERRIDES,
 				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_DENY_OVERRIDES))
 		{
-			standardAlgorithms.add(new DenyOverridesAlg(alg.id));
+			standardAlgorithms.add(new DenyOverridesCombiningAlg(alg.id));
 		}
 
 		// permit-overrides and ordered-permit-overrides
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_PERMIT_OVERRIDES,
 				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES))
 		{
-			standardAlgorithms.add(new PermitOverridesAlg(alg.id));
+			standardAlgorithms.add(new PermitOverridesCombiningAlg(alg.id));
 		}
 
 		// deny-unless-permit
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_UNLESS_PERMIT,
 				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_DENY_UNLESS_PERMIT))
 		{
-			standardAlgorithms.add(new DenyUnlessPermitAlg(alg.id));
+			standardAlgorithms.add(new DenyUnlessPermitCombiningAlg(alg.id));
 		}
 
 		// permit-unless-deny
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_PERMIT_UNLESS_DENY,
 				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_PERMIT_UNLESS_DENY))
 		{
-			standardAlgorithms.add(new PermitUnlessDenyAlg(alg.id));
+			standardAlgorithms.add(new PermitUnlessDenyCombiningAlg(alg.id));
 		}
 
 		// first-applicable
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_FIRST_APPLICABLE,
 				StandardCombiningAlgorithm.XACML_1_0_RULE_COMBINING_FIRST_APPLICABLE))
 		{
-			standardAlgorithms.add(new FirstApplicableAlg(alg.id));
+			standardAlgorithms.add(new FirstApplicableCombiningAlg(alg.id));
 		}
 
 		// only-one-applicable
-		standardAlgorithms.add(new OnlyOneApplicableAlg(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_ONLY_ONE_APPLICABLE.id));
+		standardAlgorithms.add(new OnlyOneApplicableCombiningAlg(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_ONLY_ONE_APPLICABLE.id));
 
 		//
 		// Legacy
@@ -232,14 +232,14 @@ public enum StandardCombiningAlgorithm
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_DENY_OVERRIDES,
 				StandardCombiningAlgorithm.XACML_1_1_RULE_COMBINING_ORDERED_DENY_OVERRIDES))
 		{
-			standardAlgorithms.add(new LegacyDenyOverridesAlg(alg.id));
+			standardAlgorithms.add(new LegacyDenyOverridesCombiningAlg(alg.id));
 		}
 
 		// (orderered-)permit-overrides
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_PERMIT_OVERRIDES,
 				StandardCombiningAlgorithm.XACML_1_1_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES))
 		{
-			standardAlgorithms.add(new LegacyPermitOverridesAlg(alg.id));
+			standardAlgorithms.add(new LegacyPermitOverridesCombiningAlg(alg.id));
 		}
 
 		REGISTRY = new ImmutableCombiningAlgRegistry(standardAlgorithms);

@@ -35,16 +35,15 @@ import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
 /**
- * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
+ * Deny-unless-permit combining algorithm
  *
  * @version $Id: $
  */
-final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
+final class DenyUnlessPermitCombiningAlg extends BaseCombiningAlg<Decidable>
 {
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
 	{
-
 		private Evaluator(final Iterable<? extends Decidable> combinedElements)
 		{
 			super(combinedElements);
@@ -53,14 +52,22 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 		@Override
 		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 		{
+			assert outPepActions != null;
+			/*
+			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to outApplicablePolicyIdList
+			 */
+
+			UpdatablePepActions denyPepActions = null;
+
 			for (final Decidable combinedElement : getCombinedElements())
 			{
-				// evaluate the policy
 				final DecisionResult result = combinedElement.evaluate(context);
 				final DecisionType decision = result.getDecision();
-
 				/*
-				 * In case of PERMIT, DENY, or INDETERMINATE, we always just return that decision, so only on a rule that doesn't apply do we keep going...
+				 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing
+				 * policy set.
+				 * 
+				 * So if we return Deny, we should add to outPepActions only the PEP actions from Deny decisions
 				 */
 				switch (decision)
 				{
@@ -78,23 +85,24 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
 						}
 
-						outPepActions.add(result.getPepActions());
-						return ExtendedDecisions.SIMPLE_DENY;
-					case INDETERMINATE:
-						if (outApplicablePolicyIdList != null)
+						if (denyPepActions == null)
 						{
-							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+							denyPepActions = new UpdatablePepActions();
 						}
 
-						return result;
+						denyPepActions.add(result.getPepActions());
+						break;
 					default:
 						break;
 				}
-
 			}
 
-			// if we got here, then none of the rules applied
-			return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
+			/*
+			 * All applicable policies are already in outApplicablePolicyIdList at this point, so nothing else to do with it
+			 */
+
+			outPepActions.add(denyPepActions);
+			return ExtendedDecisions.SIMPLE_DENY;
 		}
 
 	}
@@ -107,7 +115,7 @@ final class FirstApplicableAlg extends BaseCombiningAlg<Decidable>
 		return new Evaluator(combinedElements);
 	}
 
-	FirstApplicableAlg(final String algId)
+	DenyUnlessPermitCombiningAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 	}

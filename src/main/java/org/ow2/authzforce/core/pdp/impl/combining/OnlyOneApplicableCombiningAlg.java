@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  *
  * @version $Id: $
  */
-final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
+final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluator>
 {
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<PolicyEvaluator>
@@ -140,7 +140,7 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 	/**
 	 * Standard constructor.
 	 */
-	OnlyOneApplicableAlg(final String algId)
+	OnlyOneApplicableCombiningAlg(final String algId)
 	{
 		super(algId, PolicyEvaluator.class);
 	}

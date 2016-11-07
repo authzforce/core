@@ -31,19 +31,20 @@ import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 
 /**
- * permit-unless-deny policy algorithm
+ * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
  *
- * 
  * @version $Id: $
  */
-final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
+final class FirstApplicableCombiningAlg extends BaseCombiningAlg<Decidable>
 {
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
 	{
+
 		private Evaluator(final Iterable<? extends Decidable> combinedElements)
 		{
 			super(combinedElements);
@@ -52,25 +53,25 @@ final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 		@Override
 		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 		{
-			assert outPepActions != null;
-			/*
-			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to outApplicablePolicyIdList
-			 */
-
-			UpdatablePepActions permitPepActions = null;
-
 			for (final Decidable combinedElement : getCombinedElements())
 			{
+				// evaluate the policy
 				final DecisionResult result = combinedElement.evaluate(context);
 				final DecisionType decision = result.getDecision();
+
 				/*
-				 * XACML §7.18: Obligations & Advice: do not return obligations/Advice of the rule, policy, or policy set that does not match the decision resulting from evaluating the enclosing
-				 * policy set.
-				 * 
-				 * So if we return Deny, we should add to outPepActions only the PEP actions from Deny decisions
+				 * In case of PERMIT, DENY, or INDETERMINATE, we always just return that decision, so only on a rule that doesn't apply do we keep going...
 				 */
 				switch (decision)
 				{
+					case PERMIT:
+						if (outApplicablePolicyIdList != null)
+						{
+							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
+						}
+
+						outPepActions.add(result.getPepActions());
+						return ExtendedDecisions.SIMPLE_PERMIT;
 					case DENY:
 						if (outApplicablePolicyIdList != null)
 						{
@@ -78,43 +79,35 @@ final class PermitUnlessDenyAlg extends BaseCombiningAlg<Decidable>
 						}
 
 						outPepActions.add(result.getPepActions());
-						return result;
-					case PERMIT:
+						return ExtendedDecisions.SIMPLE_DENY;
+					case INDETERMINATE:
 						if (outApplicablePolicyIdList != null)
 						{
 							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
 						}
 
-						if (permitPepActions == null)
-						{
-							permitPepActions = new UpdatablePepActions();
-						}
-
-						permitPepActions.add(result.getPepActions());
-						break;
+						return result;
 					default:
 						break;
 				}
+
 			}
 
-			/*
-			 * All applicable policies are already in outApplicablePolicyIdList at this point, so nothing else to do with it
-			 */
-
-			outPepActions.add(permitPepActions);
-			return ExtendedDecisions.SIMPLE_PERMIT;
+			// if we got here, then none of the rules applied
+			return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
 		}
 
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
+			throws UnsupportedOperationException, IllegalArgumentException
 	{
 		return new Evaluator(combinedElements);
 	}
 
-	PermitUnlessDenyAlg(final String algId)
+	FirstApplicableCombiningAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 	}
