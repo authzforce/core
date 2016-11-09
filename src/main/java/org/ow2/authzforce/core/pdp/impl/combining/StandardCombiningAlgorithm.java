@@ -190,16 +190,28 @@ public enum StandardCombiningAlgorithm
 		// XACML 3.0 algorithms
 		// deny-overrides and ordered-deny-overrides
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_DENY_OVERRIDES,
-				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_DENY_OVERRIDES))
+				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_DENY_OVERRIDES))
 		{
 			standardAlgorithms.add(new DenyOverridesCombiningAlg(alg.id));
+		}
+		
+		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_ORDERED_DENY_OVERRIDES,
+				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_DENY_OVERRIDES))
+		{
+			standardAlgorithms.add(new OrderedDenyOverridesCombiningAlg(alg.id));
 		}
 
 		// permit-overrides and ordered-permit-overrides
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_PERMIT_OVERRIDES,
-				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES))
+				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_PERMIT_OVERRIDES))
 		{
 			standardAlgorithms.add(new PermitOverridesCombiningAlg(alg.id));
+		}
+		
+		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_3_0_POLICY_COMBINING_ORDERED_PERMIT_OVERRIDES,
+				StandardCombiningAlgorithm.XACML_3_0_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES))
+		{
+			standardAlgorithms.add(new OrderedPermitOverridesCombiningAlg(alg.id));
 		}
 
 		// deny-unless-permit

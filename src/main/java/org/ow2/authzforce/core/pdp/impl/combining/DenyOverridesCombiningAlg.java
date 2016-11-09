@@ -27,7 +27,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
  *
  * @version $Id: $
  */
-final class DenyOverridesCombiningAlg extends DPOverridesCombiningAlg
+final class DenyOverridesCombiningAlg extends UnorderedDPOverridesCombiningAlg
 {
 
 	DenyOverridesCombiningAlg(final String algId)

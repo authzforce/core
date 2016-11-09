@@ -57,141 +57,8 @@ import com.google.common.collect.ImmutableList;
  * Standard "unordered" *-overrides combining algorithm, as opposed to ordered-*-overrides algorithms
  *
  */
-final class UnorderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
+abstract class DPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 {
-	private static final class OverridingEffectFirstRuleCombiningAlgEvaluator extends RulesWithSameEffectEvaluator
-	{
-		private final ImmutableList<RuleEvaluator> otherRules;
-		private final DecisionType overriddenEffectAsDecision;
-
-		/**
-		 * Instantiates the evaluator a list of rules with same Effect, inferring the effect from the first rule in the list
-		 * 
-		 * @param rulesWithSameEffect
-		 *            combined Rules, all expected to have the same Effect. Must be non-null and non-empty.
-		 */
-		OverridingEffectFirstRuleCombiningAlgEvaluator(final Collection<RuleEvaluator> rulesWithOverridingEffect, final Collection<RuleEvaluator> otherRules)
-		{
-			super(rulesWithOverridingEffect);
-			assert otherRules != null && !otherRules.isEmpty() && rulesWithOverridingEffect.iterator().next().getEffect() != otherRules.iterator().next().getEffect();
-			// first rule's effect assumed the same for all
-			this.overriddenEffectAsDecision = otherRules.iterator().next().getEffect() == EffectType.DENY ? DecisionType.DENY : DecisionType.PERMIT;
-			this.otherRules = ImmutableList.copyOf(otherRules);
-		}
-
-		/**
-		 * Evaluate rules with overridden Effect in the case when the evaluation of the rules with overriding Effect returned Indeterminate
-		 * 
-		 * @param indeterminateFromRulesWithOverridingEffect
-		 *            Indeterminate result from previous evaluation of rules with overridING effect
-		 * @return final decision
-		 */
-		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final ExtendedDecision indeterminateFromRulesWithOverridingEffect)
-		{
-			/*
-			 * indeterminateFromRulesWithOverridingEffect's decision assumed Indeterminate{overriding_effect}, overriding_effect = D (resp. P) if overriding Effect is Deny (resp. Permit)
-			 */
-			assert indeterminateFromRulesWithOverridingEffect != null && indeterminateFromRulesWithOverridingEffect.getDecision() == DecisionType.INDETERMINATE;
-
-			for (final RuleEvaluator rule : otherRules)
-			{
-				final DecisionResult evalResult = rule.evaluate(context);
-				if (evalResult.getDecision() != DecisionType.NOT_APPLICABLE)
-				{
-					/**
-					 * decision is the overridden Effect or Indeterminate{overridden_effect}, which we have to combine with previous result (from rules with overriding Effect)
-					 * Indeterminate{overriding_effect}. For example,
-					 * <p>
-					 * IndeterminateD and (IndeterminateP or Permit)
-					 * </p>
-					 * <p>
-					 * OR
-					 * </p>
-					 * <p>
-					 * IndeterminateP and (IndeterminateD or Deny)
-					 * </p>
-					 * <p>
-					 * => IndeterminateDP in both cases
-					 * </p>
-					 */
-					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, indeterminateFromRulesWithOverridingEffect.getStatus());
-				}
-
-				// Else decision is NotApplicable, do nothing, continue
-			}
-
-			/*
-			 * All other rules (with overridden effect) NotApplicable -> initial Indeterminate result unchanged
-			 */
-			return indeterminateFromRulesWithOverridingEffect;
-		}
-
-		/**
-		 * Evaluate rules with overridden Effect in the case when the evaluation of the rules with overriding Effect returned NotApplicable
-		 * 
-		 * @return final decision
-		 */
-		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final UpdatablePepActions updatablePepActions)
-		{
-			ExtendedDecision firstIndeterminateInOverriddenEffect = null;
-			for (final RuleEvaluator rule : otherRules)
-			{
-				final DecisionResult evalResult = rule.evaluate(context);
-				final DecisionType decision = evalResult.getDecision();
-				if (decision == overriddenEffectAsDecision)
-				{
-					// Permit/Deny
-					updatablePepActions.add(evalResult.getPepActions());
-					return evalResult;
-				}
-
-				/*
-				 * If the decision is Indeterminate, save the indeterminate cause for the final Indeterminate result (if first Indeterminate), only used if no other rule with determinate result
-				 * checked above is found.
-				 */
-				if (decision == DecisionType.INDETERMINATE && firstIndeterminateInOverriddenEffect == null)
-				{
-					// first Indeterminate for overridden effect
-					firstIndeterminateInOverriddenEffect = evalResult;
-				}
-			}
-
-			/*
-			 * All decisions were NotApplicable or Indeterminate{overridden_effect}
-			 */
-			// at Least One Indeterminate
-			if (firstIndeterminateInOverriddenEffect != null)
-			{
-				return firstIndeterminateInOverriddenEffect;
-			}
-
-			// All decisions were NotApplicable -> NotApplicable
-			return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
-		}
-
-		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> updatableApplicablePolicyIdList)
-		{
-			final ExtendedDecision extDecisionFromRulesWithOverridingEffect = super.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
-			switch (extDecisionFromRulesWithOverridingEffect.getDecision())
-			{
-				case DENY:
-				case PERMIT:
-					return extDecisionFromRulesWithOverridingEffect;
-
-				case INDETERMINATE:
-					// Optimize
-					return evaluateRulesWithOverriddenEffect(context, extDecisionFromRulesWithOverridingEffect);
-				default:
-					// NotApplicable
-					// Optimize
-					return evaluateRulesWithOverriddenEffect(context, updatablePepActions);
-			}
-		}
-
-	}
-
 	private static final class DPOverridesPolicyCombiningAlgEvaluator extends BaseCombiningAlg.Evaluator<Decidable>
 	{
 		/**
@@ -567,7 +434,7 @@ final class UnorderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 		}
 	}
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(UnorderedDPOverridesCombiningAlg.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DPOverridesCombiningAlg.class);
 
 	private final EffectType overridingEffect;
 	private final EffectType overriddenEffect;
@@ -575,7 +442,7 @@ final class UnorderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 	private final CombiningAlg.Evaluator evaluatorIfEmptyRuleWithOverridingEffect;
 	private final CombiningAlg.Evaluator evaluatorIfEmptyRuleWithOverriddenEffectAndNoneWithOverridingOne;
 
-	UnorderedDPOverridesCombiningAlg(final String algId, final EffectType overridingEffect)
+	DPOverridesCombiningAlg(final String algId, final EffectType overridingEffect)
 	{
 		super(algId, Decidable.class);
 		this.overridingEffect = overridingEffect;
@@ -623,6 +490,8 @@ final class UnorderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
 		}
 
+		//////////////////// FROM HERE, "unordered" *-overrides are different from ordered-*-overrides//////////////////
+		
 		/*
 		 * There is at least one Rule. Prepare to iterate over Rules, we will reorder rules with overriding Effect (e.g. Deny for deny-overrides algorithm) before rules with overridden Effect (e.g.
 		 * Permit for deny-overrides algorithm) since order does not matter and deny decision prevails

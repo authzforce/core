@@ -54,10 +54,10 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * 
- * Standard "unordered" *-overrides combining algorithm, as opposed to ordered-*-overrides algorithms
+ * Standard ordered-*-overrides combining algorithm
  *
  */
-final class UnorderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
+final class OrderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 {
 	private static final class OverridingEffectFirstRuleCombiningAlgEvaluator extends RulesWithSameEffectEvaluator
 	{
@@ -567,7 +567,7 @@ final class UnorderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 		}
 	}
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(UnorderedDPOverridesCombiningAlg.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(OrderedDPOverridesCombiningAlg.class);
 
 	private final EffectType overridingEffect;
 	private final EffectType overriddenEffect;
@@ -575,7 +575,7 @@ final class UnorderedDPOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 	private final CombiningAlg.Evaluator evaluatorIfEmptyRuleWithOverridingEffect;
 	private final CombiningAlg.Evaluator evaluatorIfEmptyRuleWithOverriddenEffectAndNoneWithOverridingOne;
 
-	UnorderedDPOverridesCombiningAlg(final String algId, final EffectType overridingEffect)
+	OrderedDPOverridesCombiningAlg(final String algId, final EffectType overridingEffect)
 	{
 		super(algId, Decidable.class);
 		this.overridingEffect = overridingEffect;
