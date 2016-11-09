@@ -129,8 +129,7 @@ public final class PdpConfigurationParser
 	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types)
 	 *            in this case.
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the
-	 *            extension XSD specified as 'extensionXsdLocation' argument (may be null)
+	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
 	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
@@ -186,8 +185,7 @@ public final class PdpConfigurationParser
 	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types)
 	 *            in this case.
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the
-	 *            extension XSD specified as 'extensionXsdLocation' argument (may be null)
+	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
 	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
