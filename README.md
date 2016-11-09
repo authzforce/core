@@ -39,7 +39,7 @@ Java projects may use AuthZForce Core to instantiate an embedded Java PDP.
 * PIP (Policy Information Point): AuthzForce provides XACML PIP features in the form of extensions called *Attribute Providers*. More information in the previous list on *Extensibility points*.
 
 ## Versions
-See the [change log file](CHANGELOG.md) according to the *Keep a CHANGELOG* [conventions](http://keepachangelog.com/).
+See the [change log file](CHANGELOG.md) following the *Keep a CHANGELOG* [conventions](http://keepachangelog.com/).
 
 ## License
 See the [license file](LICENSE.txt).
