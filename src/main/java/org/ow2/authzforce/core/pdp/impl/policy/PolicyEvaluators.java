@@ -62,6 +62,7 @@ import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
@@ -98,8 +99,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
-import com.koloboke.collect.map.hash.HashObjObjMaps;
-import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
  * This class consists exclusively of static methods that operate on or return {@link PolicyEvaluator}s
@@ -380,8 +379,8 @@ public final class PolicyEvaluators
 		{
 			assert version != null && refPolicies != null && refPolicySets != null && longestPolicyRefChain != null;
 			this.version = version;
-			this.refPolicyVersionsByPolicyId = HashObjObjMaps.newImmutableMap(refPolicies);
-			this.refPolicySetVersionsByPolicyId = HashObjObjMaps.newImmutableMap(refPolicySets);
+			this.refPolicyVersionsByPolicyId = HashCollections.newImmutableMap(refPolicies);
+			this.refPolicySetVersionsByPolicyId = HashCollections.newImmutableMap(refPolicySets);
 			this.longestPolicyRefChain = Collections.unmodifiableList(longestPolicyRefChain);
 		}
 
@@ -562,7 +561,8 @@ public final class PolicyEvaluators
 			}
 			catch (final IllegalArgumentException e)
 			{
-				throw new IllegalArgumentException(this + ": Unknown combining algorithm ID = " + combiningAlgId, e);
+				throw new IllegalArgumentException(this + ": Unknown/unsupported " + (RuleEvaluator.class.isAssignableFrom(combinedElementClass) ? "rule" : "policy") + "-combining algorithm ID = '"
+						+ combiningAlgId + "'", e);
 			}
 
 			this.combiningAlgEvaluator = combiningAlg.getInstance(combinerParameters, combinedElements);
@@ -1057,8 +1057,8 @@ public final class PolicyEvaluators
 		{
 			// policyRef to PolicySet
 			// get a snapshot/copy of the referred policyset metadata
-			refPolicies = HashObjObjMaps.newImmutableMap(referredPolicyMetadata.getRefPolicies());
-			refPolicySets = HashObjObjMaps.newImmutableMap(referredPolicyMetadata.getRefPolicySets(), Collections.singletonMap(referredPolicy.getPolicyId(), referredPolicyMetadata.getVersion()));
+			refPolicies = HashCollections.newImmutableMap(referredPolicyMetadata.getRefPolicies());
+			refPolicySets = HashCollections.newImmutableMap(referredPolicyMetadata.getRefPolicySets(), Collections.singletonMap(referredPolicy.getPolicyId(), referredPolicyMetadata.getVersion()));
 		}
 
 		final List<String> referredPolicyLongestRefChain = referredPolicyMetadata.getLongestPolicyRefChain();
@@ -1115,8 +1115,8 @@ public final class PolicyEvaluators
 
 	private static final class StaticExtraPolicySetMetadataProvider extends ExtraPolicySetMetadataProvider
 	{
-		private final Map<String, PolicyVersion> refPolicies = HashObjObjMaps.newUpdatableMap();
-		private final Map<String, PolicyVersion> refPolicySets = HashObjObjMaps.newUpdatableMap();
+		private final Map<String, PolicyVersion> refPolicies = HashCollections.newUpdatableMap();
+		private final Map<String, PolicyVersion> refPolicySets = HashCollections.newUpdatableMap();
 		private final List<String> longestPolicyRefChain = new ArrayList<>();
 
 		private StaticExtraPolicySetMetadataProvider(final String policyFriendlyId, final PolicyVersion version)
@@ -1210,8 +1210,8 @@ public final class PolicyEvaluators
 			/*
 			 * cachedValue == null, i.e. result not cached yet; or cachedValue of the wrong type (unexpected), so we just overwrite with proper type
 			 */
-			final Map<String, PolicyVersion> refPolicies = HashObjObjMaps.newUpdatableMap();
-			final Map<String, PolicyVersion> refPolicySets = HashObjObjMaps.newUpdatableMap();
+			final Map<String, PolicyVersion> refPolicies = HashCollections.newUpdatableMap();
+			final Map<String, PolicyVersion> refPolicySets = HashCollections.newUpdatableMap();
 			final List<String> longestPolicyRefChain = new ArrayList<>();
 			for (final PolicyEvaluator policyRef : childPolicySetElementsOrRefs)
 			{
@@ -1533,15 +1533,16 @@ public final class PolicyEvaluators
 		 * Keep a copy of locally-defined variable IDs defined in this policy, to remove them from the global manager at the end of parsing this policy. They should not be visible outside the scope of
 		 * this policy. There are at most as many VariableDefinitions as policyChoiceElements.size().
 		 */
-		final Set<String> localVariableIds = HashObjSets.newUpdatableSet(policyChoiceElements.size());
+		final Set<String> localVariableIds = HashCollections.newUpdatableSet(policyChoiceElements.size());
 		/*
 		 * We keep a record of the size of the longest chain of VariableReference in this policy, and update it when a VariableDefinition occurs
 		 */
 		int sizeOfPolicyLongestVarRefChain = 0;
 		/*
 		 * Map to get rules by their ID so that we can resolve rules associated with RuleCombinerParameters, and detect duplicate RuleId. We want to preserve insertion order, to get map.values() in
-		 * order of declaration, so that ordered-* algorithms have rules in order. There are at most as many Rules as policyChoiceElements.size(). FIXME: use Koloboke equivalent of LinkedHashMap when
-		 * it is supported: https://github.com/leventov/Koloboke/issues/47
+		 * order of declaration, so that ordered-* algorithms have rules in order. There are at most as many Rules as policyChoiceElements.size().
+		 * 
+		 * FIXME: use Koloboke equivalent of LinkedHashMap when it is supported: https://github.com/leventov/Koloboke/issues/47
 		 */
 		final Map<String, RuleEvaluator> ruleEvaluatorsByRuleIdInOrderOfDeclaration = new LinkedHashMap<>(policyChoiceElements.size());
 		int childIndex = 0;
@@ -2001,8 +2002,7 @@ public final class PolicyEvaluators
 			final PolicySetElementEvaluatorFactory<TLPEE, COMBINED_EVALUATOR> policyEvaluatorFactory, final PolicySet policyElement, final Set<String> updatableParsedPolicyIds,
 			final Set<String> updatableParsedPolicySetIds, final Deque<String> policySetRefChain) throws IllegalArgumentException
 	{
-		// updatableParsedPolicySetIds must contain at least policyElement.getPolicySetId()
-		assert policyEvaluatorFactory != null && policyElement != null && updatableParsedPolicySetIds != null && !updatableParsedPolicySetIds.isEmpty();
+		assert policyEvaluatorFactory != null && policyElement != null && updatableParsedPolicySetIds != null;
 
 		// we are parsing a new policyset -> update updatableParsedPolicySetIds
 		if (!updatableParsedPolicySetIds.add(policyElement.getPolicySetId()))
@@ -2013,7 +2013,7 @@ public final class PolicyEvaluators
 		/*
 		 * Make sure we use a non-null set of already parsed policy identifiers (to find duplicates) to avoid checking non-nullity at every iteration of the for loop below where we find a policy
 		 */
-		final Set<String> nonNullParsedPolicyIds = updatableParsedPolicyIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicyIds;
+		final Set<String> nonNullParsedPolicyIds = updatableParsedPolicyIds == null ? HashCollections.<String> newUpdatableSet() : updatableParsedPolicyIds;
 		/*
 		 * Elements defined in xs:choice of PolicySetType in XACML schema (Policy(Set)/Policy(Set)IdReference/CombinerParameters/Policy(Set)CombinerParameters
 		 */
@@ -2028,18 +2028,18 @@ public final class PolicyEvaluators
 		 * Why isn't there any VariableDefinition in XACML PolicySet like in Policy? If there were, we would keep a copy of variable IDs defined in this policy, to remove them from the global manager
 		 * at the end of parsing this PolicySet. They should not be visible outside the scope of this.
 		 * <p>
-		 * final Set<String> variableIds = HashObjSets.newUpdatableSet(jaxbPolicySetChoiceElements.size());
+		 * final Set<String> variableIds = HashCollections.newUpdatableSet(jaxbPolicySetChoiceElements.size());
 		 */
 
 		/*
 		 * Map to get child Policies by their ID so that we can resolve Policies associated with PolicyCombinerParameters Size cannot get bigger than jaxbPolicySetChoiceElements.size()
 		 */
-		final Map<String, COMBINED_EVALUATOR> childPolicyEvaluatorsByPolicyId = HashObjObjMaps.newUpdatableMap(jaxbPolicySetChoiceElements.size());
+		final Map<String, COMBINED_EVALUATOR> childPolicyEvaluatorsByPolicyId = HashCollections.newUpdatableMap(jaxbPolicySetChoiceElements.size());
 
 		/*
 		 * Map to get child PolicySets by their ID so that we can resolve PolicySets associated with PolicySetCombinerParameters Size cannot get bigger than jaxbPolicySetChoiceElements.size()
 		 */
-		final Map<String, COMBINED_EVALUATOR> childPolicySetEvaluatorsByPolicySetId = HashObjObjMaps.newUpdatableMap(jaxbPolicySetChoiceElements.size());
+		final Map<String, COMBINED_EVALUATOR> childPolicySetEvaluatorsByPolicySetId = HashCollections.newUpdatableMap(jaxbPolicySetChoiceElements.size());
 
 		/*
 		 * *CombinerParameters (combining algorithm parameters), size <= jaxbPolicySetChoiceElements.size()
@@ -2267,7 +2267,7 @@ public final class PolicyEvaluators
 
 		final StaticPolicySetElementEvaluatorFactory factory = new StaticPolicySetElementEvaluatorFactory(policyElement.getPolicySetId(), policyElement.getVersion(),
 				policyElement.getPolicySetDefaults(), refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
-		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicySetIds;
+		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashCollections.<String> newUpdatableSet() : updatableParsedPolicySetIds;
 		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain);
 	}
 
@@ -2341,7 +2341,7 @@ public final class PolicyEvaluators
 				policyElement.getVersion(), policyElement.getPolicySetDefaults(), (StaticRefPolicyProvider) refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory,
 				combiningAlgorithmRegistry) : new DynamicPolicySetElementEvaluatorFactory(policyElement.getPolicySetId(), policyElement.getVersion(), policyElement.getPolicySetDefaults(),
 				refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
-		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashObjSets.<String> newUpdatableSet() : updatableParsedPolicySetIds;
+		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashCollections.<String> newUpdatableSet() : updatableParsedPolicySetIds;
 		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain);
 	}
 

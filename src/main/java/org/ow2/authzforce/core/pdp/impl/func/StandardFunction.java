@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
 import org.ow2.authzforce.core.pdp.api.func.ComparisonFunction;
 import org.ow2.authzforce.core.pdp.api.func.ComparisonFunction.PostCondition;
@@ -93,7 +94,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
-import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
  * Utilities to handle the XACML core standard functions
@@ -647,7 +647,7 @@ public enum StandardFunction
 
 	static
 	{
-		final Set<Function<?>> nonGenericFunctions = HashObjSets.newUpdatableSet();
+		final Set<Function<?>> nonGenericFunctions = HashCollections.newUpdatableSet();
 		/*
 		 * Add standard functions in an order as close as possible to the order of declaration in the XACML spec (A.3).
 		 */

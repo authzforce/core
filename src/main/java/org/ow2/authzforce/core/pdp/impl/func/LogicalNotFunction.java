@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
@@ -47,7 +48,7 @@ final class LogicalNotFunction extends SingleParameterTypedFirstOrderFunction<Bo
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, BooleanValue>(functionSignature, argExpressions, remainingArgTypes)
+		return new BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, BooleanValue>(functionSignature, argExpressions, remainingArgTypes)
 		{
 			@Override
 			protected BooleanValue evaluate(final Deque<BooleanValue> args) throws IndeterminateEvaluationException

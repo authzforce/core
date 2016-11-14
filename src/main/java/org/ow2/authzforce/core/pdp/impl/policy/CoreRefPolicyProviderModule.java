@@ -43,6 +43,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
 import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
@@ -62,7 +63,6 @@ import org.springframework.util.ResourceUtils;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
  * This is the core implementation of <code>RefPolicyProviderModule</code> that supports static retrieval of the policies referenced by Policy(Set)IdReference. It is configured by a list of locations
@@ -361,8 +361,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		/*
 		 * Ref policy Provider module used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in PolicySetIdReferences)
 		 */
-		final Set<String> parsedPolicyIds = HashObjSets.newUpdatableSet();
-		final Set<String> parsedPolicySetIds = HashObjSets.newUpdatableSet();
+		final Set<String> parsedPolicyIds = HashCollections.newUpdatableSet();
+		final Set<String> parsedPolicySetIds = HashCollections.newUpdatableSet();
 		final StaticRefPolicyProvider bootstrapRefPolicyProvider = new InitOnlyRefPolicyProvider(this.policyEvaluatorMap, jaxbPolicySetMap, parsedPolicyIds, parsedPolicySetIds,
 				updatablePolicySetEvaluatorTable, this.maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 		for (final Entry<String, PolicyVersions<PolicyWithNamespaces<PolicySet>>> jaxbPolicySetWithNsEntry : jaxbPolicySetMap.entrySet())

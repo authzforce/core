@@ -20,16 +20,17 @@ package org.ow2.authzforce.core.pdp.impl.value;
 
 import java.util.Set;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+
+import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
+import org.ow2.authzforce.core.pdp.api.expression.ConstantPrimitiveAttributeValueExpression;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
-import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 
 import com.google.common.base.Preconditions;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 /**
  * Immutable <code>DatatypeFactoryRegistry</code>.
@@ -37,8 +38,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
  * 
  * @version $Id: $
  */
-public final class ImmutableDatatypeFactoryRegistry extends BasePdpExtensionRegistry<DatatypeFactory<?>>
-		implements DatatypeFactoryRegistry
+public final class ImmutableDatatypeFactoryRegistry extends BasePdpExtensionRegistry<DatatypeFactory<?>> implements DatatypeFactoryRegistry
 {
 	/**
 	 * <p>
@@ -50,8 +50,7 @@ public final class ImmutableDatatypeFactoryRegistry extends BasePdpExtensionRegi
 	 */
 	public ImmutableDatatypeFactoryRegistry(final Set<DatatypeFactory<?>> attributeValueFactories)
 	{
-		super(DatatypeFactory.class, Preconditions.checkNotNull(attributeValueFactories,
-				"Input attribute datatype factories undefined (attributeValueFactories == null)"));
+		super(DatatypeFactory.class, Preconditions.checkNotNull(attributeValueFactories, "Input attribute datatype factories undefined (attributeValueFactories == null)"));
 	}
 
 	/**
@@ -69,39 +68,35 @@ public final class ImmutableDatatypeFactoryRegistry extends BasePdpExtensionRegi
 	 * @throws java.lang.IllegalArgumentException
 	 *             if any.
 	 */
-	private static <V extends AttributeValue> V createValue(final DatatypeFactory<V> datatypeFactory,
-			final AttributeValueType jaxbAttrVal, final XPathCompiler xPathCompiler) throws IllegalArgumentException
+	private static <V extends AttributeValue> V newValue(final DatatypeFactory<V> datatypeFactory, final AttributeValueType jaxbAttrVal, final XPathCompiler xPathCompiler)
+			throws IllegalArgumentException
 	{
 		final V attrVal;
 		try
 		{
-			attrVal = datatypeFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(),
-					xPathCompiler);
+			attrVal = datatypeFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), xPathCompiler);
 		}
 		catch (final IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException(
-					"Invalid Attribute value for datatype '" + datatypeFactory.getDatatype() + "'", e);
+			throw new IllegalArgumentException("Invalid Attribute value for datatype '" + datatypeFactory.getDatatype() + "'", e);
 		}
 
 		return attrVal;
 	}
 
-	private static <V extends AttributeValue> PrimitiveValueExpression<V> createValueExpression(
-			final DatatypeFactory<V> datatypeFactory, final AttributeValueType jaxbAttrVal,
-			final XPathCompiler xPathCompiler, final boolean isStatic) throws IllegalArgumentException
+	private static <V extends AttributeValue> ConstantExpression<V> newExpression(final DatatypeFactory<V> datatypeFactory, final AttributeValueType jaxbAttrVal,
+			final XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
-		final V rawValue = createValue(datatypeFactory, jaxbAttrVal, xPathCompiler);
-		return new PrimitiveValueExpression<>(datatypeFactory.getDatatype(), rawValue, isStatic);
+		final V rawValue = newValue(datatypeFactory, jaxbAttrVal, xPathCompiler);
+		return new ConstantPrimitiveAttributeValueExpression<>(datatypeFactory.getDatatype(), rawValue);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public PrimitiveValueExpression<?> createValueExpression(final AttributeValueType jaxbAttrVal,
-			final XPathCompiler xPathCompiler) throws IllegalArgumentException
+	public ConstantExpression<? extends AttributeValue> newExpression(final AttributeValueType jaxbAttrVal, final XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		final DatatypeFactory<?> datatypeFactory = getExtension(jaxbAttrVal.getDataType());
-		return createValueExpression(datatypeFactory, jaxbAttrVal, xPathCompiler, datatypeFactory.isExpressionStatic());
+		return newExpression(datatypeFactory, jaxbAttrVal, xPathCompiler);
 	}
 
 }

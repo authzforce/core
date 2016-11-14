@@ -98,10 +98,24 @@ final class CombiningAlgEvaluators
 	};
 
 	/*
-	 * Evaluator that uses the result of RulesWithSameEffectEvaluator to return the opposite if NotApplicable or Indeterminate{DP} if Indeterminate, else the same result.
+	 * Rule combining algorithm evaluator where all rules must have the same Effect, and that returns NotApplicable if no rule applies, else Indeterminate if all rules result in Indeterminate or
+	 * NotApplicable, else the Permit/Deny decision (corresponding to the common Effect) of the first rule that applies and successfully evaluates.
 	 */
 	static class RulesWithSameEffectEvaluator implements CombiningAlg.Evaluator
 	{
+		protected static boolean haveSameEffect(final EffectType expectedEffect, final Collection<? extends RuleEvaluator> rules)
+		{
+			for (final RuleEvaluator rule : rules)
+			{
+				if (rule.getEffect() != expectedEffect)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		private final ImmutableList<RuleEvaluator> rulesWithSameEffect;
 		private final DecisionType commonDecision;
 
@@ -109,7 +123,9 @@ final class CombiningAlgEvaluators
 		{
 			assert rulesWithSameEffect != null && !rulesWithSameEffect.isEmpty();
 			// first rule's effect assumed the same for all
-			this.commonDecision = rulesWithSameEffect.iterator().next().getEffect() == EffectType.DENY ? DecisionType.DENY : DecisionType.PERMIT;
+			final EffectType commonEffect = rulesWithSameEffect.iterator().next().getEffect();
+			assert haveSameEffect(commonEffect, rulesWithSameEffect);
+			this.commonDecision = commonEffect == EffectType.DENY ? DecisionType.DENY : DecisionType.PERMIT;
 			this.rulesWithSameEffect = ImmutableList.copyOf(rulesWithSameEffect);
 		}
 

@@ -42,6 +42,11 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * Datatype ID
 	 */
 	public static final String ID = "urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy";
@@ -53,7 +58,7 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 
 	private final Policy policy;
 
-	private TestXACMLPolicyAttributeValue(List<Serializable> content) throws IllegalArgumentException
+	private TestXACMLPolicyAttributeValue(final List<Serializable> content) throws IllegalArgumentException
 	{
 		super(ID, content, null);
 
@@ -82,7 +87,8 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 		if (content0 instanceof Policy)
 		{
 			policy = (Policy) content0;
-		} else if (content0 instanceof String)
+		}
+		else if (content0 instanceof String)
 		{
 			if (!contentIterator.hasNext())
 			{
@@ -93,11 +99,13 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 			if (content1 instanceof Policy)
 			{
 				policy = (Policy) content1;
-			} else
+			}
+			else
 			{
 				throw new IllegalArgumentException("Invalid content for datatype '" + ID + "': second item (after text) is not a XACML <Policy>, but: " + content1.getClass());
 			}
-		} else
+		}
+		else
 		{
 			throw new IllegalArgumentException("Invalid content for datatype '" + ID + "': first item is neither text nor a XACML <Policy>, but: " + content0.getClass());
 		}
@@ -124,7 +132,8 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 				+ "': extra XML attributes are not supported by this primitive datatype, only one XML element.");
 
 		@Override
-		public TestXACMLPolicyAttributeValue getInstance(List<Serializable> content, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException
+		public TestXACMLPolicyAttributeValue getInstance(final List<Serializable> content, final Map<QName, String> otherXmlAttributes, final XPathCompiler xPathCompiler)
+				throws IllegalArgumentException
 		{
 
 			if (otherXmlAttributes != null && !otherXmlAttributes.isEmpty())
@@ -133,12 +142,6 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 			}
 
 			return new TestXACMLPolicyAttributeValue(content);
-		}
-
-		@Override
-		public boolean isExpressionStatic()
-		{
-			return true;
 		}
 
 	}

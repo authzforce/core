@@ -37,6 +37,7 @@ import org.ow2.authzforce.core.pdp.api.CloseablePDP;
 import org.ow2.authzforce.core.pdp.api.DecisionCache;
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
@@ -61,8 +62,6 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.koloboke.collect.map.hash.HashObjObjMaps;
 
 /**
  * This is the core XACML PDP engine implementation. To build an XACML policy engine, you start by instantiating this object directly or in a easier and preferred way, using
@@ -117,7 +116,7 @@ public final class PDPImpl implements CloseablePDP
 			 */
 			// current datetime in default timezone
 			final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
-			return HashObjObjMaps.<AttributeGUID, Bag<?>> newImmutableMapOf(
+			return HashCollections.<AttributeGUID, Bag<?>> newImmutableMap(
 					// current date-time
 					StandardEnvironmentAttribute.CURRENT_DATETIME.getGUID(),
 					Bags.singleton(StandardDatatypes.DATETIME_FACTORY.getDatatype(), currentDateTimeValue),
@@ -215,7 +214,7 @@ public final class PDPImpl implements CloseablePDP
 			/*
 			 * There will be at most as many new results (not in cache) as there are individual decision requests
 			 */
-			final Map<INDIVIDUAL_DECISION_REQ_T, PdpDecisionResult> newResultsByRequest = HashObjObjMaps.newUpdatableMap(individualDecisionRequests.size());
+			final Map<INDIVIDUAL_DECISION_REQ_T, PdpDecisionResult> newResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
 			for (final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest : individualDecisionRequests)
 			{
 				final PdpDecisionResult finalResult;

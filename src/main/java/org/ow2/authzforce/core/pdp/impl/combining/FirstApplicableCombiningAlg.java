@@ -18,6 +18,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+
 import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
@@ -33,13 +37,16 @@ import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
  *
  * @version $Id: $
  */
-final class FirstApplicableCombiningAlg extends BaseCombiningAlg<Decidable>
+final class FirstApplicableCombiningAlg<T extends Decidable> extends BaseCombiningAlg<T>
 {
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<Decidable>
@@ -99,17 +106,64 @@ final class FirstApplicableCombiningAlg extends BaseCombiningAlg<Decidable>
 
 	}
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(FirstApplicableCombiningAlg.class);
+
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
-			throws UnsupportedOperationException, IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends T>> params, final Iterable<? extends T> combinedElements) throws UnsupportedOperationException,
+			IllegalArgumentException
 	{
-		return new Evaluator(combinedElements);
+		// if no element combined -> decision is overridden Effect
+		if (combinedElements == null)
+		{
+			LOGGER.warn("{}: no element to combine -> optimization: replacing with equivalent evaluator returning constant decision NotApplicable", this);
+			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
+		}
+
+		final Iterator<? extends Decidable> combinedEltIterator = combinedElements.iterator();
+		if (!combinedEltIterator.hasNext())
+		{
+			// empty (no element to combine)
+			LOGGER.warn("{}: no element to combine -> optimization: replacing with equivalent evaluator returning constant decision NotApplicable", this);
+			return CombiningAlgEvaluators.NOT_APPLICABLE_CONSTANT_EVALUATOR;
+		}
+
+		if (!RuleEvaluator.class.isAssignableFrom(getCombinedElementType()))
+		{
+			// combined elements are not rules but policies
+			return new Evaluator(combinedElements);
+		}
+
+		// combined elements are Rules, we can optimize
+		/*
+		 * There is at least one Rule. Prepare to iterate over Rules.
+		 */
+		/*
+		 * If we found any empty rule
+		 */
+		final Deque<RuleEvaluator> finalRules = new ArrayDeque<>();
+		while (combinedEltIterator.hasNext())
+		{
+			final RuleEvaluator rule = (RuleEvaluator) combinedEltIterator.next();
+			finalRules.add(rule);
+			if (rule.isAlwaysApplicable())
+			{
+				/*
+				 * The algorithm won't go further than that
+				 */
+				break;
+			}
+		}
+
+		/*
+		 * if(combinedEltIterator.hasNext()), combinedElements has more elements than finalRules, so finalRules is a subset of combinedElements; else they have the same elements
+		 */
+		return new Evaluator(combinedEltIterator.hasNext() ? finalRules : combinedElements);
 	}
 
-	FirstApplicableCombiningAlg(final String algId)
+	FirstApplicableCombiningAlg(final String algId, final Class<T> combinedType)
 	{
-		super(algId, Decidable.class);
+		super(algId, combinedType);
 	}
 
 }

@@ -34,12 +34,11 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
  * PDP Engine XML configuration handler
@@ -69,15 +68,14 @@ public final class PdpModelHandler
 	private final JAXBContext confJaxbCtx;
 
 	/**
-	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can be any resource
-	 * string supported by Spring ResourceLoader. More info:
+	 * Load Configuration model handler. Parameters here are locations to XSD files. Locations can be any resource string supported by Spring ResourceLoader. More info:
 	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html
 	 *
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
 	 *
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD,
-	 *            there must be a XSD namespace import for each extension used in the PDP configuration, for example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
+	 *            configuration, for example:
 	 *
 	 *            <pre>
 	 * {@literal
@@ -94,27 +92,24 @@ public final class PdpModelHandler
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
 	 * 			}
-	 *            </pre>
+	 * </pre>
 	 *
-	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported
-	 *            namespace above using a line like this (for an XML-formatted catalog):
+	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
 	 * 
 	 *            <pre>
 	 *            {@literal
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
-	"classpath:org.ow2.authzforce.core.test.xsd" />
+	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
 	 *            }
-	 *            </pre>
+	 * </pre>
 	 * 
-	 *            We assume that this XML type is an extension of one the PDP extension base types,
-	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types)
-	 *            in this case.
+	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
+	 *            types) in this case.
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the
-	 *            extensions XSD specified as 'extensionXsdLocation' argument (may be null)
+	 *            location of XML catalog for resolving XSDs imported by the pdp.xsd (PDP configuration schema) and the extensions XSD specified as 'extensionXsdLocation' argument (may be null)
 	 */
 	@ConstructorProperties({ "catalogLocation", "extensionXsdLocation" })
-	public PdpModelHandler(String catalogLocation, String extensionXsdLocation)
+	public PdpModelHandler(final String catalogLocation, final String extensionXsdLocation)
 	{
 		final List<String> schemaLocations;
 		if (extensionXsdLocation == null)
@@ -127,15 +122,13 @@ public final class PdpModelHandler
 		}
 
 		/*
-		 * JAXB classes of extensions are generated separately from the extension base type XSD. Therefore
-		 * no @XmlSeeAlso to link to the base type. Therefore any JAXB provider cannot (un)marshall documents using the
-		 * extension base type XSD, unless it is provided with the list of the extra JAXB classes based on the new
-		 * extension XSD. For instance, this is the case for JAXB providers used by REST/SOAP frameworks: Apache CXF,
-		 * Metro, etc. So we need to add to the JAXBContext all the extensions' model (JAXB-generated) classes. These
-		 * have been collected by the PdpExtensionLoader.
+		 * JAXB classes of extensions are generated separately from the extension base type XSD. Therefore no @XmlSeeAlso to link to the base type. Therefore any JAXB provider cannot (un)marshall
+		 * documents using the extension base type XSD, unless it is provided with the list of the extra JAXB classes based on the new extension XSD. For instance, this is the case for JAXB providers
+		 * used by REST/SOAP frameworks: Apache CXF, Metro, etc. So we need to add to the JAXBContext all the extensions' model (JAXB-generated) classes. These have been collected by the
+		 * PdpExtensionLoader.
 		 */
 		final Set<Class<? extends AbstractPdpExtension>> extJaxbClasses = PdpExtensionLoader.getExtensionJaxbClasses();
-		final Set<Class<?>> jaxbBoundClassSet = HashObjSets.<Class<?>>newUpdatableSet(extJaxbClasses.size() + 1);
+		final Set<Class<?>> jaxbBoundClassSet = HashCollections.<Class<?>> newUpdatableSet(extJaxbClasses.size() + 1);
 		jaxbBoundClassSet.addAll(extJaxbClasses);
 		LOGGER.debug("Final list of loaded extension models (JAXB classes): {}", jaxbBoundClassSet);
 
@@ -146,7 +139,7 @@ public final class PdpModelHandler
 			confJaxbCtx = JAXBContext.newInstance(jaxbBoundClassSet.toArray(new Class<?>[jaxbBoundClassSet.size()]));
 			LOGGER.debug("JAXB context for PDP configuration (un)marshalling: {}", confJaxbCtx);
 		}
-		catch (JAXBException e)
+		catch (final JAXBException e)
 		{
 			throw new RuntimeException("Failed to initialize configuration unmarshaller", e);
 		}
@@ -155,8 +148,7 @@ public final class PdpModelHandler
 		final String schemaHandlerCatalogLocation;
 		if (catalogLocation == null)
 		{
-			LOGGER.debug("No XML catalog location specified for PDP schema handler, using default: {}",
-					DEFAULT_CATALOG_LOCATION);
+			LOGGER.debug("No XML catalog location specified for PDP schema handler, using default: {}", DEFAULT_CATALOG_LOCATION);
 			schemaHandlerCatalogLocation = DEFAULT_CATALOG_LOCATION;
 		}
 		else
@@ -174,21 +166,18 @@ public final class PdpModelHandler
 	 * @param src
 	 *            XML source
 	 * @param clazz
-	 *            Class of object to be unmarshalled, must be a subclass (or the class itself) of the one defined by
-	 *            {@link #SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE}, i.e. {@link Pdp}
+	 *            Class of object to be unmarshalled, must be a subclass (or the class itself) of the one defined by {@link #SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE}, i.e. {@link Pdp}
 	 * @return object of class clazz
 	 * @throws javax.xml.bind.JAXBException
-	 *             if an error was encountered while unmarshalling the XML document in {@code src} into an instance of
-	 *             {@code clazz}
+	 *             if an error was encountered while unmarshalling the XML document in {@code src} into an instance of {@code clazz}
 	 * @param <T>
 	 *            a T object.
 	 */
-	public <T> T unmarshal(Source src, Class<T> clazz) throws JAXBException
+	public <T> T unmarshal(final Source src, final Class<T> clazz) throws JAXBException
 	{
 		if (!SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE.isAssignableFrom(clazz))
 		{
-			throw new UnsupportedOperationException("XML configuration unmarshalling is not supported for " + clazz
-					+ "; supported JAXB type for root configuration elements is: "
+			throw new UnsupportedOperationException("XML configuration unmarshalling is not supported for " + clazz + "; supported JAXB type for root configuration elements is: "
 					+ SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE);
 		}
 
@@ -208,7 +197,7 @@ public final class PdpModelHandler
 	 * @throws javax.xml.bind.JAXBException
 	 *             error when marshalling the XML configuration to the output stream
 	 */
-	public void marshal(Pdp conf, OutputStream os) throws JAXBException
+	public void marshal(final Pdp conf, final OutputStream os) throws JAXBException
 	{
 		final Marshaller marshaller = confJaxbCtx.createMarshaller();
 		marshaller.setSchema(confSchema);
@@ -226,7 +215,7 @@ public final class PdpModelHandler
 	 * @throws javax.xml.bind.JAXBException
 	 *             error when marshalling the XML configuration to file
 	 */
-	public void marshal(Pdp conf, File f) throws JAXBException
+	public void marshal(final Pdp conf, final File f) throws JAXBException
 	{
 		final Marshaller marshaller = confJaxbCtx.createMarshaller();
 		marshaller.setSchema(confSchema);

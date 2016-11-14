@@ -31,6 +31,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.BaseRequestFilter;
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.ImmutableIndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
@@ -40,8 +41,6 @@ import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
-
-import com.koloboke.collect.map.hash.HashObjObjMaps;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
@@ -118,8 +117,8 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 	public List<? extends IndividualDecisionRequest> filter(final List<Attributes> attributesList, final JaxbXACMLAttributesParser xacmlAttrsParser, final boolean isApplicablePolicyIdListReturned,
 			final boolean combinedDecision, final XPathCompiler xPathCompiler, final Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{
-		final Map<AttributeGUID, Bag<?>> namedAttributes = HashObjObjMaps.newUpdatableMap(attributesList.size());
-		final Map<String, XdmNode> extraContentsByCategory = HashObjObjMaps.newUpdatableMap(attributesList.size());
+		final Map<AttributeGUID, Bag<?>> namedAttributes = HashCollections.newUpdatableMap(attributesList.size());
+		final Map<String, XdmNode> extraContentsByCategory = HashCollections.newUpdatableMap(attributesList.size());
 		/*
 		 * attributesToIncludeInResult.size() <= attributesList.size()
 		 */
@@ -135,14 +134,18 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 				continue;
 			}
 
-			final XdmNode oldVal = extraContentsByCategory.put(categoryName, categorySpecificAttributes.getExtraContent());
-			/*
-			 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple Decision Profile. So we must check duplicate attribute categories.
-			 */
-			if (oldVal != null)
+			final XdmNode newContentNode = categorySpecificAttributes.getExtraContent();
+			if (newContentNode != null)
 			{
-				throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName
-						+ "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
+				final XdmNode oldContentNode = extraContentsByCategory.put(categoryName, newContentNode);
+				/*
+				 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple Decision Profile. So we must check duplicate attribute categories.
+				 */
+				if (oldContentNode != null)
+				{
+					throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName
+							+ "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
+				}
 			}
 
 			/*

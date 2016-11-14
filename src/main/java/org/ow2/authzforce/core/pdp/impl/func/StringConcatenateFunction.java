@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;

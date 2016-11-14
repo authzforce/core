@@ -135,27 +135,26 @@ public final class ConditionEvaluators
 
 		// WARNING: unchecked cast
 		final Expression<BooleanValue> evaluatableExpression = (Expression<BooleanValue>) expr;
+
 		/*
-		 * Try eager evaluation in case this is actually a constant expression (True/False)
+		 * Check whether the expression is constant
 		 */
-		try
+		final BooleanValue constant = evaluatableExpression.getValue();
+		if (constant != null)
 		{
-			final BooleanValue result = evaluatableExpression.evaluate(null);
-			if (result.getUnderlyingValue().booleanValue())
+			if (constant.getUnderlyingValue())
 			{
+				// constant TRUE
 				LOGGER.warn("Condition's expression is equivalent to constant True -> optimization: replacing with constant True condition");
 				return TRUE_CONDITION;
 			}
 
-			// result is constant False -> unacceptable
+			// constant False -> unacceptable
 			throw INVALID_CONSTANT_FALSE_EXPRESSION_EXCEPTION;
 		}
-		catch (final IndeterminateEvaluationException e)
-		{
-			// the expression is variable (depends on context)
-			LOGGER.debug("Condition's Expression is not constant (evaluation without context failed)");
-		}
 
+		// constant == null
+		LOGGER.debug("Condition's Expression is not constant (evaluation without context failed)");
 		return new BooleanExpressionEvaluator(evaluatableExpression);
 	}
 

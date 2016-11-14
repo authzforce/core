@@ -21,14 +21,13 @@ package org.ow2.authzforce.core.pdp.impl;
 import java.util.Map;
 import java.util.Set;
 
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
-import com.koloboke.collect.map.hash.HashObjObjMaps;
-import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
  * This is a base implementation of <code>PdpExtensionRegistry</code>. This should be used as basis to implement (in a final class) an immutable PDP extension registry of a specific type. If you need
@@ -58,7 +57,7 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 		assert extensionClass != null && extensionsById != null;
 
 		this.extClass = extensionClass;
-		this.extensionsById = HashObjObjMaps.newImmutableMap(extensionsById);
+		this.extensionsById = HashCollections.newImmutableMap(extensionsById);
 		this.toString = this + "( extensionClass= " + extClass.getCanonicalName() + " )";
 	}
 
@@ -73,7 +72,7 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 	@Override
 	public final Set<T> getExtensions()
 	{
-		return HashObjSets.newImmutableSet(extensionsById.values());
+		return HashCollections.newImmutableSet(extensionsById.values());
 	}
 
 	private static final class ExtensionToIdFunction<E extends PdpExtension> implements Function<E, String>
