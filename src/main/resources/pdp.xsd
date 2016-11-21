@@ -294,21 +294,21 @@
 			<attribute name="useStandardDatatypes" type="boolean" use="optional" default="true">
 				<annotation>
 					<documentation>Enable support for XACML core standard attribute
-						datatypes.
+						datatypes. If 'false', only dataypes specified in 'attributeDatatype' elements are available to the PDP, and therefore only these datatypes may be be used in policies.
 					</documentation>
 				</annotation>
 			</attribute>
 			<attribute name="useStandardFunctions" type="boolean" use="optional" default="true">
 				<annotation>
 					<documentation>Enable support for XACML core standard mandatory
-						functions.
+						functions. If 'false', only functions specified in 'function' elements are available to the PDP, and therefore only these functions may be be used in policies.
 					</documentation>
 				</annotation>
 			</attribute>
 			<attribute name="useStandardCombiningAlgorithms" type="boolean" use="optional" default="true">
 				<annotation>
 					<documentation>Enable support for XACML core standard combining
-						algorithms.
+						algorithms. If 'false', only algorithms specified in 'combiningAlgorithm' elements are available to the PDP, and therefore only these algorithms may be be used in policies.
 					</documentation>
 				</annotation>
 			</attribute>
@@ -359,7 +359,9 @@
 					<documentation> Maximum depth of Variable reference chaining:
 						VariableDefinition1 -&gt; VariableDefinition2 -&gt; ...; where
 						'-&gt;' represents a
-						VariableReference.					</documentation>
+						VariableReference. It is recommended to specify a value for this attribute in production for security/safety reasons.
+					Indeed, if not specified, no maximum is enforced (unlimited). 
+					</documentation>
 				</annotation>
 			</attribute>
 			<attribute name="maxPolicyRefDepth" type="nonNegativeInteger" use="optional">
@@ -367,7 +369,8 @@
 					<documentation>Maximum depth of Policy(Set) reference chaining:
 						PolicySet1 -&gt; PolicySet2 -&gt; ... -&gt; Policy(Set)N; where
 						'-&gt;' represents
-						a Policy(Set)IdReference.
+						a Policy(Set)IdReference. It is recommended to specify a value for this attribute in production for security/safety reasons.
+					Indeed, if not specified, no maximum is enforced (unlimited). 
 					</documentation>
 				</annotation>
 			</attribute>
