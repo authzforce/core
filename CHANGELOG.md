@@ -2,7 +2,7 @@
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
 
-## Unreleased
+## 6.0.0
 ### Added
 - Extension mechanism to switch HashMap/HashSet implementation; default implementation is based on native JRE and Guava.
 - Validation of 'n' argument (minimum of *true* arguments) of XACML 'n-of' function if this is constant (must be a positive integer not greater than the number of remaining arguments)
@@ -16,7 +16,7 @@ All notable changes to this project are documented in this file following the [K
 	- Saxon-HE dependency version: 9.6.0-5 -> 9.7.0-11
 	- com.sun.mail:javax.mail v1.5.4 changed to com.sun.mail:mailapi v1.5.6
 - Dependency authzforce-ce-core-pdp-api 7.1.1 -> 8.0.0
-- Behavior of "unordered" rule combining algorithms (deny-overrides, permit-overrides, deny-unless-permit and permit-unless deny), i.e. for which the order of evaluation may be different from the order of declaration: child elements are re-ordered for more efficiency (e.g. Deny rules evaluated first in case of deny-overrides algorithm), therefore the algorithm implementation, the order of evaluation in particular, now differs from ordered-* variants.
+- Behavior of *unordered* rule combining algorithms (deny-overrides, permit-overrides, deny-unless-permit and permit-unless deny), i.e. for which the order of evaluation may be different from the order of declaration: child elements are re-ordered for more efficiency (e.g. Deny rules evaluated first in case of deny-overrides algorithm), therefore the algorithm implementation, the order of evaluation in particular, now differs from ordered-* variants.
 
 ### Removed
 - Dependency on Koloboke, replaced by extension mechanism mentioned in *Added* section that would allow to switch from the default HashMap/HashSet implementation to Koloboke-based.
