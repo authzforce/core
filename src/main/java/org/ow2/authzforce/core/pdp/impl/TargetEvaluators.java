@@ -32,7 +32,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 
 /**
- * Represents the TargetType XML type in XACML.
+ * XACML Target evaluators.
  *
  * @version $Id: $
  */
@@ -47,7 +47,7 @@ public final class TargetEvaluators
 	/**
 	 * Empty Target evaluator that always evaluates to True (match all requests)
 	 */
-	public static final BooleanEvaluator EMPTY_TARGET = new BooleanEvaluator()
+	public static final BooleanEvaluator MATCH_ALL_TARGET_EVALUATOR = new BooleanEvaluator()
 	{
 
 		@Override
@@ -200,13 +200,13 @@ public final class TargetEvaluators
 	{
 		if (target == null)
 		{
-			return EMPTY_TARGET;
+			return MATCH_ALL_TARGET_EVALUATOR;
 		}
 
 		final List<AnyOf> anyOfs = target.getAnyOves();
 		if (anyOfs == null || anyOfs.isEmpty())
 		{
-			return EMPTY_TARGET;
+			return MATCH_ALL_TARGET_EVALUATOR;
 		}
 
 		return new NonEmptyTargetEvaluator(anyOfs, xPathCompiler, expressionFactory);

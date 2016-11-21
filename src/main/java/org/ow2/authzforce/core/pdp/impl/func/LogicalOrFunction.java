@@ -26,6 +26,7 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
+import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
@@ -37,10 +38,9 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 /**
  * A class that implements the logical functions "or"
  * <p>
- * From XACML core specification of function 'urn:oasis:names:tc:xacml:1.0:function:or': This function SHALL return
- * "False" if it has no arguments and SHALL return "True" if at least one of its arguments evaluates to "True". The
- * order of evaluation SHALL be from first argument to last. The evaluation SHALL stop with a result of "True" if any
- * argument evaluates to "True", leaving the rest of the arguments unevaluated.
+ * From XACML core specification of function 'urn:oasis:names:tc:xacml:1.0:function:or': This function SHALL return "False" if it has no arguments and SHALL return "True" if at least one of its
+ * arguments evaluates to "True". The order of evaluation SHALL be from first argument to last. The evaluation SHALL stop with a result of "True" if any argument evaluates to "True", leaving the rest
+ * of the arguments unevaluated.
  *
  * 
  * @version $Id: $
@@ -48,41 +48,24 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<BooleanValue, BooleanValue>
 {
 
-	private static final class Call extends FirstOrderFunctionCall<BooleanValue>
+	private static final class Call extends BaseFirstOrderFunctionCall<BooleanValue>
 	{
 		private final String indeterminateArgMsgPrefix;
 		private final String invalidArgTypeMsgPrefix;
 
 		private final List<Expression<?>> checkedArgExpressions;
 
-		private Call(final FirstOrderFunctionSignature<BooleanValue> functionSig,
-				final List<Expression<?>> argExpressions, final Datatype<?>[] remainingArgTypes)
-				throws IllegalArgumentException
+		private Call(final FirstOrderFunctionSignature<BooleanValue> functionSig, final List<Expression<?>> argExpressions, final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, argExpressions, remainingArgTypes);
 			this.checkedArgExpressions = argExpressions;
 			indeterminateArgMsgPrefix = "Function " + functionSig.getName() + ": Indeterminate arg #";
-			invalidArgTypeMsgPrefix = "Function " + functionSig.getName() + ": Invalid type (expected = "
-					+ StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
+			invalidArgTypeMsgPrefix = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
 		}
 
 		@Override
-		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... checkedRemainingArgs)
-				throws IndeterminateEvaluationException
+		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
 		{
-			/**
-			 * TODO: optimize this function call by checking the following:
-			 * <ol>
-			 * <li>If any argument expression is constant BooleanAttributeValue True, return always true.</li>
-			 * <li>Else If all argument expressions are constant BooleanAttributeValue False, return always false.</li>
-			 * <li>Else If any argument expression is constant BooleanAttributeValue False, remove it from the
-			 * arguments, as it has no effect on the final result. Indeed, or function is commutative and or(false, x,
-			 * y...) = or(x, y...).</li>
-			 * </ol>
-			 * The first two optimizations can be achieved by pre-evaluating the function call with context = null and
-			 * check the result if no IndeterminateEvaluationException is thrown.
-			 */
-
 			IndeterminateEvaluationException indeterminateException = null;
 			int argIndex = 0;
 			for (final Expression<?> arg : checkedArgExpressions)
@@ -101,8 +84,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 				{
 					// save the indeterminate to throw later only if there was not any TRUE in remaining
 					// args
-					indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex,
-							StatusHelper.STATUS_PROCESSING_ERROR, e);
+					indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
 				}
 
 				argIndex++;
@@ -122,9 +104,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 					}
 					catch (final ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException(
-								invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(),
-								StatusHelper.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
 					}
 
 					if (attrVal.getUnderlyingValue().booleanValue())
@@ -149,15 +129,21 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 
 	LogicalOrFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true,
-				Arrays.asList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions,
-			final Datatype<?>... remainingArgTypes)
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{
+		/**
+		 * TODO: optimize this function call by checking the following:
+		 * <ol>
+		 * <li>If any argument expression is constant BooleanAttributeValue False, remove it from the arguments, as it has no effect on the final result. Indeed, or function is commutative and
+		 * or(false, x, y...) = or(x, y...).</li>
+		 * </ol>
+		 * Other optimizations are already achieved by ApplyExpression pre-evaluating the function call with context = null and check the result if no IndeterminateEvaluationException is thrown.
+		 */
 		return new Call(functionSignature, argExpressions, remainingArgTypes);
 	}
 

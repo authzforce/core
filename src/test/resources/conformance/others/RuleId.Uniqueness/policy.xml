@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	PolicyId="policy-with-duplicate-RuleId" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides"
+	Version="1.0">
+	<Description>
+        Purpose: Test detection of duplicate RuleId within Policy
+    </Description>
+	<Target />
+	<Rule Effect="Permit" RuleId="rule1" />
+   <Rule Effect="Permit" RuleId="rule2" />
+   <Rule Effect="Permit" RuleId="rule3" />
+   <Rule Effect="Permit" RuleId="rule4" />
+   <Rule Effect="Permit" RuleId="rule5" />
+   <Rule Effect="Permit" RuleId="rule3" />
+   <Rule Effect="Permit" RuleId="rule6" />
+</Policy>

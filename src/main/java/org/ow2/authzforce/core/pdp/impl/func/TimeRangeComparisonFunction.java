@@ -26,6 +26,7 @@ import java.util.TimeZone;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
@@ -60,7 +61,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 				StandardDatatypes.TIME_FACTORY.getDatatype()));
 	}
 
-	private static final class Call extends FirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, TimeValue>
+	private static final class Call extends BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, TimeValue>
 	{
 		/**
 		 * XACML says: "If no time zone is provided for the first argument, it SHALL use the default time zone at the context handler."

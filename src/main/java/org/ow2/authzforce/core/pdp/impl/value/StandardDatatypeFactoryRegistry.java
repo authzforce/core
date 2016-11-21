@@ -21,6 +21,7 @@ package org.ow2.authzforce.core.pdp.impl.value;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
@@ -28,8 +29,6 @@ import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
  * This registry provides the factories for standard attribute datatypes specified in XACML.
@@ -56,8 +55,7 @@ public final class StandardDatatypeFactoryRegistry
 
 	static
 	{
-		final Set<DatatypeFactory<?>> datatypeFactories = HashObjSets
-				.newUpdatableSet(StandardDatatypes.MANDATORY_DATATYPE_SET.size() + 1);
+		final Set<DatatypeFactory<?>> datatypeFactories = HashCollections.newUpdatableSet(StandardDatatypes.MANDATORY_DATATYPE_SET.size() + 1);
 		for (final SimpleValue.Factory<? extends SimpleValue<? extends Object>> typeFactory : StandardDatatypes.MANDATORY_DATATYPE_SET)
 		{
 			datatypeFactories.add(typeFactory);

@@ -65,9 +65,9 @@ final class StandardDatatypeConverters
 
 	static class FromStringConverter<RETURN extends SimpleValue<?>> implements TypeConverter<RETURN, StringValue>
 	{
-		private final SimpleValue.Factory<RETURN> returnTypeFactory;
+		private final SimpleValue.StringContentOnlyFactory<RETURN> returnTypeFactory;
 
-		FromStringConverter(final SimpleValue.Factory<RETURN> returnTypeFactory)
+		FromStringConverter(final SimpleValue.StringContentOnlyFactory<RETURN> returnTypeFactory)
 		{
 			this.returnTypeFactory = returnTypeFactory;
 		}
@@ -75,7 +75,7 @@ final class StandardDatatypeConverters
 		@Override
 		public final RETURN convert(final StringValue arg)
 		{
-			return returnTypeFactory.getInstance(arg.getUnderlyingValue(), null, null);
+			return returnTypeFactory.getInstance(arg.getUnderlyingValue());
 
 		}
 

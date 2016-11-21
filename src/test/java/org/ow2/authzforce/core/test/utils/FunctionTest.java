@@ -29,13 +29,17 @@ import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.expression.ConstantPrimitiveAttributeValueExpression;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -43,21 +47,16 @@ import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
-import org.ow2.authzforce.core.pdp.impl.expression.PrimitiveValueExpression;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 
 import com.sun.xacml.UnknownIdentifierException;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 /**
- * An abstract class to easily test a function evaluation, according to a given function name, a list of arguments, and
- * expected result. In order to perform a function test, simply extend this class and give the test values on
- * construction.
+ * An abstract class to easily test a function evaluation, according to a given function name, a list of arguments, and expected result. In order to perform a function test, simply extend this class
+ * and give the test values on construction.
  * 
  */
 public abstract class FunctionTest
@@ -72,8 +71,7 @@ public abstract class FunctionTest
 	{
 		try
 		{
-			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.getRegistry(true),
-					StandardFunction.getRegistry(true), null, 0, false, false, null);
+			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.getRegistry(true), StandardFunction.getRegistry(true), null, 0, false, false, null);
 		}
 		catch (IllegalArgumentException | IOException e)
 		{
@@ -81,28 +79,26 @@ public abstract class FunctionTest
 		}
 	}
 
-	private final FunctionCall<?> funcCall;
+	private FunctionCall<?> funcCall;
 	private final Value expectedResult;
 	private final String toString;
 	private final boolean areBagsComparedAsSets;
+	private boolean syntaxErrorRaised = false;
 
 	/**
 	 * Creates instance
 	 * 
 	 * @param functionName
-	 *            The fully qualified name of the function to be tested. The function must be supported by the
-	 *            StandardFunctionRegistry.
+	 *            The fully qualified name of the function to be tested. The function must be supported by the StandardFunctionRegistry.
 	 * @param inputs
 	 *            The list of the function arguments as expressions, in order.
 	 * @param expectedResult
-	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to
-	 *            throw an error (IndeterminateEvaluationException)
+	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error (IndeterminateEvaluationException)
 	 * @param compareBagsAsSets
 	 *            true iff result bags should be compared as sets for equality check
 	 * @throws UnknownIdentifierException
 	 */
-	private FunctionTest(final String functionName, final List<Expression<?>> inputs, boolean compareBagsAsSets,
-			final Value expectedResult)
+	private FunctionTest(final String functionName, final List<Expression<?>> inputs, final boolean compareBagsAsSets, final Value expectedResult)
 	{
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
 		final Datatype<?> subFuncReturnType;
@@ -113,9 +109,9 @@ public abstract class FunctionTest
 		else
 		{
 			final Expression<?> xpr0 = inputs.get(0);
-			if (xpr0 instanceof Function<?>)
+			if (xpr0 instanceof FunctionExpression)
 			{
-				subFuncReturnType = xpr0.getReturnType();
+				subFuncReturnType = ((FunctionExpression) xpr0).getValue().getReturnType();
 			}
 			else
 			{
@@ -123,15 +119,27 @@ public abstract class FunctionTest
 			}
 		}
 
-		final Function<?> function = STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
-		if (function == null)
+		final FunctionExpression functionExp = STD_EXPRESSION_FACTORY.getFunction(functionName, subFuncReturnType);
+		if (functionExp == null)
 		{
-			throw new IllegalArgumentException("Function " + functionName
-					+ (subFuncReturnType == null ? "" : "(sub-function return type = " + subFuncReturnType + ")")
-					+ " not valid/supported");
+			throw new IllegalArgumentException("Function " + functionName + " not valid/supported "
+					+ (subFuncReturnType == null ? "as first-order function" : "as higher-order function with sub-function return type = " + subFuncReturnType));
 		}
 
-		funcCall = function.newCall(inputs);
+		final Function<?> function = functionExp.getValue();
+
+		try
+		{
+			funcCall = function.newCall(inputs);
+		}
+		catch (final IllegalArgumentException e)
+		{
+			funcCall = null;
+			/*
+			 * Some syntax errors might be caught at initialization time, which is expected if expectedResult == null
+			 */
+			syntaxErrorRaised = true;
+		}
 
 		this.expectedResult = expectedResult;
 		this.toString = function + "( " + inputs + " )";
@@ -146,15 +154,13 @@ public abstract class FunctionTest
 	// org.junit.Assume.assumeTrue(function == null);
 	// }
 
-	private static <V extends AttributeValue> Expression<?> createValueExpression(Datatype<V> datatype,
-			AttributeValue rawValue)
+	private static <V extends AttributeValue> Expression<?> createValueExpression(final Datatype<V> datatype, final AttributeValue rawValue)
 	{
 		// static expression only if not xpathExpression
-		return new PrimitiveValueExpression<>(datatype, datatype.cast(rawValue),
-				datatype != StandardDatatypes.XPATH_FACTORY.getDatatype());
+		return new ConstantPrimitiveAttributeValueExpression<>(datatype, datatype.cast(rawValue));
 	}
 
-	private static <V extends Bag<?>> Expression<?> createValueExpression(Datatype<V> datatype, Bag<?> rawValue)
+	private static <V extends Bag<?>> Expression<?> createValueExpression(final Datatype<V> datatype, final Bag<?> rawValue)
 	{
 		return new BagValueExpression<>(datatype, datatype.cast(rawValue));
 	}
@@ -163,7 +169,7 @@ public abstract class FunctionTest
 	{
 		private final Datatype<V> returnType;
 
-		private IndeterminateExpression(Datatype<V> returnType)
+		private IndeterminateExpression(final Datatype<V> returnType)
 		{
 			this.returnType = returnType;
 		}
@@ -175,15 +181,15 @@ public abstract class FunctionTest
 		}
 
 		@Override
-		public V evaluate(EvaluationContext context) throws IndeterminateEvaluationException
+		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
 		{
 			throw new IndeterminateEvaluationException("Missing attribute", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 		}
 
 		@Override
-		public boolean isStatic()
+		public V getValue()
 		{
-			return true;
+			throw new UnsupportedOperationException("No constant defined for Indeterminate expression");
 		}
 
 		@Override
@@ -194,20 +200,21 @@ public abstract class FunctionTest
 
 	}
 
-	private static final List<Expression<?>> toExpressions(String subFunctionName, List<Value> values)
+	// private static <V extends Value> IndeterminateExpression<V> newIndeterminateExpression
+
+	private static final List<Expression<?>> toExpressions(final String subFunctionName, final List<Value> values)
 	{
 		final List<Expression<?>> inputExpressions = new ArrayList<>();
 		if (subFunctionName != null)
 		{
 			// sub-function of higher-order function
-			final Function<?> subFunc = STD_EXPRESSION_FACTORY.getFunction(subFunctionName);
-			if (subFunc == null)
+			final FunctionExpression subFuncExp = STD_EXPRESSION_FACTORY.getFunction(subFunctionName);
+			if (subFuncExp == null)
 			{
-				throw new UnsupportedOperationException(
-						"Function " + subFunctionName + " not valid/supported (as first-order function)");
+				throw new UnsupportedOperationException("Function " + subFunctionName + " not valid/supported (as first-order function)");
 			}
 
-			inputExpressions.add(subFunc);
+			inputExpressions.add(subFuncExp);
 		}
 
 		final DatatypeFactoryRegistry stdDatatypeFactoryRegistry = StandardDatatypeFactoryRegistry.getRegistry(true);
@@ -217,33 +224,28 @@ public abstract class FunctionTest
 			if (val instanceof NullValue)
 			{
 				/*
-				 * Undefined arg -> wrap in a special expression that always return Indeterminate (useful for testing
-				 * functions that do not need all arguments to return a result, such as logical or/and/n-o
+				 * Undefined arg -> wrap in a special expression that always return Indeterminate (useful for testing functions that do not need all arguments to return a result, such as logical
+				 * or/and/n-o
 				 */
 				final NullValue nullVal = (NullValue) val;
-				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry
-						.getExtension(nullVal.getDatatypeId());
+				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(nullVal.getDatatypeId());
 				if (datatypeFactory == null)
 				{
-					throw new UnsupportedOperationException(
-							"Unsupported attribute datatype: '" + nullVal.getDatatypeId() + "'");
+					throw new UnsupportedOperationException("Unsupported attribute datatype: '" + nullVal.getDatatypeId() + "'");
 				}
 
-				valExpr = new IndeterminateExpression<>(
-						nullVal.isBag() ? datatypeFactory.getBagDatatype() : datatypeFactory.getDatatype());
+				valExpr = nullVal.isBag() ? new IndeterminateExpression<>(datatypeFactory.getBagDatatype()) : new IndeterminateExpression<>(datatypeFactory.getDatatype());
 			}
 			else if (val instanceof AttributeValue)
 			{
 				final AttributeValue primVal = (AttributeValue) val;
-				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry
-						.getExtension(primVal.getDataType());
+				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(primVal.getDataType());
 				valExpr = createValueExpression(datatypeFactory.getDatatype(), primVal);
 			}
 			else if (val instanceof Bag)
 			{
 				final Bag<?> bagVal = (Bag<?>) val;
-				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry
-						.getExtension(bagVal.getElementDatatype().getId());
+				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(bagVal.getElementDatatype().getId());
 				valExpr = createValueExpression(datatypeFactory.getBagDatatype(), bagVal);
 			}
 			else
@@ -261,25 +263,19 @@ public abstract class FunctionTest
 	 * Creates instance
 	 * 
 	 * @param functionName
-	 *            The fully qualified name of the function to be tested. The function must be supported by the
-	 *            StandardFunctionRegistry.
+	 *            The fully qualified name of the function to be tested. The function must be supported by the StandardFunctionRegistry.
 	 * @param subFunctionName
-	 *            (optional) sub-function specified iff {@code functionName} corresponds to a higher-order function;
-	 *            else null
+	 *            (optional) sub-function specified iff {@code functionName} corresponds to a higher-order function; else null
 	 * @param inputs
-	 *            The list of the function arguments as constant values, in order. Specify a null argument to indicate
-	 *            it is undefined. It will be considered as Indeterminate (wrapped in a Expression that always evaluate
-	 *            to Indeterminate result). This is useful to test specific function behavior when one (or more) of the
-	 *            arguments is indeterminate; e.g. logical or/and/n-of functions are able to return False/True even if
-	 *            some of the arguments are Indeterminate.
+	 *            The list of the function arguments as constant values, in order. Specify a null argument to indicate it is undefined. It will be considered as Indeterminate (wrapped in a Expression
+	 *            that always evaluate to Indeterminate result). This is useful to test specific function behavior when one (or more) of the arguments is indeterminate; e.g. logical or/and/n-of
+	 *            functions are able to return False/True even if some of the arguments are Indeterminate.
 	 * @param expectedResult
-	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to
-	 *            throw an error (IndeterminateEvaluationException)
+	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error (IndeterminateEvaluationException)
 	 * @param compareBagsAsSets
 	 *            true iff result bags should be compared as sets for equality check
 	 */
-	public FunctionTest(String functionName, String subFunctionName, List<Value> inputs, boolean compareBagsAsSets,
-			Value expectedResult)
+	public FunctionTest(final String functionName, final String subFunctionName, final List<Value> inputs, final boolean compareBagsAsSets, final Value expectedResult)
 	{
 		this(functionName, toExpressions(subFunctionName, inputs), compareBagsAsSets, expectedResult);
 	}
@@ -288,27 +284,23 @@ public abstract class FunctionTest
 	 * Creates instance
 	 * 
 	 * @param functionName
-	 *            The fully qualified name of the function to be tested. The function must be supported by the
-	 *            StandardFunctionRegistry.
+	 *            The fully qualified name of the function to be tested. The function must be supported by the StandardFunctionRegistry.
 	 * @param subFunctionName
-	 *            (optional) sub-function specified iff {@code functionName} corresponds to a higher-order function;
-	 *            else null
+	 *            (optional) sub-function specified iff {@code functionName} corresponds to a higher-order function; else null
 	 * @param inputs
 	 *            The list of the function arguments, as constant values, in order.
 	 * @param expectedResult
-	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to
-	 *            throw an error (IndeterminateEvaluationException)
+	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error (IndeterminateEvaluationException)
 	 */
-	public FunctionTest(final String functionName, String subFunctionName, final List<Value> inputs,
-			final Value expectedResult)
+	public FunctionTest(final String functionName, final String subFunctionName, final List<Value> inputs, final Value expectedResult)
 	{
 		this(functionName, subFunctionName, inputs, false, expectedResult);
 	}
 
-	private static final Set<AttributeValue> bagToSet(Bag<?> bag)
+	private static final Set<AttributeValue> bagToSet(final Bag<?> bag)
 	{
 		final Set<AttributeValue> set = new HashSet<>();
-		for (AttributeValue val : bag)
+		for (final AttributeValue val : bag)
 		{
 			set.add(val);
 		}
@@ -319,18 +311,22 @@ public abstract class FunctionTest
 	@Test
 	public void testEvaluate() throws IndeterminateEvaluationException
 	{
-		// Validate inputs and create function call
+		if (syntaxErrorRaised && expectedResult == null)
+		{
+			// syntax error already detected as expected -> test success
+			return;
+		}
+
 		/*
-		 * Use null context as all inputs given as values in function tests, therefore already provided as inputs to
-		 * function call
+		 * Use null context as all inputs given as values in function tests, therefore already provided as inputs to function call
 		 */
 		try
 		{
-			Value actualResult = funcCall.evaluate(null);
+			final Value actualResult = funcCall.evaluate(null);
 			if (expectedResult instanceof Bag && actualResult instanceof Bag && areBagsComparedAsSets)
 			{
-				Set<?> expectedSet = bagToSet((Bag<?>) expectedResult);
-				Set<?> actualSet = bagToSet((Bag<?>) actualResult);
+				final Set<?> expectedSet = bagToSet((Bag<?>) expectedResult);
+				final Set<?> actualSet = bagToSet((Bag<?>) actualResult);
 				Assert.assertEquals(toString, expectedSet, actualSet);
 			}
 			else if (expectedResult != null)
@@ -338,7 +334,7 @@ public abstract class FunctionTest
 				Assert.assertEquals(toString, expectedResult, actualResult);
 			}
 		}
-		catch (IndeterminateEvaluationException e)
+		catch (final IndeterminateEvaluationException e)
 		{
 			if (expectedResult != null)
 			{

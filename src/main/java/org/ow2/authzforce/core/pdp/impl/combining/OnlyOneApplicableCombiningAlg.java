@@ -18,9 +18,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.List;
-
 import javax.xml.bind.JAXBElement;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -31,20 +32,18 @@ import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 /**
  * This is the standard only-one-applicable policy combining algorithm.
  *
  * @version $Id: $
  */
-final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
+final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluator>
 {
 
 	private static final class Evaluator extends BaseCombiningAlg.Evaluator<PolicyEvaluator>
@@ -53,17 +52,15 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 
 		private final ExtendedDecision tooManyApplicablePoliciesIndeterminateResult;
 
-		private Evaluator(final String algId, final List<? extends PolicyEvaluator> policyElements)
+		private Evaluator(final String algId, final Iterable<? extends PolicyEvaluator> policyElements)
 		{
 			super(policyElements);
-			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions
-					.newIndeterminate(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
-							"Too many (more than one) applicable policies for algorithm: " + algId));
+			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
+					"Too many (more than one) applicable policies for algorithm: " + algId));
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 
@@ -99,13 +96,13 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 			}
 
 			/*
-			 * If we got through the loop, it means we found at most one match, then we return the evaluation result of
-			 * that policy if there is a match
+			 * If we got through the loop, it means we found at most one match, then we return the evaluation result of that policy if there is a match
 			 */
 			if (selectedPolicy != null)
 			{
 				final DecisionResult result = selectedPolicy.evaluate(context, true);
-				switch (result.getDecision()) {
+				switch (result.getDecision())
+				{
 					case PERMIT:
 					case DENY:
 						outPepActions.add(result.getPepActions());
@@ -135,8 +132,7 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 
 	/** {@inheritDoc} */
 	@Override
-	public Evaluator getInstance(final List<CombiningAlgParameter<? extends PolicyEvaluator>> params,
-			final List<? extends PolicyEvaluator> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends PolicyEvaluator>> params, final Iterable<? extends PolicyEvaluator> combinedElements)
 	{
 		return new Evaluator(this.getId(), combinedElements);
 	}
@@ -144,7 +140,7 @@ final class OnlyOneApplicableAlg extends BaseCombiningAlg<PolicyEvaluator>
 	/**
 	 * Standard constructor.
 	 */
-	OnlyOneApplicableAlg(final String algId)
+	OnlyOneApplicableCombiningAlg(final String algId)
 	{
 		super(algId, PolicyEvaluator.class);
 	}

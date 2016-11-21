@@ -20,6 +20,8 @@ package org.ow2.authzforce.core.pdp.impl.expression;
 
 import javax.xml.bind.JAXBElement;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -32,14 +34,11 @@ import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-
 /**
  * AttributeDesignator evaluator
  *
  * <p>
- * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI
- * type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
+ * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
  * </p>
  * <p>
  * [1] http://www.w3.org/TR/xmlschema-2/#anyURI That's why we use String instead.
@@ -58,14 +57,10 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
  */
 public final class AttributeDesignatorExpression<AV extends AttributeValue> implements Expression<Bag<AV>>
 {
-	private static final IllegalArgumentException NULL_CATEGORY_EXCEPTION = new IllegalArgumentException(
-			"Undefined attribute designator category");
-	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException(
-			"Undefined attribute designator datatype");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException(
-			"Undefined attribute designator AttribtueId");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_Provider_EXCEPTION = new IllegalArgumentException(
-			"Undefined attribute Provider");
+	private static final IllegalArgumentException NULL_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute designator category");
+	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute designator datatype");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_Provider_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
 	private static final UnsupportedOperationException UNSUPPORTED_OPERATION_EXCEPTION = new UnsupportedOperationException();
 
 	private final transient AttributeGUID attrGUID;
@@ -81,10 +76,10 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isStatic()
+	public Bag<AV> getValue()
 	{
 		// depends on the context
-		return false;
+		return null;
 	}
 
 	/**
@@ -93,14 +88,11 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 	 * @param attrDesignator
 	 *            the AttributeDesignatorType we want to convert
 	 * @param resultDatatype
-	 *            expected datatype of the result of evaluating this AttributeDesignator (
-	 *            {@code AV is the expected type of every element in the bag})
+	 *            expected datatype of the result of evaluating this AttributeDesignator ( {@code AV is the expected type of every element in the bag})
 	 * @param attrProvider
-	 *            Attribute Provider responsible for finding the attribute designated by this in a given evaluation
-	 *            context at runtime
+	 *            Attribute Provider responsible for finding the attribute designated by this in a given evaluation context at runtime
 	 */
-	public AttributeDesignatorExpression(final AttributeDesignatorType attrDesignator, final BagDatatype<AV> resultDatatype,
-			final AttributeProvider attrProvider)
+	public AttributeDesignatorExpression(final AttributeDesignatorType attrDesignator, final BagDatatype<AV> resultDatatype, final AttributeProvider attrProvider)
 	{
 		final String categoryURI = attrDesignator.getCategory();
 		if (categoryURI == null)
@@ -132,15 +124,11 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 		// error messages/exceptions
 		final String missingAttributeMessage = this + " not found in context";
 		final boolean mustBePresentFlag = attrDesignator.isMustBePresent();
-		this.mustBePresentEnforcer = mustBePresentFlag ? new Bags.NonEmptinessValidator(missingAttributeMessage)
-				: Bags.DUMB_VALIDATOR;
+		this.mustBePresentEnforcer = mustBePresentFlag ? new Bags.NonEmptinessValidator(missingAttributeMessage) : Bags.DUMB_VALIDATOR;
 
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(
-				missingAttributeMessage + " for unknown reason", StatusHelper.STATUS_MISSING_ATTRIBUTE);
-		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException(
-				"Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
-						+ "' because request context undefined",
-				StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
+				+ "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
 	/**
@@ -195,8 +183,8 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 	{
 		if (toString == null)
 		{
-			toString = "AttributeDesignator [" + this.attrGUID + ", dataType= " + this.returnType.getElementType()
-					+ ", mustBePresent= " + (mustBePresentEnforcer == Bags.DUMB_VALIDATOR ? "false" : "true") + "]";
+			toString = "AttributeDesignator [" + this.attrGUID + ", dataType= " + this.returnType.getElementType() + ", mustBePresent= "
+					+ (mustBePresentEnforcer == Bags.DUMB_VALIDATOR ? "false" : "true") + "]";
 		}
 
 		return toString;

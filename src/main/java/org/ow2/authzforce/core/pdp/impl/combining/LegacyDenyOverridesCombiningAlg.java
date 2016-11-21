@@ -18,8 +18,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.List;
-
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
@@ -31,13 +29,13 @@ import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
  *
  * @version $Id: $
  */
-final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
+final class LegacyDenyOverridesCombiningAlg extends BaseCombiningAlg<Decidable>
 {
 	private static final String LEGACY_ALG_WARNING = "%s is a legacy combining algorithm defined in XACML versions earlier than 3.0. This implementation does not support such legacy algorithms. Use the new XACML 3.0 versions of these combining algorithms instead.";
 
 	private final UnsupportedOperationException unsupportedLegacyAlgorithmException;
 
-	LegacyDenyOverridesAlg(final String algId)
+	LegacyDenyOverridesCombiningAlg(final String algId)
 	{
 		super(algId, Decidable.class);
 		this.unsupportedLegacyAlgorithmException = new UnsupportedOperationException(String.format(LEGACY_ALG_WARNING, this));
@@ -45,7 +43,7 @@ final class LegacyDenyOverridesAlg extends BaseCombiningAlg<Decidable>
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final List<CombiningAlgParameter<? extends Decidable>> params, final List<? extends Decidable> combinedElements)
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends Decidable>> params, final Iterable<? extends Decidable> combinedElements)
 	{
 		throw this.unsupportedLegacyAlgorithmException;
 		/*

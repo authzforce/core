@@ -25,19 +25,22 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.func.Function;
-import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.Value;
-
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Evaluates XACML Apply
@@ -49,17 +52,51 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
  */
 public final class ApplyExpression<V extends Value> implements Expression<V>
 {
+	/**
+	 * Function call with constant result
+	 *
+	 * @param <RETURN_T>
+	 *            return type
+	 */
+	private static final class ConstantResultFunctionCall<RETURN_T extends Value> implements FunctionCall<RETURN_T>
+	{
+		private final RETURN_T constant;
+		private final Datatype<RETURN_T> constantDatatype;
+
+		/**
+		 * Constructor
+		 * 
+		 * @param constant
+		 *            constant result
+		 * @param constantDatatype
+		 *            constant/return datatype
+		 */
+		public ConstantResultFunctionCall(final RETURN_T constant, final Datatype<RETURN_T> constantDatatype)
+		{
+			this.constant = constant;
+			this.constantDatatype = constantDatatype;
+		}
+
+		@Override
+		public RETURN_T evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		{
+			return constant;
+		}
+
+		@Override
+		public Datatype<RETURN_T> getReturnType()
+		{
+			return constantDatatype;
+		}
+	}
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(ApplyExpression.class);
+
 	private static final UnsupportedOperationException UNSUPPORTED_OPERATION_EXCEPTION = new UnsupportedOperationException();
 
-	private final transient FunctionCall<V> functionCall;
+	private static final IllegalArgumentException NULL_EXPRESSION_FACTORY_EXCEPTION = new IllegalArgumentException("Undefined expression factory argument");
 
-	private final transient boolean isStatic;
-
-	private static final IllegalArgumentException NULL_EXPRESSION_FACTORY_EXCEPTION = new IllegalArgumentException(
-			"Undefined expression factory argument");
-
-	private static final IllegalArgumentException NULL_XACML_APPLY_ELEMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined argument: XACML Apply element");
+	private static final IllegalArgumentException NULL_XACML_APPLY_ELEMENT_EXCEPTION = new IllegalArgumentException("Undefined argument: XACML Apply element");
 
 	/**
 	 * Creates instance from XACML Apply element
@@ -67,25 +104,20 @@ public final class ApplyExpression<V extends Value> implements Expression<V>
 	 * @param xacmlApply
 	 *            XACML Apply element
 	 * @param xPathCompiler
-	 *            Enclosing Policy(Set)'s default XPath compiler, corresponding to the Policy(Set)'s default XPath
-	 *            version specified in {@link DefaultsType} element.
+	 *            Enclosing Policy(Set)'s default XPath compiler, corresponding to the Policy(Set)'s default XPath version specified in {@link DefaultsType} element.
 	 * @param expFactory
 	 *            expression factory for instantiating Apply's parameters
 	 * @param longestVarRefChain
-	 *            Longest chain of VariableReference references leading to this Apply, when evaluating a
-	 *            VariableDefinitions, i.e. list of VariableIds, such that V1-> V2 ->... -> Vn -> <code>this</code>,
-	 *            where "V1 -> V2" means: the expression in VariableDefinition of V1 contains a VariableReference to V2.
-	 *            This is used to detect exceeding depth of VariableReference reference when a new VariableReference
-	 *            occurs in a VariableDefinition's expression. May be null, if this expression does not belong to any
-	 *            VariableDefinition.
+	 *            Longest chain of VariableReference references leading to this Apply, when evaluating a VariableDefinitions, i.e. list of VariableIds, such that V1-> V2 ->... -> Vn ->
+	 *            <code>this</code>, where "V1 -> V2" means: the expression in VariableDefinition of V1 contains a VariableReference to V2. This is used to detect exceeding depth of VariableReference
+	 *            reference when a new VariableReference occurs in a VariableDefinition's expression. May be null, if this expression does not belong to any VariableDefinition.
 	 * @return Apply instance
 	 * @throws java.lang.IllegalArgumentException
-	 *             if {@code xacmlApply} is invalid or {@code expFactory} is null; or function ID not supported/unknown;
-	 *             if {@code xprs} are invalid expressions, or invalid arguments for this function; or if all
-	 *             {@code xprs} are static but calling the function statically (with these static arguments) failed
+	 *             if {@code xacmlApply} is invalid or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid expressions, or invalid arguments for this
+	 *             function; or if all {@code xprs} are static but calling the function statically (with these static arguments) failed
 	 */
-	public static ApplyExpression<?> getInstance(final ApplyType xacmlApply, final XPathCompiler xPathCompiler,
-			final ExpressionFactory expFactory, final Deque<String> longestVarRefChain) throws IllegalArgumentException
+	public static ApplyExpression<?> getInstance(final ApplyType xacmlApply, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory, final Deque<String> longestVarRefChain)
+			throws IllegalArgumentException
 	{
 		if (xacmlApply == null)
 		{
@@ -110,9 +142,7 @@ public final class ApplyExpression<V extends Value> implements Expression<V>
 			}
 			catch (final IllegalArgumentException e)
 			{
-				throw new IllegalArgumentException(
-						"Error parsing one of Apply [description=" + applyDesc + "]'s function arguments (Expressions)",
-						e);
+				throw new IllegalArgumentException("Error parsing one of Apply [description=" + applyDesc + "]'s function arguments (Expressions)", e);
 			}
 
 			funcInputs.add(exprHandler);
@@ -128,9 +158,9 @@ public final class ApplyExpression<V extends Value> implements Expression<V>
 		else
 		{
 			final Expression<?> xpr0 = funcInputs.get(0);
-			if (xpr0 instanceof Function<?>)
+			if (xpr0 instanceof FunctionExpression)
 			{
-				subFuncReturnType = xpr0.getReturnType();
+				subFuncReturnType = ((FunctionExpression) xpr0).getValue().getReturnType();
 			}
 			else
 			{
@@ -139,34 +169,34 @@ public final class ApplyExpression<V extends Value> implements Expression<V>
 		}
 
 		final String functionId = xacmlApply.getFunctionId();
-		final Function<?> function;
+		final FunctionExpression functionExp;
 		try
 		{
-			function = expFactory.getFunction(functionId, subFuncReturnType);
+			functionExp = expFactory.getFunction(functionId, subFuncReturnType);
 		}
 		catch (final IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException(
-					"Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
-							+ ") of sub-function (first-parameter) of Apply Function '" + functionId + "'",
-					e);
+			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
+					+ ") of sub-function (first-parameter) of Apply Function '" + functionId + "'", e);
 		}
 
-		if (function == null)
+		if (functionExp == null)
 		{
-			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc
-					+ "]: Invalid Function: function ID '" + functionId + "' not supported");
+			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId + "' not supported");
 		}
 
-		return new ApplyExpression<>(function, funcInputs, applyDesc);
+		return new ApplyExpression<>(functionExp.getValue(), funcInputs, applyDesc);
 	}
+
+	private final transient FunctionCall<V> functionCall;
+
+	private final transient V constantValue;
 
 	/**
 	 * Constructs an <code>Apply</code> instance.
 	 * 
 	 * @param function
-	 *            function to apply to {@code xprs}. If this is a higher-order function, the sub-function is expected to
-	 *            be the first item of {@code xprs}
+	 *            function to apply to {@code xprs}. If this is a higher-order function, the sub-function is expected to be the first item of {@code xprs}
 	 * @param xprs
 	 *            the arguments to the function
 	 * @param originalXacmlExpressions
@@ -178,8 +208,7 @@ public final class ApplyExpression<V extends Value> implements Expression<V>
 	 *             if {@code xprs} are invalid arguments for this function;
 	 * 
 	 */
-	private ApplyExpression(final Function<V> function, final List<Expression<?>> xprs, final String description)
-			throws IllegalArgumentException
+	private ApplyExpression(final Function<V> function, final List<Expression<?>> xprs, final String description) throws IllegalArgumentException
 	{
 		assert function != null;
 
@@ -192,76 +221,41 @@ public final class ApplyExpression<V extends Value> implements Expression<V>
 		}
 		catch (final IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException(
-					"Error parsing Apply[Description = " + description + "]: Invalid args for function " + function, e);
+			throw new IllegalArgumentException("Error parsing Apply[Description = " + description + "]: Invalid args for function " + function, e);
 		}
 
-		// Are all input expressions static?
-		boolean allStatic = true;
-		for (final Expression<?> xpr : xprs)
+		/*
+		 * Check whether the Apply Expression is constant -> try to pre-evaluate the result statically (out of context, i.e. in null context)
+		 */
+		V staticEvalResult = null;
+		try
 		{
-			if (!xpr.isStatic())
-			{
-				allStatic = false;
-				break;
-			}
+			staticEvalResult = funcCall.evaluate(null);
+			LOGGER.debug("Apply[Description = " + description + "]: static evaluation OK -> expression is constant -> optimizing: using constant result as evaluation result");
 		}
-
-		// if all input expressions static, the Apply is static, we can pre-evaluate the result
-		if (allStatic)
+		catch (final IndeterminateEvaluationException e)
 		{
-			final V staticEvalResult;
-			try
-			{
-				staticEvalResult = funcCall.evaluate(null);
-			}
-			catch (final IndeterminateEvaluationException e)
-			{
-				throw new IllegalArgumentException("Invalid Apply[Description = " + description + "]: function "
-						+ function + " is not applicable to arguments (all static): " + xprs, e);
-			}
-
-			/*
-			 * Create a static function call, i.e. that returns the same constant (pre-evaluated) result right away, to
-			 * avoid useless re-evaluation.
-			 */
-			this.functionCall = new FunctionCall<V>()
-			{
-
-				@Override
-				public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
-				{
-					return staticEvalResult;
-				}
-
-				@Override
-				public Datatype<V> getReturnType()
-				{
-					return funcCall.getReturnType();
-				}
-
-			};
-		}
-		else
-		{
-			this.functionCall = funcCall;
+			LOGGER.debug("Apply[Description = " + description + "]: static evaluation failed -> expression is not constant -> not optimizing");
 		}
 
-		isStatic = allStatic;
+		this.constantValue = staticEvalResult;
+		/*
+		 * If result is constant, create a function call with constant result, i.e. that returns the same constant (pre-evaluated) result right away, to avoid useless re-evaluation.
+		 */
+		this.functionCall = constantValue == null ? funcCall : new ConstantResultFunctionCall<>(constantValue, funcCall.getReturnType());
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isStatic()
+	public V getValue()
 	{
-		return isStatic;
+		return constantValue;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Evaluates the apply object using the given function. This will in turn call evaluate on all the given parameters,
-	 * some of which may be other <code>Apply</code> objects.
+	 * Evaluates the apply object using the given function. This will in turn call evaluate on all the given parameters, some of which may be other <code>Apply</code> objects.
 	 */
 	@Override
 	public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
@@ -272,8 +266,8 @@ public final class ApplyExpression<V extends Value> implements Expression<V>
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Returns the type of attribute that this object will return on a call to <code>evaluate</code> . In practice, this
-	 * will always be the same as the result of calling <code>getReturnType</code> on the function used by this object.
+	 * Returns the type of attribute that this object will return on a call to <code>evaluate</code> . In practice, this will always be the same as the result of calling <code>getReturnType</code> on
+	 * the function used by this object.
 	 */
 	@Override
 	public Datatype<V> getReturnType()

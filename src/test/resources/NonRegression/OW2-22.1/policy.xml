@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="urn:ow2:authzforce:xacml:3.0:non-regression-test:22:PS1"
-	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit"
 	Version="1.0">
 	<Description>
 		Policy for non-regression test of issue 22.

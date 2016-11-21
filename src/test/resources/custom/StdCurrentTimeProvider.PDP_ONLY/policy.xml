@@ -16,7 +16,7 @@
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:date-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">1970-01-01Z</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date"
-							DataType="http://www.w3.org/2001/XMLSchema#date" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#date" MustBePresent="false" />
 					</Match>
 				</AllOf>
 			</AnyOf>
@@ -37,7 +37,7 @@
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:time-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">00:00:00Z</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time"
-							DataType="http://www.w3.org/2001/XMLSchema#time" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#time" MustBePresent="false" />
 					</Match>
 				</AllOf>
 			</AnyOf>
@@ -57,7 +57,7 @@
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:dateTime-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">1980-01-01T01:00:00Z</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime"
-							DataType="http://www.w3.org/2001/XMLSchema#dateTime" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#dateTime" MustBePresent="false" />
 					</Match>
 				</AllOf>
 			</AnyOf>
@@ -73,12 +73,12 @@
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-date</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="test-id"
-							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
 					</Match>
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:date-less-than">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">2016-08-01Z</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date"
-							DataType="http://www.w3.org/2001/XMLSchema#date" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#date" MustBePresent="false" />
 					</Match>
 				</AllOf>
 			</AnyOf>
@@ -94,12 +94,12 @@
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-time</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="test-id"
-							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
 					</Match>
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:time-less-than-or-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">00:00:00Z</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time"
-							DataType="http://www.w3.org/2001/XMLSchema#time" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#time" MustBePresent="false" />
 					</Match>
 				</AllOf>
 			</AnyOf>
@@ -115,12 +115,12 @@
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-dateTime</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="test-id"
-							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
 					</Match>
 					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:dateTime-less-than">
 						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">2016-08-01T00:00:00Z</AttributeValue>
 						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime"
-							DataType="http://www.w3.org/2001/XMLSchema#dateTime" MustBePresent="true" />
+							DataType="http://www.w3.org/2001/XMLSchema#dateTime" MustBePresent="false" />
 					</Match>
 				</AllOf>
 			</AnyOf>

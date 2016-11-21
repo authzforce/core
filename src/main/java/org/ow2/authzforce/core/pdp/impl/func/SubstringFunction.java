@@ -20,13 +20,14 @@ package org.ow2.authzforce.core.pdp.impl.func;
 
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -35,6 +36,9 @@ import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements *-substring functions
@@ -46,6 +50,8 @@ import org.ow2.authzforce.core.pdp.api.value.StringValue;
  */
 final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParameterTypedFirstOrderFunction<StringValue>
 {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(SubstringFunction.class);
 
 	private static final class Call extends EagerMultiPrimitiveTypeEval<StringValue>
 	{
@@ -60,7 +66,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 			super(functionSig, args, remainingArgTypes);
 			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types: expected: " + param0Type + ", " + StandardDatatypes.INTEGER_FACTORY.getDatatype() + ", "
 					+ StandardDatatypes.INTEGER_FACTORY.getDatatype() + "; actual: ";
-			this.argsOutOfBoundsErrorMessage = "Function " + functionId + ": args out of bounds";
+			this.argsOutOfBoundsErrorMessage = "Function " + functionId + ": either beginIndex is out of bounds, or endIndex =/= -1 and out of bounds";
 			this.firstParamClass = param0Type.getValueClass();
 		}
 
@@ -136,12 +142,94 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		this.param0Type = param0Type;
 	}
 
+	private static String getInvalidArg1MessagePrefix(final FirstOrderFunctionSignature<?> funcsig)
+	{
+		return "Function " + funcsig.getName() + ": Invalid arg #1 (beginIndex): expected: positive integer; actual: ";
+	}
+
+	private static String getInvalidArg2MessagePrefix(final FirstOrderFunctionSignature<?> funcsig)
+	{
+		return "Function " + funcsig.getName() + ": Invalid arg #2 (endIndex): expected: -1 or positive integer >= beginIndex; actual: ";
+	}
 
 	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{
+		if (argExpressions.size() != 3)
+		{
+			throw new IllegalArgumentException("Function " + functionSignature.getName() + ": Invalid number of args: expected: 3; actual: " + argExpressions.size());
+		}
+
+		/*
+		 * Datatypes will be checked by Call class but they are specific constraints: arg0 >= 0 && (arg1 == -1 || arg0 <= arg1). Note that if arg0 == arg1, result may be '' or raise out-of-bounds
+		 * error
+		 */
+		final Iterator<? extends Expression<?>> argExpsIterator = argExpressions.iterator();
+		// Skip the first argument which is the string
+		argExpsIterator.next();
+
+		// Second arg
+		final Expression<?> arg1Exp = argExpsIterator.next();
+		final Value arg1 = arg1Exp.getValue();
+		final int beginIndex;
+		if (arg1 != null)
+		{
+			if (!(arg1 instanceof IntegerValue))
+			{
+				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + arg1 + " (type: " + arg1Exp.getReturnType() + ")");
+			}
+
+			beginIndex = IntegerValue.class.cast(arg1).getUnderlyingValue().intValueExact();
+			if (beginIndex < 0)
+			{
+				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + beginIndex);
+			}
+		}
+		else
+		{
+			beginIndex = -1; // undefined
+		}
+
+		// Third arg
+		final Expression<?> arg2Exp = argExpsIterator.next();
+		final Value arg2 = arg2Exp.getValue();
+		if (arg2 != null)
+		{
+			if (!(arg2 instanceof IntegerValue))
+			{
+				throw new IllegalArgumentException(getInvalidArg2MessagePrefix(functionSignature) + arg2 + " (type: " + arg2Exp.getReturnType() + ")");
+			}
+
+			final int endIndex = IntegerValue.class.cast(arg2).getUnderlyingValue().intValueExact();
+			if (endIndex != -1)
+			{
+				if (endIndex < 0)
+				{
+					throw new IllegalArgumentException(getInvalidArg2MessagePrefix(functionSignature) + endIndex);
+				}
+
+				if (beginIndex != -1)
+				{
+					// beginIndex defined
+					if (endIndex < beginIndex)
+					{
+						// and endIndex strictly smaller than beginIndex!
+						throw new IllegalArgumentException(getInvalidArg2MessagePrefix(functionSignature) + endIndex + " < beginIndex (" + beginIndex + ")");
+					}
+
+					// endIndex >= beginIndex
+					if (beginIndex == 0 && endIndex == 0)
+					{
+						// constant empty string
+						LOGGER.warn("{} used with arg0 (beginIndex) = arg1 (endIndex) = 0 resulting in constant empty string. This is useless!", this.functionSignature);
+						return new ConstantResultFirstOrderFunctionCall<>(StringValue.EMPTY, StandardDatatypes.STRING_FACTORY.getDatatype());
+					}
+				}
+
+			}
+		}
+
 		return new Call(functionSignature, param0Type, argExpressions, remainingArgTypes);
 	}
-
 }

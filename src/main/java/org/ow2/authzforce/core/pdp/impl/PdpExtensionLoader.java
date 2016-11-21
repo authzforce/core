@@ -25,6 +25,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.JaxbBoundPdpExtension;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
@@ -35,8 +36,6 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.koloboke.collect.map.hash.HashObjObjMaps;
-import com.koloboke.collect.set.hash.HashObjSets;
 
 /**
  * Loads PDP extensions (implementing {@link PdpExtension}) from classpath using {@link ServiceLoader}.
@@ -55,7 +54,7 @@ public final class PdpExtensionLoader
 	/**
 	 * Types of zero-conf (non-JAXB-bound) extension
 	 */
-	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = HashObjSets.newImmutableSet(Arrays.asList(DatatypeFactory.class, Function.class, CombiningAlg.class,
+	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = HashCollections.newImmutableSet(Arrays.asList(DatatypeFactory.class, Function.class, CombiningAlg.class,
 			RequestFilter.Factory.class, DecisionResultFilter.class));
 
 	/*
@@ -72,7 +71,7 @@ public final class PdpExtensionLoader
 	static
 	{
 		final Table<Class<? extends PdpExtension>, String, PdpExtension> mutableNonJaxbBoundExtMapByClassAndId = HashBasedTable.create();
-		final Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> mutableJaxbBoundExtMapByClass = HashObjObjMaps.newUpdatableMap();
+		final Map<Class<? extends AbstractPdpExtension>, JaxbBoundPdpExtension<? extends AbstractPdpExtension>> mutableJaxbBoundExtMapByClass = HashCollections.newUpdatableMap();
 
 		/*
 		 * REMINDER: every service provider (implementation class) loaded by ServiceLoader MUST HAVE a ZERO-ARGUMENT CONSTRUCTOR.
@@ -117,8 +116,8 @@ public final class PdpExtensionLoader
 			}
 		}
 
-		NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID = HashObjObjMaps.newImmutableMap(mutableNonJaxbBoundExtMapByClassAndId.rowMap());
-		JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS = HashObjObjMaps.newImmutableMap(mutableJaxbBoundExtMapByClass);
+		NON_JAXB_BOUND_EXTENSIONS_BY_CLASS_AND_ID = HashCollections.newImmutableMap(mutableNonJaxbBoundExtMapByClassAndId.rowMap());
+		JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS = HashCollections.newImmutableMap(mutableJaxbBoundExtMapByClass);
 	}
 
 	/**
@@ -128,7 +127,7 @@ public final class PdpExtensionLoader
 	 */
 	public static Set<Class<? extends AbstractPdpExtension>> getExtensionJaxbClasses()
 	{
-		return HashObjSets.newImmutableSet(JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
+		return HashCollections.newImmutableSet(JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
 	}
 
 	/**
@@ -153,7 +152,7 @@ public final class PdpExtensionLoader
 			return Collections.emptySet();
 		}
 
-		return HashObjSets.newImmutableSet(typeSpecificExtsById.keySet());
+		return HashCollections.newImmutableSet(typeSpecificExtsById.keySet());
 	}
 
 	/**

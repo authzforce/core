@@ -29,6 +29,7 @@ import net.sf.saxon.s9api.XdmNode;
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
@@ -41,8 +42,6 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.koloboke.collect.map.hash.HashObjObjMaps;
 
 /**
  * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple Decision Profile spec for more
@@ -59,9 +58,9 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 
 	private final Map<AttributeGUID, Bag<?>> namedAttributes;
 
-	private final Map<String, Value> varValsById = HashObjObjMaps.newMutableMap();
+	private final Map<String, Value> varValsById = HashCollections.newMutableMap();
 
-	private final Map<String, Object> mutableProperties = HashObjObjMaps.newMutableMap();
+	private final Map<String, Object> mutableProperties = HashCollections.newMutableMap();
 
 	/*
 	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based functions, etc. This may be empty if no
@@ -99,7 +98,7 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	public IndividualDecisionRequestContext(final Map<AttributeGUID, Bag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByAttributeCategory,
 			final boolean returnApplicablePolicyIdList, final boolean returnUsedAttributes)
 	{
-		this.namedAttributes = namedAttributeMap == null ? HashObjObjMaps.<AttributeGUID, Bag<?>> newUpdatableMap() : namedAttributeMap;
+		this.namedAttributes = namedAttributeMap == null ? HashCollections.<AttributeGUID, Bag<?>> newUpdatableMap() : namedAttributeMap;
 		this.returnApplicablePolicyIdList = returnApplicablePolicyIdList;
 		this.usedNamedAttributeIdSet = returnUsedAttributes ? UpdatableCollections.<AttributeGUID> newUpdatableSet() : UpdatableCollections.<AttributeGUID> emptySet();
 		if (extraContentsByAttributeCategory == null)

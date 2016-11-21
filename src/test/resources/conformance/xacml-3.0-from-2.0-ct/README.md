@@ -7,7 +7,7 @@ https://github.com/att/XACML/wiki/XACML-TEST-Project-Information
 
 For a description of the tests, see file `ConformanceTests.html` which is the original HTML description published on the OASIS xacml-comments mailing list.
 
-**WARNING**: There are several issues with these original conformance tests (as of 26 September 2015) and changes done to adapt to our PDP implementation:
+**WARNING**: There are several issues with these original conformance tests (as of 26 September 2015) and therefore have been fixed to adapt to our PDP implementation:
 
 1. For all tests testing the validation of XACML policy syntax, our PDP implementation is expected to reject the policy at initialization time, before receiving any Request. For these tests, the original Request.xml and Response.xml have been renamed to Request.xml.ignore and Response.xml.ignore to indicate to our test framework that an invalid policy syntax is expected. 
 1. For tests testing the validation of XACML Request syntax, our PDP implementation is expected to reject the request before evaluation. For these tests, the original Policy.xml and Response.xml have been renamed to Policy.xml.ignore and Response.xml.ignore to indicate to our test framework that an invalid Request syntax is expected.
@@ -22,6 +22,7 @@ For a description of the tests, see file `ConformanceTests.html` which is the or
 1. IIA023Request.xml using timezone -14:30 in AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dateTime" and "urn:oasis:names:tc:xacml:1.0:environment:current-time" with datatype "http://www.w3.org/2001/XMLSchema#dateTime" and "http://www.w3.org/2001/XMLSchema#time" respectively. This is not valid per XML schema dateTime and time definitions. We fixed it here replacing them with timezone -14:00.
 1. IIA023Request.xml contains c\_clown@NOSE\_MEDICO.COM  in one of the urn:oasis:names:tc:xacml:1.0:subject:subject-rfc822Name attributes, which is not valid (underscore is illegal in Domain name). Fixed here by replacing with "c\_clown@NOSE.MEDICO.COM".
 1. IIB010Policy.xml and IIB011Policy.xml mention SubjectCategory in Description, which is not valid in XACML 3.0 schema (errata in section 8)
+1. IID312Policy.xml not valid because of duplicate Rule with RuleId = ...rule-5.
 1. IID321-329 missing.
 1. IID334-339 missing.
 1. IIE tests concern Policy(Set)IdReference, therefore require configuration of the referenced policies in a separate repository. In the original conformance tests provided by AT&T, this is done in the ATT-specific way with a IIEXXXRepository.properties file. We use a directory named 'IIEXXXRepository' containing all the referenced policies instead. For more advanced tests on Policy references, see the 'others' directory.
