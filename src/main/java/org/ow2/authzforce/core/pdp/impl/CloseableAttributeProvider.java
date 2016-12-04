@@ -190,13 +190,13 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 				for (final AttributeDesignatorType attrDesignator : moduleAdapter.getProvidedAttributes())
 				{
 					final AttributeGUID attrGUID = new AttributeGUID(attrDesignator);
-					if (modulesByAttributeId.containsKey(attrGUID))
+					final AttributeProviderModule duplicate = modulesByAttributeId.putIfAbsent(attrGUID, moduleAdapter.getAdaptedModule());
+					if (duplicate != null)
 					{
 						moduleAdapter.close();
 						throw new IllegalArgumentException("Conflict: " + moduleAdapter + " providing the same AttributeDesignator (" + attrGUID + ") as another already registered.");
 					}
 
-					modulesByAttributeId.put(attrGUID, moduleAdapter.getAdaptedModule());
 				}
 			}
 			catch (final IllegalArgumentException e)

@@ -109,8 +109,8 @@ public final class MutableIndividualDecisionRequest implements IndividualDecisio
 		final XdmNode newContentNode = categorySpecificAttributes.getExtraContent();
 		if (newContentNode != null)
 		{
-			final XdmNode oldContentNode = extraContentsByCategory.put(categoryName, newContentNode);
-			if (oldContentNode != null)
+			final XdmNode duplicate = extraContentsByCategory.putIfAbsent(categoryName, newContentNode);
+			if (duplicate != null)
 			{
 				throw new IllegalArgumentException("Duplicate Attributes[@Category] in Individual Decision Request (not allowed): " + categoryName);
 			}

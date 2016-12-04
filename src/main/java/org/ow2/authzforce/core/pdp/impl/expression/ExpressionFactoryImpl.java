@@ -422,7 +422,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		}
 
 		final BaseVariableReference<?> var = newVariableReference(varId, varExpr, longestVarRefChainInCurrentVarExpression);
-		return idToVariableMap.put(varId, var);
+		return idToVariableMap.putIfAbsent(varId, var);
 	}
 
 	/** {@inheritDoc} */

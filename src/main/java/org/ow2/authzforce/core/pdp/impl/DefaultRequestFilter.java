@@ -137,11 +137,11 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 			final XdmNode newContentNode = categorySpecificAttributes.getExtraContent();
 			if (newContentNode != null)
 			{
-				final XdmNode oldContentNode = extraContentsByCategory.put(categoryName, newContentNode);
+				final XdmNode duplicate = extraContentsByCategory.putIfAbsent(categoryName, newContentNode);
 				/*
 				 * No support for Multiple Decision Profile -> no support for repeated categories as specified in Multiple Decision Profile. So we must check duplicate attribute categories.
 				 */
-				if (oldContentNode != null)
+				if (duplicate != null)
 				{
 					throw new IndeterminateEvaluationException("Unsupported repetition of Attributes[@Category='" + categoryName
 							+ "'] (feature 'urn:oasis:names:tc:xacml:3.0:profile:multiple:repeated-attribute-categories' is not supported)", StatusHelper.STATUS_SYNTAX_ERROR);
