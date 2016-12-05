@@ -136,12 +136,12 @@ public class CoreRefBasedRootPolicyProviderModule implements StaticRootPolicyPro
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
-				throw new IllegalArgumentException("Failed to find a root PolicySet with id = " + policySetId + ", " + versionPatterns, e);
+				throw new IllegalArgumentException("Failed to find a root PolicySet with id = '" + policySetId + "', " + versionPatterns, e);
 			}
 
 			if (rootPolicy == null)
 			{
-				throw new IllegalArgumentException("No policy found by the refPolicyProvider for the specified PolicySetIdReference: PolicySetId = " + policySetId + "; " + versionPatterns);
+				throw new IllegalArgumentException("No policy found by the refPolicyProvider for the specified PolicySetIdReference: PolicySetId = '" + policySetId + "'; " + versionPatterns);
 			}
 		}
 		catch (final IOException e)
