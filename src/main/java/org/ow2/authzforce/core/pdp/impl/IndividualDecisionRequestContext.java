@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2016 Thales Services SAS.
+ * Copyright (C) 2012-2017 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -169,7 +169,7 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 			 * putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but different datatype URI/datatype class) in the same
 			 * context
 			 */
-			LOGGER.error("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", id, result);
+			LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", id, result);
 			return false;
 		}
 
