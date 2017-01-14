@@ -4,8 +4,10 @@ All notable changes to this project are documented in this file following the [K
 
 ## Unreleased
 ### Changed
-- Simplified code using new Java 8 Map API (esp. putIfAbsent() method)
-
+- Parent project version: 4.0.0 -> 4.1.0 => Changed dependency versions: 
+    - Spring 4.3.4 -> 4.3.5, 
+    - Saxon-HE 9.7.0-11 -> 9.7.0-14
+	- authzforce-ce-core-pdp-api: 8.0.0 -> 8.1.0
 
 ## 6.0.0
 ### Added
