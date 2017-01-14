@@ -2,6 +2,11 @@
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
 
+## Unreleased
+### Changed
+- Simplified code using new Java 8 Map API (esp. putIfAbsent() method)
+
+
 ## 6.0.0
 ### Added
 - Extension mechanism to switch HashMap/HashSet implementation; default implementation is based on native JRE and Guava.
