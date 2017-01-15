@@ -80,7 +80,7 @@ public class ConformanceV3FromV2
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3FromV2.class);
 
-	protected static void setUp(String testRootDirectoryLocation) throws Exception
+	protected static void setUp(final String testRootDirectoryLocation) throws Exception
 	{
 		LOGGER.debug("Launching conformance tests for features in directory: {}", testRootDirectoryLocation);
 	}
@@ -103,8 +103,8 @@ public class ConformanceV3FromV2
 	 *            PDP request filter ID to be used for the tests
 	 * @return test data
 	 */
-	protected static Collection<? extends Object[]> getTestData(String rootDirectoryPath, String testSubDirectoryName, String testFilenamePrefixBeforeNum, int startTestNum, int endTestNum,
-			String requestFilterId)
+	protected static Collection<? extends Object[]> getTestData(final String rootDirectoryPath, final String testSubDirectoryName, final String testFilenamePrefixBeforeNum, final int startTestNum,
+			final int endTestNum, final String requestFilterId)
 	{
 		final Collection<Object[]> testData = new ArrayList<>();
 		for (int testNum = startTestNum; testNum <= endTestNum; testNum++)
@@ -113,10 +113,12 @@ public class ConformanceV3FromV2
 			if (testNum < 10)
 			{
 				paddedTestNumber = "00" + testNum;
-			} else if (testNum < 100)
+			}
+			else if (testNum < 100)
 			{
 				paddedTestNumber = "0" + testNum;
-			} else
+			}
+			else
 			{
 				paddedTestNumber = Integer.toString(testNum);
 			}
@@ -135,7 +137,7 @@ public class ConformanceV3FromV2
 
 	private final String reqFilter;
 
-	public ConformanceV3FromV2(String filePathPrefix, boolean enableXPath, String requestFilter)
+	public ConformanceV3FromV2(final String filePathPrefix, final boolean enableXPath, final String requestFilter)
 	{
 		this.testFilePathPrefix = filePathPrefix;
 		this.enableXPath = enableXPath;
@@ -148,29 +150,33 @@ public class ConformanceV3FromV2
 	{
 		LOGGER.debug("Starting conformance test with files '{}*.xml'", testFilePathPrefix);
 
-		NamespaceFilteringParser unmarshaller = xacmlParserFactory.getInstance();
+		final NamespaceFilteringParser respUnmarshaller = xacmlParserFactory.getInstance();
 		Response expectedResponse = null;
-		String expectedRespFilepath = testFilePathPrefix + EXPECTED_RESPONSE_FILENAME_SUFFIX;
+		final String expectedRespFilepath = testFilePathPrefix + EXPECTED_RESPONSE_FILENAME_SUFFIX;
 		try
 		{
-			expectedResponse = TestUtils.createResponse(expectedRespFilepath, unmarshaller);
-		} catch (FileNotFoundException notFoundErr)
+			expectedResponse = TestUtils.createResponse(expectedRespFilepath, respUnmarshaller);
+		}
+		catch (final FileNotFoundException notFoundErr)
 		{
 			// do nothing except logging -> request = null
 			LOGGER.debug("Response file '{}' does not exist -> Static Policy/Request syntax error check", expectedRespFilepath);
 		}
 
+		final NamespaceFilteringParser reqUnmarshaller = xacmlParserFactory.getInstance();
 		Request request = null;
 		// if no Request file, it is just a static policy syntax error check
-		String expectedReqFilepath = testFilePathPrefix + REQUEST_FILENAME_SUFFIX;
+		final String expectedReqFilepath = testFilePathPrefix + REQUEST_FILENAME_SUFFIX;
 		try
 		{
-			request = TestUtils.createRequest(expectedReqFilepath, unmarshaller);
-		} catch (FileNotFoundException notFoundErr)
+			request = TestUtils.createRequest(expectedReqFilepath, reqUnmarshaller);
+		}
+		catch (final FileNotFoundException notFoundErr)
 		{
 			// do nothing except logging -> request = null
 			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", expectedReqFilepath);
-		} catch (JAXBException e)
+		}
+		catch (final JAXBException e)
 		{
 			// we found syntax error in request
 			if (expectedResponse == null)
@@ -185,11 +191,11 @@ public class ConformanceV3FromV2
 			throw e;
 		}
 
-		String rootPolicyFilepath = testFilePathPrefix + ROOT_POLICY_FILENAME_SUFFIX;
+		final String rootPolicyFilepath = testFilePathPrefix + ROOT_POLICY_FILENAME_SUFFIX;
 		// referenced policies if any
-		String refPoliciesDirLocation = testFilePathPrefix + REF_POLICIES_DIRNAME_SUFFIX;
+		final String refPoliciesDirLocation = testFilePathPrefix + REF_POLICIES_DIRNAME_SUFFIX;
 
-		String attributeProviderConfLocation = testFilePathPrefix + ATTRIBUTE_PROVIDER_FILENAME_SUFFIX;
+		final String attributeProviderConfLocation = testFilePathPrefix + ATTRIBUTE_PROVIDER_FILENAME_SUFFIX;
 
 		PDPImpl pdp = null;
 		try
@@ -200,7 +206,8 @@ public class ConformanceV3FromV2
 				// this is a policy syntax error check and we didn't found the syntax error as
 				// expected
 				Assert.fail("Failed to find syntax error as expected in policy located at: " + rootPolicyFilepath);
-			} else if (expectedResponse == null)
+			}
+			else if (expectedResponse == null)
 			{
 				/*
 				 * No expected response, so it is not a PDP evaluation test, but request or policy syntax error check. We got here, so request and policy OK. This is unexpected.
@@ -208,19 +215,21 @@ public class ConformanceV3FromV2
 				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '" + expectedReqFilepath
 						+ "' or policy located at '" + rootPolicyFilepath + "'");
 
-			} else
+			}
+			else
 			{
 				// this is an evaluation test with request/response (not a policy syntax check)
 				LOGGER.debug("Request that is sent to the PDP: {}", request);
-				Response response = pdp.evaluate(request, unmarshaller.getNamespacePrefixUriMap());
+				final Response actualResponse = pdp.evaluate(request, reqUnmarshaller.getNamespacePrefixUriMap());
 				if (LOGGER.isDebugEnabled())
 				{
-					LOGGER.debug("Response that is received from the PDP :  {}", TestUtils.printResponse(response));
+					LOGGER.debug("Response that is received from the PDP :  {}", TestUtils.printResponse(actualResponse));
 				}
 
-				TestUtils.assertNormalizedEquals(testFilePathPrefix, expectedResponse, response);
+				TestUtils.assertNormalizedEquals(testFilePathPrefix, expectedResponse, actualResponse);
 			}
-		} catch (IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			// we found syntax error in policy
 			if (request == null)
@@ -233,7 +242,8 @@ public class ConformanceV3FromV2
 
 			// Unexpected error
 			throw e;
-		} finally
+		}
+		finally
 		{
 			if (pdp != null)
 			{

@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-parent</artifactId>
-      <version>4.1.0</version>
+      <version>4.1.1</version>
    </parent>
    <artifactId>authzforce-ce-core</artifactId>
    <version>6.0.1-SNAPSHOT</version>
@@ -42,7 +42,7 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
-         <version>8.1.0</version>
+         <version>8.2.0</version>
       </dependency>
       <!-- /Authzforce dependencies -->
 
@@ -102,6 +102,9 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
+            <configuration>
+               <excludeFilterFile>findbugs-exclude-filter.xml</excludeFilterFile>
+            </configuration>
             <executions>
                <execution>
                   <phase>verify</phase>

@@ -15,8 +15,7 @@
 
 
 
-	<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" 
-			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	<PolicySet
 			PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:ordered-deny-overrides" 
 			PolicySetId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicyset" 
 			Version="1.0" 

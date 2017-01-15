@@ -365,7 +365,6 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 				LOGGER.warn("Expression of Variable {} is constant '{}', therefore should be replaced with a equivalent AttributeValue.", variableId, constant);
 			}
 
-			variableExpression.getReturnType();
 			return new ConstantVariableReference<>(variableId, constant, variableExpression.getReturnType(), longestVarRefChainInExpression);
 		}
 
