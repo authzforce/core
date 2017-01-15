@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2016 Thales Services SAS.
+ * Copyright (C) 2012-2017 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -365,7 +365,6 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 				LOGGER.warn("Expression of Variable {} is constant '{}', therefore should be replaced with a equivalent AttributeValue.", variableId, constant);
 			}
 
-			variableExpression.getReturnType();
 			return new ConstantVariableReference<>(variableId, constant, variableExpression.getReturnType(), longestVarRefChainInExpression);
 		}
 
@@ -422,7 +421,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		}
 
 		final BaseVariableReference<?> var = newVariableReference(varId, varExpr, longestVarRefChainInCurrentVarExpression);
-		return idToVariableMap.put(varId, var);
+		return idToVariableMap.putIfAbsent(varId, var);
 	}
 
 	/** {@inheritDoc} */

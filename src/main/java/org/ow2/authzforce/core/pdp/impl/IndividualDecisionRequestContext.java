@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2016 Thales Services SAS.
+ * Copyright (C) 2012-2017 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -161,7 +161,8 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	@Override
 	public boolean putAttributeDesignatorResultIfAbsent(final AttributeGUID id, final Bag<?> result)
 	{
-		if (namedAttributes.containsKey(id))
+		final Bag<?> duplicate = namedAttributes.putIfAbsent(id, result);
+		if (duplicate != null)
 		{
 			/*
 			 * This should never happen, as getAttributeDesignatorResult() should have been called first (for same id) and returned this oldResult, and no further call to
@@ -175,7 +176,7 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 		/*
 		 * Attribute value cannot change during evaluation context, so if old value already there, put it back
 		 */
-		return namedAttributes.put(id, result) == null;
+		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -210,13 +211,13 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	@Override
 	public boolean putVariableIfAbsent(final String variableId, final Value value)
 	{
-		if (varValsById.containsKey(variableId))
+		if (varValsById.putIfAbsent(variableId, value) != null)
 		{
 			LOGGER.error("Attempt to override value of Variable '{}' already set in evaluation context. Overriding value: {}", variableId, value);
 			return false;
 		}
 
-		return varValsById.put(variableId, value) == null;
+		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -257,13 +258,13 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	@Override
 	public boolean putAttributeSelectorResultIfAbsent(final AttributeSelectorId id, final Bag<?> result) throws IndeterminateEvaluationException
 	{
-		if (attributeSelectorResults.containsKey(id))
+		if (attributeSelectorResults.putIfAbsent(id, result) != null)
 		{
 			LOGGER.error("Attempt to override value of AttributeSelector {} already set in evaluation context. Overriding value: {}", id, result);
 			return false;
 		}
 
-		return attributeSelectorResults.put(id, result) == null;
+		return true;
 	}
 
 	/** {@inheritDoc} */

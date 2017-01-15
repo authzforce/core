@@ -2,6 +2,17 @@
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
 
+## 6.1.0
+### Changed
+- Parent project version: 4.0.0 -> 4.1.1 => Changed dependency versions: 
+    - Spring 4.3.4 -> 4.3.5, 
+    - Saxon-HE 9.7.0-11 -> 9.7.0-14
+- authzforce-ce-core-pdp-api dependency version: 8.0.0 -> 8.2.0
+
+### Fixed
+- Security issues reported by Find Security Bugs plugin
+
+
 ## 6.0.0
 ### Added
 - Extension mechanism to switch HashMap/HashSet implementation; default implementation is based on native JRE and Guava.
@@ -25,6 +36,7 @@ All notable changes to this project are documented in this file following the [K
 - OW2 #AUTHZFORCE-23: enforcement of RuleId/PolicyId/PolicySetId uniqueness:
 	- PolicyId (resp. PolicySetId) should be unique across all policies loaded by PDP so that PolicyIdReferences (resp. PolicySetIdReferences) in Responses' PolicyIdentifierList are absolute references to applicable policies (no ambiguity).
  	- [RuleId should be unique within a policy](https://lists.oasis-open.org/archives/xacml/201310/msg00025.html) -> A rule is globally uniquely identified by the parent PolicyId and the RuleId.
+- OW2 #AUTHZFORCE-25: NullPointerException when parsing Apply expressions using invalid/unsupported Function ID
 
 
 ## 5.0.2

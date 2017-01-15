@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2016 Thales Services SAS.
+ * Copyright (C) 2012-2017 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -83,10 +83,10 @@ public final class PdpExtensionLoader
 			if (extension instanceof JaxbBoundPdpExtension<?>)
 			{
 				final JaxbBoundPdpExtension<?> jaxbBoundExt = (JaxbBoundPdpExtension<?>) extension;
-				final JaxbBoundPdpExtension<?> conflictingExt = mutableJaxbBoundExtMapByClass.put(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
-				if (conflictingExt != null)
+				final JaxbBoundPdpExtension<?> duplicate = mutableJaxbBoundExtMapByClass.putIfAbsent(jaxbBoundExt.getJaxbClass(), jaxbBoundExt);
+				if (duplicate != null)
 				{
-					throw new IllegalArgumentException("Extension " + jaxbBoundExt + " (" + jaxbBoundExt.getClass() + ") is conflicting with " + conflictingExt + "(" + conflictingExt.getClass()
+					throw new IllegalArgumentException("Extension " + jaxbBoundExt + " (" + jaxbBoundExt.getClass() + ") is conflicting with " + duplicate + "(" + duplicate.getClass()
 							+ ") for the same XML/JAXB configuration class: " + jaxbBoundExt.getJaxbClass());
 				}
 
@@ -98,10 +98,10 @@ public final class PdpExtensionLoader
 				{
 					if (extClass.isInstance(extension))
 					{
-						final PdpExtension conflictingExt = mutableNonJaxbBoundExtMapByClassAndId.put(extClass, extension.getId(), extension);
-						if (conflictingExt != null)
+						final PdpExtension duplicate = mutableNonJaxbBoundExtMapByClassAndId.put(extClass, extension.getId(), extension);
+						if (duplicate != null)
 						{
-							throw new IllegalArgumentException("Extension " + extension + " is conflicting with " + conflictingExt + " registered with same ID: " + extension.getId());
+							throw new IllegalArgumentException("Extension " + extension + " is conflicting with " + duplicate + " registered with same ID: " + extension.getId());
 						}
 
 						isValidExt = true;

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2016 Thales Services SAS.
+ * Copyright (C) 2012-2017 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -1006,7 +1006,7 @@ public final class PolicyEvaluators
 	{
 		assert staticRefPoliciesToUpdate != null && newRefPolicyId != null && newRefPolicyVersion != null;
 
-		final PolicyVersion otherVersion = staticRefPoliciesToUpdate.put(newRefPolicyId, newRefPolicyVersion);
+		final PolicyVersion otherVersion = staticRefPoliciesToUpdate.putIfAbsent(newRefPolicyId, newRefPolicyVersion);
 		if (otherVersion != null && !otherVersion.equals(newRefPolicyVersion))
 		{
 			throw new IllegalArgumentException(policyFriendlyId + ": policy references to same policy ID (" + newRefPolicyId + ") but different versions (" + otherVersion + " and "
@@ -1631,7 +1631,7 @@ public final class PolicyEvaluators
 					throw new IllegalArgumentException(policyFriendlyId + ": Error parsing child #" + childIndex + " (Rule)", e);
 				}
 
-				final RuleEvaluator conflictingRuleEvaluator = ruleEvaluatorsByRuleIdInOrderOfDeclaration.put(ruleEvaluator.getRuleId(), ruleEvaluator);
+				final RuleEvaluator conflictingRuleEvaluator = ruleEvaluatorsByRuleIdInOrderOfDeclaration.putIfAbsent(ruleEvaluator.getRuleId(), ruleEvaluator);
 				if (conflictingRuleEvaluator != null)
 				{
 					/*
@@ -2104,15 +2104,22 @@ public final class PolicyEvaluators
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
 					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY, idRef, null);
 					combinedEvaluators.add(childEvaluator);
-					childPolicySetEvaluatorsByPolicySetId.put(childEvaluator.getPolicyId(), childEvaluator);
-
+					final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.putIfAbsent(childEvaluator.getPolicyId(), childEvaluator);
+					if (duplicate != null)
+					{
+						throw new IllegalArgumentException("Duplicate PolicyIdReference's id = " + childEvaluator.getPolicyId());
+					}
 				}
 				else if (eltNameLocalPart.equals(XACMLNodeName.POLICYSET_ID_REFERENCE.value()))
 				{
 					final IdReferenceType idRef = (IdReferenceType) jaxbElt.getValue();
 					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY_SET, idRef, policySetRefChain);
 					combinedEvaluators.add(childEvaluator);
-					childPolicySetEvaluatorsByPolicySetId.put(childEvaluator.getPolicyId(), childEvaluator);
+					final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.put(childEvaluator.getPolicyId(), childEvaluator);
+					if (duplicate != null)
+					{
+						throw new IllegalArgumentException("Duplicate PolicySetIdReference's id = " + childEvaluator.getPolicyId());
+					}
 				}
 				else if (eltNameLocalPart.equals(XACMLNodeName.COMBINER_PARAMETERS.value()))
 				{
@@ -2149,7 +2156,11 @@ public final class PolicyEvaluators
 				final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicySetEvaluator(childIndex, childPolicy, nonNullParsedPolicyIds, updatableParsedPolicySetIds,
 						policySetRefChain);
 				combinedEvaluators.add(childEvaluator);
-				childPolicySetEvaluatorsByPolicySetId.put(childPolicyId, childEvaluator);
+				final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.putIfAbsent(childPolicyId, childEvaluator);
+				if (duplicate != null)
+				{
+					throw new IllegalArgumentException("Duplicate PolicySetId = " + childPolicyId);
+				}
 			}
 			else if (policyChildElt instanceof Policy)
 			{
@@ -2165,7 +2176,12 @@ public final class PolicyEvaluators
 
 				final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyEvaluator(childIndex, childPolicy);
 				combinedEvaluators.add(childEvaluator);
-				childPolicyEvaluatorsByPolicyId.put(childPolicyId, childEvaluator);
+				final COMBINED_EVALUATOR duplicate = childPolicyEvaluatorsByPolicyId.putIfAbsent(childPolicyId, childEvaluator);
+				if (duplicate != null)
+				{
+					throw new IllegalArgumentException("Duplicate PolicyId = " + childPolicyId);
+				}
+
 			}
 
 			/*

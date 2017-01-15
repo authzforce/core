@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2016 Thales Services SAS.
+ * Copyright (C) 2012-2017 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -86,7 +86,7 @@ public final class MatchEvaluator
 		final FunctionExpression matchFunction = expFactory.getFunction(matchId);
 		if (matchFunction == null)
 		{
-			throw new IllegalArgumentException("Unsupported function for MatchId: " + matchId);
+			throw new IllegalArgumentException("Unsupported function for MatchId: '" + matchId + "'");
 		}
 
 		// next, get the designator or selector being used, and the attribute

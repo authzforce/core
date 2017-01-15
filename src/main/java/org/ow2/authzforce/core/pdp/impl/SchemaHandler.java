@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2016 Thales Services SAS.
+ * Copyright (C) 2012-2017 Thales Services SAS.
  *
  * This file is part of AuthZForce CE.
  *
@@ -19,7 +19,6 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +27,9 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -55,8 +57,7 @@ import org.xml.sax.SAXParseException;
 
 /**
  *
- * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS
- * catalog at any location supported by {@link ResourceUtils} as well.
+ * XML schema handler that can load schema file(s) from location(s) supported by {@link ResourceUtils} using any OASIS catalog at any location supported by {@link ResourceUtils} as well.
  *
  * @version $Id: $
  */
@@ -76,8 +77,7 @@ public final class SchemaHandler
 		}
 
 		@Override
-		public LSInput resolveResource(final String type, final String namespaceURI, final String publicId,
-				final String systemId, final String baseURI)
+		public LSInput resolveResource(final String type, final String namespaceURI, final String publicId, final String systemId, final String baseURI)
 		{
 			try
 			{
@@ -94,8 +94,7 @@ public final class SchemaHandler
 					resolvedLocation = catalogResolver.resolvePublic(publicId, systemId);
 					if (_LOGGER.isDebugEnabled())
 					{
-						_LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}",
-								new Object[] { publicId, systemId, resolvedLocation });
+						_LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}", publicId, systemId, resolvedLocation);
 					}
 				}
 				if (resolvedLocation != null)
@@ -109,9 +108,8 @@ public final class SchemaHandler
 			}
 			catch (final IOException ex)
 			{
-				final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='"
-						+ catalogLocation + "'): type=" + type + ", namespaceURI=" + namespaceURI + ", publicId='"
-						+ publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
+				final String errMsg = "Unable to resolve schema-required entity with XML catalog (location='" + catalogLocation + "'): type=" + type + ", namespaceURI=" + namespaceURI
+						+ ", publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'";
 				throw new RuntimeException(errMsg, ex);
 			}
 
@@ -142,10 +140,9 @@ public final class SchemaHandler
 	};
 
 	/**
-	 * This is quite similar to org.apache.cxf.catalog.OASISCatalogManager, except it is much simplified as we don't
-	 * need as many features. We are not using CXF's OASISCatalogManager class directly because it is part of cxf-core
-	 * which drags many classes and dependencies on CXF we don't need. It would make more sense if OASISCatalogManager
-	 * was part of a cxf common utility package, but it is not the case as of writing (December 2014).
+	 * This is quite similar to org.apache.cxf.catalog.OASISCatalogManager, except it is much simplified as we don't need as many features. We are not using CXF's OASISCatalogManager class directly
+	 * because it is part of cxf-core which drags many classes and dependencies on CXF we don't need. It would make more sense if OASISCatalogManager was part of a cxf common utility package, but it
+	 * is not the case as of writing (December 2014).
 	 * <p>
 	 * WARNING: this is not immutable since getCatalog() gives access to internal catalog which is mutable.
 	 * </p>
@@ -188,9 +185,7 @@ public final class SchemaHandler
 							}
 							catch (final IOException e)
 							{
-								_LOGGER.warn(
-										"Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}",
-										e);
+								_LOGGER.warn("Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}", e);
 							}
 						}
 						return s;
@@ -228,10 +223,10 @@ public final class SchemaHandler
 				{
 					try
 					{
-						final File file = new File(catalogURL.toURI());
-						if (!file.exists())
+						final Path filePath = Paths.get(catalogURL.toURI());
+						if (!Files.exists(filePath))
 						{
-							throw new FileNotFoundException(file.getAbsolutePath());
+							throw new FileNotFoundException(filePath.toString());
 						}
 					}
 					catch (final URISyntaxException e)
@@ -242,9 +237,7 @@ public final class SchemaHandler
 
 				if (catalog == null)
 				{
-					_LOGGER.warn(
-							"Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.",
-							catalogURL);
+					_LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.", catalogURL);
 				}
 				else
 				{
@@ -319,8 +312,7 @@ public final class SchemaHandler
 		public Reader getCharacterStream()
 		{
 			/*
-			 * No character stream, only byte streams are allowed. Do not throw exception, otherwise the resolution of
-			 * the resource fails, even if byte stream OK
+			 * No character stream, only byte streams are allowed. Do not throw exception, otherwise the resolution of the resource fails, even if byte stream OK
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
@@ -370,8 +362,7 @@ public final class SchemaHandler
 		public String getBaseURI()
 		{
 			/*
-			 * No base URI, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the
-			 * resolution of the resource fails, even for absolute URIs
+			 * No base URI, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even for absolute URIs
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
@@ -387,8 +378,7 @@ public final class SchemaHandler
 		public String getEncoding()
 		{
 			/*
-			 * No encoding override, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise
-			 * the resolution of the resource fails, even if encoding specified in other way
+			 * No encoding override, only absolute URIs are allowed. Do not throw exception if no base URI, otherwise the resolution of the resource fails, even if encoding specified in other way
 			 */
 			return null;
 			// throw new UnsupportedOperationException();
@@ -461,11 +451,9 @@ public final class SchemaHandler
 	public static Schema createSchema(final List<String> schemaLocations, final String catalogLocation)
 	{
 		/*
-		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are
-		 * using Spring ResourceUtils class to get Resource URLs and we don't use any Bus object. We are not using CXF's
-		 * SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF
-		 * we don't need, the full CXF JAX-RS framework actually. It would make more sense if SchemaHandler was part of
-		 * some cxf common utility package, but it is not the case as of writing (December 2014).
+		 * This is mostly similar to org.apache.cxf.jaxrs.utils.schemas.SchemaHandler#createSchema(), except we are using Spring ResourceUtils class to get Resource URLs and we don't use any Bus
+		 * object. We are not using CXF's SchemaHandler class directly because it is part of cxf-rt-frontend-jaxrs which drags many dependencies on CXF we don't need, the full CXF JAX-RS framework
+		 * actually. It would make more sense if SchemaHandler was part of some cxf common utility package, but it is not the case as of writing (December 2014).
 		 */
 
 		final SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

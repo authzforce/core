@@ -3,8 +3,10 @@ This is the directory for all non-regression tests, where each subdirectory corr
 - `pdp.xml` (required) : PDP configuration file
 - `pdp-ext.xsd` (optional): XSD for loading PDP extensions such as the TestAttributeFinder, required only if such extensions are used in the PDP configuration file 
 - `policy.xml` (required): XACML Policy(Set) file
-- `request.xml` (required): XACML Request
-- `response.xml` (required): expected response for the test to succeed
+- `request.xml` (optional): XACML Request, absent if the test is only a PDP initialization test (e.g. policy validation)
+- `response.xml` (optional): expected XACML Response for the above Request, absent if the test is only PDP initialization test (e.g. policy validation)
 - `README.md` (required): title and description of the test, mostly taken from the issue description and comments in the issue management system where the bug was reported.
+
+If the test is a PDP intialization test only, typically a policy syntax validation, we expected an IllegalArgumentException as a result of the test.
 
 If you implement or use a new PDP extension for testing, make sure there have a matching 'system' entry for the resolving the extension XSD location in the XML catalog file `src/test/resources/catalog.xml`, like the one for the TestAttributeFinder XSD.

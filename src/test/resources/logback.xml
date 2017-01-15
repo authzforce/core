@@ -11,6 +11,8 @@
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+         <!-- Pattern mitigating CRLF injection -->
+<!--          <pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %replace(%m){'\r?\n','<NEWLINE>'}%n</pattern> -->
 		</encoder>
 	</appender>
 
