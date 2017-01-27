@@ -37,6 +37,7 @@ Java projects may use AuthZForce Core to instantiate an embedded Java PDP.
   * **Root Policy Provider**: you may plug custom policy providers into the PDP engine to allow it to retrieve the root policy from specific sources (e.g. remote service);
   * **Ref Policy Providers**: you may plug custom policy providers into the PDP engine to allow it to resolve `PolicyIdReference` or `PolicySetIdReference`;
   * **Decision Cache**: you may extend the PDP engine with a custom XACML decision cache, allowing the PDP to skip evaluation and retrieve XACML decisions from cache for recurring XACML Requests;
+  * Java extension mechanism to switch HashMap/HashSet implementations (e.g. to get different performance results).
 * PIP (Policy Information Point): AuthzForce provides XACML PIP features in the form of extensions called *Attribute Providers*. More information in the previous list on *Extensibility points*.
 
 ## Versions
