@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PolicySet PolicySetId="org.apache.permissions.doubleit"
+    PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:permit-overrides"
+    Version="1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17 xacml-core-v3-schema-wd-17.xsd"
+    xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" >
+    <Target />
+    <Policy PolicyId="Permissions:for:the:boss:role"
+	    Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:permit-overrides">
+	    <Target />
+	    <Rule RuleId="Permission:to:doubleit" Effect="Permit">
+		    <Target>
+			    <AnyOf>
+				    <AllOf>
+				    	<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+					    	<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">{http://www.example.org/contract/DoubleIt}DoubleItService#DoubleIt</AttributeValue>
+						    <AttributeDesignator MustBePresent="false"
+						      	Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource" 
+						      	AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id"
+						    	DataType="http://www.w3.org/2001/XMLSchema#string" />
+					    </Match>
+			    	</AllOf>
+			    </AnyOf>
+			    <AnyOf>
+			    	<AllOf>
+                        <Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                            <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">execute</AttributeValue>
+                            <AttributeDesignator MustBePresent="false"
+                                Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" 
+                                AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+                                DataType="http://www.w3.org/2001/XMLSchema#string" />
+                        </Match>
+                    </AllOf>
+			    </AnyOf>
+		    </Target>
+	    </Rule>
+    </Policy>
+</PolicySet>
+
+
