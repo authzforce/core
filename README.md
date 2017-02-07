@@ -75,6 +75,11 @@ Our PDP implementation uses SLF4J for logging so you can use any SLF4J implement
 If you are using **Java 8**, make sure the following JVM argument is set before execution:
 `-Djavax.xml.accessExternalSchema=http`
 
+## Example of usage and code with a web service authorization module
+For an example of using an AuthzForce PDP engine in a real-life use case, please refer to the JUnit test class [LocalPdpAuthorizationTest](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpAuthorizationTest.java) and the Apache CXF authorization interceptor [LocalPdpBasedAuthzInterceptor](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpBasedAuthzInterceptor.java). The test class runs a test similar to @coheiga's [XACML 3.0 Authorization Interceptor test](https://github.com/coheigea/testcases/blob/master/apache/cxf/cxf-sts-xacml/src/test/java/org/apache/coheigea/cxf/sts/xacml/authorization/xacml3/XACML3AuthorizationTest.java) but using AuthzForce as PDP engine instead of OpenAZ. In this test, a web service client requests a Apache-CXF-based web service with a SAML token as credentials (previously issued by a Security Token Service upon successful client authentication) that contains the user ID and roles. Each request is intercepted on the web service side by a [CXF interceptor](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpBasedAuthzInterceptor.java) that plays the role of PEP (Policy Enforcement Point in XACML jargon), i.e. it extracts the various authorization attributes (user ID and roles, web service name, operation...) and requests a decision from a local PDP with these attributes, then enforces the PDP's decision, i.e. forwards the request to the web service implementation if the decision is Permit, else rejects it.
+For more information, see the Javadoc of  [LocalPdpAuthorizationTest](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpAuthorizationTest.java).
+
+
 ## Support
 
 If you are experiencing any issue with this project, please report it on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/).

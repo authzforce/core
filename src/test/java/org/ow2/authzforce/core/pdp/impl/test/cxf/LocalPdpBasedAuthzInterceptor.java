@@ -18,18 +18,20 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.cxf;
 
+import static org.ow2.authzforce.core.pdp.api.value.StandardDatatypes.ANYURI_FACTORY;
+import static org.ow2.authzforce.core.pdp.api.value.StandardDatatypes.STRING_FACTORY;
+import static org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory.XACML_1_0_ACCESS_SUBJECT;
+import static org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory.XACML_3_0_ACTION;
+import static org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory.XACML_3_0_RESOURCE;
+
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
-import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.security.AccessDeniedException;
 import org.apache.cxf.message.Message;
@@ -41,18 +43,18 @@ import org.apache.cxf.security.LoginSecurityContext;
 import org.apache.cxf.security.SecurityContext;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
 import org.ow2.authzforce.core.pdp.impl.ImmutablePdpDecisionRequest;
-import org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class represents a so-called XACML PEP that, for every CXF service request, creates an XACML 3.0 authorization decision Request to a PDP using AuthzForce's native API, given a Principal, list
@@ -70,7 +72,7 @@ import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
 public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Message>
 {
 
-	private static final Logger LOG = LogUtils.getL7dLogger(LocalPdpBasedAuthzInterceptor.class);
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LocalPdpBasedAuthzInterceptor.class);
 
 	private static final String defaultSOAPAction = "execute";
 
@@ -92,16 +94,19 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 	public void handleMessage(final Message message) throws Fault
 	{
 		final SecurityContext sc = message.get(SecurityContext.class);
-
 		if (sc instanceof LoginSecurityContext)
 		{
 			final Principal principal = sc.getUserPrincipal();
-
 			final LoginSecurityContext loginSecurityContext = (LoginSecurityContext) sc;
 			final Set<Principal> principalRoles = loginSecurityContext.getUserRoles();
-			final List<String> roles = new ArrayList<>();
-			if (principalRoles != null)
+			final Set<String> roles;
+			if (principalRoles == null)
 			{
+				roles = Collections.emptySet();
+			}
+			else
+			{
+				roles = HashCollections.newUpdatableSet(principalRoles.size());
 				for (final Principal p : principalRoles)
 				{
 					if (p != principal)
@@ -120,26 +125,22 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 			}
 			catch (final Exception e)
 			{
-				LOG.log(Level.FINE, "Unauthorized: " + e.getMessage(), e);
+				LOGGER.debug("Unauthorized", e);
 				throw new AccessDeniedException("Unauthorized");
 			}
 		}
 		else
 		{
-			LOG.log(Level.FINE, "The SecurityContext was not an instance of LoginSecurityContext. No authorization is possible as a result");
+			LOGGER.debug("The SecurityContext was not an instance of LoginSecurityContext. No authorization is possible as a result");
 		}
 
 		throw new AccessDeniedException("Unauthorized");
 	}
 
-	protected boolean authorize(final Principal principal, final List<String> roles, final Message message) throws Exception
+	protected boolean authorize(final Principal principal, final Set<String> roles, final Message message) throws Exception
 	{
 		final ImmutablePdpDecisionRequest request = createRequest(principal, roles, message);
-		// final String jsonRequest = JSONRequest.toString(request);
-		if (LOG.isLoggable(Level.FINE))
-		{
-			LOG.fine("XACML Request: " + request);
-		}
+		LOGGER.debug("XACML Request: {}", request);
 
 		// Evaluate the request
 		final PdpDecisionResult result = pdp.evaluate(request);
@@ -150,15 +151,16 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 		}
 
 		// Handle any Obligations returned by the PDP
-		handleObligations(request, principal, message, result);
+		handleObligationsOrAdvice(request, principal, message, result);
 
-		LOG.fine("XACML authorization result: " + result);
-		final DecisionType decision = result.getDecision();
-		return decision == DecisionType.PERMIT;
+		LOGGER.debug("XACML authorization result: {}", result);
+		return result.getDecision() == DecisionType.PERMIT;
 	}
 
-	private ImmutablePdpDecisionRequest createRequest(final Principal principal, final List<String> roles, final Message message) throws WSSecurityException
+	private ImmutablePdpDecisionRequest createRequest(final Principal principal, final Set<String> roles, final Message message) throws WSSecurityException
 	{
+		assert roles != null;
+
 		final CXFMessageParser messageParser = new CXFMessageParser(message);
 		final String issuer = messageParser.getIssuer();
 
@@ -168,20 +170,17 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 		final PdpDecisionRequestBuilder<ImmutablePdpDecisionRequest> requestBuilder = pdp.newRequestBuilder(3, 7);
 
 		// Subject ID
-		final AttributeGUID subjectIdAttributeId = new AttributeGUID(XACMLAttributeCategory.XACML_1_0_ACCESS_SUBJECT.value(), issuer, XACMLAttributeId.XACML_1_0_SUBJECT_ID.value());
-		final Bag<?> subjectIdAttributeValues = Bags.singleton(StandardDatatypes.STRING_FACTORY.getDatatype(), new StringValue(principal.getName()));
+		final AttributeGUID subjectIdAttributeId = new AttributeGUID(XACML_1_0_ACCESS_SUBJECT.value(), issuer, XACMLAttributeId.XACML_1_0_SUBJECT_ID.value());
+		final Bag<?> subjectIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(principal.getName()));
 		requestBuilder.putNamedAttributeIfAbsent(subjectIdAttributeId, subjectIdAttributeValues);
 
 		// Subject role(s)
-		if (roles != null)
-		{
-			final AttributeGUID subjectRoleAttributeId = new AttributeGUID(XACMLAttributeCategory.XACML_1_0_ACCESS_SUBJECT.value(), issuer, XACMLAttributeId.XACML_2_0_SUBJECT_ROLE.value());
-			requestBuilder.putNamedAttributeIfAbsent(subjectRoleAttributeId, createSubjectRoleAttributeValues(roles));
-		}
+		final AttributeGUID subjectRoleAttributeId = new AttributeGUID(XACML_1_0_ACCESS_SUBJECT.value(), issuer, XACMLAttributeId.XACML_2_0_SUBJECT_ROLE.value());
+		requestBuilder.putNamedAttributeIfAbsent(subjectRoleAttributeId, stringsToAnyURIBag(roles));
 
 		// Resource ID
-		final AttributeGUID resourceIdAttributeId = new AttributeGUID(XACMLAttributeCategory.XACML_3_0_RESOURCE.value(), null, XACMLAttributeId.XACML_1_0_RESOURCE_ID.value());
-		final Bag<?> resourceIdAttributeValues = Bags.singleton(StandardDatatypes.STRING_FACTORY.getDatatype(), new StringValue(getResourceId(messageParser)));
+		final AttributeGUID resourceIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLAttributeId.XACML_1_0_RESOURCE_ID.value());
+		final Bag<?> resourceIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(getResourceId(messageParser)));
 		requestBuilder.putNamedAttributeIfAbsent(resourceIdAttributeId, resourceIdAttributeValues);
 
 		// Resource - WSDL-defined Service ID / Operation / Endpoint
@@ -191,51 +190,50 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 			final QName wsdlService = messageParser.getWSDLService();
 			if (wsdlService != null)
 			{
-				final AttributeGUID resourceServiceIdAttributeId = new AttributeGUID(XACMLAttributeCategory.XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_SERVICE_ID);
-				final Bag<?> resourceServiceIdAttributeValues = Bags.singleton(StandardDatatypes.STRING_FACTORY.getDatatype(), new StringValue(wsdlService.toString()));
+				final AttributeGUID resourceServiceIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_SERVICE_ID);
+				final Bag<?> resourceServiceIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(wsdlService.toString()));
 				requestBuilder.putNamedAttributeIfAbsent(resourceServiceIdAttributeId, resourceServiceIdAttributeValues);
 			}
 
 			// WSDL Operation
 			final QName wsdlOperation = messageParser.getWSDLOperation();
-			final AttributeGUID resourceOperationIdAttributeId = new AttributeGUID(XACMLAttributeCategory.XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_OPERATION_ID);
-			final Bag<?> resourceOperationIddAttributeValues = Bags.singleton(StandardDatatypes.STRING_FACTORY.getDatatype(), new StringValue(wsdlOperation.toString()));
+			final AttributeGUID resourceOperationIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_OPERATION_ID);
+			final Bag<?> resourceOperationIddAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(wsdlOperation.toString()));
 			requestBuilder.putNamedAttributeIfAbsent(resourceOperationIdAttributeId, resourceOperationIddAttributeValues);
 
 			// WSDL Endpoint
 			final String endpointURI = messageParser.getResourceURI(false);
-			final AttributeGUID resourceWSDLEndpointAttributeId = new AttributeGUID(XACMLAttributeCategory.XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_ENDPOINT);
-			final Bag<?> resourceWSDLEndpointAttributeValues = Bags.singleton(StandardDatatypes.STRING_FACTORY.getDatatype(), new StringValue(endpointURI));
+			final AttributeGUID resourceWSDLEndpointAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_ENDPOINT);
+			final Bag<?> resourceWSDLEndpointAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(endpointURI));
 			requestBuilder.putNamedAttributeIfAbsent(resourceWSDLEndpointAttributeId, resourceWSDLEndpointAttributeValues);
 		}
 
 		// Action ID
 		final String actionToUse = messageParser.getAction(defaultSOAPAction);
-		final AttributeGUID actionIdAttributeId = new AttributeGUID(XACMLAttributeCategory.XACML_3_0_ACTION.value(), null, XACMLAttributeId.XACML_1_0_ACTION_ID.value());
-		final Bag<?> actionIdAttributeValues = Bags.singleton(StandardDatatypes.STRING_FACTORY.getDatatype(), new StringValue(actionToUse));
+		final AttributeGUID actionIdAttributeId = new AttributeGUID(XACML_3_0_ACTION.value(), null, XACMLAttributeId.XACML_1_0_ACTION_ID.value());
+		final Bag<?> actionIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(actionToUse));
 		requestBuilder.putNamedAttributeIfAbsent(actionIdAttributeId, actionIdAttributeValues);
 
 		// Environment - current date/time will be set by the PDP
-
 		return requestBuilder.build(false);
 	}
 
-	private static Bag<?> createSubjectRoleAttributeValues(final List<String> roles)
+	private static Bag<?> stringsToAnyURIBag(final Set<String> strings)
 	{
-		assert roles != null;
+		assert strings != null;
 
-		final List<AnyURIValue> subjectRoleAttributeValues = new ArrayList<>(roles.size());
-		for (final String role : roles)
+		final Set<AnyURIValue> anyURIs = HashCollections.newUpdatableSet(strings.size());
+		for (final String string : strings)
 		{
-			subjectRoleAttributeValues.add(new AnyURIValue(role));
+			anyURIs.add(new AnyURIValue(string));
 		}
 
-		return Bags.getInstance(StandardDatatypes.ANYURI_FACTORY.getDatatype(), subjectRoleAttributeValues);
+		return Bags.getInstance(ANYURI_FACTORY.getDatatype(), anyURIs);
 	}
 
 	private static String getResourceId(final CXFMessageParser messageParser)
 	{
-		String resourceId = "";
+		final String resourceId;
 		if (messageParser.isSOAPService())
 		{
 			final QName serviceName = messageParser.getWSDLService();
@@ -243,14 +241,14 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 
 			if (serviceName != null)
 			{
-				resourceId = serviceName.toString() + "#";
+				final String resourceIdPrefix = serviceName.toString() + "#";
 				if (serviceName.getNamespaceURI() != null && serviceName.getNamespaceURI().equals(operationName.getNamespaceURI()))
 				{
-					resourceId += operationName.getLocalPart();
+					resourceId = resourceIdPrefix + operationName.getLocalPart();
 				}
 				else
 				{
-					resourceId += operationName.toString();
+					resourceId = resourceIdPrefix + operationName.toString();
 				}
 			}
 			else
@@ -267,9 +265,9 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 	}
 
 	/**
-	 * Handle any Obligations returned by the PDP
+	 * Handle any Obligations returned by the PDP. Does nothing by default. Override this method if you want to handle Obligations/Advice in a specific way
 	 */
-	protected void handleObligations(final PdpDecisionRequest request, final Principal principal, final Message message, final PdpDecisionResult result) throws Exception
+	protected void handleObligationsOrAdvice(final PdpDecisionRequest request, final Principal principal, final Message message, final PdpDecisionResult result) throws Exception
 	{
 		// Do nothing by default
 	}
