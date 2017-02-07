@@ -2,7 +2,7 @@
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
 
-## Unreleased
+## 7.0.0
 ### Changed
 - Changed parent version: 4.1.1 -> 5.0.0
 - Changed dependency versions:
