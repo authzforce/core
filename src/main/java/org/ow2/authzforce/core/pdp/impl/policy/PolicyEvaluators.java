@@ -1541,8 +1541,6 @@ public final class PolicyEvaluators
 		/*
 		 * Map to get rules by their ID so that we can resolve rules associated with RuleCombinerParameters, and detect duplicate RuleId. We want to preserve insertion order, to get map.values() in
 		 * order of declaration, so that ordered-* algorithms have rules in order. There are at most as many Rules as policyChoiceElements.size().
-		 * 
-		 * FIXME: use Koloboke equivalent of LinkedHashMap when it is supported: https://github.com/leventov/Koloboke/issues/47
 		 */
 		final Map<String, RuleEvaluator> ruleEvaluatorsByRuleIdInOrderOfDeclaration = new LinkedHashMap<>(policyChoiceElements.size());
 		int childIndex = 0;

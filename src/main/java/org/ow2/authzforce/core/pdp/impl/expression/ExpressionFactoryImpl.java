@@ -60,8 +60,6 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.xacml.UnknownIdentifierException;
-
 /**
  * Implementation of ExpressionFactory that supports the Expressions defined in VariableDefinitions in order to resolve VariableReferences. In particular, it makes sure the depth of recursivity of
  * VariableDefinition does not exceed a value (to avoid inconveniences such as stackoverflow or very negative performance impact) defined by {@code maxVarRefDef} parameter to

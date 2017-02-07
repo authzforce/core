@@ -2,6 +2,24 @@
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
 
+## 7.0.0
+### Changed
+- Changed parent version: 4.1.1 -> 5.0.0
+- Changed dependency versions:
+	- AuthzForce Core PDP API: 8.2.0 -> 9.0.0
+	- SLF4J: 1.7.6 -> 1.7.22
+	- Spring: 4.3.5 -> 4.3.6
+	- Guava: 20.0 -> 21.0
+- Renamed `PDPImpl` class to `BasePdpEngine` implements new `PDPEngine` API
+
+### Removed
+- Removed/Merged `PdpConfigurationParser` class into new `BasePdpEngine` class (replacing `PDPImpl`)
+
+### Added
+- Unit test of CXF authorization interceptor (web service PEP) using AuthForce PDP engine, based on
+ @coheiga's [XACML 3.0 Authorization Interceptor test](https://github.com/coheigea/testcases/blob/master/apache/cxf/cxf-sts-xacml/src/test/java/org/apache/coheigea/cxf/sts/xacml/authorization/xacml3/XACML3AuthorizationTest.java)
+
+
 ## 6.1.0
 ### Changed
 - Parent project version: 4.0.0 -> 4.1.1 => Changed dependency versions: 

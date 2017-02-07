@@ -37,6 +37,7 @@ Java projects may use AuthZForce Core to instantiate an embedded Java PDP.
   * **Root Policy Provider**: you may plug custom policy providers into the PDP engine to allow it to retrieve the root policy from specific sources (e.g. remote service);
   * **Ref Policy Providers**: you may plug custom policy providers into the PDP engine to allow it to resolve `PolicyIdReference` or `PolicySetIdReference`;
   * **Decision Cache**: you may extend the PDP engine with a custom XACML decision cache, allowing the PDP to skip evaluation and retrieve XACML decisions from cache for recurring XACML Requests;
+  * Java extension mechanism to switch HashMap/HashSet implementations (e.g. to get different performance results).
 * PIP (Policy Information Point): AuthzForce provides XACML PIP features in the form of extensions called *Attribute Providers*. More information in the previous list on *Extensibility points*.
 
 ## Versions
@@ -53,7 +54,7 @@ You can either build Authzforce PDP library from the source code after cloning t
 
 If you want to use the experimental features (see previous section) as well, you need to use an extra Maven dependency that has the same groupId/artifactId/packaging but a specific classifier: `tests`.
 
-To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.PdpConfigurationParser#getPDP(...)`. The parameters are:
+To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.BasePdpEngine#getInstance(...)`. The parameters are:
 
 1. *confLocation*: location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file. If you don't use any XML-schema-defined PDP extension (AttributeProviders, PolicyProviders...), this is the only parameter you need, and you can use the simplest method `PdpConfigurationParser#getPDP(String confLocation)` to load your PDP. Here is an example of configuration:
 
@@ -67,12 +68,17 @@ To get started using a PDP to evaluate XACML requests, instantiate a new PDP ins
 1. *catalogLocation*: location of the XML catalog (optional, required only if using one or more XML-schema-defined PDP extensions): used to resolve the PDP configuration schema and other imported schemas/DTDs, and schemas of any PDP extension namespace used in the configuration file. You may use the [catalog](src/main/resources/catalog.xml) in the sources as an example. This is the one used by default if none specified.
 1. *extensionXsdLocation*: location of the PDP extensions schema file (optional, required only if using one or more XML-schema-defined PDP extensions): contains imports of namespaces corresponding to XML schemas of all XML-schema-defined PDP extensions to be used in the configuration file. Used for validation of PDP extensions configuration. The actual schema locations are resolved by the XML catalog parameter. You may use the [pdp-ext.xsd](src/test/resources/pdp-ext.xsd) in the sources as an example.
 
-Once you have a instance of `PDP`, you can evaluate a XACML request by calling one of the `PDP#evaluate(...)` methods.
+As a result of `getInstance(...)`, you get an instance of `BasePdpEngine`, you can evaluate a XACML Request directly by calling the `evaluate(Request...)` methods; or you can evaluate a decision request (more precisely an equivalent of a Individual Decision Request as defined by the XACML Multiple Decision Profile) in AuthzForce's more efficient native model by calling `evaluate(ImmutablePdpDecisionRequest)` or (multiple decision requests with `evaluate(List<ImmutablePdpDecisionRequest>)`). In order to build a `ImmutablePdpDecisionRequest`, you may use the request builder returned by `BasePdpEngine#newRequestBuilder(...)`.  Please look at the Javadoc for more information.
 
 Our PDP implementation uses SLF4J for logging so you can use any SLF4J implementation to manage logging. As an example, we use logback for testing, so you can use [logback.xml](src/test/resources/logback.xml) as an example for configuring loggers, appenders, etc.
 
 If you are using **Java 8**, make sure the following JVM argument is set before execution:
 `-Djavax.xml.accessExternalSchema=http`
+
+## Example of usage and code with a web service authorization module
+For an example of using an AuthzForce PDP engine in a real-life use case, please refer to the JUnit test class [LocalPdpAuthorizationTest](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpAuthorizationTest.java) and the Apache CXF authorization interceptor [LocalPdpBasedAuthzInterceptor](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpBasedAuthzInterceptor.java). The test class runs a test similar to @coheiga's [XACML 3.0 Authorization Interceptor test](https://github.com/coheigea/testcases/blob/master/apache/cxf/cxf-sts-xacml/src/test/java/org/apache/coheigea/cxf/sts/xacml/authorization/xacml3/XACML3AuthorizationTest.java) but using AuthzForce as PDP engine instead of OpenAZ. In this test, a web service client requests a Apache-CXF-based web service with a SAML token as credentials (previously issued by a Security Token Service upon successful client authentication) that contains the user ID and roles. Each request is intercepted on the web service side by a [CXF interceptor](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpBasedAuthzInterceptor.java) that plays the role of PEP (Policy Enforcement Point in XACML jargon), i.e. it extracts the various authorization attributes (user ID and roles, web service name, operation...) and requests a decision from a local PDP with these attributes, then enforces the PDP's decision, i.e. forwards the request to the web service implementation if the decision is Permit, else rejects it.
+For more information, see the Javadoc of  [LocalPdpAuthorizationTest](src/test/java/org/ow2/authzforce/core/pdp/impl/test/cxf/LocalPdpAuthorizationTest.java).
+
 
 ## Support
 

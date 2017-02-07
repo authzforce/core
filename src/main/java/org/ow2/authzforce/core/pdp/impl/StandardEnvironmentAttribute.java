@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
-import org.ow2.authzforce.xacml.identifiers.XACMLCategory;
+import org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory;
 
 import com.google.common.collect.Maps;
 
@@ -38,17 +38,17 @@ public enum StandardEnvironmentAttribute
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-time
 	 */
-	CURRENT_TIME(new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value())),
+	CURRENT_TIME(new AttributeGUID(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value())),
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-date
 	 */
-	CURRENT_DATE(new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value())),
+	CURRENT_DATE(new AttributeGUID(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value())),
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-dateTime
 	 */
-	CURRENT_DATETIME(new AttributeGUID(XACMLCategory.XACML_3_0_ENVIRONMENT_CATEGORY_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value()));
+	CURRENT_DATETIME(new AttributeGUID(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), null, XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value()));
 
 	private final AttributeGUID attributeGUID;
 

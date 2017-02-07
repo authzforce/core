@@ -3,10 +3,10 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-parent</artifactId>
-      <version>4.1.1</version>
+      <version>5.0.0</version>
    </parent>
    <artifactId>authzforce-ce-core</artifactId>
-   <version>6.1.0</version>
+   <version>7.0.0</version>
    <name>${project.groupId}:${project.artifactId}</name>
    <description>AuthZForce Community Edition - XACML-compliant Core Engine</description>
    <url>https://tuleap.ow2.org/projects/authzforce</url>
@@ -42,7 +42,7 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
-         <version>8.2.0</version>
+         <version>9.0.0</version>
       </dependency>
       <!-- /Authzforce dependencies -->
 
@@ -56,6 +56,30 @@
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
          <version>4.11</version>
+         <scope>test</scope>
+      </dependency>
+       <dependency>
+         <groupId>org.apache.cxf</groupId>
+         <artifactId>cxf-rt-frontend-jaxws</artifactId>
+         <version>${cxf.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.cxf</groupId>
+         <artifactId>cxf-rt-transports-http-jetty</artifactId>
+         <version>${cxf.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.cxf.services.sts</groupId>
+         <artifactId>cxf-services-sts-core</artifactId>
+         <version>${cxf.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.cxf</groupId>
+         <artifactId>cxf-testutils</artifactId>
+         <version>${cxf.version}</version>
          <scope>test</scope>
       </dependency>
       <!-- /Test dependencies -->
@@ -87,6 +111,7 @@
                <excludeRoots>
                   <excludeRoot>target/generated-sources/xjc</excludeRoot>
                   <excludeRoot>target/generated-test-sources/xjc</excludeRoot>
+                  <excludeRoot>target/generated-test-sources/cxf</excludeRoot>
                </excludeRoots>
             </configuration>
             <executions>
@@ -103,6 +128,7 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
             <configuration>
+             <onlyAnalyze>org.ow2.authzforce.*</onlyAnalyze>
                <excludeFilterFile>findbugs-exclude-filter.xml</excludeFilterFile>
             </configuration>
             <executions>
@@ -121,9 +147,9 @@
             <configuration>
                <header>license/thales-gpl.header.txt</header>
                <includes>
-                  <include>src/main/java/org/ow2/authzforce/core/**</include>
+                  <include>src/main/java/org/ow2/authzforce/**</include>
                   <!-- Include test files also -->
-                  <include>src/test/java/**</include>
+                  <include>src/test/java/org/ow2/authzforce/**</include>
                </includes>
             </configuration>
             <executions>
@@ -176,7 +202,6 @@
                   <episode>
                      <groupId>${project.groupId}</groupId>
                      <artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
-                     <version>3.4.0</version>
                   </episode>
                </episodes>
                <catalog>src/main/jaxb/catalog.xml</catalog>
@@ -214,6 +239,31 @@
                      <addCompileSourceRoot>false</addCompileSourceRoot>
                      <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
                   </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-codegen-plugin</artifactId>
+            <version>${cxf.version}</version>
+            <executions>
+               <execution>
+                  <phase>generate-sources</phase>
+                  <configuration>
+                     <sourceRoot>
+                        ${basedir}/target/generated-test-sources/cxf
+                     </sourceRoot>
+                     <wsdlOptions>
+                        <wsdlOption>
+                           <wsdl>
+                              ${basedir}/src/test/resources/org/apache/coheigea/cxf/sts/xacml/common/DoubleItLogical.wsdl
+                           </wsdl>
+                        </wsdlOption>
+                     </wsdlOptions>
+                  </configuration>
+                  <goals>
+                     <goal>wsdl2java</goal>
+                  </goals>
                </execution>
             </executions>
          </plugin>

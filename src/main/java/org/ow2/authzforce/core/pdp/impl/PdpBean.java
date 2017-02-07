@@ -24,10 +24,11 @@ import java.util.Map;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
-import org.ow2.authzforce.core.pdp.api.PDP;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PDPEngine;
+import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;
+import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SystemPropertyUtils;
@@ -42,11 +43,11 @@ import org.springframework.util.SystemPropertyUtils;
  *
  * @version $Id: $
  */
-public final class PdpBean implements PDP
+public final class PdpBean implements PDPEngine<ImmutablePdpDecisionRequest>
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpBean.class);
 
-	private PDP pdp;
+	private PDPEngine<ImmutablePdpDecisionRequest> pdp;
 
 	private String confLocation = null;
 
@@ -105,11 +106,12 @@ public final class PdpBean implements PDP
 	{
 		if (!initialized && catalogLocation != null && extSchemaLocation != null && confLocation != null)
 		{
-			LOGGER.info("Loading PDP configuration from file {} with extension schema location '{}' and XML catalog location '{}'", new Object[] { confLocation, extSchemaLocation, catalogLocation });
+			LOGGER.info("Loading PDP configuration from file {} with extension schema location '{}' and XML catalog location '{}'", confLocation, extSchemaLocation, catalogLocation);
 			try
 			{
-				pdp = PdpConfigurationParser.getPDP(confLocation, catalogLocation, extSchemaLocation);
-			} catch (IOException | IllegalArgumentException e)
+				pdp = BasePdpEngine.getInstance(confLocation, catalogLocation, extSchemaLocation);
+			}
+			catch (IOException | IllegalArgumentException e)
 			{
 				throw new RuntimeException("Error parsing PDP configuration from location: " + confLocation, e);
 			}
@@ -118,6 +120,12 @@ public final class PdpBean implements PDP
 		}
 
 		return initialized;
+	}
+
+	@Override
+	public PdpDecisionRequestBuilder<ImmutablePdpDecisionRequest> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
+	{
+		return pdp.newRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes);
 	}
 
 	/** {@inheritDoc} */
@@ -135,13 +143,16 @@ public final class PdpBean implements PDP
 			if (confLocation == null)
 			{
 				cause = "Missing parameter: configuration file";
-			} else if (extSchemaLocation == null)
+			}
+			else if (extSchemaLocation == null)
 			{
 				cause = "Missing parameter: extension schema file";
-			} else if (catalogLocation == null)
+			}
+			else if (catalogLocation == null)
 			{
 				cause = "Missing parameter: XML catalog file";
-			} else
+			}
+			else
 			{
 				cause = "Check previous errors.";
 			}
@@ -152,10 +163,17 @@ public final class PdpBean implements PDP
 
 	/** {@inheritDoc} */
 	@Override
-	public <INDIVIDUAL_DECISION_REQUEST_T extends IndividualDecisionRequest> List<Result> evaluate(final List<INDIVIDUAL_DECISION_REQUEST_T> individualDecisionRequests)
+	public PdpDecisionResult evaluate(final ImmutablePdpDecisionRequest individualDecisionRequest)
 	{
 		checkInit();
-		return pdp.evaluate(individualDecisionRequests);
+		return pdp.evaluate(individualDecisionRequest);
+	}
+
+	@Override
+	public Map<ImmutablePdpDecisionRequest, ? extends PdpDecisionResult> evaluate(final List<ImmutablePdpDecisionRequest> requests) throws IndeterminateEvaluationException
+	{
+		checkInit();
+		return pdp.evaluate(requests);
 	}
 
 	/** {@inheritDoc} */

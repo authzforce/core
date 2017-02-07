@@ -18,6 +18,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +26,13 @@ import java.util.Map;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
+import org.ow2.authzforce.core.pdp.api.DecisionResultFilter.FilteringResultCollector;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
@@ -165,8 +169,59 @@ public abstract class IndividualDecisionRequestEvaluator
 
 	};
 
+	private static final class DefaultResultCollector implements FilteringResultCollector
+	{
+		private final List<Result> results;
+
+		private DefaultResultCollector(final int numberOfFilteredResults)
+		{
+
+			results = new ArrayList<>(numberOfFilteredResults);
+		}
+
+		@Override
+		public List<Result> addResult(final IndividualDecisionRequest request, final PdpDecisionResult result)
+		{
+			results.add(result.toXACMLResult(request.getReturnedAttributes()));
+			return null;
+		}
+
+		@Override
+		public List<Result> getFilteredResults()
+		{
+			return results;
+		}
+
+	}
+
+	private static final DecisionResultFilter DEFAULT_RESULT_FILTER = new DecisionResultFilter()
+	{
+		private static final String ID = "urn:ow2:authzforce:feature:pdp:result-filter:default";
+
+		@Override
+		public String getId()
+		{
+			return ID;
+		}
+
+		@Override
+		public boolean supportsMultipleDecisionCombining()
+		{
+			return false;
+		}
+
+		@Override
+		public FilteringResultCollector newResultCollector(final int numberOfInputResults)
+		{
+			return new DefaultResultCollector(numberOfInputResults);
+		}
+
+	};
+
 	private final RootPolicyEvaluator rootPolicyEvaluator;
 	private final RequestAndPdpIssuedNamedAttributesMerger reqAndPdpIssuedAttributesMerger;
+
+	private final DecisionResultFilter decisionResultFilter;
 
 	/**
 	 * Creates an evaluator
@@ -189,10 +244,13 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *            attributes are not present in the decision request, then their values MUST be supplied by the context handler " but it does NOT say "If AND ONLY IF values..." So this option could
 	 *            still be considered XACML compliant in a strict sense.</li>
 	 *            </ul>
+	 * @param resultFilter
+	 *            Decision Result filter
 	 * @throws IllegalArgumentException
 	 *             if {@code stdEnvAttributeSource} is null or not supported
 	 */
-	protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource) throws IllegalArgumentException
+	protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource, final DecisionResultFilter resultFilter)
+			throws IllegalArgumentException
 	{
 		assert rootPolicyEvaluator != null && stdEnvAttributeSource != null;
 		this.rootPolicyEvaluator = rootPolicyEvaluator;
@@ -214,11 +272,26 @@ public abstract class IndividualDecisionRequestEvaluator
 			default:
 				throw new IllegalArgumentException("Unsupported standardEnvAttributeSource: " + stdEnvAttributeSource + ". Expected: " + Arrays.toString(StandardEnvironmentAttributeSource.values()));
 		}
+
+		this.decisionResultFilter = resultFilter == null ? DEFAULT_RESULT_FILTER : resultFilter;
+	}
+
+	final boolean supportsMultipleDecisionCombining()
+	{
+		return this.decisionResultFilter.supportsMultipleDecisionCombining();
+	}
+
+	protected final FilteringResultCollector beginMultipleDecisions(final int numOfRequests)
+	{
+		/*
+		 * There will be at most as many results as requests, so we prepare to filter at most numOfRequests results
+		 */
+		return decisionResultFilter.newResultCollector(numOfRequests);
 	}
 
 	/**
 	 * <p>
-	 * evaluate
+	 * Evaluate an Individual Decision Request, with option to return attributes used by the evaluation, e.g. to improve caching mechanisms
 	 * </p>
 	 *
 	 * @param request
@@ -229,7 +302,7 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *            true iff the list of attributes used for evaluation must be included in the result
 	 * @return the evaluation result.
 	 */
-	protected final PdpDecisionResult evaluate(final IndividualDecisionRequest request, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final boolean returnUsedAttributes)
+	protected final PdpDecisionResult evaluate(final PdpDecisionRequest request, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final boolean returnUsedAttributes)
 	{
 		assert request != null;
 		LOGGER.debug("Evaluating Individual Decision Request: {}", request);
@@ -243,15 +316,45 @@ public abstract class IndividualDecisionRequestEvaluator
 
 	/**
 	 * <p>
-	 * evaluate
+	 * Evaluate an Individual Decision Request.
+	 * </p>
+	 *
+	 * @param individualDecisionRequest
+	 *            an individual decision request
+	 * @return the evaluation result pair
+	 */
+	protected abstract PdpDecisionResult evaluate(PdpDecisionRequest individualDecisionRequest, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
+
+	/**
+	 * <p>
+	 * Evaluate multiple Individual Decision Requests with same PDP-issued attribute values (e.g. current date/time) in order to return decision results in internal model (more efficient than JAXB
+	 * model derived from XACML schema as in {@link #evaluateToJAXB(List, Map)}).
 	 * </p>
 	 *
 	 * @param individualDecisionRequests
 	 *            a {@link java.util.List} of individual decision requests.
 	 * @param pdpIssuedAttributes
 	 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
-	 * @return a {@link java.util.List} of evaluation results (one per individual decision request).
+	 * @return individual decision request-result pairs, where the list of the requests is the same as {@code individualDecisionRequests}.
+	 * @throws IndeterminateEvaluationException
+	 *             if an error occurred preventing any request evaluation
 	 */
-	protected abstract <INDIVIDUAL_DECISION_REQ_T extends IndividualDecisionRequest> List<Result> evaluate(List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests,
-			final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
+	protected abstract <INDIVIDUAL_DECISION_REQ_T extends PdpDecisionRequest> Map<INDIVIDUAL_DECISION_REQ_T, ? extends PdpDecisionResult> evaluate(
+			List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException;
+
+	/**
+	 * <p>
+	 * Evaluate multiple Individual Decision Requests with same PDP-issued attribute values (e.g. current date/time) in order to return JAXB {@link Result}s. Use only if you need to produce a final
+	 * XACML/JAXB Result or Response for serialization (esp. to interoperate with external systems, where external means outside the current runtime JVM), else use
+	 * {@link #evaluate(PdpDecisionRequest, Map)} which is more optimal.
+	 * </p>
+	 *
+	 * @param individualDecisionRequests
+	 *            a {@link java.util.List} of individual decision requests.
+	 * @param pdpIssuedAttributes
+	 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
+	 * @return a {@link java.util.List} of XACML {@link Result}s (one per individual decision request), ready to be included in a final XACML Response.
+	 */
+	protected abstract List<Result> evaluateToJAXB(List<? extends IndividualDecisionRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
+
 }
