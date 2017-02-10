@@ -56,7 +56,7 @@ If you want to use the experimental features (see previous section) as well, you
 
 To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.BasePdpEngine#getInstance(...)`. The parameters are:
 
-1. *confLocation*: location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file. If you don't use any XML-schema-defined PDP extension (AttributeProviders, PolicyProviders...), this is the only parameter you need, and you can use the simplest method `PdpConfigurationParser#getPDP(String confLocation)` to load your PDP. Here is an example of configuration:
+1. *confLocation*: location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file. If you don't use any XML-schema-defined PDP extension (AttributeProviders, PolicyProviders...), this is the only parameter you need, and you can use the simplest method `BasePdpEngine#getInstance(String confLocation)` to load your PDP. Here is an example of configuration:
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -91,4 +91,4 @@ Please include as much information as possible; the more we know, the better the
 * Log output can be useful too; sometimes enabling DEBUG logging can help;
 * Your code & configuration files are often useful.
 
-If you wish to contact the developers for other reasons, use [Authzforce contact mailing list](http://scr.im/azteam).
+If you wish to contact the developers for other reasons, use [AuthzForce contact mailing list](http://scr.im/azteam).
