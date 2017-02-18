@@ -51,13 +51,11 @@ public final class ImmutableFunctionRegistry implements FunctionRegistry
 	 * @param genericFunctionFactories
 	 *            (optional) generic function factories
 	 */
-	public ImmutableFunctionRegistry(Set<Function<?>> nonGenericFunctions,
-			Set<GenericHigherOrderFunctionFactory> genericFunctionFactories)
+	public ImmutableFunctionRegistry(final Set<Function<?>> nonGenericFunctions, final Set<GenericHigherOrderFunctionFactory> genericFunctionFactories)
 	{
 		this.nonGenericFunctionRegistry = new ImmutablePdpExtensionRegistry<>(Function.class, nonGenericFunctions);
-		this.genericHigherOrderFunctionFactoryRegistry = genericFunctionFactories == null ? null
-				: new ImmutablePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class,
-						genericFunctionFactories);
+		this.genericHigherOrderFunctionFactoryRegistry = genericFunctionFactories == null ? null : new ImmutablePdpExtensionRegistry<>(GenericHigherOrderFunctionFactory.class,
+				genericFunctionFactories);
 	}
 
 	/*
@@ -66,7 +64,7 @@ public final class ImmutableFunctionRegistry implements FunctionRegistry
 	 * @see org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry#getFunction(java.lang.String)
 	 */
 	@Override
-	public Function<?> getFunction(String functionId)
+	public Function<?> getFunction(final String functionId)
 	{
 		return nonGenericFunctionRegistry.getExtension(functionId);
 	}
@@ -74,12 +72,10 @@ public final class ImmutableFunctionRegistry implements FunctionRegistry
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry#getFunction(java.lang.String,
-	 * org.ow2.authzforce.core.pdp.api.value.DatatypeFactory)
+	 * @see org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry#getFunction(java.lang.String, org.ow2.authzforce.core.pdp.api.value.DatatypeFactory)
 	 */
 	@Override
-	public <SUB_RETURN_T extends AttributeValue> Function<?> getFunction(String functionId,
-			DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory)
+	public <SUB_RETURN_T extends AttributeValue> Function<?> getFunction(final String functionId, final DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory)
 	{
 		final Function<?> nonGenericFunc = nonGenericFunctionRegistry.getExtension(functionId);
 		if (nonGenericFunc != null)
@@ -92,8 +88,16 @@ public final class ImmutableFunctionRegistry implements FunctionRegistry
 			return null;
 		}
 
-		final GenericHigherOrderFunctionFactory funcFactory = genericHigherOrderFunctionFactoryRegistry
-				.getExtension(functionId);
+		final GenericHigherOrderFunctionFactory funcFactory = genericHigherOrderFunctionFactoryRegistry.getExtension(functionId);
+		/*
+		 * FIXME: faire la test suite qui met en evidence le bug d'abord en non regression -> modifier OW2#25 (avec wrong id for any-of combined with sub function in a ApplyExpression) et ensuite
+		 * corriger
+		 */
+		// if (funcFactory == null)
+		// {
+		// return null;
+		// }
+
 		return funcFactory.getInstance(subFunctionReturnTypeFactory);
 	}
 
