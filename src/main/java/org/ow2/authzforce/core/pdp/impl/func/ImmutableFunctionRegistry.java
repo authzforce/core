@@ -89,14 +89,10 @@ public final class ImmutableFunctionRegistry implements FunctionRegistry
 		}
 
 		final GenericHigherOrderFunctionFactory funcFactory = genericHigherOrderFunctionFactoryRegistry.getExtension(functionId);
-		/*
-		 * FIXME: faire la test suite qui met en evidence le bug d'abord en non regression -> modifier OW2#25 (avec wrong id for any-of combined with sub function in a ApplyExpression) et ensuite
-		 * corriger
-		 */
-		// if (funcFactory == null)
-		// {
-		// return null;
-		// }
+		if (funcFactory == null)
+		{
+			return null;
+		}
 
 		return funcFactory.getInstance(subFunctionReturnTypeFactory);
 	}

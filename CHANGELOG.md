@@ -1,6 +1,14 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
+Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
+
+
+## Unreleased
+### Fixed
+- [OW2-25] (Reopened) NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. This is the final fix addressing higher-order functions. (Initial fix only addressed first-order ones.)
+- Artifact `authzforce-ce-core` with `tests` classifier: missing classes.
+
 
 ## 7.0.0
 ### Changed
@@ -40,7 +48,7 @@ All notable changes to this project are documented in this file following the [K
 
 ### Changed
 - Maven parent project version: 3.4.0 -> 4.0.0:
-	- **Java version: 1.7 -> 1.8** (fixes GitHub issue #4)
+	- [GH-4] **Java version: 1.7 -> 1.8**
 	- Guava dependency version: 18.0 -> 20.0
 	- Saxon-HE dependency version: 9.6.0-5 -> 9.7.0-11
 	- com.sun.mail:javax.mail v1.5.4 changed to com.sun.mail:mailapi v1.5.6
@@ -51,10 +59,10 @@ All notable changes to this project are documented in this file following the [K
 - Dependency on Koloboke, replaced by extension mechanism mentioned in *Added* section that would allow to switch from the default HashMap/HashSet implementation to Koloboke-based.
 
 ### Fixed
-- OW2 #AUTHZFORCE-23: enforcement of RuleId/PolicyId/PolicySetId uniqueness:
+- [OW2-23] Enforcement of RuleId/PolicyId/PolicySetId uniqueness:
 	- PolicyId (resp. PolicySetId) should be unique across all policies loaded by PDP so that PolicyIdReferences (resp. PolicySetIdReferences) in Responses' PolicyIdentifierList are absolute references to applicable policies (no ambiguity).
  	- [RuleId should be unique within a policy](https://lists.oasis-open.org/archives/xacml/201310/msg00025.html) -> A rule is globally uniquely identified by the parent PolicyId and the RuleId.
-- OW2 #AUTHZFORCE-25: NullPointerException when parsing Apply expressions using invalid/unsupported Function ID
+- [OW2-25] NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. Partial fix addressing only invalid first-order functions. See release 7.0.1 for final fix addressing higher-order functions too.
 
 
 ## 5.0.2
@@ -64,7 +72,7 @@ All notable changes to this project are documented in this file following the [K
 
 ## 5.0.1
 ### Fixed
-- #22 (OW2): When handling the same XACML Request twice in the same JVM with the root PolicySet using deny-unless-permit algorithm over a Policy returning simple Deny (no status/obligation/advice) and a Policy returning Permit/Deny with obligations/advice, the obligation is duplicated in the final result at the second time this situation occurs. 
+- [OW2-22] When handling the same XACML Request twice in the same JVM with the root PolicySet using deny-unless-permit algorithm over a Policy returning simple Deny (no status/obligation/advice) and a Policy returning Permit/Deny with obligations/advice, the obligation is duplicated in the final result at the second time this situation occurs. 
 - XACML StatusCode XML serialization/marshalling error when Missing Attribute info that is no valid anyURI is returned by PDP in a Indeterminate Result
 - Memory management issue: native RootPolicyProvider modules keeping a reference to static refPolicyProvider, even after policies have been resolved statically at initialization time, preventing garbage collection and memory saving.
 - Calls to Logger impacted negatively by autoboxing
