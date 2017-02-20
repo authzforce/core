@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file following the [K
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
 
-## Unreleased
+## 7.1.0
 ### Added
 - [OW2-26] Simplify evaluation of Apply expression with commutative numeric function f (e.g. add and multiply): if multiple arguments are constants A, B..., then: `f(a1,...an, A, b1,...bn, B, c1,...) = f(C, a1,...an, b1,...bn, c1...)` where `C = f(A,B...)` and a1,...an, b1,...bn, c1,... are the other arguments (variables).
 
