@@ -5,6 +5,9 @@ Issues reported on [GitHub](https://github.com/authzforce/core/issues) are refer
 
 
 ## Unreleased
+### Added
+- [OW2-26] Simplify evaluation of Apply expression with commutative numeric function f (e.g. add and multiply): if multiple arguments are constants A, B..., then: `f(a1,...an, A, b1,...bn, B, c1,...) = f(C, a1,...an, b1,...bn, c1...)` where `C = f(A,B...)` and a1,...an, b1,...bn, c1,... are the other arguments (variables).
+
 ### Fixed
 - [OW2-25] (Reopened) NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. This is the final fix addressing higher-order functions. (Initial fix only addressed first-order ones.)
 - Artifact `authzforce-ce-core` with `tests` classifier: missing classes.
