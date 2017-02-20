@@ -21,6 +21,7 @@ package org.ow2.authzforce.core.pdp.impl.func;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -148,8 +149,11 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 			 */
 			final List<Expression<?>> finalArgExpressions = new ArrayList<>(argExpressions.size());
 			final Datatype<AV> paramType = this.functionSignature.getParameterType();
-			for (final Expression<?> argExp : argExpressions)
+			final Iterator<Expression<?>> argExpIterator = argExpressions.iterator();
+			int argIndex = 0;
+			while (argExpIterator.hasNext())
 			{
+				final Expression<?> argExp = argExpIterator.next();
 				final Value v = argExp.getValue();
 				if (v == null)
 				{
@@ -159,8 +163,18 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 				else
 				{
 					// constant
-					constants.add(paramType.cast(v));
+					try
+					{
+						constants.add(paramType.cast(v));
+					}
+					catch (final ClassCastException e)
+					{
+						throw new IllegalArgumentException("Function " + this.functionSignature + ": invalid arg #" + argIndex + ": bad type: " + argExp.getReturnType() + ". Expected type: "
+								+ paramType, e);
+					}
 				}
+
+				argIndex += 1;
 			}
 
 			if (constants.size() > 1)
@@ -168,8 +182,20 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 				/*
 				 * we can replace all constant args C1, C2... with one constant C = op(C1, C2...)
 				 */
+				LOGGER.warn("Function {}: simplifying args to this commutative function (f): replacing all constant args {} with one that is the constant result of f(constant_args)",
+						this.functionSignature, constants);
 				final AV constantResult = op.eval(constants);
-				LOGGER.warn("Function {}: optimizing call to this commutative function: replacing/merging constant args {} with/into one: {}", this.functionSignature, constants, constantResult);
+				if (finalArgExpressions.isEmpty())
+				{
+					/*
+					 * There aren't any other args, i.e. all are constant. The result is constantResult.
+					 */
+					return new ConstantResultFirstOrderFunctionCall<>(constantResult, paramType);
+				}
+
+				/*
+				 * finalArgExpressions is not empty. There is at least one variable arg.
+				 */
 				finalArgExpressions.add(new ConstantPrimitiveAttributeValueExpression<>(paramType, constantResult));
 				return new Call<>(functionSignature, op, finalArgExpressions, remainingArgTypes);
 			}
