@@ -6,7 +6,7 @@
       <version>5.0.0</version>
    </parent>
    <artifactId>authzforce-ce-core</artifactId>
-   <version>7.0.0</version>
+   <version>7.1.0</version>
    <name>${project.groupId}:${project.artifactId}</name>
    <description>AuthZForce Community Edition - XACML-compliant Core Engine</description>
    <url>https://tuleap.ow2.org/projects/authzforce</url>
@@ -58,7 +58,7 @@
          <version>4.11</version>
          <scope>test</scope>
       </dependency>
-       <dependency>
+      <dependency>
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-rt-frontend-jaxws</artifactId>
          <version>${cxf.version}</version>
@@ -128,7 +128,7 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>findbugs-maven-plugin</artifactId>
             <configuration>
-             <onlyAnalyze>org.ow2.authzforce.*</onlyAnalyze>
+               <onlyAnalyze>org.ow2.authzforce.*</onlyAnalyze>
                <excludeFilterFile>findbugs-exclude-filter.xml</excludeFilterFile>
             </configuration>
             <executions>
@@ -292,8 +292,8 @@
                      <includes>
                         <include>org.ow2.authzforce.core.test.xsd</include>
                         <include>org/ow2/authzforce/core/xmlns/test/**</include>
-                        <include>org/ow2/authzforce/core/test/custom/**</include>
-                        <include>org/ow2/authzforce/core/test/utils/**</include>
+                        <include>org/ow2/authzforce/core/pdp/impl/test/custom/**</include>
+                        <include>org/ow2/authzforce/core/pdp/impl/test/utils/**</include>
                         <include>META-INF/**</include>
                      </includes>
                   </configuration>

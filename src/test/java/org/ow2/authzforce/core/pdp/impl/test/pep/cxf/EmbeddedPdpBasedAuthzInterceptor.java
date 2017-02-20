@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.pdp.impl.test.cxf;
+package org.ow2.authzforce.core.pdp.impl.test.pep.cxf;
 
 import static org.ow2.authzforce.core.pdp.api.value.StandardDatatypes.ANYURI_FACTORY;
 import static org.ow2.authzforce.core.pdp.api.value.StandardDatatypes.STRING_FACTORY;
@@ -66,13 +66,12 @@ import org.slf4j.LoggerFactory;
  * For a SOAP Service, the resource-id Attribute refers to the "{serviceNamespace}serviceName#{operationNamespace}operationName" String (shortened to "{serviceNamespace}serviceName#operationName" if
  * the namespaces are identical). The "{serviceNamespace}serviceName", "{operationNamespace}operationName" and resource URI are also sent to simplify processing at the PDP side.
  * 
- * For a REST service the request URL is the resource. You can also configure the ability to send the truncated request URI instead for a SOAP or REST service. The current DateTime is also sent in an
- * Environment, however this can be disabled via configuration.
+ * For a REST service the request URL is the resource. You can also configure the ability to send the truncated request URI instead for a SOAP or REST service.
  */
-public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Message>
+public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Message>
 {
 
-	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LocalPdpBasedAuthzInterceptor.class);
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(EmbeddedPdpBasedAuthzInterceptor.class);
 
 	private static final String defaultSOAPAction = "execute";
 
@@ -84,7 +83,7 @@ public class LocalPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<Mess
 	 * @param pdp
 	 *            XACML PDP
 	 */
-	public LocalPdpBasedAuthzInterceptor(final BasePdpEngine pdp)
+	public EmbeddedPdpBasedAuthzInterceptor(final BasePdpEngine pdp)
 	{
 		super(Phase.PRE_INVOKE);
 		this.pdp = pdp;

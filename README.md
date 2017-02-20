@@ -56,7 +56,7 @@ If you want to use the experimental features (see previous section) as well, you
 
 To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.BasePdpEngine#getInstance(...)`. The parameters are:
 
-1. *confLocation*: location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file. If you don't use any XML-schema-defined PDP extension (AttributeProviders, PolicyProviders...), this is the only parameter you need, and you can use the simplest method `PdpConfigurationParser#getPDP(String confLocation)` to load your PDP. Here is an example of configuration:
+1. *confLocation*: location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file. If you don't use any XML-schema-defined PDP extension (AttributeProviders, PolicyProviders...), this is the only parameter you need, and you can use the simplest method `BasePdpEngine#getInstance(String confLocation)` to load your PDP. Here is an example of configuration:
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -68,7 +68,7 @@ To get started using a PDP to evaluate XACML requests, instantiate a new PDP ins
 1. *catalogLocation*: location of the XML catalog (optional, required only if using one or more XML-schema-defined PDP extensions): used to resolve the PDP configuration schema and other imported schemas/DTDs, and schemas of any PDP extension namespace used in the configuration file. You may use the [catalog](src/main/resources/catalog.xml) in the sources as an example. This is the one used by default if none specified.
 1. *extensionXsdLocation*: location of the PDP extensions schema file (optional, required only if using one or more XML-schema-defined PDP extensions): contains imports of namespaces corresponding to XML schemas of all XML-schema-defined PDP extensions to be used in the configuration file. Used for validation of PDP extensions configuration. The actual schema locations are resolved by the XML catalog parameter. You may use the [pdp-ext.xsd](src/test/resources/pdp-ext.xsd) in the sources as an example.
 
-As a result of `getInstance(...)`, you get an instance of `BasePdpEngine`, you can evaluate a XACML Request directly by calling the `evaluate(Request...)` methods; or you can evaluate a decision request (more precisely an equivalent of a Individual Decision Request as defined by the XACML Multiple Decision Profile) in AuthzForce's more efficient native model by calling `evaluate(ImmutablePdpDecisionRequest)` or (multiple decision requests with `evaluate(List<ImmutablePdpDecisionRequest>)`). In order to build a `ImmutablePdpDecisionRequest`, you may use the request builder returned by `BasePdpEngine#newRequestBuilder(...)`.  Please look at the Javadoc for more information.
+As a result of `getInstance(...)`, you get an instance of `BasePdpEngine` with which you can evaluate a XACML Request directly by calling the `evaluate(Request...)` methods; or you can evaluate a decision request (more precisely an equivalent of a Individual Decision Request as defined by the XACML Multiple Decision Profile) in AuthzForce's more efficient native model by calling `evaluate(ImmutablePdpDecisionRequest)` or (multiple decision requests with `evaluate(List<ImmutablePdpDecisionRequest>)`). In order to build a `ImmutablePdpDecisionRequest`, you may use the request builder returned by `BasePdpEngine#newRequestBuilder(...)`.  Please look at the Javadoc for more information.
 
 Our PDP implementation uses SLF4J for logging so you can use any SLF4J implementation to manage logging. As an example, we use logback for testing, so you can use [logback.xml](src/test/resources/logback.xml) as an example for configuring loggers, appenders, etc.
 
@@ -91,4 +91,4 @@ Please include as much information as possible; the more we know, the better the
 * Log output can be useful too; sometimes enabling DEBUG logging can help;
 * Your code & configuration files are often useful.
 
-If you wish to contact the developers for other reasons, use [Authzforce contact mailing list](http://scr.im/azteam).
+If you wish to contact the developers for other reasons, use [AuthzForce contact mailing list](http://scr.im/azteam).

@@ -23,6 +23,7 @@ import java.util.Deque;
 import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.NumericValue;
+import org.ow2.authzforce.core.pdp.impl.func.NumericArithmeticFunction.MultaryOperation;
 import org.ow2.authzforce.core.pdp.impl.func.NumericArithmeticFunction.StaticOperation;
 
 final class NumericArithmeticOperators
@@ -43,8 +44,14 @@ final class NumericArithmeticOperators
 
 	}
 
-	static final class AddOperator<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
+	static final class AddOperator<NAV extends NumericValue<?, NAV>> implements MultaryOperation<NAV>
 	{
+		@Override
+		public boolean isCommutative()
+		{
+			return true;
+		}
+
 		@Override
 		public NAV eval(final Deque<NAV> args)
 		{
@@ -54,8 +61,14 @@ final class NumericArithmeticOperators
 
 	}
 
-	static final class MultiplyOperator<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
+	static final class MultiplyOperator<NAV extends NumericValue<?, NAV>> implements MultaryOperation<NAV>
 	{
+
+		@Override
+		public boolean isCommutative()
+		{
+			return true;
+		}
 
 		@Override
 		public NAV eval(final Deque<NAV> args)

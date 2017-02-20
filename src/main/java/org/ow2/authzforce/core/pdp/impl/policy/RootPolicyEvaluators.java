@@ -43,7 +43,6 @@ import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResults;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
@@ -145,14 +144,10 @@ public final class RootPolicyEvaluators
 			this.expressionFactory = new ExpressionFactoryImpl(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth, enableXPath, strictAttributeIssuerMatch,
 					environmentProperties);
 
-			final RootPolicyProviderModule.Factory<?> rootPolicyProviderModFactory = PdpExtensionLoader.getJaxbBoundExtension(RootPolicyProviderModule.Factory.class,
-					jaxbRootPolicyProviderConf.getClass());
-
-			final RefPolicyProviderModule.Factory<?> refPolicyProviderModFactory = jaxbRefPolicyProviderConf == null ? null : PdpExtensionLoader.getJaxbBoundExtension(
-					RefPolicyProviderModule.Factory.class, jaxbRefPolicyProviderConf.getClass());
-			rootPolicyProviderMod = ((RootPolicyProviderModule.Factory<AbstractPolicyProvider>) rootPolicyProviderModFactory).getInstance(jaxbRootPolicyProviderConf,
-					JaxbXACMLUtils.getXACMLParserFactory(enableXPath), this.expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf,
-					(RefPolicyProviderModule.Factory<AbstractPolicyProvider>) refPolicyProviderModFactory, maxPolicySetRefDepth, environmentProperties);
+			final RefPolicyProviderModule.Factory<AbstractPolicyProvider> refPolicyProviderModFactory = jaxbRefPolicyProviderConf == null ? null : PdpExtensionLoader
+					.getRefPolicyProviderModuleFactory(jaxbRefPolicyProviderConf);
+			rootPolicyProviderMod = PdpExtensionLoader.getRootPolicyProviderModule(jaxbRootPolicyProviderConf, enableXPath, this.expressionFactory, combiningAlgRegistry, jaxbRefPolicyProviderConf,
+					refPolicyProviderModFactory, maxPolicySetRefDepth, environmentProperties);
 			isRootPolicyProviderStatic = rootPolicyProviderMod instanceof StaticRootPolicyProviderModule;
 
 		}

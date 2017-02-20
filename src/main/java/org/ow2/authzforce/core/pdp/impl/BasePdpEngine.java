@@ -499,8 +499,8 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		}
 		else
 		{
-			final DecisionCache.Factory<?> responseCacheStoreFactory = PdpExtensionLoader.getJaxbBoundExtension(DecisionCache.Factory.class, jaxbDecisionCacheConf.getClass());
-			this.decisionCache = ((DecisionCache.Factory<AbstractDecisionCache>) responseCacheStoreFactory).getInstance(jaxbDecisionCacheConf);
+			final DecisionCache.Factory<AbstractDecisionCache> responseCacheStoreFactory = PdpExtensionLoader.getDecisionCacheFactory(jaxbDecisionCacheConf);
+			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
 		}
 
 		final StandardEnvironmentAttributeSource validStdEnvAttrSrc = stdEnvAttributeSource == null ? DEFAULT_STD_ENV_ATTRIBUTE_SOURCE : stdEnvAttributeSource;

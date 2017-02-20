@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.ow2.authzforce.core.pdp.impl.test.cxf;
+package org.ow2.authzforce.core.pdp.impl.test.pep.cxf;
 
 import java.net.URL;
 
@@ -39,7 +39,7 @@ import org.junit.BeforeClass;
  * using a username/password, and gets a signed holder-of-key SAML Assertion in return. This is presented to the service, who verifies proof-of-possession + the signature of the STS on the assertion.
  * The CXF endpoint extracts roles from the Assertion + populates the security context. Note that the CXF endpoint requires a "role" Claim via the security policy.
  *
- * The CXF Endpoint has configured the {@link LocalPdpBasedAuthzInterceptor}, which creates a XACML 3.0 request for dispatch to the (co-located) PDP, and then enforces the PDP's decision.
+ * The CXF Endpoint has configured the {@link EmbeddedPdpBasedAuthzInterceptor}, which creates a XACML 3.0 request for dispatch to the (co-located) PDP, and then enforces the PDP's decision.
  * 
  * <p>
  * Detailed description:
@@ -66,7 +66,7 @@ import org.junit.BeforeClass;
  * service "{http://www.example.org/contract/DoubleIt}DoubleItService#DoubleIt".
  * </p>
  */
-public class LocalPdpAuthorizationTest extends AbstractBusClientServerTestBase
+public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServerTestBase
 {
 
 	private static final String NAMESPACE = "http://www.example.org/contract/DoubleIt";
@@ -93,13 +93,13 @@ public class LocalPdpAuthorizationTest extends AbstractBusClientServerTestBase
 	{
 
 		final SpringBusFactory bf = new SpringBusFactory();
-		final URL busFile = LocalPdpAuthorizationTest.class.getResource("cxf-client.xml");
+		final URL busFile = EmbeddedPdpBasedAuthzInterceptorTest.class.getResource("cxf-client.xml");
 
 		final Bus bus = bf.createBus(busFile.toString());
 		SpringBusFactory.setDefaultBus(bus);
 		SpringBusFactory.setThreadDefaultBus(bus);
 
-		final URL wsdl = LocalPdpAuthorizationTest.class.getResource("DoubleItSecure.wsdl");
+		final URL wsdl = EmbeddedPdpBasedAuthzInterceptorTest.class.getResource("DoubleItSecure.wsdl");
 		final Service service = Service.create(wsdl, SERVICE_QNAME);
 		final QName portQName = new QName(NAMESPACE, "DoubleItTransportPort");
 		final DoubleItPortType transportPort = service.getPort(portQName, DoubleItPortType.class);
@@ -118,13 +118,13 @@ public class LocalPdpAuthorizationTest extends AbstractBusClientServerTestBase
 	{
 
 		final SpringBusFactory bf = new SpringBusFactory();
-		final URL busFile = LocalPdpAuthorizationTest.class.getResource("cxf-client.xml");
+		final URL busFile = EmbeddedPdpBasedAuthzInterceptorTest.class.getResource("cxf-client.xml");
 
 		final Bus bus = bf.createBus(busFile.toString());
 		SpringBusFactory.setDefaultBus(bus);
 		SpringBusFactory.setThreadDefaultBus(bus);
 
-		final URL wsdl = LocalPdpAuthorizationTest.class.getResource("DoubleItSecure.wsdl");
+		final URL wsdl = EmbeddedPdpBasedAuthzInterceptorTest.class.getResource("DoubleItSecure.wsdl");
 		final Service service = Service.create(wsdl, SERVICE_QNAME);
 		final QName portQName = new QName(NAMESPACE, "DoubleItTransportPort");
 		final DoubleItPortType transportPort = service.getPort(portQName, DoubleItPortType.class);

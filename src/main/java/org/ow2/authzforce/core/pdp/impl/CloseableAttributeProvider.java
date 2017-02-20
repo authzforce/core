@@ -161,8 +161,8 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 		{
 			try
 			{
-				final CloseableAttributeProviderModule.FactoryBuilder<AbstractAttributeProvider> attrProviderModBuilder = PdpExtensionLoader.getJaxbBoundExtension(
-						CloseableAttributeProviderModule.FactoryBuilder.class, jaxbAttributeProviderConf.getClass());
+				final CloseableAttributeProviderModule.FactoryBuilder<AbstractAttributeProvider> attrProviderModBuilder = PdpExtensionLoader
+						.getAttributeProviderModuleFactoryBuilder(jaxbAttributeProviderConf);
 				final CloseableAttributeProviderModule.DependencyAwareFactory depAwareAttrProviderModBuilder = attrProviderModBuilder.getInstance(jaxbAttributeProviderConf, environmentProperties);
 				final Set<AttributeDesignatorType> requiredAttrs = depAwareAttrProviderModBuilder.getDependencies();
 				/*

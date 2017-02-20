@@ -28,7 +28,6 @@ import org.ow2.authzforce.core.pdp.impl.test.conformance.ConformanceV3FromV2Opti
 import org.ow2.authzforce.core.pdp.impl.test.conformance.ConformanceV3Others;
 import org.ow2.authzforce.core.pdp.impl.test.custom.CustomPdpTest;
 import org.ow2.authzforce.core.pdp.impl.test.custom.TestPdpGetStaticApplicablePolicies;
-import org.ow2.authzforce.core.pdp.impl.test.cxf.LocalPdpAuthorizationTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.BagFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.DateTimeArithmeticFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.EqualityFunctionsTest;
@@ -43,6 +42,7 @@ import org.ow2.authzforce.core.pdp.impl.test.func.SetFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.SpecialMatchFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.StringConversionFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.StringFunctionsTest;
+import org.ow2.authzforce.core.pdp.impl.test.pep.cxf.EmbeddedPdpBasedAuthzInterceptorTest;
 import org.ow2.authzforce.core.pdp.impl.test.value.AnyURIAttributeTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 @SuiteClasses(value = { EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class, NumericConversionFunctionsTest.class, LogicalFunctionsTest.class,
 		NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class, NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class,
 		SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, ConformanceV3FromV2Mandatory.class, ConformanceV3FromV2Optional.class,
-		ConformanceV3Others.class, CustomPdpTest.class, TestPdpGetStaticApplicablePolicies.class, NonRegression.class, LocalPdpAuthorizationTest.class })
+		ConformanceV3Others.class, CustomPdpTest.class, TestPdpGetStaticApplicablePolicies.class, NonRegression.class, EmbeddedPdpBasedAuthzInterceptorTest.class })
 public class MainTest
 {
 	/**

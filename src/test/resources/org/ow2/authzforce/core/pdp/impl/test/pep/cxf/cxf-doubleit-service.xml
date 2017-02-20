@@ -46,9 +46,9 @@
    </cxf:bus>
    
    <bean id="pdp" class="org.ow2.authzforce.core.pdp.impl.BasePdpEngine" factory-method="getInstance">
-      <constructor-arg value="classpath:org/ow2/authzforce/core/pdp/impl/test/cxf/pdp.xml" />
+      <constructor-arg value="classpath:org/ow2/authzforce/core/pdp/impl/test/pep/cxf/pdp.xml" />
    </bean>
-   <bean class="org.ow2.authzforce.core.pdp.impl.test.cxf.LocalPdpBasedAuthzInterceptor" id="XACMLInterceptor">
+   <bean class="org.ow2.authzforce.core.pdp.impl.test.pep.cxf.EmbeddedPdpBasedAuthzInterceptor" id="XACMLInterceptor">
        <constructor-arg ref="pdp"/>
    </bean>
    
@@ -58,9 +58,8 @@
       serviceName="s:DoubleItService"
       depends-on="ClientAuthHttpsSettings"
       address="https://localhost:${testutil.ports.Server}/doubleit/services/doubleittransportxacml3"
-      wsdlLocation="org/ow2/authzforce/core/pdp/impl/test/cxf/DoubleItSecure.wsdl"
-      xmlns:s="http://www.example.org/contract/DoubleIt">
-        
+      wsdlLocation="org/ow2/authzforce/core/pdp/impl/test/pep/cxf/DoubleItSecure.wsdl"
+      xmlns:s="http://www.example.org/contract/DoubleIt"> 
       <jaxws:properties>
           <entry key="security.signature.properties" value="stsServiceKeystore.properties"/>
       </jaxws:properties>

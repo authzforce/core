@@ -4,7 +4,7 @@
    <Policy PolicyId="P1" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-permit-overrides">
       <Target />
       <Rule RuleId="R1" Effect="Permit">
-         <Description>ule using unknown Function as Match function: urn:oasis:names:tc:xacml:2.0:function:string-equal instead of urn:oasis:names:tc:xacml:1.0:function:string-equal</Description>
+         <Description>Rule using unknown Function as Match function: urn:oasis:names:tc:xacml:2.0:function:string-equal instead of urn:oasis:names:tc:xacml:1.0:function:string-equal</Description>
          <Target />
          <Condition>
             <Apply FunctionId="urn:oasis:names:tc:xacml:2.0:function:string-equal">
