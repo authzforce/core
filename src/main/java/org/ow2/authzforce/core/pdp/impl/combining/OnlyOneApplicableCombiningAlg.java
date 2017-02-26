@@ -18,6 +18,8 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
+import java.util.Optional;
+
 import javax.xml.bind.JAXBElement;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
@@ -55,8 +57,8 @@ final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluat
 		private Evaluator(final String algId, final Iterable<? extends PolicyEvaluator> policyElements)
 		{
 			super(policyElements);
-			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
-					"Too many (more than one) applicable policies for algorithm: " + algId));
+			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE,
+					new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, Optional.of("Too many (more than one) applicable policies for algorithm: " + algId)));
 		}
 
 		@Override

@@ -21,6 +21,7 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.bind.JAXBElement;
@@ -176,7 +177,7 @@ public final class RootPolicyEvaluators
 			{
 				LOGGER.warn("One of the possible root policies (resolved by the root policy provider module {}) is invalid", rootPolicyProviderMod, e);
 				// we consider that
-				return new ImmutablePdpDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, e.getMessage()), context);
+				return new ImmutablePdpDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, Optional.ofNullable(e.getMessage())), context);
 			}
 
 			if (policy == null)

@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.impl.test.custom;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
@@ -46,7 +47,7 @@ public class TestCombinedDecisionResultFilter implements DecisionResultFilter
 	public static final String ID = "urn:ow2:authzforce:feature:pdp:result-filter:multiple:test-combined-decision";
 
 	private static final List<Result> INDETERMINATE_RESULT_SINGLETON_LIST = Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR,
-			null), null, null, null, null));
+			Optional.empty()), null, null, null, null));
 
 	// private static final List<Result> INDETERMINATE_RESULT_SINGLETON_LIST_BECAUSE_NO_INDIVIDUAL = Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
 	// StatusHelper.STATUS_PROCESSING_ERROR, "No <Result> to combine!"), null, null, null, null));

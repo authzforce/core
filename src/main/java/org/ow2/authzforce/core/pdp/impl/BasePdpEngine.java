@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
@@ -111,7 +112,7 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any scheme from MultipleDecisionProfile section 2.
 	 */
 	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
-			StatusHelper.STATUS_SYNTAX_ERROR, "Unsupported feature: CombinedDecision='true'"), null, null, null, null)));
+			StatusHelper.STATUS_SYNTAX_ERROR, Optional.of("Unsupported feature: CombinedDecision='true'")), null, null, null, null)));
 
 	private interface StandardEnvironmentAttributeIssuer
 	{
@@ -207,7 +208,7 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 			/*
 			 * Put the non-issued version of the attribute first
 			 */
-			final AttributeGUID nonIssuedAttributeGUID = new AttributeGUID(attributeGUID.getCategory(), null, attributeGUID.getId());
+			final AttributeGUID nonIssuedAttributeGUID = new AttributeGUID(attributeGUID.getCategory(), Optional.empty(), attributeGUID.getId());
 			super.putNamedAttributeIfAbsent(nonIssuedAttributeGUID, attributeValues);
 			return super.putNamedAttributeIfAbsent(attributeGUID, attributeValues);
 		}
@@ -277,8 +278,8 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		private static final IndeterminateEvaluationException INDETERMINATE_EVALUATION_EXCEPTION = new IndeterminateEvaluationException("Internal error in decision cache: null result",
 				StatusHelper.STATUS_PROCESSING_ERROR);
 
-		private static final Result INVALID_DECISION_CACHE_RESULT = new Result(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, "Internal error"), null, null, null,
-				null);
+		private static final Result INVALID_DECISION_CACHE_RESULT = new Result(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, Optional.of("Internal error")), null,
+				null, null, null);
 
 		private final DecisionCache decisionCache;
 

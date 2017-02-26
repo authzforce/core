@@ -26,7 +26,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
@@ -44,14 +49,9 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.xmlns.test.TestAttributeProvider;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-
 /**
  * 
- * Fake AttributeProviderModule for test purposes only that can be configured to support a specific set of attribute Providers, but always return an empty bag
- * as attribute value.
+ * Fake AttributeProviderModule for test purposes only that can be configured to support a specific set of attribute Providers, but always return an empty bag as attribute value.
  * 
  */
 public class TestAttributeProviderModule extends BaseAttributeProviderModule
@@ -70,7 +70,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 		}
 
 		@Override
-		public DependencyAwareFactory getInstance(final TestAttributeProvider conf, EnvironmentProperties environmentProperties)
+		public DependencyAwareFactory getInstance(final TestAttributeProvider conf, final EnvironmentProperties environmentProperties)
 		{
 			return new DependencyAwareFactory()
 			{
@@ -83,7 +83,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 				}
 
 				@Override
-				public CloseableAttributeProviderModule getInstance(DatatypeFactoryRegistry attrDatatypeFactory, AttributeProvider depAttrProvider)
+				public CloseableAttributeProviderModule getInstance(final DatatypeFactoryRegistry attrDatatypeFactory, final AttributeProvider depAttrProvider)
 				{
 					return new TestAttributeProviderModule(conf, attrDatatypeFactory);
 				}
@@ -95,7 +95,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 	private final Set<AttributeDesignatorType> supportedDesignatorTypes = new HashSet<>();
 	private final Map<AttributeGUID, Bag<?>> attrMap = new HashMap<>();
 
-	private TestAttributeProviderModule(TestAttributeProvider conf, DatatypeFactoryRegistry attrDatatypeFactory) throws IllegalArgumentException
+	private TestAttributeProviderModule(final TestAttributeProvider conf, final DatatypeFactoryRegistry attrDatatypeFactory) throws IllegalArgumentException
 	{
 		super(conf.getId());
 		final JaxbXACMLAttributeParser<Bag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictJaxbXACMLAttributeParser(attrDatatypeFactory);
@@ -110,8 +110,8 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 
 			for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
 			{
-				xacmlAttributeParser.parseAttribute(attrMap, new AttributeGUID(categoryName, jaxbAttr.getIssuer(), jaxbAttr.getAttributeId()),
-						jaxbAttr.getAttributeValues(), null);
+				xacmlAttributeParser
+						.parseAttribute(attrMap, new AttributeGUID(categoryName, Optional.ofNullable(jaxbAttr.getIssuer()), jaxbAttr.getAttributeId()), jaxbAttr.getAttributeValues(), null);
 			}
 		}
 
@@ -119,8 +119,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 		{
 			final AttributeGUID attrKey = attrEntry.getKey();
 			final Bag<?> attrVals = attrEntry.getValue();
-			supportedDesignatorTypes.add(new AttributeDesignatorType(attrKey.getCategory(), attrKey.getId(), attrVals.getElementDatatype().getId(), attrKey
-					.getIssuer(), false));
+			supportedDesignatorTypes.add(new AttributeDesignatorType(attrKey.getCategory(), attrKey.getId(), attrVals.getElementDatatype().getId(), attrKey.getIssuer().orElse(null), false));
 		}
 	}
 
@@ -137,8 +136,7 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 	}
 
 	@Override
-	public <AV extends AttributeValue> Bag<AV> get(AttributeGUID attributeGUID, Datatype<AV> attributeDatatype, EvaluationContext context)
-			throws IndeterminateEvaluationException
+	public <AV extends AttributeValue> Bag<AV> get(final AttributeGUID attributeGUID, final Datatype<AV> attributeDatatype, final EvaluationContext context) throws IndeterminateEvaluationException
 	{
 		final Bag<?> attrVals = attrMap.get(attributeGUID);
 		if (attrVals == null)
@@ -151,8 +149,8 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 			return (Bag<AV>) attrVals;
 		}
 
-		throw new IndeterminateEvaluationException("Requested datatype (" + attributeDatatype + ") != provided by " + this + " ("
-				+ attrVals.getElementDatatype() + ")", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		throw new IndeterminateEvaluationException("Requested datatype (" + attributeDatatype + ") != provided by " + this + " (" + attrVals.getElementDatatype() + ")",
+				StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
 }

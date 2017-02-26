@@ -57,10 +57,7 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
  */
 public final class AttributeDesignatorExpression<AV extends AttributeValue> implements Expression<Bag<AV>>
 {
-	private static final IllegalArgumentException NULL_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute designator category");
-	private static final IllegalArgumentException NULL_DATATYPE_EXCEPTION = new IllegalArgumentException("Undefined attribute designator datatype");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_ID_EXCEPTION = new IllegalArgumentException("Undefined attribute designator AttribtueId");
-	private static final IllegalArgumentException NULL_ATTRIBUTE_Provider_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
+	private static final IllegalArgumentException NULL_ATTRIBUTE_PROVIDER_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
 	private static final UnsupportedOperationException UNSUPPORTED_OPERATION_EXCEPTION = new UnsupportedOperationException();
 
 	private final transient AttributeGUID attrGUID;
@@ -91,35 +88,19 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 	 *            expected datatype of the result of evaluating this AttributeDesignator ( {@code AV is the expected type of every element in the bag})
 	 * @param attrProvider
 	 *            Attribute Provider responsible for finding the attribute designated by this in a given evaluation context at runtime
+	 * @throws IllegalArgumentException
+	 *             if {@code attrDesignator.getCategory() == null || attrDesignator.getAttributeId() == null}
 	 */
 	public AttributeDesignatorExpression(final AttributeDesignatorType attrDesignator, final BagDatatype<AV> resultDatatype, final AttributeProvider attrProvider)
 	{
-		final String categoryURI = attrDesignator.getCategory();
-		if (categoryURI == null)
-		{
-			throw NULL_CATEGORY_EXCEPTION;
-		}
-
-		final String datatypeURI = attrDesignator.getDataType();
-		if (datatypeURI == null)
-		{
-			throw NULL_DATATYPE_EXCEPTION;
-		}
-
-		final String id = attrDesignator.getAttributeId();
-		if (id == null)
-		{
-			throw NULL_ATTRIBUTE_ID_EXCEPTION;
-		}
-
 		if (attrProvider == null)
 		{
-			throw NULL_ATTRIBUTE_Provider_EXCEPTION;
+			throw NULL_ATTRIBUTE_PROVIDER_EXCEPTION;
 		}
-
-		this.attrGUID = new AttributeGUID(categoryURI, attrDesignator.getIssuer(), id);
-		this.returnType = resultDatatype;
+		
 		this.attrProvider = attrProvider;
+		this.attrGUID = new AttributeGUID(attrDesignator);
+		this.returnType = resultDatatype;
 
 		// error messages/exceptions
 		final String missingAttributeMessage = this + " not found in context";

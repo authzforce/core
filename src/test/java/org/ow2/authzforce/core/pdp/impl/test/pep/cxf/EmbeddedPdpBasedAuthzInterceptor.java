@@ -26,6 +26,7 @@ import static org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory.XACML_
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -169,16 +170,16 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 		final PdpDecisionRequestBuilder<ImmutablePdpDecisionRequest> requestBuilder = pdp.newRequestBuilder(3, 7);
 
 		// Subject ID
-		final AttributeGUID subjectIdAttributeId = new AttributeGUID(XACML_1_0_ACCESS_SUBJECT.value(), issuer, XACMLAttributeId.XACML_1_0_SUBJECT_ID.value());
+		final AttributeGUID subjectIdAttributeId = new AttributeGUID(XACML_1_0_ACCESS_SUBJECT.value(), Optional.ofNullable(issuer), XACMLAttributeId.XACML_1_0_SUBJECT_ID.value());
 		final Bag<?> subjectIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(principal.getName()));
 		requestBuilder.putNamedAttributeIfAbsent(subjectIdAttributeId, subjectIdAttributeValues);
 
 		// Subject role(s)
-		final AttributeGUID subjectRoleAttributeId = new AttributeGUID(XACML_1_0_ACCESS_SUBJECT.value(), issuer, XACMLAttributeId.XACML_2_0_SUBJECT_ROLE.value());
+		final AttributeGUID subjectRoleAttributeId = new AttributeGUID(XACML_1_0_ACCESS_SUBJECT.value(), Optional.ofNullable(issuer), XACMLAttributeId.XACML_2_0_SUBJECT_ROLE.value());
 		requestBuilder.putNamedAttributeIfAbsent(subjectRoleAttributeId, stringsToAnyURIBag(roles));
 
 		// Resource ID
-		final AttributeGUID resourceIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLAttributeId.XACML_1_0_RESOURCE_ID.value());
+		final AttributeGUID resourceIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_RESOURCE_ID.value());
 		final Bag<?> resourceIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(getResourceId(messageParser)));
 		requestBuilder.putNamedAttributeIfAbsent(resourceIdAttributeId, resourceIdAttributeValues);
 
@@ -189,27 +190,27 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 			final QName wsdlService = messageParser.getWSDLService();
 			if (wsdlService != null)
 			{
-				final AttributeGUID resourceServiceIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_SERVICE_ID);
+				final AttributeGUID resourceServiceIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_SERVICE_ID);
 				final Bag<?> resourceServiceIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(wsdlService.toString()));
 				requestBuilder.putNamedAttributeIfAbsent(resourceServiceIdAttributeId, resourceServiceIdAttributeValues);
 			}
 
 			// WSDL Operation
 			final QName wsdlOperation = messageParser.getWSDLOperation();
-			final AttributeGUID resourceOperationIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_OPERATION_ID);
+			final AttributeGUID resourceOperationIdAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_OPERATION_ID);
 			final Bag<?> resourceOperationIddAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(wsdlOperation.toString()));
 			requestBuilder.putNamedAttributeIfAbsent(resourceOperationIdAttributeId, resourceOperationIddAttributeValues);
 
 			// WSDL Endpoint
 			final String endpointURI = messageParser.getResourceURI(false);
-			final AttributeGUID resourceWSDLEndpointAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), null, XACMLConstants.RESOURCE_WSDL_ENDPOINT);
+			final AttributeGUID resourceWSDLEndpointAttributeId = new AttributeGUID(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_ENDPOINT);
 			final Bag<?> resourceWSDLEndpointAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(endpointURI));
 			requestBuilder.putNamedAttributeIfAbsent(resourceWSDLEndpointAttributeId, resourceWSDLEndpointAttributeValues);
 		}
 
 		// Action ID
 		final String actionToUse = messageParser.getAction(defaultSOAPAction);
-		final AttributeGUID actionIdAttributeId = new AttributeGUID(XACML_3_0_ACTION.value(), null, XACMLAttributeId.XACML_1_0_ACTION_ID.value());
+		final AttributeGUID actionIdAttributeId = new AttributeGUID(XACML_3_0_ACTION.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ACTION_ID.value());
 		final Bag<?> actionIdAttributeValues = Bags.singleton(STRING_FACTORY.getDatatype(), new StringValue(actionToUse));
 		requestBuilder.putNamedAttributeIfAbsent(actionIdAttributeId, actionIdAttributeValues);
 

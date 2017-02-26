@@ -58,7 +58,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 
 		private final String invalidArgTypesErrorMsg;
 		private final String argsOutOfBoundsErrorMessage;
-		private final Class<? extends SimpleValue<String>> firstParamClass;
+		private final Datatype<? extends SimpleValue<String>> param0Type;
 
 		private Call(final FirstOrderFunctionSignature<StringValue> functionSig, final Datatype<? extends SimpleValue<String>> param0Type, final List<Expression<?>> args,
 				final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
@@ -67,7 +67,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types: expected: " + param0Type + ", " + StandardDatatypes.INTEGER_FACTORY.getDatatype() + ", "
 					+ StandardDatatypes.INTEGER_FACTORY.getDatatype() + "; actual: ";
 			this.argsOutOfBoundsErrorMessage = "Function " + functionId + ": either beginIndex is out of bounds, or endIndex =/= -1 and out of bounds";
-			this.firstParamClass = param0Type.getValueClass();
+			this.param0Type = param0Type;
 		}
 
 		@Override
@@ -82,7 +82,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 			final IntegerValue endIndex;
 			try
 			{
-				arg0 = firstParamClass.cast(rawArg0);
+				arg0 = param0Type.cast(rawArg0);
 				beginIndex = (IntegerValue) rawArg1;
 				endIndex = (IntegerValue) rawArg2;
 			}

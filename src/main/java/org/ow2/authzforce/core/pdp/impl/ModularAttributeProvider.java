@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
@@ -57,7 +58,7 @@ public class ModularAttributeProvider implements AttributeProvider
 		@Override
 		public void process(final AttributeGUID attributeGUID, final Bag<?> result, final EvaluationContext context)
 		{
-			if (attributeGUID.getIssuer() == null)
+			if (!attributeGUID.getIssuer().isPresent())
 			{
 				// Attribute already without Issuer -> nothing to copy
 				return;
@@ -65,7 +66,7 @@ public class ModularAttributeProvider implements AttributeProvider
 			/*
 			 * Attribute with Issuer -> make Issuer-less copy and put same result in context for match by Issuer-less AttributeDesignator
 			 */
-			final AttributeGUID issuerLessAttributeGUID = new AttributeGUID(attributeGUID.getCategory(), null, attributeGUID.getId());
+			final AttributeGUID issuerLessAttributeGUID = new AttributeGUID(attributeGUID.getCategory(), Optional.empty(), attributeGUID.getId());
 			/*
 			 * Cache the attribute value(s) for the issuer-less attribute in context in case there is a matching Issuer-less AttributeDesignator to evaluate
 			 */

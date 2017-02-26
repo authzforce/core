@@ -65,7 +65,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 			private final String indeterminateSubFuncEvalMessagePrefix;
 
 			private Call(final String functionId, final Datatype<Bag<SUB_RETURN>> returnType, final FirstOrderFunction<SUB_RETURN> subFunction, final List<Expression<?>> primitiveInputs,
-					final Expression<?> lastInputBag)
+					final Expression<? extends Bag<?>> lastInputBag)
 			{
 				super(functionId, returnType, subFunction, primitiveInputs, lastInputBag);
 				this.returnBagElementType = subFunction.getReturnType();
@@ -108,7 +108,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 
 		@Override
 		protected OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN_T>, SUB_RETURN_T> newFunctionCall(final FirstOrderFunction<SUB_RETURN_T> subFunc, final List<Expression<?>> primitiveInputs,
-				final Expression<?> lastInputBag)
+				final Expression<? extends Bag<?>> lastInputBag)
 		{
 			return new Call<>(this.getId(), this.getReturnType(), subFunc, primitiveInputs, lastInputBag);
 		}

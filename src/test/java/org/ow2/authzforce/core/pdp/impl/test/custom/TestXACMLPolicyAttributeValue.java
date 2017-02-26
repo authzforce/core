@@ -19,10 +19,10 @@
 package org.ow2.authzforce.core.pdp.impl.test.custom;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
@@ -60,7 +60,7 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 
 	private TestXACMLPolicyAttributeValue(final List<Serializable> content) throws IllegalArgumentException
 	{
-		super(ID, content, null);
+		super(ID, content, Optional.empty());
 
 		/*
 		 * If content is empty, e.g. <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string"/>, assume value is empty string.
@@ -125,16 +125,21 @@ public class TestXACMLPolicyAttributeValue extends AttributeValue
 	{
 		public Factory()
 		{
-			super(TestXACMLPolicyAttributeValue.class, ID, URI.create(FUNCTION_ID_PREFIX));
+			super(TestXACMLPolicyAttributeValue.class, ID, FUNCTION_ID_PREFIX);
 		}
 
 		private static final IllegalArgumentException NON_NULL_OTHER_XML_ATTRIBUTES_ARG_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + ID
 				+ "': extra XML attributes are not supported by this primitive datatype, only one XML element.");
+		private static final IllegalArgumentException UNDEFINED_CONTENT_ARG_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + ID + "': null.");
 
 		@Override
 		public TestXACMLPolicyAttributeValue getInstance(final List<Serializable> content, final Map<QName, String> otherXmlAttributes, final XPathCompiler xPathCompiler)
 				throws IllegalArgumentException
 		{
+			if (content == null || content.isEmpty())
+			{
+				throw UNDEFINED_CONTENT_ARG_EXCEPTION;
+			}
 
 			if (otherXmlAttributes != null && !otherXmlAttributes.isEmpty())
 			{

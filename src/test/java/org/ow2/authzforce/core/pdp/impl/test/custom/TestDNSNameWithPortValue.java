@@ -18,7 +18,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.custom;
 
-import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Locale;
 import java.util.Map.Entry;
@@ -29,13 +28,11 @@ import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 
 /**
- * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert,
- * Richard Hill, Crystal Hayes, David Brossard, Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01.
- * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html. Latest version:
+ * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David Brossard,
+ * Hal Lockhart, and Steven Legg. 16 February 2015. OASIS Committee Specification 01. http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/cs01/xacml-3.0-dlp-nac-v1.0-cs01.html. Latest version:
  * http://docs.oasis-open.org/xacml/xacml-3.0-dlp-nac/v1.0/xacml-3.0-dlp-nac-v1.0.html.
  * <p>
- * It is basically the same as XACML Core dnsName datatype except that the hostname may use a wildcard as left-most subdomain, and the part after ':' is limited
- * to a port number only.
+ * It is basically the same as XACML Core dnsName datatype except that the hostname may use a wildcard as left-most subdomain, and the part after ':' is limited to a port number only.
  * <p>
  * Used here for testing Authzforce datatype extension mechanism, i.e. plugging a custom simple datatype into the PDP engine.
  *
@@ -54,11 +51,11 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 
 		public Factory()
 		{
-			super(TestDNSNameWithPortValue.class, ID, URI.create(Function.XACML_NS_3_0 + "dnsName-value"));
+			super(TestDNSNameWithPortValue.class, ID, Function.XACML_NS_3_0 + "dnsName-value");
 		}
 
 		@Override
-		public TestDNSNameWithPortValue getInstance(String val)
+		public TestDNSNameWithPortValue getInstance(final String val)
 		{
 			return new TestDNSNameWithPortValue(val);
 		}
@@ -91,8 +88,8 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 	}
 
 	/*
-	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom
-	 * functions dealing with network access control for instance.
+	 * These fields are not actually needed in the XACML core specification since no function uses them, but it might be useful for new XACML profile or custom functions dealing with network access
+	 * control for instance.
 	 */
 	// the required hostname
 	private final transient String hostname;
@@ -103,16 +100,15 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 	/**
 	 * Private helper that tests whether the given string is valid.
 	 * 
-	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead, but first make sure this issue is fixed:
-	 * https://issues.apache.org/jira/browse/VALIDATOR-366
+	 * TODO: find out whether it's better to use DomainValidator from Apache commons-validator instead, but first make sure this issue is fixed: https://issues.apache.org/jira/browse/VALIDATOR-366
 	 */
-	private static boolean isValidHostName(String hostname)
+	private static boolean isValidHostName(final String hostname)
 	{
 		assert hostname != null;
 		return HOSTNAME_PATTERN.matcher(hostname).matches();
 	}
 
-	private static Entry<String, Integer> parseDnsName(String dnsName) throws IllegalArgumentException
+	private static Entry<String, Integer> parseDnsName(final String dnsName) throws IllegalArgumentException
 	{
 		assert dnsName != null;
 
@@ -124,7 +120,8 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 			// there is no port portRange, so just use the name
 			host = dnsName;
 			port = UNDEFINED_PORT;
-		} else
+		}
+		else
 		{
 			// split the name and the port
 			host = dnsName.substring(0, portSep);
@@ -149,7 +146,7 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 	 * @throws java.lang.IllegalArgumentException
 	 *             if format of {@code val} does not comply with the dnsName datatype definition
 	 */
-	public TestDNSNameWithPortValue(String val) throws IllegalArgumentException
+	public TestDNSNameWithPortValue(final String val) throws IllegalArgumentException
 	{
 		super(ID, val);
 		final Entry<String, Integer> hostAndPort = parseDnsName(this.value);
@@ -197,12 +194,11 @@ public final class TestDNSNameWithPortValue extends SimpleValue<String>
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 * 
-	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange
-	 * attribute (more optimal than String equals)
+	 * We override the equals because for hostname, we can use equalsIgnoreCase() instead of equals() to compare, and PortRange.equals() for the portRange attribute (more optimal than String equals)
 	 */
 	/** {@inheritDoc} */
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{

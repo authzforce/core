@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -311,7 +312,7 @@ public final class AttributeSelectorExpression<AV extends AttributeValue> implem
 				throw NULL_ATTRIBUTE_Provider_BUT_NON_NULL_CONTEXT_SELECTOR_ID_EXCEPTION;
 			}
 
-			final AttributeGUID contextSelectorGUID = new AttributeGUID(attributeSelectorId.getCategory(), null, contextSelectorId);
+			final AttributeGUID contextSelectorGUID = new AttributeGUID(attributeSelectorId.getCategory(), Optional.empty(), contextSelectorId);
 			final String missingContextSelectorAttributeExceptionMessage = this + ": No value found for attribute designated by Category=" + attributeCategory + " and ContextSelectorId="
 					+ contextSelectorId;
 			final IndeterminateEvaluationException missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason",
@@ -432,19 +433,14 @@ public final class AttributeSelectorExpression<AV extends AttributeValue> implem
 				final AttributeValue attrVal;
 				try
 				{
-					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(),
-							this.xpathCompiler);
+					attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), this.xpathCompiler);
 				}
 				catch (final IllegalArgumentException e)
 				{
 					final String contextSelectorId = attributeSelectorId.getContextSelectorId();
-					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '"
-							+ attributeDatatype + "' from result #" + xpathEvalResultItemIndex
-							+ " of evaluating XPath against XML node from Content of Attributes Category='"
-							+ attributeSelectorId.getCategory() + "'"
-							+ (contextSelectorId == null ? ""
-									: " selected by ContextSelectorId='" + contextSelectorId + "'")
-							+ ": " + xpathEvalResultItem, StatusHelper.STATUS_SYNTAX_ERROR, e);
+					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
+							+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory() + "'"
+							+ (contextSelectorId == null ? "" : " selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, StatusHelper.STATUS_SYNTAX_ERROR, e);
 				}
 
 				resultBag.add(attributeDatatype.cast(attrVal));
