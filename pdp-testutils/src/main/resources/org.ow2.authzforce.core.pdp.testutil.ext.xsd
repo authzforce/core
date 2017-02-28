@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2013-2015 Thales Services. All rights reserved. No warranty, explicit or implicit, provided. -->
+<!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/test/3" xmlns="http://authzforce.github.io/core/xmlns/test/3"
+	xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3" xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" elementFormDefault="qualified" attributeFormDefault="unqualified"
+	version="3.5.9">
+	<xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
+	<xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
+	<xs:annotation>
+		<xs:documentation xml:lang="en">
+			Data Model for PDP test extensions, e.g. the Test Attribute Provider module
+		</xs:documentation>
+	</xs:annotation>
+	<xs:complexType name="TestAttributeProvider">
+		<xs:annotation>
+			<xs:documentation>
+				Test Attribute Provider. This Provider is used for test purposes only. It can be
+				configured to support any attribute but returns always an empty bag as attribute value.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="authz-ext:AbstractAttributeProvider">
+				<xs:sequence>
+					<xs:element ref="xacml:Attributes" minOccurs="1" maxOccurs="10" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

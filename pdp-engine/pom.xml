@@ -1,0 +1,220 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <groupId>org.ow2.authzforce</groupId>
+      <artifactId>authzforce-ce-core</artifactId>
+      <version>7.1.1-SNAPSHOT</version>
+      <relativePath>..</relativePath>
+   </parent>
+   <artifactId>authzforce-ce-core-pdp-engine</artifactId>
+   <name>${project.groupId}:${project.artifactId}</name>
+   <description>AuthZForce Community Edition - XACML-compliant Core PDP Engine</description>
+   <url>${project.url}</url>
+   <scm>
+<!--       Used by Jenkins - Maven release plugin -->
+      <connection>scm:git:${git.url.base}/core.git/pdp-engine</connection>
+      <developerConnection>scm:git:${git.url.base}/core.git/pdp-engine</developerConnection>
+      <tag>HEAD</tag>
+<!--       Publicly browsable repository URL. For example, via Gitlab web UI. -->
+      <url>${git.url.base}/core/pdp-engine</url>
+   </scm>
+   <!-- distributionManagement defined in parent POM already -->
+   <dependencies>
+      <!-- Third-party dependencies -->
+      <dependency>
+         <!-- For redirecting Spring logs to slf4j -->
+         <groupId>org.slf4j</groupId>
+         <artifactId>jcl-over-slf4j</artifactId>
+      </dependency>
+      <dependency>
+         <!-- Needed for org.springframework.util.ResourceUtils,SystemPropertyUtils,FileCopyUtils, etc. -->
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-core</artifactId>
+      </dependency>
+      <dependency>
+         <!-- For loading XML schemas with OASIS catalog (CatalogManager) -->
+         <groupId>xml-resolver</groupId>
+         <artifactId>xml-resolver</artifactId>
+      </dependency>
+      <!-- /Third-party dependencies -->
+
+      <!-- Authzforce dependencies -->
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
+         <version>9.0.1-SNAPSHOT</version>
+      </dependency>
+      <!-- /Authzforce dependencies -->
+
+      <!-- Test dependencies -->
+      <dependency>
+         <groupId>ch.qos.logback</groupId>
+         <artifactId>logback-classic</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <!-- /Test dependencies -->
+   </dependencies>
+   <build>
+      <plugins>
+         <plugin>
+            <!-- Consider combining with Red Hat Victims and OSS Index. More info on Victims vs. Dependency-check: https://bugzilla.redhat.com/show_bug.cgi?id=1388712 -->
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <configuration>
+               <!-- The plugin has numerous issues with version matching, which triggers false positives so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
+               <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
+            </configuration>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>check</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <!-- target JDK already set by parent project's maven.compiler.target property -->
+            <configuration>
+               <verbose>true</verbose>
+               <excludeRoots>
+                  <excludeRoot>target/generated-sources/xjc</excludeRoot>
+                  <excludeRoot>target/generated-test-sources/xjc</excludeRoot>
+               </excludeRoots>
+            </configuration>
+            <executions>
+               <execution>
+                  <phase>verify</phase>
+                  <goals>
+                     <goal>check</goal>
+                     <goal>cpd-check</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <configuration>
+               <onlyAnalyze>org.ow2.authzforce.*</onlyAnalyze>
+               <excludeFilterFile>findbugs-exclude-filter.xml</excludeFilterFile>
+            </configuration>
+            <executions>
+               <execution>
+                  <phase>verify</phase>
+                  <goals>
+                     <goal>check</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <!-- Override license-maven-plugin configuration to exclude Sunxacml files from adding GPL license headers (different license) -->
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
+               <header>license/thales-gpl.header.txt</header>
+               <includes>
+                  <include>src/main/java/org/ow2/authzforce/**</include>
+                  <!-- Include test files also -->
+                  <include>src/test/java/org/ow2/authzforce/**</include>
+               </includes>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>format-sources-license</id>
+                  <phase>process-sources</phase>
+                  <goals>
+                     <goal>format</goal>
+                  </goals>
+               </execution>
+               <execution>
+                  <id>format-test-sources-license</id>
+                  <phase>process-test-sources</phase>
+                  <goals>
+                     <goal>format</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.jvnet.jaxb2.maven2</groupId>
+            <artifactId>maven-jaxb2-plugin</artifactId>
+            <configuration>
+               <!-- debug=true will generate JAXBDebug class. More info: https://github.com/highsource/maven-jaxb2-plugin/wiki/Miscellaneous -->
+               <debug>false</debug>
+               <strict>false</strict>
+               <verbose>true</verbose>
+               <removeOldOutput>true</removeOldOutput>
+               <extension>true</extension>
+               <args>
+                  <arg>-Xvalue-constructor</arg>
+               </args>
+               <plugins>
+                  <plugin>
+                     <groupId>org.jvnet.jaxb2_commons</groupId>
+                     <artifactId>jaxb2-value-constructor</artifactId>
+                     <version>${jaxb2-value-constructor.version}</version>
+                  </plugin>
+               </plugins>
+               <useDependenciesAsEpisodes>false</useDependenciesAsEpisodes>
+               <episodes>
+                  <episode>
+                     <groupId>${project.groupId}</groupId>
+                     <artifactId>${artifactId.prefix}-xmlns-model</artifactId>
+                  </episode>
+                  <episode>
+                     <groupId>${project.groupId}</groupId>
+                     <artifactId>${artifactId.prefix}-xacml-model</artifactId>
+                  </episode>
+                  <episode>
+                     <groupId>${project.groupId}</groupId>
+                     <artifactId>${artifactId.prefix}-pdp-ext-model</artifactId>
+                  </episode>
+               </episodes>
+               <catalog>src/main/jaxb/catalog.xml</catalog>
+               <bindingDirectory>src/main/jaxb</bindingDirectory>
+               <bindingIncludes>
+                  <include>bindings.xjb</include>
+               </bindingIncludes>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>jaxb-generate-compile-sources</id>
+                  <goals>
+                     <goal>generate</goal>
+                  </goals>
+                  <configuration>
+                     <schemaDirectory>src/main/resources</schemaDirectory>
+                     <schemaIncludes>
+                        <include>pdp.xsd</include>
+                     </schemaIncludes>
+                     <generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
+                     <generatePackage>${project.groupId}.core.xmlns.pdp</generatePackage>
+                     <addCompileSourceRoot>true</addCompileSourceRoot>
+                     <addTestCompileSourceRoot>false</addTestCompileSourceRoot>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <skipTests>false</skipTests>
+               <systemPropertyVariables>
+                  <javax.xml.accessExternalSchema>all</javax.xml.accessExternalSchema>
+               </systemPropertyVariables>
+               <includes>
+                  <include>**/MainTest.java</include>
+               </includes>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+</project>

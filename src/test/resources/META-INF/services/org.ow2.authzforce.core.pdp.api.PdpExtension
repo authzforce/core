@@ -1,6 +1,0 @@
-org.ow2.authzforce.core.pdp.impl.test.custom.TestAttributeProviderModule$Factory
-org.ow2.authzforce.core.pdp.impl.test.custom.TestXACMLPolicyAttributeValue$Factory
-org.ow2.authzforce.core.pdp.impl.test.custom.TestDNSNameWithPortValue$Factory
-org.ow2.authzforce.core.pdp.impl.test.custom.TestDNSNameValueEqualFunction
-org.ow2.authzforce.core.pdp.impl.test.custom.TestOnPermitApplySecondCombiningAlg
-org.ow2.authzforce.core.pdp.impl.test.custom.TestCombinedDecisionResultFilter

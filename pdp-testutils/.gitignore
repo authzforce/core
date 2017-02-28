@@ -1,7 +1,4 @@
 /target/
-/.CHANGELOG.md.html
-/.README.md.html
-/.settings/
 /.classpath
 /.pmd
 /.pmdruleset.xml
