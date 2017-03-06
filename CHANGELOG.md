@@ -4,12 +4,24 @@ All notable changes to this project are documented in this file following the [K
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
 
+## 8.0.0
+### Changed
+- Version of parent project: 5.1.0
+- Version of dependency authzforce-ce-core-pdp-api: 9.1.0 (API changes)
+- License: GPL v3.0 replaced with Apache License v2.0
+- Project URL: 'https://tuleap.ow2.org/projects/authzforce' replaced with 'https://authzforce.ow2.org'
+- GIT repository URL base: 'https://tuleap.ow2.org/plugins/git/authzforce' replaced with 'https://gitlab.ow2.org/authzforce'
+- Project converted to multi-module project with two new modules in order to have properly separated artifact with the test utility classes to be reused in other AuthzForce projects (e.g. `server/webapp` and PDP extensions), therefore two new Maven artifacts:
+	- `authzforce-ce-core-pdp-engine` replacing artifact `authzforce-ce-core` (no classifier);
+	- `authzforce-ce-core-pdp-testutils` replacing artifact `authzforce-ce-core` with `tests` classifier.
+
+
 ## 7.1.0
 ### Added
 - [OW2-26] Simplify evaluation of Apply expression with commutative numeric function f (e.g. add and multiply): if multiple arguments are constants A, B..., then: `f(a1,...an, A, b1,...bn, B, c1,...) = f(C, a1,...an, b1,...bn, c1...)` where `C = f(A,B...)` and a1,...an, b1,...bn, c1,... are the other arguments (variables).
 
 ### Fixed
-- [OW2-25] (Reopened) NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. This is the final fix addressing higher-order functions. (Initial fix only addressed first-order ones.)
+- [OW2-25] - Reopened - NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. This is the final fix addressing higher-order functions. (Initial fix only addressed first-order ones.)
 - Artifact `authzforce-ce-core` with `tests` classifier: missing classes.
 
 
