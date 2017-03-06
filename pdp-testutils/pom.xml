@@ -28,6 +28,7 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
+         <version>4.11</version>
       </dependency>
       <!-- Test dependencies -->
       <dependency>
@@ -122,7 +123,7 @@
             <groupId>com.mycila</groupId>
             <artifactId>license-maven-plugin</artifactId>
             <configuration>
-               <header>license/thales-gpl.header.txt</header>
+               <header>license/alv2-header.txt</header>
                <includes>
                   <include>src/main/java/org/ow2/authzforce/**</include>
                   <!-- Include test files also -->
