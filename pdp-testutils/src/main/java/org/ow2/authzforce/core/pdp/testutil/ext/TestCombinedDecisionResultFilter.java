@@ -26,7 +26,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 
@@ -61,7 +61,7 @@ public class TestCombinedDecisionResultFilter implements DecisionResultFilter
 		private DecisionType combinedDecision = DecisionType.INDETERMINATE;
 
 		@Override
-		public List<Result> addResult(final IndividualDecisionRequest request, final PdpDecisionResult result)
+		public List<Result> addResult(final IndividualXACMLRequest request, final PdpDecisionResult result)
 		{
 			if (result.getDecision() == DecisionType.INDETERMINATE)
 			{

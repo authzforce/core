@@ -24,6 +24,7 @@ import java.util.Map;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
+import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PDPEngine;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;

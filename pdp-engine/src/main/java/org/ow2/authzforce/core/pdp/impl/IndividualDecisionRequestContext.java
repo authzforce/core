@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
 import org.ow2.authzforce.core.pdp.api.UpdatableMap;
@@ -87,20 +87,20 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	 * @param namedAttributeMap
 	 *            updatable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on attribute category,issuer,id. An
 	 *            attribute value is a bag of primitive values.
-	 * @param extraContentsByAttributeCategory
+	 * @param contentNodesByCategory
 	 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
 	 * @param returnUsedAttributes
 	 *            true iff the list of attributes used during evaluation may be requested by
 	 */
-	public IndividualDecisionRequestContext(final Map<AttributeGUID, Bag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByAttributeCategory,
+	public IndividualDecisionRequestContext(final Map<AttributeGUID, Bag<?>> namedAttributeMap, final Map<String, XdmNode> contentNodesByCategory,
 			final boolean returnApplicablePolicyIdList, final boolean returnUsedAttributes)
 	{
 		this.namedAttributes = namedAttributeMap == null ? HashCollections.<AttributeGUID, Bag<?>> newUpdatableMap() : namedAttributeMap;
 		this.returnApplicablePolicyIdList = returnApplicablePolicyIdList;
 		this.usedNamedAttributeIdSet = returnUsedAttributes ? UpdatableCollections.<AttributeGUID> newUpdatableSet() : UpdatableCollections.<AttributeGUID> emptySet();
-		if (extraContentsByAttributeCategory == null)
+		if (contentNodesByCategory == null)
 		{
 			this.extraContentsByAttributeCategory = Collections.emptyMap();
 			this.attributeSelectorResults = UpdatableCollections.emptyMap();
@@ -110,7 +110,7 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 		}
 		else
 		{
-			this.extraContentsByAttributeCategory = extraContentsByAttributeCategory;
+			this.extraContentsByAttributeCategory = contentNodesByCategory;
 			this.attributeSelectorResults = UpdatableCollections.newUpdatableMap();
 			this.usedAttributeSelectorIdSet = returnUsedAttributes ? UpdatableCollections.<AttributeSelectorId> newUpdatableSet() : UpdatableCollections.<AttributeSelectorId> emptySet();
 		}
@@ -124,9 +124,9 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	 * @param returnUsedAttributes
 	 *            true iff the list of attributes used during evaluation may be requested by
 	 */
-	public IndividualDecisionRequestContext(final IndividualDecisionRequest individualDecisionReq, final boolean returnUsedAttributes)
+	public IndividualDecisionRequestContext(final PdpDecisionRequest individualDecisionReq, final boolean returnUsedAttributes)
 	{
-		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getExtraContentsByCategory(), individualDecisionReq.isApplicablePolicyIdListReturned(), returnUsedAttributes);
+		this(individualDecisionReq.getNamedAttributes(), individualDecisionReq.getContentNodesByCategory(), individualDecisionReq.isApplicablePolicyIdListReturned(), returnUsedAttributes);
 	}
 
 	/** {@inheritDoc} */

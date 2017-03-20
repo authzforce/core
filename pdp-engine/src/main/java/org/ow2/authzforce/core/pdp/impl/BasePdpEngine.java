@@ -47,8 +47,9 @@ import org.ow2.authzforce.core.pdp.api.DecisionResultFilter.FilteringResultColle
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
+import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
@@ -247,10 +248,10 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		}
 
 		@Override
-		protected List<Result> evaluateToJAXB(final List<? extends IndividualDecisionRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		protected List<Result> evaluateToJAXB(final List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
 			final FilteringResultCollector filteringResultCollector = beginMultipleDecisions(individualDecisionRequests.size());
-			for (final IndividualDecisionRequest individualDecisionRequest : individualDecisionRequests)
+			for (final IndividualXACMLRequest individualDecisionRequest : individualDecisionRequests)
 			{
 				if (individualDecisionRequest == null)
 				{
@@ -351,9 +352,9 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		}
 
 		@Override
-		public List<Result> evaluateToJAXB(final List<? extends IndividualDecisionRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
+		public List<Result> evaluateToJAXB(final List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes)
 		{
-			final Map<? extends IndividualDecisionRequest, PdpDecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
+			final Map<? extends IndividualXACMLRequest, PdpDecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
 				// error, return indeterminate result as only result
@@ -365,11 +366,11 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 			 * There will be at most as many new results (not in cache) as there are individual decision requests
 			 */
 			final FilteringResultCollector filteringResultCollector = beginMultipleDecisions(individualDecisionRequests.size());
-			final Map<IndividualDecisionRequest, PdpDecisionResult> newResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
+			final Map<IndividualXACMLRequest, PdpDecisionResult> newResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
 
 			try
 			{
-				for (final IndividualDecisionRequest individualDecisionRequest : individualDecisionRequests)
+				for (final IndividualXACMLRequest individualDecisionRequest : individualDecisionRequests)
 				{
 					final PdpDecisionResult finalResult;
 					/*
@@ -961,7 +962,7 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		 * The request parser may return multiple individual decision requests from a single Request, e.g. if the request parser implements the Multiple Decision profile or Hierarchical Resource
 		 * profile
 		 */
-		final List<? extends IndividualDecisionRequest> individualDecisionRequests;
+		final List<? extends IndividualXACMLRequest> individualDecisionRequests;
 		try
 		{
 			individualDecisionRequests = reqFilter.filter(request, namespaceURIsByPrefix);

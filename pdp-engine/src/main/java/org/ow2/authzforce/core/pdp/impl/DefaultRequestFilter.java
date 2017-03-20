@@ -31,15 +31,17 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.BaseRequestFilter;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.ImmutableIndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.JaxbXACMLAttributesParser;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
@@ -113,7 +115,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 
 	/** {@inheritDoc} */
 	@Override
-	public List<? extends IndividualDecisionRequest> filter(final List<Attributes> attributesList, final JaxbXACMLAttributesParser xacmlAttrsParser, final boolean isApplicablePolicyIdListReturned,
+	public List<? extends IndividualXACMLRequest> filter(final List<Attributes> attributesList, final JaxbXACMLAttributesParser xacmlAttrsParser, final boolean isApplicablePolicyIdListReturned,
 			final boolean combinedDecision, final XPathCompiler xPathCompiler, final Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{
 		final Map<AttributeGUID, Bag<?>> namedAttributes = HashCollections.newUpdatableMap(attributesList.size());
@@ -165,6 +167,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 			}
 		}
 
-		return Collections.singletonList(new ImmutableIndividualDecisionRequest(namedAttributes, extraContentsByCategory, attributesToIncludeInResult, isApplicablePolicyIdListReturned));
+		return Collections.singletonList(new IndividualXACMLRequest(new ImmutablePdpDecisionRequest(namedAttributes, extraContentsByCategory, isApplicablePolicyIdListReturned), ImmutableList
+				.copyOf(attributesToIncludeInResult)));
 	}
 }

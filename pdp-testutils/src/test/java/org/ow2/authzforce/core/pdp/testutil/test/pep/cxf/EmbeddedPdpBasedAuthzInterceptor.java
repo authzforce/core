@@ -44,6 +44,7 @@ import org.apache.cxf.security.SecurityContext;
 import org.apache.wss4j.common.ext.WSSecurityException;
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
+import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
@@ -52,7 +53,6 @@ import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
-import org.ow2.authzforce.core.pdp.impl.ImmutablePdpDecisionRequest;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
 import org.slf4j.LoggerFactory;
 

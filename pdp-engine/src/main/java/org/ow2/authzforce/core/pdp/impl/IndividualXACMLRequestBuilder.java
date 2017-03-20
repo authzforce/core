@@ -27,26 +27,28 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 import org.ow2.authzforce.core.pdp.api.AttributeGUID;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
+import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 
+import com.google.common.collect.ImmutableList;
+
 /**
- * Mutable Individual Decision Request
+ * (Mutable) Individual Decision Request builder, used only by {@link MultiDecisionRequestFilter}, to build an immutable decision request
  *
  * @version $Id: $
  */
-public final class MutableIndividualDecisionRequest implements IndividualDecisionRequest
+final class IndividualXACMLRequestBuilder
 {
 	private static final IllegalArgumentException UNDEF_ATTRIBUTES_EXCEPTION = new IllegalArgumentException("Undefined attributes");
 	private static final IllegalArgumentException UNDEF_ATTRIBUTE_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute category");
 
-	private final Map<AttributeGUID, Bag<?>> namedAttributes;
-
 	// initialized not null by constructors
-	private final Map<String, XdmNode> extraContentsByCategory;
+	private final Map<AttributeGUID, Bag<?>> namedAttributes;
+	private final Map<String, XdmNode> contentNodesByCategory;
 	private final List<Attributes> attributesToIncludeInResult;
-	private final boolean returnApplicablePolicyIdList;
+	private final boolean isApplicablePolicyIdListReturned;
 
 	/**
 	 * Creates empty request (no attribute)
@@ -54,13 +56,13 @@ public final class MutableIndividualDecisionRequest implements IndividualDecisio
 	 * @param returnPolicyIdList
 	 *            equivalent of XACML ReturnPolicyIdList
 	 */
-	public MutableIndividualDecisionRequest(final boolean returnPolicyIdList)
+	IndividualXACMLRequestBuilder(final boolean returnPolicyIdList)
 	{
 		// these maps/lists may be updated later by put(...) method defined in this class
 		namedAttributes = HashCollections.newUpdatableMap();
-		extraContentsByCategory = HashCollections.newUpdatableMap();
+		contentNodesByCategory = HashCollections.newUpdatableMap();
 		attributesToIncludeInResult = new ArrayList<>();
-		returnApplicablePolicyIdList = returnPolicyIdList;
+		isApplicablePolicyIdListReturned = returnPolicyIdList;
 	}
 
 	/**
@@ -69,16 +71,15 @@ public final class MutableIndividualDecisionRequest implements IndividualDecisio
 	 * @param baseRequest
 	 *            replicated existing request. Further changes to it are not reflected back to this new instance.
 	 */
-	public MutableIndividualDecisionRequest(final IndividualDecisionRequest baseRequest)
+	IndividualXACMLRequestBuilder(final IndividualXACMLRequestBuilder baseRequest)
 	{
+		assert baseRequest != null;
+
 		// these maps/lists may be updated later by put(...) method defined in this class
-		final Map<AttributeGUID, Bag<?>> baseNamedAttributes = baseRequest.getNamedAttributes();
-		final Map<String, XdmNode> baseExtraContentsByCategory = baseRequest.getExtraContentsByCategory();
-		final List<Attributes> baseReturnedAttributes = baseRequest.getReturnedAttributes();
-		namedAttributes = baseNamedAttributes == null ? HashCollections.<AttributeGUID, Bag<?>> newUpdatableMap() : HashCollections.newUpdatableMap(baseNamedAttributes);
-		extraContentsByCategory = baseExtraContentsByCategory == null ? HashCollections.<String, XdmNode> newUpdatableMap() : HashCollections.newUpdatableMap(baseExtraContentsByCategory);
-		attributesToIncludeInResult = baseReturnedAttributes == null ? new ArrayList<>() : new ArrayList<>(baseRequest.getReturnedAttributes());
-		returnApplicablePolicyIdList = baseRequest.isApplicablePolicyIdListReturned();
+		namedAttributes = HashCollections.newUpdatableMap(baseRequest.namedAttributes);
+		contentNodesByCategory = HashCollections.newUpdatableMap(baseRequest.contentNodesByCategory);
+		isApplicablePolicyIdListReturned = baseRequest.isApplicablePolicyIdListReturned;
+		attributesToIncludeInResult = new ArrayList<>(baseRequest.attributesToIncludeInResult);
 	}
 
 	/**
@@ -89,7 +90,7 @@ public final class MutableIndividualDecisionRequest implements IndividualDecisio
 	 * @param categorySpecificAttributes
 	 *            attributes in category {@code categoryName}
 	 * @throws java.lang.IllegalArgumentException
-	 *             if {@code categoryName == null || attributes == null} or duplicate attribute category ({@link #put(String, SingleCategoryAttributes)} already called with same {@code categoryName}
+	 *             if {@code categoryName == null || categorySpecificAttributes == null} or duplicate attribute category (this method was already called with same {@code categoryName})
 	 */
 	public void put(final String categoryName, final SingleCategoryAttributes<?> categorySpecificAttributes) throws IllegalArgumentException
 	{
@@ -104,11 +105,11 @@ public final class MutableIndividualDecisionRequest implements IndividualDecisio
 		}
 
 		// extraContentsByCategory initialized not null by constructors
-		assert extraContentsByCategory != null;
+		assert contentNodesByCategory != null;
 		final XdmNode newContentNode = categorySpecificAttributes.getExtraContent();
 		if (newContentNode != null)
 		{
-			final XdmNode duplicate = extraContentsByCategory.putIfAbsent(categoryName, newContentNode);
+			final XdmNode duplicate = contentNodesByCategory.putIfAbsent(categoryName, newContentNode);
 			if (duplicate != null)
 			{
 				throw new IllegalArgumentException("Duplicate Attributes[@Category] in Individual Decision Request (not allowed): " + categoryName);
@@ -134,47 +135,10 @@ public final class MutableIndividualDecisionRequest implements IndividualDecisio
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getNamedAttributes()
-	 */
-	/** {@inheritDoc} */
-	@Override
-	public Map<AttributeGUID, Bag<?>> getNamedAttributes()
+	public IndividualXACMLRequest build()
 	{
-		return namedAttributes;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getAttributesIncludedInResult()
-	 */
-	/** {@inheritDoc} */
-	@Override
-	public List<Attributes> getReturnedAttributes()
-	{
-		return this.attributesToIncludeInResult;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.ow2.authzforce.core.IndividualDecisionRequest#getExtraContentsByCategory()
-	 */
-	/** {@inheritDoc} */
-	@Override
-	public Map<String, XdmNode> getExtraContentsByCategory()
-	{
-		return this.extraContentsByCategory;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isApplicablePolicyIdListReturned()
-	{
-		return returnApplicablePolicyIdList;
+		return new IndividualXACMLRequest(new ImmutablePdpDecisionRequest(this.namedAttributes, this.contentNodesByCategory, this.isApplicablePolicyIdListReturned),
+				ImmutableList.copyOf(this.attributesToIncludeInResult));
 	}
 
 }

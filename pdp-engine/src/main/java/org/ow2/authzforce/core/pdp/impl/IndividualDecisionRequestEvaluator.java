@@ -30,7 +30,7 @@ import org.ow2.authzforce.core.pdp.api.DecisionResultFilter.FilteringResultColle
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
@@ -179,9 +179,9 @@ public abstract class IndividualDecisionRequestEvaluator
 		}
 
 		@Override
-		public List<Result> addResult(final IndividualDecisionRequest request, final PdpDecisionResult result)
+		public List<Result> addResult(final IndividualXACMLRequest request, final PdpDecisionResult result)
 		{
-			results.add(result.toXACMLResult(request.getReturnedAttributes()));
+			results.add(result.toXACMLResult(request.getAttributesToBeReturned()));
 			return null;
 		}
 
@@ -294,7 +294,7 @@ public abstract class IndividualDecisionRequestEvaluator
 	 * </p>
 	 *
 	 * @param request
-	 *            a non-null {@link org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest} object.
+	 *            a non-null {@link PdpDecisionRequest} object.
 	 * @param pdpIssuedAttributes
 	 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 	 * @param returnUsedAttributes
@@ -308,8 +308,7 @@ public abstract class IndividualDecisionRequestEvaluator
 
 		// convert to EvaluationContext
 		final Map<AttributeGUID, Bag<?>> mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, request.getNamedAttributes());
-		final EvaluationContext ctx = new IndividualDecisionRequestContext(mergedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdListReturned(),
-				returnUsedAttributes);
+		final EvaluationContext ctx = new IndividualDecisionRequestContext(mergedNamedAttributes, request.getContentNodesByCategory(), request.isApplicablePolicyIdListReturned(), returnUsedAttributes);
 		return rootPolicyEvaluator.findAndEvaluate(ctx);
 	}
 
@@ -354,6 +353,6 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 	 * @return a {@link java.util.List} of XACML {@link Result}s (one per individual decision request), ready to be included in a final XACML Response.
 	 */
-	protected abstract List<Result> evaluateToJAXB(List<? extends IndividualDecisionRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
+	protected abstract List<Result> evaluateToJAXB(List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
 
 }
