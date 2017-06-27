@@ -6,7 +6,7 @@ Authorization PDP (Policy Decision Point) engine implementing the [OASIS XACML v
 
 Java projects may use AuthZForce Core to instantiate an embedded Java PDP. 
 
-*If you are interested in using a XACML PDP/PAP as a server with a RESTful API, go to the [AuthZForce server project](http://github.com/authzforce/server).*
+*If you are interested in using the HTTP/REST API, go to the [AuthZForce server project](http://github.com/authzforce/server).*
 
 ## Features
 * Compliance with the following OASIS XACML 3.0 standards:
@@ -46,7 +46,8 @@ See the [change log file](CHANGELOG.md) following the *Keep a CHANGELOG* [conven
 ## License
 See the [license file](LICENSE).
 
-## Getting started
+## Usage
+### Getting started
 You can either build Authzforce PDP library from the source code after cloning this git repository, or use the latest release from Maven Central with this information:
 * groupId: `org.ow2.authzforce`;
 * artifactId: `authzforce-ce-core-pdp-engine`;
@@ -78,10 +79,12 @@ Our PDP implementation uses SLF4J for logging so you can use any SLF4J implement
 If you are using **Java 8**, make sure the following JVM argument is set before execution:
 `-Djavax.xml.accessExternalSchema=http`
 
-## Example of usage and PEP code with a web service authorization module
+### Example of usage and PEP code with a web service authorization module
 For an example of using an AuthzForce PDP engine in a real-life use case, please refer to the JUnit test class [EmbeddedPdpBasedAuthzInterceptorTest](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptorTest.java) and the Apache CXF authorization interceptor [EmbeddedPdpBasedAuthzInterceptor](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptor.java). The test class runs a test similar to @coheigea's [XACML 3.0 Authorization Interceptor test](https://github.com/coheigea/testcases/blob/master/apache/cxf/cxf-sts-xacml/src/test/java/org/apache/coheigea/cxf/sts/xacml/authorization/xacml3/XACML3AuthorizationTest.java) but using AuthzForce as PDP engine instead of OpenAZ. In this test, a web service client requests a Apache-CXF-based web service with a SAML token as credentials (previously issued by a Security Token Service upon successful client authentication) that contains the user ID and roles. Each request is intercepted on the web service side by a [EmbeddedPdpBasedAuthzInterceptor](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptor.java) that plays the role of PEP (Policy Enforcement Point in XACML jargon), i.e. it extracts the various authorization attributes (user ID and roles, web service name, operation...) and requests a decision from a local PDP with these attributes, then enforces the PDP's decision, i.e. forwards the request to the web service implementation if the decision is Permit, else rejects it.
 For more information, see the Javadoc of  [EmbeddedPdpBasedAuthzInterceptorTest](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptorTest.java).
 
+## Extensions
+If you are missing features in AuthzForce, you can extend it with various types of plugins (without changing the existing code), as described on the [wiki](../../wiki/Extensions).
 
 ## Support
 
@@ -95,3 +98,6 @@ Please include as much information as possible; the more we know, the better the
 * Your code & configuration files are often useful.
 
 If you wish to contact the developers for other reasons, use [AuthzForce contact mailing list](http://scr.im/azteam).
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md).
