@@ -90,7 +90,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 					results.add(subResult);
 				}
 
-				return Bags.getInstance(returnBagElementType, results);
+				return Bags.newBag(returnBagElementType, results);
 			}
 		}
 

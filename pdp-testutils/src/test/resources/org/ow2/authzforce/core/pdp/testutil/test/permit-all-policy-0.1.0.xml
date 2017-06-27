@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" PolicyId="permit-all" Version="0.1.0">
+   <Target />
+   <Rule Effect="Permit" RuleId="permit-all" />
+</Policy>

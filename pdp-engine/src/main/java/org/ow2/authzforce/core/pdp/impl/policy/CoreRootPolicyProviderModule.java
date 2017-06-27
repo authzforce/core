@@ -145,9 +145,9 @@ public class CoreRootPolicyProviderModule implements StaticRootPolicyProviderMod
 	 *            global PDP configuration environment properties
 	 * 
 	 * @throws IllegalArgumentException
-	 *             if {@code jaxbPolicySet } null/invalid, or {@code expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null}; OR ({@code
-	 *             jaxbRefPolicyProviderConf != null} AND ({@code refPolicyProviderModFactory == null || xacmlParserFactory == null} OR no PolicySet matching {@code policySetRef} could be resolved by the
-	 *             refPolicyProvider OR policy reference too deep (longer than {@code maxPolicySetRefDepth}))
+	 *             if {@code jaxbPolicySet } null/invalid, or {@code expressionFactory == null || combiningAlgRegistry == null || xacmlParserFactory == null}; OR (
+	 *             {@code jaxbRefPolicyProviderConf != null} AND ({@code refPolicyProviderModFactory == null || xacmlParserFactory == null} OR no PolicySet matching {@code policySetRef} could be
+	 *             resolved by the refPolicyProvider OR policy reference too deep (longer than {@code maxPolicySetRefDepth}))
 	 */
 	public <CONF extends AbstractPolicyProvider> CoreRootPolicyProviderModule(final PolicySet jaxbPolicySet, final Map<String, String> namespacePrefixesByURI,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final XACMLParserFactory xacmlParserFactory, final CONF jaxbRefPolicyProviderConf,
@@ -158,7 +158,7 @@ public class CoreRootPolicyProviderModule implements StaticRootPolicyProviderMod
 			// refPolicyProvider null
 			try
 			{
-				rootPolicy = PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry, null, null);
+				rootPolicy = PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry, null, null, maxPolicySetRefDepth);
 			}
 			catch (final IllegalArgumentException e)
 			{
@@ -174,7 +174,7 @@ public class CoreRootPolicyProviderModule implements StaticRootPolicyProviderMod
 		{
 			try
 			{
-				rootPolicy = PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry, refPolicyProvider, null);
+				rootPolicy = PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry, refPolicyProvider, null, maxPolicySetRefDepth);
 			}
 			catch (final IllegalArgumentException e)
 			{

@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
@@ -170,16 +171,17 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 
 		// Second arg
 		final Expression<?> arg1Exp = argExpsIterator.next();
-		final Value arg1 = arg1Exp.getValue();
+		final Optional<? extends Value> arg1 = arg1Exp.getValue();
 		final int beginIndex;
-		if (arg1 != null)
+		if (arg1.isPresent())
 		{
-			if (!(arg1 instanceof IntegerValue))
+			final Value arg1Value = arg1.get();
+			if (!(arg1Value instanceof IntegerValue))
 			{
-				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + arg1 + " (type: " + arg1Exp.getReturnType() + ")");
+				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + arg1Value + " (type: " + arg1Exp.getReturnType() + ")");
 			}
 
-			beginIndex = IntegerValue.class.cast(arg1).getUnderlyingValue().intValueExact();
+			beginIndex = IntegerValue.class.cast(arg1Value).getUnderlyingValue().intValueExact();
 			if (beginIndex < 0)
 			{
 				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + beginIndex);
@@ -192,15 +194,16 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 
 		// Third arg
 		final Expression<?> arg2Exp = argExpsIterator.next();
-		final Value arg2 = arg2Exp.getValue();
-		if (arg2 != null)
+		final Optional<? extends Value> arg2 = arg2Exp.getValue();
+		if (arg2.isPresent())
 		{
-			if (!(arg2 instanceof IntegerValue))
+			final Value arg2Value = arg2.get();
+			if (!(arg2Value instanceof IntegerValue))
 			{
-				throw new IllegalArgumentException(getInvalidArg2MessagePrefix(functionSignature) + arg2 + " (type: " + arg2Exp.getReturnType() + ")");
+				throw new IllegalArgumentException(getInvalidArg2MessagePrefix(functionSignature) + arg2Value + " (type: " + arg2Exp.getReturnType() + ")");
 			}
 
-			final int endIndex = IntegerValue.class.cast(arg2).getUnderlyingValue().intValueExact();
+			final int endIndex = IntegerValue.class.cast(arg2Value).getUnderlyingValue().intValueExact();
 			if (endIndex != -1)
 			{
 				if (endIndex < 0)

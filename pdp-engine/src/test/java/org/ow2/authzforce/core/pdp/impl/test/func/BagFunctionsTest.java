@@ -146,7 +146,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.singleton(typeFactory.getDatatype(), primitiveValue)), primitiveValue });
 
 		// one-and-only({primitiveValue, primitiveValue}) -> Indeterminate
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.getInstance(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue))), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.newBag(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue))), null });
 
 		return params;
 	}
@@ -169,7 +169,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.singleton(typeFactory.getDatatype(), primitiveValue)), ONE_AS_INT });
 
 		// bag-size({primitiveValue, primitiveValue}) -> 2
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.getInstance(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue))), TWO_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.newBag(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue))), TWO_AS_INT });
 		return params;
 	}
 
@@ -188,11 +188,11 @@ public class BagFunctionsTest extends StandardFunctionTest
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, typeFactory.getEmptyBag()), BooleanValue.FALSE });
 
 		// is-in(primitiveValue2, {primitiveValue1, primitiveValue2}) -> true
-		final Bag<AV> twoValBag = Bags.getInstance(typeFactory.getDatatype(), Arrays.asList(primitiveValue1, primitiveValue2));
+		final Bag<AV> twoValBag = Bags.newBag(typeFactory.getDatatype(), Arrays.asList(primitiveValue1, primitiveValue2));
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag), BooleanValue.TRUE });
 
 		// is-in(primitiveValue2, {primitiveValue1, primitiveValue1}) -> false
-		final Bag<AV> twoValBag2 = Bags.getInstance(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue1));
+		final Bag<AV> twoValBag2 = Bags.newBag(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue1));
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag2), BooleanValue.FALSE });
 		return params;
 	}
@@ -206,7 +206,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 		final Collection<Object[]> params = new ArrayList<>();
 
 		// bag(primitiveValue1, primitiveValue2) -> {primitiveValue1, primitiveValue2}
-		final Bag<AV> twoValBag = Bags.getInstance(typeFactory.getDatatype(), Arrays.asList(primitiveValue1, primitiveValue2));
+		final Bag<AV> twoValBag = Bags.newBag(typeFactory.getDatatype(), Arrays.asList(primitiveValue1, primitiveValue2));
 		params.add(new Object[] { bagOfFunctionId, Arrays.asList(primitiveValue1, primitiveValue2), twoValBag });
 		return params;
 	}

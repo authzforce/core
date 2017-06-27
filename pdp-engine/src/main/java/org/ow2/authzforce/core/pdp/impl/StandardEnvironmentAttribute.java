@@ -21,7 +21,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeFQN;
+import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory;
 import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
 
@@ -38,23 +39,23 @@ public enum StandardEnvironmentAttribute
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-time
 	 */
-	CURRENT_TIME(new AttributeGUID(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value())),
+	CURRENT_TIME(AttributeFQNs.newInstance(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value())),
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-date
 	 */
-	CURRENT_DATE(new AttributeGUID(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value())),
+	CURRENT_DATE(AttributeFQNs.newInstance(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value())),
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-dateTime
 	 */
-	CURRENT_DATETIME(new AttributeGUID(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value()));
+	CURRENT_DATETIME(AttributeFQNs.newInstance(XACMLAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value()));
 
-	private final AttributeGUID attributeGUID;
+	private final AttributeFQN attributeFQN;
 
-	private StandardEnvironmentAttribute(final AttributeGUID attributeGUID)
+	private StandardEnvironmentAttribute(final AttributeFQN attributeFQN)
 	{
-		this.attributeGUID = attributeGUID;
+		this.attributeFQN = attributeFQN;
 	}
 
 	/**
@@ -62,20 +63,20 @@ public enum StandardEnvironmentAttribute
 	 * 
 	 * @return attribute GUID (AttributeId, Issuer, Category)
 	 */
-	public AttributeGUID getGUID()
+	public AttributeFQN getFQN()
 	{
-		return this.attributeGUID;
+		return this.attributeFQN;
 	}
 
-	private static final Map<AttributeGUID, StandardEnvironmentAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(StandardEnvironmentAttribute.values()),
-			new com.google.common.base.Function<StandardEnvironmentAttribute, AttributeGUID>()
+	private static final Map<AttributeFQN, StandardEnvironmentAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(StandardEnvironmentAttribute.values()),
+			new com.google.common.base.Function<StandardEnvironmentAttribute, AttributeFQN>()
 			{
 
 				@Override
-				public AttributeGUID apply(final StandardEnvironmentAttribute input)
+				public AttributeFQN apply(final StandardEnvironmentAttribute input)
 				{
 					assert input != null;
-					return input.getGUID();
+					return input.getFQN();
 				}
 
 			});
@@ -83,12 +84,12 @@ public enum StandardEnvironmentAttribute
 	/**
 	 * Get the standard environment attribute corresponding to the given ID
 	 * 
-	 * @param attributeGUID
+	 * @param attributeFQN
 	 *            standard attribute ID
 	 * @return StandardEnvironmentAttribute corresponding to given ID, or null if there is no standard environment attribute with such ID
 	 */
-	public static StandardEnvironmentAttribute getInstance(final AttributeGUID attributeGUID)
+	public static StandardEnvironmentAttribute getInstance(final AttributeFQN attributeFQN)
 	{
-		return ID_TO_STD_ATTR_MAP.get(attributeGUID);
+		return ID_TO_STD_ATTR_MAP.get(attributeFQN);
 	}
 }

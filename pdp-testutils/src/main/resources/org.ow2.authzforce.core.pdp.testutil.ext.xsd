@@ -1,29 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (C) 2013-2015 Thales Services. All rights reserved. No warranty, explicit or implicit, provided. -->
 <!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/test/3" xmlns="http://authzforce.github.io/core/xmlns/test/3"
-	xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3" xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" elementFormDefault="qualified" attributeFormDefault="unqualified"
-	version="3.5.9">
-	<xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
-	<xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
-	<xs:annotation>
-		<xs:documentation xml:lang="en">
-			Data Model for PDP test extensions, e.g. the Test Attribute Provider module
-		</xs:documentation>
-	</xs:annotation>
-	<xs:complexType name="TestAttributeProvider">
-		<xs:annotation>
-			<xs:documentation>
-				Test Attribute Provider. This Provider is used for test purposes only. It can be
-				configured to support any attribute but returns always an empty bag as attribute value.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexContent>
-			<xs:extension base="authz-ext:AbstractAttributeProvider">
-				<xs:sequence>
-					<xs:element ref="xacml:Attributes" minOccurs="1" maxOccurs="10" />
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/test/3" xmlns="http://authzforce.github.io/core/xmlns/test/3" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"
+   xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" elementFormDefault="qualified" attributeFormDefault="unqualified" version="3.5.9">
+   <xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
+   <xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
+   <xs:annotation>
+      <xs:documentation xml:lang="en">
+         Data Model for PDP test extensions, e.g. the Test Attribute Provider module
+      </xs:documentation>
+   </xs:annotation>
+   <xs:complexType name="TestAttributeProvider">
+      <xs:annotation>
+         <xs:documentation>
+            Test Attribute Provider. This Provider is used for test purposes only. It can be
+            configured to support any attribute but returns always an empty bag as attribute value.
+         </xs:documentation>
+      </xs:annotation>
+      <xs:complexContent>
+         <xs:extension base="authz-ext:AbstractAttributeProvider">
+            <xs:sequence>
+               <xs:element ref="xacml:Attributes" minOccurs="1" maxOccurs="10" />
+            </xs:sequence>
+         </xs:extension>
+      </xs:complexContent>
+   </xs:complexType>
+   <xs:complexType name="MongoDBBasedPolicyProvider">
+      <xs:annotation>
+         <xs:documentation>
+            Policy provider module that retrieves policies (given a Policy(Set)IdReference) from documents in a MongoDB-hosted collection. The document model must correspond to JSON form:
+            <![CDATA[{id: $policy_ID, version: $policy_version, type: $policy_type, content: $policy_doc}]]>,
+            where $policy_ID must be a valid XACML 3.0 PolicyId, $policy_version a valid XACML 3.0 policy version, $policy_type either '{urn:oasis:names:tc:xacml:3.0:core:schema:wd-17}Policy' if the
+            policy is XACML 3.0 Policy or '{urn:oasis:names:tc:xacml:3.0:core:schema:wd-17}PolicySet' if it is a XACML 3.0 PolicySet, and $policy_doc a valid XACML 3.0 Policy or PolicySet according to
+            $policy_type.
+            TODO: add settings to control the behavior of the client (MongoClientOptions) and its credentials (MongoCredentials).
+         </xs:documentation>
+      </xs:annotation>
+      <xs:complexContent>
+         <xs:extension base="authz-ext:AbstractPolicyProvider">
+            <xs:attribute name="serverHost" use="required">
+               <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                     <xs:pattern value="localhost|([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}" />
+                  </xs:restriction>
+               </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="serverPort" use="required">
+               <xs:simpleType>
+                  <xs:restriction base="xs:int">
+                     <xs:minInclusive value="1" />
+                     <xs:maxInclusive value="65535" />
+                  </xs:restriction>
+               </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="dbName" use="required">
+               <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                     <xs:minLength value="1"></xs:minLength>
+                  </xs:restriction>
+               </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="collectionName" use="required">
+               <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                     <xs:minLength value="1"></xs:minLength>
+                  </xs:restriction>
+               </xs:simpleType>
+            </xs:attribute>
+         </xs:extension>
+      </xs:complexContent>
+   </xs:complexType>
 </xs:schema>

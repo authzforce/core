@@ -17,6 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
+import java.util.Optional;
+
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
@@ -138,10 +140,10 @@ public final class ConditionEvaluators
 		/*
 		 * Check whether the expression is constant
 		 */
-		final BooleanValue constant = evaluatableExpression.getValue();
-		if (constant != null)
+		final Optional<BooleanValue> constant = evaluatableExpression.getValue();
+		if (constant.isPresent())
 		{
-			if (constant.getUnderlyingValue())
+			if (constant.get().getUnderlyingValue())
 			{
 				// constant TRUE
 				LOGGER.warn("Condition's expression is equivalent to constant True -> optimization: replacing with constant True condition");

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
@@ -153,8 +154,8 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 			while (argExpIterator.hasNext())
 			{
 				final Expression<?> argExp = argExpIterator.next();
-				final Value v = argExp.getValue();
-				if (v == null)
+				final Optional<? extends Value> v = argExp.getValue();
+				if (!v.isPresent())
 				{
 					// variable
 					finalArgExpressions.add(argExp);
@@ -164,7 +165,7 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 					// constant
 					try
 					{
-						constants.add(paramType.cast(v));
+						constants.add(paramType.cast(v.get()));
 					}
 					catch (final ClassCastException e)
 					{

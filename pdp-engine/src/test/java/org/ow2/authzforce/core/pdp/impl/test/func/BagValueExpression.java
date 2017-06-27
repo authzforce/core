@@ -17,10 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.func;
 
-import javax.xml.bind.JAXBElement;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -37,12 +33,6 @@ public class BagValueExpression<BV extends Bag<?>> extends ConstantExpression<BV
 	protected BagValueExpression(final Datatype<BV> datatype, final BV v) throws IllegalArgumentException
 	{
 		super(datatype, v);
-	}
-
-	@Override
-	public JAXBElement<? extends ExpressionType> getJAXBElement()
-	{
-		throw new UnsupportedOperationException();
 	}
 
 }

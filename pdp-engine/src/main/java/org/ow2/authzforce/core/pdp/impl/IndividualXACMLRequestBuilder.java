@@ -25,12 +25,12 @@ import java.util.Map.Entry;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeFQN;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 
 import com.google.common.collect.ImmutableList;
 
@@ -45,7 +45,7 @@ final class IndividualXACMLRequestBuilder
 	private static final IllegalArgumentException UNDEF_ATTRIBUTE_CATEGORY_EXCEPTION = new IllegalArgumentException("Undefined attribute category");
 
 	// initialized not null by constructors
-	private final Map<AttributeGUID, Bag<?>> namedAttributes;
+	private final Map<AttributeFQN, AttributeBag<?>> namedAttributes;
 	private final Map<String, XdmNode> contentNodesByCategory;
 	private final List<Attributes> attributesToIncludeInResult;
 	private final boolean isApplicablePolicyIdListReturned;
@@ -122,7 +122,7 @@ final class IndividualXACMLRequestBuilder
 		 * "Regardless of any dynamic modifications of the request context during policy evaluation, the PDP SHALL behave as if each bag of attribute values is fully populated in the context before it is first tested, and is thereafter immutable during evaluation. (That is, every subsequent test of that attribute shall use the same bag of values that was initially tested.)"
 		 * </i></p>
 		 */
-		for (final Entry<AttributeGUID, Bag<?>> attrEntry : categorySpecificAttributes)
+		for (final Entry<AttributeFQN, AttributeBag<?>> attrEntry : categorySpecificAttributes)
 		{
 			namedAttributes.put(attrEntry.getKey(), attrEntry.getValue());
 		}
@@ -137,7 +137,7 @@ final class IndividualXACMLRequestBuilder
 
 	public IndividualXACMLRequest build()
 	{
-		return new IndividualXACMLRequest(new ImmutablePdpDecisionRequest(this.namedAttributes, this.contentNodesByCategory, this.isApplicablePolicyIdListReturned),
+		return new IndividualXACMLRequest(ImmutablePdpDecisionRequest.getInstance(this.namedAttributes, this.contentNodesByCategory, this.isApplicablePolicyIdListReturned),
 				ImmutableList.copyOf(this.attributesToIncludeInResult));
 	}
 

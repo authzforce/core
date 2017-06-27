@@ -183,23 +183,13 @@ public final class MultiDecisionRequestFilter extends BaseRequestFilter
 		 * the map should guarantee that the iteration order is the same as insertion order used previously (e.g. LinkedHashMap).
 		 */
 		final Iterator<Entry<String, Queue<SingleCategoryAttributes<?>>>> multiReqAttrAlternativesByCategoryIterator = multiReqAttrAlternativesByCategory.entrySet().iterator();
-		while (multiReqAttrAlternativesByCategoryIterator.hasNext())
+		boolean isLastCategory = !multiReqAttrAlternativesByCategoryIterator.hasNext();
+		while (!isLastCategory)
 		{
 			final Entry<String, Queue<SingleCategoryAttributes<?>>> multiReqAttrAlternativesByCategoryEntry = multiReqAttrAlternativesByCategoryIterator.next();
 			final String categoryName = multiReqAttrAlternativesByCategoryEntry.getKey();
 			final Queue<SingleCategoryAttributes<?>> categorySpecificAlternatives = multiReqAttrAlternativesByCategoryEntry.getValue();
-			/*
-			 * Get the first category (<Attributes>) alternative to be added to the individual requests existing in the individualRequests already, i.e. the "old" ones; whereas the other alternatives
-			 * (if any) will be added to new individual request cloned from these "old" ones.
-			 */
-			final SingleCategoryAttributes<?> categorySpecificAlternative0 = categorySpecificAlternatives.poll();
-			if (categorySpecificAlternative0 == null)
-			{
-				// no alternative / no repeated category
-				continue;
-			}
-
-			final boolean isLastCategory = multiReqAttrAlternativesByCategoryIterator.hasNext();
+			isLastCategory = !multiReqAttrAlternativesByCategoryIterator.hasNext();
 			final ListIterator<IndividualXACMLRequestBuilder> individualRequestsIterator = individualRequestBuilders.listIterator();
 			while (individualRequestsIterator.hasNext())
 			{
@@ -228,17 +218,6 @@ public final class MultiDecisionRequestFilter extends BaseRequestFilter
 							 */
 							individualRequestsIterator.add(newReqBuilder);
 						}
-					}
-
-					/*
-					 * Now we are done cloning, we can add the first category alternative to individualReqCtx
-					 */
-					oldReqBuilder.put(categoryName, categorySpecificAlternative0);
-
-					if (isLastCategory)
-					{
-						// we can finalize the request build
-						finalIndividualRequests.add(oldReqBuilder.build());
 					}
 				}
 				catch (final IllegalArgumentException e)

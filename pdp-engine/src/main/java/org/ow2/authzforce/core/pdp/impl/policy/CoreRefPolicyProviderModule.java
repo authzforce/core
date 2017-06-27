@@ -33,6 +33,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
@@ -283,14 +284,14 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		}
 
 		@Override
-		public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final VersionPatterns versionConstraints, final Deque<String> ancestorPolicyRefChain,
-				final EvaluationContext evaluationContext) throws IndeterminateEvaluationException, IllegalArgumentException
+		public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final Optional<VersionPatterns> versionConstraints,
+				final Deque<String> ancestorPolicyRefChain, final EvaluationContext evaluationContext) throws IndeterminateEvaluationException, IllegalArgumentException
 		{
 			return get(policyType, id, versionConstraints, ancestorPolicyRefChain);
 		}
 
 		@Override
-		public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final VersionPatterns versionConstraints,
+		public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final Optional<VersionPatterns> versionConstraints,
 				final Deque<String> ancestorPolicyRefChain)
 		{
 			// If this is a request for Policy (from PolicyIdReference)
@@ -322,7 +323,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				try
 				{
 					resultPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
-							this.parsedPolicyIds, this.parsedPolicySetIds, this, newPolicySetRefChain);
+							this.parsedPolicyIds, this.parsedPolicySetIds, this, newPolicySetRefChain, maxPolicySetRefDepth);
 				}
 				catch (final IllegalArgumentException e)
 				{
@@ -387,7 +388,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 					try
 					{
 						newPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
-								parsedPolicyIds, parsedPolicySetIds, bootstrapRefPolicyProvider, null);
+								parsedPolicyIds, parsedPolicySetIds, bootstrapRefPolicyProvider, null, maxPolicySetRefDepth);
 					}
 					catch (final IllegalArgumentException e)
 					{
@@ -627,7 +628,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 
 	/** {@inheritDoc} */
 	@Override
-	public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final VersionPatterns constraints, final Deque<String> policySetRefChain)
+	public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final Optional<VersionPatterns> constraints, final Deque<String> policySetRefChain)
 	{
 		if (policyType == TopLevelPolicyElementType.POLICY)
 		{
@@ -666,8 +667,8 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 
 	/** {@inheritDoc} */
 	@Override
-	public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId, final VersionPatterns policyVersionConstraints, final Deque<String> policySetRefChain,
-			final EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+	public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId, final Optional<VersionPatterns> policyVersionConstraints,
+			final Deque<String> policySetRefChain, final EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		return get(policyType, policyId, policyVersionConstraints, policySetRefChain);
 	}

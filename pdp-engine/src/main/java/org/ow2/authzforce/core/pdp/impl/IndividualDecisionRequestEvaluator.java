@@ -24,7 +24,7 @@ import java.util.Map;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeFQN;
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
 import org.ow2.authzforce.core.pdp.api.DecisionResultFilter.FilteringResultCollector;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -34,7 +34,7 @@ import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
@@ -60,27 +60,28 @@ public abstract class IndividualDecisionRequestEvaluator
 		 * @param requestAttributes
 		 * @return updatable map resulting from merger, or null if nothing merged
 		 */
-		Map<AttributeGUID, Bag<?>> merge(final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final Map<AttributeGUID, Bag<?>> requestAttributes);
+		Map<AttributeFQN, AttributeBag<?>> merge(final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFQN, AttributeBag<?>> requestAttributes);
 	}
 
-	private static final IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeGUID attrGUID)
+	private static final IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeFQN attrGUID)
 	{
 		return new IndeterminateEvaluationException("The standard environment attribute ( " + attrGUID
 				+ " ) is not present in the REQUEST although at least one of the others is! (PDP standardEnvironmentAttributeSource = REQUEST_ELSE_PDP.)", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
-	private static final Map<AttributeGUID, Bag<?>> STD_ENV_RESET_MAP = HashCollections.<AttributeGUID, Bag<?>> newImmutableMap(StandardEnvironmentAttribute.CURRENT_DATETIME.getGUID(),
-			Bags.empty(StandardDatatypes.DATETIME_FACTORY.getDatatype(), newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATETIME.getGUID())),
-			StandardEnvironmentAttribute.CURRENT_DATE.getGUID(),
-			Bags.empty(StandardDatatypes.DATE_FACTORY.getDatatype(), newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATE.getGUID())),
-			StandardEnvironmentAttribute.CURRENT_TIME.getGUID(),
-			Bags.empty(StandardDatatypes.TIME_FACTORY.getDatatype(), newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_TIME.getGUID())));
+	private static final Map<AttributeFQN, AttributeBag<?>> STD_ENV_RESET_MAP = HashCollections.<AttributeFQN, AttributeBag<?>> newImmutableMap(
+			StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(),
+			Bags.emptyAttributeBag(StandardDatatypes.DATETIME_FACTORY.getDatatype(), newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN())),
+			StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
+			Bags.emptyAttributeBag(StandardDatatypes.DATE_FACTORY.getDatatype(), newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())),
+			StandardEnvironmentAttribute.CURRENT_TIME.getFQN(),
+			Bags.emptyAttributeBag(StandardDatatypes.TIME_FACTORY.getDatatype(), newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_TIME.getFQN())));
 
 	private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_OVERRIDES_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
 	{
 
 		@Override
-		public Map<AttributeGUID, Bag<?>> merge(final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final Map<AttributeGUID, Bag<?>> requestAttributes)
+		public Map<AttributeFQN, AttributeBag<?>> merge(final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFQN, AttributeBag<?>> requestAttributes)
 		{
 			/*
 			 * Request attribute values override PDP issued ones. Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must not
@@ -108,8 +109,8 @@ public abstract class IndividualDecisionRequestEvaluator
 			 * provides its own value(s) for the missing attributes (e.g. current-dateTime), this may cause some inconsistencies since we end up having date/time attributes coming from two different
 			 * sources/environments (current-time and current-dateTime for instance).
 			 */
-			if (requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATETIME.getGUID()) || requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATE.getGUID())
-					|| requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_TIME.getGUID()))
+			if (requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN()) || requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())
+					|| requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_TIME.getFQN()))
 			{
 				/*
 				 * Request has at least one standard env attribute -> make sure all PDP values are ignored (overridden by STD_ENV_RESET_MAP no matter whether requestAttributes contains all of them or
@@ -129,7 +130,7 @@ public abstract class IndividualDecisionRequestEvaluator
 	{
 
 		@Override
-		public Map<AttributeGUID, Bag<?>> merge(final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final Map<AttributeGUID, Bag<?>> requestAttributes)
+		public Map<AttributeFQN, AttributeBag<?>> merge(final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFQN, AttributeBag<?>> requestAttributes)
 		{
 
 			// PDP issued attribute values override request attribute values
@@ -160,7 +161,7 @@ public abstract class IndividualDecisionRequestEvaluator
 	{
 
 		@Override
-		public Map<AttributeGUID, Bag<?>> merge(final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final Map<AttributeGUID, Bag<?>> requestAttributes)
+		public Map<AttributeFQN, AttributeBag<?>> merge(final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFQN, AttributeBag<?>> requestAttributes)
 		{
 			// PDP values completely ignored
 			return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
@@ -288,40 +289,44 @@ public abstract class IndividualDecisionRequestEvaluator
 		return decisionResultFilter.newResultCollector(numOfRequests);
 	}
 
+	protected final EvaluationContext newEvaluationContext(final PdpDecisionRequest request, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes)
+	{
+		final Map<AttributeFQN, AttributeBag<?>> mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, request.getNamedAttributes());
+		return new IndividualDecisionRequestContext(mergedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdListReturned());
+	}
+
 	/**
 	 * <p>
-	 * Evaluate an Individual Decision Request, with option to return attributes used by the evaluation, e.g. to improve caching mechanisms
+	 * Evaluate Individual Decision Request in an existing request context
+	 * </p>
+	 *
+	 * @param evalCtx
+	 *            existing evaluation context
+	 * @return the evaluation result.
+	 */
+	protected final PdpDecisionResult evaluateReusingContext(final EvaluationContext evalCtx)
+	{
+		return rootPolicyEvaluator.findAndEvaluate(evalCtx);
+	}
+
+	/**
+	 * <p>
+	 * Evaluate an Individual Decision Request from which a new request context is created to evaluate the request
 	 * </p>
 	 *
 	 * @param request
 	 *            a non-null {@link PdpDecisionRequest} object.
 	 * @param pdpIssuedAttributes
 	 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
-	 * @param returnUsedAttributes
-	 *            true iff the list of attributes used for evaluation must be included in the result
 	 * @return the evaluation result.
 	 */
-	protected final PdpDecisionResult evaluate(final PdpDecisionRequest request, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes, final boolean returnUsedAttributes)
+	protected final PdpDecisionResult evaluateInNewContext(final PdpDecisionRequest request, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes)
 	{
 		assert request != null;
 		LOGGER.debug("Evaluating Individual Decision Request: {}", request);
-
-		// convert to EvaluationContext
-		final Map<AttributeGUID, Bag<?>> mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, request.getNamedAttributes());
-		final EvaluationContext ctx = new IndividualDecisionRequestContext(mergedNamedAttributes, request.getContentNodesByCategory(), request.isApplicablePolicyIdListReturned(), returnUsedAttributes);
-		return rootPolicyEvaluator.findAndEvaluate(ctx);
+		final EvaluationContext evalCtx = newEvaluationContext(request, pdpIssuedAttributes);
+		return rootPolicyEvaluator.findAndEvaluate(evalCtx);
 	}
-
-	/**
-	 * <p>
-	 * Evaluate an Individual Decision Request.
-	 * </p>
-	 *
-	 * @param individualDecisionRequest
-	 *            an individual decision request
-	 * @return the evaluation result pair
-	 */
-	protected abstract PdpDecisionResult evaluate(PdpDecisionRequest individualDecisionRequest, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
 
 	/**
 	 * <p>
@@ -338,13 +343,13 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *             if an error occurred preventing any request evaluation
 	 */
 	protected abstract <INDIVIDUAL_DECISION_REQ_T extends PdpDecisionRequest> Map<INDIVIDUAL_DECISION_REQ_T, ? extends PdpDecisionResult> evaluate(
-			List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException;
+			List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException;
 
 	/**
 	 * <p>
 	 * Evaluate multiple Individual Decision Requests with same PDP-issued attribute values (e.g. current date/time) in order to return JAXB {@link Result}s. Use only if you need to produce a final
 	 * XACML/JAXB Result or Response for serialization (esp. to interoperate with external systems, where external means outside the current runtime JVM), else use
-	 * {@link #evaluate(PdpDecisionRequest, Map)} which is more optimal.
+	 * {@link #evaluateInNewContext(PdpDecisionRequest, Map)} which is more optimal.
 	 * </p>
 	 *
 	 * @param individualDecisionRequests
@@ -353,6 +358,6 @@ public abstract class IndividualDecisionRequestEvaluator
 	 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 	 * @return a {@link java.util.List} of XACML {@link Result}s (one per individual decision request), ready to be included in a final XACML Response.
 	 */
-	protected abstract List<Result> evaluateToJAXB(List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeGUID, Bag<?>> pdpIssuedAttributes);
+	protected abstract List<Result> evaluateToJAXB(List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes);
 
 }

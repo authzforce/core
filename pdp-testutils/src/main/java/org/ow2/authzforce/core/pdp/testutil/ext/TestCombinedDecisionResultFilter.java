@@ -70,7 +70,7 @@ public class TestCombinedDecisionResultFilter implements DecisionResultFilter
 			}
 
 			final ImmutablePepActions pepActions = result.getPepActions();
-			if (!pepActions.getObligatory().isEmpty() || !pepActions.getAdvisory().isEmpty())
+			if (pepActions != null && (!pepActions.getObligatory().isEmpty() || !pepActions.getAdvisory().isEmpty()))
 			{
 				return INDETERMINATE_RESULT_SINGLETON_LIST;
 			}
