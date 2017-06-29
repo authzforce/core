@@ -2193,8 +2193,8 @@ public final class PolicyEvaluators
 				else if (eltNameLocalPart.equals(XACMLNodeName.POLICYSET_ID_REFERENCE.value()))
 				{
 					final IdReferenceType policyChildIdRef = (IdReferenceType) jaxbPolicyChildElt.getValue();
-					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY_SET, policyChildIdRef, new ArrayDeque<>(
-							ancestorPolicySetRefChain));
+					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY_SET, policyChildIdRef,
+							ancestorPolicySetRefChain == null ? null : new ArrayDeque<>(ancestorPolicySetRefChain));
 					combinedEvaluators.add(childEvaluator);
 					final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.put(childEvaluator.getPolicyId(), childEvaluator);
 					if (duplicate != null)
@@ -2235,7 +2235,7 @@ public final class PolicyEvaluators
 				 * PolicySetEvaluator.getInstance(() to avoid that inconsistency.
 				 */
 				final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicySetEvaluator(childIndex, childPolicy, nonNullParsedPolicyIds, updatableParsedPolicySetIds,
-						new ArrayDeque<>(ancestorPolicySetRefChain));
+						ancestorPolicySetRefChain == null ? null : new ArrayDeque<>(ancestorPolicySetRefChain));
 				combinedEvaluators.add(childEvaluator);
 				final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.putIfAbsent(childPolicyId, childEvaluator);
 				if (duplicate != null)

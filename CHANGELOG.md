@@ -4,10 +4,23 @@ All notable changes to this project are documented in this file following the [K
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
 
-## 9.0.0
+## Unreleased
 ### Changed
-- Version of parent project: 6.0.0
-- Version of dependency authzforce-ce-core-pdp-api: 10.0.0 (API changes)
+- Version of parent project: 6.0.0:
+  - The XML schema definition of PDP Decision Cache extensions' base type have been simplified (a few attributes removed).
+- Version of dependency authzforce-ce-core-pdp-api: 11.0.0 (API changes):
+  - Changed PDPEngine interface methods
+  - Changed PDP extensions' interface methods: DecisionResultFilter, RequestFilter, DecisionCache (new EvaluationContext parameter to enable context-dependent caches), RefPolicyProvider (renamed RefPolicyProvider.Utils class to RefPolicyProvider.Helper).
+  - Changed EvaluationContext interface methods: 
+  		- Use of Bag replaced with AttributeBag class (AttributeBags are Bags with extra metadata such as the source - AttributeSource - of the attribute values: request, PDP, attribute provider extension, etc.
+  		- New methods to help PDP extensions to watch for changes to the context with listeners
+  - Changed Expression interface methods
+  - Changed VersionPatterns class methods to return new PolicyVersionPattern class that helps manipulate XACML VersionMatchTypes
+  - Renamed class IndividualDecisionRequest to IndividualXACMLRequest (XACML-specific model of Individual Decision Request)
+  - Renamed class IndividualPdpDecisionRequest to PdpDecisionRequest (individual request in XACML-agnostic AuthzForce model)
+  - Renamed class AttributeGUID(s) to AttributeFQN(s) (Fully Qualified Name is more appropriate than GUID)
+  - Renamed class MutableBag to MutableAttributeBag
+  - Aded BaseStaticRefPolicyProviderModule class as convenient base class for implementing static Policy Provider (StaticRefPolicyProviderModule) implementations
 
 ### Added
 - [PolicyProvider implementation](pdp-testutils/src/main/java/org/ow2/authzforce/core/pdp/testutil/ext/MongoDBRefPolicyProviderModule.java) for testing and documentation purposes, using MongoDB as policy database system and Jongo as client library, with [JUnit test class](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MongoDBRefPolicyProviderModuleTest.java) showing how to use it.
