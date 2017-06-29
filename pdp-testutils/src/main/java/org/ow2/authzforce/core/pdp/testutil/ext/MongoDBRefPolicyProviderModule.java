@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.UnknownHostException;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,19 +36,17 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.BaseStaticRefPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPattern;
 import org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule;
-import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
 import org.ow2.authzforce.core.pdp.impl.policy.PolicyEvaluators;
@@ -71,7 +70,7 @@ import com.mongodb.ServerAddress;
  * TODO: performance optimization: cache results of {@link #get(TopLevelPolicyElementType, String, Optional, Deque)} to avoid repetitive requests to database server
  * 
  */
-public class MongoDBRefPolicyProviderModule implements StaticRefPolicyProviderModule
+public class MongoDBRefPolicyProviderModule extends BaseStaticRefPolicyProviderModule
 {
 	/**
 	 * 'type' value expected in policy documents stored in database for XACML Policies
@@ -89,11 +88,11 @@ public class MongoDBRefPolicyProviderModule implements StaticRefPolicyProviderMo
 	private final XACMLParserFactory xacmlParserFactory;
 	private final ExpressionFactory expressionFactory;
 	private final CombiningAlgRegistry combiningAlgRegistry;
-	private final int maxPolicySetRefDepth;
 
 	private MongoDBRefPolicyProviderModule(final String id, final ServerAddress serverAddress, final String dbName, final String collectionName, final XACMLParserFactory xacmlParserFactory,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final int maxPolicySetRefDepth)
 	{
+		super(maxPolicySetRefDepth);
 		assert id != null && !id.isEmpty() && dbName != null && !dbName.isEmpty() && collectionName != null && !collectionName.isEmpty() && xacmlParserFactory != null && expressionFactory != null
 				&& combiningAlgRegistry != null;
 
@@ -104,7 +103,6 @@ public class MongoDBRefPolicyProviderModule implements StaticRefPolicyProviderMo
 		this.xacmlParserFactory = xacmlParserFactory;
 		this.expressionFactory = expressionFactory;
 		this.combiningAlgRegistry = combiningAlgRegistry;
-		this.maxPolicySetRefDepth = maxPolicySetRefDepth;
 	}
 
 	/**
@@ -161,6 +159,12 @@ public class MongoDBRefPolicyProviderModule implements StaticRefPolicyProviderMo
 					maxPolicySetRefDepth);
 		}
 
+	}
+
+	@Override
+	public Deque<String> checkJoinedPolicyRefChain(final Deque<String> policyRefChain1, final List<String> policyRefChain2)
+	{
+		return Helper.checkJoinedPolicyRefChain(policyRefChain1, policyRefChain2, maxPolicySetRefDepth);
 	}
 
 	@Override
@@ -341,12 +345,5 @@ public class MongoDBRefPolicyProviderModule implements StaticRefPolicyProviderMo
 		throw new IndeterminateEvaluationException("Unexpected 'content' found in policy document '" + policyPOJO + "' (corrupted database?). Corresponding Java type: "
 				+ jaxbPolicyOrPolicySetObj.getClass().getCanonicalName() + ". Expected: " + Policy.class.getCanonicalName() + ", " + PolicySet.class.getCanonicalName(),
 				StatusHelper.STATUS_PROCESSING_ERROR);
-	}
-
-	@Override
-	public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId, final Optional<VersionPatterns> policyVersionPatterns,
-			final Deque<String> policySetRefChain, final EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
-	{
-		return get(policyType, policyId, policyVersionPatterns, policySetRefChain);
 	}
 }

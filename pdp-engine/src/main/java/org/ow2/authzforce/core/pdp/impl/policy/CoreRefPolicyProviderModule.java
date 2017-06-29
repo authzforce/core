@@ -49,10 +49,10 @@ import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
 import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.BaseStaticRefPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.RefPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
@@ -78,7 +78,7 @@ import com.google.common.collect.Table;
  * 
  * @version $Id: $
  */
-public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModule
+public class CoreRefPolicyProviderModule extends BaseStaticRefPolicyProviderModule
 {
 	private static final IllegalArgumentException ILLEGAL_COMBINING_ALG_REGISTRY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined CombiningAlgorithm registry");
 	private static final IllegalArgumentException ILLEGAL_EXPRESSION_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Expression factory");
@@ -284,10 +284,9 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		}
 
 		@Override
-		public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final Optional<VersionPatterns> versionConstraints,
-				final Deque<String> ancestorPolicyRefChain, final EvaluationContext evaluationContext) throws IndeterminateEvaluationException, IllegalArgumentException
+		public Deque<String> checkJoinedPolicyRefChain(final Deque<String> policyRefChain1, final List<String> policyRefChain2)
 		{
-			return get(policyType, id, versionConstraints, ancestorPolicyRefChain);
+			return Helper.checkJoinedPolicyRefChain(policyRefChain1, policyRefChain2, maxPolicySetRefDepth);
 		}
 
 		@Override
@@ -301,8 +300,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				return policyEntry == null ? null : policyEntry.getValue();
 			}
 
-			// Else this is a request for PolicySet (from PolicySetIdReference)
-			final Deque<String> newPolicySetRefChain = Utils.appendAndCheckPolicyRefChain(ancestorPolicyRefChain, Collections.singletonList(id), maxPolicySetRefDepth);
+			// Else this is a request for PolicySet
 			final Entry<PolicyVersion, PolicyWithNamespaces<PolicySet>> jaxbPolicySetEntry = jaxbPolicySetMap.get(id, versionConstraints);
 			if (jaxbPolicySetEntry == null)
 			{
@@ -323,7 +321,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				try
 				{
 					resultPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
-							this.parsedPolicyIds, this.parsedPolicySetIds, this, newPolicySetRefChain, maxPolicySetRefDepth);
+							this.parsedPolicyIds, this.parsedPolicySetIds, this, ancestorPolicyRefChain);
 				}
 				catch (final IllegalArgumentException e)
 				{
@@ -339,23 +337,29 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 				/*
 				 * check total policy ref depth, i.e. length of (newAncestorPolicySetRefChain + parsed policySet's longest (nested) policy ref chain) <= maxPolicySetRefDepth
 				 */
-				Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, policySetEvaluator.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
+				checkJoinedPolicyRefChain(ancestorPolicyRefChain, policySetEvaluator.getExtraPolicyMetadata().getLongestPolicyRefChain());
 			}
 
 			return resultPolicySetEvaluator;
+		}
+
+		@Override
+		public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final Optional<VersionPatterns> versionConstraints,
+				final Deque<String> ancestorPolicyRefChain, final EvaluationContext evaluationContext) throws IndeterminateEvaluationException, IllegalArgumentException
+		{
+			return get(policyType, id, versionConstraints, ancestorPolicyRefChain);
 		}
 	}
 
 	private final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyEvaluatorMap;
 	private final PolicyMap<StaticTopLevelPolicyElementEvaluator> policySetEvaluatorMap;
-	private final int maxPolicySetRefDepth;
 
 	private CoreRefPolicyProviderModule(final PolicyMap<StaticTopLevelPolicyElementEvaluator> policyMap, final PolicyMap<PolicyWithNamespaces<PolicySet>> jaxbPolicySetMap,
 			final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 	{
+		super(maxPolicySetRefDepth);
 		assert policyMap != null && jaxbPolicySetMap != null && expressionFactory != null && combiningAlgRegistry != null;
 
-		this.maxPolicySetRefDepth = maxPolicySetRefDepth < 0 ? Utils.UNLIMITED_POLICY_REF_DEPTH : maxPolicySetRefDepth;
 		this.policyEvaluatorMap = policyMap;
 		final Table<String, PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablePolicySetEvaluatorTable = HashBasedTable.create();
 		/*
@@ -388,7 +392,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 					try
 					{
 						newPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
-								parsedPolicyIds, parsedPolicySetIds, bootstrapRefPolicyProvider, null, maxPolicySetRefDepth);
+								parsedPolicyIds, parsedPolicySetIds, bootstrapRefPolicyProvider, null);
 					}
 					catch (final IllegalArgumentException e)
 					{
@@ -626,6 +630,12 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		return new CoreRefPolicyProviderModule(policyMap, policySetMap, maxPolicySetRefDepth, expressionFactory, combiningAlgRegistry);
 	}
 
+	@Override
+	public Deque<String> checkJoinedPolicyRefChain(final Deque<String> policyRefChain1, final List<String> policyRefChain2)
+	{
+		return Helper.checkJoinedPolicyRefChain(policyRefChain1, policyRefChain2, maxPolicySetRefDepth);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String id, final Optional<VersionPatterns> constraints, final Deque<String> policySetRefChain)
@@ -642,8 +652,9 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 			return policyEntry.getValue();
 		}
 
-		// Request for PolicySet (from PolicySetIdReference)
-		final Deque<String> newPolicySetRefChain = Utils.appendAndCheckPolicyRefChain(policySetRefChain, Collections.singletonList(id), maxPolicySetRefDepth);
+		/*
+		 * Request for PolicySet (not necessarily from PolicySetIdReference, but also from CoreRefBasedRootPolicyProviderModule#CoreRefBasedRootPolicyProviderModule(...) or else)
+		 */
 		final Entry<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyEntry = policySetEvaluatorMap.get(id, constraints);
 		if (policyEntry == null)
 		{
@@ -654,7 +665,7 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 		 * check total policy ref depth, i.e. length of (newAncestorPolicySetRefChain + parsed policySet's longest (nested) policy ref chain) <= maxPolicySetRefDepth
 		 */
 		final StaticTopLevelPolicyElementEvaluator policy = policyEntry.getValue();
-		Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, policy.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
+		checkJoinedPolicyRefChain(policySetRefChain, policy.getExtraPolicyMetadata().getLongestPolicyRefChain());
 		return policy;
 	}
 
@@ -663,14 +674,6 @@ public class CoreRefPolicyProviderModule implements StaticRefPolicyProviderModul
 	public void close() throws IOException
 	{
 		// maps are immutable, nothing to clear
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public TopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId, final Optional<VersionPatterns> policyVersionConstraints,
-			final Deque<String> policySetRefChain, final EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
-	{
-		return get(policyType, policyId, policyVersionConstraints, policySetRefChain);
 	}
 
 }

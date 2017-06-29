@@ -82,7 +82,6 @@ import org.ow2.authzforce.core.pdp.api.policy.ExtraPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.RefPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.RefPolicyProvider.Utils;
 import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
@@ -1323,10 +1322,14 @@ public final class PolicyEvaluators
 
 	}
 
-	private static final class DynamicPolicyRefEvaluator extends PolicyRefEvaluator
+	/**
+	 * Dynamic Policy/PolicySet reference evaluator
+	 *
+	 */
+	private static abstract class DynamicTopLevelPolicyElementRefEvaluator extends PolicyRefEvaluator
 	{
 
-		private static final class RefResolvedResult
+		protected static final class RefResolvedResult
 		{
 
 			private final TopLevelPolicyElementEvaluator resolvedPolicy;
@@ -1355,24 +1358,33 @@ public final class PolicyEvaluators
 
 		private final String requestScopedCacheKey;
 
-		/*
-		 * Chain of Policy Reference leading from root policy down to this reference (excluded) (Do not use a Queue as it is FIFO, and we need LIFO and iteration in order of insertion, so different
-		 * from Collections.asLifoQueue(Deque) as well.)
-		 */
-		private final Deque<String> ancestorPolicyRefChain;
-
-		private DynamicPolicyRefEvaluator(final TopLevelPolicyElementType policyReferenceType, final String policyId, final Optional<VersionPatterns> versionConstraints,
-				final RefPolicyProvider refPolicyProvider, final Deque<String> ancestorPolicyRefChain)
+		private DynamicTopLevelPolicyElementRefEvaluator(final TopLevelPolicyElementType policyType, final String policyId, final Optional<VersionPatterns> versionConstraints,
+				final RefPolicyProvider refPolicyProvider)
 		{
-			super(policyReferenceType, policyId, versionConstraints);
+			super(policyType, policyId, versionConstraints);
 			assert refPolicyProvider != null;
 			this.refPolicyProvider = refPolicyProvider;
-			this.ancestorPolicyRefChain = ancestorPolicyRefChain;
 			/*
 			 * define a key for caching the resolved policy in the request context (see Object#toString())
 			 */
 			this.requestScopedCacheKey = this.getClass().getName() + '@' + Integer.toHexString(hashCode());
 		}
+
+		protected final void checkJoinedPolicySetRefChain(final Deque<String> chain1, final List<String> chain2) throws IllegalArgumentException
+		{
+			refPolicyProvider.checkJoinedPolicyRefChain(chain1, chain2);
+		}
+
+		protected final TopLevelPolicyElementEvaluator resolvePolicy(final Deque<String> ancestorPolicyRefChain, final EvaluationContext evalCtx) throws IllegalArgumentException,
+				IndeterminateEvaluationException
+		{
+			return refPolicyProvider.get(this.referredPolicyType, this.refPolicyId, this.versionConstraints, ancestorPolicyRefChain, evalCtx);
+		}
+
+		protected abstract void checkPolicyRefChain(TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx) throws IllegalArgumentException,
+				IndeterminateEvaluationException;
+
+		protected abstract TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx) throws IllegalArgumentException, IndeterminateEvaluationException;
 
 		/**
 		 * Resolves this to the actual Policy
@@ -1391,6 +1403,7 @@ public final class PolicyEvaluators
 				final RefResolvedResult result = (RefResolvedResult) cachedValue;
 				if (result.exception == null)
 				{
+					checkPolicyRefChain(result.resolvedPolicy, evalCtx);
 					return result;
 				}
 
@@ -1402,7 +1415,7 @@ public final class PolicyEvaluators
 			 */
 			try
 			{
-				final TopLevelPolicyElementEvaluator policy = refPolicyProvider.get(this.referredPolicyType, this.refPolicyId, this.versionConstraints, ancestorPolicyRefChain, evalCtx);
+				final TopLevelPolicyElementEvaluator policy = resolvePolicyWithRefDepthCheck(evalCtx);
 				final RefResolvedResult newCacheValue = new RefResolvedResult(policy, evalCtx);
 				evalCtx.putOther(requestScopedCacheKey, newCacheValue);
 				return newCacheValue;
@@ -1456,6 +1469,61 @@ public final class PolicyEvaluators
 		{
 			final RefResolvedResult refResolvedResult = resolve(evalCtx);
 			return refResolvedResult.extraMetadata;
+		}
+
+	}
+
+	private static final class DynamicPolicyRefEvaluator extends DynamicTopLevelPolicyElementRefEvaluator
+	{
+		private DynamicPolicyRefEvaluator(final String policyId, final Optional<VersionPatterns> versionConstraints, final RefPolicyProvider refPolicyProvider)
+		{
+			super(TopLevelPolicyElementType.POLICY, policyId, versionConstraints, refPolicyProvider);
+		}
+
+		@Override
+		protected void checkPolicyRefChain(final TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx)
+		{
+			// nothing to do for XACML Policy (no nested policy ref)
+		}
+
+		@Override
+		protected TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+		{
+			// no policy ref depth check to do for XACML Policy (no nested policy ref)
+			return resolvePolicy(null, evalCtx);
+		}
+	}
+
+	private static final class DynamicPolicySetRefEvaluator extends DynamicTopLevelPolicyElementRefEvaluator
+	{
+		/*
+		 * Chain of PolicySet Reference leading from root PolicySet down to this reference (included) (Do not use a Queue as it is FIFO, and we need LIFO and iteration in order of insertion, so
+		 * different from Collections.asLifoQueue(Deque) as well.)
+		 */
+		private final Deque<String> policySetRefChainToThis;
+
+		private DynamicPolicySetRefEvaluator(final String policyId, final Optional<VersionPatterns> versionConstraints, final RefPolicyProvider refPolicyProvider,
+				final Deque<String> ancestorPolicySetRefChain) throws IllegalArgumentException
+		{
+			super(TopLevelPolicyElementType.POLICY_SET, policyId, versionConstraints, refPolicyProvider);
+			this.policySetRefChainToThis = new ArrayDeque<>(ancestorPolicySetRefChain);
+		}
+
+		@Override
+		protected void checkPolicyRefChain(final TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx) throws IllegalArgumentException,
+				IndeterminateEvaluationException
+		{
+			assert nonNullRefResultPolicy != null;
+			/*
+			 * Check PolicySet reference depth resulting from resolving this new PolicySet ref
+			 */
+			checkJoinedPolicySetRefChain(policySetRefChainToThis, nonNullRefResultPolicy.getExtraPolicyMetadata(evalCtx).getLongestPolicyRefChain());
+		}
+
+		@Override
+		protected TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+		{
+			return resolvePolicy(policySetRefChainToThis, evalCtx);
 		}
 
 	}
@@ -1676,23 +1744,27 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public StaticPolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final String policyId, final Optional<VersionPatterns> versionConstraints,
-				final Deque<String> parentPolicySetRefChain)
+		public StaticPolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final String refPolicyId, final Optional<VersionPatterns> versionConstraints,
+				final Deque<String> ancestorPolicySetRefChain)
 		{
+			/*
+			 * We are about to add new PolicySet Reference in the chain
+			 */
+			final Deque<String> policySetRefChainToThis = refPolicyProvider.checkJoinedPolicyRefChain(ancestorPolicySetRefChain, Collections.singletonList(refPolicyId));
 			final StaticTopLevelPolicyElementEvaluator policy;
 			try
 			{
-				policy = refPolicyProvider.get(refPolicyType, policyId, versionConstraints, parentPolicySetRefChain);
+				policy = refPolicyProvider.get(refPolicyType, refPolicyId, versionConstraints, policySetRefChainToThis);
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
-				throw new IllegalArgumentException("Error resolving statically or parsing " + PolicyRefEvaluator.toString(refPolicyType, policyId, versionConstraints)
+				throw new IllegalArgumentException("Error resolving statically or parsing " + PolicyRefEvaluator.toString(refPolicyType, refPolicyId, versionConstraints)
 						+ " into its referenced policy (via static policy provider)", e);
 			}
 
 			if (policy == null)
 			{
-				throw new IllegalArgumentException("No " + refPolicyType + " matching reference: id = " + policyId + ", " + versionConstraints);
+				throw new IllegalArgumentException("No " + refPolicyType + " matching reference: id = " + refPolicyId + ", " + versionConstraints);
 			}
 
 			return new StaticPolicyRefEvaluator(policy, versionConstraints);
@@ -1710,16 +1782,25 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public PolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final String idRefPolicyId, final Optional<VersionPatterns> versionConstraints,
-				final Deque<String> parentPolicySetRefChain)
+		public PolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final String refPolicyId, final Optional<VersionPatterns> versionConstraints,
+				final Deque<String> ancestorPolicySetRefChain)
 		{
 			// dynamic reference resolution
-			return new DynamicPolicyRefEvaluator(refPolicyType, idRefPolicyId, versionConstraints, refPolicyProvider, parentPolicySetRefChain);
+			if (refPolicyType == TopLevelPolicyElementType.POLICY)
+			{
+				return new DynamicPolicyRefEvaluator(refPolicyId, versionConstraints, refPolicyProvider);
+			}
+
+			/*
+			 * We are about to add new PolicySet Reference in the chain
+			 */
+			refPolicyProvider.checkJoinedPolicyRefChain(ancestorPolicySetRefChain, Collections.singletonList(refPolicyId));
+			return new DynamicPolicySetRefEvaluator(refPolicyId, versionConstraints, refPolicyProvider, ancestorPolicySetRefChain);
 		}
 	}
 
 	private static <PRE extends PolicyRefEvaluator> PRE getInstanceGeneric(final PolicyRefEvaluatorFactory<PRE> policyRefEvaluatorFactory, final TopLevelPolicyElementType refPolicyType,
-			final IdReferenceType idRef, final Deque<String> parentPolicySetRefChain) throws IllegalArgumentException
+			final IdReferenceType idRef, final Deque<String> ancestorPolicySetRefChain) throws IllegalArgumentException
 	{
 		assert policyRefEvaluatorFactory != null && idRef != null;
 
@@ -1727,7 +1808,7 @@ public final class PolicyEvaluators
 		/*
 		 * REMINDER: parentPolicySetRefChain is handled/updated by the refPolicyProvider. So do not modify it here, just pass the parameter. modify it here.
 		 */
-		return policyRefEvaluatorFactory.getInstance(refPolicyType, idRef.getValue(), Optional.of(versionConstraints), parentPolicySetRefChain);
+		return policyRefEvaluatorFactory.getInstance(refPolicyType, idRef.getValue(), Optional.of(versionConstraints), ancestorPolicySetRefChain);
 	}
 
 	/**
@@ -1826,10 +1907,9 @@ public final class PolicyEvaluators
 		protected abstract COMBINED_ELT getChildPolicyEvaluator(int childIndex, Policy policyChildElt);
 
 		protected abstract COMBINED_ELT getChildPolicySetEvaluator(int childIndex, PolicySet policySetChildElt, Set<String> updatableParsedPolicyIds, Set<String> updatableParsedPolicySetIds,
-				Deque<String> policySetRefChain, int maxPolicySetRefDepth);
+				Deque<String> policySetRefChain);
 
-		protected abstract COMBINED_ELT getChildPolicyRefEvaluator(int childIndex, TopLevelPolicyElementType refPolicyType, IdReferenceType idRef, Deque<String> policySetRefChain,
-				int maxPolicySetRefDepth);
+		protected abstract COMBINED_ELT getChildPolicyRefEvaluator(int childIndex, TopLevelPolicyElementType refPolicyType, IdReferenceType idRef, Deque<String> policySetRefChain);
 
 		protected abstract INSTANCE getInstance(String policyId, Target target, String policyCombiningAlgId, Iterable<COMBINED_ELT> combinedElements,
 				Iterable<CombiningAlgParameter<? extends COMBINED_ELT>> policyCombinerParameters, ObligationExpressions obligationExpressions, AdviceExpressions adviceExpressions,
@@ -1868,7 +1948,7 @@ public final class PolicyEvaluators
 
 		@Override
 		public StaticPolicyEvaluator getChildPolicySetEvaluator(final int childIndex, final PolicySet policySetChildElt, final Set<String> updatableParsedPolicyIds,
-				final Set<String> updatableParsedPolicySetIds, final Deque<String> policySetRefChain, final int maxPolicySetRefDepth)
+				final Set<String> updatableParsedPolicySetIds, final Deque<String> policySetRefChain)
 		{
 			/*
 			 * Since it's a child PolicySet, there should be something in updatableParsedPolicySetIds containing itself and parent PolicySet
@@ -1879,7 +1959,7 @@ public final class PolicyEvaluators
 			try
 			{
 				childElement = PolicyEvaluators.getInstanceStatic(policySetChildElt, defaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry,
-						updatableParsedPolicyIds, updatableParsedPolicySetIds, refPolicyProvider, policySetRefChain == null ? null : new ArrayDeque<>(policySetRefChain), maxPolicySetRefDepth);
+						updatableParsedPolicyIds, updatableParsedPolicySetIds, refPolicyProvider, policySetRefChain == null ? null : new ArrayDeque<>(policySetRefChain));
 			}
 			catch (final IllegalArgumentException e)
 			{
@@ -1894,8 +1974,7 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public StaticPolicyEvaluator getChildPolicyRefEvaluator(final int childIndex, final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef,
-				final Deque<String> policySetRefChain, final int maxPolicySetRefDepth)
+		public StaticPolicyEvaluator getChildPolicyRefEvaluator(final int childIndex, final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final Deque<String> policySetRefChain)
 		{
 			if (refPolicyProvider == null)
 			{
@@ -1950,7 +2029,7 @@ public final class PolicyEvaluators
 
 		@Override
 		public PolicyEvaluator getChildPolicySetEvaluator(final int childIndex, final PolicySet policySetChildElt, final Set<String> updatableParsedPolicyIds,
-				final Set<String> updatableParsedPolicySetIds, final Deque<String> policySetRefChain, final int maxPolicySetRefDepth)
+				final Set<String> updatableParsedPolicySetIds, final Deque<String> policySetRefChain)
 		{
 			/*
 			 * Since it's a child PolicySet, there should be something in parsedPolicySetids containing itself and parent PolicySet
@@ -1961,7 +2040,7 @@ public final class PolicyEvaluators
 			try
 			{
 				childElement = PolicyEvaluators.getInstance(policySetChildElt, defaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry, updatableParsedPolicyIds,
-						updatableParsedPolicySetIds, refPolicyProvider, policySetRefChain == null ? null : new ArrayDeque<>(policySetRefChain), maxPolicySetRefDepth);
+						updatableParsedPolicySetIds, refPolicyProvider, policySetRefChain == null ? null : new ArrayDeque<>(policySetRefChain));
 			}
 			catch (final IllegalArgumentException e)
 			{
@@ -1976,8 +2055,7 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public PolicyEvaluator getChildPolicyRefEvaluator(final int childIndex, final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final Deque<String> policySetRefChain,
-				final int maxPolicySetRefDepth)
+		public PolicyEvaluator getChildPolicyRefEvaluator(final int childIndex, final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final Deque<String> policySetRefChain)
 		{
 			if (refPolicyProvider == null)
 			{
@@ -2002,14 +2080,9 @@ public final class PolicyEvaluators
 
 	private static <TLPEE extends TopLevelPolicyElementEvaluator, COMBINED_EVALUATOR extends PolicyEvaluator> TLPEE getInstanceGeneric(
 			final PolicySetElementEvaluatorFactory<TLPEE, COMBINED_EVALUATOR> policyEvaluatorFactory, final PolicySet policyElement, final Set<String> updatableParsedPolicyIds,
-			final Set<String> updatableParsedPolicySetIds, final Deque<String> ancestorPolicySetRefChain, final int maxPolicySetRefDepth) throws IllegalArgumentException
+			final Set<String> updatableParsedPolicySetIds, final Deque<String> ancestorPolicySetRefChain) throws IllegalArgumentException
 	{
 		assert policyEvaluatorFactory != null && policyElement != null && updatableParsedPolicySetIds != null;
-
-		/*
-		 * Check PolicySet reference depth resulting from adding this new PolicySet
-		 */
-		final Deque<String> newPolicySetRefChain = Utils.appendAndCheckPolicyRefChain(ancestorPolicySetRefChain, Collections.singletonList(policyElement.getPolicySetId()), maxPolicySetRefDepth);
 
 		// we are parsing a new policyset -> update updatableParsedPolicySetIds
 		if (!updatableParsedPolicySetIds.add(policyElement.getPolicySetId()))
@@ -2109,8 +2182,7 @@ public final class PolicyEvaluators
 				if (eltNameLocalPart.equals(XACMLNodeName.POLICY_ID_REFERENCE.value()))
 				{
 					final IdReferenceType policyChildIdRef = (IdReferenceType) jaxbPolicyChildElt.getValue();
-					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY, policyChildIdRef, null,
-							maxPolicySetRefDepth);
+					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY, policyChildIdRef, null);
 					combinedEvaluators.add(childEvaluator);
 					final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.putIfAbsent(childEvaluator.getPolicyId(), childEvaluator);
 					if (duplicate != null)
@@ -2122,7 +2194,7 @@ public final class PolicyEvaluators
 				{
 					final IdReferenceType policyChildIdRef = (IdReferenceType) jaxbPolicyChildElt.getValue();
 					final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicyRefEvaluator(childIndex, TopLevelPolicyElementType.POLICY_SET, policyChildIdRef, new ArrayDeque<>(
-							newPolicySetRefChain), maxPolicySetRefDepth);
+							ancestorPolicySetRefChain));
 					combinedEvaluators.add(childEvaluator);
 					final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.put(childEvaluator.getPolicyId(), childEvaluator);
 					if (duplicate != null)
@@ -2163,7 +2235,7 @@ public final class PolicyEvaluators
 				 * PolicySetEvaluator.getInstance(() to avoid that inconsistency.
 				 */
 				final COMBINED_EVALUATOR childEvaluator = policyEvaluatorFactory.getChildPolicySetEvaluator(childIndex, childPolicy, nonNullParsedPolicyIds, updatableParsedPolicySetIds,
-						new ArrayDeque<>(newPolicySetRefChain), maxPolicySetRefDepth);
+						new ArrayDeque<>(ancestorPolicySetRefChain));
 				combinedEvaluators.add(childEvaluator);
 				final COMBINED_EVALUATOR duplicate = childPolicySetEvaluatorsByPolicySetId.putIfAbsent(childPolicyId, childEvaluator);
 				if (duplicate != null)
@@ -2276,16 +2348,14 @@ public final class PolicyEvaluators
 	 *            set of PolicyIds of all Policy elements parsed so far by the PDP or in the same PDP instantiation. Used to detect duplicate PolicyId.
 	 * @param updatableParsedPolicySetIds
 	 *            set of PolicySetIds of all PolicySet elements previously parsed so far by the PDP or in the same PDP instantiation. Used to detect duplicate PolicySetId.
-	 * @param maxPolicySetRefDepth
-	 *            maximum allowed size of {@code policySetRefChain}
 	 * @return instance
 	 * @throws java.lang.IllegalArgumentException
 	 *             if any argument (e.g. {@code policyElement}) is invalid
 	 */
 	public static StaticTopLevelPolicyElementEvaluator getInstanceStatic(final PolicySet policyElement, final XPathCompiler parentDefaultXPathCompiler,
 			final Map<String, String> namespacePrefixesByURI, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry,
-			final Set<String> updatableParsedPolicyIds, final Set<String> updatableParsedPolicySetIds, final StaticRefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain,
-			final int maxPolicySetRefDepth) throws IllegalArgumentException
+			final Set<String> updatableParsedPolicyIds, final Set<String> updatableParsedPolicySetIds, final StaticRefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain)
+			throws IllegalArgumentException
 	{
 		if (policyElement == null)
 		{
@@ -2295,7 +2365,7 @@ public final class PolicyEvaluators
 		final StaticPolicySetElementEvaluatorFactory factory = new StaticPolicySetElementEvaluatorFactory(policyElement.getPolicySetId(), policyElement.getVersion(),
 				policyElement.getPolicySetDefaults(), refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
 		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashCollections.<String> newUpdatableSet() : updatableParsedPolicySetIds;
-		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain, maxPolicySetRefDepth);
+		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain);
 	}
 
 	/**
@@ -2327,8 +2397,7 @@ public final class PolicyEvaluators
 			final Map<String, String> namespacePrefixesByURI, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry,
 			final StaticRefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain, final int maxPolicySetRefDepth) throws IllegalArgumentException
 	{
-		return getInstanceStatic(policyElement, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry, null, null, refPolicyProvider, policySetRefChain,
-				maxPolicySetRefDepth);
+		return getInstanceStatic(policyElement, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry, null, null, refPolicyProvider, policySetRefChain);
 	}
 
 	/**
@@ -2354,16 +2423,13 @@ public final class PolicyEvaluators
 	 *            set of PolicyIds of all Policy elements parsed so far by the PDP or in the same PDP instantiation. Used to detect duplicate PolicyId.
 	 * @param updatableParsedPolicySetIds
 	 *            set of PolicySetIds of all PolicySet elements parsed so far by the PDP or in the same PDP instantiation. Used to detect duplicate PolicySetId.
-	 * @param maxPolicySetRefDepth
-	 *            maximum allowed size of {@code policySetRefChain}
 	 * @return instance
 	 * @throws java.lang.IllegalArgumentException
 	 *             if any argument (e.g. {@code policyElement}) is invalid
 	 */
 	public static TopLevelPolicyElementEvaluator getInstance(final PolicySet policyElement, final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI,
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry, final Set<String> updatableParsedPolicyIds,
-			final Set<String> updatableParsedPolicySetIds, final RefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain, final int maxPolicySetRefDepth)
-			throws IllegalArgumentException
+			final Set<String> updatableParsedPolicySetIds, final RefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain) throws IllegalArgumentException
 	{
 		if (policyElement == null)
 		{
@@ -2375,7 +2441,7 @@ public final class PolicyEvaluators
 				combiningAlgorithmRegistry) : new DynamicPolicySetElementEvaluatorFactory(policyElement.getPolicySetId(), policyElement.getVersion(), policyElement.getPolicySetDefaults(),
 				refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
 		final Set<String> nonNullParsedPolicySetIds = updatableParsedPolicySetIds == null ? HashCollections.<String> newUpdatableSet() : updatableParsedPolicySetIds;
-		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain, maxPolicySetRefDepth);
+		return getInstanceGeneric(factory, policyElement, updatableParsedPolicyIds, nonNullParsedPolicySetIds, policySetRefChain);
 	}
 
 	/**
@@ -2407,7 +2473,6 @@ public final class PolicyEvaluators
 			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry, final RefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChain,
 			final int maxPolicySetRefDepth) throws IllegalArgumentException
 	{
-		return getInstance(policyElement, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry, null, null, refPolicyProvider, policySetRefChain,
-				maxPolicySetRefDepth);
+		return getInstance(policyElement, parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry, null, null, refPolicyProvider, policySetRefChain);
 	}
 }
