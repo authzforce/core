@@ -21,27 +21,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import javax.xml.bind.JAXBElement;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AssociatedAdvice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligations;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIdentifierList;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
-
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
-import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
+import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
 import org.ow2.authzforce.core.pdp.api.PdpDecisionResults;
@@ -55,14 +39,12 @@ import org.ow2.authzforce.core.pdp.api.policy.StaticRootPolicyProviderModule;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.impl.PdpExtensionLoader;
-import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
+import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * {@link RootPolicyEvaluator} implementations
@@ -72,6 +54,7 @@ import com.google.common.collect.ImmutableList;
  */
 public final class RootPolicyEvaluators
 {
+
 	/**
 	 * Root Policy Provider base implementation.
 	 */
@@ -141,8 +124,8 @@ public final class RootPolicyEvaluators
 			}
 
 			// Initialize ExpressionFactory
-			this.expressionFactory = new ExpressionFactoryImpl(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth, enableXPath, strictAttributeIssuerMatch,
-					environmentProperties);
+			this.expressionFactory = new DepthLimitingExpressionFactory(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth, enableXPath,
+					strictAttributeIssuerMatch, environmentProperties);
 
 			final RefPolicyProviderModule.Factory<AbstractPolicyProvider> refPolicyProviderModFactory = jaxbRefPolicyProviderConf == null ? null : PdpExtensionLoader
 					.getRefPolicyProviderModuleFactory(jaxbRefPolicyProviderConf);
@@ -170,13 +153,13 @@ public final class RootPolicyEvaluators
 			catch (final IndeterminateEvaluationException e)
 			{
 				LOGGER.info("Root policy Provider module {} could not find an applicable root policy to evaluate", rootPolicyProviderMod, e);
-				return new ImmutablePdpDecisionResult(e.getStatus(), context);
+				return new ImmutablePdpDecisionResult(e.getStatus());
 			}
 			catch (final IllegalArgumentException e)
 			{
 				LOGGER.warn("One of the possible root policies (resolved by the root policy provider module {}) is invalid", rootPolicyProviderMod, e);
 				// we consider that
-				return new ImmutablePdpDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, Optional.ofNullable(e.getMessage())), context);
+				return new ImmutablePdpDecisionResult(new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, Optional.ofNullable(e.getMessage())));
 			}
 
 			if (policy == null)
@@ -185,7 +168,7 @@ public final class RootPolicyEvaluators
 			}
 
 			final DecisionResult result = policy.evaluate(context, true);
-			return new ImmutablePdpDecisionResult(result, context);
+			return new ImmutablePdpDecisionResult(result);
 		}
 
 		@Override
@@ -214,124 +197,6 @@ public final class RootPolicyEvaluators
 			}
 
 			return staticView;
-		}
-
-	}
-
-	private static final class ImmutablePdpDecisionResult implements PdpDecisionResult
-	{
-
-		private final DecisionType decision;
-
-		private final Status status;
-
-		private final ImmutablePepActions pepActions;
-
-		/**
-		 * Extended Indeterminate value, only in case {@link #getDecision()} returns {@value DecisionType#INDETERMINATE}, else it should be ignored, as defined in section 7.10 of XACML 3.0 core:
-		 * <i>potential effect value which could have occurred if there would not have been an error causing the “Indeterminate”</i>. We use the following convention:
-		 * <ul>
-		 * <li>{@link DecisionType#DENY} means "Indeterminate{D}"</li>
-		 * <li>{@link DecisionType#PERMIT} means "Indeterminate{P}"</li>
-		 * <li>{@link DecisionType#INDETERMINATE} means "Indeterminate{DP}"</li>
-		 * <li>{@link DecisionType#NOT_APPLICABLE} is the default value and means the decision is not Indeterminate, and therefore any extended Indeterminate value should be ignored</li>
-		 * </ul>
-		 * 
-		 */
-		private final DecisionType extIndeterminate;
-
-		private final ImmutableList<JAXBElement<IdReferenceType>> applicablePolicyIdList;
-
-		// null if not required
-		private final Set<AttributeGUID> usedNamedAttributeIdList;
-
-		// null if not required
-		private final Set<AttributeSelectorId> usedExtraContentSelectorList;
-
-		private ImmutablePdpDecisionResult(final DecisionType decision, final DecisionType extendedIndeterminate, final Status status, final ImmutablePepActions pepActions,
-				final ImmutableList<JAXBElement<IdReferenceType>> applicablePolicyIdList, final EvaluationContext evalCtx)
-		{
-			assert decision != null && extendedIndeterminate != null;
-			this.decision = decision;
-			this.status = status;
-			this.pepActions = pepActions;
-			this.extIndeterminate = extendedIndeterminate;
-			this.applicablePolicyIdList = decision == DecisionType.NOT_APPLICABLE ? null : applicablePolicyIdList == null ? ImmutableList.<JAXBElement<IdReferenceType>> of() : applicablePolicyIdList;
-			this.usedNamedAttributeIdList = evalCtx.getUsedNamedAttributes();
-			this.usedExtraContentSelectorList = evalCtx.getUsedExtraAttributeContents();
-		}
-
-		private ImmutablePdpDecisionResult(final DecisionResult decisionResult, final EvaluationContext evalCtx)
-		{
-			this(decisionResult.getDecision(), decisionResult.getExtendedIndeterminate(), decisionResult.getStatus(), decisionResult.getPepActions(), decisionResult.getApplicablePolicies(), evalCtx);
-		}
-
-		private ImmutablePdpDecisionResult(final Status status, final EvaluationContext evalCtx)
-		{
-			this(DecisionType.INDETERMINATE, DecisionType.INDETERMINATE, status, null, null, evalCtx);
-		}
-
-		@Override
-		public ImmutableList<JAXBElement<IdReferenceType>> getApplicablePolicies()
-		{
-			return this.applicablePolicyIdList;
-		}
-
-		@Override
-		public DecisionType getDecision()
-		{
-			return this.decision;
-		}
-
-		@Override
-		public DecisionType getExtendedIndeterminate()
-		{
-			return this.extIndeterminate;
-		}
-
-		@Override
-		public ImmutablePepActions getPepActions()
-		{
-			return this.pepActions;
-		}
-
-		@Override
-		public Status getStatus()
-		{
-			return this.status;
-		}
-
-		@Override
-		public Set<AttributeSelectorId> getUsedExtraAttributeContents()
-		{
-			return this.usedExtraContentSelectorList;
-		}
-
-		@Override
-		public Set<AttributeGUID> getUsedNamedAttributes()
-		{
-			return this.usedNamedAttributeIdList;
-		}
-
-		@Override
-		public Result toXACMLResult(final List<Attributes> returnedAttributes)
-		{
-			final List<Obligation> obligationList;
-			final List<Advice> adviceList;
-			if (pepActions == null)
-			{
-				obligationList = null;
-				adviceList = null;
-			}
-			else
-			{
-				obligationList = this.pepActions.getObligatory();
-				adviceList = this.pepActions.getAdvisory();
-			}
-
-			return new Result(this.decision, this.status, obligationList == null || obligationList.isEmpty() ? null : new Obligations(obligationList),
-					adviceList == null || adviceList.isEmpty() ? null : new AssociatedAdvice(adviceList), returnedAttributes, applicablePolicyIdList == null || applicablePolicyIdList.isEmpty() ? null
-							: new PolicyIdentifierList(applicablePolicyIdList));
 		}
 
 	}
@@ -368,7 +233,7 @@ public final class RootPolicyEvaluators
 		public PdpDecisionResult findAndEvaluate(final EvaluationContext context)
 		{
 			final DecisionResult result = staticRootPolicyEvaluator.evaluate(context);
-			return new ImmutablePdpDecisionResult(result, context);
+			return new ImmutablePdpDecisionResult(result);
 		}
 
 		@Override

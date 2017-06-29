@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>8.0.0</version>
+      <version>9.0.0</version>
       <relativePath>..</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
@@ -26,9 +26,19 @@
          <version>${project.parent.version}</version>
       </dependency>
       <dependency>
+         <groupId>org.mongodb</groupId>
+         <artifactId>mongo-java-driver</artifactId>
+         <!-- See this issue for compatibility with Jongo: https://github.com/bguerout/jongo/issues/254 -->
+         <version>2.14.2</version>
+      </dependency>
+      <dependency>
+         <groupId>org.jongo</groupId>
+         <artifactId>jongo</artifactId>
+         <version>1.3.0</version>
+      </dependency>
+      <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <version>4.11</version>
       </dependency>
       <!-- Test dependencies -->
       <dependency>
@@ -58,6 +68,12 @@
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-testutils</artifactId>
          <version>${cxf.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>de.bwaldvogel</groupId>
+         <artifactId>mongo-java-server</artifactId>
+         <version>1.7.0</version>
          <scope>test</scope>
       </dependency>
       <!-- /Test dependencies -->

@@ -24,11 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-
-import javax.xml.bind.JAXBElement;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +44,7 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Value;
-import org.ow2.authzforce.core.pdp.impl.expression.ExpressionFactoryImpl;
+import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
 
@@ -68,7 +65,7 @@ public abstract class StandardFunctionTest
 	{
 		try
 		{
-			STD_EXPRESSION_FACTORY = new ExpressionFactoryImpl(StandardDatatypeFactoryRegistry.getRegistry(true), StandardFunction.getRegistry(true), null, 0, false, false, null);
+			STD_EXPRESSION_FACTORY = new DepthLimitingExpressionFactory(StandardDatatypeFactoryRegistry.getRegistry(true), StandardFunction.getRegistry(true), null, 0, false, false, null);
 		}
 		catch (IllegalArgumentException | IOException e)
 		{
@@ -108,7 +105,7 @@ public abstract class StandardFunctionTest
 			final Expression<?> xpr0 = inputs.get(0);
 			if (xpr0 instanceof FunctionExpression)
 			{
-				subFuncReturnType = ((FunctionExpression) xpr0).getValue().getReturnType();
+				subFuncReturnType = ((FunctionExpression) xpr0).getValue().get().getReturnType();
 			}
 			else
 			{
@@ -123,7 +120,7 @@ public abstract class StandardFunctionTest
 					+ (subFuncReturnType == null ? "as first-order function" : "as higher-order function with sub-function return type = " + subFuncReturnType));
 		}
 
-		final Function<?> function = functionExp.getValue();
+		final Function<?> function = functionExp.getValue().get();
 
 		try
 		{
@@ -184,15 +181,9 @@ public abstract class StandardFunctionTest
 		}
 
 		@Override
-		public V getValue()
+		public Optional<V> getValue()
 		{
 			throw new UnsupportedOperationException("No constant defined for Indeterminate expression");
-		}
-
-		@Override
-		public JAXBElement<? extends ExpressionType> getJAXBElement()
-		{
-			return null;
 		}
 
 	}

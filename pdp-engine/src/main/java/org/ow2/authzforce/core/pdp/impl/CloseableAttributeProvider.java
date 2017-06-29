@@ -26,7 +26,8 @@ import java.util.Set;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeFQN;
+import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.AttributeProviderModule;
 import org.ow2.authzforce.core.pdp.api.CloseableAttributeProviderModule;
@@ -113,7 +114,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	// not-null
 	private final Set<ModuleAdapter> moduleClosers;
 
-	private CloseableAttributeProvider(final Map<AttributeGUID, AttributeProviderModule> modulesByAttributeId, final Set<ModuleAdapter> moduleClosers, final boolean strictAttributeIssuerMatch)
+	private CloseableAttributeProvider(final Map<AttributeFQN, AttributeProviderModule> modulesByAttributeId, final Set<ModuleAdapter> moduleClosers, final boolean strictAttributeIssuerMatch)
 	{
 		super(modulesByAttributeId, null, strictAttributeIssuerMatch);
 		assert moduleClosers != null;
@@ -121,7 +122,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	}
 
 	private static final CloseableAttributeProvider EVALUATION_CONTEXT_ONLY_SCOPED_CLOSEABLE_ATTRIBUTE_PROVIDER = new CloseableAttributeProvider(
-			Collections.<AttributeGUID, AttributeProviderModule> emptyMap(), Collections.<ModuleAdapter> emptySet(), true);
+			Collections.<AttributeFQN, AttributeProviderModule> emptyMap(), Collections.<ModuleAdapter> emptySet(), true);
 
 	/**
 	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the requested attribute ID, if any.
@@ -153,7 +154,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 			return EVALUATION_CONTEXT_ONLY_SCOPED_CLOSEABLE_ATTRIBUTE_PROVIDER;
 		}
 
-		final Map<AttributeGUID, AttributeProviderModule> modulesByAttributeId = HashCollections.newUpdatableMap();
+		final Map<AttributeFQN, AttributeProviderModule> modulesByAttributeId = HashCollections.newUpdatableMap();
 		final int moduleCount = jaxbAttributeProviderConfs.size();
 		final Set<ModuleAdapter> mutableModuleCloserSet = HashCollections.newUpdatableSet(moduleCount);
 		for (final AbstractAttributeProvider jaxbAttributeProviderConf : jaxbAttributeProviderConfs)
@@ -176,8 +177,8 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 				}
 				else
 				{
-					final Map<AttributeGUID, AttributeProviderModule> immutableCopyOfAttrProviderModsByAttrId = Collections
-							.<AttributeGUID, AttributeProviderModule> unmodifiableMap(modulesByAttributeId);
+					final Map<AttributeFQN, AttributeProviderModule> immutableCopyOfAttrProviderModsByAttrId = Collections
+							.<AttributeFQN, AttributeProviderModule> unmodifiableMap(modulesByAttributeId);
 					depAttrProvider = new ModularAttributeProvider(immutableCopyOfAttrProviderModsByAttrId, requiredAttrs, strictAttributeIssuerMatch);
 				}
 
@@ -188,7 +189,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 
 				for (final AttributeDesignatorType attrDesignator : moduleAdapter.getProvidedAttributes())
 				{
-					final AttributeGUID attrGUID = new AttributeGUID(attrDesignator);
+					final AttributeFQN attrGUID = AttributeFQNs.newInstance(attrDesignator);
 					final AttributeProviderModule duplicate = modulesByAttributeId.putIfAbsent(attrGUID, moduleAdapter.getAdaptedModule());
 					if (duplicate != null)
 					{

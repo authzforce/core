@@ -76,8 +76,8 @@ public final class AttributeAssignmentExpressionEvaluator
 			final XPathCompiler xPathCompiler, final ExpressionFactory expFactory) throws IllegalArgumentException
 	{
 		/*
-		 * Cannot used AttributeGUID class to handle metadata because AttributeAssignment Category is not required like
-		 * in AttributeDesignator which is what the AttributeGUID is used for
+		 * Cannot used AttributeFQN class to handle metadata because AttributeAssignment Category is not required like
+		 * in AttributeDesignator which is what the AttributeFQN is used for
 		 */
 		this.attributeId = Preconditions.checkNotNull(jaxbAttrAssignExp.getAttributeId(),
 				"Undefined AttributeAssignment/AttributeId");

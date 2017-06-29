@@ -32,7 +32,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeFQN;
+import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.BaseAttributeProviderModule;
 import org.ow2.authzforce.core.pdp.api.CloseableAttributeProviderModule;
@@ -42,8 +43,10 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.JaxbXACMLAttributeParser;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.NonIssuedLikeIssuedStrictJaxbXACMLAttributeParser;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
+import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider;
@@ -92,12 +95,12 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 	}
 
 	private final Set<AttributeDesignatorType> supportedDesignatorTypes = new HashSet<>();
-	private final Map<AttributeGUID, Bag<?>> attrMap = new HashMap<>();
+	private final Map<AttributeFQN, AttributeBag<?>> attrMap = new HashMap<>();
 
 	private TestAttributeProviderModule(final TestAttributeProvider conf, final DatatypeFactoryRegistry attrDatatypeFactory) throws IllegalArgumentException
 	{
 		super(conf.getId());
-		final JaxbXACMLAttributeParser<Bag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictJaxbXACMLAttributeParser(attrDatatypeFactory);
+		final JaxbXACMLAttributeParser<AttributeBag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictJaxbXACMLAttributeParser(attrDatatypeFactory);
 		final Set<String> attrCategoryNames = new HashSet<>();
 		for (final Attributes jaxbAttributes : conf.getAttributes())
 		{
@@ -109,14 +112,14 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 
 			for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
 			{
-				xacmlAttributeParser
-						.parseAttribute(attrMap, new AttributeGUID(categoryName, Optional.ofNullable(jaxbAttr.getIssuer()), jaxbAttr.getAttributeId()), jaxbAttr.getAttributeValues(), null);
+				xacmlAttributeParser.parseAttribute(attrMap, AttributeFQNs.newInstance(categoryName, Optional.ofNullable(jaxbAttr.getIssuer()), jaxbAttr.getAttributeId()),
+						jaxbAttr.getAttributeValues(), null);
 			}
 		}
 
-		for (final Entry<AttributeGUID, Bag<?>> attrEntry : attrMap.entrySet())
+		for (final Entry<AttributeFQN, AttributeBag<?>> attrEntry : attrMap.entrySet())
 		{
-			final AttributeGUID attrKey = attrEntry.getKey();
+			final AttributeFQN attrKey = attrEntry.getKey();
 			final Bag<?> attrVals = attrEntry.getValue();
 			supportedDesignatorTypes.add(new AttributeDesignatorType(attrKey.getCategory(), attrKey.getId(), attrVals.getElementDatatype().getId(), attrKey.getIssuer().orElse(null), false));
 		}
@@ -135,21 +138,22 @@ public class TestAttributeProviderModule extends BaseAttributeProviderModule
 	}
 
 	@Override
-	public <AV extends AttributeValue> Bag<AV> get(final AttributeGUID attributeGUID, final Datatype<AV> attributeDatatype, final EvaluationContext context) throws IndeterminateEvaluationException
+	public <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFQN attributeGUID, final BagDatatype<AV> returnDatatype, final EvaluationContext context)
+			throws IndeterminateEvaluationException
 	{
-		final Bag<?> attrVals = attrMap.get(attributeGUID);
+		final AttributeBag<?> attrVals = attrMap.get(attributeGUID);
 		if (attrVals == null)
 		{
 			return null;
 		}
 
-		if (attrVals.getElementDatatype().equals(attributeDatatype))
+		final Datatype<AV> valueType = returnDatatype.getElementType();
+		if (attrVals.getElementDatatype().equals(valueType))
 		{
-			return (Bag<AV>) attrVals;
+			return returnDatatype.castAttributeBag(attrVals);
 		}
 
-		throw new IndeterminateEvaluationException("Requested datatype (" + attributeDatatype + ") != provided by " + this + " (" + attrVals.getElementDatatype() + ")",
-				StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		throw new IndeterminateEvaluationException("Requested datatype (" + valueType + ") != provided by " + this + " (" + attrVals.getElementDatatype() + ")", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 	}
 
 }

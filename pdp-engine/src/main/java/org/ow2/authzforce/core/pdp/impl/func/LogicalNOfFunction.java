@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.impl.func;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -339,12 +340,13 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 		 */
 		final Iterator<? extends Expression<?>> argExpsIterator = argExpressions.iterator();
 		// Evaluate the first argument
-		final Value arg0 = argExpsIterator.next().getValue();
-		if (arg0 != null)
+		final Optional<? extends Value> arg0 = argExpsIterator.next().getValue();
+		if (arg0.isPresent())
 		{
+			// arg0 is constant
 			// We downsize the BigInteger value to int right away, because anyway inputs.size() is an
 			// int, so we cannot do better and don't need to.
-			final int nOfRequiredTrues = IntegerValue.class.cast(arg0).getUnderlyingValue().intValueExact();
+			final int nOfRequiredTrues = IntegerValue.class.cast(arg0.get()).getUnderlyingValue().intValueExact();
 			if (nOfRequiredTrues < 0)
 			{
 				throw new IllegalArgumentException(getInvalidArg0MessagePrefix(functionSignature) + nOfRequiredTrues);

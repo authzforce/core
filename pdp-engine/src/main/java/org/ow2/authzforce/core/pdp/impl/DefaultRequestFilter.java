@@ -28,18 +28,21 @@ import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeFQN;
 import org.ow2.authzforce.core.pdp.api.BaseRequestFilter;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.ImmutableIndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.IndividualDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
 import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.JaxbXACMLAttributesParser;
+import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestFactory;
 import org.ow2.authzforce.core.pdp.api.RequestFilter;
 import org.ow2.authzforce.core.pdp.api.SingleCategoryAttributes;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Default Request filter for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
@@ -48,6 +51,17 @@ import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
  */
 public final class DefaultRequestFilter extends BaseRequestFilter
 {
+	private static final PdpDecisionRequestFactory<ImmutablePdpDecisionRequest> DEFAULT_REQUEST_FACTORY = new PdpDecisionRequestFactory<ImmutablePdpDecisionRequest>()
+	{
+
+		@Override
+		public ImmutablePdpDecisionRequest getInstance(final Map<AttributeFQN, AttributeBag<?>> namedAttributes, final Map<String, XdmNode> extraContentsByCategory,
+				final boolean returnApplicablePolicies)
+		{
+			return ImmutablePdpDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
+		}
+	};
+
 	/**
 	 *
 	 * Factory for this type of request filter that allows duplicate &lt;Attribute&gt; with same meta-data in the same &lt;Attributes&gt; element of a Request (complying with XACML 3.0 core spec,
@@ -71,7 +85,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		public RequestFilter getInstance(final DatatypeFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch, final boolean requireContentForXPath,
 				final Processor xmlProcessor)
 		{
-			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, true, requireContentForXPath, xmlProcessor);
+			return new DefaultRequestFilter(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, true, requireContentForXPath, xmlProcessor);
 		}
 
 		/**
@@ -101,22 +115,42 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 		public RequestFilter getInstance(final DatatypeFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch, final boolean requireContentForXPath,
 				final Processor xmlProcessor)
 		{
-			return new DefaultRequestFilter(datatypeFactoryRegistry, strictAttributeIssuerMatch, false, requireContentForXPath, xmlProcessor);
+			return new DefaultRequestFilter(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, false, requireContentForXPath, xmlProcessor);
 		}
 	}
 
-	private DefaultRequestFilter(final DatatypeFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates,
-			final boolean requireContentForXPath, final Processor xmlProcessor)
+	private final PdpDecisionRequestFactory<ImmutablePdpDecisionRequest> reqFactory;
+
+	/**
+	 * Creates instance of default request filter
+	 * 
+	 * @param datatypeFactoryRegistry
+	 *            attribute datatype registry
+	 * @param requestFactory
+	 *            decision request factory
+	 * @param strictAttributeIssuerMatch
+	 *            true iff strict attribute Issuer match must be enforced (in particular request attributes with empty Issuer only match corresponding AttributeDesignators with empty Issuer)
+	 * @param allowAttributeDuplicates
+	 *            true iff duplicate Attribute (with same metadata) elements in Request (for multi-valued attributes) must be allowed
+	 * @param requireContentForXPath
+	 *            true iff Content elements must be parsed, else ignored
+	 * @param xmlProcessor
+	 *            XML processor for parsing Content elements iff {@code requireContentForXPath}
+	 */
+	public DefaultRequestFilter(final DatatypeFactoryRegistry datatypeFactoryRegistry, final PdpDecisionRequestFactory<ImmutablePdpDecisionRequest> requestFactory,
+			final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates, final boolean requireContentForXPath, final Processor xmlProcessor)
 	{
 		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor);
+		assert requestFactory != null;
+		reqFactory = requestFactory;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public List<? extends IndividualDecisionRequest> filter(final List<Attributes> attributesList, final JaxbXACMLAttributesParser xacmlAttrsParser, final boolean isApplicablePolicyIdListReturned,
+	public List<? extends IndividualXACMLRequest> filter(final List<Attributes> attributesList, final JaxbXACMLAttributesParser xacmlAttrsParser, final boolean isApplicablePolicyIdListReturned,
 			final boolean combinedDecision, final XPathCompiler xPathCompiler, final Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
 	{
-		final Map<AttributeGUID, Bag<?>> namedAttributes = HashCollections.newUpdatableMap(attributesList.size());
+		final Map<AttributeFQN, AttributeBag<?>> namedAttributes = HashCollections.newUpdatableMap(attributesList.size());
 		final Map<String, XdmNode> extraContentsByCategory = HashCollections.newUpdatableMap(attributesList.size());
 		/*
 		 * attributesToIncludeInResult.size() <= attributesList.size()
@@ -153,7 +187,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 			 * "Regardless of any dynamic modifications of the request context during policy evaluation, the PDP SHALL behave as if each bag of attribute values is fully populated in the context before it is first tested, and is thereafter immutable during evaluation. (That is, every subsequent test of that attribute shall use the same bag of values that was initially tested.)"
 			 * </i></p>
 			 */
-			for (final Entry<AttributeGUID, Bag<?>> attrEntry : categorySpecificAttributes)
+			for (final Entry<AttributeFQN, AttributeBag<?>> attrEntry : categorySpecificAttributes)
 			{
 				namedAttributes.put(attrEntry.getKey(), attrEntry.getValue());
 			}
@@ -165,6 +199,7 @@ public final class DefaultRequestFilter extends BaseRequestFilter
 			}
 		}
 
-		return Collections.singletonList(new ImmutableIndividualDecisionRequest(namedAttributes, extraContentsByCategory, attributesToIncludeInResult, isApplicablePolicyIdListReturned));
+		return Collections.singletonList(new IndividualXACMLRequest(reqFactory.getInstance(namedAttributes, extraContentsByCategory, isApplicablePolicyIdListReturned), ImmutableList
+				.copyOf(attributesToIncludeInResult)));
 	}
 }

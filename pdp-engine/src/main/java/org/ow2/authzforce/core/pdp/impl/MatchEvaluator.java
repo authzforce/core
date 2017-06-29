@@ -114,7 +114,7 @@ public final class MatchEvaluator
 			throw new IllegalArgumentException("Unsupported function '" + StandardFunction.ANY_OF.getId() + "' required for Match evaluation");
 		}
 
-		final Function<BooleanValue> anyOfFunc = funcExp.getValue();
+		final Function<BooleanValue> anyOfFunc = funcExp.getValue().get();
 		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr, bagExpression);
 		try
 		{

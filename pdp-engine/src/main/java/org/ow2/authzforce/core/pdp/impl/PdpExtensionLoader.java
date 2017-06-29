@@ -314,7 +314,7 @@ public final class PdpExtensionLoader
 	/**
 	 * Get Attribute Provider Module factory builder
 	 * 
-	 * @param jaxbAttributeProviderConf
+	 * @param jaxbDecisionCacheConf
 	 *            module configuration (instance of JAXB-annotated class derived from XML instance)
 	 * @return Attribute Provider Module factory builder
 	 * @throws java.lang.IllegalArgumentException

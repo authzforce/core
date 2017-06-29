@@ -17,16 +17,17 @@
  */
 package org.ow2.authzforce.core.pdp.impl.expression;
 
-import javax.xml.bind.JAXBElement;
+import java.util.Optional;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import org.ow2.authzforce.core.pdp.api.AttributeGUID;
+import org.ow2.authzforce.core.pdp.api.AttributeFQN;
+import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.AttributeDesignatorExpression;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
@@ -34,37 +35,25 @@ import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 
 /**
- * AttributeDesignator evaluator
- *
- * <p>
- * WARNING: java.net.URI cannot be used here for XACML datatype/category/ID, because not equivalent to XML schema anyURI type. Spaces are allowed in XSD anyURI [1], not in java.net.URI.
- * </p>
- * <p>
- * [1] http://www.w3.org/TR/xmlschema-2/#anyURI That's why we use String instead.
- * </p>
- * <p>
- * See also:
- * </p>
- * <p>
- * https://java.net/projects/jaxb/lists/users/archive/2011-07/message/16
- * </p>
+ * AttributeDesignator evaluator initialized with and using an {@link AttributeProvider} to retrieve the attribute value not only from the request but also possibly from extra Attribute Provider
+ * modules (so-called XACML PIPs) (PDP extensions)
  *
  * @param <AV>
  *            AttributeDesignator evaluation result value's primitive datatype
  * 
  * @version $Id: $
  */
-public final class AttributeDesignatorExpression<AV extends AttributeValue> implements Expression<Bag<AV>>
+public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV extends AttributeValue> implements AttributeDesignatorExpression<AV>
 {
 	private static final IllegalArgumentException NULL_ATTRIBUTE_PROVIDER_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
-	private static final UnsupportedOperationException UNSUPPORTED_OPERATION_EXCEPTION = new UnsupportedOperationException();
 
-	private final transient AttributeGUID attrGUID;
+	private final AttributeFQN attrGUID;
+	private final BagDatatype<AV> returnType;
+	private final boolean mustBePresent;
+	private final transient Bag.Validator mustBePresentEnforcer;
 	private final transient AttributeProvider attrProvider;
-	private final transient BagDatatype<AV> returnType;
 	private final transient IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 	private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
-	private final transient Bag.Validator mustBePresentEnforcer;
 
 	// lazy initialization
 	private transient volatile String toString = null;
@@ -72,10 +61,12 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 
 	/** {@inheritDoc} */
 	@Override
-	public Bag<AV> getValue()
+	public Optional<Bag<AV>> getValue()
 	{
-		// depends on the context
-		return null;
+		/*
+		 * context-dependent, therefore not constant
+		 */
+		return Optional.empty();
 	}
 
 	/**
@@ -90,25 +81,37 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 	 * @throws IllegalArgumentException
 	 *             if {@code attrDesignator.getCategory() == null || attrDesignator.getAttributeId() == null}
 	 */
-	public AttributeDesignatorExpression(final AttributeDesignatorType attrDesignator, final BagDatatype<AV> resultDatatype, final AttributeProvider attrProvider)
+	public GenericAttributeProviderBasedAttributeDesignatorExpression(final AttributeDesignatorType attrDesignator, final BagDatatype<AV> resultDatatype, final AttributeProvider attrProvider)
 	{
 		if (attrProvider == null)
 		{
 			throw NULL_ATTRIBUTE_PROVIDER_EXCEPTION;
 		}
-		
+
 		this.attrProvider = attrProvider;
-		this.attrGUID = new AttributeGUID(attrDesignator);
+		this.attrGUID = AttributeFQNs.newInstance(attrDesignator);
 		this.returnType = resultDatatype;
 
 		// error messages/exceptions
 		final String missingAttributeMessage = this + " not found in context";
-		final boolean mustBePresentFlag = attrDesignator.isMustBePresent();
-		this.mustBePresentEnforcer = mustBePresentFlag ? new Bags.NonEmptinessValidator(missingAttributeMessage) : Bags.DUMB_VALIDATOR;
+		this.mustBePresent = attrDesignator.isMustBePresent();
+		this.mustBePresentEnforcer = mustBePresent ? new Bags.NonEmptinessValidator(missingAttributeMessage) : Bags.DUMB_VALIDATOR;
 
 		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", StatusHelper.STATUS_MISSING_ATTRIBUTE);
 		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
 				+ "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+	}
+
+	@Override
+	public AttributeFQN getAttributeFQN()
+	{
+		return this.attrGUID;
+	}
+
+	@Override
+	public boolean isNonEmptyBagRequired()
+	{
+		return this.mustBePresent;
 	}
 
 	/**
@@ -124,7 +127,7 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 			throw missingAttributeBecauseNullContextException;
 		}
 
-		final Bag<AV> bag = attrProvider.get(attrGUID, this.returnType.getElementType(), context);
+		final Bag<AV> bag = attrProvider.get(attrGUID, this.returnType, context);
 		if (bag == null)
 		{
 			throw this.missingAttributeForUnknownReasonException;
@@ -143,13 +146,6 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 	public Datatype<Bag<AV>> getReturnType()
 	{
 		return this.returnType;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public JAXBElement<AttributeDesignatorType> getJAXBElement()
-	{
-		throw UNSUPPORTED_OPERATION_EXCEPTION;
 	}
 
 	/*
@@ -182,7 +178,7 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 		return hashCode;
 	}
 
-	/** {@inheritDoc} */
+	/** Equal iff the Attribute Category/Issuer/Id are equal */
 	@Override
 	public boolean equals(final Object obj)
 	{
@@ -191,12 +187,12 @@ public final class AttributeDesignatorExpression<AV extends AttributeValue> impl
 			return true;
 		}
 
-		if (!(obj instanceof AttributeDesignatorExpression))
+		if (!(obj instanceof GenericAttributeProviderBasedAttributeDesignatorExpression))
 		{
 			return false;
 		}
 
-		final AttributeDesignatorExpression<?> other = (AttributeDesignatorExpression<?>) obj;
+		final GenericAttributeProviderBasedAttributeDesignatorExpression<?> other = (GenericAttributeProviderBasedAttributeDesignatorExpression<?>) obj;
 		return this.attrGUID.equals(other.attrGUID);
 	}
 

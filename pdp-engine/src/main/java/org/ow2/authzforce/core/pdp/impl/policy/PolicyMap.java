@@ -19,6 +19,7 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import org.ow2.authzforce.core.pdp.api.HashCollections;
@@ -66,7 +67,7 @@ public final class PolicyMap<P>
 	 *            patterns that the returned policy version must match
 	 * @return policy version latest version of policy with ID {@code id} and version matching {@code versionPatterns}
 	 */
-	public Entry<PolicyVersion, P> get(final String id, final VersionPatterns versionPatterns)
+	public Entry<PolicyVersion, P> get(final String id, final Optional<VersionPatterns> versionPatterns)
 	{
 		final PolicyVersions<P> policyVersions = policiesById.get(id);
 		// id not matched

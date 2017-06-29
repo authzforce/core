@@ -65,14 +65,14 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						STRING_EQUAL_FUNCTION_ID,//
 						Arrays.asList(
 								new StringValue("Paul"), //
-								Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(),
 										Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George"), new StringValue("Ringo")))),//
 						BooleanValue.TRUE },
 
 				new Object[] { NAME_ANY_OF,//
 						STRING_EQUAL_FUNCTION_ID,//
 						Arrays.asList(new StringValue("Paul"), //
-								Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("John"), new StringValue("George"), new StringValue("Ringo")))),//
+								Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("John"), new StringValue("George"), new StringValue("Ringo")))),//
 						BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:all-of
@@ -81,7 +81,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
 						Arrays.asList(
 								new IntegerValue("10"), //
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 										Arrays.asList(new IntegerValue("9"), new IntegerValue("3"), new IntegerValue("4"), new IntegerValue("2")))),//
 						BooleanValue.TRUE },
 
@@ -90,7 +90,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
 						Arrays.asList(
 								new IntegerValue("10"), //
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 										Arrays.asList(new IntegerValue("9"), new IntegerValue("3"), new IntegerValue("14"), new IntegerValue("2")))),//
 						BooleanValue.FALSE },
 
@@ -99,8 +99,8 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						NAME_ANY_OF_ANY,//
 						STRING_EQUAL_FUNCTION_ID,//
 						Arrays.asList(
-								Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))),//
-								Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))),//
+								Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(),
 										Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George"), new StringValue("Ringo")))),//
 						BooleanValue.TRUE },//
 				// Example with matching string in last position in first bag
@@ -108,30 +108,30 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						NAME_ANY_OF_ANY,//
 						STRING_EQUAL_FUNCTION_ID,//
 						Arrays.asList(
-								Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))),//
-								Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))),//
+								Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(),
 										Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("Mary"), new StringValue("Ringo")))),//
 						BooleanValue.TRUE },
 
 				new Object[] { NAME_ANY_OF_ANY,//
 						STRING_EQUAL_FUNCTION_ID,//
-						Arrays.asList(Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))),//
-								Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George")))),//
+						Arrays.asList(Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))),//
+								Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George")))),//
 						BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:all-of-any
 				new Object[] { NAME_ALL_OF_ANY,//
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
-						Arrays.asList(Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("10"), new IntegerValue("20"))),//
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("1"), new IntegerValue("3")))),//
+						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("10"), new IntegerValue("20"))),//
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("1"), new IntegerValue("3")))),//
 						BooleanValue.TRUE },
 
 				new Object[] {
 						NAME_ALL_OF_ANY,//
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
 						Arrays.asList(
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("10"), new IntegerValue("20"))),//
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("10"), new IntegerValue("20"))),//
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 										Arrays.asList(new IntegerValue("11"), new IntegerValue("13"), new IntegerValue("15"), new IntegerValue("19")))),//
 						BooleanValue.FALSE },
 
@@ -141,8 +141,8 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
 
 						Arrays.asList(
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("3"), new IntegerValue("5"))),//
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("3"), new IntegerValue("5"))),//
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 										Arrays.asList(new IntegerValue("1"), new IntegerValue("2"), new IntegerValue("3"), new IntegerValue("4")))),//
 						BooleanValue.TRUE },
 
@@ -150,8 +150,8 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						NAME_ANY_OF_ALL,//
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
 						Arrays.asList(
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("3"), new IntegerValue("4"))),//
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("3"), new IntegerValue("4"))),//
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 										Arrays.asList(new IntegerValue("1"), new IntegerValue("2"), new IntegerValue("3"), new IntegerValue("4")))),//
 						BooleanValue.FALSE },
 
@@ -160,24 +160,24 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 						NAME_ALL_OF_ALL,//
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
 						Arrays.asList(
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("6"), new IntegerValue("5"))),//
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("6"), new IntegerValue("5"))),//
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 										Arrays.asList(new IntegerValue("1"), new IntegerValue("2"), new IntegerValue("3"), new IntegerValue("4")))),//
 						BooleanValue.TRUE },
 
 				new Object[] { NAME_ALL_OF_ALL,
 						INTEGER_GREATER_THAN_FUNCTION_ID,//
 						Arrays.asList(
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("3"), new IntegerValue("5"))),//
-								Bags.getInstance(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(), Arrays.asList(new IntegerValue("3"), new IntegerValue("5"))),//
+								Bags.newBag(StandardDatatypes.INTEGER_FACTORY.getDatatype(),
 										Arrays.asList(new IntegerValue("1"), new IntegerValue("2"), new IntegerValue("3"), new IntegerValue("4")))),//
 						BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:map
 				new Object[] { NAME_MAP, //
 						STRING_NORMALIZE_TO_LC_FUNCTION_ID,//
-						Arrays.asList(Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Hello"), new StringValue("World")))),//
-						Bags.getInstance(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("hello"), new StringValue("world"))) }//
+						Arrays.asList(Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("Hello"), new StringValue("World")))),//
+						Bags.newBag(StandardDatatypes.STRING_FACTORY.getDatatype(), Arrays.asList(new StringValue("hello"), new StringValue("world"))) }//
 				);
 	}
 

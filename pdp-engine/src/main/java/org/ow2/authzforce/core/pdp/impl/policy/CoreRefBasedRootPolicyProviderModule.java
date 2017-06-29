@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
@@ -131,7 +132,7 @@ public class CoreRefBasedRootPolicyProviderModule implements StaticRootPolicyPro
 			final VersionPatterns versionPatterns = new VersionPatterns(policyRef.getVersion(), policyRef.getEarliestVersion(), policyRef.getLatestVersion());
 			try
 			{
-				rootPolicy = refPolicyProvider.get(TopLevelPolicyElementType.POLICY_SET, policySetId, versionPatterns, null);
+				rootPolicy = refPolicyProvider.get(TopLevelPolicyElementType.POLICY_SET, policySetId, Optional.of(versionPatterns), null);
 			}
 			catch (final IndeterminateEvaluationException e)
 			{

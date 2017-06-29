@@ -22,9 +22,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.xpath.XPathExpressionException;
+import java.util.Optional;
 
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
@@ -40,7 +38,6 @@ import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -62,13 +59,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Implementation of ExpressionFactory that supports the Expressions defined in VariableDefinitions in order to resolve VariableReferences. In particular, it makes sure the depth of recursivity of
  * VariableDefinition does not exceed a value (to avoid inconveniences such as stackoverflow or very negative performance impact) defined by {@code maxVarRefDef} parameter to
- * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)}. Note that reference loops are avoided by the fact that a
+ * {@link #DepthLimitingExpressionFactory(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)}. Note that reference loops are avoided by the fact that a
  * VariableReference can reference only a VariableDefinition defined previously to the VariableReference in this implementation.
  *
  * 
  * @version $Id: $
  */
-public final class ExpressionFactoryImpl implements ExpressionFactory
+public final class DepthLimitingExpressionFactory implements ExpressionFactory
 {
 	/**
 	 * Base class for evaluating XACML VariableReferences that holds the variable ID and longest VariableReference chain found in the referenced variable's expression, in order to detect abuse of such
@@ -96,6 +93,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		 */
 		private BaseVariableReference(final String varId, final Deque<String> longestVarRefChain)
 		{
+			assert varId != null;
 			this.variableId = varId;
 			this.longestVariableReferenceChain = longestVarRefChain;
 		}
@@ -105,13 +103,6 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		public final String getVariableId()
 		{
 			return this.variableId;
-		}
-
-		/** {@inheritDoc} */
-		@Override
-		public final JAXBElement<VariableReferenceType> getJAXBElement()
-		{
-			return JaxbXACMLUtils.XACML_3_0_OBJECT_FACTORY.createVariableReference(new VariableReferenceType(variableId));
 		}
 
 		/**
@@ -129,7 +120,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 
 	private static final class ConstantVariableReference<V extends Value> extends BaseVariableReference<V>
 	{
-		private final transient V varValue;
+		private final transient Optional<V> alwaysPresentVarValue;
 		private final transient Datatype<V> varDatatype;
 
 		/**
@@ -145,10 +136,11 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		 *            longest chain of VariableReference Reference in <code>expr</code> (V1 -> V2 -> ... -> Vn, where "V1 -> V2" means VariableReference V1's expression contains one or more
 		 *            VariableReferences to V2)
 		 */
-		public ConstantVariableReference(final String varId, final V varValue, final Datatype<V> varDatatype, final Deque<String> longestVarRefChain)
+		private ConstantVariableReference(final String varId, final V varValue, final Datatype<V> varDatatype, final Deque<String> longestVarRefChain)
 		{
 			super(varId, longestVarRefChain);
-			this.varValue = varValue;
+			assert varValue != null && varDatatype != null;
+			this.alwaysPresentVarValue = Optional.of(varValue);
 			this.varDatatype = varDatatype;
 		}
 
@@ -170,9 +162,9 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		 */
 		/** {@inheritDoc} */
 		@Override
-		public V getValue()
+		public Optional<V> getValue()
 		{
-			return this.varValue;
+			return this.alwaysPresentVarValue;
 		}
 
 		/**
@@ -184,7 +176,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		@Override
 		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			return this.varValue;
+			return this.alwaysPresentVarValue.get();
 		}
 	}
 
@@ -204,9 +196,10 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		 *            longest chain of VariableReference Reference in <code>expr</code> (V1 -> V2 -> ... -> Vn, where "V1 -> V2" means VariableReference V1's expression contains one or more
 		 *            VariableReferences to V2)
 		 */
-		public DynamicVariableReference(final String varId, final Expression<V> varExpr, final Deque<String> longestVarRefChain)
+		private DynamicVariableReference(final String varId, final Expression<V> varExpr, final Deque<String> longestVarRefChain)
 		{
 			super(varId, longestVarRefChain);
+			assert varExpr != null;
 			this.expression = varExpr;
 			this.nullContextException = new IndeterminateEvaluationException("VariableReference[VariableId='" + this.variableId
 					+ "']: evaluate(context = null) not allowed because the variable requires context for evaluation (not constant)", StatusHelper.STATUS_PROCESSING_ERROR);
@@ -230,9 +223,9 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		 */
 		/** {@inheritDoc} */
 		@Override
-		public V getValue()
+		public Optional<V> getValue()
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		/**
@@ -262,7 +255,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		}
 	}
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(ExpressionFactoryImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DepthLimitingExpressionFactory.class);
 
 	private static final IllegalArgumentException MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION = new IllegalArgumentException(
 			"Missing Issuer that is required on AttributeDesignators by PDP configuration");
@@ -325,7 +318,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 	 * @throws java.io.IOException
 	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
 	 */
-	public ExpressionFactoryImpl(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
+	public DepthLimitingExpressionFactory(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
 			final int maxVarRefDepth, final boolean allowAttributeSelectors, final boolean strictAttributeIssuerMatch, final EnvironmentProperties environmentProperties)
 			throws IllegalArgumentException, IOException
 	{
@@ -351,8 +344,10 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 
 	private static <V extends Value> BaseVariableReference<?> newVariableReference(final String variableId, final Expression<V> variableExpression, final Deque<String> longestVarRefChainInExpression)
 	{
-		final V constant = variableExpression.getValue();
-		if (constant != null)
+		assert variableId != null && variableExpression != null;
+
+		final Optional<V> constant = variableExpression.getValue();
+		if (constant.isPresent())
 		{
 			/*
 			 * Variable expression is constant
@@ -362,7 +357,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 				LOGGER.warn("Expression of Variable {} is constant '{}', therefore should be replaced with a equivalent AttributeValue.", variableId, constant);
 			}
 
-			return new ConstantVariableReference<>(variableId, constant, variableExpression.getReturnType(), longestVarRefChainInExpression);
+			return new ConstantVariableReference<>(variableId, constant.get(), variableExpression.getReturnType(), longestVarRefChainInExpression);
 		}
 
 		return new DynamicVariableReference<>(variableId, variableExpression, longestVarRefChainInExpression);
@@ -372,6 +367,8 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 	@Override
 	public VariableReference<?> addVariable(final VariableDefinition varDef, final XPathCompiler xPathCompiler, final Deque<String> inoutLongestVarRefChain) throws IllegalArgumentException
 	{
+		assert varDef != null;
+
 		final String varId = varDef.getVariableId();
 		/*
 		 * Initialize the longest variable reference chain from this VariableDefinition (varDef -> VarDef2 -> ..., where "v1 -> v2" means: v1's expression contains a VariableReference to v2) as empty
@@ -447,6 +444,8 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 	 */
 	private BaseVariableReference<?> getVariable(final VariableReferenceType jaxbVarRef, final Deque<String> inoutLongestVarRefChain) throws IllegalArgumentException
 	{
+		assert jaxbVarRef != null;
+
 		final String varId = jaxbVarRef.getVariableId();
 		final BaseVariableReference<?> var = idToVariableMap.get(varId);
 		if (var == null)
@@ -489,7 +488,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 	 * {@inheritDoc}
 	 *
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)} .
+	 * {@link #DepthLimitingExpressionFactory(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)} .
 	 */
 	@Override
 	public FunctionExpression getFunction(final String functionId)
@@ -507,7 +506,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 	 * {@inheritDoc}
 	 *
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #ExpressionFactoryImpl(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)} .
+	 * {@link #DepthLimitingExpressionFactory(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)} .
 	 */
 	@Override
 	public FunctionExpression getFunction(final String functionId, final Datatype<?> subFunctionReturnType) throws IllegalArgumentException
@@ -542,7 +541,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 		 */
 		if (expr instanceof ApplyType)
 		{
-			expression = ApplyExpression.getInstance((ApplyType) expr, xPathCompiler, this, longestVarRefChain);
+			expression = ApplyExpressions.newInstance((ApplyType) expr, xPathCompiler, this, longestVarRefChain);
 		}
 		else if (expr instanceof AttributeDesignatorType)
 		{
@@ -563,7 +562,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 				throw new IllegalArgumentException("Unsupported Datatype used in AttributeDesignator: " + jaxbAttrDes.getDataType());
 			}
 
-			expression = new AttributeDesignatorExpression<>(jaxbAttrDes, attrFactory.getBagDatatype(), attributeProvider);
+			expression = new GenericAttributeProviderBasedAttributeDesignatorExpression<>(jaxbAttrDes, attrFactory.getBagDatatype(), attributeProvider);
 		}
 		else if (expr instanceof AttributeSelectorType)
 		{
@@ -591,14 +590,7 @@ public final class ExpressionFactoryImpl implements ExpressionFactory
 				throw new IllegalArgumentException("AttributeSelector found but missing Policy(Set)Defaults/XPathVersion required for XPath evaluation in AttributeSelector");
 			}
 
-			try
-			{
-				expression = new AttributeSelectorExpression<>(jaxbAttrSelector, xPathCompiler, attributeProvider, attrFactory);
-			}
-			catch (final XPathExpressionException e)
-			{
-				throw new IllegalArgumentException("Invalid AttributeSelector's Path='" + jaxbAttrSelector.getPath() + "' into a XPath expression", e);
-			}
+			expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector, xPathCompiler, attributeProvider, attrFactory);
 		}
 		else if (expr instanceof AttributeValueType)
 		{

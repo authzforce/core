@@ -97,8 +97,8 @@ final class StandardHigherOrderBagFunctions
 
 			private Call(final String functionId, final FirstOrderFunction<BooleanValue> subFunc, final Expression<? extends Bag<?>> input0, final Expression<? extends Bag<?>> input1)
 			{
-				final Optional<Datatype<?>> bagElementType0 = input0.getReturnType().getTypeParameter();
-				final Optional<Datatype<?>> bagElementType1 = input1.getReturnType().getTypeParameter();
+				final Optional<? extends Datatype<?>> bagElementType0 = input0.getReturnType().getTypeParameter();
+				final Optional<? extends Datatype<?>> bagElementType1 = input1.getReturnType().getTypeParameter();
 				assert bagElementType0.isPresent() && bagElementType1.isPresent();
 
 				final Datatype<?>[] subFuncArgTypes = { bagElementType0.get(), bagElementType1.get() };
@@ -313,7 +313,7 @@ final class StandardHigherOrderBagFunctions
 				argIndex++;
 				hasNextInput = inputsAfterSubfuncIterator.hasNext();
 				final Datatype<?> inputType = input.getReturnType();
-				final Optional<Datatype<?>> typeParam = inputType.getTypeParameter();
+				final Optional<? extends Datatype<?>> typeParam = inputType.getTypeParameter();
 				if (hasNextInput)
 				{
 					// not the last input, must be primitive
@@ -545,8 +545,8 @@ final class StandardHigherOrderBagFunctions
 					/*
 					 * Always primitive datatype are used in the sub-function call (typeParameter of the datatype if it is a generic/bag datatype, else the datatype itself (already primitive))
 					 */
-					final Optional<Datatype<?>> typeParam = inputDatatype.getTypeParameter();
-					subFuncArgTypes[i] = typeParam.orElse(inputDatatype);
+					final Optional<? extends Datatype<?>> typeParam = inputDatatype.getTypeParameter();
+					subFuncArgTypes[i] = typeParam.isPresent() ? typeParam.get() : inputDatatype;
 					i++;
 				}
 

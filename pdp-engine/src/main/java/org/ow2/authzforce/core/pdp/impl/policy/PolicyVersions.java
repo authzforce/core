@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
@@ -74,11 +75,13 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 *            version patterns
 	 * @return latest version; null if none matched
 	 */
-	public Entry<PolicyVersion, P> getLatest(final VersionPatterns versionPatterns)
+	public Entry<PolicyVersion, P> getLatest(final Optional<VersionPatterns> versionPatterns)
 	{
+		assert versionPatterns != null;
+
 		// policiesByVersion is not empty -> at least one value
 		final Iterator<Entry<PolicyVersion, P>> versionPolicyPairsIterator = policiesByVersion.entrySet().iterator();
-		if (versionPatterns == null)
+		if (!versionPatterns.isPresent())
 		{
 			/*
 			 * Return the latest version which is the first element by design (TreeMap initialized with reverse order on version keys). See §5.10 of XACML core spec:
@@ -86,6 +89,8 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 			 */
 			return versionPolicyPairsIterator.next();
 		}
+
+		final VersionPatterns nonNullVersionPatterns = versionPatterns.get();
 
 		// constraints not null
 		// in the loop, go on until LatestVersion matched, then go on as long as
@@ -103,7 +108,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 			 */
 			if (!latestVersionMatched)
 			{
-				latestVersionMatched = versionPatterns.matchLatestVersion(version);
+				latestVersionMatched = nonNullVersionPatterns.matchLatestVersion(version);
 			}
 
 			// If LatestVersion matched, check other constraints, else do
@@ -119,7 +124,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 				{
 					// EarliestVersion not checked yet
 					// check against EarliestVersion pattern
-					earliestVersionMatched = versionPatterns.matchEarliestVersion(version);
+					earliestVersionMatched = nonNullVersionPatterns.matchEarliestVersion(version);
 					/*
 					 * If still not matched, version cannot be in the [EarliestVersion, LatestVersion] interval. All next versions are earlier, so they cannot be either -> no match
 					 */
@@ -131,7 +136,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 
 				// EarliestVersion and LatestVersion matched.
 				// Check against Version pattern
-				if (versionPatterns.matchVersion(version))
+				if (nonNullVersionPatterns.matchVersion(version))
 				{
 					// all constraints matched, return the associated policy
 					return versionPolicyPair;
