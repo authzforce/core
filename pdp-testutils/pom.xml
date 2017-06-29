@@ -30,7 +30,6 @@
          <artifactId>mongo-java-driver</artifactId>
          <!-- See this issue for compatibility with Jongo: https://github.com/bguerout/jongo/issues/254 -->
          <version>2.14.2</version>
-         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.jongo</groupId>

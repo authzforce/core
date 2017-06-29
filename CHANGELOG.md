@@ -6,11 +6,24 @@ Issues reported on [GitHub](https://github.com/authzforce/core/issues) are refer
 
 ## Unreleased
 ### Changed
-- Version of parent project: 6.0.0
-- Version of dependency authzforce-ce-core-pdp-api: 10.0.0 (API changes)
+- Version of parent project: 6.0.0:
+  - The XML schema definition of PDP Decision Cache extensions' base type have been simplified (a few attributes removed).
+- Version of dependency authzforce-ce-core-pdp-api: 11.0.0 (API changes):
+  - Changed PDPEngine interface methods
+  - Changed PDP extensions' interface methods: DecisionResultFilter, RequestFilter, DecisionCache (new EvaluationContext parameter to enable context-dependent caches), RefPolicyProvider (renamed RefPolicyProvider.Utils class to RefPolicyProvider.Helper).
+  - Changed EvaluationContext interface methods: 
+  		- Use of Bag replaced with AttributeBag class (AttributeBags are Bags with extra metadata such as the source - AttributeSource - of the attribute values: request, PDP, attribute provider extension, etc.
+  		- New methods to help PDP extensions to watch for changes to the context with listeners
+  - Changed Expression interface methods
+  - Changed VersionPatterns class methods to return new PolicyVersionPattern class that helps manipulate XACML VersionMatchTypes
+  - Renamed class IndividualDecisionRequest to IndividualXACMLRequest (XACML-specific model of Individual Decision Request)
+  - Renamed class IndividualPdpDecisionRequest to PdpDecisionRequest (individual request in XACML-agnostic AuthzForce model)
+  - Renamed class AttributeGUID(s) to AttributeFQN(s) (Fully Qualified Name is more appropriate than GUID)
+  - Renamed class MutableBag to MutableAttributeBag
+  - Aded BaseStaticRefPolicyProviderModule class as convenient base class for implementing static Policy Provider (StaticRefPolicyProviderModule) implementations
 
 ### Added
-- [PolicyProvider implementation](src/main/java/org/ow2/authzforce/core/pdp/testutil/ext/MongoDBRefPolicyProviderModule.java) for testing and documentation purposes, using MongoDB as policy database system and Jongo as client library, with [JUnit test class](src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MongoDBRefPolicyProviderModuleTest.java) showing how to use it.
+- [PolicyProvider implementation](pdp-testutils/src/main/java/org/ow2/authzforce/core/pdp/testutil/ext/MongoDBRefPolicyProviderModule.java) for testing and documentation purposes, using MongoDB as policy database system and Jongo as client library, with [JUnit test class](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MongoDBRefPolicyProviderModuleTest.java) showing how to use it.
 
 
 ## 8.0.0
@@ -201,14 +214,14 @@ Issues reported on [GitHub](https://github.com/authzforce/core/issues) are refer
 
 ## 3.6.0
 ### Added
-- Support all [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, except IIA010, IIA012, IIA024, IID029, IID030, III.C.2, III.C.3, IIIE301, IIIE303, II.G.2-6 (see also [README](src\test\resources\conformance\xacml-3.0-from-2.0-ct\README.md) ); with specific adaptations and enhancements:
+- Support all [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, except IIA010, IIA012, IIA024, IID029, IID030, III.C.2, III.C.3, IIIE301, IIIE303, II.G.2-6 (see also [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md) ); with specific adaptations and enhancements:
   1. XACML 3.0 Schema validation in all conformance tests (original files are not all compliant with XACML 3.0). 
   1. The original conformance test folder contains hundreds of files; for better readability and management, the folder is split in *mandatory* folder for tests on supported mandatory features (XACMl 3.0 core), *optional* folder for supported optional features (XACML 3.0 core and profiles), and *unsupported* for unsupported features.
   1. For tests requiring a custom attribute finder, added a file with suffix `AttributeProvider.xml` that configures the `TestAttributeProviderModule`. This configuration file must contain a list of `Attributes` elements defining the attributes that this attribute provider is able to provide, with their constant values.
   1. For tests requiring policies to be referenced via Policy(Set)IdReferences, added a directory named `refPolicies` containing a XACML Policy(Set) file per referenced Policy(Set).
   1. For tests of Request syntax validation (syntax error expected to be detected by Authzforce PDP at initialization-time, i.e. before any Request evaluation), added suffix `.ignore` to the original test Policy(Set) and Response files.
   1. For tests of Policy(Set) syntax validation (syntax error expected to be detected by Authzforce PDP at initialization-time, i.e. before any Request evaluation), added suffix `.ignore` to the original test Request and Response files.
-- [HTML description](\src\test\resources\conformance\xacml-3.0-from-2.0-ct\ConformanceTests.html) of XACML 3.0 conformance tests
+- [HTML description](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/ConformanceTests.html) of XACML 3.0 conformance tests
 - Support of Policy(Set)Version in Policy(Set)IdReference handled by the native policy finder
 - Support for Variable evaluation in Policy with scope management (variable is local to Policy where defined and inherited by Rules)
 - Added support of xpathExpressions (optional XACML feature) in Request with support of namespace-prefix mappings extracted from XML document (XACML Request/Policy(Set)/Rule) (typically via `xmlns` declarations) where the xpathExpression is defined, e.g. XACML Request or Policy(Set).
@@ -231,7 +244,7 @@ Issues reported on [GitHub](https://github.com/authzforce/core/issues) are refer
 
 ### Fixed 
 - Issues reported by PMD and findbugs
-- Fixed issues in [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, see [README](src\test\resources\conformance\xacml-3.0-from-2.0-ct\README.md).
+- Fixed issues in [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, see [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct\README.md).
 - In logical OR, AND and N-OF functions, an Indeterminate argument results in Indeterminate result. 
   1. FIX for OR function: If at least one True argument, return True regardless of Indeterminate arguments; else (no True) if there is at least one Indeterminate, return Indeterminate, return Indeterminate; else (no True/Indeterminate -> all false) return false
   1. FIX for AND function: If at least one False argument, return False regardless of Indeterminate arguments; else (no False) if there is at least one Indeterminate, return Indeterminate, return Indeterminate; else (no False/Indeterminate -> all true) return true
