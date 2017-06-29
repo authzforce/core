@@ -5,6 +5,11 @@ Issues reported on [GitHub](https://github.com/authzforce/core/issues) are refer
 
 
 ## Unreleased
+### Fixed
+- Latest versions in Changelog 
+
+
+## 9.0.0
 ### Changed
 - Version of parent project: 6.0.0:
   - The XML schema definition of PDP Decision Cache extensions' base type have been simplified (a few attributes removed).
