@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.UnknownHostException;
 import java.util.Deque;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -159,12 +158,6 @@ public class MongoDBRefPolicyProviderModule extends BaseStaticRefPolicyProviderM
 					maxPolicySetRefDepth);
 		}
 
-	}
-
-	@Override
-	public Deque<String> checkJoinedPolicyRefChain(final Deque<String> policyRefChain1, final List<String> policyRefChain2)
-	{
-		return Helper.checkJoinedPolicyRefChain(policyRefChain1, policyRefChain2, maxPolicySetRefDepth);
 	}
 
 	@Override
