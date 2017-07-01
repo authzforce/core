@@ -3,6 +3,10 @@ All notable changes to this project are documented in this file following the [K
 
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
+## Unreleased
+### Changed 
+- MongoDBRefPolicyProviderModule class: removed useless method already implemented by super class BaseStaticRefPolicyProviderModule.
+
 
 ## 9.0.1
 ### Fixed
