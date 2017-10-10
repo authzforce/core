@@ -1,5 +1,11 @@
 ## Contributing
-### Contribution Rules
+### Coding Rules
+Follow these Java coding guidelines:
+* [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html), except braces must follow the Allman style instead of K & R style;
+* *Effective Java, Second Edition*, by Joshua Bloch;
+* [Oracle Secure Coding Guidelines for Java SE](http://www.oracle.com/technetwork/java/seccodeguide-139067.html).
+
+### Dependency management
 1. No SNAPSHOT dependencies on "develop" and obviously "master" branches
 
 ### Releasing
