@@ -21,18 +21,18 @@ import java.util.Optional;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
-import org.ow2.authzforce.core.pdp.api.AttributeFQN;
-import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
+import org.ow2.authzforce.core.pdp.api.AttributeFqn;
+import org.ow2.authzforce.core.pdp.api.AttributeFqns;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.AttributeDesignatorExpression;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
  * AttributeDesignator evaluator initialized with and using an {@link AttributeProvider} to retrieve the attribute value not only from the request but also possibly from extra Attribute Provider
@@ -47,7 +47,7 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 {
 	private static final IllegalArgumentException NULL_ATTRIBUTE_PROVIDER_EXCEPTION = new IllegalArgumentException("Undefined attribute Provider");
 
-	private final AttributeFQN attrGUID;
+	private final AttributeFqn attrGUID;
 	private final BagDatatype<AV> returnType;
 	private final boolean mustBePresent;
 	private final transient Bag.Validator mustBePresentEnforcer;
@@ -89,7 +89,7 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 		}
 
 		this.attrProvider = attrProvider;
-		this.attrGUID = AttributeFQNs.newInstance(attrDesignator);
+		this.attrGUID = AttributeFqns.newInstance(attrDesignator);
 		this.returnType = resultDatatype;
 
 		// error messages/exceptions
@@ -97,13 +97,13 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 		this.mustBePresent = attrDesignator.isMustBePresent();
 		this.mustBePresentEnforcer = mustBePresent ? new Bags.NonEmptinessValidator(missingAttributeMessage) : Bags.DUMB_VALIDATOR;
 
-		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
-				+ "' because request context undefined", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+				+ "' because request context undefined", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 	}
 
 	@Override
-	public AttributeFQN getAttributeFQN()
+	public AttributeFqn getAttributeFQN()
 	{
 		return this.attrGUID;
 	}

@@ -1,0 +1,133 @@
+<!--
+
+    Copyright (C) 2017 Thales Services SAS.
+
+    This file is part of AuthZForce CE.
+
+    AuthZForce CE is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    AuthZForce CE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
+
+-->
+<!-- On Ubuntu, do this first: $ sudo apt-get install ivy ant-contrib-->
+<project name="authzforce-upgrader" default="upgrade" xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:ac="antlib:net.sf.antcontrib">
+	<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant">
+		<classpath>
+			<!-- Valid path to ivy on Ubuntu when installed with APT -->
+			<pathelement location="/usr/share/java/ivy.jar" />
+		</classpath>
+	</taskdef>
+
+	<property name="src.dir" value="" description="root directory containing subdirectories of xacml/xml files to be converted (property overridden in Maven POM)" />
+	<property name="target.dir" value=""  description="root directory where to put the new subdirectories with conversion results to (property overridden in Maven POM)"/>
+
+	<macrodef name="saxon-xslt">
+		<attribute name="basedir" />
+		<attribute name="destdir" />
+		<attribute name="includes" />
+		<attribute name="style" />
+		<sequential>
+			<xslt processor="trax" basedir="@{basedir}" destdir="@{destdir}" style="@{style}" includes="@{includes}" extension=".json" classpathref="lib.path.id">
+				<!-- parameters used by pdp-upgrade.xsl -->
+				<param name="basedir" expression="@{basedir}" />
+				<!--
+        			    		http://www.saxonica.com/html/documentation/using-xsl/xsltfromant.html
+        			    		-->
+				<factory name="net.sf.saxon.TransformerFactoryImpl">
+					<!-- 
+        							For a full list of feature names in version 9.1, see http://www.saxonica.com/documentation9.1/javadoc/net/sf/saxon/FeatureKeys.html
+        							 
+        							 More info on using XSLT task with Saxon 9:
+        							 http://www.saxonica.com/documentation9.1/using-xsl/xsltfromant.html
+        							-->
+					<!-- Using a SAXON configuration file
+        							<attribute name="http://saxon.sf.net/feature/configuration-file" 
+        							               value="config-de.xml"/>
+        							               -->
+
+					<!--
+					<attribute name="http://saxon.sf.net/feature/traceListenerClass" value="net.sf.saxon.trace.XSLTTraceListener" />
+					-->
+					<!-- xsltSchemaAware available only in proprietary versions of Saxon (Professional/Enterprise) -->
+					<!--<attribute name="http://saxon.sf.net/feature/xsltSchemaAware" value="true" />
+					<attribute name="http://saxon.sf.net/feature/schema-validation-mode" value="strict" />
+					<attribute name="http://saxon.sf.net/feature/xsd-version" value="1.1" />
+					-->
+					<!--ignoreSAXSourceParser is necessary so parsers defined below are used
+        							            instead of ones passed by ant-->
+					<!--
+					<attribute name="http://saxon.sf.net/feature/ignoreSAXSourceParser" value="true" />
+					-->
+				</factory>
+			</xslt>
+		</sequential>
+	</macrodef>
+	<!--
+	<target name="copy-policies-dir" unless="no.old.policies.dir">
+		<copy verbose="true" todir="${new.policies.dir}">
+			<fileset dir="${old.domain.dir.path}/policies" />
+		</copy>
+	</target>
+-->
+	<target name="convert-xacml-to-json" description="Convert original XACML 3.0 XML conformance test-specific files to JSON Profile's equivalent">
+		<basename property="src.sub.dir.name" file="${src.sub.dir.path}" />
+		<property name="target.sub.dir.path" value="${target.dir}/${src.sub.dir.name}" />
+		<echo message="Converting XACML/XML files from directory '${src.sub.dir.path}' --> '${target.sub.dir.path}'" />
+
+		<mkdir dir="${target.sub.dir.path}" />
+		<!-- Policy.xml not converted because no JSON mapping defined in JSON Profile -->
+		<copy verbose="true" file="${src.sub.dir.path}/Policy.xml" tofile="${target.sub.dir.path}/Policy.xml"/>
+
+		<!-- Convert Request.xml -->
+		<saxon-xslt basedir="${src.sub.dir.path}" destdir="${target.sub.dir.path}" includes="Request.xml" style="xacml3-request-xml-to-json.xsl" />
+
+		<!-- Convert Response.xml -->
+		<saxon-xslt basedir="${src.sub.dir.path}" destdir="${target.sub.dir.path}" includes="Response.xml" style="xacml3-response-xml-to-json.xsl" />
+	</target>
+
+	<!-- ================================= 
+          Main target
+         ================================= -->
+	<!--
+	<target name="upgrade" depends="install-ivy, generate-src" 
+            description=" resolve dependencies and run the project: upgrade">-->
+	<target name="upgrade" description=" --> resolve dependencies and run the project: upgrade">
+		<echo message="using ivy to resolve dependencies..." />
+		<!--
+		http://www.codetab.org/apache-ivy-tutorial/apache-ivy-cachepath-and-retrieve/
+		Default ivy settings:  
+		ivy.project.dir = ${basedir}
+		ivy.lib.dir = ${ivy.project.dir}/lib
+		ivy.retrieve.pattern = ${ivy.lib.dir}/[artifact]-[revision].[ext]
+		
+		 ivy retrieve - default pattern = ${ivy.retrieve.pattern}
+    Sync set to true will ensure that any extra files in the lib directory is deleted.
+    Type set to jar tells ivy to copy only jar artifacts. Source and javadoc artifacts are ignored.
+		-->
+		<ivy:retrieve sync="true" type="jar,bundle" pathId="lib.path.id" />
+
+		<!-- inheritrefs="true" is required to pass ref 'lib.path.id' to tasks 'upgrade-domain-tmpl' and 'upgrade-domain' -->
+		<ac:foreach target="convert-xacml-to-json" param="src.sub.dir.path" inheritall="true" inheritrefs="true">
+			<path>
+				<!-- includes parameter prevents recursive listing -->
+				<dirset dir="${src.dir}" includes="*" />
+			</path>
+		</ac:foreach>
+	</target>
+
+	<!-- ================================= 
+          target: clean-cache              
+         ================================= -->
+	<target name="clean-cache" description="--> clean the ivy cache">
+		<ivy:cleancache />
+	</target>
+</project>

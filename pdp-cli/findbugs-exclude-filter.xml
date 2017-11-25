@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!--
+  This file contains some false positive bugs detected by Findbugs. Their
+  false positive nature has been analyzed individually and they have been
+  put here to instruct Findbugs to ignore them.
+-->
+<FindBugsFilter>
+  <Match>
+  <!-- CRLF injection in logs is considered fixed in the logger configuration, e.g. logback.xml.
+  More info: https://github.com/find-sec-bugs/find-sec-bugs/issues/240
+   -->
+    <Bug pattern="CRLF_INJECTION_LOGS" />
+  </Match>
+</FindBugsFilter>

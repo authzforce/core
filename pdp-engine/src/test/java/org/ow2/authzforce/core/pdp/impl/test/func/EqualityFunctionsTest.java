@@ -27,7 +27,7 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
 import org.ow2.authzforce.core.pdp.api.value.Base64BinaryValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
@@ -36,7 +36,7 @@ import org.ow2.authzforce.core.pdp.api.value.DayTimeDurationValue;
 import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
 import org.ow2.authzforce.core.pdp.api.value.HexBinaryValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
@@ -88,8 +88,8 @@ public class EqualityFunctionsTest extends StandardFunctionTest
 						new Object[] { NAME_BOOLEAN_EQUAL, Arrays.asList(BooleanValue.FALSE, BooleanValue.TRUE), BooleanValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:integer-equal
-						new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(new IntegerValue("42"), new IntegerValue("42")), BooleanValue.TRUE },
-						new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(new IntegerValue("42"), new IntegerValue("24")), BooleanValue.FALSE },
+						new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(IntegerValue.valueOf(42), IntegerValue.valueOf(42)), BooleanValue.TRUE },
+						new Object[] { NAME_INTEGER_EQUAL, Arrays.asList(IntegerValue.valueOf(42), IntegerValue.valueOf(24)), BooleanValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:double-equal
 						new Object[] { NAME_DOUBLE_EQUAL, Arrays.asList(new DoubleValue("42.543"), new DoubleValue("42.543")), BooleanValue.TRUE },
@@ -119,8 +119,8 @@ public class EqualityFunctionsTest extends StandardFunctionTest
 								NAME_YEARMONTH_DURATION_EQUAL, Arrays.asList(new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("P14M")), BooleanValue.TRUE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:anyURI-equal
-						new Object[] { NAME_ANYURI_EQUAL, Arrays.asList(new AnyURIValue("http://www.example.com"), new AnyURIValue("http://www.example.com")), BooleanValue.TRUE }, new Object[] {
-								NAME_ANYURI_EQUAL, Arrays.asList(new AnyURIValue("http://www.example.com"), new AnyURIValue("https://www.example.com")), BooleanValue.FALSE },
+						new Object[] { NAME_ANYURI_EQUAL, Arrays.asList(new AnyUriValue("http://www.example.com"), new AnyUriValue("http://www.example.com")), BooleanValue.TRUE }, new Object[] {
+								NAME_ANYURI_EQUAL, Arrays.asList(new AnyUriValue("http://www.example.com"), new AnyUriValue("https://www.example.com")), BooleanValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:x500Name-equal
 						new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue("cn= John Smith,o =Medico Corp, C=US")),
@@ -131,10 +131,10 @@ public class EqualityFunctionsTest extends StandardFunctionTest
 						new Object[] { NAME_X500NAME_EQUAL, Arrays.asList(new X500NameValue("cn=John+o=Medico, c=US"), new X500NameValue("o=Medico+cn=John, c=US")), BooleanValue.TRUE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-equal
-						new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Anderson@sun.com")), BooleanValue.TRUE }, new Object[] {
-								NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Smith@sun.com")), BooleanValue.FALSE }, new Object[] {
-								NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Anderson@SUN.COM")), BooleanValue.TRUE }, new Object[] {
-								NAME_RFC822NAME_EQUAL, Arrays.asList(new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("ANDERSON@SUN.COM")), BooleanValue.FALSE },
+						new Object[] { NAME_RFC822NAME_EQUAL, Arrays.asList(new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("Anderson@sun.com")), BooleanValue.TRUE }, new Object[] {
+								NAME_RFC822NAME_EQUAL, Arrays.asList(new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("Smith@sun.com")), BooleanValue.FALSE }, new Object[] {
+								NAME_RFC822NAME_EQUAL, Arrays.asList(new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("Anderson@SUN.COM")), BooleanValue.TRUE }, new Object[] {
+								NAME_RFC822NAME_EQUAL, Arrays.asList(new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("ANDERSON@SUN.COM")), BooleanValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:1.0:function:hexBinary-equal
 						new Object[] { NAME_HEXBINARY_EQUAL, Arrays.asList(new HexBinaryValue("0FB7"), new HexBinaryValue("0FB7")), BooleanValue.TRUE },//

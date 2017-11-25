@@ -37,10 +37,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
-import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
-import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
-import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
+import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
+import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
+import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
+import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
+import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
+import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
@@ -116,7 +118,7 @@ public abstract class PdpTest
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(PdpTest.class);
 
-	private static final XACMLParserFactory XACML_PARSER_FACTORY = JaxbXACMLUtils.getXACMLParserFactory(false);
+	private static final XmlnsFilteringParserFactory XACML_PARSER_FACTORY = XacmlJaxbParsingUtils.getXacmlParserFactory(false);
 
 	private final String testDirPath;
 
@@ -185,7 +187,7 @@ public abstract class PdpTest
 		Request request = null;
 		// if no Request file, it is just a static policy syntax error check
 		final String reqFilepath = testResourceLocationPrefix + REQUEST_FILENAME;
-		final NamespaceFilteringParser unmarshaller = XACML_PARSER_FACTORY.getInstance();
+		final XmlnsFilteringParser unmarshaller = XACML_PARSER_FACTORY.getInstance();
 		try
 		{
 			request = TestUtils.createRequest(reqFilepath, unmarshaller);
@@ -198,7 +200,7 @@ public abstract class PdpTest
 		}
 
 		// Create PDP
-		BasePdpEngine pdp = null;
+		PdpEngineInoutAdapter<Request, Response> pdp = null;
 		final String pdpConfLocation = testResourceLocationPrefix + PDP_CONF_FILENAME;
 		File pdpConfFile = null;
 		try
@@ -217,8 +219,9 @@ public abstract class PdpTest
 				/*
 				 * PDP configuration filename NOT found in test directory -> create minimal PDP using TestUtils.getPDPNewInstance(policy)
 				 */
-				pdp = TestUtils.getPDPNewInstance(testResourceLocationPrefix + POLICY_FILENAME, testResourceLocationPrefix + REF_POLICIES_DIR_NAME, false, null, null);
-
+				final PdpEngineConfiguration pdpEngineConf = TestUtils.newPdpEngineConfiguration(testResourceLocationPrefix + POLICY_FILENAME, testResourceLocationPrefix + REF_POLICIES_DIR_NAME,
+						false, null, null, null);
+				pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConf);
 			}
 			else
 			{
@@ -239,7 +242,9 @@ public abstract class PdpTest
 					/*
 					 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this file exists, and the XML catalog required to resolve these extension XSDs
 					 */
-					pdp = pdpExtXsdFile == null ? BasePdpEngine.getInstance(pdpConfLocation) : BasePdpEngine.getInstance(pdpConfFile, XML_CATALOG_LOCATION, pdpExtXsdLocation);
+					final PdpEngineConfiguration pdpEngineConfiguration = pdpExtXsdFile == null ? PdpEngineConfiguration.getInstance(pdpConfLocation) : PdpEngineConfiguration.getInstance(
+							pdpConfLocation, XML_CATALOG_LOCATION, pdpExtXsdLocation);
+					pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConfiguration);
 				}
 				catch (final IOException e)
 				{

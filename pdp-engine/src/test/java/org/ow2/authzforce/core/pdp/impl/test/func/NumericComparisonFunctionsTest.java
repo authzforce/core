@@ -52,24 +52,24 @@ public class NumericComparisonFunctionsTest extends StandardFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than
-				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerValue("5"), new IntegerValue("4")), BooleanValue.TRUE },
-				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerValue("5"), new IntegerValue("6")), BooleanValue.FALSE },
-				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(new IntegerValue("5"), new IntegerValue("5")), BooleanValue.FALSE },
+				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(4)), BooleanValue.TRUE },
+				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(6)), BooleanValue.FALSE },
+				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(5)), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal
-				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerValue("5"), new IntegerValue("4")), BooleanValue.TRUE },
-				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerValue("5"), new IntegerValue("6")), BooleanValue.FALSE },
-				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(new IntegerValue("5"), new IntegerValue("5")), BooleanValue.TRUE },
+				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(4)), BooleanValue.TRUE },
+				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(6)), BooleanValue.FALSE },
+				new Object[] { NAME_INTEGER_GREATER_THAN_OR_EQUAL, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(5)), BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-less-than
-				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerValue("5"), new IntegerValue("4")), BooleanValue.FALSE },
-				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerValue("5"), new IntegerValue("6")), BooleanValue.TRUE },
-				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(new IntegerValue("5"), new IntegerValue("5")), BooleanValue.FALSE },
+				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(4)), BooleanValue.FALSE },
+				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(6)), BooleanValue.TRUE },
+				new Object[] { NAME_INTEGER_LESS_THAN, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(5)), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal
-				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerValue("5"), new IntegerValue("4")), BooleanValue.FALSE },
-				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerValue("5"), new IntegerValue("6")), BooleanValue.TRUE },
-				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(new IntegerValue("5"), new IntegerValue("5")), BooleanValue.TRUE },
+				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(4)), BooleanValue.FALSE },
+				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(6)), BooleanValue.TRUE },
+				new Object[] { NAME_INTEGER_LESS_THAN_OR_EQUAL, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(5)), BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-greater-than
 				new Object[] { NAME_DOUBLE_GREATER_THAN, Arrays.asList(new DoubleValue("5.5"), new DoubleValue("5.4")), BooleanValue.TRUE },

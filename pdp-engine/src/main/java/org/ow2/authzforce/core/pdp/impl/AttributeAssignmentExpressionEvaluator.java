@@ -24,21 +24,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
+
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.PrimitiveValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 
 /**
  * XACML AttributeAssignmentExpression evaluator
@@ -60,8 +62,7 @@ public final class AttributeAssignmentExpressionEvaluator
 	private transient volatile String toString = null; // Effective Java - Item 71
 
 	/**
-	 * Instantiates evaluatable AttributeAssignment expression evaluator from XACML-Schema-derived JAXB
-	 * {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
+	 * Instantiates evaluatable AttributeAssignment expression evaluator from XACML-Schema-derived JAXB {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
 	 *
 	 * @param jaxbAttrAssignExp
 	 *            XACML-schema-derived JAXB AttributeAssignmentExpression
@@ -72,33 +73,27 @@ public final class AttributeAssignmentExpressionEvaluator
 	 * @throws java.lang.IllegalArgumentException
 	 *             invalid AttributeAssignmentExpression's Expression
 	 */
-	public AttributeAssignmentExpressionEvaluator(final AttributeAssignmentExpression jaxbAttrAssignExp,
-			final XPathCompiler xPathCompiler, final ExpressionFactory expFactory) throws IllegalArgumentException
+	public AttributeAssignmentExpressionEvaluator(final AttributeAssignmentExpression jaxbAttrAssignExp, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory)
+			throws IllegalArgumentException
 	{
 		/*
-		 * Cannot used AttributeFQN class to handle metadata because AttributeAssignment Category is not required like
-		 * in AttributeDesignator which is what the AttributeFQN is used for
+		 * Cannot used AttributeFQN class to handle metadata because AttributeAssignment Category is not required like in AttributeDesignator which is what the AttributeFQN is used for
 		 */
-		this.attributeId = Preconditions.checkNotNull(jaxbAttrAssignExp.getAttributeId(),
-				"Undefined AttributeAssignment/AttributeId");
+		this.attributeId = Preconditions.checkNotNull(jaxbAttrAssignExp.getAttributeId(), "Undefined AttributeAssignment/AttributeId");
 		this.category = jaxbAttrAssignExp.getCategory();
 		this.issuer = jaxbAttrAssignExp.getIssuer();
-		this.evaluatableExpression = expFactory.getInstance(jaxbAttrAssignExp.getExpression().getValue(), xPathCompiler,
-				null);
+		this.evaluatableExpression = expFactory.getInstance(jaxbAttrAssignExp.getExpression().getValue(), xPathCompiler, null);
 	}
 
 	private AttributeAssignment newAttributeAssignment(final AttributeValue attrVal)
 	{
-		return new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(),
-				this.attributeId, this.category, this.issuer);
+		return new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category, this.issuer);
 	}
 
 	/**
-	 * Evaluates to AttributeAssignments Section 5.39 and 5.40 of XACML 3.0 core spec: If an
-	 * AttributeAssignmentExpression evaluates to an atomic attribute value, then there MUST be one resulting
-	 * AttributeAssignment which MUST contain this single attribute value. If the AttributeAssignmentExpression
-	 * evaluates to a bag, then there MUST be a resulting AttributeAssignment for each of the values in the bag. If the
-	 * bag is empty, there shall be no AttributeAssignment from this AttributeAssignmentExpression
+	 * Evaluates to AttributeAssignments Section 5.39 and 5.40 of XACML 3.0 core spec: If an AttributeAssignmentExpression evaluates to an atomic attribute value, then there MUST be one resulting
+	 * AttributeAssignment which MUST contain this single attribute value. If the AttributeAssignmentExpression evaluates to a bag, then there MUST be a resulting AttributeAssignment for each of the
+	 * values in the bag. If the bag is empty, there shall be no AttributeAssignment from this AttributeAssignmentExpression
 	 *
 	 * @param context
 	 *            evaluation context
@@ -118,19 +113,29 @@ public final class AttributeAssignmentExpressionEvaluator
 			final Bag<?> bag = (Bag<?>) result;
 			attrAssignList = new ArrayList<>(bag.size());
 			/*
-			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False
-			 * evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
+			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
 			 * "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
 			 */
-			for (final AttributeValue attrVal : bag)
+			for (final PrimitiveValue attrVal : bag)
 			{
-				attrAssignList.add(newAttributeAssignment(attrVal));
+				if (!(attrVal instanceof AttributeValue))
+				{
+					LOGGER.error("Error evaluating {}: one of the elements in the result bag is not an AttributeValue");
+					throw new IndeterminateEvaluationException("Error evaluating " + this, XacmlStatusCode.PROCESSING_ERROR.value());
+				}
+
+				attrAssignList.add(newAttributeAssignment((AttributeValue) attrVal));
 			}
 		}
-		else
+		else if (result instanceof AttributeValue)
 		{
 			// atomic (see spec §5.30, 5.40) / primitive attribute value
 			attrAssignList = Collections.singletonList(newAttributeAssignment((AttributeValue) result));
+		}
+		else
+		{
+			LOGGER.error("Error evaluating {}: the result value is not an AttributeValue");
+			throw new IndeterminateEvaluationException("Error evaluating " + this, XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		return attrAssignList;
@@ -141,8 +146,7 @@ public final class AttributeAssignmentExpressionEvaluator
 	{
 		if (toString == null)
 		{
-			toString = "AttributeAssignmentExpression [attributeId=" + attributeId + ", category=" + category
-					+ ", issuer=" + issuer + "]";
+			toString = "AttributeAssignmentExpression [attributeId=" + attributeId + ", category=" + category + ", issuer=" + issuer + "]";
 		}
 		return toString;
 	}

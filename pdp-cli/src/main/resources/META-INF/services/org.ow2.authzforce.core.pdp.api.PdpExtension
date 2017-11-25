@@ -1,0 +1,3 @@
+org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor$LaxVariantFactory
+org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor$StrictVariantFactory
+org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocessor$Factory

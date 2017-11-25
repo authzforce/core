@@ -56,8 +56,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 		/**
 		 * boolean timeInRange(time,time,time)
 		 */
-		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Arrays.asList(StandardDatatypes.TIME_FACTORY.getDatatype(), StandardDatatypes.TIME_FACTORY.getDatatype(),
-				StandardDatatypes.TIME_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN, false, Arrays.asList(StandardDatatypes.TIME, StandardDatatypes.TIME, StandardDatatypes.TIME));
 	}
 
 	private static final class Call extends BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, TimeValue>

@@ -31,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantPrimitiveAttributeValueExpression;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
@@ -39,14 +38,16 @@ import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.value.PrimitiveValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
-import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
+import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
  * An abstract class to easily test a function evaluation, according to a given function name, a list of arguments, and expected result. In order to perform a function test, simply extend this class
@@ -65,7 +66,8 @@ public abstract class StandardFunctionTest
 	{
 		try
 		{
-			STD_EXPRESSION_FACTORY = new DepthLimitingExpressionFactory(StandardDatatypeFactoryRegistry.getRegistry(true), StandardFunction.getRegistry(true), null, 0, false, false, null);
+			STD_EXPRESSION_FACTORY = new DepthLimitingExpressionFactory(StandardAttributeValueFactories.getRegistry(true, Optional.empty()), StandardFunction.getRegistry(true,
+					StandardAttributeValueFactories.BIG_INTEGER), null, 0, false, false);
 		}
 		catch (IllegalArgumentException | IOException e)
 		{
@@ -95,7 +97,7 @@ public abstract class StandardFunctionTest
 	private StandardFunctionTest(final String functionName, final List<Expression<?>> inputs, final boolean compareBagsAsSets, final Value expectedResult)
 	{
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
-		final Datatype<?> subFuncReturnType;
+		final Datatype<? extends AttributeValue> subFuncReturnType;
 		if (inputs.isEmpty())
 		{
 			subFuncReturnType = null;
@@ -177,7 +179,7 @@ public abstract class StandardFunctionTest
 		@Override
 		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			throw new IndeterminateEvaluationException("Missing attribute", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+			throw new IndeterminateEvaluationException("Missing attribute", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		}
 
 		@Override
@@ -205,7 +207,7 @@ public abstract class StandardFunctionTest
 			inputExpressions.add(subFuncExp);
 		}
 
-		final DatatypeFactoryRegistry stdDatatypeFactoryRegistry = StandardDatatypeFactoryRegistry.getRegistry(true);
+		final AttributeValueFactoryRegistry stdDatatypeFactoryRegistry = StandardAttributeValueFactories.getRegistry(true, Optional.empty());
 		for (final Value val : values)
 		{
 			final Expression<?> valExpr;
@@ -216,25 +218,25 @@ public abstract class StandardFunctionTest
 				 * or/and/n-o
 				 */
 				final NullValue nullVal = (NullValue) val;
-				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(nullVal.getDatatypeId());
+				final AttributeValueFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(nullVal.getDatatypeId());
 				if (datatypeFactory == null)
 				{
 					throw new UnsupportedOperationException("Unsupported attribute datatype: '" + nullVal.getDatatypeId() + "'");
 				}
 
-				valExpr = nullVal.isBag() ? new IndeterminateExpression<>(datatypeFactory.getBagDatatype()) : new IndeterminateExpression<>(datatypeFactory.getDatatype());
+				valExpr = nullVal.isBag() ? new IndeterminateExpression<>(datatypeFactory.getDatatype().getBagDatatype()) : new IndeterminateExpression<>(datatypeFactory.getDatatype());
 			}
 			else if (val instanceof AttributeValue)
 			{
 				final AttributeValue primVal = (AttributeValue) val;
-				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(primVal.getDataType());
+				final AttributeValueFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(primVal.getDataType());
 				valExpr = createValueExpression(datatypeFactory.getDatatype(), primVal);
 			}
 			else if (val instanceof Bag)
 			{
 				final Bag<?> bagVal = (Bag<?>) val;
-				final DatatypeFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(bagVal.getElementDatatype().getId());
-				valExpr = createValueExpression(datatypeFactory.getBagDatatype(), bagVal);
+				final AttributeValueFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(bagVal.getElementDatatype().getId());
+				valExpr = createValueExpression(datatypeFactory.getDatatype().getBagDatatype(), bagVal);
 			}
 			else
 			{
@@ -285,10 +287,10 @@ public abstract class StandardFunctionTest
 		this(functionName, subFunctionName, inputs, false, expectedResult);
 	}
 
-	private static final Set<AttributeValue> bagToSet(final Bag<?> bag)
+	private static final Set<PrimitiveValue> bagToSet(final Bag<?> bag)
 	{
-		final Set<AttributeValue> set = new HashSet<>();
-		for (final AttributeValue val : bag)
+		final Set<PrimitiveValue> set = new HashSet<>();
+		for (final PrimitiveValue val : bag)
 		{
 			set.add(val);
 		}

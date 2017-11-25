@@ -41,22 +41,22 @@ import net.sf.saxon.s9api.XdmValue;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
-import org.ow2.authzforce.core.pdp.api.AttributeFQN;
-import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
+import org.ow2.authzforce.core.pdp.api.AttributeFqn;
+import org.ow2.authzforce.core.pdp.api.AttributeFqns;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.XPathValue;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
  * Static utility methods pertaining to {@link AttributeSelectorExpression} instances.
@@ -98,7 +98,7 @@ public final class AttributeSelectorExpressions
 	{
 		private static final IllegalArgumentException NULL_INPUT_XPATH_EXPRESSION_BAG_EXCEPTION = new IllegalArgumentException("Input xpathExpression bag is null or empty");
 
-		private static final IndeterminateEvaluationException NULL_CONTENT_ARG_EXCEPTION = new IndeterminateEvaluationException("Undefined <Content>", StatusHelper.STATUS_PROCESSING_ERROR);
+		private static final IndeterminateEvaluationException NULL_CONTENT_ARG_EXCEPTION = new IndeterminateEvaluationException("Undefined <Content>", XacmlStatusCode.PROCESSING_ERROR.value());
 
 		// the logger we'll use for all messages
 		// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
@@ -175,7 +175,7 @@ public final class AttributeSelectorExpressions
 
 		protected final AttributeSelectorId attributeSelectorId;
 		private final boolean mustBePresent;
-		private final DatatypeFactory<?> attrFactory;
+		private final AttributeValueFactory<?> attrFactory;
 		private final transient Bag.Validator mustBePresentEnforcer;
 		protected final transient XPathCompiler xPathCompiler;
 		private final transient XPathExecutable xPathEvaluator;
@@ -209,7 +209,7 @@ public final class AttributeSelectorExpressions
 		 *             if {@code attrSelectorElement == null || xPathCompiler == null || attrFactory == null}; or {@code attrSelectorElement.getContextSelectorId() != null} but
 		 *             {@code attrProvider == null}; or {@code attrSelectorElement.getPath()} is not a valid XPath expression
 		 */
-		private ExtensibleAttributeSelectorExpression(final AttributeSelectorType attrSelectorElement, final XPathCompiler xPathCompiler, final DatatypeFactory<AV> attrFactory)
+		private ExtensibleAttributeSelectorExpression(final AttributeSelectorType attrSelectorElement, final XPathCompiler xPathCompiler, final AttributeValueFactory<AV> attrFactory)
 				throws IllegalArgumentException
 		{
 			if (attrSelectorElement == null)
@@ -229,7 +229,7 @@ public final class AttributeSelectorExpressions
 
 			this.attributeSelectorId = new AttributeSelectorId(attrSelectorElement);
 			this.attrFactory = attrFactory;
-			this.returnType = attrFactory.getBagDatatype();
+			this.returnType = attrFactory.getDatatype().getBagDatatype();
 
 			final String attributeCategory = attributeSelectorId.getCategory();
 
@@ -249,9 +249,9 @@ public final class AttributeSelectorExpressions
 
 			// error messages/exceptions
 			this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing request context for evaluating AttributeSelector '" + this.attributeSelectorId + "'",
-					StatusHelper.STATUS_PROCESSING_ERROR);
+					XacmlStatusCode.PROCESSING_ERROR.value());
 			this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + attributeCategory,
-					StatusHelper.STATUS_SYNTAX_ERROR);
+					XacmlStatusCode.SYNTAX_ERROR.value());
 
 			this.mustBePresent = attrSelectorElement.isMustBePresent();
 			this.mustBePresentEnforcer = mustBePresent ? new Bags.NonEmptinessValidator(missingAttributeMessage) : Bags.DUMB_VALIDATOR;
@@ -350,7 +350,7 @@ public final class AttributeSelectorExpressions
 			}
 			catch (final SaxonApiException e)
 			{
-				throw new IndeterminateEvaluationException(this.xPathEvalExceptionMessage, StatusHelper.STATUS_SYNTAX_ERROR, e);
+				throw new IndeterminateEvaluationException(this.xPathEvalExceptionMessage, XacmlStatusCode.SYNTAX_ERROR.value(), e);
 			}
 
 			final Datatype<AV> attributeDatatype = returnType.getElementType();
@@ -378,7 +378,8 @@ public final class AttributeSelectorExpressions
 						final Optional<String> contextSelectorId = attributeSelectorId.getContextSelectorId();
 						throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
 								+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
-								+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, StatusHelper.STATUS_SYNTAX_ERROR, e);
+								+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, XacmlStatusCode.SYNTAX_ERROR.value(),
+								e);
 					}
 				}
 				else
@@ -387,7 +388,7 @@ public final class AttributeSelectorExpressions
 					throw new IndeterminateEvaluationException(this + ": Invalid type of result #" + xpathEvalResultItemIndex
 							+ " from evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
 							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + xpathEvalResultItem.getClass().getName(),
-							StatusHelper.STATUS_SYNTAX_ERROR);
+							XacmlStatusCode.SYNTAX_ERROR.value());
 				}
 
 				final AttributeValue attrVal;
@@ -400,7 +401,7 @@ public final class AttributeSelectorExpressions
 					final Optional<String> contextSelectorId = attributeSelectorId.getContextSelectorId();
 					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
 							+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory() + "'"
-							+ (contextSelectorId == null ? "" : " selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, StatusHelper.STATUS_SYNTAX_ERROR, e);
+							+ (contextSelectorId == null ? "" : " selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, XacmlStatusCode.SYNTAX_ERROR.value(), e);
 				}
 
 				resultBag.add(attributeDatatype.cast(attrVal));
@@ -446,13 +447,13 @@ public final class AttributeSelectorExpressions
 					catch (final SaxonApiException e)
 					{
 						throw new IndeterminateEvaluationException(this + ": Error evaluating XPath = '" + contextPathEvaluator.get().getUnderlyingExpression().getInternalExpression().toString()
-								+ "' against <Content> element", StatusHelper.STATUS_PROCESSING_ERROR, e);
+								+ "' against <Content> element", XacmlStatusCode.PROCESSING_ERROR.value(), e);
 					}
 
 					if (finalXPathEvaluationContextItem == null)
 					{
 						throw new IndeterminateEvaluationException(this + ": No node returned by evaluation of XPath = '"
-								+ contextPathEvaluator.get().getUnderlyingExpression().getInternalExpression().toString() + "' against <Content> element", StatusHelper.STATUS_SYNTAX_ERROR);
+								+ contextPathEvaluator.get().getUnderlyingExpression().getInternalExpression().toString() + "' against <Content> element", XacmlStatusCode.SYNTAX_ERROR.value());
 					}
 				}
 				else
@@ -579,8 +580,8 @@ public final class AttributeSelectorExpressions
 
 	private static final class AttributeSelectorExpressionWithoutContextSelector<AV extends AttributeValue> extends ExtensibleAttributeSelectorExpression<AV>
 	{
-		private AttributeSelectorExpressionWithoutContextSelector(final AttributeSelectorType attributeSelectorElement, final XPathCompiler xPathCompiler, final DatatypeFactory<AV> attributeFactory)
-				throws IllegalArgumentException
+		private AttributeSelectorExpressionWithoutContextSelector(final AttributeSelectorType attributeSelectorElement, final XPathCompiler xPathCompiler,
+				final AttributeValueFactory<AV> attributeFactory) throws IllegalArgumentException
 		{
 			super(attributeSelectorElement, xPathCompiler, attributeFactory);
 			assert attributeSelectorElement.getContextSelectorId() == null;
@@ -599,7 +600,7 @@ public final class AttributeSelectorExpressions
 		}
 
 		@Override
-		public Optional<AttributeFQN> getContextSelectorFQN()
+		public Optional<AttributeFqn> getContextSelectorFQN()
 		{
 			return Optional.empty();
 		}
@@ -607,7 +608,7 @@ public final class AttributeSelectorExpressions
 
 	private static final class AttributeSelectorExpressionWithContextSelector<AV extends AttributeValue> extends ExtensibleAttributeSelectorExpression<AV>
 	{
-		private final AttributeFQN contextSelectorFQN;
+		private final AttributeFqn contextSelectorFQN;
 		private final AttributeProvider attrProvider;
 		private final IndeterminateEvaluationException missingAttributeForUnknownReasonException;
 		private final String missingContextSelectorAttributeExceptionMessage;
@@ -619,7 +620,7 @@ public final class AttributeSelectorExpressions
 			return "' selected by ContextSelectorId='" + this.attributeSelectorId.getContextSelectorId() + "'";
 		}
 
-		private AttributeSelectorExpressionWithContextSelector(final AttributeSelectorType attrSelectorElement, final XPathCompiler xPathCompiler, final DatatypeFactory<AV> attrFactory,
+		private AttributeSelectorExpressionWithContextSelector(final AttributeSelectorType attrSelectorElement, final XPathCompiler xPathCompiler, final AttributeValueFactory<AV> attrFactory,
 				final AttributeProvider attrProvider) throws IllegalArgumentException
 		{
 			super(attrSelectorElement, xPathCompiler, attrFactory);
@@ -627,15 +628,15 @@ public final class AttributeSelectorExpressions
 
 			final String attributeCategory = attributeSelectorId.getCategory();
 			final String contextSelectorId = attributeSelectorId.getContextSelectorId().get();
-			this.contextSelectorFQN = AttributeFQNs.newInstance(attributeCategory, Optional.empty(), contextSelectorId);
+			this.contextSelectorFQN = AttributeFqns.newInstance(attributeCategory, Optional.empty(), contextSelectorId);
 			this.attrProvider = attrProvider;
-			this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(this + " not found in context for unknown reason", StatusHelper.STATUS_MISSING_ATTRIBUTE);
+			this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(this + " not found in context for unknown reason", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 			this.missingContextSelectorAttributeExceptionMessage = this + ": No value found for attribute designated by Category=" + attributeCategory + " and ContextSelectorId=" + contextSelectorId;
 			this.xpathEvalErrMsgSuffix = "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + attributeCategory;
 		}
 
 		@Override
-		public Optional<AttributeFQN> getContextSelectorFQN()
+		public Optional<AttributeFqn> getContextSelectorFQN()
 		{
 			return Optional.of(this.contextSelectorFQN);
 		}
@@ -643,7 +644,7 @@ public final class AttributeSelectorExpressions
 		@Override
 		protected XdmItem getFinalXPathEvaluationContextItem(final XdmNode contentElement, final EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			final Bag<XPathValue> bag = attrProvider.get(contextSelectorFQN, StandardDatatypes.XPATH_FACTORY.getBagDatatype(), context);
+			final Bag<XPathValue> bag = attrProvider.get(contextSelectorFQN, StandardDatatypes.XPATH.getBagDatatype(), context);
 			if (bag == null)
 			{
 				throw this.missingAttributeForUnknownReasonException;
@@ -651,7 +652,7 @@ public final class AttributeSelectorExpressions
 
 			if (bag.isEmpty())
 			{
-				throw new IndeterminateEvaluationException(missingContextSelectorAttributeExceptionMessage, StatusHelper.STATUS_MISSING_ATTRIBUTE, bag.getReasonWhyEmpty());
+				throw new IndeterminateEvaluationException(missingContextSelectorAttributeExceptionMessage, XacmlStatusCode.MISSING_ATTRIBUTE.value(), bag.getReasonWhyEmpty());
 			}
 
 			final String contextSelectorPath = bag.getSingleElement().getUnderlyingValue();
@@ -662,12 +663,12 @@ public final class AttributeSelectorExpressions
 			}
 			catch (final SaxonApiException e)
 			{
-				throw new IndeterminateEvaluationException(this + ": Error evaluating XPath='" + contextSelectorPath + xpathEvalErrMsgSuffix, StatusHelper.STATUS_SYNTAX_ERROR, e);
+				throw new IndeterminateEvaluationException(this + ": Error evaluating XPath='" + contextSelectorPath + xpathEvalErrMsgSuffix, XacmlStatusCode.SYNTAX_ERROR.value(), e);
 			}
 
 			if (contextNode == null)
 			{
-				throw new IndeterminateEvaluationException(this + ": No node returned by evaluation of XPath='" + contextSelectorPath + xpathEvalErrMsgSuffix, StatusHelper.STATUS_SYNTAX_ERROR);
+				throw new IndeterminateEvaluationException(this + ": No node returned by evaluation of XPath='" + contextSelectorPath + xpathEvalErrMsgSuffix, XacmlStatusCode.SYNTAX_ERROR.value());
 			}
 
 			return contextNode;
@@ -696,7 +697,7 @@ public final class AttributeSelectorExpressions
 	 *             {@code attributeProvider == null}; or {@code attributeSelectorElement.getPath()} is not a valid XPath expression
 	 */
 	public static <AV extends AttributeValue> AttributeSelectorExpression<AV> newInstance(final AttributeSelectorType attributeSelectorElement, final XPathCompiler xPathCompiler,
-			final AttributeProvider attributeProvider, final DatatypeFactory<AV> attributeFactory) throws IllegalArgumentException
+			final AttributeProvider attributeProvider, final AttributeValueFactory<AV> attributeFactory) throws IllegalArgumentException
 	{
 		final String contextSelectorId = attributeSelectorElement.getContextSelectorId();
 		if (contextSelectorId == null)

@@ -3,13 +3,13 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-parent</artifactId>
-      <version>6.0.0</version>
+      <version>7.0.0</version>
    </parent>
    <artifactId>authzforce-ce-core</artifactId>
    <version>9.1.1-SNAPSHOT</version>
    <packaging>pom</packaging>
    <name>${project.groupId}:${project.artifactId}</name>
-   <description>AuthzForce Community Edition - XACML-compliant Core PDP Engine and associated test modules</description>
+   <description>AuthzForce - XACML-compliant Core PDP Engine and associated test modules</description>
    <url>${project.url}</url>
    <scm>
       <!-- Used by Jenkins - Maven release plugin -->
@@ -31,8 +31,20 @@
          <!-- /Test dependencies -->
       </dependencies>
    </dependencyManagement>
+   <build>
+   <pluginManagement>
+      <plugins>
+         <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <version>3.0.1</version>
+         </plugin>
+      </plugins>
+   </pluginManagement>
+   </build>
    <modules>
       <module>pdp-engine</module>
       <module>pdp-testutils</module>
+      <module>pdp-io-xacml-json</module>
+      <module>pdp-cli</module>
    </modules>
 </project>

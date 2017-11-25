@@ -17,117 +17,87 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigInteger;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.transform.stream.StreamSource;
 
 import net.sf.saxon.s9api.XdmNode;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
 
-import org.ow2.authzforce.core.pdp.api.AttributeFQN;
-import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
+import org.ow2.authzforce.core.pdp.api.AttributeFqn;
+import org.ow2.authzforce.core.pdp.api.AttributeFqns;
+import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
 import org.ow2.authzforce.core.pdp.api.AttributeSources;
-import org.ow2.authzforce.core.pdp.api.CloseablePDP;
+import org.ow2.authzforce.core.pdp.api.CloseablePdpEngine;
 import org.ow2.authzforce.core.pdp.api.DecisionCache;
-import org.ow2.authzforce.core.pdp.api.DecisionResultFilter;
-import org.ow2.authzforce.core.pdp.api.DecisionResultFilter.FilteringResultCollector;
-import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
-import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
+import org.ow2.authzforce.core.pdp.api.DecisionRequest;
+import org.ow2.authzforce.core.pdp.api.DecisionRequestBuilder;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.ImmutableDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.IndividualXACMLRequest;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
-import org.ow2.authzforce.core.pdp.api.RequestFilter;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
-import org.ow2.authzforce.core.pdp.api.XMLUtils;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
+import org.ow2.authzforce.core.pdp.api.UpdatableMap;
+import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
+import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
+import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
 import org.ow2.authzforce.core.pdp.api.value.DateValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
-import org.ow2.authzforce.core.pdp.impl.combining.ImmutableCombiningAlgRegistry;
-import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgorithm;
-import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
-import org.ow2.authzforce.core.pdp.impl.func.ImmutableFunctionRegistry;
-import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
+import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.core.pdp.api.value.XPathValue;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluator;
 import org.ow2.authzforce.core.pdp.impl.policy.RootPolicyEvaluators;
-import org.ow2.authzforce.core.pdp.impl.policy.StaticApplicablePolicyView;
-import org.ow2.authzforce.core.pdp.impl.value.ImmutableDatatypeFactoryRegistry;
-import org.ow2.authzforce.core.pdp.impl.value.StandardDatatypeFactoryRegistry;
-import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.core.xmlns.pdp.StandardEnvironmentAttributeSource;
-import org.ow2.authzforce.xacml.identifiers.XACMLDatatypeId;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ClassToInstanceMap;
+import com.google.common.collect.MutableClassToInstanceMap;
 
 /**
  * This is the core XACML PDP engine implementation.
  *
  * @version $Id: $
  */
-public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionRequest>
+public final class BasePdpEngine implements CloseablePdpEngine
 {
-	// the logger we'll use for all messages
-	private static final Logger LOGGER = LoggerFactory.getLogger(BasePdpEngine.class);
+	private static final String NULL_STD_ENV_ATTRIBUTE_SOURCE_ARG = "Undefined stdEnvAttributeSource arg (source of standard curent-* environment attributes)";
 
-	private static final IllegalArgumentException NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined PDP configuration model handler");
-	private static final IllegalArgumentException ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("No input Individual Decision Request");
-
-	/*
-	 * The default behavior for getting the standard environment attributes (current date/time) is the one complying strictly with the XACML spec: if request does not have values for these attributes,
-	 * the "context handler" (PDP in this case) must provide them. So we use PDP values if it does not override any existing value in the request.
-	 */
-	private static final StandardEnvironmentAttributeSource DEFAULT_STD_ENV_ATTRIBUTE_SOURCE = StandardEnvironmentAttributeSource.REQUEST_ELSE_PDP;
-
-	/**
-	 * Indeterminate response iff CombinedDecision element not supported because the request parser does not support any scheme from MultipleDecisionProfile section 2.
-	 */
-	private static final Response UNSUPPORTED_COMBINED_DECISION_RESPONSE = new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
-			StatusHelper.STATUS_SYNTAX_ERROR, Optional.of("Unsupported feature: CombinedDecision='true'")), null, null, null, null)));
+	private static final IllegalArgumentException NULL_REQUEST_ARGUMENT_EXCEPTION = new IllegalArgumentException("No input Decision Request");
 
 	private interface StandardEnvironmentAttributeIssuer
 	{
-		Map<AttributeFQN, AttributeBag<?>> get();
+		Map<AttributeFqn, AttributeBag<?>> get();
 	}
 
 	private static final StandardEnvironmentAttributeIssuer NULL_STD_ENV_ATTRIBUTE_ISSUER = new StandardEnvironmentAttributeIssuer()
 	{
 
 		@Override
-		public Map<AttributeFQN, AttributeBag<?>> get()
+		public Map<AttributeFqn, AttributeBag<?>> get()
 		{
 			return null;
 		}
@@ -137,7 +107,7 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 	{
 
 		@Override
-		public Map<AttributeFQN, AttributeBag<?>> get()
+		public Map<AttributeFqn, AttributeBag<?>> get()
 		{
 			/*
 			 * Set the standard current date/time attribute according to XACML core spec:
@@ -146,21 +116,22 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 			 */
 			// current datetime in default timezone
 			final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
-			return HashCollections.<AttributeFQN, AttributeBag<?>> newImmutableMap(
-			// current date-time
-					StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(), Bags.singletonAttributeBag(StandardDatatypes.DATETIME_FACTORY.getDatatype(), currentDateTimeValue, AttributeSources.PDP),
+			return HashCollections.<AttributeFqn, AttributeBag<?>> newImmutableMap(
+					// current date-time
+					StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(),
+					Bags.singletonAttributeBag(StandardDatatypes.DATETIME, currentDateTimeValue, AttributeSources.PDP),
 					// current date
-					StandardEnvironmentAttribute.CURRENT_DATE.getFQN(), Bags.singletonAttributeBag(StandardDatatypes.DATE_FACTORY.getDatatype(),
-							DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP),
+					StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
+					Bags.singletonAttributeBag(StandardDatatypes.DATE, DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP),
 					// current time
-					StandardEnvironmentAttribute.CURRENT_TIME.getFQN(), Bags.singletonAttributeBag(StandardDatatypes.TIME_FACTORY.getDatatype(),
-							TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP));
+					StandardEnvironmentAttribute.CURRENT_TIME.getFQN(),
+					Bags.singletonAttributeBag(StandardDatatypes.TIME, TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP));
 		}
 	};
 
-	private static class NonIssuedLikeIssuedAttributeHandlingRequestBuilder implements PdpDecisionRequestBuilder<ImmutablePdpDecisionRequest>
+	private static class NonIssuedLikeIssuedAttributeHandlingRequestBuilder implements DecisionRequestBuilder<ImmutableDecisionRequest>
 	{
-		private final Map<AttributeFQN, AttributeBag<?>> namedAttributes;
+		private final Map<AttributeFqn, AttributeBag<?>> namedAttributes;
 		private final Map<String, XdmNode> extraContentsByCategory;
 
 		private NonIssuedLikeIssuedAttributeHandlingRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
@@ -170,7 +141,7 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		}
 
 		@Override
-		public Bag<?> putNamedAttributeIfAbsent(final AttributeFQN attributeId, final AttributeBag<?> attributeValues)
+		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn attributeId, final AttributeBag<?> attributeValues)
 		{
 			return namedAttributes.putIfAbsent(attributeId, attributeValues);
 		}
@@ -182,9 +153,9 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		}
 
 		@Override
-		public final ImmutablePdpDecisionRequest build(final boolean returnApplicablePolicies)
+		public final ImmutableDecisionRequest build(final boolean returnApplicablePolicies)
 		{
-			return ImmutablePdpDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
+			return ImmutableDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
 		}
 
 		@Override
@@ -206,15 +177,530 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		}
 
 		@Override
-		public Bag<?> putNamedAttributeIfAbsent(final AttributeFQN attributeFQN, final AttributeBag<?> attributeValues)
+		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn AttributeFqn, final AttributeBag<?> attributeValues)
 		{
 			/*
 			 * Put the non-issued version of the attribute first
 			 */
-			final AttributeFQN nonAttributeFQN = AttributeFQNs.newInstance(attributeFQN.getCategory(), Optional.empty(), attributeFQN.getId());
-			super.putNamedAttributeIfAbsent(nonAttributeFQN, attributeValues);
-			return super.putNamedAttributeIfAbsent(attributeFQN, attributeValues);
+			final AttributeFqn nonAttributeFqn = AttributeFqns.newInstance(AttributeFqn.getCategory(), Optional.empty(), AttributeFqn.getId());
+			super.putNamedAttributeIfAbsent(nonAttributeFqn, attributeValues);
+			return super.putNamedAttributeIfAbsent(AttributeFqn, attributeValues);
 		}
+	}
+
+	/**
+	 * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple Decision Profile spec for more
+	 * information on Individual Decision Request as opposed to Multiple Decision Request).
+	 *
+	 * @version $Id: $
+	 */
+	private static final class IndividualDecisionRequestContext implements EvaluationContext
+	{
+		/**
+		 * Logger used for all classes
+		 */
+		private static final Logger LOGGER = LoggerFactory.getLogger(IndividualDecisionRequestContext.class);
+
+		private final Map<AttributeFqn, AttributeBag<?>> namedAttributes;
+
+		/*
+		 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based functions, etc. This may be empty if
+		 * no Content in Request or no feature requiring XPath evaluation against Content is supported/enabled.
+		 */
+		// Not null
+		private final Map<String, XdmNode> extraContentsByAttributeCategory;
+
+		/*
+		 * AttributeSelector evaluation results. Not null
+		 */
+		private final UpdatableMap<AttributeSelectorId, Bag<?>> attributeSelectorResults;
+
+		private final Map<String, Value> varValsById = HashCollections.newMutableMap();
+
+		private final Map<String, Object> mutableProperties = HashCollections.newMutableMap();
+
+		private final boolean returnApplicablePolicyIdList;
+
+		private final ClassToInstanceMap<Listener> listeners = MutableClassToInstanceMap.create();
+
+		/**
+		 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation against Content element in
+		 * Attributes
+		 *
+		 * @param namedAttributeMap
+		 *            updatable named attribute map (attribute key and value pairs) from the original Request; null iff none. An attribute key is a global ID based on attribute category,issuer,id. An
+		 *            attribute value is a bag of primitive values.
+		 * @param extraContentsByCategory
+		 *            extra contents by attribute category (equivalent to XACML Attributes/Content elements); null iff no Content in the attribute category.
+		 * @param returnApplicablePolicyIdList
+		 *            true iff list of IDs of policies matched during evaluation must be returned
+		 */
+		public IndividualDecisionRequestContext(final Map<AttributeFqn, AttributeBag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByCategory,
+				final boolean returnApplicablePolicyIdList)
+		{
+			this.namedAttributes = namedAttributeMap == null ? HashCollections.<AttributeFqn, AttributeBag<?>> newUpdatableMap() : HashCollections
+					.<AttributeFqn, AttributeBag<?>> newUpdatableMap(namedAttributeMap);
+			this.returnApplicablePolicyIdList = returnApplicablePolicyIdList;
+			if (extraContentsByCategory == null)
+			{
+				this.extraContentsByAttributeCategory = Collections.emptyMap();
+				this.attributeSelectorResults = UpdatableCollections.emptyMap();
+			}
+			else
+			{
+				this.extraContentsByAttributeCategory = extraContentsByCategory;
+				this.attributeSelectorResults = UpdatableCollections.newUpdatableMap();
+			}
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public <AV extends AttributeValue> AttributeBag<AV> getNamedAttributeValue(final AttributeFqn AttributeFqn, final BagDatatype<AV> attributeBagDatatype) throws IndeterminateEvaluationException
+		{
+			final AttributeBag<?> bagResult = namedAttributes.get(AttributeFqn);
+			if (bagResult == null)
+			{
+				return null;
+			}
+
+			final Datatype<?> expectedElementDatatype = attributeBagDatatype.getElementType();
+			if (!bagResult.getElementDatatype().equals(expectedElementDatatype))
+			{
+				throw new IndeterminateEvaluationException(
+						"Datatype ("
+								+ bagResult.getElementDatatype()
+								+ ") of AttributeDesignator "
+								+ AttributeFqn
+								+ " in context is different from expected/requested ("
+								+ expectedElementDatatype
+								+ "). May be caused by refering to the same Attribute Category/Id/Issuer with different Datatypes in different policy elements and/or attribute providers, which is not allowed.",
+						XacmlStatusCode.SYNTAX_ERROR.value());
+			}
+
+			/*
+			 * If datatype classes match, bagResult should have same type as datatypeClass.
+			 */
+			final AttributeBag<AV> result = (AttributeBag<AV>) bagResult;
+			this.listeners.forEach((lt, l) -> l.namedAttributeValueConsumed(AttributeFqn, result));
+			return result;
+		}
+
+		@Override
+		public boolean putNamedAttributeValueIfAbsent(final AttributeFqn AttributeFqn, final AttributeBag<?> result)
+		{
+			final Bag<?> duplicate = namedAttributes.putIfAbsent(AttributeFqn, result);
+			if (duplicate != null)
+			{
+				/*
+				 * This should never happen, as getAttributeDesignatorResult() should have been called first (for same id) and returned this oldResult, and no further call to
+				 * putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but different datatype URI/datatype class) in the same
+				 * context
+				 */
+				LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", AttributeFqn, result);
+				return false;
+			}
+
+			this.listeners.forEach((lt, l) -> l.namedAttributeValueProduced(AttributeFqn, result));
+			/*
+			 * Attribute value cannot change during evaluation context, so if old value already there, put it back
+			 */
+			return true;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public XdmNode getAttributesContent(final String category)
+		{
+			return extraContentsByAttributeCategory.get(category);
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(final AttributeSelectorExpression<AV> attributeSelector) throws IndeterminateEvaluationException
+		{
+			final Bag<?> bagResult = attributeSelectorResults.get(attributeSelector.getAttributeSelectorId());
+			if (bagResult == null)
+			{
+				return null;
+			}
+
+			final Datatype<Bag<AV>> expectedBagDatatype = attributeSelector.getReturnType();
+			final Datatype<?> expectedElementDatatype = expectedBagDatatype.getTypeParameter().get();
+			if (!bagResult.getElementDatatype().equals(expectedElementDatatype))
+			{
+				throw new IndeterminateEvaluationException(
+						"Datatype ("
+								+ bagResult.getElementDatatype()
+								+ ")of AttributeSelector "
+								+ attributeSelector.getAttributeSelectorId()
+								+ " in context is different from actually expected/requested ("
+								+ expectedElementDatatype
+								+ "). May be caused by use of same AttributeSelector Category/Path/ContextSelectorId with different Datatypes in different in different policy elements, which is not allowed.",
+						XacmlStatusCode.SYNTAX_ERROR.value());
+			}
+
+			/*
+			 * If datatype classes match, bagResult should has same type as datatypeClass.
+			 */
+			final Bag<AV> result = expectedBagDatatype.cast(bagResult);
+			this.listeners.forEach((lt, l) -> l.attributeSelectorResultConsumed(attributeSelector, result));
+			return result;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public <AV extends AttributeValue> boolean putAttributeSelectorResultIfAbsent(final AttributeSelectorExpression<AV> attributeSelector, final Bag<AV> result)
+				throws IndeterminateEvaluationException
+		{
+			final AttributeSelectorId attSelectorId = attributeSelector.getAttributeSelectorId();
+			if (attributeSelectorResults.putIfAbsent(attSelectorId, result) != null)
+			{
+				LOGGER.error("Attempt to override value of AttributeSelector {} already set in evaluation context. Overriding value: {}", attSelectorId, result);
+				return false;
+			}
+
+			for (final Listener listener : this.listeners.values())
+			{
+				final Optional<AttributeFqn> optionalContextSelectorFQN = attributeSelector.getContextSelectorFQN();
+				final Optional<AttributeBag<XPathValue>> contextSelectorValue = optionalContextSelectorFQN.isPresent() ? Optional.of(getNamedAttributeValue(optionalContextSelectorFQN.get(),
+						StandardDatatypes.XPATH.getBagDatatype())) : Optional.empty();
+				listener.attributeSelectorResultProduced(attributeSelector, contextSelectorValue, result);
+			}
+
+			return true;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public <V extends Value> V getVariableValue(final String variableId, final Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
+		{
+			final Value val = varValsById.get(variableId);
+			if (val == null)
+			{
+				return null;
+			}
+
+			try
+			{
+				return expectedDatatype.cast(val);
+			}
+			catch (final ClassCastException e)
+			{
+				throw new IndeterminateEvaluationException("Datatype of variable '" + variableId + "' in context does not match expected datatype: " + expectedDatatype,
+						XacmlStatusCode.PROCESSING_ERROR.value(), e);
+			}
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean putVariableIfAbsent(final String variableId, final Value value)
+		{
+			if (varValsById.putIfAbsent(variableId, value) != null)
+			{
+				LOGGER.error("Attempt to override value of Variable '{}' already set in evaluation context. Overriding value: {}", variableId, value);
+				return false;
+			}
+
+			return true;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public Value removeVariable(final String variableId)
+		{
+			return varValsById.remove(variableId);
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public Object getOther(final String key)
+		{
+			return mutableProperties.get(key);
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public boolean containsKey(final String key)
+		{
+			return mutableProperties.containsKey(key);
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public void putOther(final String key, final Object val)
+		{
+			mutableProperties.put(key, val);
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public Object remove(final String key)
+		{
+			return mutableProperties.remove(key);
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public Iterator<Entry<AttributeFqn, AttributeBag<?>>> getNamedAttributes()
+		{
+			final Set<Entry<AttributeFqn, AttributeBag<?>>> immutableAttributeSet = Collections.unmodifiableSet(namedAttributes.entrySet());
+			return immutableAttributeSet.iterator();
+		}
+
+		@Override
+		public boolean isApplicablePolicyIdListRequested()
+		{
+			return returnApplicablePolicyIdList;
+		}
+
+		@Override
+		public <L extends Listener> L putListener(final Class<L> listenerType, final L listener)
+		{
+			return this.listeners.putInstance(listenerType, listener);
+		}
+
+		@Override
+		public <L extends Listener> L getListener(final Class<L> listenerType)
+		{
+			return this.listeners.getInstance(listenerType);
+		}
+	}
+
+	/**
+	 * Individual decision request evaluator
+	 *
+	 * @version $Id: $
+	 */
+	private static abstract class IndividualDecisionRequestEvaluator
+	{
+		private static final Logger LOGGER = LoggerFactory.getLogger(IndividualDecisionRequestEvaluator.class);
+
+		private interface RequestAndPdpIssuedNamedAttributesMerger
+		{
+			/**
+			 * Return an updatable map after merging {@code pdpIssuedAttributes} and {@code requestAttributes} or one of each into it, depending on the implementation
+			 * 
+			 * @param pdpIssuedAttributes
+			 * @param requestAttributes
+			 * @return updatable map resulting from merger, or null if nothing merged
+			 */
+			Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes);
+		}
+
+		private static final IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeFqn attrGUID)
+		{
+			return new IndeterminateEvaluationException("The standard environment attribute ( " + attrGUID
+					+ " ) is not present in the REQUEST although at least one of the others is! (PDP standardEnvironmentAttributeSource = REQUEST_ELSE_PDP.)",
+					XacmlStatusCode.MISSING_ATTRIBUTE.value());
+		}
+
+		private static final Map<AttributeFqn, AttributeBag<?>> STD_ENV_RESET_MAP = HashCollections.<AttributeFqn, AttributeBag<?>> newImmutableMap(
+				StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(),
+				Bags.emptyAttributeBag(StandardDatatypes.DATETIME, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN())),
+				StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
+				Bags.emptyAttributeBag(StandardDatatypes.DATE, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())),
+				StandardEnvironmentAttribute.CURRENT_TIME.getFQN(),
+				Bags.emptyAttributeBag(StandardDatatypes.TIME, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_TIME.getFQN())));
+
+		private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_OVERRIDES_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
+		{
+
+			@Override
+			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
+			{
+				/*
+				 * Request attribute values override PDP issued ones. Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must
+				 * not modify it but clone it before individual decision request processing.
+				 */
+				if (pdpIssuedAttributes == null)
+				{
+					return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
+				}
+
+				// pdpIssuedAttributes != null
+				if (requestAttributes == null)
+				{
+					return HashCollections.newUpdatableMap(pdpIssuedAttributes);
+				}
+				// requestAttributes != null
+
+				/**
+				 * 
+				 * XACML standard (§10.2.5) says: "If values for these [the standard environment attributes, i.e. current-time, current-date, current-dateTime] attributes are not present in the
+				 * decision request, then their values MUST be supplied by the context handler ". In our case, "context handler" means the PDP. In other words, the attribute values come from request
+				 * by default, or from the PDP if (and *only if* in this case) they are not set in the request. More precisely, if any of these standard environment attributes is provided in the
+				 * request, none of the PDP values is used, even if some policy requires one that is missing from the request. Indeed, this is to avoid such case when the decision request specifies at
+				 * least one date/time attribute, e.g. current-time, but not all of them, e.g. not current-dateTime, and the policy requires both the one(s) provided and the one(s) not provided. In
+				 * this case, if the PDP provides its own value(s) for the missing attributes (e.g. current-dateTime), this may cause some inconsistencies since we end up having date/time attributes
+				 * coming from two different sources/environments (current-time and current-dateTime for instance).
+				 */
+				if (requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN()) || requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())
+						|| requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_TIME.getFQN()))
+				{
+					/*
+					 * Request has at least one standard env attribute -> make sure all PDP values are ignored (overridden by STD_ENV_RESET_MAP no matter whether requestAttributes contains all of them
+					 * or not)
+					 */
+					// mappings in order of increasing priority
+					return HashCollections.newUpdatableMap(pdpIssuedAttributes, STD_ENV_RESET_MAP, requestAttributes);
+				}
+
+				// mappings in order of increasing priority
+				return HashCollections.newUpdatableMap(pdpIssuedAttributes, requestAttributes);
+			}
+
+		};
+
+		private static final RequestAndPdpIssuedNamedAttributesMerger PDP_OVERRIDES_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
+		{
+
+			@Override
+			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
+			{
+
+				// PDP issued attribute values override request attribute values
+				/*
+				 * Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must not modify it but clone it before individual
+				 * decision request processing.
+				 */
+				if (pdpIssuedAttributes == null)
+				{
+					return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
+				}
+
+				// pdpIssuedAttributes != null
+				if (requestAttributes == null)
+				{
+					return HashCollections.newUpdatableMap(pdpIssuedAttributes);
+				}
+				// requestAttributes != null
+
+				// mappings of pdpIssuedAttributes have priority
+				return HashCollections.newUpdatableMap(requestAttributes, pdpIssuedAttributes);
+
+			}
+
+		};
+
+		private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_ONLY_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
+		{
+
+			@Override
+			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
+			{
+				// PDP values completely ignored
+				return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
+			}
+
+		};
+
+		private final RootPolicyEvaluator rootPolicyEvaluator;
+		private final RequestAndPdpIssuedNamedAttributesMerger reqAndPdpIssuedAttributesMerger;
+
+		/**
+		 * Creates an evaluator
+		 *
+		 * @param rootPolicyEvaluator
+		 *            root policy evaluator that this request evaluator uses to evaluate individual decision request
+		 * @param stdEnvAttributeSource
+		 *            (mandatory) Defines the source for the standard environment attributes specified in §10.2.5: current-time, current-date and current-dateTime. The options are:
+		 *            <ul>
+		 *            <li>REQUEST_ELSE_PDP: the default choice, that complies with the XACML standard (§10.2.5): "If values for these attributes are not present in the decision request, then their
+		 *            values MUST be supplied by the context handler", in our case, " context handler" means the PDP. In other words, the attribute values come from request by default, or from the PDP
+		 *            if (and *only if* in this case) they are not set in the request. Issue: what if the decision request only specifies current-time but not current-dateTime, and the policy requires
+		 *            both? Should the PDP provides its own value for current-dateTime? This could cause some inconsistencies since current-time and current-dateTime would come from two different
+		 *            sources/environments. With this option, we have a strict interpretation of the spec, i.e. if any of these attribute is not set in the request, the PDP uses its own value instead.
+		 *            So BEWARE. Else you have the other options below.</li>
+		 *            <li>REQUEST_ONLY: always use the standard environment attribute value from the request, or nothing if the value is not set in the request, in which case this results in
+		 *            Indeterminate (missing attribute) if the policy evaluation requires it.</li>
+		 *            <li>PDP_ONLY: always use the standard environment attribute values from the PDP. In other words, Request values are simply ignored; PDP values for standard environment attributes
+		 *            systematically override the ones from the request. This also guarantees that they are always set (by the PDP). NB: note that the XACML standard (§10.2.5) says: "If values for
+		 *            these attributes are not present in the decision request, then their values MUST be supplied by the context handler " but it does NOT say "If AND ONLY IF values..." So this
+		 *            option could still be considered XACML compliant in a strict sense.</li>
+		 *            </ul>
+		 * @throws IllegalArgumentException
+		 *             if {@code stdEnvAttributeSource} is null or not supported
+		 */
+		protected IndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource) throws IllegalArgumentException
+		{
+			assert rootPolicyEvaluator != null && stdEnvAttributeSource != null;
+			this.rootPolicyEvaluator = rootPolicyEvaluator;
+			switch (stdEnvAttributeSource)
+			{
+				case PDP_ONLY:
+					/*
+					 * PDP_ONLY means the standard environment attribute values come from the PDP only (not the Request), this does not affect other attributes. In other words, only PDP's standard
+					 * environment attribute values override.
+					 */
+					this.reqAndPdpIssuedAttributesMerger = PDP_OVERRIDES_ATTRIBUTES_MERGER;
+					break;
+				case REQUEST_ONLY:
+					this.reqAndPdpIssuedAttributesMerger = REQUEST_ONLY_ATTRIBUTES_MERGER;
+					break;
+				case REQUEST_ELSE_PDP:
+					this.reqAndPdpIssuedAttributesMerger = REQUEST_OVERRIDES_ATTRIBUTES_MERGER;
+					break;
+				default:
+					throw new IllegalArgumentException("Unsupported standardEnvAttributeSource: " + stdEnvAttributeSource + ". Expected: "
+							+ Arrays.toString(StandardEnvironmentAttributeSource.values()));
+			}
+		}
+
+		protected final EvaluationContext newEvaluationContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
+		{
+			final Map<AttributeFqn, AttributeBag<?>> mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, request.getNamedAttributes());
+			return new IndividualDecisionRequestContext(mergedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdListReturned());
+		}
+
+		/**
+		 * <p>
+		 * Evaluate Individual Decision Request in an existing request context
+		 * </p>
+		 *
+		 * @param evalCtx
+		 *            existing evaluation context
+		 * @return the evaluation result.
+		 */
+		protected final DecisionResult evaluateReusingContext(final EvaluationContext evalCtx)
+		{
+			return rootPolicyEvaluator.findAndEvaluate(evalCtx);
+		}
+
+		/**
+		 * <p>
+		 * Evaluate an Individual Decision Request from which a new request context is created to evaluate the request
+		 * </p>
+		 *
+		 * @param request
+		 *            a non-null {@link DecisionRequest} object.
+		 * @param pdpIssuedAttributes
+		 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
+		 * @return the evaluation result.
+		 */
+		protected final DecisionResult evaluateInNewContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
+		{
+			assert request != null;
+			LOGGER.debug("Evaluating Individual Decision Request: {}", request);
+			final EvaluationContext evalCtx = newEvaluationContext(request, pdpIssuedAttributes);
+			return rootPolicyEvaluator.findAndEvaluate(evalCtx);
+		}
+
+		/**
+		 * <p>
+		 * Evaluate multiple Individual Decision Requests with same PDP-issued attribute values (e.g. current date/time) in order to return decision results in internal model.
+		 * </p>
+		 *
+		 * @param individualDecisionRequests
+		 *            a {@link java.util.List} of individual decision requests.
+		 * @param pdpIssuedAttributes
+		 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
+		 * @return individual decision request-result pairs, where the list of the requests is the same as {@code individualDecisionRequests}.
+		 * @throws IndeterminateEvaluationException
+		 *             if an error occurred preventing any request evaluation
+		 */
+		protected abstract <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+				List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException;
+
 	}
 
 	private static final class NonCachingIndividualDecisionRequestEvaluator extends IndividualDecisionRequestEvaluator
@@ -222,19 +708,18 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		private static final RuntimeException NULL_INDIVIDUAL_DECISION_REQUEST_EXCEPTION = new RuntimeException(
 				"One of the individual decision requests returned by the request filter is invalid (null).");
 
-		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource,
-				final DecisionResultFilter resultFilter)
+		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource)
 		{
-			super(rootPolicyEvaluator, stdEnvAttributeSource, resultFilter);
+			super(rootPolicyEvaluator, stdEnvAttributeSource);
 		}
 
 		@Override
-		protected <INDIVIDUAL_DECISION_REQ_T extends PdpDecisionRequest> Map<INDIVIDUAL_DECISION_REQ_T, ? extends PdpDecisionResult> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
 		{
 			assert individualDecisionRequests != null;
 
-			final Map<INDIVIDUAL_DECISION_REQ_T, PdpDecisionResult> resultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
+			final Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> resultsByRequest = new ArrayDeque<>(individualDecisionRequests.size());
 			for (final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest : individualDecisionRequests)
 			{
 				if (individualDecisionRequest == null)
@@ -242,53 +727,26 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 					throw NULL_INDIVIDUAL_DECISION_REQUEST_EXCEPTION;
 				}
 
-				final PdpDecisionResult decisionResult = evaluateInNewContext(individualDecisionRequest, pdpIssuedAttributes);
-				resultsByRequest.put(individualDecisionRequest, decisionResult);
+				final DecisionResult decisionResult = evaluateInNewContext(individualDecisionRequest, pdpIssuedAttributes);
+				resultsByRequest.add(new SimpleImmutableEntry<>(individualDecisionRequest, decisionResult));
 			}
 
 			return resultsByRequest;
 		}
 
-		@Override
-		protected List<Result> evaluateToJAXB(final List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes)
-		{
-			assert individualDecisionRequests != null;
-
-			final FilteringResultCollector filteringResultCollector = beginMultipleDecisions(individualDecisionRequests.size());
-			for (final IndividualXACMLRequest individualDecisionRequest : individualDecisionRequests)
-			{
-				if (individualDecisionRequest == null)
-				{
-					throw NULL_INDIVIDUAL_DECISION_REQUEST_EXCEPTION;
-				}
-
-				final PdpDecisionResult decisionResult = evaluateInNewContext(individualDecisionRequest, pdpIssuedAttributes);
-				final List<Result> finalResults = filteringResultCollector.addResult(individualDecisionRequest, decisionResult);
-				if (finalResults != null)
-				{
-					return finalResults;
-				}
-			}
-
-			return filteringResultCollector.getFilteredResults();
-		}
 	}
 
 	private static abstract class CachingIndividualRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
 
 		protected static final IndeterminateEvaluationException INDETERMINATE_EVALUATION_EXCEPTION = new IndeterminateEvaluationException("Internal error in decision cache: null result",
-				StatusHelper.STATUS_PROCESSING_ERROR);
-
-		protected static final Result INVALID_DECISION_CACHE_RESULT = new Result(DecisionType.INDETERMINATE, new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, Optional.of("Internal error")),
-				null, null, null, null);
+				XacmlStatusCode.PROCESSING_ERROR.value());
 
 		protected final DecisionCache decisionCache;
 
-		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource,
-				final DecisionResultFilter resultFilter, final DecisionCache decisionCache)
+		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource, final DecisionCache decisionCache)
 		{
-			super(rootPolicyEvaluator, stdEnvAttributeSource, resultFilter);
+			super(rootPolicyEvaluator, stdEnvAttributeSource);
 			assert decisionCache != null;
 			this.decisionCache = decisionCache;
 		}
@@ -300,16 +758,16 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		private static final Logger _LOGGER = LoggerFactory.getLogger(IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext.class);
 
 		private IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource,
-				final DecisionResultFilter resultFilter, final DecisionCache decisionCache)
+				final DecisionCache decisionCache)
 		{
-			super(rootPolicyEvaluator, stdEnvAttributeSource, resultFilter, decisionCache);
+			super(rootPolicyEvaluator, stdEnvAttributeSource, decisionCache);
 		}
 
 		@Override
-		public <INDIVIDUAL_DECISION_REQ_T extends PdpDecisionRequest> Map<INDIVIDUAL_DECISION_REQ_T, ? extends PdpDecisionResult> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
 		{
-			final Map<INDIVIDUAL_DECISION_REQ_T, PdpDecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
+			final Map<INDIVIDUAL_DECISION_REQ_T, DecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
 				// error, return indeterminate result as only result
@@ -320,15 +778,15 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 			/*
 			 * There will be at most as many new results (not in cache) as there are individual decision requests
 			 */
-			final Map<INDIVIDUAL_DECISION_REQ_T, PdpDecisionResult> finalResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
-			final Map<INDIVIDUAL_DECISION_REQ_T, PdpDecisionResult> newResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
+			final Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> finalResultsByRequest = new ArrayDeque<>(individualDecisionRequests.size());
+			final Map<INDIVIDUAL_DECISION_REQ_T, DecisionResult> newResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
 			for (final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest : individualDecisionRequests)
 			{
-				final PdpDecisionResult finalResult;
+				final DecisionResult finalResult;
 				/*
 				 * Check whether there is any decision result in cache for this request
 				 */
-				final PdpDecisionResult cachedResult = cachedResultsByRequest.get(individualDecisionRequest);
+				final DecisionResult cachedResult = cachedResultsByRequest.get(individualDecisionRequest);
 				if (cachedResult == null)
 				{
 					// result not in cache -> evaluate request
@@ -340,7 +798,7 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 					finalResult = cachedResult;
 				}
 
-				finalResultsByRequest.put(individualDecisionRequest, finalResult);
+				finalResultsByRequest.add(new SimpleImmutableEntry<>(individualDecisionRequest, finalResult));
 			}
 
 			if (!newResultsByRequest.isEmpty())
@@ -351,203 +809,86 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 			return finalResultsByRequest;
 		}
 
-		@Override
-		public List<Result> evaluateToJAXB(final List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes)
-		{
-			final Map<? extends IndividualXACMLRequest, PdpDecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
-			if (cachedResultsByRequest == null)
-			{
-				// error, return indeterminate result as only result
-				_LOGGER.error("Invalid decision cache result: null");
-				return Collections.singletonList(INVALID_DECISION_CACHE_RESULT);
-			}
-
-			/*
-			 * There will be at most as many new results (not in cache) as there are individual decision requests
-			 */
-			final FilteringResultCollector filteringResultCollector = beginMultipleDecisions(individualDecisionRequests.size());
-			final Map<IndividualXACMLRequest, PdpDecisionResult> newResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
-
-			try
-			{
-				for (final IndividualXACMLRequest individualDecisionRequest : individualDecisionRequests)
-				{
-					final PdpDecisionResult finalResult;
-					/*
-					 * Check whether there is any decision result in cache for this request
-					 */
-					final PdpDecisionResult cachedResult = cachedResultsByRequest.get(individualDecisionRequest);
-					if (cachedResult == null)
-					{
-						// result not in cache -> evaluate request
-						finalResult = evaluateInNewContext(individualDecisionRequest, pdpIssuedAttributes);
-						newResultsByRequest.put(individualDecisionRequest, finalResult);
-					}
-					else
-					{
-						finalResult = cachedResult;
-					}
-
-					final List<Result> finalResults = filteringResultCollector.addResult(individualDecisionRequest, finalResult);
-					if (finalResults != null)
-					{
-						return finalResults;
-					}
-				}
-
-				return filteringResultCollector.getFilteredResults();
-			}
-			finally
-			{
-				if (!newResultsByRequest.isEmpty())
-				{
-					decisionCache.putAll(newResultsByRequest);
-				}
-			}
-		}
-
 	}
 
 	private static final class IndividualRequestEvaluatorWithCacheUsingEvaluationContext extends CachingIndividualRequestEvaluator
 	{
 
 		public IndividualRequestEvaluatorWithCacheUsingEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource validStdEnvAttrSrc,
-				final DecisionResultFilter decisionResultFilter, final DecisionCache decisionCache)
+				final DecisionCache decisionCache)
 		{
-			super(rootPolicyEvaluator, validStdEnvAttrSrc, decisionResultFilter, decisionCache);
+			super(rootPolicyEvaluator, validStdEnvAttrSrc, decisionCache);
 		}
 
-		private <INDIVIDUAL_DECISION_REQ_T extends PdpDecisionRequest> PdpDecisionResult evaluate(final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest,
-				final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes)
+		private <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> DecisionResult evaluate(final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest,
+				final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
 		{
 			/*
 			 * Check whether there is any decision result in cache for this request
 			 */
 			final EvaluationContext evalCtx = newEvaluationContext(individualDecisionRequest, pdpIssuedAttributes);
-			final PdpDecisionResult cachedResult = decisionCache.get(individualDecisionRequest, evalCtx);
+			final DecisionResult cachedResult = decisionCache.get(individualDecisionRequest, evalCtx);
 			if (cachedResult != null)
 			{
 				return cachedResult;
 			}
 
 			// result not in cache -> evaluate request
-			final PdpDecisionResult finalResult = evaluateReusingContext(evalCtx);
+			final DecisionResult finalResult = evaluateReusingContext(evalCtx);
 			decisionCache.put(individualDecisionRequest, finalResult, evalCtx);
 			return finalResult;
 		}
 
 		@Override
-		public <INDIVIDUAL_DECISION_REQ_T extends PdpDecisionRequest> Map<INDIVIDUAL_DECISION_REQ_T, ? extends PdpDecisionResult> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
 		{
 			/*
 			 * There will be at most as many new results (not in cache) as there are individual decision requests
 			 */
-			final Map<INDIVIDUAL_DECISION_REQ_T, PdpDecisionResult> finalResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
+			final Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> finalResultsByRequest = new ArrayDeque<>(individualDecisionRequests.size());
 			for (final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest : individualDecisionRequests)
 			{
-				final PdpDecisionResult finalResult = evaluate(individualDecisionRequest, pdpIssuedAttributes);
-				finalResultsByRequest.put(individualDecisionRequest, finalResult);
+				final DecisionResult finalResult = evaluate(individualDecisionRequest, pdpIssuedAttributes);
+				finalResultsByRequest.add(new SimpleImmutableEntry<>(individualDecisionRequest, finalResult));
 			}
 
 			return finalResultsByRequest;
 		}
 
-		@Override
-		public List<Result> evaluateToJAXB(final List<? extends IndividualXACMLRequest> individualDecisionRequests, final Map<AttributeFQN, AttributeBag<?>> pdpIssuedAttributes)
-		{
-			/*
-			 * There will be at most as many new results (not in cache) as there are individual decision requests
-			 */
-			final FilteringResultCollector filteringResultCollector = beginMultipleDecisions(individualDecisionRequests.size());
-
-			for (final IndividualXACMLRequest individualDecisionRequest : individualDecisionRequests)
-			{
-				final PdpDecisionResult finalResult = evaluate(individualDecisionRequest, pdpIssuedAttributes);
-				final List<Result> finalResults = filteringResultCollector.addResult(individualDecisionRequest, finalResult);
-				if (finalResults != null)
-				{
-					return finalResults;
-				}
-			}
-
-			return filteringResultCollector.getFilteredResults();
-		}
-
 	}
 
 	private final boolean strictAttributeIssuerMatch;
-	private final RequestFilter reqFilter;
 	private final IndividualDecisionRequestEvaluator individualReqEvaluator;
 	private final DecisionCache decisionCache;
 	private final RootPolicyEvaluator rootPolicyEvaluator;
 	private final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer;
-	private final int badRequestStatusDetailLevel;
 
 	/**
-	 * Constructs a new <code>PDP</code> object with the given configuration information.
+	 * Constructs a new PDP engine with the given configuration information.
 	 *
-	 * @param attributeFactory
-	 *            attribute value factory - mandatory
-	 * @param functionRegistry
-	 *            function registry - mandatory
-	 * @param jaxbAttributeProviderConfs
-	 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression evaluation (out of context), in which case
-	 *            AttributeSelectors/AttributeDesignators are not supported
-	 * @param maxVariableReferenceDepth
-	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference); strictly negative value means no limit
-	 * 
-	 * @param enableXPath
-	 *            allow XPath evaluation, i.e. AttributeSelectors and xpathExpressions (experimental, not for production, use with caution)
-	 * @param requestFilterId
-	 *            ID of request filter (XACML Request processing prior to policy evaluation) - mandatory
-	 * @param decisionResultFilter
-	 *            decision result filter (XACML Result processing after policy evaluation, before creating/returning final XACML Response)
-	 * @param jaxbDecisionCacheConf
-	 *            decision response cache XML/JAXB configuration
-	 * @param jaxbRootPolicyProviderConf
-	 *            root policy Provider's XML/JAXB configuration - mandatory
-	 * @param combiningAlgRegistry
-	 *            XACML policy/rule combining algorithm registry - mandatory
-	 * @param jaxbRefPolicyProviderConf
-	 *            policy-by-reference Provider's XML/JAXB configuration, for resolving policies referred to by Policy(Set)IdReference in policies found by root policy Provider
-	 * @param maxPolicySetRefDepth
-	 *            max allowed PolicySetIdReference chain: PolicySet1 (PolicySetIdRef1) -> PolicySet2 (PolicySetIdRef2) -> ...; a strictly negative value means no limit
+	 * @param xacmlExpressionFactory
+	 *            XACML Expression parser/factory - mandatory
+	 * @param rootPolicyProvider
+	 *            Root Policy Provider - mandatory
+	 * @param decisionCache
+	 *            (optional) decision response cache
 	 * @param strictAttributeIssuerMatch
 	 *            true iff strict Attribute Issuer matching is enabled, i.e. AttributeDesignators without Issuer only match request Attributes without Issuer (and same AttributeId, Category...). This
 	 *            mode is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it performs better and is recommended when all
 	 *            AttributeDesignators have an Issuer (best practice). Reminder: the XACML 3.0 specification for AttributeDesignator evaluation (5.29) says: "If the Issuer is not present in the
-	 *            attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone." if one of the mandatory arguments is
-	 *            null
+	 *            attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone."
 	 * @param stdEnvAttributeSource
-	 *            source for standard environment current-time/current-date/current-dateTime attribute values (request or PDP, etc.)
-	 * @param badRequestStatusDetailLevel
-	 *            level of detail in the StatusDetail returned in the Indeterminate Result when the Request format/syntax is invalid
-	 * @param environmentProperties
-	 *            PDP configuration environment properties
+	 *            (mandatory) source for standard environment current-time/current-date/current-dateTime attribute values (request or PDP, etc.).
 	 * @throws java.lang.IllegalArgumentException
-	 *             if there is not any extension found for type {@link org.ow2.authzforce.core.pdp.api.RequestFilter.Factory} with ID {@code requestFilterId}; or if one of the mandatory arguments is
-	 *             null; or if any Attribute Provider module created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with another one already registered to
-	 *             provide the same or part of the same attributes; of if there is no extension supporting {@code jaxbDecisionCacheConf}
+	 *             if one of the mandatory arguments is null ({@code xacmlExpressionFactory}, {@code rootPolicyProvider})
 	 * @throws java.io.IOException
-	 *             error closing the root policy Provider when static resolution is to be used; or error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when
-	 *             and before an {@link IllegalArgumentException} is raised
+	 *             error closing the root policy Provider when static resolution is to be used
 	 */
-	public BasePdpEngine(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
-			final int maxVariableReferenceDepth, final boolean enableXPath, final CombiningAlgRegistry combiningAlgRegistry, final AbstractPolicyProvider jaxbRootPolicyProviderConf,
-			final AbstractPolicyProvider jaxbRefPolicyProviderConf, final int maxPolicySetRefDepth, final String requestFilterId, final boolean strictAttributeIssuerMatch,
-			final StandardEnvironmentAttributeSource stdEnvAttributeSource, final DecisionResultFilter decisionResultFilter, final AbstractDecisionCache jaxbDecisionCacheConf,
-			final int badRequestStatusDetailLevel, final EnvironmentProperties environmentProperties) throws IllegalArgumentException, IOException
+	public BasePdpEngine(final ExpressionFactory xacmlExpressionFactory, final RootPolicyProvider rootPolicyProvider, final boolean strictAttributeIssuerMatch,
+			final StandardEnvironmentAttributeSource stdEnvAttributeSource, final Optional<DecisionCache> decisionCache) throws IllegalArgumentException, IOException
 	{
-		this.strictAttributeIssuerMatch = strictAttributeIssuerMatch;
-
-		final RequestFilter.Factory requestFilterFactory = requestFilterId == null ? DefaultRequestFilter.LaxFilterFactory.INSTANCE : PdpExtensionLoader.getExtension(RequestFilter.Factory.class,
-				requestFilterId);
-
-		final RequestFilter requestFilter = requestFilterFactory.getInstance(attributeFactory, strictAttributeIssuerMatch, enableXPath, XMLUtils.SAXON_PROCESSOR);
-
-		final RootPolicyEvaluators.Base candidateRootPolicyEvaluator = new RootPolicyEvaluators.Base(attributeFactory, functionRegistry, jaxbAttributeProviderConfs, maxVariableReferenceDepth,
-				enableXPath, combiningAlgRegistry, jaxbRootPolicyProviderConf, jaxbRefPolicyProviderConf, maxPolicySetRefDepth, strictAttributeIssuerMatch, environmentProperties);
+		final RootPolicyEvaluators.Base candidateRootPolicyEvaluator = new RootPolicyEvaluators.Base(xacmlExpressionFactory, rootPolicyProvider);
 		// Use static resolution if possible
 		final RootPolicyEvaluator staticRootPolicyEvaluator = candidateRootPolicyEvaluator.toStatic();
 		if (staticRootPolicyEvaluator == null)
@@ -559,419 +900,48 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 			this.rootPolicyEvaluator = staticRootPolicyEvaluator;
 		}
 
-		this.reqFilter = requestFilter;
+		this.strictAttributeIssuerMatch = strictAttributeIssuerMatch;
 
-		// decision cache
-		if (jaxbDecisionCacheConf == null)
-		{
-			this.decisionCache = null;
-		}
-		else
-		{
-			final DecisionCache.Factory<AbstractDecisionCache> responseCacheStoreFactory = PdpExtensionLoader.getDecisionCacheFactory(jaxbDecisionCacheConf);
-			this.decisionCache = responseCacheStoreFactory.getInstance(jaxbDecisionCacheConf);
-		}
+		Preconditions.checkNotNull(stdEnvAttributeSource, NULL_STD_ENV_ATTRIBUTE_SOURCE_ARG);
+		this.pdpStdEnvAttributeIssuer = stdEnvAttributeSource == StandardEnvironmentAttributeSource.REQUEST_ONLY ? NULL_STD_ENV_ATTRIBUTE_ISSUER : DEFAULT_TZ_BASED_STD_ENV_ATTRIBUTE_ISSUER;
 
-		final StandardEnvironmentAttributeSource validStdEnvAttrSrc = stdEnvAttributeSource == null ? DEFAULT_STD_ENV_ATTRIBUTE_SOURCE : stdEnvAttributeSource;
-		this.pdpStdEnvAttributeIssuer = validStdEnvAttrSrc == StandardEnvironmentAttributeSource.REQUEST_ONLY ? NULL_STD_ENV_ATTRIBUTE_ISSUER : DEFAULT_TZ_BASED_STD_ENV_ATTRIBUTE_ISSUER;
+		this.decisionCache = decisionCache.orElse(null);
 		if (this.decisionCache == null)
 		{
-			this.individualReqEvaluator = new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, validStdEnvAttrSrc, decisionResultFilter);
+			this.individualReqEvaluator = new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, stdEnvAttributeSource);
 		}
 		else
 		{
-			this.individualReqEvaluator = this.decisionCache.isEvaluationContextRequired() ? new IndividualRequestEvaluatorWithCacheUsingEvaluationContext(rootPolicyEvaluator, validStdEnvAttrSrc,
-					decisionResultFilter, this.decisionCache) : new IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(rootPolicyEvaluator, validStdEnvAttrSrc, decisionResultFilter,
-					this.decisionCache);
+			this.individualReqEvaluator = this.decisionCache.isEvaluationContextRequired() ? new IndividualRequestEvaluatorWithCacheUsingEvaluationContext(rootPolicyEvaluator, stdEnvAttributeSource,
+					this.decisionCache) : new IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(rootPolicyEvaluator, stdEnvAttributeSource, this.decisionCache);
 		}
-
-		this.badRequestStatusDetailLevel = badRequestStatusDetailLevel;
-	}
-
-	private static boolean isXpathBased(final Function<?> function)
-	{
-		/*
-		 * A function is said "XPath-based" iff it takes at least one XPathExpression parameter. Regarding higher-order function, as of now, we only provide higher-order functions defined in the XACML
-		 * (3.0) Core specification, which are not XPath-based, or if a higher-order function happens to take a XPathExpression parameter, it is actually a parameter to the first-order sub-function.
-		 * Plus it is not possible to add extensions that are higher-order functions in this PDP implementation. Therefore, it is enough to check first-order functions (class FirstOrderFunction) only.
-		 * (Remember that such functions may be used as parameter to a higher-order function.)
-		 */
-		if (function instanceof FirstOrderFunction)
-		{
-			final List<? extends Datatype<?>> paramTypes = ((FirstOrderFunction<?>) function).getParameterTypes();
-			for (final Datatype<?> paramType : paramTypes)
-			{
-				if (paramType.getId().equals(XACMLDatatypeId.XPATH_EXPRESSION.value()))
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
 	}
 
 	/**
-	 * Get PDP instance
+	 * Constructs a new PDP engine with the given configuration information.
 	 *
-	 * @param pdpJaxbConf
-	 *            (JAXB-bound) PDP configuration
-	 * @param envProps
-	 *            PDP configuration environment properties (e.g. PARENT_DIR)
-	 * @return PDP instance
+	 * @param configuration
+	 *            PDP engine configuration
+	 *
 	 * @throws java.lang.IllegalArgumentException
-	 *             invalid PDP configuration
+	 *             if {@code configuration.getXacmlExpressionFactory() == null || configuration.getRootPolicyProvider() == null}
 	 * @throws java.io.IOException
-	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
+	 *             error closing {@code configuration.getRootPolicyProvider()} when static resolution is to be used
 	 */
-	public static BasePdpEngine getInstance(final Pdp pdpJaxbConf, final EnvironmentProperties envProps) throws IllegalArgumentException, IOException
+	public BasePdpEngine(final PdpEngineConfiguration configuration) throws IllegalArgumentException, IOException
 	{
-		/*
-		 * Initialize all parameters of ExpressionFactoryImpl: attribute datatype factories, functions, etc.
-		 */
-
-		final boolean enableXPath = pdpJaxbConf.isEnableXPath();
-
-		// Attribute datatypes
-		// Extensions
-		final List<String> datatypeExtensionIdentifiers = pdpJaxbConf.getAttributeDatatypes();
-		final Set<DatatypeFactory<?>> datatypeExtensions = HashCollections.newUpdatableSet(datatypeExtensionIdentifiers.size());
-		for (final String datatypeId : datatypeExtensionIdentifiers)
-		{
-			final DatatypeFactory<?> datatypeFactory = PdpExtensionLoader.getExtension(DatatypeFactory.class, datatypeId);
-			datatypeExtensions.add(datatypeFactory);
-		}
-
-		/*
-		 * Merge with standards if required, or use the standards as is if no extension
-		 */
-		final DatatypeFactoryRegistry datatypeFactoryRegistry;
-		if (pdpJaxbConf.isUseStandardDatatypes())
-		{
-			final DatatypeFactoryRegistry stdRegistry = StandardDatatypeFactoryRegistry.getRegistry(enableXPath);
-			if (datatypeExtensionIdentifiers.isEmpty())
-			{
-				datatypeFactoryRegistry = stdRegistry;
-			}
-			else
-			{
-				datatypeFactoryRegistry = new ImmutableDatatypeFactoryRegistry(HashCollections.newImmutableSet(stdRegistry.getExtensions(), datatypeExtensions));
-			}
-		}
-		else
-		{
-			datatypeFactoryRegistry = new ImmutableDatatypeFactoryRegistry(datatypeExtensions);
-		}
-
-		// Functions
-		// Extensions (only non-generic functions supported in configuration)
-		final List<String> nonGenericFunctionExtensionIdentifiers = pdpJaxbConf.getFunctions();
-		final Set<Function<?>> nonGenericFunctionExtensions = HashCollections.newUpdatableSet(nonGenericFunctionExtensionIdentifiers.size());
-		for (final String funcId : nonGenericFunctionExtensionIdentifiers)
-		{
-			final Function<?> function = PdpExtensionLoader.getExtension(Function.class, funcId);
-			if (!enableXPath && isXpathBased(function))
-			{
-				throw new IllegalArgumentException("XPath-based function not allowed (because configuration parameter 'enableXPath' = false): " + function);
-			}
-
-			nonGenericFunctionExtensions.add(function);
-		}
-
-		/*
-		 * Merge with standards if required, or use the standards as is if no extension
-		 */
-		final FunctionRegistry functionRegistry;
-		if (pdpJaxbConf.isUseStandardFunctions())
-		{
-			final FunctionRegistry stdRegistry = StandardFunction.getRegistry(enableXPath);
-			if (nonGenericFunctionExtensionIdentifiers.isEmpty())
-			{
-				functionRegistry = stdRegistry;
-			}
-			else
-			{
-				functionRegistry = new ImmutableFunctionRegistry(HashCollections.newImmutableSet(stdRegistry.getNonGenericFunctions(), nonGenericFunctionExtensions),
-						stdRegistry.getGenericFunctionFactories());
-			}
-		}
-		else
-		{
-			functionRegistry = new ImmutableFunctionRegistry(nonGenericFunctionExtensions, null);
-		}
-
-		// Combining Algorithms
-		// Extensions
-		final List<String> algExtensionIdentifiers = pdpJaxbConf.getCombiningAlgorithms();
-		final Set<CombiningAlg<?>> algExtensions = HashCollections.newUpdatableSet(algExtensionIdentifiers.size());
-		for (final String algId : algExtensionIdentifiers)
-		{
-			final CombiningAlg<?> alg = PdpExtensionLoader.getExtension(CombiningAlg.class, algId);
-			algExtensions.add(alg);
-		}
-
-		/*
-		 * Merge with standards if required, or use the standards as is if no extension
-		 */
-		final CombiningAlgRegistry combiningAlgRegistry;
-		if (pdpJaxbConf.isUseStandardCombiningAlgorithms())
-		{
-			if (algExtensions.isEmpty())
-			{
-				combiningAlgRegistry = StandardCombiningAlgorithm.REGISTRY;
-			}
-			else
-			{
-				combiningAlgRegistry = new ImmutableCombiningAlgRegistry(HashCollections.newImmutableSet(StandardCombiningAlgorithm.REGISTRY.getExtensions(), algExtensions));
-			}
-		}
-		else
-		{
-			combiningAlgRegistry = new ImmutableCombiningAlgRegistry(algExtensions);
-		}
-
-		// Decision combiner
-		final String resultFilterId = pdpJaxbConf.getResultFilter();
-		final DecisionResultFilter decisionResultFilter = resultFilterId == null ? null : PdpExtensionLoader.getExtension(DecisionResultFilter.class, resultFilterId);
-
-		// decision cache
-		final AbstractDecisionCache jaxbDecisionCache = pdpJaxbConf.getDecisionCache();
-
-		final BigInteger bigMaxVarRefDepth = pdpJaxbConf.getMaxVariableRefDepth();
-		final int maxVarRefDepth;
-		try
-		{
-			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : bigMaxVarRefDepth.intValueExact();
-		}
-		catch (final ArithmeticException e)
-		{
-			throw new IllegalArgumentException("Invalid maxVariableRefDepth: " + bigMaxVarRefDepth, e);
-		}
-
-		final BigInteger bigMaxPolicyRefDepth = pdpJaxbConf.getMaxPolicyRefDepth();
-		final int maxPolicyRefDepth;
-		try
-		{
-			maxPolicyRefDepth = bigMaxPolicyRefDepth == null ? -1 : bigMaxPolicyRefDepth.intValueExact();
-		}
-		catch (final ArithmeticException e)
-		{
-			throw new IllegalArgumentException("Invalid maxPolicyRefDepth: " + bigMaxPolicyRefDepth, e);
-		}
-
-		return new BasePdpEngine(datatypeFactoryRegistry, functionRegistry, pdpJaxbConf.getAttributeProviders(), maxVarRefDepth, enableXPath, combiningAlgRegistry,
-				pdpJaxbConf.getRootPolicyProvider(), pdpJaxbConf.getRefPolicyProvider(), maxPolicyRefDepth, pdpJaxbConf.getRequestFilter(), pdpJaxbConf.isStrictAttributeIssuerMatch(),
-				pdpJaxbConf.getStandardEnvAttributeSource(), decisionResultFilter, jaxbDecisionCache, pdpJaxbConf.getBadRequestStatusDetailLevel().intValue(), envProps);
-	}
-
-	/**
-	 * Create PDP instance
-	 * <p>
-	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file (including in PDP extensions'), we define a
-	 * property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then
-	 * ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation is not a file on the filesystem, then ${PARENT_DIR} is undefined.
-	 *
-	 * @param confFile
-	 *            PDP configuration file
-	 * @param modelHandler
-	 *            PDP configuration model handler
-	 * @return PDP instance
-	 * @throws java.io.IOException
-	 *             I/O error reading from {@code confFile}
-	 * @throws java.lang.IllegalArgumentException
-	 *             Invalid PDP configuration in {@code confFile}
-	 */
-	public static BasePdpEngine getInstance(final File confFile, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
-	{
-		if (confFile == null || !confFile.exists())
-		{
-			// no property replacement of PARENT_DIR
-			throw new IllegalArgumentException("Invalid configuration file location: No file exists at: " + confFile);
-		}
-
-		if (modelHandler == null)
-		{
-			throw NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION;
-		}
-
-		// configuration file exists
-		final Pdp pdpJaxbConf;
-		try
-		{
-			pdpJaxbConf = modelHandler.unmarshal(new StreamSource(confFile), Pdp.class);
-		}
-		catch (final JAXBException e)
-		{
-			throw new IllegalArgumentException("Invalid PDP configuration file", e);
-		}
-
-		// Set property PARENT_DIR in environment properties for future
-		// replacement in configuration strings by PDP extensions using file
-		// paths
-		final String propVal = confFile.getParentFile().toURI().toString();
-		LOGGER.debug("Property {} = {}", EnvironmentPropertyName.PARENT_DIR, propVal);
-		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propVal));
-		return getInstance(pdpJaxbConf, envProps);
-	}
-
-	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
-	 * /resources.html.
-	 * <p>
-	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file (including in PDP extensions'), we define a
-	 * property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then
-	 * ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation is not a file on the filesystem, then ${PARENT_DIR} is undefined.
-	 *
-	 * @param confLocation
-	 *            location of PDP configuration file
-	 * @param modelHandler
-	 *            PDP configuration model handler
-	 * @return PDP instance
-	 * @throws java.io.IOException
-	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
-	 *             Invalid PDP configuration at {@code confLocation}
-	 */
-	public static BasePdpEngine getInstance(final String confLocation, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
-	{
-		File confFile = null;
-		try
-		{
-			confFile = ResourceUtils.getFile(confLocation);
-		}
-		catch (final FileNotFoundException e)
-		{
-			throw new IllegalArgumentException("Invalid PDP configuration location: " + confLocation, e);
-		}
-
-		return getInstance(confFile, modelHandler);
-	}
-
-	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
-	 * /resources.html
-	 *
-	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
-	 *
-	 * @param confFile
-	 *            PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
-	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
-	 *            configuration, for example:
-	 *
-	 *            <pre>
-	 * {@literal
-	 * 		  <?xml version="1.0" encoding="UTF-8"?>
-	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	 * 	<xs:annotation>
-	 * 		<xs:documentation xml:lang="en">
-	 * 			Import here the schema(s) of any XSD-defined PDP extension that you want to use in a PDP configuration: attribute finders, policy finders, etc.
-	 * 			Indicate only the namespace here and use the XML catalog to resolve the schema location.
-	 * 		</xs:documentation>
-	 * 	</xs:annotation>
-	 * 	<!-- Do not specify schema locations here. Define the schema locations in the XML catalog instead (see file 'catalog.xml'). -->
-	 * 	<!--  Adding TestAttributeProvider extension for example -->
-	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
-	 * </xs:schema>
-	 * 			}
-	 * </pre>
-	 *
-	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
-	 * 
-	 *            <pre>
-	 *            {@literal
-	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
-	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
-	 *            }
-	 * </pre>
-	 * 
-	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
-	 *            types) in this case.
-	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
-	 * @return PDP instance
-	 * @throws java.io.IOException
-	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
-	 *             Invalid PDP configuration at {@code confLocation}
-	 */
-	public static BasePdpEngine getInstance(final File confFile, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
-	{
-		return getInstance(confFile, new PdpModelHandler(catalogLocation, extensionXsdLocation));
-	}
-
-	/**
-	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
-	 * /resources.html
-	 *
-	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
-	 *
-	 * @param confLocation
-	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
-	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
-	 *            configuration, for example:
-	 *
-	 *            <pre>
-	 * {@literal
-	 * 		  <?xml version="1.0" encoding="UTF-8"?>
-	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	 * 	<xs:annotation>
-	 * 		<xs:documentation xml:lang="en">
-	 * 			Import here the schema(s) of any XSD-defined PDP extension that you want to use in a PDP configuration: attribute finders, policy finders, etc.
-	 * 			Indicate only the namespace here and use the XML catalog to resolve the schema location.
-	 * 		</xs:documentation>
-	 * 	</xs:annotation>
-	 * 	<!-- Do not specify schema locations here. Define the schema locations in the XML catalog instead (see file 'catalog.xml'). -->
-	 * 	<!--  Adding TestAttributeProvider extension for example -->
-	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
-	 * </xs:schema>
-	 * 			}
-	 * </pre>
-	 *
-	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
-	 * 
-	 *            <pre>
-	 *            {@literal
-	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
-	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
-	 *            }
-	 * </pre>
-	 * 
-	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
-	 *            types) in this case.
-	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
-	 * @return PDP instance
-	 * @throws java.io.IOException
-	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
-	 *             Invalid PDP configuration at {@code confLocation}
-	 */
-	public static BasePdpEngine getInstance(final String confLocation, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
-	{
-		return getInstance(confLocation, new PdpModelHandler(catalogLocation, extensionXsdLocation));
-	}
-
-	/**
-	 * Create PDP instance.
-	 *
-	 * @param confLocation
-	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd). This location may be any resource string supported by Spring ResourceLoader. For example:
-	 *            classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd... More info: http://docs.spring.io/spring/docs/current/spring-framework- reference/html/resources.html
-	 * @return PDP instance
-	 * @throws java.io.IOException
-	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
-	 *             Invalid PDP configuration at {@code confLocation}
-	 */
-	public static BasePdpEngine getInstance(final String confLocation) throws IOException, IllegalArgumentException
-	{
-		return getInstance(confLocation, null, null);
+		this(configuration.getXacmlExpressionFactory(), configuration.getRootPolicyProvider(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.getStdEnvAttributeSource(),
+				configuration.getDecisionCache());
 	}
 
 	@Override
-	public PdpDecisionRequestBuilder<ImmutablePdpDecisionRequest> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
+	public Iterable<PrimaryPolicyMetadata> getApplicablePolicies()
+	{
+		return this.rootPolicyEvaluator.getStaticApplicablePolicies();
+	}
+
+	@Override
+	public DecisionRequestBuilder<?> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
 	{
 		return this.strictAttributeIssuerMatch ? new NonIssuedLikeIssuedAttributeHandlingRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes)
 				: new IssuedToNonIssuedAttributeCopyingRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes);
@@ -981,11 +951,11 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PdpDecisionResult evaluate(final ImmutablePdpDecisionRequest individualDecisionRequest)
+	public DecisionResult evaluate(final DecisionRequest individualDecisionRequest)
 	{
 		if (individualDecisionRequest == null)
 		{
-			throw ILLEGAL_ARGUMENT_EXCEPTION;
+			throw NULL_REQUEST_ARGUMENT_EXCEPTION;
 		}
 
 		/*
@@ -998,11 +968,12 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 
 	/** {@inheritDoc} */
 	@Override
-	public Map<ImmutablePdpDecisionRequest, ? extends PdpDecisionResult> evaluate(final List<ImmutablePdpDecisionRequest> individualDecisionRequests) throws IndeterminateEvaluationException
+	public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+			final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests) throws IndeterminateEvaluationException
 	{
 		if (individualDecisionRequests == null)
 		{
-			throw ILLEGAL_ARGUMENT_EXCEPTION;
+			throw NULL_REQUEST_ARGUMENT_EXCEPTION;
 		}
 
 		/*
@@ -1015,46 +986,6 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 
 	/** {@inheritDoc} */
 	@Override
-	public Response evaluate(final Request request, final Map<String, String> namespaceURIsByPrefix)
-	{
-		if (request == null)
-		{
-			throw ILLEGAL_ARGUMENT_EXCEPTION;
-		}
-
-		/*
-		 * No support for CombinedDecision = true if no decisionCombiner defined. (The use of the CombinedDecision attribute is specified in Multiple Decision Profile.)
-		 */
-		if (request.isCombinedDecision() && !this.individualReqEvaluator.supportsMultipleDecisionCombining())
-		{
-			/*
-			 * According to XACML core spec, 5.42, "If the PDP does not implement the relevant functionality in [Multiple Decision Profile], then the PDP must return an Indeterminate with a status
-			 * code of urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute set to "true".
-			 */
-			return UNSUPPORTED_COMBINED_DECISION_RESPONSE;
-		}
-
-		/*
-		 * The request parser may return multiple individual decision requests from a single Request, e.g. if the request parser implements the Multiple Decision profile or Hierarchical Resource
-		 * profile
-		 */
-		final List<? extends IndividualXACMLRequest> individualDecisionRequests;
-		try
-		{
-			individualDecisionRequests = reqFilter.filter(request, namespaceURIsByPrefix);
-		}
-		catch (final IndeterminateEvaluationException e)
-		{
-			LOGGER.info("Invalid or unsupported input XACML Request syntax", e);
-			return new Response(Collections.<Result> singletonList(new Result(DecisionType.INDETERMINATE, e.getStatus(badRequestStatusDetailLevel), null, null, null, null)));
-		}
-
-		final List<Result> results = individualReqEvaluator.evaluateToJAXB(individualDecisionRequests, this.pdpStdEnvAttributeIssuer.get());
-		return new Response(results);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public void close() throws IOException
 	{
 		rootPolicyEvaluator.close();
@@ -1062,23 +993,6 @@ public final class BasePdpEngine implements CloseablePDP<ImmutablePdpDecisionReq
 		{
 			decisionCache.close();
 		}
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Response evaluate(final Request request)
-	{
-		return evaluate(request, null);
-	}
-
-	/**
-	 * Get the PDP's root policy and policies referenced - directly or indirectly - from the root policy, if all are statically resolved
-	 *
-	 * @return the root and referenced policies; null if any of these policies is not statically resolved (once and for all)
-	 */
-	public StaticApplicablePolicyView getStaticApplicablePolicies()
-	{
-		return this.rootPolicyEvaluator.getStaticApplicablePolicies();
 	}
 
 }

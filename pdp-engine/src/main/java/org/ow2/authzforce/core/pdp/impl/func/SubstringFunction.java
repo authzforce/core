@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
@@ -37,6 +36,7 @@ import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +64,8 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types: expected: " + param0Type + ", " + StandardDatatypes.INTEGER_FACTORY.getDatatype() + ", "
-					+ StandardDatatypes.INTEGER_FACTORY.getDatatype() + "; actual: ";
+			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types: expected: " + param0Type + ", " + StandardDatatypes.INTEGER + ", " + StandardDatatypes.INTEGER
+					+ "; actual: ";
 			this.argsOutOfBoundsErrorMessage = "Function " + functionId + ": either beginIndex is out of bounds, or endIndex =/= -1 and out of bounds";
 			this.param0Type = param0Type;
 		}
@@ -89,7 +89,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 			catch (final ClassCastException e)
 			{
 				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType() + "," + rawArg2.getDataType(),
-						StatusHelper.STATUS_PROCESSING_ERROR, e);
+						XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
 
 			/**
@@ -106,7 +106,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 			 * @param endIndex
 			 *            the position in this string just before which to end the substring
 			 * @return the substring
-			 * @throws IndeterminateEvaluationException
+			 * @throws IndeterminateXacmlJaxbResult
 			 *             if {@code beginIndex} or {@code endIndex} are out of bounds
 			 */
 			final String substring;
@@ -118,7 +118,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 			}
 			catch (ArithmeticException | IndexOutOfBoundsException e)
 			{
-				throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, StatusHelper.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
 
 			return new StringValue(substring);
@@ -137,8 +137,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 	 */
 	SubstringFunction(final String functionId, final Datatype<AV> param0Type)
 	{
-		super(functionId, StandardDatatypes.STRING_FACTORY.getDatatype(), false, Arrays.asList(param0Type, StandardDatatypes.INTEGER_FACTORY.getDatatype(),
-				StandardDatatypes.INTEGER_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.STRING, false, Arrays.asList(param0Type, StandardDatatypes.INTEGER, StandardDatatypes.INTEGER));
 		this.param0Type = param0Type;
 	}
 
@@ -225,7 +224,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 					{
 						// constant empty string
 						LOGGER.warn("{} used with arg0 (beginIndex) = arg1 (endIndex) = 0 resulting in constant empty string. This is useless!", this.functionSignature);
-						return new ConstantResultFirstOrderFunctionCall<>(StringValue.EMPTY, StandardDatatypes.STRING_FACTORY.getDatatype());
+						return new ConstantResultFirstOrderFunctionCall<>(StringValue.EMPTY, StandardDatatypes.STRING);
 					}
 				}
 

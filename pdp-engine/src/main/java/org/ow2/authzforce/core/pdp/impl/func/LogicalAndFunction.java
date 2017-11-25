@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
@@ -34,6 +33,7 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
  * A class that implements the logical function "and".
@@ -61,7 +61,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
-				invalidArgTypeMsgPrefix = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
+				invalidArgTypeMsgPrefix = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN + ") of arg#";
 				indeterminateArgMsgPrefix = "Function " + functionSig.getName() + ": Indeterminate arg #";
 			}
 
@@ -76,7 +76,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 					final BooleanValue attrVal;
 					try
 					{
-						attrVal = Expressions.eval(arg, context, StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
+						attrVal = Expressions.eval(arg, context, StandardDatatypes.BOOLEAN);
 						if (!attrVal.getUnderlyingValue().booleanValue())
 						{
 							return BooleanValue.FALSE;
@@ -86,7 +86,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 					{
 						// keep the indeterminate error to throw later if there was not any FALSE in
 						// remaining args
-						indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
+						indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e.getStatusCode(), e);
 					}
 
 					argIndex++;
@@ -106,7 +106,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 						}
 						catch (final ClassCastException e)
 						{
-							throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
+							throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
 						}
 
 						if (!attrVal.getUnderlyingValue().booleanValue())
@@ -156,7 +156,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 
 	LogicalAndFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN, true, Arrays.asList(StandardDatatypes.BOOLEAN));
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
 

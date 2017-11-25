@@ -27,16 +27,16 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.api.value.DNSNameWithPortRangeValue;
 import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
 import org.ow2.authzforce.core.pdp.api.value.DateValue;
 import org.ow2.authzforce.core.pdp.api.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.api.value.DnsNameWithPortRangeValue;
 import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
-import org.ow2.authzforce.core.pdp.api.value.IPAddressValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.api.value.IpAddressValue;
+import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
@@ -105,12 +105,12 @@ public class StringFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_STRING_FROM_BOOLEAN, Arrays.asList(BooleanValue.TRUE), new StringValue("true") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:integer-from-string
-				new Object[] { NAME_INTEGER_FROM_STRING, Arrays.asList(new StringValue("5")), new IntegerValue("5") },
-				new Object[] { NAME_INTEGER_FROM_STRING, Arrays.asList(new StringValue("-5")), new IntegerValue("-5") },
+				new Object[] { NAME_INTEGER_FROM_STRING, Arrays.asList(new StringValue("5")), IntegerValue.valueOf(5) },
+				new Object[] { NAME_INTEGER_FROM_STRING, Arrays.asList(new StringValue("-5")), IntegerValue.valueOf(-5) },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-from-integer
-				new Object[] { NAME_STRING_FROM_INTEGER, Arrays.asList(new IntegerValue("5")), new StringValue("5") },
-				new Object[] { NAME_STRING_FROM_INTEGER, Arrays.asList(new IntegerValue("-5")), new StringValue("-5") },
+				new Object[] { NAME_STRING_FROM_INTEGER, Arrays.asList(IntegerValue.valueOf(5)), new StringValue("5") },
+				new Object[] { NAME_STRING_FROM_INTEGER, Arrays.asList(IntegerValue.valueOf(-5)), new StringValue("-5") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:double-from-string
 				new Object[] { NAME_DOUBLE_FROM_STRING, Arrays.asList(new StringValue("5.2")), new DoubleValue("5.2") },
@@ -139,10 +139,10 @@ public class StringFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_STRING_FROM_DATETIME, Arrays.asList(new DateTimeValue("2002-09-24T09:30:15")), new StringValue("2002-09-24T09:30:15") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:anyURI-from-string
-				new Object[] { NAME_ANYURI_FROM_STRING, Arrays.asList(new StringValue("http://www.example.com")), new AnyURIValue("http://www.example.com") },
+				new Object[] { NAME_ANYURI_FROM_STRING, Arrays.asList(new StringValue("http://www.example.com")), new AnyUriValue("http://www.example.com") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-from-anyURI
-				new Object[] { NAME_STRING_FROM_ANYURI, Arrays.asList(new AnyURIValue("http://www.example.com")), new StringValue("http://www.example.com") },
+				new Object[] { NAME_STRING_FROM_ANYURI, Arrays.asList(new AnyUriValue("http://www.example.com")), new StringValue("http://www.example.com") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:dayTimeDuration-from-string
 				new Object[] { NAME_DAYTIMEDURATION_FROM_STRING, Arrays.asList(new StringValue("P1DT2H")), new DayTimeDurationValue("P1DT2H") },
@@ -163,77 +163,77 @@ public class StringFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_STRING_FROM_X500NAME, Arrays.asList(new X500NameValue("cn=John Smith, o=Medico Corp, c=US")), new StringValue("cn=John Smith, o=Medico Corp, c=US") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:rfc822Name-from-string
-				new Object[] { NAME_RFC822NAME_FROM_STRING, Arrays.asList(new StringValue("Anderson@sun.com")), new RFC822NameValue("Anderson@sun.com") },
+				new Object[] { NAME_RFC822NAME_FROM_STRING, Arrays.asList(new StringValue("Anderson@sun.com")), new Rfc822NameValue("Anderson@sun.com") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-from-rfc822Name
-				new Object[] { NAME_STRING_FROM_RFC822NAME, Arrays.asList(new RFC822NameValue("Anderson@sun.com")), new StringValue("Anderson@sun.com") },
+				new Object[] { NAME_STRING_FROM_RFC822NAME, Arrays.asList(new Rfc822NameValue("Anderson@sun.com")), new StringValue("Anderson@sun.com") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:ipAddress-from-string
-				new Object[] { NAME_IPADDRESS_FROM_STRING, Arrays.asList(new StringValue("192.168.1.10/255.255.255.0:8080")), new IPAddressValue("192.168.1.10/255.255.255.0:8080") },
+				new Object[] { NAME_IPADDRESS_FROM_STRING, Arrays.asList(new StringValue("192.168.1.10/255.255.255.0:8080")), new IpAddressValue("192.168.1.10/255.255.255.0:8080") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-from-ipAddress
-				new Object[] { NAME_STRING_FROM_IPADDRESS, Arrays.asList(new IPAddressValue("192.168.1.10/255.255.255.0:8080")), new StringValue("192.168.1.10/255.255.255.0:8080") },
+				new Object[] { NAME_STRING_FROM_IPADDRESS, Arrays.asList(new IpAddressValue("192.168.1.10/255.255.255.0:8080")), new StringValue("192.168.1.10/255.255.255.0:8080") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:dnsName-from-string
-				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com")), new DNSNameWithPortRangeValue("example.com") },
+				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com")), new DnsNameWithPortRangeValue("example.com") },
 				// with a wildcard in the left-most
-				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("*.example.com")), new DNSNameWithPortRangeValue("*.example.com") },
+				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("*.example.com")), new DnsNameWithPortRangeValue("*.example.com") },
 				// wildcard at the end or in the middle (WRONG)
 				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.*")), null },
 				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("www.*.com")), null },
 				// with ':' but missing port/port range
 				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:")), null },
 				// with port number
-				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:123")), new DNSNameWithPortRangeValue("example.com:123") },
+				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:123")), new DnsNameWithPortRangeValue("example.com:123") },
 				// with bounded port range
-				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:123-456")), new DNSNameWithPortRangeValue("example.com:123-456") },
+				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:123-456")), new DnsNameWithPortRangeValue("example.com:123-456") },
 				// with unbounded port range
-				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:123-")), new DNSNameWithPortRangeValue("example.com:123-") },
-				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:-456")), new DNSNameWithPortRangeValue("example.com:-456") },
+				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:123-")), new DnsNameWithPortRangeValue("example.com:123-") },
+				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:-456")), new DnsNameWithPortRangeValue("example.com:-456") },
 				// with invalid port ranges
 				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:-456-")), null },
 				new Object[] { NAME_DNSNAME_FROM_STRING, Arrays.asList(new StringValue("example.com:123--456")), null },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-from-dnsName
-				new Object[] { NAME_STRING_FROM_DNSNAME, Arrays.asList(new DNSNameWithPortRangeValue("example.com")), new StringValue("example.com") },
+				new Object[] { NAME_STRING_FROM_DNSNAME, Arrays.asList(new DnsNameWithPortRangeValue("example.com")), new StringValue("example.com") },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-starts-with
 				new Object[] { NAME_STRING_STARTS_WITH, Arrays.asList(new StringValue("First"), new StringValue("First test")), BooleanValue.TRUE },
 				new Object[] { NAME_STRING_STARTS_WITH, Arrays.asList(new StringValue("test"), new StringValue("First test")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:anyURI-starts-with
-				new Object[] { NAME_ANYURI_STARTS_WITH, Arrays.asList(new StringValue("http"), new AnyURIValue("http://www.example.com")), BooleanValue.TRUE }, new Object[] { NAME_ANYURI_STARTS_WITH,
-						Arrays.asList(new StringValue(".com"), new AnyURIValue("http://www.example.com")), BooleanValue.FALSE },
+				new Object[] { NAME_ANYURI_STARTS_WITH, Arrays.asList(new StringValue("http"), new AnyUriValue("http://www.example.com")), BooleanValue.TRUE }, new Object[] { NAME_ANYURI_STARTS_WITH,
+						Arrays.asList(new StringValue(".com"), new AnyUriValue("http://www.example.com")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-ends-with
 				new Object[] { NAME_STRING_ENDS_WITH, Arrays.asList(new StringValue("First"), new StringValue("First test")), BooleanValue.FALSE },
 				new Object[] { NAME_STRING_ENDS_WITH, Arrays.asList(new StringValue("test"), new StringValue("First test")), BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:anyURI-ends-with
-				new Object[] { NAME_ANYURI_ENDS_WITH, Arrays.asList(new StringValue("http"), new AnyURIValue("http://www.example.com")), BooleanValue.FALSE }, new Object[] { NAME_ANYURI_ENDS_WITH,
-						Arrays.asList(new StringValue(".com"), new AnyURIValue("http://www.example.com")), BooleanValue.TRUE },
+				new Object[] { NAME_ANYURI_ENDS_WITH, Arrays.asList(new StringValue("http"), new AnyUriValue("http://www.example.com")), BooleanValue.FALSE }, new Object[] { NAME_ANYURI_ENDS_WITH,
+						Arrays.asList(new StringValue(".com"), new AnyUriValue("http://www.example.com")), BooleanValue.TRUE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-contains
 				new Object[] { NAME_STRING_CONTAINS, Arrays.asList(new StringValue("test"), new StringValue("First test")), BooleanValue.TRUE },//
 				new Object[] { NAME_STRING_CONTAINS, Arrays.asList(new StringValue("Error"), new StringValue("First test")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:anyURI-contains
-				new Object[] { NAME_ANYURI_CONTAINS, Arrays.asList(new StringValue("example.com"), new AnyURIValue("http://www.example.com")), BooleanValue.TRUE }, new Object[] {
-						NAME_ANYURI_CONTAINS, Arrays.asList(new StringValue("acme.com"), new AnyURIValue("http://www.example.com")), BooleanValue.FALSE },
+				new Object[] { NAME_ANYURI_CONTAINS, Arrays.asList(new StringValue("example.com"), new AnyUriValue("http://www.example.com")), BooleanValue.TRUE }, new Object[] {
+						NAME_ANYURI_CONTAINS, Arrays.asList(new StringValue("acme.com"), new AnyUriValue("http://www.example.com")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:3.0:function:string-substring
-				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), new IntegerValue("0"), new IntegerValue("5")), new StringValue("First") },//
-				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), new IntegerValue("6"), new IntegerValue("-1")), new StringValue("test") },//
-				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), new IntegerValue("6"), new IntegerValue("106")), null },//
-				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), new IntegerValue("106"), new IntegerValue("-1")), null },//
-				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), new IntegerValue("-1"), new IntegerValue("-1")), null },
+				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), IntegerValue.valueOf(0), IntegerValue.valueOf(5)), new StringValue("First") },//
+				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), IntegerValue.valueOf(6), IntegerValue.valueOf(-1)), new StringValue("test") },//
+				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), IntegerValue.valueOf(6), IntegerValue.valueOf(106)), null },//
+				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), IntegerValue.valueOf(106), IntegerValue.valueOf(-1)), null },//
+				new Object[] { NAME_STRING_SUBSTRING, Arrays.asList(new StringValue("First test"), IntegerValue.valueOf(-1), IntegerValue.valueOf(-1)), null },
 
 				// urn:oasis:names:tc:xacml:3.0:function:anyURI-substring
-				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIValue("http://www.example.com"), new IntegerValue("0"), new IntegerValue("7")), new StringValue("http://") },//
-				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIValue("http://www.example.com"), new IntegerValue("11"), new IntegerValue("-1")), new StringValue("example.com") },//
-				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIValue("http://www.example.com"), new IntegerValue("11"), new IntegerValue("106")), null },//
-				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIValue("http://www.example.com"), new IntegerValue("-1"), new IntegerValue("7")), null },//
-				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyURIValue("http://www.example.com"), new IntegerValue("-1"), new IntegerValue("-1")), null });
+				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyUriValue("http://www.example.com"), IntegerValue.valueOf(0), IntegerValue.valueOf(7)), new StringValue("http://") },//
+				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyUriValue("http://www.example.com"), IntegerValue.valueOf(11), IntegerValue.valueOf(-1)), new StringValue("example.com") },//
+				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyUriValue("http://www.example.com"), IntegerValue.valueOf(11), IntegerValue.valueOf(106)), null },//
+				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyUriValue("http://www.example.com"), IntegerValue.valueOf(-1), IntegerValue.valueOf(7)), null },//
+				new Object[] { NAME_ANYURI_SUBSTRING, Arrays.asList(new AnyUriValue("http://www.example.com"), IntegerValue.valueOf(-1), IntegerValue.valueOf(-1)), null });
 	}
 
 }

@@ -8,7 +8,7 @@
    </parent>
    <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
    <name>${project.groupId}:${project.artifactId}</name>
-   <description>AuthZForce Community Edition - XACML-compliant Core PDP Test Utilities</description>
+   <description>AuthzForce - XACML-compliant Core PDP Test Utilities</description>
    <url>${project.url}</url>
    <scm>
       <!-- Used by Jenkins - Maven release plugin -->
@@ -39,6 +39,7 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
+         <scope>test</scope>
       </dependency>
       <!-- Test dependencies -->
       <dependency>
@@ -85,8 +86,10 @@
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-maven</artifactId>
             <configuration>
+               <cveValidForHours>24</cveValidForHours>
                <!-- The plugin has numerous issues with version matching, which triggers false positives so we need a "suppresion" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
+               <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
             </configuration>
             <executions>
                <execution>
@@ -253,6 +256,13 @@
                <systemPropertyVariables>
                   <javax.xml.accessExternalSchema>all</javax.xml.accessExternalSchema>
                </systemPropertyVariables>
+               <properties>
+                  <property>
+                     <name>surefire.testng.verbose</name>
+                     <!-- verbosity level from 0 to 10 (10 is the most detailed), or -1 for debug More info: http://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html -->
+                     <value>2</value>
+                  </property>
+               </properties>
                <includes>
                   <include>**/MainTest.java</include>
                </includes>

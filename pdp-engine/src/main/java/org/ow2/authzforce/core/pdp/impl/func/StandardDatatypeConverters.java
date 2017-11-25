@@ -38,7 +38,8 @@ final class StandardDatatypeConverters
 		@Override
 		public final IntegerValue convert(final DoubleValue arg)
 		{
-			return new IntegerValue(arg.longValue());
+
+			return IntegerValue.valueOf(arg.longValue());
 		}
 
 	};
@@ -53,7 +54,7 @@ final class StandardDatatypeConverters
 		{
 			try
 			{
-				return new DoubleValue(arg.doubleValue());
+				return new DoubleValue(Double.valueOf(arg.doubleValue()));
 			}
 			catch (final IllegalArgumentException e)
 			{
@@ -64,9 +65,9 @@ final class StandardDatatypeConverters
 
 	static class FromStringConverter<RETURN extends SimpleValue<?>> implements TypeConverter<RETURN, StringValue>
 	{
-		private final SimpleValue.StringContentOnlyFactory<RETURN> returnTypeFactory;
+		private final SimpleValue.StringParseableValueFactory<RETURN> returnTypeFactory;
 
-		FromStringConverter(final SimpleValue.StringContentOnlyFactory<RETURN> returnTypeFactory)
+		FromStringConverter(final SimpleValue.StringParseableValueFactory<RETURN> returnTypeFactory)
 		{
 			this.returnTypeFactory = returnTypeFactory;
 		}

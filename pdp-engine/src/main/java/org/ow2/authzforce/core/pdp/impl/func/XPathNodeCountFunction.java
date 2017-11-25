@@ -24,7 +24,6 @@ import net.sf.saxon.s9api.XdmValue;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
@@ -37,6 +36,7 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.XPathValue;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
  * A class that implements the optional XACML 3.0 xpath-node-count function.
@@ -64,7 +64,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
-				invalidArgTypeMsg = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.XPATH_FACTORY.getDatatype() + ") of arg#0: ";
+				invalidArgTypeMsg = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.XPATH + ") of arg#0: ";
 				indeterminateArgMsg = "Function " + functionSig.getName() + ": Indeterminate arg #0";
 				indeterminateArgEvalMsg = "Function " + functionSig.getName() + ": Error evaluating xpathExpression arg #0";
 			}
@@ -83,7 +83,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 					}
 					catch (final ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException(invalidArgTypeMsg + remainingArgs[0].getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException(invalidArgTypeMsg + remainingArgs[0].getDataType(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
 					}
 				}
 				else
@@ -91,12 +91,12 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 					final Expression<?> arg = checkedArgExpressions.get(0);
 					try
 					{
-						xpathVal = Expressions.eval(arg, context, StandardDatatypes.XPATH_FACTORY.getDatatype());
+						xpathVal = Expressions.eval(arg, context, StandardDatatypes.XPATH);
 
 					}
 					catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(indeterminateArgMsg, StatusHelper.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException(indeterminateArgMsg, e.getStatusCode(), e);
 					}
 				}
 
@@ -107,10 +107,10 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 				}
 				catch (final IndeterminateEvaluationException e)
 				{
-					throw new IndeterminateEvaluationException(indeterminateArgEvalMsg, StatusHelper.STATUS_PROCESSING_ERROR, e);
+					throw new IndeterminateEvaluationException(indeterminateArgEvalMsg, e.getStatusCode(), e);
 				}
 
-				return new IntegerValue(xdmResult.size());
+				return IntegerValue.valueOf(xdmResult.size());
 			}
 		}
 
@@ -131,7 +131,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 
 	XPathNodeCountFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.INTEGER_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.XPATH_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.INTEGER, true, Arrays.asList(StandardDatatypes.XPATH));
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
 

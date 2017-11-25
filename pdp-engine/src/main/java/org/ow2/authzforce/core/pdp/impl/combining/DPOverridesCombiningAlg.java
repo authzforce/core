@@ -26,11 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBElement;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
@@ -44,6 +41,7 @@ import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.impl.combining.CombiningAlgEvaluators.RulesWithSameEffectEvaluator;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.slf4j.Logger;
@@ -69,7 +67,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		 */
 		private static final class DecisionResultCollector
 		{
-			private final UpdatableList<JAXBElement<IdReferenceType>> combinedApplicablePolicyIdList;
+			private final UpdatableList<PrimaryPolicyMetadata> combinedApplicablePolicyIdList;
 			/*
 			 * Replaces atLeastOneErrorDP from XACML spec. atLeastOneErrorDP == true <=> firstIndeterminateDPResult != null
 			 */
@@ -99,15 +97,14 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 				 * Since we may combine multiple elements before returning a final decision, we have to collect them in a list; and since we don't know yet whether the final decision is NotApplicable,
 				 * we cannot add collected applicable policies straight to outApplicablePolicyIdList. So we create a temporary list until we know the final decision applies.
 				 */
-				combinedApplicablePolicyIdList = returnApplicablePolicyIdList ? UpdatableCollections.<JAXBElement<IdReferenceType>> newUpdatableList() : UpdatableCollections
-						.<JAXBElement<IdReferenceType>> emptyList();
+				combinedApplicablePolicyIdList = returnApplicablePolicyIdList ? UpdatableCollections.<PrimaryPolicyMetadata> newUpdatableList() : UpdatableCollections.<PrimaryPolicyMetadata> emptyList();
 			}
 
 			/**
 			 * Return new result's applicable policies combined (added last) with the ones previously found, or only the ones combined so far if result == null
 			 * 
 			 */
-			List<JAXBElement<IdReferenceType>> getApplicablePolicies(final DecisionResult result)
+			List<PrimaryPolicyMetadata> getApplicablePolicies(final DecisionResult result)
 			{
 				if (result != null)
 				{
@@ -337,7 +334,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 			final DecisionResultCollector resultCollector = new DecisionResultCollector(outApplicablePolicyIdList != null);
@@ -383,7 +380,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 				return firstIndeterminateDP;
 			}
 
-			final List<JAXBElement<IdReferenceType>> combinedApplicablePolicies = resultCollector.getApplicablePolicies(null);
+			final List<PrimaryPolicyMetadata> combinedApplicablePolicies = resultCollector.getApplicablePolicies(null);
 			final PepActions combinedPepActionsOfNotOverridingDP = resultCollector.getPepActions();
 			final ExtendedDecision firstIndeterminateWithOverridingEffect = resultCollector.getFirstIndeterminateWithOverridingEffect();
 			final ExtendedDecision firstIndeterminateWithOverriddenEffect = resultCollector.getFirstIndeterminateWithOverriddenEffect();
@@ -405,7 +402,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 				}
 
 				return ExtendedDecisions.newIndeterminate(firstIndeterminateWithOverriddenEffect != null || combinedPepActionsOfNotOverridingDP != null ? DecisionType.INDETERMINATE
-						: decisionForOverridingEffect.getDecision(), firstIndeterminateWithOverridingEffect.getStatus());
+						: decisionForOverridingEffect.getDecision(), firstIndeterminateWithOverridingEffect.getCauseForIndeterminate().get());
 			}
 
 			/*
@@ -514,7 +511,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 					 * => IndeterminateDP in both cases
 					 * </p>
 					 */
-					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, indeterminateFromRulesWithOverridingEffect.getStatus());
+					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, indeterminateFromRulesWithOverridingEffect.getCauseForIndeterminate().get());
 				}
 
 				// Else decision is NotApplicable, do nothing, continue
@@ -591,8 +588,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> updatableApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions, final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
 			final ExtendedDecision extDecisionFromRulesWithOverridingEffect = super.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
 			switch (extDecisionFromRulesWithOverridingEffect.getDecision())

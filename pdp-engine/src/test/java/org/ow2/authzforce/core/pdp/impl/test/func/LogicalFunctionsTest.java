@@ -28,6 +28,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.xacml.identifiers.XacmlDatatypeId;
 
 @RunWith(Parameterized.class)
 public class LogicalFunctionsTest extends StandardFunctionTest
@@ -43,7 +44,7 @@ public class LogicalFunctionsTest extends StandardFunctionTest
 	private static final String NAME_N_OF = "urn:oasis:names:tc:xacml:1.0:function:n-of";
 	private static final String NAME_NOT = "urn:oasis:names:tc:xacml:1.0:function:not";
 
-	private static final NullValue NULL_BOOLEAN_VALUE = new NullValue(BooleanValue.TYPE_URI);
+	private static final NullValue NULL_BOOLEAN_VALUE = new NullValue(XacmlDatatypeId.BOOLEAN.value());
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() throws Exception
@@ -78,29 +79,29 @@ public class LogicalFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_AND, Arrays.asList(BooleanValue.TRUE, NULL_BOOLEAN_VALUE, BooleanValue.TRUE), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:n-of
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("0")), BooleanValue.TRUE },//
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("0"), BooleanValue.FALSE, BooleanValue.FALSE, BooleanValue.FALSE), BooleanValue.TRUE },//
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("2"), BooleanValue.TRUE, BooleanValue.FALSE, BooleanValue.FALSE), BooleanValue.FALSE },
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("2"), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.FALSE), BooleanValue.TRUE },
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("2"), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.TRUE), BooleanValue.TRUE },
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("4"), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.TRUE), null },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(0)), BooleanValue.TRUE },//
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(0), BooleanValue.FALSE, BooleanValue.FALSE, BooleanValue.FALSE), BooleanValue.TRUE },//
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, BooleanValue.FALSE, BooleanValue.FALSE), BooleanValue.FALSE },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.FALSE), BooleanValue.TRUE },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.TRUE), BooleanValue.TRUE },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(4), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.TRUE), null },
 
 				/*
 				 * This is not explicit in the XACML spec, but we expect the function to return an error if first argument is < 0.
 				 */
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("-1"), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.TRUE), null },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(-1), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.TRUE), null },
 
 				// with indeterminate argument in first position
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("2"), NULL_BOOLEAN_VALUE, BooleanValue.TRUE, BooleanValue.TRUE), BooleanValue.TRUE },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), NULL_BOOLEAN_VALUE, BooleanValue.TRUE, BooleanValue.TRUE), BooleanValue.TRUE },
 				// with indeterminate argument after a TRUE
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("2"), BooleanValue.TRUE, NULL_BOOLEAN_VALUE, BooleanValue.TRUE), BooleanValue.TRUE },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, NULL_BOOLEAN_VALUE, BooleanValue.TRUE), BooleanValue.TRUE },
 				// with indeterminate argument after a FALSE with a TRUE
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("1"), BooleanValue.FALSE, NULL_BOOLEAN_VALUE, BooleanValue.TRUE), BooleanValue.TRUE },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(1), BooleanValue.FALSE, NULL_BOOLEAN_VALUE, BooleanValue.TRUE), BooleanValue.TRUE },
 				// 2 TRUES required: 1 indeterminate and all other FALSE args -> FALSE (2 TRUES not
 				// possible)
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("2"), BooleanValue.FALSE, NULL_BOOLEAN_VALUE, BooleanValue.FALSE), BooleanValue.FALSE },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.FALSE, NULL_BOOLEAN_VALUE, BooleanValue.FALSE), BooleanValue.FALSE },
 				// 2 TRUEs required: 1 TRUE and one indeterminate args -> indeterminate
-				new Object[] { NAME_N_OF, Arrays.asList(new IntegerValue("2"), BooleanValue.TRUE, NULL_BOOLEAN_VALUE, BooleanValue.FALSE), null },
+				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, NULL_BOOLEAN_VALUE, BooleanValue.FALSE), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:not
 				new Object[] { NAME_NOT, Arrays.asList(BooleanValue.TRUE), BooleanValue.FALSE }, new Object[] { NAME_NOT, Arrays.asList(BooleanValue.FALSE), BooleanValue.TRUE });

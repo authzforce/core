@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="AuthzForce.Core.PDP.JSON.Profile.Conformance" verbose="3">
+   <parameter name="org.ow2.authzforce.domains.param1" value="val1" />
+
+   <test name="XacmlJsonProfileMandatory" preserve-order="true" enabled="true">
+      <classes>
+         <class name="org.ow2.authzforce.core.pdp.io.xacml.json.test.JsonProfileConformanceV3MandatoryTest">
+         </class>
+      </classes>
+   </test>
+</suite> 
+

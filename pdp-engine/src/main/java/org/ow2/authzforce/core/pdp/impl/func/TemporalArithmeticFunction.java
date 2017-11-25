@@ -22,7 +22,6 @@ import java.util.Deque;
 import java.util.List;
 
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
@@ -32,6 +31,7 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BaseTimeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DurationValue;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
@@ -83,7 +83,7 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 			}
 			catch (final ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), StatusHelper.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
 
 			return op.eval(arg0, arg1);

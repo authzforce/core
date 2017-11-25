@@ -29,7 +29,6 @@ import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
@@ -60,7 +59,7 @@ final class StandardHigherOrderBagFunctions
 
 		private BooleanHigherOrderBagFunction(final String functionId)
 		{
-			super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
+			super(functionId, StandardDatatypes.BOOLEAN, StandardDatatypes.BOOLEAN);
 			this.subFunctionCallErrorMessagePrefix = "Function " + functionId + ": Error evaluating sub-function with arguments (evaluated to): ";
 		}
 	}
@@ -121,7 +120,7 @@ final class StandardHigherOrderBagFunctions
 				}
 				catch (final IndeterminateEvaluationException e)
 				{
-					throw new IndeterminateEvaluationException(errorEvalArg1Message, StatusHelper.STATUS_PROCESSING_ERROR);
+					throw new IndeterminateEvaluationException(errorEvalArg1Message, e.getStatusCode());
 				}
 
 				/*
@@ -140,7 +139,7 @@ final class StandardHigherOrderBagFunctions
 				}
 				catch (final IndeterminateEvaluationException e)
 				{
-					throw new IndeterminateEvaluationException(errorEvalArg2Message, StatusHelper.STATUS_PROCESSING_ERROR);
+					throw new IndeterminateEvaluationException(errorEvalArg2Message, e.getStatusCode());
 				}
 
 				if (bag1.isEmpty())
@@ -154,7 +153,7 @@ final class StandardHigherOrderBagFunctions
 			@Override
 			public final Datatype<BooleanValue> getReturnType()
 			{
-				return StandardDatatypes.BOOLEAN_FACTORY.getDatatype();
+				return StandardDatatypes.BOOLEAN;
 			}
 
 		}
@@ -379,7 +378,7 @@ final class StandardHigherOrderBagFunctions
 			private OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue> getInstance(final FirstOrderFunction<BooleanValue> subFunc, final List<Expression<?>> primitiveInputs,
 					final Expression<? extends Bag<?>> lastInputBag)
 			{
-				return new OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue>(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), subFunc, primitiveInputs, lastInputBag)
+				return new OneBagOnlyHigherOrderFunction.Call<BooleanValue, BooleanValue>(functionId, StandardDatatypes.BOOLEAN, subFunc, primitiveInputs, lastInputBag)
 				{
 
 					@Override
@@ -415,7 +414,7 @@ final class StandardHigherOrderBagFunctions
 
 		protected BooleanOneBagOnlyFunction(final String functionId, final CallFactory functionCallFactory)
 		{
-			super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
+			super(functionId, StandardDatatypes.BOOLEAN, StandardDatatypes.BOOLEAN);
 			this.funcCallFactory = functionCallFactory;
 		}
 
@@ -689,7 +688,7 @@ final class StandardHigherOrderBagFunctions
 			@Override
 			public Datatype<BooleanValue> getReturnType()
 			{
-				return StandardDatatypes.BOOLEAN_FACTORY.getDatatype();
+				return StandardDatatypes.BOOLEAN;
 			}
 
 		}
@@ -800,7 +799,7 @@ final class StandardHigherOrderBagFunctions
 					}
 					catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), StatusHelper.STATUS_PROCESSING_ERROR);
+						throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e.getStatusCode());
 					}
 
 					if (subResult.getUnderlyingValue().booleanValue())
@@ -886,7 +885,7 @@ final class StandardHigherOrderBagFunctions
 					}
 					catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), StatusHelper.STATUS_PROCESSING_ERROR);
+						throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e.getStatusCode());
 					}
 
 					if (!subResult.getUnderlyingValue().booleanValue())

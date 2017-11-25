@@ -45,11 +45,11 @@ public class NumericConversionFunctionsTest extends StandardFunctionTest
 	{
 		return Arrays.asList(
 		// urn:oasis:names:tc:xacml:1.0:function:double-to-integer
-				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleValue("5.25")), new IntegerValue("5") },//
-				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleValue("5.75")), new IntegerValue("5") },
+				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleValue("5.25")), IntegerValue.valueOf(5) },//
+				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleValue("5.75")), IntegerValue.valueOf(5) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-to-double
-				new Object[] { NAME_INTEGER_TO_DOUBLE, Arrays.asList(new IntegerValue("5")), new DoubleValue("5.") });
+				new Object[] { NAME_INTEGER_TO_DOUBLE, Arrays.asList(IntegerValue.valueOf(5)), new DoubleValue("5.") });
 	}
 
 }
