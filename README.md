@@ -109,7 +109,7 @@ To get started using a PDP to evaluate XACML requests, instantiate a new PDP eng
 
 As a result of `getInstance(...)`, you get an instance of `PdpEngineConfiguration`.
 
-##### Evaluating Requests in AuthzForce native model (most efficient)
+##### Evaluating Requests in AuthzForce native API (most efficient)
 You can pass the `PdpEngineConfiguration` to `BasePdpEngine(PdpEngineConfiguration)` constructor in order to instantiate a PDP engine. With this, you can evaluate a decision request (more precisely an equivalent of a Individual Decision Request as defined by the XACML Multiple Decision Profile) in AuthzForce's native model by calling `evaluate(DecisionRequest)` or (multiple decision requests with `evaluate(List)`). In order to build a `DecisionRequest`, you may use the request builder returned by `BasePdpEngine#newRequestBuilder(...)`.  Please look at the Javadoc for more information.
 
 ##### Evaluating Requests in XACML/XML format
@@ -117,6 +117,10 @@ You can pass the `PdpEngineConfiguration` to `PdpEngineAdapters#newXacmlJaxbInou
 
 ##### Evaluating Requests in XACML/JSON format
 To instantiate a PDP supporting XACML 3.0/JSON (JSON Profile) format, you may reuse the test code from [PdpEngineXacmlJsonAdapters](pdp-io-xacml-json/src/test/java/org/ow2/authzforce/core/pdp/io/xacml/json/test/PdpEngineXacmlJsonAdapters.java).
+You will need an extra dependency as well, available from Maven Central:
+* groupId: `org.ow2.authzforce`;
+* artifactId: `authzforce-ce-core-pdp-io-xacml-json`;
+* packaging: `jar`.
 
 ##### Logging
 Our PDP implementation uses SLF4J for logging so you can use any SLF4J implementation to manage logging. The CLI executable includes logback implementation, so you can use logback configuration file, e.g. [logback.xml](pdp-testutils/src/test/resources/logback.xml), for configuring loggers, appenders, etc.
