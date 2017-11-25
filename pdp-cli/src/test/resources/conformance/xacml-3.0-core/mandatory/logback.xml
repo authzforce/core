@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- For assistance related to logback-translator or configuration -->
+<!-- files in general, please contact the logback user mailing list -->
+<!-- at http://www.qos.ch/mailman/listinfo/logback-user -->
+<!-- -->
+<!-- For professional support please see -->
+<!-- http://www.qos.ch/shop/products/professionalSupport -->
+<!-- -->
+<!-- More information: http://logback.qos.ch/faq.html#sharedConfiguration -->
+<configuration>
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+         <!-- Pattern mitigating CRLF injection -->
+<!--          <pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %replace(%m){'\r?\n','<NEWLINE>'}%n</pattern> -->
+		</encoder>
+	</appender>
+
+	<logger name="org.ow2.authzforce" additivity="false" level="ERROR">
+		<appender-ref ref="stdout" />
+	</logger>
+<!-- HTTP/JAX-RS/SOAP request/response debugging -->
+   <!-- For logging request/response to/from webapp, only logger "org.apache.cxf" 
+      in level INFO is required, and you must add CXF org.apache.cxf.interceptor.LoggingInInterceptor/LoggingOutInterceptor 
+      to JAX-RS server's in/outInterceptors. When running unit test with embedded 
+      Tomcat, the server's logback.xml overrides this, so you need to modify the 
+      server's logback.xml to get the proper CXF client logging. -->
+   <logger name="org.apache.cxf" additivity="false" level="WARN"> <appender-ref 
+      ref="stdout" /> </logger> 
+   <!-- <logger name="org.apache.http" additivity="false" level="DEBUG"> <appender-ref 
+      ref="error" /> </logger> <logger name="org.apache.http.wire" level="ERROR"> 
+      <appender-ref ref="error" /> </logger> -->
+	<root level="ERROR">
+		<appender-ref ref="stdout" />
+	</root>
+</configuration>

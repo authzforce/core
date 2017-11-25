@@ -1,12 +1,14 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/dee3e6f5cdd240fc80dfdcc1ee419ac8)](https://www.codacy.com/app/coder103/authzforce-ce-core?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=authzforce/core&amp;utm_campaign=Badge_Grade)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/389/badge)](https://bestpractices.coreinfrastructure.org/projects/389)
 
-# AuthZForce PDP Core (Community Edition) 
+# AuthzForce Core (Community Edition) 
 Authorization PDP (Policy Decision Point) engine implementing the [OASIS XACML v3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html).
 
-Java projects may use AuthZForce Core to instantiate an embedded Java PDP. 
+AuthzForce Core may be used in the following ways:
+- Java API: you may use AuthzForce Core from your Java code to instantiate an embedded Java PDP. 
+- CLI (Command-Line Interface): you may call AuthzForce Core PDP engine from the command-line (e.g. in a script) by running the provided executable.
 
-*If you are interested in using the HTTP/REST API, go to the [AuthZForce server project](http://github.com/authzforce/server).*
+*HTTP/REST API: if you are interested in using a HTTP/REST API, check the [AuthZForce RESTful PDP project](http://github.com/authzforce/restful-pdp) and [AuthZForce server project](http://github.com/authzforce/server).*
 
 ## Features
 * Compliance with the following OASIS XACML 3.0 standards:
@@ -39,6 +41,7 @@ Java projects may use AuthZForce Core to instantiate an embedded Java PDP.
   * **Decision Cache**: you may extend the PDP engine with a custom XACML decision cache, allowing the PDP to skip evaluation and retrieve XACML decisions from cache for recurring XACML Requests;
   * Java extension mechanism to switch HashMap/HashSet implementations (e.g. to get different performance results).
 * PIP (Policy Information Point): AuthzForce provides XACML PIP features in the form of extensions called *Attribute Providers*. More information in the previous list on *Extensibility points*.
+* Interfaces: Java API and CLI (HTTP/REST API provided by the [AuthZForce RESTful PDP project](http://github.com/authzforce/restful-pdp) for PDP only, and [AuthZForce server project](http://github.com/authzforce/server) for PDP and PAP with multi-tenancy)
 
 ## Versions
 See the [change log file](CHANGELOG.md) following the *Keep a CHANGELOG* [conventions](http://keepachangelog.com/).
@@ -48,6 +51,25 @@ See the [license file](LICENSE).
 
 ## Usage
 ### Getting started
+#### CLI
+Get the latest executable jar from Maven Central: groupId/artifactId = `org.ow2.authzforce`/`authzforce-ce-core-pdp-cli`.
+
+Copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory, and run the executable as follows:
+```
+$ ./authzforce-ce-core-pdp-cli-10.0.0.jar pdp.xml request.xml
+```
+`pdp.xml`: PDP configuration file
+`request.xml`: XACML request in XACML 3.0/XML (core specification) format
+
+If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
+```
+$ ./authzforce-ce-core-pdp-cli-10.0.0.jar -t XACML_JSON pdp.xml request.json
+```
+`request.json`: XACML request in XACML 3.0/JSON (Profile) format
+
+For more info, run it without parameters and you'll get detailed information on usage.
+
+#### Java API
 You can either build Authzforce PDP library from the source code after cloning this git repository, or use the latest release from Maven Central with this information:
 * groupId: `org.ow2.authzforce`;
 * artifactId: `authzforce-ce-core-pdp-engine`;
