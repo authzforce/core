@@ -80,13 +80,13 @@ If you want to use the experimental features (see previous section) as well, you
 * artifactId: `authzforce-ce-core-pdp-testutils`;
 * packaging: `jar`.
 
-To get started using a PDP to evaluate XACML requests, instantiate a new PDP instance with one of the methods: `org.ow2.authzforce.core.pdp.impl.BasePdpEngine#getInstance(...)`. The parameters are:
+To get started using a PDP to evaluate XACML requests, instantiate a new PDP engine configuration with one of the methods: `org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration#getInstance(...)`. The parameters are:
 
 1. *confLocation*: location of the configuration file (mandatory): this file must be an XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd). You can read the documentation of every configuration parameter in that file. If you don't use any XML-schema-defined PDP extension (AttributeProviders, PolicyProviders...), this is the only parameter you need, and you can use the simplest method `BasePdpEngine#getInstance(String confLocation)` to load your PDP. Here is an example of configuration:
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/5.0" version="5.0.0">
+   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/6.0" version="6.0.0">
 	   <rootPolicyProvider id="rootPolicyProvider" xsi:type="StaticRootPolicyProvider" policyLocation="${PARENT_DIR}/policy.xml" />
    </pdp>
    ```
@@ -94,10 +94,21 @@ To get started using a PDP to evaluate XACML requests, instantiate a new PDP ins
 1. *catalogLocation*: location of the XML catalog (optional, required only if using one or more XML-schema-defined PDP extensions): used to resolve the PDP configuration schema and other imported schemas/DTDs, and schemas of any PDP extension namespace used in the configuration file. You may use the [catalog](pdp-engine/src/main/resources/catalog.xml) in the sources as an example. This is the one used by default if none specified.
 1. *extensionXsdLocation*: location of the PDP extensions schema file (optional, required only if using one or more XML-schema-defined PDP extensions): contains imports of namespaces corresponding to XML schemas of all XML-schema-defined PDP extensions to be used in the configuration file. Used for validation of PDP extensions configuration. The actual schema locations are resolved by the XML catalog parameter. You may use the [pdp-ext.xsd](pdp-testutils/src/test/resources/pdp-ext.xsd) in the sources as an example.
 
-As a result of `getInstance(...)`, you get an instance of `BasePdpEngine` with which you can evaluate a XACML Request directly by calling the `evaluate(Request...)` methods; or you can evaluate a decision request (more precisely an equivalent of a Individual Decision Request as defined by the XACML Multiple Decision Profile) in AuthzForce's more efficient native model by calling `evaluate(ImmutablePdpDecisionRequest)` or (multiple decision requests with `evaluate(List<ImmutablePdpDecisionRequest>)`). In order to build a `ImmutablePdpDecisionRequest`, you may use the request builder returned by `BasePdpEngine#newRequestBuilder(...)`.  Please look at the Javadoc for more information.
+As a result of `getInstance(...)`, you get an instance of `PdpEngineConfiguration`.
 
-Our PDP implementation uses SLF4J for logging so you can use any SLF4J implementation to manage logging. As an example, we use logback for testing, so you can use [logback.xml](pdp-testutils/src/test/resources/logback.xml) as an example for configuring loggers, appenders, etc.
+##### Evaluating Requests in AuthzForce native model (most efficient)
+You can pass the `PdpEngineConfiguration` to `BasePdpEngine(PdpEngineConfiguration)` constructor in order to instantiate a PDP engine. With this, you can evaluate a decision request (more precisely an equivalent of a Individual Decision Request as defined by the XACML Multiple Decision Profile) in AuthzForce's native model by calling `evaluate(DecisionRequest)` or (multiple decision requests with `evaluate(List)`). In order to build a `DecisionRequest`, you may use the request builder returned by `BasePdpEngine#newRequestBuilder(...)`.  Please look at the Javadoc for more information.
 
+##### Evaluating Requests in XACML/XML format
+You can pass the `PdpEngineConfiguration` to `PdpEngineAdapters#newXacmlJaxbInoutAdapter(PdpEngineConfiguration)` utility method to instantiate a PDP supporting XACML 3.0/XML (core specification) format. You can evaluate such XACML Request by calling the `evaluate(...)` methods.
+
+##### Evaluating Requests in XACML/JSON format
+To instantiate a PDP supporting XACML 3.0/JSON (JSON Profile) format, you may reuse the test code from [PdpEngineXacmlJsonAdapters](pdp-io-xacml-json/src/test/java/org/ow2/authzforce/core/pdp/io/xacml/json/test/PdpEngineXacmlJsonAdapters.java).
+
+##### Logging
+Our PDP implementation uses SLF4J for logging so you can use any SLF4J implementation to manage logging. The CLI executable includes logback implementation, so you can use logback configuration file, e.g. [logback.xml](pdp-testutils/src/test/resources/logback.xml), for configuring loggers, appenders, etc.
+
+##### Java 8+ external schema access restriction (workaround)
 If you are using **Java 8**, make sure the following JVM argument is set before execution:
 `-Djavax.xml.accessExternalSchema=http`
 
