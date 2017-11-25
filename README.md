@@ -145,5 +145,8 @@ Please include as much information as possible; the more we know, the better the
 
 If you wish to contact the developers for other reasons, use [AuthzForce contact mailing list](http://scr.im/azteam).
 
+## Vulnerability reporting
+If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/) with *Security Level* set to **Private**. Then, if the AuthzForce team can confirm it, they will change it to **Public** and set a fix version.
+
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).
