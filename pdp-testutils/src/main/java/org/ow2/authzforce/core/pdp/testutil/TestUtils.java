@@ -46,21 +46,90 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
 
-import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
-import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
-import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
+import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.impl.DefaultEnvironmentProperties;
+import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider;
+import org.ow2.authzforce.core.xmlns.pdp.InOutProcChain;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider;
 import org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider;
+import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
 public class TestUtils
 {
+
+	private static final class MarshallableWithToString
+	{
+		private final Object jaxbAnnotatedObject;
+		private final Marshaller marshaller;
+
+		private MarshallableWithToString(final Object jaxbAnnotatedObject, final Marshaller marshaller)
+		{
+			assert jaxbAnnotatedObject != null && marshaller != null;
+			this.jaxbAnnotatedObject = jaxbAnnotatedObject;
+			this.marshaller = marshaller;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode()
+		{
+			return this.jaxbAnnotatedObject.hashCode();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+
+			if (!(obj instanceof MarshallableWithToString))
+			{
+				return false;
+			}
+
+			return this.jaxbAnnotatedObject.equals(((MarshallableWithToString) obj).jaxbAnnotatedObject);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString()
+		{
+			final StringWriter strWriter = new StringWriter();
+			try
+			{
+				this.marshaller.marshal(this.jaxbAnnotatedObject, strWriter);
+			}
+			catch (final JAXBException e)
+			{
+				throw new RuntimeException(e);
+			}
+			return strWriter.toString();
+		}
+	}
 
 	/**
 	 * JAXB context for (un)marshalling TestAttributeProvider configuration
@@ -96,7 +165,7 @@ public class TestUtils
 	 * @throws FileNotFoundException
 	 *             no file found at {@code requestFileLocation}
 	 */
-	public static Request createRequest(final String requestFileLocation, final NamespaceFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
+	public static Request createRequest(final String requestFileLocation, final XmlnsFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
 	{
 		/**
 		 * Get absolute path/URL to request file in a portable way, using current class loader. As per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path
@@ -127,7 +196,7 @@ public class TestUtils
 	 * @throws FileNotFoundException
 	 *             no file found at {@code responseFileLocation}
 	 */
-	public static Response createResponse(final String responseFileLocation, final NamespaceFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
+	public static Response createResponse(final String responseFileLocation, final XmlnsFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
 	{
 		/**
 		 * Get absolute path/URL to response file in a portable way, using current class loader. As per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path
@@ -145,7 +214,7 @@ public class TestUtils
 		final StringWriter writer = new StringWriter();
 		try
 		{
-			final Marshaller marshaller = JaxbXACMLUtils.createXacml3Marshaller();
+			final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
 			marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
 			marshaller.marshal(response, writer);
 		}
@@ -175,8 +244,35 @@ public class TestUtils
 		for (final Result result : response.getResults())
 		{
 			// We ignore the status, so set it to null in both expected and tested response to avoid
-			// Status comparison
-			results.add(new Result(result.getDecision(), null, result.getObligations(), result.getAssociatedAdvice(), normalizeAttributeCategories(result.getAttributes()), result
+			// StatusMessage/StatusDetail/nested StatusCode comparison
+			// conserve root status code if any
+			final Status oldStatus = result.getStatus();
+			final Status newStatus;
+			if (oldStatus == null)
+			{
+				newStatus = null;
+			}
+			else
+			{
+				final StatusCode oldStatusCode = oldStatus.getStatusCode();
+				// status OK is useless, equivalent to no status (no error)
+				if (oldStatusCode.getValue().equals(XacmlStatusCode.OK.value()))
+				{
+					newStatus = null;
+				}
+				else if (oldStatus.getStatusMessage() == null && oldStatus.getStatusDetail() == null && oldStatusCode.getStatusCode() == null)
+				{
+					// if there is only a StatusCode (no nested one), keep it as is
+					newStatus = oldStatus;
+				}
+				else
+				{
+					// keep only the statusCode
+					newStatus = new Status(oldStatusCode, null, null);
+				}
+			}
+
+			results.add(new Result(result.getDecision(), newStatus, result.getObligations(), result.getAssociatedAdvice(), normalizeAttributeCategories(result.getAttributes()), result
 					.getPolicyIdentifierList()));
 		}
 
@@ -213,7 +309,7 @@ public class TestUtils
 	}
 
 	/**
-	 * Creates PDP from root policy file
+	 * Creates PDP engine configuration
 	 * 
 	 * @param rootPolicyLocation
 	 *            root XACML policy location (with Spring-supported URL prefixes: 'classpath:', etc.)
@@ -226,18 +322,22 @@ public class TestUtils
 	 *            specification, so set this to false if you are testing mandatory features only.
 	 * @param attributeProviderConfLocation
 	 *            (optional) {@link TestAttributeProvider} XML configuration location
-	 * @param requestFilterId
-	 *            RequestFilter ID
+	 * @param requestPreprocId
+	 *            Request preprocessor ID
+	 * @param resultPostprocId
+	 *            Result postprocessor ID
 	 * @return PDP instance
 	 * @throws IllegalArgumentException
-	 *             invalid XACML policy located at {@code policyLocation}
+	 *             invalid XACML policy located at {@code rootPolicyLocation} or {@code refPoliciesDirectoryLocation}
 	 * @throws IOException
 	 *             if error closing some resources used by the PDP after {@link IllegalArgumentException} occurred
 	 * @throws URISyntaxException
+	 *             invalid {@code refPoliciesDirectoryLocation}
 	 * @throws JAXBException
+	 *             cannot create Attribute Provider configuration (XML) unmarshaller
 	 */
-	public static BasePdpEngine getPDPNewInstance(final String rootPolicyLocation, final String refPoliciesDirectoryLocation, final boolean enableXPath, final String attributeProviderConfLocation,
-			final String requestFilterId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
+	public static PdpEngineConfiguration newPdpEngineConfiguration(final String rootPolicyLocation, final String refPoliciesDirectoryLocation, final boolean enableXPath,
+			final String attributeProviderConfLocation, final String requestPreprocId, final String resultPostprocId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
 		final Pdp jaxbPDP = new Pdp();
 		jaxbPDP.setEnableXPath(enableXPath);
@@ -312,13 +412,13 @@ public class TestUtils
 			}
 		}
 
-		// request filter
-		if (requestFilterId != null)
+		if (requestPreprocId != null)
 		{
-			jaxbPDP.setRequestFilter(requestFilterId);
+			final InOutProcChain ioProcChain = new InOutProcChain(requestPreprocId, resultPostprocId);
+			jaxbPDP.getIoProcChains().add(ioProcChain);
 		}
 
-		return BasePdpEngine.getInstance(jaxbPDP, new DefaultEnvironmentProperties());
+		return new PdpEngineConfiguration(jaxbPDP, new DefaultEnvironmentProperties());
 	}
 
 	/**
@@ -352,6 +452,9 @@ public class TestUtils
 		// normalize responses for comparison
 		final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse);
 		final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP);
-		assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", normalizedExpectedResponse, normalizedActualResponse);
+		final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", new MarshallableWithToString(normalizedExpectedResponse, marshaller), new MarshallableWithToString(
+				normalizedActualResponse, marshaller));
 	}
 }

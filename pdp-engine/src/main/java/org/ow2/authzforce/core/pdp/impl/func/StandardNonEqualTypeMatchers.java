@@ -19,8 +19,8 @@ package org.ow2.authzforce.core.pdp.impl.func;
 
 import org.ow2.authzforce.core.pdp.api.func.EqualTypeMatchFunction;
 import org.ow2.authzforce.core.pdp.api.func.NonEqualTypeMatchFunction.Matcher;
-import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
-import org.ow2.authzforce.core.pdp.api.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
+import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 
 /**
@@ -34,11 +34,11 @@ final class StandardNonEqualTypeMatchers
 	 * rfc822Name-match function
 	 * 
 	 */
-	static final Matcher<StringValue, RFC822NameValue> RFC822NAME_MATCHER = new Matcher<StringValue, RFC822NameValue>()
+	static final Matcher<StringValue, Rfc822NameValue> RFC822NAME_MATCHER = new Matcher<StringValue, Rfc822NameValue>()
 	{
 
 		@Override
-		public final boolean match(final StringValue arg0, final RFC822NameValue arg1)
+		public final boolean match(final StringValue arg0, final Rfc822NameValue arg1)
 		{
 			return arg1.match(arg0.getUnderlyingValue());
 		}
@@ -61,14 +61,14 @@ final class StandardNonEqualTypeMatchers
 	 * anyURI-starts-with matcher. For string-starts-with, see {@link EqualTypeMatchFunction} class.
 	 * 
 	 */
-	static final Matcher<StringValue, AnyURIValue> ANYURI_STARTS_WITH_MATCHER = new Matcher<StringValue, AnyURIValue>()
+	static final Matcher<StringValue, AnyUriValue> ANYURI_STARTS_WITH_MATCHER = new Matcher<StringValue, AnyUriValue>()
 	{
 
 		/**
 		 * WARNING: the XACML spec defines the first argument as the prefix
 		 */
 		@Override
-		public final boolean match(final StringValue prefix, final AnyURIValue arg1)
+		public final boolean match(final StringValue prefix, final AnyUriValue arg1)
 		{
 			return arg1.getUnderlyingValue().startsWith(prefix.getUnderlyingValue());
 		}
@@ -77,13 +77,13 @@ final class StandardNonEqualTypeMatchers
 	/**
 	 * anyURI-ends-with matcher
 	 */
-	static final Matcher<StringValue, AnyURIValue> ANYURI_ENDS_WITH_MATCHER = new Matcher<StringValue, AnyURIValue>()
+	static final Matcher<StringValue, AnyUriValue> ANYURI_ENDS_WITH_MATCHER = new Matcher<StringValue, AnyUriValue>()
 	{
 		/**
 		 * WARNING: the XACML spec defines the first argument as the suffix
 		 */
 		@Override
-		public final boolean match(final StringValue suffix, final AnyURIValue arg1)
+		public final boolean match(final StringValue suffix, final AnyUriValue arg1)
 		{
 			return arg1.getUnderlyingValue().endsWith(suffix.getUnderlyingValue());
 		}
@@ -93,14 +93,14 @@ final class StandardNonEqualTypeMatchers
 	 * anyURI-contains matcher
 	 * 
 	 */
-	static final Matcher<StringValue, AnyURIValue> ANYURI_CONTAINS_MATCHER = new Matcher<StringValue, AnyURIValue>()
+	static final Matcher<StringValue, AnyUriValue> ANYURI_CONTAINS_MATCHER = new Matcher<StringValue, AnyUriValue>()
 	{
 
 		/**
 		 * WARNING: the XACML spec defines the second argument as the string that must contain the other
 		 */
 		@Override
-		public final boolean match(final StringValue contained, final AnyURIValue arg1)
+		public final boolean match(final StringValue contained, final AnyUriValue arg1)
 		{
 			return arg1.getUnderlyingValue().contains(contained.getUnderlyingValue());
 		}

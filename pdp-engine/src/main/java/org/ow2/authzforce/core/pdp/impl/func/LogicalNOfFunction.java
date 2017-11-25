@@ -24,7 +24,6 @@ import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
@@ -37,6 +36,7 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
  * A class that implements the n-of function. From the XACML spec (urn:oasis:names:tc:xacml:1.0:function:n-of): the first argument to this function SHALL be of data-type
@@ -76,8 +76,8 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			numOfArgsAfterFirst = args.size() + remainingArgTypes.length - 1;
 			indeterminateArgMsgPrefix = "Function " + functionSig.getName() + ": Indeterminate arg #";
 			indeterminateArgException = new IndeterminateEvaluationException("Function " + functionSig.getName() + ": evaluation failed because of indeterminate arg",
-					StatusHelper.STATUS_PROCESSING_ERROR);
-			invalidArgTypeMsgPrefix = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN_FACTORY.getDatatype() + ") of arg#";
+					XacmlStatusCode.PROCESSING_ERROR.value());
+			invalidArgTypeMsgPrefix = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.BOOLEAN + ") of arg#";
 		}
 
 		protected BooleanValue evaluate(final EvaluationContext context, final int requiredMinOfTrues, final Iterator<? extends Expression<?>> remainingArgExpsIterator,
@@ -99,7 +99,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 				final BooleanValue attrVal;
 				try
 				{
-					attrVal = Expressions.eval(input, context, StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
+					attrVal = Expressions.eval(input, context, StandardDatatypes.BOOLEAN);
 					if (attrVal.getUnderlyingValue().booleanValue())
 					{
 						/*
@@ -121,7 +121,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 					 * numOfArgsAfterFirst - nOfRemainingArgs
 					 */
 					final int argIndex = numOfArgsAfterFirst - nOfRemainingArgs;
-					lastIndeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, StatusHelper.STATUS_PROCESSING_ERROR, e);
+					lastIndeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e.getStatusCode(), e);
 					nOfIndeterminateArgs++;
 				}
 
@@ -182,7 +182,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 						 * numOfArgsAfterFirst - nOfRemainingArgs
 						 */
 						final int argIndex = numOfArgsAfterFirst - nOfRemainingArgs;
-						throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), StatusHelper.STATUS_PROCESSING_ERROR, e);
+						throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
 					}
 
 					if (attrVal.getUnderlyingValue().booleanValue())
@@ -289,11 +289,11 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			final IntegerValue intAttrVal;
 			try
 			{
-				intAttrVal = Expressions.eval(input0, context, StandardDatatypes.INTEGER_FACTORY.getDatatype());
+				intAttrVal = Expressions.eval(input0, context, StandardDatatypes.INTEGER);
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(indeterminateArgMsgPrefix + 0, StatusHelper.STATUS_PROCESSING_ERROR, e);
+				throw new IndeterminateEvaluationException(indeterminateArgMsgPrefix + 0, e.getStatusCode(), e);
 			}
 
 			/*
@@ -306,7 +306,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			// If the number of trues needed is less than zero, report an error.
 			if (nOfRequiredTrues < 0)
 			{
-				throw new IndeterminateEvaluationException(invalidArg0MsgPrefix + nOfRequiredTrues, StatusHelper.STATUS_PROCESSING_ERROR);
+				throw new IndeterminateEvaluationException(invalidArg0MsgPrefix + nOfRequiredTrues, XacmlStatusCode.PROCESSING_ERROR.value());
 			}
 
 			// If the number of trues needed is zero, return true.
@@ -319,7 +319,8 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			// make sure it's possible to find n true values in the remaining arguments
 			if (nOfRequiredTrues > numOfArgsAfterFirst)
 			{
-				throw new IndeterminateEvaluationException(invalidArg0MsgPrefix + nOfRequiredTrues + " > number_of_remaining_args (" + numOfArgsAfterFirst + ")", StatusHelper.STATUS_PROCESSING_ERROR);
+				throw new IndeterminateEvaluationException(invalidArg0MsgPrefix + nOfRequiredTrues + " > number_of_remaining_args (" + numOfArgsAfterFirst + ")",
+						XacmlStatusCode.PROCESSING_ERROR.value());
 			}
 
 			return evaluate(context, nOfRequiredTrues, argExpsIterator, checkedRemainingArgs);
@@ -328,7 +329,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 
 	LogicalNOfFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.INTEGER_FACTORY.getDatatype(), StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN, true, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.BOOLEAN));
 	}
 
 	/** {@inheritDoc} */
@@ -355,7 +356,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			// If the number of trues needed is zero, return true.
 			if (nOfRequiredTrues == 0)
 			{
-				return new ConstantResultFirstOrderFunctionCall<>(BooleanValue.TRUE, StandardDatatypes.BOOLEAN_FACTORY.getDatatype());
+				return new ConstantResultFirstOrderFunctionCall<>(BooleanValue.TRUE, StandardDatatypes.BOOLEAN);
 			}
 
 			// else nOfRequiredTrues > 0

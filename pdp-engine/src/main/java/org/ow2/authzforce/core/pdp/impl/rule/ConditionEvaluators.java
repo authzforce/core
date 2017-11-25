@@ -129,7 +129,7 @@ public final class ConditionEvaluators
 		final Expression<?> expr = expressionFactory.getInstance(exprElt, xPathCompiler, null);
 
 		// make sure it's a boolean expression...
-		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN_FACTORY.getDatatype())))
+		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN)))
 		{
 			throw new IllegalArgumentException("Invalid return datatype (" + expr.getReturnType() + ") for Expression (" + expr.getClass().getSimpleName() + ") in Condition. Expected: Boolean.");
 		}

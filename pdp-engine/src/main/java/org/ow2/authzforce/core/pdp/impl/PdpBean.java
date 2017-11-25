@@ -18,17 +18,16 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-
-import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
+import org.ow2.authzforce.core.pdp.api.DecisionRequest;
+import org.ow2.authzforce.core.pdp.api.DecisionRequestBuilder;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PDPEngine;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
+import org.ow2.authzforce.core.pdp.api.PdpEngine;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SystemPropertyUtils;
@@ -43,11 +42,11 @@ import org.springframework.util.SystemPropertyUtils;
  *
  * @version $Id: $
  */
-public final class PdpBean implements PDPEngine<ImmutablePdpDecisionRequest>
+public final class PdpBean implements PdpEngine
 {
 	private final static Logger LOGGER = LoggerFactory.getLogger(PdpBean.class);
 
-	private PDPEngine<ImmutablePdpDecisionRequest> pdp;
+	private PdpEngine pdp;
 
 	private String confLocation = null;
 
@@ -109,7 +108,8 @@ public final class PdpBean implements PDPEngine<ImmutablePdpDecisionRequest>
 			LOGGER.info("Loading PDP configuration from file {} with extension schema location '{}' and XML catalog location '{}'", confLocation, extSchemaLocation, catalogLocation);
 			try
 			{
-				pdp = BasePdpEngine.getInstance(confLocation, catalogLocation, extSchemaLocation);
+				final PdpEngineConfiguration conf = PdpEngineConfiguration.getInstance(confLocation, catalogLocation, extSchemaLocation);
+				pdp = new BasePdpEngine(conf);
 			}
 			catch (IOException | IllegalArgumentException e)
 			{
@@ -123,16 +123,9 @@ public final class PdpBean implements PDPEngine<ImmutablePdpDecisionRequest>
 	}
 
 	@Override
-	public PdpDecisionRequestBuilder<ImmutablePdpDecisionRequest> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
+	public DecisionRequestBuilder<?> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
 	{
 		return pdp.newRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Response evaluate(final Request request)
-	{
-		return evaluate(request, null);
 	}
 
 	private void checkInit()
@@ -163,25 +156,24 @@ public final class PdpBean implements PDPEngine<ImmutablePdpDecisionRequest>
 
 	/** {@inheritDoc} */
 	@Override
-	public PdpDecisionResult evaluate(final ImmutablePdpDecisionRequest individualDecisionRequest)
+	public DecisionResult evaluate(final DecisionRequest individualDecisionRequest)
 	{
 		checkInit();
 		return pdp.evaluate(individualDecisionRequest);
 	}
 
 	@Override
-	public Map<ImmutablePdpDecisionRequest, ? extends PdpDecisionResult> evaluate(final List<ImmutablePdpDecisionRequest> requests) throws IndeterminateEvaluationException
+	public <INDIVIDUAL_DECISION_REQUEST extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQUEST, ? extends DecisionResult>> evaluate(final List<INDIVIDUAL_DECISION_REQUEST> requests)
+			throws IndeterminateEvaluationException
 	{
 		checkInit();
 		return pdp.evaluate(requests);
 	}
 
-	/** {@inheritDoc} */
 	@Override
-	public Response evaluate(final Request request, final Map<String, String> namespaceURIsByPrefix)
+	public Iterable<PrimaryPolicyMetadata> getApplicablePolicies()
 	{
-		checkInit();
-		return pdp.evaluate(request, namespaceURIsByPrefix);
+		return this.pdp.getApplicablePolicies();
 	}
 
 }

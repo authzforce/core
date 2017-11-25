@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response
+      xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      >
+    <Result>
+        <Decision>Permit</Decision>
+        <Status>
+            <StatusCode
+                  Value="urn:oasis:names:tc:xacml:1.0:status:ok"/>
+        </Status>
+		  <Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
+		
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Julius Hibbert as string</AttributeValue>
+		    </Attribute>
+		     <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">test string</AttributeValue>
+		    </Attribute>   
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Julius Hibbert</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-boolean" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#boolean">true</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-boolean" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#boolean">false</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-integer" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">56</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-integer" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">12</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-double" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#double">27.50</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-double" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#double">73985.34256</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-date" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">2002-03-22</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-date" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">1256-11-11</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dateTime" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">2002-03-22T08:23:47-05:00</AttributeValue>
+		    </Attribute>
+		    <!-- The original test from AT&T is using timezone -14:30 which is not valid per XML schema dateTime definition. -->
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dateTime" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">1056-11-05T19:08:12-14:00</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dayTimeDuration" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dayTimeDuration">P50DT5H4M3S</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dayTimeDuration" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dayTimeDuration">P12DT148H18M21S</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-yearMonthDuration" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#yearMonthDuration">-P5Y3M</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-yearMonthDuration" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#yearMonthDuration">-P28Y7M</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-hexBinary" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#hexBinary">0BF7A9876CDE</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-hexBinary" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#hexBinary">0FB8</AttributeValue>
+		    </Attribute>
+		    <!-- Original ATT file uses wrong attributeId "urn:oasis:names:tc:xacml:1.0:subject:subject-rfc822Name" for attribute below. Fixed here by replacing AttributeId with urn:oasis:names:tc:xacml:1.0:subject:subject-base64Binary. -->
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-base64Binary" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#base64Binary">c3VyZS4=</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-base64Binary" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#base64Binary">YXN1cmUu</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-rfc822Name" Issuer="ConformanceTester">
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">j_hibbert@MEDICO.COM</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-rfc822Name" Issuer="ConformanceTester">
+		    <!--  Originally ATT-proposed conformance test contains c_clown@NOSE_MEDICO.COM which is not valid (_ is illegal in Domain name) -->
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:rfc822Name">c_clown@NOSE.MEDICO.COM</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-x500Name" Issuer="ConformanceTester">
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:x500Name">cn=Julius Hibbert, o=Medi Corporation, c=US</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-x500Name" Issuer="ConformanceTester">
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:1.0:data-type:x500Name">cn=Crusty Clown, o=Red Nose Corporation, c=US</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-ipAddress" Issuer="ConformanceTester">
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:2.0:data-type:ipAddress">122.45.38.245/255.255.255.64:8080</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-ipAddress" Issuer="ConformanceTester">
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:2.0:data-type:ipAddress">35.123.111.56/255.64.32.255:9999</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dnsName" Issuer="ConformanceTester">
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:2.0:data-type:dnsName">some.host.name:147-874</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-dnsName" Issuer="ConformanceTester">
+		      <AttributeValue DataType="urn:oasis:names:tc:xacml:2.0:data-type:dnsName">a.different.host:-45</AttributeValue>
+		    </Attribute>
+		  </Attributes>
+		  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
+		   <!-- xpathExpressions are optional feature, therefore should not be there. Version with xpathExpressions moved to "optional" folder -->
+<!-- 		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:xpathExpression" Issuer="ConformanceTester"> -->
+<!-- 		      <AttributeValue DataType="urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression"  -->
+<!-- 		      	XPathCategory="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">//md:records/md:record</AttributeValue> -->
+<!-- 		    </Attribute> -->
+<!-- 		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:xpathExpression" Issuer="ConformanceTester"> -->
+<!-- 		      <AttributeValue DataType="urn:oasis:names:tc:xacml:3.0:data-type:xpathExpression"  -->
+<!-- 		      	XPathCategory="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">//md:records/md:diagnosis_info</AttributeValue> -->
+<!-- 		    </Attribute> -->
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#anyURI">http://medico.com/record/patient/BartSimpson</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:resource:resource-id" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#anyURI">http://medico.com/record/patient/HomerSimpson</AttributeValue>
+		    </Attribute>
+		  </Attributes>
+		  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">write</AttributeValue>
+		    </Attribute>
+		  </Attributes>
+		  <Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time" Issuer="ConformanceTester">
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">08:23:47-05:00</AttributeValue>
+		    </Attribute>
+		    <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time" Issuer="ConformanceTester">
+		    <!-- The original test from AT&T is using timezone -24:53 which is not valid per XML schema dateTime definition. -->
+		      <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">22:12:10-14:00</AttributeValue>
+		    </Attribute>
+		  </Attributes>  
+		  
+    </Result>
+
+</Response>

@@ -17,11 +17,9 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
-import static org.ow2.authzforce.core.pdp.api.value.StandardDatatypes.ANYURI_FACTORY;
-import static org.ow2.authzforce.core.pdp.api.value.StandardDatatypes.STRING_FACTORY;
-import static org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory.XACML_1_0_ACCESS_SUBJECT;
-import static org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory.XACML_3_0_ACTION;
-import static org.ow2.authzforce.xacml.identifiers.XACMLAttributeCategory.XACML_3_0_RESOURCE;
+import static org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory.XACML_1_0_ACCESS_SUBJECT;
+import static org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory.XACML_3_0_ACTION;
+import static org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory.XACML_3_0_RESOURCE;
 
 import java.security.Principal;
 import java.util.Collections;
@@ -42,19 +40,19 @@ import org.apache.cxf.rt.security.saml.xacml.XACMLConstants;
 import org.apache.cxf.security.LoginSecurityContext;
 import org.apache.cxf.security.SecurityContext;
 import org.apache.wss4j.common.ext.WSSecurityException;
-import org.ow2.authzforce.core.pdp.api.AttributeFQN;
-import org.ow2.authzforce.core.pdp.api.AttributeFQNs;
+import org.ow2.authzforce.core.pdp.api.AttributeFqn;
+import org.ow2.authzforce.core.pdp.api.AttributeFqns;
+import org.ow2.authzforce.core.pdp.api.DecisionRequest;
+import org.ow2.authzforce.core.pdp.api.DecisionRequestBuilder;
+import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.ImmutablePdpDecisionRequest;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionRequest;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionRequestBuilder;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionResult;
-import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
-import org.ow2.authzforce.xacml.identifiers.XACMLAttributeId;
+import org.ow2.authzforce.xacml.identifiers.XacmlAttributeId;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -139,11 +137,11 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 
 	protected boolean authorize(final Principal principal, final Set<String> roles, final Message message) throws Exception
 	{
-		final ImmutablePdpDecisionRequest request = createRequest(principal, roles, message);
+		final DecisionRequest request = createRequest(principal, roles, message);
 		LOGGER.debug("XACML Request: {}", request);
 
 		// Evaluate the request
-		final PdpDecisionResult result = pdp.evaluate(request);
+		final DecisionResult result = pdp.evaluate(request);
 
 		if (result == null)
 		{
@@ -157,7 +155,7 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 		return result.getDecision() == DecisionType.PERMIT;
 	}
 
-	private ImmutablePdpDecisionRequest createRequest(final Principal principal, final Set<String> roles, final Message message) throws WSSecurityException
+	private DecisionRequest createRequest(final Principal principal, final Set<String> roles, final Message message) throws WSSecurityException
 	{
 		assert roles != null;
 
@@ -167,20 +165,20 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 		/*
 		 * 3 attribute categories, 7 total attributes
 		 */
-		final PdpDecisionRequestBuilder<ImmutablePdpDecisionRequest> requestBuilder = pdp.newRequestBuilder(3, 7);
+		final DecisionRequestBuilder<?> requestBuilder = pdp.newRequestBuilder(3, 7);
 
 		// Subject ID
-		final AttributeFQN subjectIdAttributeId = AttributeFQNs.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.ofNullable(issuer), XACMLAttributeId.XACML_1_0_SUBJECT_ID.value());
-		final AttributeBag<?> subjectIdAttributeValues = Bags.singletonAttributeBag(STRING_FACTORY.getDatatype(), new StringValue(principal.getName()));
+		final AttributeFqn subjectIdAttributeId = AttributeFqns.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.ofNullable(issuer), XacmlAttributeId.XACML_1_0_SUBJECT_ID.value());
+		final AttributeBag<?> subjectIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue(principal.getName()));
 		requestBuilder.putNamedAttributeIfAbsent(subjectIdAttributeId, subjectIdAttributeValues);
 
 		// Subject role(s)
-		final AttributeFQN subjectRoleAttributeId = AttributeFQNs.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.ofNullable(issuer), XACMLAttributeId.XACML_2_0_SUBJECT_ROLE.value());
+		final AttributeFqn subjectRoleAttributeId = AttributeFqns.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.ofNullable(issuer), XacmlAttributeId.XACML_2_0_SUBJECT_ROLE.value());
 		requestBuilder.putNamedAttributeIfAbsent(subjectRoleAttributeId, stringsToAnyURIBag(roles));
 
 		// Resource ID
-		final AttributeFQN resourceIdAttributeId = AttributeFQNs.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_RESOURCE_ID.value());
-		final AttributeBag<?> resourceIdAttributeValues = Bags.singletonAttributeBag(STRING_FACTORY.getDatatype(), new StringValue(getResourceId(messageParser)));
+		final AttributeFqn resourceIdAttributeId = AttributeFqns.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_RESOURCE_ID.value());
+		final AttributeBag<?> resourceIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue(getResourceId(messageParser)));
 		requestBuilder.putNamedAttributeIfAbsent(resourceIdAttributeId, resourceIdAttributeValues);
 
 		// Resource - WSDL-defined Service ID / Operation / Endpoint
@@ -190,28 +188,28 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 			final QName wsdlService = messageParser.getWSDLService();
 			if (wsdlService != null)
 			{
-				final AttributeFQN resourceServiceIdAttributeId = AttributeFQNs.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_SERVICE_ID);
-				final AttributeBag<?> resourceServiceIdAttributeValues = Bags.singletonAttributeBag(STRING_FACTORY.getDatatype(), new StringValue(wsdlService.toString()));
+				final AttributeFqn resourceServiceIdAttributeId = AttributeFqns.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_SERVICE_ID);
+				final AttributeBag<?> resourceServiceIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue(wsdlService.toString()));
 				requestBuilder.putNamedAttributeIfAbsent(resourceServiceIdAttributeId, resourceServiceIdAttributeValues);
 			}
 
 			// WSDL Operation
 			final QName wsdlOperation = messageParser.getWSDLOperation();
-			final AttributeFQN resourceOperationIdAttributeId = AttributeFQNs.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_OPERATION_ID);
-			final AttributeBag<?> resourceOperationIddAttributeValues = Bags.singletonAttributeBag(STRING_FACTORY.getDatatype(), new StringValue(wsdlOperation.toString()));
+			final AttributeFqn resourceOperationIdAttributeId = AttributeFqns.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_OPERATION_ID);
+			final AttributeBag<?> resourceOperationIddAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue(wsdlOperation.toString()));
 			requestBuilder.putNamedAttributeIfAbsent(resourceOperationIdAttributeId, resourceOperationIddAttributeValues);
 
 			// WSDL Endpoint
 			final String endpointURI = messageParser.getResourceURI(false);
-			final AttributeFQN resourceWSDLEndpointAttributeId = AttributeFQNs.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_ENDPOINT);
-			final AttributeBag<?> resourceWSDLEndpointAttributeValues = Bags.singletonAttributeBag(STRING_FACTORY.getDatatype(), new StringValue(endpointURI));
+			final AttributeFqn resourceWSDLEndpointAttributeId = AttributeFqns.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XACMLConstants.RESOURCE_WSDL_ENDPOINT);
+			final AttributeBag<?> resourceWSDLEndpointAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue(endpointURI));
 			requestBuilder.putNamedAttributeIfAbsent(resourceWSDLEndpointAttributeId, resourceWSDLEndpointAttributeValues);
 		}
 
 		// Action ID
 		final String actionToUse = messageParser.getAction(defaultSOAPAction);
-		final AttributeFQN actionIdAttributeId = AttributeFQNs.newInstance(XACML_3_0_ACTION.value(), Optional.empty(), XACMLAttributeId.XACML_1_0_ACTION_ID.value());
-		final AttributeBag<?> actionIdAttributeValues = Bags.singletonAttributeBag(STRING_FACTORY.getDatatype(), new StringValue(actionToUse));
+		final AttributeFqn actionIdAttributeId = AttributeFqns.newInstance(XACML_3_0_ACTION.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ACTION_ID.value());
+		final AttributeBag<?> actionIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue(actionToUse));
 		requestBuilder.putNamedAttributeIfAbsent(actionIdAttributeId, actionIdAttributeValues);
 
 		// Environment - current date/time will be set by the PDP
@@ -222,13 +220,13 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 	{
 		assert strings != null;
 
-		final Set<AnyURIValue> anyURIs = HashCollections.newUpdatableSet(strings.size());
+		final Set<AnyUriValue> anyURIs = HashCollections.newUpdatableSet(strings.size());
 		for (final String string : strings)
 		{
-			anyURIs.add(new AnyURIValue(string));
+			anyURIs.add(new AnyUriValue(string));
 		}
 
-		return Bags.newAttributeBag(ANYURI_FACTORY.getDatatype(), anyURIs);
+		return Bags.newAttributeBag(StandardDatatypes.ANYURI, anyURIs);
 	}
 
 	private static String getResourceId(final CXFMessageParser messageParser)
@@ -267,7 +265,7 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 	/**
 	 * Handle any Obligations returned by the PDP. Does nothing by default. Override this method if you want to handle Obligations/Advice in a specific way
 	 */
-	protected void handleObligationsOrAdvice(final PdpDecisionRequest request, final Principal principal, final Message message, final PdpDecisionResult result) throws Exception
+	protected void handleObligationsOrAdvice(final DecisionRequest request, final Principal principal, final Message message, final DecisionResult result) throws Exception
 	{
 		// Do nothing by default
 	}

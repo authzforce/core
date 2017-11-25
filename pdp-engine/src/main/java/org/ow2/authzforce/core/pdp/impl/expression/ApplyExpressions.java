@@ -38,6 +38,7 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
@@ -170,7 +171,7 @@ public final class ApplyExpressions
 
 		// get the function instance
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
-		final Datatype<?> subFuncReturnType;
+		final Datatype<? extends AttributeValue> subFuncReturnType;
 		if (funcInputs.isEmpty())
 		{
 			subFuncReturnType = null;

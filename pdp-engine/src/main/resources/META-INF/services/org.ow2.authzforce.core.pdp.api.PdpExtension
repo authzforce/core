@@ -1,7 +1,7 @@
-org.ow2.authzforce.core.pdp.impl.policy.CoreRootPolicyProviderModule$Factory
-org.ow2.authzforce.core.pdp.impl.policy.CoreRefPolicyProviderModule$Factory
-org.ow2.authzforce.core.pdp.impl.policy.CoreRefBasedRootPolicyProviderModule$Factory
-org.ow2.authzforce.core.pdp.impl.DefaultRequestFilter$LaxFilterFactory
-org.ow2.authzforce.core.pdp.impl.DefaultRequestFilter$StrictFilterFactory
-org.ow2.authzforce.core.pdp.impl.MultiDecisionRequestFilter$LaxFilterFactory
-org.ow2.authzforce.core.pdp.impl.MultiDecisionRequestFilter$StrictFilterFactory
+org.ow2.authzforce.core.pdp.impl.policy.CoreRootPolicyProvider$Factory
+org.ow2.authzforce.core.pdp.impl.policy.CoreRefPolicyProvider$Factory
+org.ow2.authzforce.core.pdp.impl.policy.CoreRefBasedRootPolicyProvider$Factory
+org.ow2.authzforce.core.pdp.impl.io.SingleDecisionXacmlJaxbRequestPreprocessor$LaxVariantFactory
+org.ow2.authzforce.core.pdp.impl.io.SingleDecisionXacmlJaxbRequestPreprocessor$StrictVariantFactory
+org.ow2.authzforce.core.pdp.impl.io.MultiDecisionXacmlJaxbRequestPreprocessor$LaxVariantFactory
+org.ow2.authzforce.core.pdp.impl.io.MultiDecisionXacmlJaxbRequestPreprocessor$StrictVariantFactory

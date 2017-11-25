@@ -34,11 +34,10 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
-import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.CloseableDesignatedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
@@ -46,21 +45,21 @@ import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
 import org.ow2.authzforce.core.pdp.api.expression.VariableReference;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.CloseableAttributeProvider;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of ExpressionFactory that supports the Expressions defined in VariableDefinitions in order to resolve VariableReferences. In particular, it makes sure the depth of recursivity of
  * VariableDefinition does not exceed a value (to avoid inconveniences such as stackoverflow or very negative performance impact) defined by {@code maxVarRefDef} parameter to
- * {@link #DepthLimitingExpressionFactory(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)}. Note that reference loops are avoided by the fact that a
- * VariableReference can reference only a VariableDefinition defined previously to the VariableReference in this implementation.
+ * {@link #DepthLimitingExpressionFactory(AttributeValueFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)}. Note that reference loops are avoided by the fact that a VariableReference can
+ * reference only a VariableDefinition defined previously to the VariableReference in this implementation.
  *
  * 
  * @version $Id: $
@@ -202,7 +201,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			assert varExpr != null;
 			this.expression = varExpr;
 			this.nullContextException = new IndeterminateEvaluationException("VariableReference[VariableId='" + this.variableId
-					+ "']: evaluate(context = null) not allowed because the variable requires context for evaluation (not constant)", StatusHelper.STATUS_PROCESSING_ERROR);
+					+ "']: evaluate(context = null) not allowed because the variable requires context for evaluation (not constant)", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		/**
@@ -271,7 +270,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 
 	private static final int UNLIMITED_MAX_VARIABLE_REF_DEPTH = -1;
 
-	private final DatatypeFactoryRegistry datatypeFactoryRegistry;
+	private final AttributeValueFactoryRegistry datatypeFactoryRegistry;
 	private final FunctionRegistry functionRegistry;
 	private final CloseableAttributeProvider attributeProvider;
 	private final int maxVariableReferenceDepth;
@@ -293,34 +292,30 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	 *            attribute value factory (not null)
 	 * @param functionRegistry
 	 *            function registry (not null)
-	 * @param jaxbAttributeProviderConfs
-	 *            XML/JAXB configurations of Attribute Providers for AttributeDesignator/AttributeSelector evaluation; may be null for static expression evaluation (out of context), in which case
-	 *            AttributeSelectors/AttributeDesignators are not supported
-	 * @param maxVarRefDepth
+	 * @param attributeProviderFactories
+	 *            Attribute Provider factories (Attribute Providers resolve values of attributes absent from the request context). Empty if none.
+	 * @param maxVariableRefDepth
 	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference); strictly negative value means unlimited
 	 * @param allowAttributeSelectors
 	 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
 	 * @param strictAttributeIssuerMatch
 	 *            true iff we want strict Attribute Issuer matching and we require that all AttributeDesignators set the Issuer field.
 	 *            <p>
-	 *            "Strict Attribute Issuer matching" means that an AttributeDesignator without Issuer only match request Attributes without Issuer. This mode is not fully compliant with XACML 3.0,
+	 *            "Strict Attribute Issuer matching" means that an AttributeDesignator without Issuer only matches request Attributes without Issuer. This mode is not fully compliant with XACML 3.0,
 	 *            §5.29, in the case that the Issuer is not present in the Attribute Designator, but it performs better and is recommended when all AttributeDesignators have an Issuer (best practice).
 	 *            Indeed, the XACML 3.0 Attribute Evaluation section §5.29 says: "If the Issuer is not present in the AttributeDesignator, then the matching of the attribute to the named attribute
 	 *            SHALL be governed by AttributeId and DataType attributes alone." Therefore, if {@code strictAttributeIssuerMatch} is false, since policies may use AttributeDesignators without
 	 *            Issuer, if the requests are using matching Attributes but with none, one or more different Issuers, this PDP engine has to gather all the values from all the attributes with matching
 	 *            Category/AttributeId but with any Issuer or no Issuer. Therefore, in order to stay compliant with §5.29 and still enforce best practice, when {@code strictAttributeIssuerMatch} is
-	 *            true, we also require that all AttributeDesignators set the Issuer field. AttributeDesignators set the Issuer field.
-	 * @param environmentProperties
-	 *            global PDP configuration environment properties
+	 *            true, we also require that all AttributeDesignators set the Issuer field.
 	 * @throws java.lang.IllegalArgumentException
-	 *             If any of attribute Provider modules created from {@code jaxbAttributeProviderConfs} does not provide any attribute; or it is in conflict with another one already registered to
-	 *             provide the same or part of the same attributes.
+	 *             If {@code attributeFactory == null || functionRegistry == null} OR any Attribute Provider created from {@code attributeProviderFactories} does not provide any attribute.
 	 * @throws java.io.IOException
-	 *             error closing the attribute Provider modules created from {@code jaxbAttributeProviderConfs}, when and before an {@link IllegalArgumentException} is raised
+	 *             error closing the Attribute Providers created from {@code attributeProviderFactories}, when a {@link IllegalArgumentException} is raised
 	 */
-	public DepthLimitingExpressionFactory(final DatatypeFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry, final List<AbstractAttributeProvider> jaxbAttributeProviderConfs,
-			final int maxVarRefDepth, final boolean allowAttributeSelectors, final boolean strictAttributeIssuerMatch, final EnvironmentProperties environmentProperties)
-			throws IllegalArgumentException, IOException
+	public DepthLimitingExpressionFactory(final AttributeValueFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry,
+			final List<CloseableDesignatedAttributeProvider.DependencyAwareFactory> attributeProviderFactories, final int maxVariableRefDepth, final boolean allowAttributeSelectors,
+			final boolean strictAttributeIssuerMatch) throws IllegalArgumentException, IOException
 	{
 		if (attributeFactory == null)
 		{
@@ -334,10 +329,11 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 
 		this.datatypeFactoryRegistry = attributeFactory;
 		this.functionRegistry = functionRegistry;
-		this.maxVariableReferenceDepth = maxVarRefDepth < 0 ? UNLIMITED_MAX_VARIABLE_REF_DEPTH : maxVarRefDepth;
-		// finally create the global attribute Provider used to resolve
-		// AttributeDesignators
-		this.attributeProvider = CloseableAttributeProvider.getInstance(jaxbAttributeProviderConfs, attributeFactory, strictAttributeIssuerMatch, environmentProperties);
+		this.maxVariableReferenceDepth = maxVariableRefDepth < 0 ? UNLIMITED_MAX_VARIABLE_REF_DEPTH : maxVariableRefDepth;
+		/*
+		 * finally create the global attribute Provider used to resolve AttributeDesignators
+		 */
+		this.attributeProvider = CloseableAttributeProvider.getInstance(attributeProviderFactories, attributeFactory, strictAttributeIssuerMatch);
 		this.allowAttributeSelectors = allowAttributeSelectors;
 		this.issuerRequiredOnAttributeDesignators = strictAttributeIssuerMatch;
 	}
@@ -488,7 +484,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	 * {@inheritDoc}
 	 *
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #DepthLimitingExpressionFactory(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)} .
+	 * {@link #DepthLimitingExpressionFactory(AttributeValueFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
 	 */
 	@Override
 	public FunctionExpression getFunction(final String functionId)
@@ -506,23 +502,17 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	 * {@inheritDoc}
 	 *
 	 * Create a function instance using the function registry passed as parameter to
-	 * {@link #DepthLimitingExpressionFactory(DatatypeFactoryRegistry, FunctionRegistry, List, int, boolean, boolean, EnvironmentProperties)} .
+	 * {@link #DepthLimitingExpressionFactory(AttributeValueFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} .
 	 */
 	@Override
-	public FunctionExpression getFunction(final String functionId, final Datatype<?> subFunctionReturnType) throws IllegalArgumentException
+	public FunctionExpression getFunction(final String functionId, final Datatype<? extends AttributeValue> subFunctionReturnType) throws IllegalArgumentException
 	{
 		if (subFunctionReturnType == null)
 		{
 			return getFunction(functionId);
 		}
 
-		final DatatypeFactory<?> subFuncReturnTypeFactory = this.datatypeFactoryRegistry.getExtension(subFunctionReturnType.getId());
-		if (subFuncReturnTypeFactory == null)
-		{
-			throw new IllegalArgumentException("Invalid sub-function's return type specified: unknown/unsupported ID: " + subFunctionReturnType.getId());
-		}
-
-		final Function<?> f = this.functionRegistry.getFunction(functionId, subFuncReturnTypeFactory);
+		final Function<?> f = this.functionRegistry.getFunction(functionId, subFunctionReturnType);
 		if (f == null)
 		{
 			return null;
@@ -556,13 +546,13 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 				throw MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION;
 			}
 
-			final DatatypeFactory<?> attrFactory = datatypeFactoryRegistry.getExtension(jaxbAttrDes.getDataType());
+			final AttributeValueFactory<?> attrFactory = datatypeFactoryRegistry.getExtension(jaxbAttrDes.getDataType());
 			if (attrFactory == null)
 			{
 				throw new IllegalArgumentException("Unsupported Datatype used in AttributeDesignator: " + jaxbAttrDes.getDataType());
 			}
 
-			expression = new GenericAttributeProviderBasedAttributeDesignatorExpression<>(jaxbAttrDes, attrFactory.getBagDatatype(), attributeProvider);
+			expression = new GenericAttributeProviderBasedAttributeDesignatorExpression<>(jaxbAttrDes, attrFactory.getDatatype().getBagDatatype(), attributeProvider);
 		}
 		else if (expr instanceof AttributeSelectorType)
 		{
@@ -577,7 +567,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			}
 
 			final AttributeSelectorType jaxbAttrSelector = (AttributeSelectorType) expr;
-			final DatatypeFactory<?> attrFactory = datatypeFactoryRegistry.getExtension(jaxbAttrSelector.getDataType());
+			final AttributeValueFactory<?> attrFactory = datatypeFactoryRegistry.getExtension(jaxbAttrSelector.getDataType());
 			if (attrFactory == null)
 			{
 				throw new IllegalArgumentException("Unsupported Datatype used in AttributeSelector: " + jaxbAttrSelector.getDataType());
@@ -628,7 +618,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	@Override
 	public ConstantExpression<? extends AttributeValue> getInstance(final AttributeValueType jaxbAttrVal, final XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
-		return this.datatypeFactoryRegistry.newExpression(jaxbAttrVal, xPathCompiler);
+		return this.datatypeFactoryRegistry.newExpression(jaxbAttrVal.getDataType(), jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), xPathCompiler);
 	}
 
 	/** {@inheritDoc} */

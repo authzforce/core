@@ -17,25 +17,21 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.Optional;
-
-import javax.xml.bind.JAXBElement;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,12 +52,12 @@ final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluat
 		private Evaluator(final String algId, final Iterable<? extends PolicyEvaluator> policyElements)
 		{
 			super(policyElements);
-			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE,
-					new StatusHelper(StatusHelper.STATUS_PROCESSING_ERROR, Optional.of("Too many (more than one) applicable policies for algorithm: " + algId)));
+			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, new IndeterminateEvaluationException(
+					"Too many (more than one) applicable policies for algorithm: " + algId, XacmlStatusCode.PROCESSING_ERROR.value()));
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 
@@ -79,7 +75,7 @@ final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluat
 				catch (final IndeterminateEvaluationException e)
 				{
 					LOGGER.info("Error checking whether {} is applicable", policy, e);
-					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, e.getStatus());
+					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, e);
 				}
 
 				if (isApplicableByTarget)

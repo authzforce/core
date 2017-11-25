@@ -78,23 +78,25 @@ public final class SchemaHandler
 		@Override
 		public LSInput resolveResource(final String type, final String namespaceURI, final String publicId, final String systemId, final String baseURI)
 		{
+			_LOGGER.debug("resolveResource(type = {}, namespaceURI = {}, publicId = {}, systemId = {}, baseURI = {}) -> {}", type, namespaceURI, publicId, systemId, baseURI);
 			try
 			{
-				String resolvedLocation = catalogResolver.resolveSystem(systemId);
-				_LOGGER.debug("resolveSystem(systemId = {}) -> {}", systemId, resolvedLocation);
+				String resolvedLocation = null;
+				if (systemId != null)
+				{
+					resolvedLocation = catalogResolver.resolveSystem(systemId);
+					_LOGGER.debug("resolveSystem(systemId = {}) -> {}", systemId, resolvedLocation);
+				}
 
-				if (resolvedLocation == null)
+				if (resolvedLocation == null && namespaceURI != null)
 				{
 					resolvedLocation = catalogResolver.resolveURI(namespaceURI);
 					_LOGGER.debug("resolveURI(namespaceURI = {}) -> {}", namespaceURI, resolvedLocation);
 				}
-				if (resolvedLocation == null)
+				if (resolvedLocation == null && publicId != null)
 				{
 					resolvedLocation = catalogResolver.resolvePublic(publicId, systemId);
-					if (_LOGGER.isDebugEnabled())
-					{
-						_LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}", publicId, systemId, resolvedLocation);
-					}
+					_LOGGER.debug("resolvePublic(publicId = {}, systemId = {}) -> {}", publicId, systemId, resolvedLocation);
 				}
 				if (resolvedLocation != null)
 				{
@@ -216,6 +218,7 @@ public final class SchemaHandler
 
 		private void loadCatalog(final URL catalogURL) throws IOException
 		{
+			assert catalogURL != null;
 			if (!loadedCatalogs.contains(catalogURL.toString()))
 			{
 				if ("file".equals(catalogURL.getProtocol()))
@@ -248,6 +251,7 @@ public final class SchemaHandler
 
 		private String resolveSystem(final String sys) throws MalformedURLException, IOException
 		{
+			assert sys != null;
 			if (catalog == null)
 			{
 				return null;
@@ -257,6 +261,7 @@ public final class SchemaHandler
 
 		private String resolveURI(final String uri) throws MalformedURLException, IOException
 		{
+			assert uri != null;
 			if (catalog == null)
 			{
 				return null;
@@ -266,6 +271,7 @@ public final class SchemaHandler
 
 		private String resolvePublic(final String uri, final String parent) throws MalformedURLException, IOException
 		{
+			assert uri != null;
 			if (resolver == null)
 			{
 				return null;

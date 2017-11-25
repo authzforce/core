@@ -30,21 +30,22 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils;
-import org.ow2.authzforce.core.pdp.api.JaxbXACMLUtils.XACMLParserFactory;
-import org.ow2.authzforce.core.pdp.api.XMLUtils.NamespaceFilteringParser;
-import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
+import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
+import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
+import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
+import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
+import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
+import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * XACML 3.0 conformance tests (published on OASIS xacml-comments mailing list). For tests testing validation of XACML policy syntax, the PDP is expected to reject the policy before receiving any
- * Request. For these tests, the original Request.xml and Response.xml must be renamed to Request.xml.ignore and Response.xml.ignore to indicate to this test class, that an invalid policy syntax is
- * expected.
+ * Request. For these tests, the Request.xml and Response.xml are absent to indicate to this test class, that an invalid policy syntax is expected.
  * <p>
- * For tests testing validation of XACML Request syntax, the PDP is expected to reject the request before evaluation. For these tests, the original Policy.xml and Response.xml must be renamed to
- * Policy.xml.ignore and Response.xml.ignore to indicate to this test class, that an invalid Request syntax is expected.
+ * For tests testing validation of XACML Request syntax, the PDP is expected to reject the request before evaluation. For these tests, the Response.xml is absent to indicate to this test class, that
+ * an invalid Request syntax is expected.
  */
 @RunWith(value = Parameterized.class)
 public class ConformanceV3FromV2
@@ -132,7 +133,7 @@ public class ConformanceV3FromV2
 
 	private final boolean enableXPath;
 
-	private final XACMLParserFactory xacmlParserFactory;
+	private final XmlnsFilteringParserFactory xacmlParserFactory;
 
 	private final String reqFilter;
 
@@ -141,7 +142,7 @@ public class ConformanceV3FromV2
 		this.testFilePathPrefix = filePathPrefix;
 		this.enableXPath = enableXPath;
 		this.reqFilter = requestFilter;
-		this.xacmlParserFactory = JaxbXACMLUtils.getXACMLParserFactory(enableXPath);
+		this.xacmlParserFactory = XacmlJaxbParsingUtils.getXacmlParserFactory(enableXPath);
 	}
 
 	@Test
@@ -149,7 +150,7 @@ public class ConformanceV3FromV2
 	{
 		LOGGER.debug("Starting conformance test with files '{}*.xml'", testFilePathPrefix);
 
-		final NamespaceFilteringParser respUnmarshaller = xacmlParserFactory.getInstance();
+		final XmlnsFilteringParser respUnmarshaller = xacmlParserFactory.getInstance();
 		Response expectedResponse = null;
 		final String expectedRespFilepath = testFilePathPrefix + EXPECTED_RESPONSE_FILENAME_SUFFIX;
 		try
@@ -162,18 +163,18 @@ public class ConformanceV3FromV2
 			LOGGER.debug("Response file '{}' does not exist -> Static Policy/Request syntax error check", expectedRespFilepath);
 		}
 
-		final NamespaceFilteringParser reqUnmarshaller = xacmlParserFactory.getInstance();
+		final XmlnsFilteringParser reqUnmarshaller = xacmlParserFactory.getInstance();
 		Request request = null;
 		// if no Request file, it is just a static policy syntax error check
-		final String expectedReqFilepath = testFilePathPrefix + REQUEST_FILENAME_SUFFIX;
+		final String reqFilepath = testFilePathPrefix + REQUEST_FILENAME_SUFFIX;
 		try
 		{
-			request = TestUtils.createRequest(expectedReqFilepath, reqUnmarshaller);
+			request = TestUtils.createRequest(reqFilepath, reqUnmarshaller);
 		}
 		catch (final FileNotFoundException notFoundErr)
 		{
 			// do nothing except logging -> request = null
-			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", expectedReqFilepath);
+			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", reqFilepath);
 		}
 		catch (final JAXBException e)
 		{
@@ -182,7 +183,7 @@ public class ConformanceV3FromV2
 			{
 				// this is a Request syntax error check and we found the syntax error as
 				// expected -> success
-				LOGGER.debug("Successfully found syntax error as expected in Request located at: {}", expectedReqFilepath);
+				LOGGER.debug("Successfully found syntax error as expected in Request located at: {}", reqFilepath);
 				return;
 			}
 
@@ -195,11 +196,28 @@ public class ConformanceV3FromV2
 		final String refPoliciesDirLocation = testFilePathPrefix + REF_POLICIES_DIRNAME_SUFFIX;
 
 		final String attributeProviderConfLocation = testFilePathPrefix + ATTRIBUTE_PROVIDER_FILENAME_SUFFIX;
-
-		BasePdpEngine pdp = null;
+		final PdpEngineConfiguration pdpEngineConf;
 		try
 		{
-			pdp = TestUtils.getPDPNewInstance(rootPolicyFilepath, refPoliciesDirLocation, enableXPath, attributeProviderConfLocation, this.reqFilter);
+			pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFilepath, refPoliciesDirLocation, enableXPath, attributeProviderConfLocation, this.reqFilter, null);
+		}
+		catch (final IllegalArgumentException e)
+		{
+			// we found syntax error in policy
+			if (request == null)
+			{
+				// this is a policy syntax error check and we found the syntax error as
+				// expected -> success
+				LOGGER.debug("Successfully found syntax error as expected in policy located at: {}", rootPolicyFilepath);
+				return;
+			}
+
+			// Unexpected error
+			throw e;
+		}
+
+		try (PdpEngineInoutAdapter<Request, Response> pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConf))
+		{
 			if (request == null)
 			{
 				// this is a policy syntax error check and we didn't found the syntax error as
@@ -211,8 +229,8 @@ public class ConformanceV3FromV2
 				/*
 				 * No expected response, so it is not a PDP evaluation test, but request or policy syntax error check. We got here, so request and policy OK. This is unexpected.
 				 */
-				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '" + expectedReqFilepath
-						+ "' or policy located at '" + rootPolicyFilepath + "'");
+				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '" + reqFilepath + "' or policy located at '"
+						+ rootPolicyFilepath + "'");
 
 			}
 			else
@@ -241,13 +259,6 @@ public class ConformanceV3FromV2
 
 			// Unexpected error
 			throw e;
-		}
-		finally
-		{
-			if (pdp != null)
-			{
-				pdp.close();
-			}
 		}
 	}
 }

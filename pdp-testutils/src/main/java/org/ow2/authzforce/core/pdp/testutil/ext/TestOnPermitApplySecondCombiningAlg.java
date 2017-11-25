@@ -19,10 +19,7 @@ package org.ow2.authzforce.core.pdp.testutil.ext;
 
 import java.util.Iterator;
 
-import javax.xml.bind.JAXBElement;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -34,6 +31,7 @@ import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 
 /**
  * Implements "on-permit-apply-second" policy combining algorithm from <a href="http://docs.oasis-open.org/xacml/xacml-3.0-combalgs/v1.0/xacml-3.0-combalgs-v1.0.html">XACML 3.0 Additional Combining
@@ -55,7 +53,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 		private interface ThirdPolicyEvaluator
 		{
 			ExtendedDecision evaluate(EvaluationContext ctx, final DecisionResult decisionResult0, final UpdatablePepActions outPepActions,
-					final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList);
+					final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList);
 		}
 
 		private static class NonNullThirdPolicyEvaluator implements ThirdPolicyEvaluator
@@ -69,7 +67,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 
 			@Override
 			public ExtendedDecision evaluate(final EvaluationContext ctx, final DecisionResult decisionResult0, final UpdatablePepActions outPepActions,
-					final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+					final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 			{
 				final DecisionResult decisionResult2 = policyEvaluator.evaluate(ctx);
 				final DecisionType decision0 = decisionResult0.getDecision();
@@ -113,7 +111,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 
 			@Override
 			public ExtendedDecision evaluate(final EvaluationContext ctx, final DecisionResult decisionResult0, final UpdatablePepActions outPepActions,
-					final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+					final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 			{
 				// When there is no third policy -> NotApplicable
 				return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
@@ -150,7 +148,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<JAXBElement<IdReferenceType>> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 			// Use same variable names as in profile spec for decisions (decision0, decision1, decision2)

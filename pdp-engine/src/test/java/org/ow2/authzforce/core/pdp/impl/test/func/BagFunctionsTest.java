@@ -29,22 +29,23 @@ import java.util.List;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.value.AnyURIValue;
+import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
+import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Base64BinaryValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.api.value.DNSNameWithPortRangeValue;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
 import org.ow2.authzforce.core.pdp.api.value.DateValue;
 import org.ow2.authzforce.core.pdp.api.value.DayTimeDurationValue;
+import org.ow2.authzforce.core.pdp.api.value.DnsNameWithPortRangeValue;
 import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
 import org.ow2.authzforce.core.pdp.api.value.HexBinaryValue;
-import org.ow2.authzforce.core.pdp.api.value.IPAddressValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.api.value.IpAddressValue;
+import org.ow2.authzforce.core.pdp.api.value.PrimitiveDatatype;
+import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
@@ -134,42 +135,43 @@ public class BagFunctionsTest extends StandardFunctionTest
 	 * *-one-and-only function test parameters. For each, we test with a valid one-value bag parameter, then with an invalid parameter that is an empty bag, then an invalid parameter that is a
 	 * two-value bag.
 	 */
-	private static <AV extends AttributeValue> Collection<Object[]> newOneAndOnlyFunctionTestParams(final String oneAndOnlyFunctionId, final DatatypeFactory<AV> typeFactory, final AV primitiveValue)
+	private static <AV extends AttributeValue> Collection<Object[]> newOneAndOnlyFunctionTestParams(final String oneAndOnlyFunctionId, final AttributeDatatype<AV> bagElementType,
+			final AV primitiveValue)
 	{
 		final Collection<Object[]> params = new ArrayList<>();
 
 		// case 1: empty bag {}
 		// one-and-only({}) -> Indeterminate
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(typeFactory.getEmptyBag()), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(bagElementType.getEmptyBag()), null });
 
 		// one-and-only({primitiveValue}) -> primitiveValue
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.singleton(typeFactory.getDatatype(), primitiveValue)), primitiveValue });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.singleton(bagElementType, primitiveValue)), primitiveValue });
 
 		// one-and-only({primitiveValue, primitiveValue}) -> Indeterminate
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.newBag(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue))), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.newBag(bagElementType, Collections.nCopies(2, primitiveValue))), null });
 
 		return params;
 	}
 
-	private static final IntegerValue ZERO_AS_INT = new IntegerValue("0");
-	private static final IntegerValue ONE_AS_INT = new IntegerValue("1");
-	private static final IntegerValue TWO_AS_INT = new IntegerValue("2");
+	private static final IntegerValue ZERO_AS_INT = IntegerValue.valueOf(0);
+	private static final IntegerValue ONE_AS_INT = IntegerValue.valueOf(1);
+	private static final IntegerValue TWO_AS_INT = IntegerValue.valueOf(2);
 
 	/**
 	 * *-bag-size function test parameters. For each, we test with an empty bag parameter, then with an one-value bag, then a two-value bag.
 	 */
-	private static <AV extends AttributeValue> Collection<Object[]> newBagSizeFunctionTestParams(final String bagSizeFunctionId, final DatatypeFactory<AV> typeFactory, final AV primitiveValue)
+	private static <AV extends AttributeValue> Collection<Object[]> newBagSizeFunctionTestParams(final String bagSizeFunctionId, final AttributeDatatype<AV> bagElementType, final AV primitiveValue)
 	{
 		final Collection<Object[]> params = new ArrayList<>();
 
 		// bag-size({}) -> 0
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(typeFactory.getEmptyBag()), ZERO_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(bagElementType.getEmptyBag()), ZERO_AS_INT });
 
 		// bag-size({primitiveValue}) -> 1
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.singleton(typeFactory.getDatatype(), primitiveValue)), ONE_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.singleton(bagElementType, primitiveValue)), ONE_AS_INT });
 
 		// bag-size({primitiveValue, primitiveValue}) -> 2
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.newBag(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue))), TWO_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.newBag(bagElementType, Collections.nCopies(2, primitiveValue))), TWO_AS_INT });
 		return params;
 	}
 
@@ -179,20 +181,20 @@ public class BagFunctionsTest extends StandardFunctionTest
 	 * <p>
 	 * Parameters primitiveValue1 and primitiveValue2 MUST be different values.
 	 */
-	private static <AV extends AttributeValue> Collection<Object[]> newIsInFunctionTestParams(final String isInFunctionId, final DatatypeFactory<AV> typeFactory, final AV primitiveValue1,
+	private static <AV extends AttributeValue> Collection<Object[]> newIsInFunctionTestParams(final String isInFunctionId, final AttributeDatatype<AV> bagElementType, final AV primitiveValue1,
 			final AV primitiveValue2)
 	{
 		final Collection<Object[]> params = new ArrayList<>();
 
 		// is-in(val, {}) -> false
-		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, typeFactory.getEmptyBag()), BooleanValue.FALSE });
+		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue1, bagElementType.getEmptyBag()), BooleanValue.FALSE });
 
 		// is-in(primitiveValue2, {primitiveValue1, primitiveValue2}) -> true
-		final Bag<AV> twoValBag = Bags.newBag(typeFactory.getDatatype(), Arrays.asList(primitiveValue1, primitiveValue2));
+		final Bag<AV> twoValBag = Bags.newBag(bagElementType, Arrays.asList(primitiveValue1, primitiveValue2));
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag), BooleanValue.TRUE });
 
 		// is-in(primitiveValue2, {primitiveValue1, primitiveValue1}) -> false
-		final Bag<AV> twoValBag2 = Bags.newBag(typeFactory.getDatatype(), Collections.nCopies(2, primitiveValue1));
+		final Bag<AV> twoValBag2 = Bags.newBag(bagElementType, Collections.nCopies(2, primitiveValue1));
 		params.add(new Object[] { isInFunctionId, Arrays.asList(primitiveValue2, twoValBag2), BooleanValue.FALSE });
 		return params;
 	}
@@ -200,13 +202,13 @@ public class BagFunctionsTest extends StandardFunctionTest
 	/**
 	 * *-bag function test parameters.
 	 */
-	private static <AV extends AttributeValue> Collection<Object[]> newBagOfFunctionTestParams(final String bagOfFunctionId, final DatatypeFactory<AV> typeFactory, final AV primitiveValue1,
+	private static <AV extends AttributeValue> Collection<Object[]> newBagOfFunctionTestParams(final String bagOfFunctionId, final PrimitiveDatatype<AV> bagElementType, final AV primitiveValue1,
 			final AV primitiveValue2)
 	{
 		final Collection<Object[]> params = new ArrayList<>();
 
 		// bag(primitiveValue1, primitiveValue2) -> {primitiveValue1, primitiveValue2}
-		final Bag<AV> twoValBag = Bags.newBag(typeFactory.getDatatype(), Arrays.asList(primitiveValue1, primitiveValue2));
+		final Bag<AV> twoValBag = Bags.newBag(bagElementType, Arrays.asList(primitiveValue1, primitiveValue2));
 		params.add(new Object[] { bagOfFunctionId, Arrays.asList(primitiveValue1, primitiveValue2), twoValBag });
 		return params;
 	}
@@ -217,78 +219,78 @@ public class BagFunctionsTest extends StandardFunctionTest
 		final Collection<Object[]> params = new ArrayList<>();
 
 		// *-one-and-only functions
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_STRING_ONE_AND_ONLY, StandardDatatypes.STRING_FACTORY, new StringValue("Test")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BOOLEAN_ONE_AND_ONLY, StandardDatatypes.BOOLEAN_FACTORY, BooleanValue.FALSE));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_INTEGER_ONE_AND_ONLY, StandardDatatypes.INTEGER_FACTORY, new IntegerValue("3")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DOUBLE_ONE_AND_ONLY, StandardDatatypes.DOUBLE_FACTORY, new DoubleValue("3.14")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_ANYURI_ONE_AND_ONLY, StandardDatatypes.ANYURI_FACTORY, new AnyURIValue("http://www.example.com")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_HEXBINARY_ONE_AND_ONLY, StandardDatatypes.HEXBINARY_FACTORY, new HexBinaryValue("0FB7")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BASE64BINARY_ONE_AND_ONLY, StandardDatatypes.BASE64BINARY_FACTORY, new Base64BinaryValue("RXhhbXBsZQ==")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_TIME_ONE_AND_ONLY, StandardDatatypes.TIME_FACTORY, new TimeValue("09:30:15")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATE_ONE_AND_ONLY, StandardDatatypes.DATE_FACTORY, new DateValue("2002-09-24")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATETIME_ONE_AND_ONLY, StandardDatatypes.DATETIME_FACTORY, new DateTimeValue("2002-09-24T09:30:15")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DAYTIMEDURATION_ONE_AND_ONLY, StandardDatatypes.DAYTIMEDURATION_FACTORY, new DayTimeDurationValue("P1DT2H")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_YEARMONTHDURATION_ONE_AND_ONLY, StandardDatatypes.YEARMONTHDURATION_FACTORY, new YearMonthDurationValue("P1Y2M")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_X500NAME_ONE_AND_ONLY, StandardDatatypes.X500NAME_FACTORY, new X500NameValue("cn=John Smith, o=Medico Corp, c=US")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_RFC822NAME_ONE_AND_ONLY, StandardDatatypes.RFC822NAME_FACTORY, new RFC822NameValue("Anderson@sun.com")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_IPADDRESS_ONE_AND_ONLY, StandardDatatypes.IPADDRESS_FACTORY, new IPAddressValue("192.168.1.10")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DNSNAME_ONE_AND_ONLY, StandardDatatypes.DNSNAME_FACTORY, new DNSNameWithPortRangeValue("example.com")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_STRING_ONE_AND_ONLY, StandardDatatypes.STRING, new StringValue("Test")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BOOLEAN_ONE_AND_ONLY, StandardDatatypes.BOOLEAN, BooleanValue.FALSE));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_INTEGER_ONE_AND_ONLY, StandardDatatypes.INTEGER, IntegerValue.valueOf(3)));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DOUBLE_ONE_AND_ONLY, StandardDatatypes.DOUBLE, new DoubleValue("3.14")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_ANYURI_ONE_AND_ONLY, StandardDatatypes.ANYURI, new AnyUriValue("http://www.example.com")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_HEXBINARY_ONE_AND_ONLY, StandardDatatypes.HEXBINARY, new HexBinaryValue("0FB7")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_BASE64BINARY_ONE_AND_ONLY, StandardDatatypes.BASE64BINARY, new Base64BinaryValue("RXhhbXBsZQ==")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_TIME_ONE_AND_ONLY, StandardDatatypes.TIME, new TimeValue("09:30:15")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATE_ONE_AND_ONLY, StandardDatatypes.DATE, new DateValue("2002-09-24")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DATETIME_ONE_AND_ONLY, StandardDatatypes.DATETIME, new DateTimeValue("2002-09-24T09:30:15")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DAYTIMEDURATION_ONE_AND_ONLY, StandardDatatypes.DAYTIMEDURATION, new DayTimeDurationValue("P1DT2H")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_YEARMONTHDURATION_ONE_AND_ONLY, StandardDatatypes.YEARMONTHDURATION, new YearMonthDurationValue("P1Y2M")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_X500NAME_ONE_AND_ONLY, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_RFC822NAME_ONE_AND_ONLY, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_IPADDRESS_ONE_AND_ONLY, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DNSNAME_ONE_AND_ONLY, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com")));
 
 		// *-bag-size functions
-		params.addAll(newBagSizeFunctionTestParams(NAME_STRING_BAG_SIZE, StandardDatatypes.STRING_FACTORY, new StringValue("Test")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_BOOLEAN_BAG_SIZE, StandardDatatypes.BOOLEAN_FACTORY, BooleanValue.FALSE));
-		params.addAll(newBagSizeFunctionTestParams(NAME_INTEGER_BAG_SIZE, StandardDatatypes.INTEGER_FACTORY, new IntegerValue("1")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DOUBLE_BAG_SIZE, StandardDatatypes.DOUBLE_FACTORY, new DoubleValue("3.14")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_ANYURI_BAG_SIZE, StandardDatatypes.ANYURI_FACTORY, new AnyURIValue("http://www.example.com")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_HEXBINARY_BAG_SIZE, StandardDatatypes.HEXBINARY_FACTORY, new HexBinaryValue("0FB7")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_BASE64BINARY_BAG_SIZE, StandardDatatypes.BASE64BINARY_FACTORY, new Base64BinaryValue("RXhhbXBsZQ==")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_TIME_BAG_SIZE, StandardDatatypes.TIME_FACTORY, new TimeValue("09:30:15")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DATE_BAG_SIZE, StandardDatatypes.DATE_FACTORY, new DateValue("2002-09-24")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DATETIME_BAG_SIZE, StandardDatatypes.DATETIME_FACTORY, new DateTimeValue("2002-09-24T09:30:15")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DAYTIMEDURATION_BAG_SIZE, StandardDatatypes.DAYTIMEDURATION_FACTORY, new DayTimeDurationValue("P1DT2H")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_YEARMONTHDURATION_BAG_SIZE, StandardDatatypes.YEARMONTHDURATION_FACTORY, new YearMonthDurationValue("P1Y2M")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_X500NAME_BAG_SIZE, StandardDatatypes.X500NAME_FACTORY, new X500NameValue("cn=John Smith, o=Medico Corp, c=US")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_RFC822NAME_BAG_SIZE, StandardDatatypes.RFC822NAME_FACTORY, new RFC822NameValue("Anderson@sun.com")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_IPADDRESS_BAG_SIZE, StandardDatatypes.IPADDRESS_FACTORY, new IPAddressValue("192.168.1.10")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_DNSNAME_BAG_SIZE, StandardDatatypes.DNSNAME_FACTORY, new DNSNameWithPortRangeValue("example.com")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_STRING_BAG_SIZE, StandardDatatypes.STRING, new StringValue("Test")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_BOOLEAN_BAG_SIZE, StandardDatatypes.BOOLEAN, BooleanValue.FALSE));
+		params.addAll(newBagSizeFunctionTestParams(NAME_INTEGER_BAG_SIZE, StandardDatatypes.INTEGER, IntegerValue.valueOf(1)));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DOUBLE_BAG_SIZE, StandardDatatypes.DOUBLE, new DoubleValue("3.14")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_ANYURI_BAG_SIZE, StandardDatatypes.ANYURI, new AnyUriValue("http://www.example.com")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_HEXBINARY_BAG_SIZE, StandardDatatypes.HEXBINARY, new HexBinaryValue("0FB7")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_BASE64BINARY_BAG_SIZE, StandardDatatypes.BASE64BINARY, new Base64BinaryValue("RXhhbXBsZQ==")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_TIME_BAG_SIZE, StandardDatatypes.TIME, new TimeValue("09:30:15")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DATE_BAG_SIZE, StandardDatatypes.DATE, new DateValue("2002-09-24")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DATETIME_BAG_SIZE, StandardDatatypes.DATETIME, new DateTimeValue("2002-09-24T09:30:15")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DAYTIMEDURATION_BAG_SIZE, StandardDatatypes.DAYTIMEDURATION, new DayTimeDurationValue("P1DT2H")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_YEARMONTHDURATION_BAG_SIZE, StandardDatatypes.YEARMONTHDURATION, new YearMonthDurationValue("P1Y2M")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_X500NAME_BAG_SIZE, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_RFC822NAME_BAG_SIZE, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_IPADDRESS_BAG_SIZE, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_DNSNAME_BAG_SIZE, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com")));
 
 		// *-is-in functions
-		params.addAll(newIsInFunctionTestParams(NAME_STRING_IS_IN, StandardDatatypes.STRING_FACTORY, new StringValue("Test1"), new StringValue("Test2")));
-		params.addAll(newIsInFunctionTestParams(NAME_BOOLEAN_IS_IN, StandardDatatypes.BOOLEAN_FACTORY, BooleanValue.FALSE, BooleanValue.TRUE));
-		params.addAll(newIsInFunctionTestParams(NAME_INTEGER_IS_IN, StandardDatatypes.INTEGER_FACTORY, new IntegerValue("1"), new IntegerValue("2")));
-		params.addAll(newIsInFunctionTestParams(NAME_DOUBLE_IS_IN, StandardDatatypes.DOUBLE_FACTORY, new DoubleValue("-4.21"), new DoubleValue("3.14")));
-		params.addAll(newIsInFunctionTestParams(NAME_ANYURI_IS_IN, StandardDatatypes.ANYURI_FACTORY, new AnyURIValue("http://www.example.com"), new AnyURIValue("http://www.example1.com")));
-		params.addAll(newIsInFunctionTestParams(NAME_HEXBINARY_IS_IN, StandardDatatypes.HEXBINARY_FACTORY, new HexBinaryValue("0FB7"), new HexBinaryValue("0FB8")));
-		params.addAll(newIsInFunctionTestParams(NAME_BASE64BINARY_IS_IN, StandardDatatypes.BASE64BINARY_FACTORY, new Base64BinaryValue("RXhhbXBsZQ=="), new Base64BinaryValue("T3RoZXI=")));
-		params.addAll(newIsInFunctionTestParams(NAME_TIME_IS_IN, StandardDatatypes.TIME_FACTORY, new TimeValue("09:30:15"), new TimeValue("17:18:19")));
-		params.addAll(newIsInFunctionTestParams(NAME_DATE_IS_IN, StandardDatatypes.DATE_FACTORY, new DateValue("2002-09-24"), new DateValue("2003-10-25")));
-		params.addAll(newIsInFunctionTestParams(NAME_DATETIME_IS_IN, StandardDatatypes.DATETIME_FACTORY, new DateTimeValue("2002-09-24T09:30:15"), new DateTimeValue("2003-10-25T17:18:19")));
-		params.addAll(newIsInFunctionTestParams(NAME_DAYTIMEDURATION_IS_IN, StandardDatatypes.DAYTIMEDURATION_FACTORY, new DayTimeDurationValue("P1DT2H"), new DayTimeDurationValue("-P1DT3H")));
-		params.addAll(newIsInFunctionTestParams(NAME_YEARMONTHDURATION_IS_IN, StandardDatatypes.YEARMONTHDURATION_FACTORY, new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("-P1Y3M")));
-		params.addAll(newIsInFunctionTestParams(NAME_X500NAME_IS_IN, StandardDatatypes.X500NAME_FACTORY, new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue(
+		params.addAll(newIsInFunctionTestParams(NAME_STRING_IS_IN, StandardDatatypes.STRING, new StringValue("Test1"), new StringValue("Test2")));
+		params.addAll(newIsInFunctionTestParams(NAME_BOOLEAN_IS_IN, StandardDatatypes.BOOLEAN, BooleanValue.FALSE, BooleanValue.TRUE));
+		params.addAll(newIsInFunctionTestParams(NAME_INTEGER_IS_IN, StandardDatatypes.INTEGER, IntegerValue.valueOf(1), IntegerValue.valueOf(2)));
+		params.addAll(newIsInFunctionTestParams(NAME_DOUBLE_IS_IN, StandardDatatypes.DOUBLE, new DoubleValue("-4.21"), new DoubleValue("3.14")));
+		params.addAll(newIsInFunctionTestParams(NAME_ANYURI_IS_IN, StandardDatatypes.ANYURI, new AnyUriValue("http://www.example.com"), new AnyUriValue("http://www.example1.com")));
+		params.addAll(newIsInFunctionTestParams(NAME_HEXBINARY_IS_IN, StandardDatatypes.HEXBINARY, new HexBinaryValue("0FB7"), new HexBinaryValue("0FB8")));
+		params.addAll(newIsInFunctionTestParams(NAME_BASE64BINARY_IS_IN, StandardDatatypes.BASE64BINARY, new Base64BinaryValue("RXhhbXBsZQ=="), new Base64BinaryValue("T3RoZXI=")));
+		params.addAll(newIsInFunctionTestParams(NAME_TIME_IS_IN, StandardDatatypes.TIME, new TimeValue("09:30:15"), new TimeValue("17:18:19")));
+		params.addAll(newIsInFunctionTestParams(NAME_DATE_IS_IN, StandardDatatypes.DATE, new DateValue("2002-09-24"), new DateValue("2003-10-25")));
+		params.addAll(newIsInFunctionTestParams(NAME_DATETIME_IS_IN, StandardDatatypes.DATETIME, new DateTimeValue("2002-09-24T09:30:15"), new DateTimeValue("2003-10-25T17:18:19")));
+		params.addAll(newIsInFunctionTestParams(NAME_DAYTIMEDURATION_IS_IN, StandardDatatypes.DAYTIMEDURATION, new DayTimeDurationValue("P1DT2H"), new DayTimeDurationValue("-P1DT3H")));
+		params.addAll(newIsInFunctionTestParams(NAME_YEARMONTHDURATION_IS_IN, StandardDatatypes.YEARMONTHDURATION, new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("-P1Y3M")));
+		params.addAll(newIsInFunctionTestParams(NAME_X500NAME_IS_IN, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue(
 				"cn=John Smith, o=Other Corp, c=US")));
-		params.addAll(newIsInFunctionTestParams(NAME_RFC822NAME_IS_IN, StandardDatatypes.RFC822NAME_FACTORY, new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Smith@sun.com")));
-		params.addAll(newIsInFunctionTestParams(NAME_IPADDRESS_IS_IN, StandardDatatypes.IPADDRESS_FACTORY, new IPAddressValue("192.168.1.10"), new IPAddressValue("192.168.1.11")));
-		params.addAll(newIsInFunctionTestParams(NAME_DNSNAME_IS_IN, StandardDatatypes.DNSNAME_FACTORY, new DNSNameWithPortRangeValue("example.com"), new DNSNameWithPortRangeValue("example1.com")));
+		params.addAll(newIsInFunctionTestParams(NAME_RFC822NAME_IS_IN, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("Smith@sun.com")));
+		params.addAll(newIsInFunctionTestParams(NAME_IPADDRESS_IS_IN, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10"), new IpAddressValue("192.168.1.11")));
+		params.addAll(newIsInFunctionTestParams(NAME_DNSNAME_IS_IN, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com"), new DnsNameWithPortRangeValue("example1.com")));
 
 		// *-bag functions
-		params.addAll(newBagOfFunctionTestParams(NAME_STRING_BAG, StandardDatatypes.STRING_FACTORY, new StringValue("Test1"), new StringValue("Test2")));
-		params.addAll(newBagOfFunctionTestParams(NAME_BOOLEAN_BAG, StandardDatatypes.BOOLEAN_FACTORY, BooleanValue.FALSE, BooleanValue.TRUE));
-		params.addAll(newBagOfFunctionTestParams(NAME_INTEGER_BAG, StandardDatatypes.INTEGER_FACTORY, new IntegerValue("1"), new IntegerValue("2")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DOUBLE_BAG, StandardDatatypes.DOUBLE_FACTORY, new DoubleValue("-4.21"), new DoubleValue("3.14")));
-		params.addAll(newBagOfFunctionTestParams(NAME_ANYURI_BAG, StandardDatatypes.ANYURI_FACTORY, new AnyURIValue("http://www.example.com"), new AnyURIValue("http://www.example1.com")));
-		params.addAll(newBagOfFunctionTestParams(NAME_HEXBINARY_BAG, StandardDatatypes.HEXBINARY_FACTORY, new HexBinaryValue("0FB7"), new HexBinaryValue("0FB8")));
-		params.addAll(newBagOfFunctionTestParams(NAME_BASE64BINARY_BAG, StandardDatatypes.BASE64BINARY_FACTORY, new Base64BinaryValue("RXhhbXBsZQ=="), new Base64BinaryValue("T3RoZXI=")));
-		params.addAll(newBagOfFunctionTestParams(NAME_TIME_BAG, StandardDatatypes.TIME_FACTORY, new TimeValue("09:30:15"), new TimeValue("17:18:19")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DATE_BAG, StandardDatatypes.DATE_FACTORY, new DateValue("2002-09-24"), new DateValue("2003-10-25")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DATETIME_BAG, StandardDatatypes.DATETIME_FACTORY, new DateTimeValue("2002-09-24T09:30:15"), new DateTimeValue("2003-10-25T17:18:19")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DAYTIMEDURATION_BAG, StandardDatatypes.DAYTIMEDURATION_FACTORY, new DayTimeDurationValue("P1DT2H"), new DayTimeDurationValue("-P1DT3H")));
-		params.addAll(newBagOfFunctionTestParams(NAME_YEARMONTHDURATION_BAG, StandardDatatypes.YEARMONTHDURATION_FACTORY, new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("-P1Y3M")));
-		params.addAll(newBagOfFunctionTestParams(NAME_X500NAME_BAG, StandardDatatypes.X500NAME_FACTORY, new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue(
+		params.addAll(newBagOfFunctionTestParams(NAME_STRING_BAG, StandardDatatypes.STRING, new StringValue("Test1"), new StringValue("Test2")));
+		params.addAll(newBagOfFunctionTestParams(NAME_BOOLEAN_BAG, StandardDatatypes.BOOLEAN, BooleanValue.FALSE, BooleanValue.TRUE));
+		params.addAll(newBagOfFunctionTestParams(NAME_INTEGER_BAG, StandardDatatypes.INTEGER, IntegerValue.valueOf(1), IntegerValue.valueOf(2)));
+		params.addAll(newBagOfFunctionTestParams(NAME_DOUBLE_BAG, StandardDatatypes.DOUBLE, new DoubleValue("-4.21"), new DoubleValue("3.14")));
+		params.addAll(newBagOfFunctionTestParams(NAME_ANYURI_BAG, StandardDatatypes.ANYURI, new AnyUriValue("http://www.example.com"), new AnyUriValue("http://www.example1.com")));
+		params.addAll(newBagOfFunctionTestParams(NAME_HEXBINARY_BAG, StandardDatatypes.HEXBINARY, new HexBinaryValue("0FB7"), new HexBinaryValue("0FB8")));
+		params.addAll(newBagOfFunctionTestParams(NAME_BASE64BINARY_BAG, StandardDatatypes.BASE64BINARY, new Base64BinaryValue("RXhhbXBsZQ=="), new Base64BinaryValue("T3RoZXI=")));
+		params.addAll(newBagOfFunctionTestParams(NAME_TIME_BAG, StandardDatatypes.TIME, new TimeValue("09:30:15"), new TimeValue("17:18:19")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DATE_BAG, StandardDatatypes.DATE, new DateValue("2002-09-24"), new DateValue("2003-10-25")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DATETIME_BAG, StandardDatatypes.DATETIME, new DateTimeValue("2002-09-24T09:30:15"), new DateTimeValue("2003-10-25T17:18:19")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DAYTIMEDURATION_BAG, StandardDatatypes.DAYTIMEDURATION, new DayTimeDurationValue("P1DT2H"), new DayTimeDurationValue("-P1DT3H")));
+		params.addAll(newBagOfFunctionTestParams(NAME_YEARMONTHDURATION_BAG, StandardDatatypes.YEARMONTHDURATION, new YearMonthDurationValue("P1Y2M"), new YearMonthDurationValue("-P1Y3M")));
+		params.addAll(newBagOfFunctionTestParams(NAME_X500NAME_BAG, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue(
 				"cn=John Smith, o=Other Corp, c=US")));
-		params.addAll(newBagOfFunctionTestParams(NAME_RFC822NAME_BAG, StandardDatatypes.RFC822NAME_FACTORY, new RFC822NameValue("Anderson@sun.com"), new RFC822NameValue("Smith@sun.com")));
-		params.addAll(newBagOfFunctionTestParams(NAME_IPADDRESS_BAG, StandardDatatypes.IPADDRESS_FACTORY, new IPAddressValue("192.168.1.10"), new IPAddressValue("192.168.1.11")));
-		params.addAll(newBagOfFunctionTestParams(NAME_DNSNAME_BAG, StandardDatatypes.DNSNAME_FACTORY, new DNSNameWithPortRangeValue("example.com"), new DNSNameWithPortRangeValue("example1.com")));
+		params.addAll(newBagOfFunctionTestParams(NAME_RFC822NAME_BAG, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("Smith@sun.com")));
+		params.addAll(newBagOfFunctionTestParams(NAME_IPADDRESS_BAG, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10"), new IpAddressValue("192.168.1.11")));
+		params.addAll(newBagOfFunctionTestParams(NAME_DNSNAME_BAG, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com"), new DnsNameWithPortRangeValue("example1.com")));
 
 		return params;
 	}

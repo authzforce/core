@@ -37,7 +37,6 @@ import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PdpDecisionResults;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
@@ -180,7 +179,7 @@ public final class RuleEvaluator implements Decidable
 		{
 			assert e != null;
 
-			return DecisionResults.newIndeterminate(DecisionType.PERMIT, e.getStatus(), null);
+			return DecisionResults.newIndeterminate(DecisionType.PERMIT, e, null);
 		}
 
 		@Override
@@ -205,7 +204,7 @@ public final class RuleEvaluator implements Decidable
 		{
 			assert e != null;
 
-			return DecisionResults.newIndeterminate(DecisionType.DENY, e.getStatus(), null);
+			return DecisionResults.newIndeterminate(DecisionType.DENY, e, null);
 		}
 
 		@Override
@@ -269,7 +268,7 @@ public final class RuleEvaluator implements Decidable
 		@Override
 		public DecisionResult newIndeterminate(final IndeterminateEvaluationException e)
 		{
-			return DecisionResults.newIndeterminate(ruleEffectAsDecision, e.getStatus(), null);
+			return DecisionResults.newIndeterminate(ruleEffectAsDecision, e, null);
 		}
 	}
 
@@ -411,11 +410,13 @@ public final class RuleEvaluator implements Decidable
 		else
 		{
 			this.hasNoPepAction = false;
+			final List<ObligationExpression> obligationExpList = obligationExps == null ? null : obligationExps.getObligationExpressions();
+			final List<AdviceExpression> adviceExpList = adviceExps == null ? null : adviceExps.getAdviceExpressions();
 			final RulePepActionExpressions rulePepActionExpressions;
 			try
 			{
-				rulePepActionExpressions = PepActionExpressions.Helper
-						.parseActionExpressions(obligationExps, adviceExps, xPathCompiler, expressionFactory, new RulePepActionExpressionsFactory(effect));
+				rulePepActionExpressions = PepActionExpressions.Helper.parseActionExpressions(obligationExpList, adviceExpList, xPathCompiler, expressionFactory, new RulePepActionExpressionsFactory(
+						effect));
 			}
 			catch (final IllegalArgumentException e)
 			{
@@ -502,7 +503,7 @@ public final class RuleEvaluator implements Decidable
 			if (!targetEvaluator.evaluate(context))
 			{
 				LOGGER.debug("{}/Target -> No-match", this);
-				final DecisionResult result = PdpDecisionResults.SIMPLE_NOT_APPLICABLE;
+				final DecisionResult result = DecisionResults.SIMPLE_NOT_APPLICABLE;
 				LOGGER.debug("{} -> {}", this, result);
 				return result;
 			}
@@ -550,7 +551,7 @@ public final class RuleEvaluator implements Decidable
 		if (!isConditionTrue)
 		{
 			LOGGER.debug("{}/Condition -> False", this);
-			final DecisionResult result = PdpDecisionResults.SIMPLE_NOT_APPLICABLE;
+			final DecisionResult result = DecisionResults.SIMPLE_NOT_APPLICABLE;
 			LOGGER.debug("{} -> {}", this, result);
 			return result;
 		}

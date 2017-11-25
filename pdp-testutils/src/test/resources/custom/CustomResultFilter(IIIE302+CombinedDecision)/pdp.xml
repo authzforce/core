@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Testing parameter 'maxPolicySetRefDepth' -->
+<pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/6.0" version="6.0.0">
+   <rootPolicyProvider id="rootPolicyProvider" xsi:type="StaticRootPolicyProvider" policyLocation="${PARENT_DIR}/policy.xml" />
+   <ioProcChain>
+      <requestPreproc>urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:multiple:repeated-attribute-categories-lax</requestPreproc>
+      <resultPostproc>urn:ow2:authzforce:feature:pdp:result-postproc:xacml-xml:multiple:test-combined-decision</resultPostproc>
+   </ioProcChain>
+</pdp>

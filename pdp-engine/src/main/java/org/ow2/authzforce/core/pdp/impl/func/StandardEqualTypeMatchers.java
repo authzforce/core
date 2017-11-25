@@ -120,7 +120,7 @@ final class StandardEqualTypeMatchers
 		private StringRegexpMatchCallFactory(final SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, StringValue> functionSignature)
 		{
 			super(functionSignature, STRING_REGEXP_MATCHER);
-			regexFuncHelper = new RegexpMatchFunctionHelper(functionSignature, StandardDatatypes.STRING_FACTORY.getDatatype());
+			regexFuncHelper = new RegexpMatchFunctionHelper(functionSignature, StandardDatatypes.STRING);
 		}
 
 		@Override

@@ -27,12 +27,11 @@ import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
 import org.ow2.authzforce.core.pdp.api.func.HigherOrderBagFunction;
+import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
 import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions.OneBagOnlyHigherOrderFunction;
 
 /**
@@ -100,9 +99,9 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 		 * @param subFunctionReturnType
 		 *            sub-function return type
 		 */
-		private MapFunction(final String functionId, final BagDatatype<SUB_RETURN_T> returnType)
+		private MapFunction(final String functionId, final AttributeDatatype<SUB_RETURN_T> returnType)
 		{
-			super(functionId, returnType, returnType.getElementType());
+			super(functionId, returnType.getBagDatatype(), returnType);
 		}
 
 		@Override
@@ -128,14 +127,20 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 	}
 
 	@Override
-	public <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(final DatatypeFactory<SUB_RETURN> subFunctionReturnTypeFactory)
+	public <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(final Datatype<SUB_RETURN> subFunctionReturnType) throws IllegalArgumentException
 	{
-		if (subFunctionReturnTypeFactory == null)
+		if (subFunctionReturnType == null)
 		{
 			throw NULL_SUB_FUNCTION_RETURN_TYPE_ARG_EXCEPTION;
 		}
 
-		return new MapFunction<>(functionId, subFunctionReturnTypeFactory.getBagDatatype());
+		if (!(subFunctionReturnType instanceof AttributeDatatype<?>))
+		{
+			throw new IllegalArgumentException("Invalid sub-function's return type specified for function '" + functionId + "': " + subFunctionReturnType
+					+ ". Expected: any primitive attribute datatype.");
+		}
+
+		return new MapFunction<>(functionId, (AttributeDatatype<SUB_RETURN>) subFunctionReturnType);
 	}
 
 }

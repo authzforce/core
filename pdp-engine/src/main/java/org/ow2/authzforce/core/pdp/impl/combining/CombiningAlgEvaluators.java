@@ -22,11 +22,8 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.Collection;
 
-import javax.xml.bind.JAXBElement;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -35,6 +32,7 @@ import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
 import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +56,7 @@ final class CombiningAlgEvaluators
 		protected abstract ExtendedDecision getReturnedDecision();
 
 		@Override
-		public final ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> updatableApplicablePolicyIdList)
+		public final ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions, final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
 			LOGGER.debug("This evaluator constantly returns the same decision, which results from an optimization of the combining algorithm and combined elements (if any) initially defined in the policy. Check the policy initialization logs for more information on this optimization.");
 			return getReturnedDecision();
@@ -129,8 +126,7 @@ final class CombiningAlgEvaluators
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions,
-				final UpdatableList<JAXBElement<IdReferenceType>> updatableApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions, final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
 			ExtendedDecision firstIndeterminate = null;
 			for (final RuleEvaluator rule : rulesWithSameEffect)

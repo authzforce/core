@@ -59,10 +59,10 @@ public class NumericArithmeticFunctionsTest extends StandardFunctionTest
 	{
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-add
-				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerValue("2"), new IntegerValue("1")), new IntegerValue("3") },
+				new Object[] { NAME_INTEGER_ADD, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(1)), IntegerValue.valueOf(3) },
 				//
-				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerValue("2"), new IntegerValue("-1")), new IntegerValue("1") },
-				new Object[] { NAME_INTEGER_ADD, Arrays.asList(new IntegerValue("2"), new IntegerValue("-1"), new IntegerValue("0"), new IntegerValue("3")), new IntegerValue("4") },
+				new Object[] { NAME_INTEGER_ADD, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(-1)), IntegerValue.valueOf(1) },
+				new Object[] { NAME_INTEGER_ADD, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(-1), IntegerValue.valueOf(0), IntegerValue.valueOf(3)), IntegerValue.valueOf(4) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-add
 				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleValue("1.5"), new DoubleValue("2.5")), new DoubleValue("4.0") },
@@ -71,9 +71,9 @@ public class NumericArithmeticFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_DOUBLE_ADD, Arrays.asList(new DoubleValue("1.25"), new DoubleValue("-2.75"), new DoubleValue("0.0"), new DoubleValue("4.0")), new DoubleValue("2.5") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-subtract
-				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(new IntegerValue("2"), new IntegerValue("1")), new IntegerValue("1") },
+				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(1)), IntegerValue.valueOf(1) },
 				//
-				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(new IntegerValue("2"), new IntegerValue("-1")), new IntegerValue("3") },
+				new Object[] { NAME_INTEGER_SUBTRACT, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(-1)), IntegerValue.valueOf(3) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-subtract
 				new Object[] { NAME_DOUBLE_SUBTRACT, Arrays.asList(new DoubleValue("1.5"), new DoubleValue("2.5")), new DoubleValue("-1.") },
@@ -81,9 +81,9 @@ public class NumericArithmeticFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_DOUBLE_SUBTRACT, Arrays.asList(new DoubleValue("1.5"), new DoubleValue("-2.5")), new DoubleValue("4.0") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-multiply
-				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerValue("2"), new IntegerValue("3")), new IntegerValue("6") },//
-				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerValue("2"), new IntegerValue("0")), new IntegerValue("0") },
-				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(new IntegerValue("2"), new IntegerValue("-1"), new IntegerValue("3")), new IntegerValue("-6") },
+				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(3)), IntegerValue.valueOf(6) },//
+				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(0)), IntegerValue.valueOf(0) },
+				new Object[] { NAME_INTEGER_MULTIPLY, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(-1), IntegerValue.valueOf(3)), IntegerValue.valueOf(-6) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-multiply
 				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleValue("1.5"), new DoubleValue("2.5")), new DoubleValue("3.75") },//
@@ -91,13 +91,13 @@ public class NumericArithmeticFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_DOUBLE_MULTIPLY, Arrays.asList(new DoubleValue("1.25"), new DoubleValue("-2.75"), new DoubleValue("1.5")), new DoubleValue("-5.15625") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-divide
-				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerValue("6"), new IntegerValue("3")), new IntegerValue("2") },
+				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(3)), IntegerValue.valueOf(2) },
 				//
-				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerValue("7"), new IntegerValue("-3")), new IntegerValue("-2") },
+				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(IntegerValue.valueOf(7), IntegerValue.valueOf(-3)), IntegerValue.valueOf(-2) },
 				//
-				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerValue("0"), new IntegerValue("-3")), new IntegerValue("0") },
+				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(IntegerValue.valueOf(0), IntegerValue.valueOf(-3)), IntegerValue.valueOf(0) },
 				//
-				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(new IntegerValue("-3"), new IntegerValue("0")), null },
+				new Object[] { NAME_INTEGER_DIVIDE, Arrays.asList(IntegerValue.valueOf(-3), IntegerValue.valueOf(0)), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-divide
 				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleValue("6.5"), new DoubleValue("2.5")), new DoubleValue("2.6") },
@@ -109,15 +109,15 @@ public class NumericArithmeticFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_DOUBLE_DIVIDE, Arrays.asList(new DoubleValue("-3.14"), new DoubleValue("0.0")), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-mod
-				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerValue("6"), new IntegerValue("3")), new IntegerValue("0") },
+				new Object[] { NAME_INTEGER_MOD, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(3)), IntegerValue.valueOf(0) },
 				//
-				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerValue("7"), new IntegerValue("3")), new IntegerValue("1") },
+				new Object[] { NAME_INTEGER_MOD, Arrays.asList(IntegerValue.valueOf(7), IntegerValue.valueOf(3)), IntegerValue.valueOf(1) },
 				//
-				new Object[] { NAME_INTEGER_MOD, Arrays.asList(new IntegerValue("0"), new IntegerValue("-3")), new IntegerValue("0") },
+				new Object[] { NAME_INTEGER_MOD, Arrays.asList(IntegerValue.valueOf(0), IntegerValue.valueOf(-3)), IntegerValue.valueOf(0) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-abs
-				new Object[] { NAME_INTEGER_ABS, Arrays.asList(new IntegerValue("5")), new IntegerValue("5") },//
-				new Object[] { NAME_INTEGER_ABS, Arrays.asList(new IntegerValue("-5")), new IntegerValue("5") },
+				new Object[] { NAME_INTEGER_ABS, Arrays.asList(IntegerValue.valueOf(5)), IntegerValue.valueOf(5) },//
+				new Object[] { NAME_INTEGER_ABS, Arrays.asList(IntegerValue.valueOf(-5)), IntegerValue.valueOf(5) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-abs
 				new Object[] { NAME_DOUBLE_ABS, Arrays.asList(new DoubleValue("5.25")), new DoubleValue("5.25") },//

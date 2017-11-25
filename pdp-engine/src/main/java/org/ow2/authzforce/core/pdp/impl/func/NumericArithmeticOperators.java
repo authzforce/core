@@ -52,7 +52,7 @@ final class NumericArithmeticOperators
 		}
 
 		@Override
-		public NAV eval(final Deque<NAV> args)
+		public NAV eval(final Deque<NAV> args) throws ArithmeticException
 		{
 			final NAV arg0 = args.poll();
 			return arg0.add(args);
@@ -70,7 +70,7 @@ final class NumericArithmeticOperators
 		}
 
 		@Override
-		public NAV eval(final Deque<NAV> args)
+		public NAV eval(final Deque<NAV> args) throws ArithmeticException
 		{
 			final NAV arg0 = args.poll();
 			return arg0.multiply(args);
@@ -81,7 +81,7 @@ final class NumericArithmeticOperators
 	static final class SubtractOperator<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
 	{
 		@Override
-		public NAV eval(final Deque<NAV> args)
+		public NAV eval(final Deque<NAV> args) throws ArithmeticException
 		{
 			final NAV arg0 = args.poll();
 			final NAV arg1 = args.poll();

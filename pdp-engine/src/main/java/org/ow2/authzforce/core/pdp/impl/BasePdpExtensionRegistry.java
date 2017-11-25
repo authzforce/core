@@ -51,7 +51,7 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 	 * @param extensionsById
 	 *            extensions input map; the registry actually creates and uses an immutable copy of this map internally to avoid external modifications on the internal map
 	 */
-	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Map<String, T> extensionsById)
+	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Map<String, ? extends T> extensionsById)
 	{
 		assert extensionClass != null && extensionsById != null;
 
@@ -102,7 +102,7 @@ public abstract class BasePdpExtensionRegistry<T extends PdpExtension> implement
 	 * @param extensions
 	 *            extensions (required not null)
 	 */
-	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Set<T> extensions)
+	protected BasePdpExtensionRegistry(final Class<? super T> extensionClass, final Set<? extends T> extensions)
 	{
 		this(extensionClass, newImmutableMap(extensions));
 	}

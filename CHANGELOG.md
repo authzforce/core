@@ -4,6 +4,39 @@ All notable changes to this project are documented in this file following the [K
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
 
+## 10.0.0
+### Changed
+- Parent project version: 6.0.0 -> 7.0.0:
+	- Changed managed Spring version: 4.3.6 -> 4.3.12
+- Dependency version: core-pdp-api: 11.0.0 ->12.0.0
+- Changed PDP configuration XSD: 5.0.0 -> 6.0.0:
+	- Replaced attribute `badRequestStatusDetailLevel` with `clientRequestErrorVerbosityLevel`
+	- Replaced attributes `requestFilter` and `resultFilter` with element `ioProcChain` of new type `InOutProcChain` defining a pair of request preprocessor (ex-requestFilter) and result postprocessor (ex-resultFilter)
+	- Added `maxIntegerValue` attribute allowing to define the expected max integer value to be handled by the PDP engine during evaluation, based on which the engine selects the best Java representation among several (BigInteger, Long, Integer) for memory and CPU usage optimization
+- Renamed PDP engine interfaces and base implementations:
+	* `(Base|Closeable)AttributeProviderModule` -> `(Base|Closeable)DesignatedAttributeProvider`
+	* `(Base)RequestFilter` -> `(Base)DecisionRequestPreprocessor`
+	* `DecisionResultFilter` -> `DecisionResultPostprocessor`
+	* `CloseablePdp` -> `CloseablePdpEngine`
+	* `(Base|Closeable)(Static)RefPolicyProviderModule` -> `(Base|Closeable)(Static)RefPolicyProvider`
+	* `RootPolicyProviderModule` -> `RootPolicyProvider`
+	* `(Base)DatatypeFactory(Registry)` -> `(Base)AttributeValueFactory(Registry)` (using new `AttributeDatatype` subclass of `Datatype`)
+- Core PDP engine made agnostic of decision request/response formats, and extensible through `PdpEngineInoutAdapter` interface, and more specifically `DecisionRequestPreprocessor` and `DecisionResultPostprocessor` interfaces, in order to support new types of input/output (SerDes) formats (native implementations provided for XACML 3.0/XML - core specification - using JAXB API, and XACML/JSON - JSON Profile of XACML 3.0)
+- Identifiers of native PDP requestFilter/resultFilter (now requestPreproc/resultPostproc) extensions: 
+	- *...:request-filter:...* renamed to *...:request-preproc:xacml-xml:...*
+	- *...result-filter:...* renamed to *...:result-postproc:xacml-xml:...*	
+- Replaced `JaxbXacmlUtils` utility class with `Xacml3JaxbHelper` (in authzforce-ce-xacml-model dependency)
+- Changed naming convention for Java class names with acronym(s) (only first letter should be uppercase), e.g. PolicyPOJO -> PolicyPojo
+
+### Added	
+- Module `pdp-io-xacml-json` - XACML JSON Profile implementation: provides PDP extensions for processing (request/result pre/postprocessors) JSON input/output formats defined by JSON Profile of
+XACML 3.0, and adapting to the PDP engine API; also provides automatic conversion of OASIS XACML 3.0/XML conformance test to XACML/JSON format (JSON Profile of XACML 3.0) with XSLT.
+- Module `pdp-cli`: provides a PDP command-line interface and produces an executable jar allowing to test the PDP engine on the command line
+- PDP engine I/O adapter extension mechanism for supporting new input/output formats of decision requests/responses
+- `PdpEngineAdapters` utility class to help instantiate PDP engines supporting specific input/output formats
+- `PpEngineConfiguration` utility class to help instantiate a PDP engine from a PDP XML configuration file (valid against PDP configuration XSD)
+
+
 ## 9.1.0
 ### Changed 
 - MongoDBRefPolicyProviderModule class: removed useless method already implemented by super class BaseStaticRefPolicyProviderModule.

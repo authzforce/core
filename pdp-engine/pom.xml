@@ -3,12 +3,12 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>9.1.0</version>
+      <version>10.0.0</version>
       <relativePath>..</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-engine</artifactId>
    <name>${project.groupId}:${project.artifactId}</name>
-   <description>AuthZForce Community Edition - XACML-compliant Core PDP Engine</description>
+   <description>AuthzForce - XACML-compliant Core PDP Engine</description>
    <url>${project.url}</url>
    <scm>
 <!--       Used by Jenkins - Maven release plugin -->
@@ -42,7 +42,7 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
-         <version>11.0.0</version>
+         <version>12.0.0</version>
       </dependency>
       <!-- /Authzforce dependencies -->
 
@@ -66,8 +66,10 @@
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-maven</artifactId>
             <configuration>
-               <!-- The plugin has numerous issues with version matching, which triggers false positives so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
+               <cveValidForHours>24</cveValidForHours>
+               <!-- The plugin has numerous issues with version matching, which triggers false positives so we need a "suppresion" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
+               <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
             </configuration>
             <executions>
                <execution>

@@ -25,7 +25,7 @@ import java.util.Set;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.DatatypeFactory;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.impl.ImmutablePdpExtensionRegistry;
 
 /**
@@ -74,7 +74,7 @@ public final class ImmutableFunctionRegistry implements FunctionRegistry
 	 * @see org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry#getFunction(java.lang.String, org.ow2.authzforce.core.pdp.api.value.DatatypeFactory)
 	 */
 	@Override
-	public <SUB_RETURN_T extends AttributeValue> Function<?> getFunction(final String functionId, final DatatypeFactory<SUB_RETURN_T> subFunctionReturnTypeFactory)
+	public Function<?> getFunction(final String functionId, final Datatype<? extends AttributeValue> subFunctionReturnType)
 	{
 		final Function<?> nonGenericFunc = nonGenericFunctionRegistry.getExtension(functionId);
 		if (nonGenericFunc != null)
@@ -93,7 +93,7 @@ public final class ImmutableFunctionRegistry implements FunctionRegistry
 			return null;
 		}
 
-		return funcFactory.getInstance(subFunctionReturnTypeFactory);
+		return funcFactory.getInstance(subFunctionReturnType);
 	}
 
 	@Override

@@ -41,8 +41,7 @@ final class StringConcatenateFunction extends SingleParameterTypedFirstOrderFunc
 
 	StringConcatenateFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.STRING_FACTORY.getDatatype(), true, Arrays.asList(StandardDatatypes.STRING_FACTORY.getDatatype(), StandardDatatypes.STRING_FACTORY.getDatatype(),
-				StandardDatatypes.STRING_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.STRING, true, Arrays.asList(StandardDatatypes.STRING, StandardDatatypes.STRING, StandardDatatypes.STRING));
 	}
 
 	@Override

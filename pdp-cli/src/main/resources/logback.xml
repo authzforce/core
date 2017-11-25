@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- For assistance related to logback-translator or configuration -->
+<!-- files in general, please contact the logback user mailing list -->
+<!-- at http://www.qos.ch/mailman/listinfo/logback-user -->
+<!-- -->
+<!-- For professional support please see -->
+<!-- http://www.qos.ch/shop/products/professionalSupport -->
+<!-- -->
+<!-- More information: http://logback.qos.ch/faq.html#sharedConfiguration -->
+<configuration>
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %m%n</pattern>
+         <!-- Pattern mitigating CRLF injection -->
+<!--          <pattern>%-4r [%t] [%d] %5p [%C:%M] \(%F:%L\) - %replace(%m){'\r?\n','<NEWLINE>'}%n</pattern> -->
+		</encoder>
+	</appender>
+
+	<logger name="org.ow2.authzforce" additivity="false" level="ERROR">
+		<appender-ref ref="stdout" />
+	</logger>
+   <!-- <logger name="org.apache.http" additivity="false" level="DEBUG"> <appender-ref 
+      ref="error" /> </logger> <logger name="org.apache.http.wire" level="ERROR"> 
+      <appender-ref ref="error" /> </logger> -->
+	<root level="ERROR">
+		<appender-ref ref="stdout" />
+	</root>
+</configuration>

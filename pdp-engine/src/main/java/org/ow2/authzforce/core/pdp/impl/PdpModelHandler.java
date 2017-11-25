@@ -126,7 +126,7 @@ public final class PdpModelHandler
 		 * used by REST/SOAP frameworks: Apache CXF, Metro, etc. So we need to add to the JAXBContext all the extensions' model (JAXB-generated) classes. These have been collected by the
 		 * PdpExtensionLoader.
 		 */
-		final Set<Class<? extends AbstractPdpExtension>> extJaxbClasses = PdpExtensionLoader.getExtensionJaxbClasses();
+		final Set<Class<? extends AbstractPdpExtension>> extJaxbClasses = PdpExtensions.getExtensionJaxbClasses();
 		final Set<Class<?>> jaxbBoundClassSet = HashCollections.<Class<?>> newUpdatableSet(extJaxbClasses.size() + 1);
 		jaxbBoundClassSet.addAll(extJaxbClasses);
 		LOGGER.debug("Final list of loaded extension models (JAXB classes): {}", jaxbBoundClassSet);

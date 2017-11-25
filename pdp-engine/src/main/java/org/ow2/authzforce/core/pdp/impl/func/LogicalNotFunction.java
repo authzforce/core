@@ -40,7 +40,7 @@ final class LogicalNotFunction extends SingleParameterTypedFirstOrderFunction<Bo
 
 	LogicalNotFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.BOOLEAN_FACTORY.getDatatype(), false, Collections.singletonList(StandardDatatypes.BOOLEAN_FACTORY.getDatatype()));
+		super(functionId, StandardDatatypes.BOOLEAN, false, Collections.singletonList(StandardDatatypes.BOOLEAN));
 	}
 
 	/** {@inheritDoc} */

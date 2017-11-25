@@ -28,7 +28,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.api.value.RFC822NameValue;
+import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
@@ -61,27 +61,27 @@ public class SpecialMatchFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_X500NAME_MATCH, Arrays.asList(new X500NameValue("O=Another Corp,C=US"), new X500NameValue("cn=John Smith,o=Medico Corp, c=US")), BooleanValue.FALSE },
 
 				// urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new RFC822NameValue("Anderson@sun.com")), BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new Rfc822NameValue("Anderson@sun.com")), BooleanValue.TRUE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new RFC822NameValue("Anderson@SUN.COM")), BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new Rfc822NameValue("Anderson@SUN.COM")), BooleanValue.TRUE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new RFC822NameValue("Anne.Anderson@sun.com")), BooleanValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new Rfc822NameValue("Anne.Anderson@sun.com")), BooleanValue.FALSE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new RFC822NameValue("anderson@sun.com")), BooleanValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new Rfc822NameValue("anderson@sun.com")), BooleanValue.FALSE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new RFC822NameValue("Anderson@east.sun.com")), BooleanValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("Anderson@sun.com"), new Rfc822NameValue("Anderson@east.sun.com")), BooleanValue.FALSE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("sun.com"), new RFC822NameValue("Anderson@sun.com")), BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("sun.com"), new Rfc822NameValue("Anderson@sun.com")), BooleanValue.TRUE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("sun.com"), new RFC822NameValue("Baxter@SUN.COM")), BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("sun.com"), new Rfc822NameValue("Baxter@SUN.COM")), BooleanValue.TRUE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("sun.com"), new RFC822NameValue("Anderson@east.sun.com")), BooleanValue.FALSE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue("sun.com"), new Rfc822NameValue("Anderson@east.sun.com")), BooleanValue.FALSE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue(".east.sun.com"), new RFC822NameValue("Anderson@east.sun.com")), BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue(".east.sun.com"), new Rfc822NameValue("Anderson@east.sun.com")), BooleanValue.TRUE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue(".east.sun.com"), new RFC822NameValue("anne.anderson@ISRG.EAST.SUN.COM")), BooleanValue.TRUE },
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue(".east.sun.com"), new Rfc822NameValue("anne.anderson@ISRG.EAST.SUN.COM")), BooleanValue.TRUE },
 				//
-				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue(".east.sun.com"), new RFC822NameValue("Anderson@sun.com")), BooleanValue.FALSE });
+				new Object[] { NAME_RFC822NAME_MATCH, Arrays.asList(new StringValue(".east.sun.com"), new Rfc822NameValue("Anderson@sun.com")), BooleanValue.FALSE });
 	}
 
 }

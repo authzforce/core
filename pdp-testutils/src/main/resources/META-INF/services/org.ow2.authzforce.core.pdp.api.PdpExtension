@@ -1,7 +1,7 @@
-org.ow2.authzforce.core.pdp.testutil.ext.TestAttributeProviderModule$Factory
-org.ow2.authzforce.core.pdp.testutil.ext.MongoDBRefPolicyProviderModule$Factory
-org.ow2.authzforce.core.pdp.testutil.ext.TestXACMLPolicyAttributeValue$Factory
-org.ow2.authzforce.core.pdp.testutil.ext.TestDNSNameWithPortValue$Factory
-org.ow2.authzforce.core.pdp.testutil.ext.TestDNSNameValueEqualFunction
+org.ow2.authzforce.core.pdp.testutil.ext.TestAttributeProvider$Factory
+org.ow2.authzforce.core.pdp.testutil.ext.MongoDbRefPolicyProvider$Factory
+org.ow2.authzforce.core.pdp.testutil.ext.TestXacmlPolicyAttributeValue$Factory
+org.ow2.authzforce.core.pdp.testutil.ext.TestDnsNameWithPortValue$Factory
+org.ow2.authzforce.core.pdp.testutil.ext.TestDnsNameValueEqualFunction
 org.ow2.authzforce.core.pdp.testutil.ext.TestOnPermitApplySecondCombiningAlg
-org.ow2.authzforce.core.pdp.testutil.ext.TestCombinedDecisionResultFilter
+org.ow2.authzforce.core.pdp.testutil.ext.TestCombinedDecisionXacmlJaxbResultPostprocessor$Factory
