@@ -29,7 +29,7 @@ Issues reported on [GitHub](https://github.com/authzforce/core/issues) are refer
 - Changed naming convention for Java class names with acronym(s) (only first letter should be uppercase), e.g. PolicyPOJO -> PolicyPojo
 
 ### Added	
-- Module `pdp-io-xacml-json`: provides PDP extensions for processing (request/result pre/postprocessors) JSON input/output formats defined by JSON Profile of
+- Module `pdp-io-xacml-json` - XACML JSON Profile implementation: provides PDP extensions for processing (request/result pre/postprocessors) JSON input/output formats defined by JSON Profile of
 XACML 3.0, and adapting to the PDP engine API; also provides automatic conversion of OASIS XACML 3.0/XML conformance test to XACML/JSON format (JSON Profile of XACML 3.0) with XSLT.
 - Module `pdp-cli`: provides a PDP command-line interface and produces an executable jar allowing to test the PDP engine on the command line
 - PDP engine I/O adapter extension mechanism for supporting new input/output formats of decision requests/responses
