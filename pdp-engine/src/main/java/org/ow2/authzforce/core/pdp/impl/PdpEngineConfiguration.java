@@ -570,7 +570,7 @@ public final class PdpEngineConfiguration
 		}
 		catch (final FileNotFoundException e)
 		{
-			throw new IllegalArgumentException("Invalid PDP configuration location: " + confLocation, e);
+			throw new IllegalArgumentException("Invalid PDP configuration location (neither a file in the file system nor a valid URL): " + confLocation, e);
 		}
 
 		/*
