@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file following the [K
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
 
+## Unreleased
+### Added
+- Support for PDP configuration files located inside JARs (`jar` URLs)
+
+
 ## 10.1.0
 ### Changed
 - Parent project version: 7.0.0 -> 7.1.0
