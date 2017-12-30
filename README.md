@@ -67,7 +67,9 @@ See the [license file](LICENSE).
 
 
 ## System requirements
-Java (JRE) 8 or later. Make sure the value - comma-separated list - of the system property `javax.xml.accessExternalSchema` is set to include `http`, to work around Java 8+ external schema access restriction, e.g. with a JVM argument:
+Java (JRE) 8 or later. 
+
+**Make sure** the value - comma-separated list - of the system property `javax.xml.accessExternalSchema` is set to include `http`, to work around Java 8+ external schema access restriction, e.g. with a JVM argument:
 `-Djavax.xml.accessExternalSchema=http`
 
 
@@ -99,7 +101,7 @@ You can either build AuthzForce PDP library from the source code after cloning t
 * artifactId: `authzforce-ce-core-pdp-engine`;
 * packaging: `jar`.
 
-Since this is a Maven artifact and it requires dependencies, you should build your application with a build tool that understands Maven dependencies (e.g. Maven or Gradle), and configure this artifact as a Maven dependency, for instance with Maven in the `pom.xml`
+Since this is a Maven artifact and it requires dependencies, you should build your application with a build tool that understands Maven dependencies (e.g. Maven or Gradle), and configure this artifact as a Maven dependency, for instance with Maven in the `pom.xml`:
 
 ```xml
 ...
@@ -124,10 +126,10 @@ Then instantiate a PDP engine configuration with method [PdpEngineConfiguration#
    ```
    This is a basic PDP configuration with basic settings and the root policy (XACML 3.0 Policy document) loaded from a file `policy.xml` located in the same directory as this PDP configuration file (see previous paragraph for an example of policy).
 
-As a result of calling method `getInstance(...)`, you get a `PdpEngineConfiguration` object. Basic example of Java code using a PDP configuration file at the root of the classpath:
+As a result of calling method `getInstance(...)`, you get a `PdpEngineConfiguration` object. Basic example of Java code using a PDP configuration file in some folder `/opt/authzforce`:
 
 ```java
-final PdpEngineConfiguration pdpEngineConf = PdpEngineConfiguration.getInstance("classpath:pdp.xml"); 
+final PdpEngineConfiguration pdpEngineConf = PdpEngineConfiguration.getInstance("file:///opt/authzforce/pdp.xml"); 
 ```
 
 Then the next step depends on the kind of decision request you want to evaluate. The various alternatives are detailed in the next sections.
@@ -141,39 +143,38 @@ Basic example of Java code (based on previous line of code):
 ```java
 ...
 /*
- * Create the PDP engine. You can reuse the same for all requests, so do it only once and for all.
+ * Create the PDP engine. You can reuse the same for all requests, so do it only once for all.
  */
 final BasePdpEngine pdp = new BasePdpEngine(pdpEngineConf);
 ...
 
-// For every request...
 // Create the XACML request in native model
-        final DecisionRequestBuilder<?> requestBuilder = pdp.newRequestBuilder(-1, -1);
-        /*
-		 * If you care about memory optimization (avoid useless memory allocation), make sure you know the (expected) number of XACML attribute categories and (expected) total number of attributes in the request, and use these as arguments to newRequestBuilder(int,int) method, instead of negative values like above.
-		 * e.g. 3 attribute categories, 7 total attributes
-		 */
-		// final DecisionRequestBuilder<?> requestBuilder = pdp.newRequestBuilder(3, 7);
+final DecisionRequestBuilder<?> requestBuilder = pdp.newRequestBuilder(-1, -1);
+/*
+ * If you care about memory optimization (avoid useless memory allocation), make sure you know the (expected) number of XACML attribute categories and (expected) total number of attributes in the request, and use these as arguments to newRequestBuilder(int,int) method, instead of negative values like above.
+ * e.g. 3 attribute categories, 4 total attributes in this case
+ */
+// final DecisionRequestBuilder<?> requestBuilder = pdp.newRequestBuilder(3, 4);
 
-		// Add subject ID attribute (access-subject category), no issuer, string value "john"
-		final AttributeFqn subjectIdAttributeId = AttributeFqns.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_ID.value());
-		final AttributeBag<?> subjectIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("john"));
-		requestBuilder.putNamedAttributeIfAbsent(subjectIdAttributeId, subjectIdAttributeValues);
+// Add subject ID attribute (access-subject category), no issuer, string value "john"
+final AttributeFqn subjectIdAttributeId = AttributeFqns.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_SUBJECT_ID.value());
+final AttributeBag<?> subjectIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("john"));
+requestBuilder.putNamedAttributeIfAbsent(subjectIdAttributeId, subjectIdAttributeValues);
 
-		// Add subject role(s) attribute to access-subject category, no issuer, string value "boss"
-		final AttributeFqn subjectRoleAttributeId = AttributeFqns.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_2_0_SUBJECT_ROLE.value());
-		final AttributeBag<?> roleAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("boss"));
-		requestBuilder.putNamedAttributeIfAbsent(subjectRoleAttributeId, roleAttributeValues);
+// Add subject role(s) attribute to access-subject category, no issuer, string value "boss"
+final AttributeFqn subjectRoleAttributeId = AttributeFqns.newInstance(XACML_1_0_ACCESS_SUBJECT.value(), Optional.empty(), XacmlAttributeId.XACML_2_0_SUBJECT_ROLE.value());
+final AttributeBag<?> roleAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("boss"));
+requestBuilder.putNamedAttributeIfAbsent(subjectRoleAttributeId, roleAttributeValues);
 
-		// Add resource ID attribute (resource category), no issuer, string value "/some/resource/location"
-		final AttributeFqn resourceIdAttributeId = AttributeFqns.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_RESOURCE_ID.value());
-		final AttributeBag<?> resourceIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("/some/resource/location"));
-		requestBuilder.putNamedAttributeIfAbsent(resourceIdAttributeId, resourceIdAttributeValues);
+// Add resource ID attribute (resource category), no issuer, string value "/some/resource/location"
+final AttributeFqn resourceIdAttributeId = AttributeFqns.newInstance(XACML_3_0_RESOURCE.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_RESOURCE_ID.value());
+final AttributeBag<?> resourceIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("/some/resource/location"));
+requestBuilder.putNamedAttributeIfAbsent(resourceIdAttributeId, resourceIdAttributeValues);
 
-		// Add action ID attribute (action category), no issuer, string value "GET"
-		final AttributeFqn actionIdAttributeId = AttributeFqns.newInstance(XACML_3_0_ACTION.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ACTION_ID.value());
-		final AttributeBag<?> actionIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("GET"));
-		requestBuilder.putNamedAttributeIfAbsent(actionIdAttributeId, actionIdAttributeValues);
+// Add action ID attribute (action category), no issuer, string value "GET"
+final AttributeFqn actionIdAttributeId = AttributeFqns.newInstance(XACML_3_0_ACTION.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ACTION_ID.value());
+final AttributeBag<?> actionIdAttributeValues = Bags.singletonAttributeBag(StandardDatatypes.STRING, new StringValue("GET"));
+requestBuilder.putNamedAttributeIfAbsent(actionIdAttributeId, actionIdAttributeValues);
 
 // No more attribute, let's finalize the request creation
 final DecisionRequest request = requestBuilder.build(false);
@@ -184,7 +185,7 @@ if(result.getDecision() == DecisionType.PERMIT) {
 	...
 } else {
 	// Not a Permit :-( (maybe Deny, NotApplicable or Indeterminate)
-	...s
+	...
 }
 ```
 
@@ -210,7 +211,7 @@ For an example of using an AuthzForce PDP engine in a real-life use case, please
 For more information, see the Javadoc of  [EmbeddedPdpBasedAuthzInterceptorTest](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptorTest.java).
 
 ## Extensions
-Experimental features (see #features section) are provided as extensions. If you want to use them, you need to use this Maven dependency (which depends on the `authzforce-ce-core-pdp-engine` already) instead:
+Experimental features (see [Features](#Features) section) are provided as extensions. If you want to use them, you need to use this Maven dependency (which depends on the `authzforce-ce-core-pdp-engine` already) instead:
 * groupId: `org.ow2.authzforce`;
 * artifactId: `authzforce-ce-core-pdp-testutils`;
 * packaging: `jar`
