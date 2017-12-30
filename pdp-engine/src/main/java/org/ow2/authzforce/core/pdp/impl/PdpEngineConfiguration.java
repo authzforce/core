@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import org.ow2.authzforce.core.pdp.api.CloseableDesignatedAttributeProvider;
@@ -459,6 +461,24 @@ public final class PdpEngineConfiguration
 
 	}
 
+	private static PdpEngineConfiguration getInstance(final Source confXmlSrc, final PdpModelHandler modelHandler, final EnvironmentProperties envProps) throws IOException, IllegalArgumentException
+	{
+		assert confXmlSrc != null && modelHandler != null;
+
+		// configuration file exists
+		final Pdp pdpJaxbConf;
+		try
+		{
+			pdpJaxbConf = modelHandler.unmarshal(confXmlSrc, Pdp.class);
+		}
+		catch (final JAXBException e)
+		{
+			throw new IllegalArgumentException("Invalid PDP configuration file", e);
+		}
+
+		return new PdpEngineConfiguration(pdpJaxbConf, envProps);
+	}
+
 	/**
 	 * Create PDP instance
 	 * <p>
@@ -483,30 +503,20 @@ public final class PdpEngineConfiguration
 			// no property replacement of PARENT_DIR
 			throw new IllegalArgumentException("Invalid configuration file location: No file exists at: " + confFile);
 		}
+		// configuration file exists
 
 		if (modelHandler == null)
 		{
 			throw NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION;
 		}
 
-		// configuration file exists
-		final Pdp pdpJaxbConf;
-		try
-		{
-			pdpJaxbConf = modelHandler.unmarshal(new StreamSource(confFile), Pdp.class);
-		}
-		catch (final JAXBException e)
-		{
-			throw new IllegalArgumentException("Invalid PDP configuration file", e);
-		}
-
-		// Set property PARENT_DIR in environment properties for future
-		// replacement in configuration strings by PDP extensions using file
-		// paths
+		/*
+		 * Set property PARENT_DIR in environment properties for future replacement in configuration strings by PDP extensions using file paths
+		 */
 		final String propVal = confFile.getParentFile().toURI().toString();
 		LOGGER.debug("Property {} = {}", EnvironmentPropertyName.PARENT_DIR, propVal);
 		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propVal));
-		return new PdpEngineConfiguration(pdpJaxbConf, envProps);
+		return getInstance(new StreamSource(confFile), modelHandler, envProps);
 	}
 
 	/**
@@ -529,17 +539,46 @@ public final class PdpEngineConfiguration
 	 */
 	public static PdpEngineConfiguration getInstance(final String confLocation, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
 	{
-		File confFile = null;
+
+		if (modelHandler == null)
+		{
+			throw NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION;
+		}
+
 		try
 		{
-			confFile = ResourceUtils.getFile(confLocation);
+			final File confFile = ResourceUtils.getFile(confLocation);
+			return getInstance(confFile, modelHandler);
 		}
 		catch (final FileNotFoundException e)
 		{
-			throw new IllegalArgumentException("Invalid PDP configuration location: " + confLocation, e);
+			if (LOGGER.isInfoEnabled())
+			{
+				LOGGER.info(
+						"Could not resolve input PDP configuration location to a file in the file system ({}). Trying to resolve as generic URL instead (but PARENT_DIR property will remain undefined).",
+						e.getMessage());
+			}
 		}
 
-		return getInstance(confFile, modelHandler);
+		/*
+		 * Not a file in the file system, e.g. maybe a file resource inside a JAR/ZIP
+		 */
+		final URL confUrl;
+		try
+		{
+			confUrl = ResourceUtils.getURL(confLocation);
+		}
+		catch (final FileNotFoundException e)
+		{
+			throw new IllegalArgumentException("Invalid PDP configuration location (neither a file in the file system nor a valid URL): " + confLocation, e);
+		}
+
+		/*
+		 * Leave PARENT_DIR environment property undefined since we cannot get the file's parent directory
+		 */
+		LOGGER.debug("Property {} = <undefined>", EnvironmentPropertyName.PARENT_DIR);
+		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.emptyMap());
+		return getInstance(new StreamSource(confUrl.toExternalForm()), modelHandler, envProps);
 	}
 
 	/**
