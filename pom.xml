@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-parent</artifactId>
-      <version>7.1.0</version>
+      <version>7.1.1-SNAPSHOT</version>
    </parent>
    <artifactId>authzforce-ce-core</artifactId>
    <version>10.2.1-SNAPSHOT</version>
@@ -19,6 +19,13 @@
       <!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
       <url>${git.url.base}/core</url>
    </scm>
+<repositories>
+    <repository>
+	<!-- Required by owasp dependency-check plugin for find info (POM) about dependency org.everit.json.schema in child modules -->
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+   </repositories>
    <!-- distributionManagement defined in parent POM already -->
    <dependencyManagement>
       <dependencies>
