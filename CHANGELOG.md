@@ -6,7 +6,7 @@ Issues reported on [GitHub](https://github.com/authzforce/core/issues) are refer
 
 ## 10.3.0
 ### Fixed
-    - Fixed #9 (github) and added unit tests
+    - [GH-9]: authzforce-ce-core-pdp-cli NullPointerException with filenames specified as relative paths to PDP configuration file and XACML request in arguments 
 
 ### Changed
 - Parent project version: 7.1.0 -> 7.2.0, making dependency version changes:
