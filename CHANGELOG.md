@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file following the [K
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
 
+## 10.3.0
+### Fixed
+    - Fixed #9 (github) and added unit tests
+
+### Changed
+- Parent project version: 7.1.0 -> 7.2.0, making dependency version changes:
+  - logback-classic: 1.1.9 -> 1.2.2 (to fix CVE affecting versions < 1.2.0)
+  - slf4j: 1.7.22 --> 1.7.25 (to match logback-classic version upgrade above)
+
+
 ## 10.2.0
 ### Added
 - Support for PDP configuration files located inside JARs (`jar` URLs)
