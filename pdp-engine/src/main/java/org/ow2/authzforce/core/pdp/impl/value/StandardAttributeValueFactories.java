@@ -18,13 +18,26 @@
 package org.ow2.authzforce.core.pdp.impl.value;
 
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.math.BigInteger;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
@@ -34,8 +47,11 @@ import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
 import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
 import org.ow2.authzforce.core.pdp.api.value.ArbitrarilyBigInteger;
+import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Base64BinaryValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
@@ -48,6 +64,7 @@ import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.IpAddressValue;
 import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
+import org.ow2.authzforce.core.pdp.api.value.SimpleValue.StringParseableValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
@@ -56,6 +73,9 @@ import org.ow2.authzforce.core.pdp.api.value.XPathValue;
 import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * XACML standard datatypes
@@ -121,6 +141,8 @@ public final class StandardAttributeValueFactories
 
 	}
 
+	private static final String MEDIUM_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX = ". Expected one of: " + Short.class + "," + Integer.class + "," + BigInteger.class + "," + String.class;
+
 	/**
 	 * integer parsed into {@link Integer}, therefore supports medium-size integers (representing xsd:int)
 	 */
@@ -146,6 +168,11 @@ public final class StandardAttributeValueFactories
 		@Override
 		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
 		{
+			if (value instanceof Short)
+			{
+				return IntegerValue.valueOf(((Short) value).intValue());
+			}
+
 			if (value instanceof Integer)
 			{
 				return IntegerValue.valueOf(((Integer) value).intValue());
@@ -172,11 +199,12 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + ". Expected one of: " + Integer.class + "," + BigInteger.class
-					+ "," + String.class);
+			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + MEDIUM_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX);
 		}
 
 	};
+
+	private static final String LONG_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX = ". Expected one of: " + Short.class + "," + Integer.class + "," + Long.class + "," + BigInteger.class + "," + String.class;
 
 	/**
 	 * integer parsed into {@link Long}, therefore supports long integers (representing xsd:long)
@@ -203,9 +231,19 @@ public final class StandardAttributeValueFactories
 		@Override
 		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
 		{
+			if (value instanceof Short)
+			{
+				return IntegerValue.valueOf(((Short) value).intValue());
+			}
+
 			if (value instanceof Integer)
 			{
 				return IntegerValue.valueOf(((Integer) value).intValue());
+			}
+
+			if (value instanceof Long)
+			{
+				return IntegerValue.valueOf(((Long) value).longValue());
 			}
 
 			if (value instanceof BigInteger)
@@ -229,8 +267,7 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + ". Expected one of: " + Integer.class + "," + BigInteger.class
-					+ "," + String.class);
+			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + LONG_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX);
 		}
 
 	};
@@ -254,9 +291,6 @@ public final class StandardAttributeValueFactories
 				LOGGER.debug("Input integer too big to fit in a long: {}", bigi);
 			}
 
-			/*
-			 * TODO: if it can fit in a long, use IntegerValue.valueOf(long l) -> new LongInteger class
-			 */
 			return new IntegerValue(new ArbitrarilyBigInteger(bigi));
 		}
 
@@ -279,9 +313,19 @@ public final class StandardAttributeValueFactories
 		@Override
 		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
 		{
+			if (value instanceof Short)
+			{
+				return IntegerValue.valueOf(((Short) value).intValue());
+			}
+
 			if (value instanceof Integer)
 			{
 				return IntegerValue.valueOf(((Integer) value).intValue());
+			}
+
+			if (value instanceof Long)
+			{
+				return IntegerValue.valueOf(((Long) value).longValue());
 			}
 
 			if (value instanceof BigInteger)
@@ -295,8 +339,7 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + ". Expected one of: " + Integer.class + "," + BigInteger.class
-					+ "," + String.class);
+			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + LONG_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX);
 		}
 
 	};
@@ -316,6 +359,11 @@ public final class StandardAttributeValueFactories
 		@Override
 		public DoubleValue getInstance(final Serializable value)
 		{
+			if (value instanceof Float)
+			{
+				return new DoubleValue(Double.valueOf(((Float) value).doubleValue()));
+			}
+
 			if (value instanceof Double)
 			{
 				return new DoubleValue((Double) value);
@@ -526,9 +574,9 @@ public final class StandardAttributeValueFactories
 
 	// private static BigInteger BYTE_MAX_AS_BIG_INT = BigInteger.valueOf(Byte.valueOf(Byte.MAX_VALUE).longValue());
 	// private static BigInteger SHORT_MAX_AS_BIG_INT = BigInteger.valueOf(Short.valueOf(Short.MAX_VALUE).longValue());
-	private static BigInteger INT_MAX_AS_BIG_INT = BigInteger.valueOf(Integer.valueOf(Integer.MAX_VALUE).longValue());
+	private static final BigInteger INT_MAX_AS_BIG_INT = BigInteger.valueOf(Integer.valueOf(Integer.MAX_VALUE).longValue());
 
-	private static BigInteger LONG_MAX_AS_BIG_INT = BigInteger.valueOf(Long.valueOf(Long.MAX_VALUE).longValue());
+	private static final BigInteger LONG_MAX_AS_BIG_INT = BigInteger.valueOf(Long.valueOf(Long.MAX_VALUE).longValue());
 
 	/**
 	 * Get standard registry of (datatype-specific) attribute value parsers/factories
@@ -605,4 +653,104 @@ public final class StandardAttributeValueFactories
 		// private empty constructor
 	}
 
+	/*
+	 * FIXME: move this to Bags class?
+	 */
+	private static final Map<Class<?>, StringParseableValueFactory<?>> JAVA_TYPE_TO_ATT_VALUE_FACTORY;
+	private static final Set<Entry<Class<?>, StringParseableValueFactory<?>>> NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY;
+	static
+	{
+		final Map<Class<?>, StringParseableValueFactory<?>> mutableMap = HashCollections.newUpdatableMap(14);
+		mutableMap.put(String.class, STRING);
+		mutableMap.put(Boolean.class, BOOLEAN);
+		mutableMap.put(Short.class, MEDIUM_INTEGER);
+		mutableMap.put(Integer.class, MEDIUM_INTEGER);
+		mutableMap.put(Long.class, LONG_INTEGER);
+		mutableMap.put(BigInteger.class, BIG_INTEGER); // non final
+		mutableMap.put(Float.class, DOUBLE);
+		mutableMap.put(Double.class, DOUBLE);
+		mutableMap.put(LocalTime.class, TIME);
+		mutableMap.put(OffsetTime.class, TIME);
+		mutableMap.put(LocalDate.class, DATE);
+		mutableMap.put(GregorianCalendar.class, DATETIME);// nonfinal
+		mutableMap.put(LocalDateTime.class, DATETIME);
+		mutableMap.put(OffsetDateTime.class, DATETIME);
+		mutableMap.put(ZonedDateTime.class, DATETIME);
+		mutableMap.put(Date.class, DATETIME); // non final, subclass java.sql.Date, etc.
+		mutableMap.put(URI.class, ANYURI);
+		mutableMap.put(byte[].class, HEXBINARY);
+		mutableMap.put(X500Principal.class, X500NAME);
+
+		JAVA_TYPE_TO_ATT_VALUE_FACTORY = HashCollections.newImmutableMap(mutableMap);
+
+		/*
+		 * Using JAVA_TYPE_TO_ATT_VALUE_FACTORY.get(instanceClass) to get the corresponding factory is faster that doing many instanceOf checks but only works for equal match. For non final classes,
+		 * we still have to do the instanceOf check because the instance class might not be equal, i.e same class, but a subclass. So we gather the list of non-final classes for which instanceOf check
+		 * is necessary iff no equal match.
+		 */
+		final Set<Entry<Class<?>, StringParseableValueFactory<?>>> mutableSet = JAVA_TYPE_TO_ATT_VALUE_FACTORY.entrySet().stream().filter(e -> !Modifier.isFinal(e.getKey().getModifiers()))
+				.collect(Collectors.toSet());// HashCollections.newUpdatableSet(JAVA_TYPE_TO_ATT_VALUE_FACTORY.size());
+		NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY = ImmutableSet.copyOf(mutableSet);
+	}
+
+	private static final StringParseableValueFactory<?> getAttributeValueFactory(final Serializable rawValue)
+	{
+		final StringParseableValueFactory<? extends AttributeValue> attValFactoryFromMap = JAVA_TYPE_TO_ATT_VALUE_FACTORY.get(rawValue.getClass());
+		if (attValFactoryFromMap == null)
+		{
+			/*
+			 * This may look like the collection is fully filtered before findfirst() is called but it is not the case. "All intermediate operations e.g. filter(), map() etc are lazy and they are only
+			 * executed when a terminal operation like findFirst() or forEach() is called.
+			 * 
+			 * This also means, a lot of opportunity for optimization depending upon the size of the original list." (Quote from:
+			 * http://javarevisited.blogspot.fr/2016/03/how-to-find-first-element-of-stream-in.html)
+			 */
+			final Optional<Entry<Class<?>, StringParseableValueFactory<?>>> optionalResult = NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY.stream().filter(e -> e.getKey().isInstance(rawValue)).findFirst();
+			if (optionalResult.isPresent())
+			{
+				return optionalResult.get().getValue();
+			}
+
+			throw new UnsupportedOperationException("Unsupported input value type: '" + rawValue.getClass() + "' (no suitable XACML datatype factory found)");
+		}
+
+		return attValFactoryFromMap;
+	}
+
+	public static AttributeValue newAttributeValue(final Serializable rawValue) throws IllegalArgumentException, UnsupportedOperationException
+	{
+		Preconditions.checkArgument(rawValue != null, "Null arg");
+		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawValue);
+		if (factory == null)
+		{
+			throw new UnsupportedOperationException("Unsupported input value type: '" + rawValue.getClass() + "' (no suitable XACML datatype factory found)");
+		}
+		return factory.getInstance(rawValue);
+	}
+
+	/**
+	 * TODO: document default mappings
+	 * 
+	 * @param rawVals
+	 * @return
+	 * @throws UnsupportedOperationException
+	 * @throws IllegalArgumentException
+	 *             if
+	 */
+	public static AttributeBag<?> newAttributeBag(final Collection<Serializable> rawVals) throws UnsupportedOperationException, IllegalArgumentException
+	{
+		Preconditions.checkArgument(rawVals != null && rawVals.isEmpty(), "Null/empty arg");
+		final Serializable rawVal0 = rawVals.iterator().next();
+		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawVal0);
+		if (factory == null)
+		{
+			throw new UnsupportedOperationException("Unsupported input value type: '" + rawVal0.getClass() + "' (no suitable XACML datatype factory found)");
+		}
+		return Bags.newAttributeBag(factory, rawVals);
+	}
+
+	public static void main(final String... strings)
+	{
+		final Serializable javaValue = java.sql.Date.valueOf(LocalDate.now());
+	}
 }
