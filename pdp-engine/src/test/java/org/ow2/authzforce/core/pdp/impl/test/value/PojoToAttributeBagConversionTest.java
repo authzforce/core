@@ -21,13 +21,16 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
 
 /**
  * 
@@ -36,46 +39,52 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 @RunWith(value = Parameterized.class)
 public class PojoToAttributeBagConversionTest
 {
-	@Parameters
+	@Parameters()
 	public static Collection<Object[]> data()
 	{
 		final Object[][] data = new Object[][] {
-		/* string type */
-		{ "string", StandardDatatypes.STRING },
-		/*
-		 * date
-		 */
-		/*
-		 * matching type (LocalDate)
-		 */
-		{ LocalDate.now(), StandardDatatypes.DATE },
-		/* subtype (of Date) */
-		{ java.sql.Date.valueOf(LocalDate.now()), StandardDatatypes.DATE } };
-		/*
-		 * TODO: others
-		 */
+				/* empty collection */
+				{ Collections.emptyList(), StandardDatatypes.STRING.getId() },
+				/* string type */
+				{ Arrays.asList("string"), StandardDatatypes.STRING.getId() },
+				/*
+				 * date
+				 */
+				/*
+				 * matching type (LocalDate)
+				 */
+				{ Arrays.asList(LocalDate.now()), StandardDatatypes.DATE.getId() },
+				/* subtype (of Date) */
+				{ Arrays.asList(java.sql.Date.valueOf(LocalDate.now())), StandardDatatypes.DATE.getId() },
+				/*
+				 * TODO: others
+				 */
+				/* invalid mix of datatypes */
+				{ Arrays.asList(new Integer(0), LocalDate.now()), StandardDatatypes.DATE.getId() } };
+
 		return Arrays.asList(data);
 	}
 
-	private final Serializable value;
-	private final AttributeDatatype<?> expectedXacmlDatatype;
+	private final Collection<? extends Serializable> rawValues;
+	private final String expectedAttributeDatatypeId;
 
-	public PojoToAttributeBagConversionTest(final Serializable rawValue, final AttributeDatatype<?> expectedReturnedXacmlDataType)
+	public PojoToAttributeBagConversionTest(final Collection<? extends Serializable> rawValues,
+			final String expectedAttributeDatatypeId)
 	{
-		this.value = rawValue;
-		this.expectedXacmlDatatype = expectedReturnedXacmlDataType;
+		this.rawValues = rawValues;
+		this.expectedAttributeDatatypeId = expectedAttributeDatatypeId;
 	}
 
 	@Test
-	public void testSingleValue()
+	public void test()
 	{
-		// TODO
-	}
+		if (rawValues.isEmpty())
+		{
 
-	@Test
-	public void testCollection()
-	{
-		// TODO
+		}
+		final AttributeValue attVal = StandardAttributeValueFactories.newAttributeValue(rawValue);
+		Assert.assertEquals(attVal.getDataType(), expectedAttributeDatatypeId,
+				"Unexpected datatype for created attribute value");
 	}
 
 }

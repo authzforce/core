@@ -740,7 +740,7 @@ public final class StandardAttributeValueFactories
 	 */
 	public static AttributeBag<?> newAttributeBag(final Collection<Serializable> rawVals) throws UnsupportedOperationException, IllegalArgumentException
 	{
-		Preconditions.checkArgument(rawVals != null && rawVals.isEmpty(), "Null/empty arg");
+		Preconditions.checkArgument(rawVals != null && !rawVals.isEmpty(), "Null/empty arg");
 		final Serializable rawVal0 = rawVals.iterator().next();
 		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawVal0.getClass());
 		if (factory == null)
