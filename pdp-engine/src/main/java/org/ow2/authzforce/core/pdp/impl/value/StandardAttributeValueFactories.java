@@ -693,9 +693,9 @@ public final class StandardAttributeValueFactories
 		NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY = ImmutableSet.copyOf(mutableSet);
 	}
 
-	private static final StringParseableValueFactory<?> getAttributeValueFactory(final Serializable rawValue)
+	private static final StringParseableValueFactory<?> getAttributeValueFactory(final Class<? extends Serializable> rawValueClass)
 	{
-		final StringParseableValueFactory<? extends AttributeValue> attValFactoryFromMap = JAVA_TYPE_TO_ATT_VALUE_FACTORY.get(rawValue.getClass());
+		final StringParseableValueFactory<? extends AttributeValue> attValFactoryFromMap = JAVA_TYPE_TO_ATT_VALUE_FACTORY.get(rawValueClass);
 		if (attValFactoryFromMap == null)
 		{
 			/*
@@ -705,13 +705,14 @@ public final class StandardAttributeValueFactories
 			 * This also means, a lot of opportunity for optimization depending upon the size of the original list." (Quote from:
 			 * http://javarevisited.blogspot.fr/2016/03/how-to-find-first-element-of-stream-in.html)
 			 */
-			final Optional<Entry<Class<?>, StringParseableValueFactory<?>>> optionalResult = NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY.stream().filter(e -> e.getKey().isInstance(rawValue)).findFirst();
+			final Optional<Entry<Class<?>, StringParseableValueFactory<?>>> optionalResult = NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY.stream().filter(e -> e.getKey().isAssignableFrom(rawValueClass))
+					.findFirst();
 			if (optionalResult.isPresent())
 			{
 				return optionalResult.get().getValue();
 			}
 
-			throw new UnsupportedOperationException("Unsupported input value type: '" + rawValue.getClass() + "' (no suitable XACML datatype factory found)");
+			throw new UnsupportedOperationException("Unsupported input value type: '" + rawValueClass + "' (no suitable XACML datatype factory found)");
 		}
 
 		return attValFactoryFromMap;
@@ -720,7 +721,7 @@ public final class StandardAttributeValueFactories
 	public static AttributeValue newAttributeValue(final Serializable rawValue) throws IllegalArgumentException, UnsupportedOperationException
 	{
 		Preconditions.checkArgument(rawValue != null, "Null arg");
-		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawValue);
+		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawValue.getClass());
 		if (factory == null)
 		{
 			throw new UnsupportedOperationException("Unsupported input value type: '" + rawValue.getClass() + "' (no suitable XACML datatype factory found)");
@@ -741,7 +742,7 @@ public final class StandardAttributeValueFactories
 	{
 		Preconditions.checkArgument(rawVals != null && rawVals.isEmpty(), "Null/empty arg");
 		final Serializable rawVal0 = rawVals.iterator().next();
-		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawVal0);
+		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawVal0.getClass());
 		if (factory == null)
 		{
 			throw new UnsupportedOperationException("Unsupported input value type: '" + rawVal0.getClass() + "' (no suitable XACML datatype factory found)");
