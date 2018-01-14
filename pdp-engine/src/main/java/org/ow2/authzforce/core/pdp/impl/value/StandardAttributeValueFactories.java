@@ -18,21 +18,21 @@
 package org.ow2.authzforce.core.pdp.impl.value;
 
 import java.io.Serializable;
-import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,13 +45,11 @@ import net.sf.saxon.s9api.XPathCompiler;
 
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
+import org.ow2.authzforce.core.pdp.api.XmlUtils;
 import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
 import org.ow2.authzforce.core.pdp.api.value.ArbitrarilyBigInteger;
-import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Base64BinaryValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.DateTimeValue;
@@ -64,7 +62,6 @@ import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.IpAddressValue;
 import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
-import org.ow2.authzforce.core.pdp.api.value.SimpleValue.StringParseableValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
@@ -74,8 +71,7 @@ import org.ow2.authzforce.core.pdp.api.value.YearMonthDurationValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
 /**
  * XACML standard datatypes
@@ -101,11 +97,19 @@ public final class StandardAttributeValueFactories
 
 	};
 
+	private static final Set<Class<? extends Serializable>> SUPPORTED_BOOLEAN_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(Boolean.class, String.class));
+
 	/**
 	 * boolean
 	 */
 	public static final SimpleValue.StringParseableValueFactory<BooleanValue> BOOLEAN = new SimpleValue.StringParseableValueFactory<BooleanValue>(StandardDatatypes.BOOLEAN)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_BOOLEAN_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public BooleanValue parse(final String val)
@@ -126,10 +130,13 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Boolean AttributeValue factory: " + value.getClass().getName() + ". Expected one of: " + Boolean.class + "," + String.class);
+			throw newInvalidInputTypeException(value);
 		}
 
 	};
+
+	private static final Set<Class<? extends Serializable>> SUPPORTED_INTEGER_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(Short.class, Integer.class, Long.class,
+			BigInteger.class, String.class));
 
 	private static abstract class IntegerValueFactory extends SimpleValue.StringParseableValueFactory<IntegerValue>
 	{
@@ -139,9 +146,13 @@ public final class StandardAttributeValueFactories
 			super(StandardDatatypes.INTEGER);
 		}
 
-	}
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_INTEGER_FACTORY_INPUT_TYPES;
+		}
 
-	private static final String MEDIUM_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX = ". Expected one of: " + Short.class + "," + Integer.class + "," + BigInteger.class + "," + String.class;
+	}
 
 	/**
 	 * integer parsed into {@link Integer}, therefore supports medium-size integers (representing xsd:int)
@@ -159,7 +170,7 @@ public final class StandardAttributeValueFactories
 			}
 			catch (final NumberFormatException e)
 			{
-				throw new IllegalArgumentException(this + ": input value not valid or too big: " + val);
+				throw new IllegalArgumentException(this + ": input value not valid or too big for Java int: " + val);
 			}
 
 			return IntegerValue.valueOf(i);
@@ -178,6 +189,22 @@ public final class StandardAttributeValueFactories
 				return IntegerValue.valueOf(((Integer) value).intValue());
 			}
 
+			if (value instanceof Long)
+			{
+				final Long l = (Long) value;
+				final int i;
+				try
+				{
+					i = Math.toIntExact(l.longValue());
+				}
+				catch (final ArithmeticException e)
+				{
+					throw new IllegalArgumentException(this + ": input value not supported (too big for Java int): " + value);
+				}
+
+				return IntegerValue.valueOf(i);
+			}
+
 			if (value instanceof BigInteger)
 			{
 				final BigInteger bigInt = (BigInteger) value;
@@ -188,7 +215,7 @@ public final class StandardAttributeValueFactories
 				}
 				catch (final ArithmeticException e)
 				{
-					throw new IllegalArgumentException(this + ": input value not supported (too big): " + bigInt);
+					throw new IllegalArgumentException(this + ": input value not supported (too big for Java int): " + value);
 				}
 
 				return IntegerValue.valueOf(i);
@@ -199,12 +226,10 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + MEDIUM_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX);
+			throw newInvalidInputTypeException(value);
 		}
 
 	};
-
-	private static final String LONG_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX = ". Expected one of: " + Short.class + "," + Integer.class + "," + Long.class + "," + BigInteger.class + "," + String.class;
 
 	/**
 	 * integer parsed into {@link Long}, therefore supports long integers (representing xsd:long)
@@ -222,7 +247,7 @@ public final class StandardAttributeValueFactories
 			}
 			catch (final NumberFormatException e)
 			{
-				throw new IllegalArgumentException(this + ": input value not valid or too big: " + val);
+				throw new IllegalArgumentException(this + ": input value not valid or too big for Java long: " + val);
 			}
 
 			return IntegerValue.valueOf(i);
@@ -256,7 +281,7 @@ public final class StandardAttributeValueFactories
 				}
 				catch (final ArithmeticException e)
 				{
-					throw new IllegalArgumentException(this + ": input value not supported (too big): " + bigInt);
+					throw new IllegalArgumentException(this + ": input value not supported (too big for Java long): " + bigInt);
 				}
 
 				return IntegerValue.valueOf(i);
@@ -267,7 +292,7 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + LONG_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX);
+			throw newInvalidInputTypeException(value);
 		}
 
 	};
@@ -339,16 +364,24 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Integer AttributeValue factory: " + value.getClass().getName() + LONG_INT_FACTORY_INPUT_TYPE_ERR_MSG_SUFFIX);
+			throw newInvalidInputTypeException(value);
 		}
 
 	};
+
+	private static final Set<Class<? extends Serializable>> SUPPORTED_DOUBLE_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(Float.class, Double.class, String.class));
 
 	/**
 	 * double
 	 */
 	public static final SimpleValue.StringParseableValueFactory<DoubleValue> DOUBLE = new SimpleValue.StringParseableValueFactory<DoubleValue>(StandardDatatypes.DOUBLE)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_DOUBLE_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public DoubleValue parse(final String val)
@@ -374,16 +407,29 @@ public final class StandardAttributeValueFactories
 				return parse((String) value);
 			}
 
-			throw new IllegalArgumentException("Invalid input type to Double AttributeValue factory: " + value.getClass().getName() + ". Expected one of: " + Double.class + "," + String.class);
+			throw newInvalidInputTypeException(value);
 		}
 
 	};
 
+	private static TimeValue newUtcTimeValue(final int hours, final int minutes, final int seconds, final int nanoOfSec)
+	{
+		return TimeValue.getInstance(XmlUtils.XML_TEMPORAL_DATATYPE_FACTORY.newXMLGregorianCalendarTime(hours, minutes, seconds, BigDecimal.valueOf(nanoOfSec).movePointLeft(9), 0));
+	}
+
+	private static final Set<Class<? extends Serializable>> SUPPORTED_TIME_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(LocalTime.class, OffsetTime.class, String.class));
+
 	/**
 	 * time
 	 */
-	public static final SimpleValue.StringContentOnlyFactory<TimeValue> TIME = new SimpleValue.StringContentOnlyFactory<TimeValue>(StandardDatatypes.TIME)
+	public static final SimpleValue.StringParseableValueFactory<TimeValue> TIME = new SimpleValue.StringParseableValueFactory<TimeValue>(StandardDatatypes.TIME)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_TIME_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public TimeValue parse(final String val)
@@ -391,13 +437,46 @@ public final class StandardAttributeValueFactories
 			return new TimeValue(val);
 		}
 
+		@Override
+		public TimeValue getInstance(final Serializable value) throws IllegalArgumentException
+		{
+			if (value instanceof LocalTime)
+			{
+				final LocalTime time = (LocalTime) value;
+				// We set time in UTC, so timezone offset is 0
+				return newUtcTimeValue(time.getHour(), time.getMinute(), time.getSecond(), time.getNano());
+			}
+
+			if (value instanceof OffsetTime)
+			{
+				final OffsetTime time = (OffsetTime) value;
+				// We set time in UTC, so timezone offset is 0
+				return newUtcTimeValue(time.getHour(), time.getMinute(), time.getSecond(), time.getNano());
+			}
+
+			if (value instanceof String)
+			{
+				return parse((String) value);
+			}
+
+			throw newInvalidInputTypeException(value);
+		}
+
 	};
+
+	private static final Set<Class<? extends Serializable>> SUPPORTED_DATE_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(LocalDate.class, String.class));
 
 	/**
 	 * date
 	 */
-	public static final SimpleValue.StringContentOnlyFactory<DateValue> DATE = new SimpleValue.StringContentOnlyFactory<DateValue>(StandardDatatypes.DATE)
+	public static final SimpleValue.StringParseableValueFactory<DateValue> DATE = new SimpleValue.StringParseableValueFactory<DateValue>(StandardDatatypes.DATE)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_DATE_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public DateValue parse(final String val)
@@ -405,13 +484,47 @@ public final class StandardAttributeValueFactories
 			return new DateValue(val);
 		}
 
+		@Override
+		public DateValue getInstance(final Serializable value) throws IllegalArgumentException
+		{
+			if (value instanceof LocalDate)
+			{
+				final LocalDate date = (LocalDate) value;
+				// We set date in UTC, so timezone offset is 0
+				return DateValue.getInstance(XmlUtils.XML_TEMPORAL_DATATYPE_FACTORY.newXMLGregorianCalendarDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), 0));
+			}
+
+			if (value instanceof String)
+			{
+				return parse((String) value);
+			}
+
+			throw newInvalidInputTypeException(value);
+		}
+
 	};
+
+	private static DateTimeValue newDateTimeValue(final int year, final int month, final int dayOfMonth, final int hours, final int minutes, final int seconds, final int nanoOfSec,
+			final int timezoneOffsetMinutes)
+	{
+		return new DateTimeValue(XmlUtils.XML_TEMPORAL_DATATYPE_FACTORY.newXMLGregorianCalendar(BigInteger.valueOf(year), month, dayOfMonth, hours, minutes, seconds, BigDecimal.valueOf(nanoOfSec)
+				.movePointLeft(9), timezoneOffsetMinutes));
+	}
+
+	private static final Set<Class<? extends Serializable>> SUPPORTED_DATETIME_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(LocalDateTime.class, OffsetDateTime.class,
+			ZonedDateTime.class, Instant.class, String.class));
 
 	/**
 	 * dateTime
 	 */
-	public static final SimpleValue.StringContentOnlyFactory<DateTimeValue> DATETIME = new SimpleValue.StringContentOnlyFactory<DateTimeValue>(StandardDatatypes.DATETIME)
+	public static final SimpleValue.StringParseableValueFactory<DateTimeValue> DATETIME = new SimpleValue.StringParseableValueFactory<DateTimeValue>(StandardDatatypes.DATETIME)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_DATETIME_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public DateTimeValue parse(final String val)
@@ -419,13 +532,61 @@ public final class StandardAttributeValueFactories
 			return new DateTimeValue(val);
 		}
 
+		@Override
+		public DateTimeValue getInstance(final Serializable value) throws IllegalArgumentException
+		{
+			if (value instanceof LocalDateTime)
+			{
+				final LocalDateTime dateTime = (LocalDateTime) value;
+				// We set time in UTC, so timezone offset is 0
+				return newDateTimeValue(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), dateTime.getNano(), 0);
+			}
+
+			if (value instanceof OffsetDateTime)
+			{
+				final OffsetDateTime dateTime = (OffsetDateTime) value;
+				return newDateTimeValue(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), dateTime.getNano(),
+						dateTime.getOffset().getTotalSeconds() / 60);
+			}
+
+			if (value instanceof ZonedDateTime)
+			{
+				final ZonedDateTime dateTime = (ZonedDateTime) value;
+				return newDateTimeValue(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), dateTime.getNano(),
+						dateTime.getOffset().getTotalSeconds() / 60);
+			}
+
+			if (value instanceof Instant)
+			{
+				final Instant instant = (Instant) value;
+				// We set time in UTC
+				final LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
+				return newDateTimeValue(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), dateTime.getNano(), 0);
+			}
+
+			if (value instanceof String)
+			{
+				return parse((String) value);
+			}
+
+			throw newInvalidInputTypeException(value);
+		}
+
 	};
+
+	private static final Set<Class<? extends Serializable>> SUPPORTED_ANYURI_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(URI.class, String.class));
 
 	/**
 	 * anyURI
 	 */
-	public static final SimpleValue.StringContentOnlyFactory<AnyUriValue> ANYURI = new SimpleValue.StringContentOnlyFactory<AnyUriValue>(StandardDatatypes.ANYURI)
+	public static final SimpleValue.StringParseableValueFactory<AnyUriValue> ANYURI = new SimpleValue.StringParseableValueFactory<AnyUriValue>(StandardDatatypes.ANYURI)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_ANYURI_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public AnyUriValue parse(final String val)
@@ -433,13 +594,38 @@ public final class StandardAttributeValueFactories
 			return new AnyUriValue(val);
 		}
 
+		@Override
+		public AnyUriValue getInstance(final Serializable value) throws IllegalArgumentException
+		{
+			if (value instanceof URI)
+			{
+				final URI uri = (URI) value;
+				return new AnyUriValue(uri.toString());
+			}
+
+			if (value instanceof String)
+			{
+				return parse((String) value);
+			}
+
+			throw newInvalidInputTypeException(value);
+		}
+
 	};
+
+	private static final Set<Class<? extends Serializable>> SUPPORTED_HEXBINARY_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(byte[].class, String.class));
 
 	/**
 	 * hexBinary
 	 */
-	public static final SimpleValue.StringContentOnlyFactory<HexBinaryValue> HEXBINARY = new SimpleValue.StringContentOnlyFactory<HexBinaryValue>(StandardDatatypes.HEXBINARY)
+	public static final SimpleValue.StringParseableValueFactory<HexBinaryValue> HEXBINARY = new SimpleValue.StringParseableValueFactory<HexBinaryValue>(StandardDatatypes.HEXBINARY)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_HEXBINARY_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public HexBinaryValue parse(final String val)
@@ -447,12 +633,29 @@ public final class StandardAttributeValueFactories
 			return new HexBinaryValue(val);
 		}
 
+		@Override
+		public HexBinaryValue getInstance(final Serializable value) throws IllegalArgumentException
+		{
+			if (value instanceof byte[])
+			{
+				final byte[] bytes = (byte[]) value;
+				return new HexBinaryValue(bytes);
+			}
+
+			if (value instanceof String)
+			{
+				return parse((String) value);
+			}
+
+			throw newInvalidInputTypeException(value);
+		}
+
 	};
 
 	/**
 	 * base64Binary
 	 */
-	public static final SimpleValue.StringContentOnlyFactory<Base64BinaryValue> BASE64BINARY = new SimpleValue.StringContentOnlyFactory<Base64BinaryValue>(StandardDatatypes.BASE64BINARY)
+	public static final SimpleValue.StringParseableValueFactory<Base64BinaryValue> BASE64BINARY = new SimpleValue.StringContentOnlyFactory<Base64BinaryValue>(StandardDatatypes.BASE64BINARY)
 	{
 		@Override
 		public Base64BinaryValue parse(final String val)
@@ -462,11 +665,19 @@ public final class StandardAttributeValueFactories
 
 	};
 
+	private static final Set<Class<? extends Serializable>> SUPPORTED_X500NAME_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(X500Principal.class, String.class));
+
 	/**
 	 * x500Name
 	 */
-	public static final SimpleValue.StringContentOnlyFactory<X500NameValue> X500NAME = new SimpleValue.StringContentOnlyFactory<X500NameValue>(StandardDatatypes.X500NAME)
+	public static final SimpleValue.StringParseableValueFactory<X500NameValue> X500NAME = new SimpleValue.StringParseableValueFactory<X500NameValue>(StandardDatatypes.X500NAME)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_X500NAME_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public X500NameValue parse(final String val)
@@ -474,6 +685,22 @@ public final class StandardAttributeValueFactories
 			return new X500NameValue(val);
 		}
 
+		@Override
+		public X500NameValue getInstance(final Serializable value) throws IllegalArgumentException
+		{
+			if (value instanceof X500Principal)
+			{
+				final X500Principal principal = (X500Principal) value;
+				return new X500NameValue(principal);
+			}
+
+			if (value instanceof String)
+			{
+				return parse((String) value);
+			}
+
+			throw newInvalidInputTypeException(value);
+		}
 	};
 
 	/**
@@ -545,11 +772,19 @@ public final class StandardAttributeValueFactories
 
 	};
 
+	private static final Set<Class<? extends Serializable>> SUPPORTED_XPATH_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(String.class);
+
 	/**
 	 * xpathExpression
 	 */
 	public static final SimpleValue.BaseFactory<XPathValue> XPATH = new SimpleValue.BaseFactory<XPathValue>(StandardDatatypes.XPATH)
 	{
+
+		@Override
+		public Set<Class<? extends Serializable>> getSupportedInputTypes()
+		{
+			return SUPPORTED_XPATH_FACTORY_INPUT_TYPES;
+		}
 
 		@Override
 		public XPathValue getInstance(final Serializable value, final Map<QName, String> otherXmlAttributes, final XPathCompiler xPathCompiler) throws IllegalArgumentException
@@ -561,22 +796,23 @@ public final class StandardAttributeValueFactories
 
 			return new XPathValue((String) value, otherXmlAttributes, xPathCompiler);
 		}
-
 	};
 
 	private static final PdpExtensionComparator<AttributeValueFactory<?>> DATATYPE_EXTENSION_COMPARATOR = new PdpExtensionComparator<>();
 
 	/**
-	 * Set of attribute value factories for standard mandatory datatypes (xpathExpression is optional, therefore excluded)
+	 * List of attribute value factories for standard mandatory datatypes (xpathExpression is optional, therefore excluded), ordered by preference; i.e. if two factories support a common input type,
+	 * the first one in the list is always used, when no specific output XACML datatype is requested. For example, all factories support String type, but STRING factory is first in the list, so this
+	 * is the one that is used for creating attribute values from String when no specific output XACML datatype (different from string) is requested.
 	 */
-	public static final Set<SimpleValue.StringParseableValueFactory<? extends SimpleValue<? extends Object>>> MANDATORY_SET_EXCEPT_INTEGER = HashCollections.newImmutableSet(Arrays.asList(STRING,
-			BOOLEAN, DOUBLE, TIME, DATE, DATETIME, ANYURI, HEXBINARY, BASE64BINARY, X500NAME, RFC822NAME, IPADDRESS, DNSNAME, DAYTIMEDURATION, YEARMONTHDURATION));
+	public static final List<SimpleValue.StringParseableValueFactory<? extends SimpleValue<? extends Object>>> MANDATORY_SET_EXCEPT_INTEGER = ImmutableList.of(STRING, BOOLEAN, DOUBLE, TIME, DATE,
+			DATETIME, ANYURI, HEXBINARY, BASE64BINARY, X500NAME, RFC822NAME, IPADDRESS, DNSNAME, DAYTIMEDURATION, YEARMONTHDURATION);
 
 	// private static BigInteger BYTE_MAX_AS_BIG_INT = BigInteger.valueOf(Byte.valueOf(Byte.MAX_VALUE).longValue());
 	// private static BigInteger SHORT_MAX_AS_BIG_INT = BigInteger.valueOf(Short.valueOf(Short.MAX_VALUE).longValue());
 	private static final BigInteger INT_MAX_AS_BIG_INT = BigInteger.valueOf(Integer.valueOf(Integer.MAX_VALUE).longValue());
 
-	private static final BigInteger LONG_MAX_AS_BIG_INT = BigInteger.valueOf(Long.valueOf(Long.MAX_VALUE).longValue());
+	private static final BigInteger LONG_MAX_AS_BIG_INT = BigInteger.valueOf(Long.MAX_VALUE);
 
 	/**
 	 * Get standard registry of (datatype-specific) attribute value parsers/factories
@@ -593,21 +829,24 @@ public final class StandardAttributeValueFactories
 	 */
 	public static AttributeValueFactoryRegistry getRegistry(final boolean enableXPath, final Optional<BigInteger> maxIntegerValue)
 	{
-		final Set<SimpleValue.BaseFactory<?>> attValFactories;
-		if (enableXPath)
+		/*
+		 * Ordered in which factories are added to the registry must be preserved to indicate order of preference; i.e. if two factories support a common input type, the first one in the list is
+		 * always used by default, unless a specific output XACML datatype is requested. For example, all factories support String type, but STRING factory must be first in the list, so that it is the
+		 * one that is used for creating attribute values from String by default when no specific output XACML datatype (different from string) is requested.
+		 */
+		/*
+		 * There is one more factory for XPathExpression if XPath support is requested
+		 */
+		final List<SimpleValue.BaseFactory<?>> attValFactories = new ArrayList<>(StandardDatatypes.MANDATORY_SET.size() + (enableXPath ? 1 : 0));
+		for (final SimpleValue.StringParseableValueFactory<? extends SimpleValue<? extends Object>> typeFactory : MANDATORY_SET_EXCEPT_INTEGER)
 		{
-			attValFactories = HashCollections.newUpdatableSet(StandardDatatypes.MANDATORY_SET.size() + 1);
-			attValFactories.add(StandardAttributeValueFactories.XPATH);
-		}
-		else
-		{
-			attValFactories = HashCollections.newUpdatableSet(StandardDatatypes.MANDATORY_SET.size());
+			attValFactories.add(typeFactory);
 		}
 
 		final SimpleValue.BaseFactory<?> integerValFactory;
 		if (!maxIntegerValue.isPresent())
 		{
-			integerValFactory = BIG_INTEGER;
+			integerValFactory = MEDIUM_INTEGER;
 		}
 		else
 		{
@@ -619,11 +858,11 @@ public final class StandardAttributeValueFactories
 			// else if(maxIntegerValue.compareTo(SHORT_MAX_AS_BIG_INT) == -1) {
 			// integerValFactory = SHORT_INTEGER;
 			// }
-			if (nonNullMaxInt.compareTo(INT_MAX_AS_BIG_INT) == -1)
+			if (nonNullMaxInt.compareTo(INT_MAX_AS_BIG_INT) <= 0)
 			{
 				integerValFactory = MEDIUM_INTEGER;
 			}
-			else if (nonNullMaxInt.compareTo(LONG_MAX_AS_BIG_INT) == -1)
+			else if (nonNullMaxInt.compareTo(LONG_MAX_AS_BIG_INT) <= 0)
 			{
 				integerValFactory = LONG_INTEGER;
 			}
@@ -634,10 +873,10 @@ public final class StandardAttributeValueFactories
 		}
 
 		attValFactories.add(integerValFactory);
-
-		for (final SimpleValue.StringParseableValueFactory<? extends SimpleValue<? extends Object>> typeFactory : MANDATORY_SET_EXCEPT_INTEGER)
+		if (enableXPath)
 		{
-			attValFactories.add(typeFactory);
+
+			attValFactories.add(StandardAttributeValueFactories.XPATH);
 		}
 
 		if (LOGGER.isDebugEnabled())
@@ -653,105 +892,4 @@ public final class StandardAttributeValueFactories
 		// private empty constructor
 	}
 
-	/*
-	 * FIXME: move this to Bags class?
-	 */
-	private static final Map<Class<?>, StringParseableValueFactory<?>> JAVA_TYPE_TO_ATT_VALUE_FACTORY;
-	private static final Set<Entry<Class<?>, StringParseableValueFactory<?>>> NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY;
-	static
-	{
-		final Map<Class<?>, StringParseableValueFactory<?>> mutableMap = HashCollections.newUpdatableMap(14);
-		mutableMap.put(String.class, STRING);
-		mutableMap.put(Boolean.class, BOOLEAN);
-		mutableMap.put(Short.class, MEDIUM_INTEGER);
-		mutableMap.put(Integer.class, MEDIUM_INTEGER);
-		mutableMap.put(Long.class, LONG_INTEGER);
-		mutableMap.put(BigInteger.class, BIG_INTEGER); // non final
-		mutableMap.put(Float.class, DOUBLE);
-		mutableMap.put(Double.class, DOUBLE);
-		mutableMap.put(LocalTime.class, TIME);
-		mutableMap.put(OffsetTime.class, TIME);
-		mutableMap.put(LocalDate.class, DATE);
-		mutableMap.put(GregorianCalendar.class, DATETIME);// nonfinal
-		mutableMap.put(LocalDateTime.class, DATETIME);
-		mutableMap.put(OffsetDateTime.class, DATETIME);
-		mutableMap.put(ZonedDateTime.class, DATETIME);
-		mutableMap.put(Date.class, DATETIME); // non final, subclass java.sql.Date, etc.
-		mutableMap.put(URI.class, ANYURI);
-		mutableMap.put(byte[].class, HEXBINARY);
-		mutableMap.put(X500Principal.class, X500NAME);
-
-		JAVA_TYPE_TO_ATT_VALUE_FACTORY = HashCollections.newImmutableMap(mutableMap);
-
-		/*
-		 * Using JAVA_TYPE_TO_ATT_VALUE_FACTORY.get(instanceClass) to get the corresponding factory is faster that doing many instanceOf checks but only works for equal match. For non final classes,
-		 * we still have to do the instanceOf check because the instance class might not be equal, i.e same class, but a subclass. So we gather the list of non-final classes for which instanceOf check
-		 * is necessary iff no equal match.
-		 */
-		final Set<Entry<Class<?>, StringParseableValueFactory<?>>> mutableSet = JAVA_TYPE_TO_ATT_VALUE_FACTORY.entrySet().stream().filter(e -> !Modifier.isFinal(e.getKey().getModifiers()))
-				.collect(Collectors.toSet());// HashCollections.newUpdatableSet(JAVA_TYPE_TO_ATT_VALUE_FACTORY.size());
-		NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY = ImmutableSet.copyOf(mutableSet);
-	}
-
-	private static final StringParseableValueFactory<?> getAttributeValueFactory(final Class<? extends Serializable> rawValueClass)
-	{
-		final StringParseableValueFactory<? extends AttributeValue> attValFactoryFromMap = JAVA_TYPE_TO_ATT_VALUE_FACTORY.get(rawValueClass);
-		if (attValFactoryFromMap == null)
-		{
-			/*
-			 * This may look like the collection is fully filtered before findfirst() is called but it is not the case. "All intermediate operations e.g. filter(), map() etc are lazy and they are only
-			 * executed when a terminal operation like findFirst() or forEach() is called.
-			 * 
-			 * This also means, a lot of opportunity for optimization depending upon the size of the original list." (Quote from:
-			 * http://javarevisited.blogspot.fr/2016/03/how-to-find-first-element-of-stream-in.html)
-			 */
-			final Optional<Entry<Class<?>, StringParseableValueFactory<?>>> optionalResult = NON_FINAL_JAVA_TYPE_TO_ATT_VALUE_FACTORY.stream().filter(e -> e.getKey().isAssignableFrom(rawValueClass))
-					.findFirst();
-			if (optionalResult.isPresent())
-			{
-				return optionalResult.get().getValue();
-			}
-
-			throw new UnsupportedOperationException("Unsupported input value type: '" + rawValueClass + "' (no suitable XACML datatype factory found)");
-		}
-
-		return attValFactoryFromMap;
-	}
-
-	public static AttributeValue newAttributeValue(final Serializable rawValue) throws IllegalArgumentException, UnsupportedOperationException
-	{
-		Preconditions.checkArgument(rawValue != null, "Null arg");
-		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawValue.getClass());
-		if (factory == null)
-		{
-			throw new UnsupportedOperationException("Unsupported input value type: '" + rawValue.getClass() + "' (no suitable XACML datatype factory found)");
-		}
-		return factory.getInstance(rawValue);
-	}
-
-	/**
-	 * TODO: document default mappings
-	 * 
-	 * @param rawVals
-	 * @return
-	 * @throws UnsupportedOperationException
-	 * @throws IllegalArgumentException
-	 *             if
-	 */
-	public static AttributeBag<?> newAttributeBag(final Collection<Serializable> rawVals) throws UnsupportedOperationException, IllegalArgumentException
-	{
-		Preconditions.checkArgument(rawVals != null && !rawVals.isEmpty(), "Null/empty arg");
-		final Serializable rawVal0 = rawVals.iterator().next();
-		final StringParseableValueFactory<?> factory = getAttributeValueFactory(rawVal0.getClass());
-		if (factory == null)
-		{
-			throw new UnsupportedOperationException("Unsupported input value type: '" + rawVal0.getClass() + "' (no suitable XACML datatype factory found)");
-		}
-		return Bags.newAttributeBag(factory, rawVals);
-	}
-
-	public static void main(final String... strings)
-	{
-		final Serializable javaValue = java.sql.Date.valueOf(LocalDate.now());
-	}
 }
