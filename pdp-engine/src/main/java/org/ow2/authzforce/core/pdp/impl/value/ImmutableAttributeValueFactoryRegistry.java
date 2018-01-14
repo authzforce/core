@@ -31,7 +31,6 @@ import javax.xml.namespace.QName;
 
 import net.sf.saxon.s9api.XPathCompiler;
 
-import org.ow2.authzforce.core.pdp.api.AttributeSources;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantPrimitiveAttributeValueExpression;
@@ -100,7 +99,7 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	}
 
 	/**
-	 * Creates instance of immutable attribute bag from raw values, with {@link AttributeSources#REQUEST} as attribute source.
+	 * Creates instance of immutable attribute bag from raw values, using {@link Bags#newAttributeBag(Datatype, Collection)} and {@code attributeValueFactory.getDatatype()} as datatype argument.
 	 * 
 	 * @param attributeValueFactory
 	 *            factory in charge of create attribute values in the bag
@@ -183,7 +182,7 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 		return newExpression(datatypeFactory, content, otherAttributes, xPathCompiler);
 	}
 
-	private final StringParseableValueFactory<?> getCompatibleFactory(final Class<? extends Serializable> rawValueClass)
+	private StringParseableValueFactory<?> getCompatibleFactory(final Class<? extends Serializable> rawValueClass)
 	{
 		final StringParseableValueFactory<?> attValFactoryFromMap = inputClassToAttValFactory.get(rawValueClass);
 		if (attValFactoryFromMap == null)

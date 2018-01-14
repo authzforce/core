@@ -48,17 +48,15 @@ import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
 
 /**
  * 
- * Tests conversion from raw Java types to XACML datatype (attribute value)
+ * Tests conversion from standard Java types to XACML datatype (attribute value)
+ * <p>
+ * Implements feature requested in <a href="https://github.com/authzforce/core/issues/10">GitHub issue #10</a>
  */
 @RunWith(value = Parameterized.class)
 public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 {
 	private static final class MyBigInteger extends BigInteger
 	{
-
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		public MyBigInteger(final String val)
@@ -218,8 +216,8 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 	private final String expectedAttributeDatatypeId;
 	private final Class<? extends Exception> expectedExceptionClass;
 
-	public StandardJavaTypeToXacmlAttributeDatatypeConversionTest(final AttributeValueFactoryRegistry attValFactories, final Collection<? extends Serializable> rawValues, final String expectedAttributeDatatypeId,
-			final Class<? extends Exception> expectedExceptionClass)
+	public StandardJavaTypeToXacmlAttributeDatatypeConversionTest(final AttributeValueFactoryRegistry attValFactories, final Collection<? extends Serializable> rawValues,
+			final String expectedAttributeDatatypeId, final Class<? extends Exception> expectedExceptionClass)
 	{
 		this.attValFactories = attValFactories == null ? ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT : attValFactories;
 		this.rawValues = rawValues;

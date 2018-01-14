@@ -231,6 +231,26 @@ public final class StandardAttributeValueFactories
 
 	};
 
+	private static IntegerValue longOrSmallerIntToIntegerValue(final Serializable value)
+	{
+		if (value instanceof Short)
+		{
+			return IntegerValue.valueOf(((Short) value).intValue());
+		}
+
+		if (value instanceof Integer)
+		{
+			return IntegerValue.valueOf(((Integer) value).intValue());
+		}
+
+		if (value instanceof Long)
+		{
+			return IntegerValue.valueOf(((Long) value).longValue());
+		}
+
+		return null;
+	}
+
 	/**
 	 * integer parsed into {@link Long}, therefore supports long integers (representing xsd:long)
 	 */
@@ -256,19 +276,10 @@ public final class StandardAttributeValueFactories
 		@Override
 		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
 		{
-			if (value instanceof Short)
+			final IntegerValue smallIntegerValue = longOrSmallerIntToIntegerValue(value);
+			if (smallIntegerValue != null)
 			{
-				return IntegerValue.valueOf(((Short) value).intValue());
-			}
-
-			if (value instanceof Integer)
-			{
-				return IntegerValue.valueOf(((Integer) value).intValue());
-			}
-
-			if (value instanceof Long)
-			{
-				return IntegerValue.valueOf(((Long) value).longValue());
+				return smallIntegerValue;
 			}
 
 			if (value instanceof BigInteger)
@@ -338,19 +349,10 @@ public final class StandardAttributeValueFactories
 		@Override
 		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
 		{
-			if (value instanceof Short)
+			final IntegerValue smallIntegerValue = longOrSmallerIntToIntegerValue(value);
+			if (smallIntegerValue != null)
 			{
-				return IntegerValue.valueOf(((Short) value).intValue());
-			}
-
-			if (value instanceof Integer)
-			{
-				return IntegerValue.valueOf(((Integer) value).intValue());
-			}
-
-			if (value instanceof Long)
-			{
-				return IntegerValue.valueOf(((Long) value).longValue());
+				return smallIntegerValue;
 			}
 
 			if (value instanceof BigInteger)
