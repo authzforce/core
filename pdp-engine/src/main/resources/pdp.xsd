@@ -393,7 +393,7 @@
          </attribute>
          <attribute name="maxIntegerValue" type="positiveInteger" use="optional" default="2147483647">
             <annotation>
-               <documentation> Maximum integer value. This is the expected maximum value for XACML attributes of standard type 'http://www.w3.org/2001/XMLSchema#integer' (requires useStandardDatatypes
+               <documentation> Maximum absolute integer value. This is the expected maximum absolute value for XACML attributes of standard type 'http://www.w3.org/2001/XMLSchema#integer' (requires useStandardDatatypes
                   = true). Decreasing this value as much
                   as
                   possible helps the PDP engine optimize the processing of integer

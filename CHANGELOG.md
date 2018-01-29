@@ -4,9 +4,17 @@ All notable changes to this project are documented in this file following the [K
 Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
 
 
+## 11.0.0
+### Changed
+- Upgraded dependency authzforce-ce-core-pdp-api: 12.1.0 -> 13.0.0
+
+### Added
+- [GH-10]: new API feature allowing to create `AttributeValue`s or `AttributeBag`s from raw standard Java types using [default Java-to-XACML-type mappings](../../wiki/Default-Java-XACML-type-mappings) (without specifying the XACML datatype explicitly). This is done by calling `AttributeValueFactoryRegistry#newAttributeValue(Serializable)` (for creating AttributeValue) or `AttributeValueFactoryRegistry#newAttributeBag(Collection)` (for creating AttributeBag) methods, using `StandardAttributeValueFactories.getRegistry(...)` to get the proper `AttributeValueFactoryRegistry` instance to do that.  
+
+
 ## 10.3.0
 ### Fixed
-    - Fixed #9 (github) and added unit tests
+- [GH-9]: authzforce-ce-core-pdp-cli NullPointerException with filenames specified as relative paths to PDP configuration file and XACML request in arguments 
 
 ### Changed
 - Parent project version: 7.1.0 -> 7.2.0, making dependency version changes:

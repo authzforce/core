@@ -6,7 +6,7 @@
       <version>7.2.0</version>
    </parent>
    <artifactId>authzforce-ce-core</artifactId>
-   <version>10.3.0</version>
+   <version>11.0.0</version>
    <packaging>pom</packaging>
    <name>${project.groupId}:${project.artifactId}</name>
    <description>AuthzForce - XACML-compliant Core PDP Engine and associated test modules</description>
@@ -19,16 +19,23 @@
       <!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
       <url>${git.url.base}/core</url>
    </scm>
-<repositories>
-    <repository>
-	<!-- Required by owasp dependency-check plugin for find info (POM) about dependency org.everit.json.schema in child modules -->
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
+   <repositories>
+      <repository>
+         <!-- Required by owasp dependency-check plugin for find info (POM) about dependency org.everit.json.schema in child modules -->
+         <id>jitpack.io</id>
+         <url>https://jitpack.io</url>
+      </repository>
    </repositories>
    <!-- distributionManagement defined in parent POM already -->
    <dependencyManagement>
       <dependencies>
+         <!-- AuthzForce dependencies -->
+         <dependency>
+            <groupId>org.ow2.authzforce</groupId>
+            <artifactId>authzforce-ce-core-pdp-api</artifactId>
+            <version>13.0.0</version>
+         </dependency>
+         <!-- /AuthzForce dependencies -->
          <!-- Test dependencies -->
          <dependency>
             <groupId>junit</groupId>
@@ -39,14 +46,14 @@
       </dependencies>
    </dependencyManagement>
    <build>
-   <pluginManagement>
-      <plugins>
-         <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <version>3.0.1</version>
-         </plugin>
-      </plugins>
-   </pluginManagement>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <artifactId>maven-resources-plugin</artifactId>
+               <version>3.0.1</version>
+            </plugin>
+         </plugins>
+      </pluginManagement>
    </build>
    <modules>
       <module>pdp-engine</module>
