@@ -37,6 +37,7 @@ import org.ow2.authzforce.core.pdp.impl.test.func.SpecialMatchFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.StringConversionFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.func.StringFunctionsTest;
 import org.ow2.authzforce.core.pdp.impl.test.value.AnyURIAttributeTest;
+import org.ow2.authzforce.core.pdp.impl.test.value.StandardJavaTypeToXacmlAttributeDatatypeConversionTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
 @RunWith(Suite.class)
 @SuiteClasses(value = { EqualityFunctionsTest.class, NumericArithmeticFunctionsTest.class, StringConversionFunctionsTest.class, NumericConversionFunctionsTest.class, LogicalFunctionsTest.class,
 		NumericComparisonFunctionsTest.class, DateTimeArithmeticFunctionsTest.class, NonNumericComparisonFunctionsTest.class, StringFunctionsTest.class, BagFunctionsTest.class,
-		SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class })
+		SetFunctionsTest.class, HigherOrderFunctionsTest.class, RegExpBasedFunctionsTest.class, SpecialMatchFunctionsTest.class, StandardJavaTypeToXacmlAttributeDatatypeConversionTest.class })
 public class MainTest
 {
 	/**

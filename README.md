@@ -90,14 +90,14 @@ Copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3
 $ ./authzforce-ce-core-pdp-cli-10.0.0.jar pdp.xml IIA001/Request.xml
 ```
 
-* `pdp.xml`: PDP configuration file, that defines the location(s) of XACML policy(ies), among other PDP engine parameters; this content of this file is a XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd), so you can read the documentation of every configuration parameter in that schema file;
-* `request.xml`: XACML request in XACML 3.0/XML (core specification) format.
+* `pdp.xml`: PDP configuration file, that defines the location(s) of XACML policy(ies), among other PDP engine parameters; the content of this file is a XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd), so you can read the documentation of every configuration parameter in that schema file;
+* `Request.xml`: XACML request in XACML 3.0/XML (core specification) format.
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
 ```
 $ ./authzforce-ce-core-pdp-cli-10.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.json
 ```
-* `request.json`: XACML request in XACML 3.0/JSON (Profile) format.
+* `Request.json`: XACML request in XACML 3.0/JSON (Profile) format.
 
 For more info, run it without parameters and you'll get detailed information on usage.
 
@@ -235,7 +235,7 @@ If you are experiencing any issue with this project, please report it on the [OW
 Please include as much information as possible; the more we know, the better the chance of a quicker resolution:
 
 * Software version
-* Platform (OS and JDK)
+* Platform (OS and JRE)
 * Stack traces generally really help! If in doubt include the whole thing; often exceptions get wrapped in other exceptions and the exception right near the bottom explains the actual error, not the first few lines at the top. It's very easy for us to skim-read past unnecessary parts of a stack trace.
 * Log output can be useful too; sometimes enabling DEBUG logging can help;
 * Your code & configuration files are often useful.

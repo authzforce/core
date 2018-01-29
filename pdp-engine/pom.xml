@@ -42,7 +42,6 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>${artifactId.prefix}-core-pdp-api</artifactId>
-         <version>12.1.0</version>
       </dependency>
       <!-- /Authzforce dependencies -->
 
