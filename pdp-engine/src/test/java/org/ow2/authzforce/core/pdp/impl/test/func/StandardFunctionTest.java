@@ -130,10 +130,17 @@ public abstract class StandardFunctionTest
 		}
 		catch (final IllegalArgumentException e)
 		{
-			funcCall = null;
 			/*
 			 * Some syntax errors might be caught at initialization time, which is expected if expectedResult == null
 			 */
+			if(expectedResult != null) {
+				/*
+				 * IllegalArgumentException should not have been thrown, since we expect a result of the function call
+				 */
+				throw new RuntimeException("expectedResult != null but invalid args in test definition prevented the function call", e);
+			}
+			
+			funcCall = null;
 			syntaxErrorRaised = true;
 		}
 
@@ -301,10 +308,21 @@ public abstract class StandardFunctionTest
 	@Test
 	public void testEvaluate() throws IndeterminateEvaluationException
 	{
-		if (syntaxErrorRaised && expectedResult == null)
+		/*
+		 * expectedResult == null means that we expect IllegalArgumentException thrown when validating function inputs (syntaxErrorRaised = true)
+		 */
+		if (expectedResult == null)
 		{
+			Assert.assertTrue("expectedResult = null, but no syntax error (invalid inputs) raised as expected", syntaxErrorRaised);
 			// syntax error already detected as expected -> test success
 			return;
+		}
+		
+		/*
+		 * expectedResult != null
+		 */
+		if(funcCall == null) {
+			Assert.fail("expectedResult != null but function call undefined (failed to initialize)");
 		}
 
 		/*

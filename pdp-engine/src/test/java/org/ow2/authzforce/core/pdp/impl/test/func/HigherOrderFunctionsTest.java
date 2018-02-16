@@ -53,6 +53,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 	private static final String STRING_EQUAL_FUNCTION_ID = "urn:oasis:names:tc:xacml:1.0:function:string-equal";
 	private static final String INTEGER_GREATER_THAN_FUNCTION_ID = "urn:oasis:names:tc:xacml:1.0:function:integer-greater-than";
 	private static final String STRING_NORMALIZE_TO_LC_FUNCTION_ID = "urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case";
+	private static final String STRING_SUBSTRING_FUNCTION_ID = "urn:oasis:names:tc:xacml:3.0:function:string-substring";
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> params() throws Exception
@@ -138,7 +139,8 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))),//
 						BooleanValue.TRUE },
 
-				new Object[] { NAME_ALL_OF_ALL, INTEGER_GREATER_THAN_FUNCTION_ID,//
+				new Object[] { NAME_ALL_OF_ALL, //
+						INTEGER_GREATER_THAN_FUNCTION_ID,//
 						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(3), IntegerValue.valueOf(5))),//
 								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))),//
 						BooleanValue.FALSE },
@@ -147,7 +149,12 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_MAP, //
 						STRING_NORMALIZE_TO_LC_FUNCTION_ID,//
 						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World")))),//
-						Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("hello"), new StringValue("world"))) }//
+						Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("hello"), new StringValue("world"))) },
+				
+				new Object[] { NAME_MAP, //
+						STRING_SUBSTRING_FUNCTION_ID,//
+						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World"))), IntegerValue.valueOf(0), IntegerValue.valueOf(1)),//
+						Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("H"), new StringValue("W"))) }//
 				);
 	}
 
