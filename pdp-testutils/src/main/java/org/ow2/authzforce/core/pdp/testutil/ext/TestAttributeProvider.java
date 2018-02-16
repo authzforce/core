@@ -60,7 +60,7 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 {
 	/**
-	 * module factory
+	 * Module factory
 	 * 
 	 */
 	public static class Factory extends CloseableDesignatedAttributeProvider.FactoryBuilder<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider>
