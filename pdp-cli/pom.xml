@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>11.0.1</version>
+      <version>11.0.2-SNAPSHOT</version>
       <relativePath>..</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
@@ -30,12 +30,12 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>11.0.1</version>
+         <version>11.0.2-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-         <version>11.0.1</version>
+         <version>11.0.2-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.testng</groupId>
@@ -46,7 +46,7 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-         <version>11.0.1</version>
+         <version>11.0.2-SNAPSHOT</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
