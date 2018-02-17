@@ -52,8 +52,7 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 
 	private static final IllegalArgumentException UNDEF_PARAMETER_TYPES_EXCEPTION = new IllegalArgumentException("Undefined function parameter types");
 
-	private static <AV extends Value> List<Datatype<AV>> validate(final List<Datatype<AV>> paramTypes)
-	{
+	private static <AV extends Value> List<Datatype<AV>> validate(final List<Datatype<AV>> paramTypes) {
 		if (paramTypes == null || paramTypes.isEmpty())
 		{
 			throw UNDEF_PARAMETER_TYPES_EXCEPTION;
@@ -93,13 +92,11 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 		}
 
 		@Override
-		protected V evaluate(final Deque<V> args) throws IndeterminateEvaluationException
-		{
+		protected V evaluate(final Deque<V> args) throws IndeterminateEvaluationException {
 			try
 			{
 				return op.eval(args);
-			}
-			catch (IllegalArgumentException | ArithmeticException e)
+			} catch (IllegalArgumentException | ArithmeticException e)
 			{
 				throw new IndeterminateEvaluationException(invalidArgsErrMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
@@ -128,12 +125,11 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<AV> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
-	{
+	public FirstOrderFunctionCall<AV> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException {
 		/**
 		 * If this.op is a commutative function (e.g. add or multiply function), we can simplify arguments if there are multiple constants. Indeed, if C1,...Cm are constants, then:
 		 * <p>
-		 * op(x1,..., x_{n1-1}, C1, x_n1, ..., x_{n2-1} C2, x_n2, ..., Cm, x_nm...) = op( C, x1.., x_{n1-1}, x_n1, x_{n2-2}, x_n2...), where C (constant) = op(C1, C2..., Cm)
+		 * op(x1,..., x_{n1-1}, C1, x_n1, ..., x_{n2-1}, C2, x_n2, ..., Cm, x_nm...) = op( C, x1.., x_{n1-1}, x_n1, x_{n2-2}, x_n2...), where C (constant) = op(C1, C2..., Cm)
 		 * </p>
 		 * In this case, we can pre-compute constant C and replace all constant args with one: C
 		 * 
@@ -159,18 +155,16 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 				{
 					// variable
 					finalArgExpressions.add(argExp);
-				}
-				else
+				} else
 				{
 					// constant
 					try
 					{
 						constants.add(paramType.cast(v.get()));
-					}
-					catch (final ClassCastException e)
+					} catch (final ClassCastException e)
 					{
-						throw new IllegalArgumentException("Function " + this.functionSignature + ": invalid arg #" + argIndex + ": bad type: " + argExp.getReturnType() + ". Expected type: "
-								+ paramType, e);
+						throw new IllegalArgumentException(
+								"Function " + this.functionSignature + ": invalid arg #" + argIndex + ": bad type: " + argExp.getReturnType() + ". Expected type: " + paramType, e);
 					}
 				}
 

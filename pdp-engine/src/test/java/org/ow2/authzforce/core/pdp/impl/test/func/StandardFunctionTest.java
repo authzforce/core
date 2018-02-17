@@ -66,10 +66,9 @@ public abstract class StandardFunctionTest
 	{
 		try
 		{
-			STD_EXPRESSION_FACTORY = new DepthLimitingExpressionFactory(StandardAttributeValueFactories.getRegistry(true, Optional.empty()), StandardFunction.getRegistry(true,
-					StandardAttributeValueFactories.BIG_INTEGER), null, 0, false, false);
-		}
-		catch (IllegalArgumentException | IOException e)
+			STD_EXPRESSION_FACTORY = new DepthLimitingExpressionFactory(StandardAttributeValueFactories.getRegistry(true, Optional.empty()),
+					StandardFunction.getRegistry(true, StandardAttributeValueFactories.BIG_INTEGER), null, 0, false, false);
+		} catch (IllegalArgumentException | IOException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -79,7 +78,7 @@ public abstract class StandardFunctionTest
 	private final Value expectedResult;
 	private final String toString;
 	private final boolean areBagsComparedAsSets;
-	private boolean syntaxErrorRaised = false;
+	private boolean isTestOkBeforeFuncCall = false;
 
 	/**
 	 * Creates instance
@@ -101,15 +100,13 @@ public abstract class StandardFunctionTest
 		if (inputs.isEmpty())
 		{
 			subFuncReturnType = null;
-		}
-		else
+		} else
 		{
 			final Expression<?> xpr0 = inputs.get(0);
 			if (xpr0 instanceof FunctionExpression)
 			{
 				subFuncReturnType = ((FunctionExpression) xpr0).getValue().get().getReturnType();
-			}
-			else
+			} else
 			{
 				subFuncReturnType = null;
 			}
@@ -127,14 +124,30 @@ public abstract class StandardFunctionTest
 		try
 		{
 			funcCall = function.newCall(inputs);
-		}
-		catch (final IllegalArgumentException e)
+		} catch (final IllegalArgumentException e)
 		{
-			funcCall = null;
 			/*
 			 * Some syntax errors might be caught at initialization time, which is expected if expectedResult == null
 			 */
-			syntaxErrorRaised = true;
+			if (expectedResult != null)
+			{
+				/*
+				 * IllegalArgumentException should not have been thrown, since we expect a result of the function call
+				 */
+				throw new RuntimeException("expectedResult != null but invalid args in test definition prevented the function call", e);
+			}
+
+			funcCall = null;
+			// expectedResult == null
+			isTestOkBeforeFuncCall = true;
+		}
+
+		/*
+		 * If test not yet OK, we need to run the function call (funcCall.evaluate(...)), so funcCall must be defined
+		 */
+		if (!isTestOkBeforeFuncCall && funcCall == null)
+		{
+			throw new RuntimeException("Failed to initialize function call for unknown reason");
 		}
 
 		this.expectedResult = expectedResult;
@@ -150,14 +163,12 @@ public abstract class StandardFunctionTest
 	// org.junit.Assume.assumeTrue(function == null);
 	// }
 
-	private static <V extends AttributeValue> Expression<?> createValueExpression(final Datatype<V> datatype, final AttributeValue rawValue)
-	{
+	private static <V extends AttributeValue> Expression<?> createValueExpression(final Datatype<V> datatype, final AttributeValue rawValue) {
 		// static expression only if not xpathExpression
 		return new ConstantPrimitiveAttributeValueExpression<>(datatype, datatype.cast(rawValue));
 	}
 
-	private static <V extends Bag<?>> Expression<?> createValueExpression(final Datatype<V> datatype, final Bag<?> rawValue)
-	{
+	private static <V extends Bag<?>> Expression<?> createValueExpression(final Datatype<V> datatype, final Bag<?> rawValue) {
 		return new BagValueExpression<>(datatype, datatype.cast(rawValue));
 	}
 
@@ -171,20 +182,17 @@ public abstract class StandardFunctionTest
 		}
 
 		@Override
-		public Datatype<V> getReturnType()
-		{
+		public Datatype<V> getReturnType() {
 			return returnType;
 		}
 
 		@Override
-		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
-		{
+		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException {
 			throw new IndeterminateEvaluationException("Missing attribute", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		}
 
 		@Override
-		public Optional<V> getValue()
-		{
+		public Optional<V> getValue() {
 			throw new UnsupportedOperationException("No constant defined for Indeterminate expression");
 		}
 
@@ -192,8 +200,7 @@ public abstract class StandardFunctionTest
 
 	// private static <V extends Value> IndeterminateExpression<V> newIndeterminateExpression
 
-	private static final List<Expression<?>> toExpressions(final String subFunctionName, final List<Value> values)
-	{
+	private static final List<Expression<?>> toExpressions(final String subFunctionName, final List<Value> values) {
 		final List<Expression<?>> inputExpressions = new ArrayList<>();
 		if (subFunctionName != null)
 		{
@@ -225,20 +232,17 @@ public abstract class StandardFunctionTest
 				}
 
 				valExpr = nullVal.isBag() ? new IndeterminateExpression<>(datatypeFactory.getDatatype().getBagDatatype()) : new IndeterminateExpression<>(datatypeFactory.getDatatype());
-			}
-			else if (val instanceof AttributeValue)
+			} else if (val instanceof AttributeValue)
 			{
 				final AttributeValue primVal = (AttributeValue) val;
 				final AttributeValueFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(primVal.getDataType());
 				valExpr = createValueExpression(datatypeFactory.getDatatype(), primVal);
-			}
-			else if (val instanceof Bag)
+			} else if (val instanceof Bag)
 			{
 				final Bag<?> bagVal = (Bag<?>) val;
 				final AttributeValueFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(bagVal.getElementDatatype().getId());
 				valExpr = createValueExpression(datatypeFactory.getDatatype().getBagDatatype(), bagVal);
-			}
-			else
+			} else
 			{
 				throw new UnsupportedOperationException("Unsupported type of Value: " + val.getClass());
 			}
@@ -287,8 +291,7 @@ public abstract class StandardFunctionTest
 		this(functionName, subFunctionName, inputs, false, expectedResult);
 	}
 
-	private static final Set<PrimitiveValue> bagToSet(final Bag<?> bag)
-	{
+	private static final Set<PrimitiveValue> bagToSet(final Bag<?> bag) {
 		final Set<PrimitiveValue> set = new HashSet<>();
 		for (final PrimitiveValue val : bag)
 		{
@@ -299,11 +302,12 @@ public abstract class StandardFunctionTest
 	}
 
 	@Test
-	public void testEvaluate() throws IndeterminateEvaluationException
-	{
-		if (syntaxErrorRaised && expectedResult == null)
+	public void testEvaluate() throws IndeterminateEvaluationException {
+		if (isTestOkBeforeFuncCall)
 		{
-			// syntax error already detected as expected -> test success
+			/*
+			 * Test already OK (syntax error was expected and occured when creating the function call already), no need to carry on the function call
+			 */
 			return;
 		}
 
@@ -312,19 +316,20 @@ public abstract class StandardFunctionTest
 		 */
 		try
 		{
+			/*
+			 * funcCall != null (see constructor)
+			 */
 			final Value actualResult = funcCall.evaluate(null);
 			if (expectedResult instanceof Bag && actualResult instanceof Bag && areBagsComparedAsSets)
 			{
 				final Set<?> expectedSet = bagToSet((Bag<?>) expectedResult);
 				final Set<?> actualSet = bagToSet((Bag<?>) actualResult);
 				Assert.assertEquals(toString, expectedSet, actualSet);
-			}
-			else if (expectedResult != null)
+			} else if (expectedResult != null)
 			{
 				Assert.assertEquals(toString, expectedResult, actualResult);
 			}
-		}
-		catch (final IndeterminateEvaluationException e)
+		} catch (final IndeterminateEvaluationException e)
 		{
 			if (expectedResult != null)
 			{

@@ -21,11 +21,13 @@
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
@@ -58,7 +60,7 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 {
 	/**
-	 * module factory
+	 * Module factory
 	 * 
 	 */
 	public static class Factory extends CloseableDesignatedAttributeProvider.FactoryBuilder<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider>
@@ -92,9 +94,15 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 		}
 
 	}
+	
+	private static AttributeDesignatorType newAttributeDesignator(Entry<AttributeFqn, AttributeBag<?>> attributeEntry) {
+		final AttributeFqn attrKey = attributeEntry.getKey();
+		final Bag<?> attrVals = attributeEntry.getValue();
+		return new AttributeDesignatorType(attrKey.getCategory(), attrKey.getId(), attrVals.getElementDatatype().getId(), attrKey.getIssuer().orElse(null), false);
+	}
 
-	private final Set<AttributeDesignatorType> supportedDesignatorTypes = new HashSet<>();
-	private final Map<AttributeFqn, AttributeBag<?>> attrMap = new HashMap<>();
+	private final Set<AttributeDesignatorType> supportedDesignatorTypes;
+	private final Map<AttributeFqn, AttributeBag<?>> attrMap;
 
 	private TestAttributeProvider(final org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider conf, final AttributeValueFactoryRegistry attributeValueFactoryRegistry)
 			throws IllegalArgumentException
@@ -103,6 +111,7 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 		final NamedXacmlAttributeParser<Attribute> namedXacmlAttParser = new NamedXacmlJaxbAttributeParser(attributeValueFactoryRegistry);
 		final XacmlRequestAttributeParser<Attribute, AttributeBag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictXacmlAttributeParser<>(namedXacmlAttParser);
 		final Set<String> attrCategoryNames = new HashSet<>();
+		final Map<AttributeFqn, AttributeBag<?>> mutableAttMap = new HashMap<>();
 		for (final Attributes jaxbAttributes : conf.getAttributes())
 		{
 			final String categoryName = jaxbAttributes.getCategory();
@@ -113,16 +122,13 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 
 			for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
 			{
-				xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, null, attrMap);
+				xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, null, mutableAttMap);
 			}
 		}
 
-		for (final Entry<AttributeFqn, AttributeBag<?>> attrEntry : attrMap.entrySet())
-		{
-			final AttributeFqn attrKey = attrEntry.getKey();
-			final Bag<?> attrVals = attrEntry.getValue();
-			supportedDesignatorTypes.add(new AttributeDesignatorType(attrKey.getCategory(), attrKey.getId(), attrVals.getElementDatatype().getId(), attrKey.getIssuer().orElse(null), false));
-		}
+		attrMap = Collections.unmodifiableMap(mutableAttMap);
+		final Set<AttributeDesignatorType> mutableSupportedAttDesignatorSet = attrMap.entrySet().stream().map(attEntry -> newAttributeDesignator(attEntry)).collect(Collectors.toSet());
+		this.supportedDesignatorTypes = Collections.unmodifiableSet(mutableSupportedAttDesignatorSet);
 	}
 
 	@Override

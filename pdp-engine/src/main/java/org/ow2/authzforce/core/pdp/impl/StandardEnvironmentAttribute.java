@@ -51,11 +51,11 @@ public enum StandardEnvironmentAttribute
 	 */
 	CURRENT_DATETIME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value()));
 
-	private final AttributeFqn AttributeFqn;
+	private final AttributeFqn attributeFqn;
 
-	private StandardEnvironmentAttribute(final AttributeFqn AttributeFqn)
+	private StandardEnvironmentAttribute(final AttributeFqn attributeFqn)
 	{
-		this.AttributeFqn = AttributeFqn;
+		this.attributeFqn = attributeFqn;
 	}
 
 	/**
@@ -65,7 +65,7 @@ public enum StandardEnvironmentAttribute
 	 */
 	public AttributeFqn getFQN()
 	{
-		return this.AttributeFqn;
+		return this.attributeFqn;
 	}
 
 	private static final Map<AttributeFqn, StandardEnvironmentAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(StandardEnvironmentAttribute.values()),
@@ -84,12 +84,12 @@ public enum StandardEnvironmentAttribute
 	/**
 	 * Get the standard environment attribute corresponding to the given ID
 	 * 
-	 * @param AttributeFqn
+	 * @param attributeFqn
 	 *            standard attribute ID
 	 * @return StandardEnvironmentAttribute corresponding to given ID, or null if there is no standard environment attribute with such ID
 	 */
-	public static StandardEnvironmentAttribute getInstance(final AttributeFqn AttributeFqn)
+	public static StandardEnvironmentAttribute getInstance(final AttributeFqn attributeFqn)
 	{
-		return ID_TO_STD_ATTR_MAP.get(AttributeFqn);
+		return ID_TO_STD_ATTR_MAP.get(attributeFqn);
 	}
 }
