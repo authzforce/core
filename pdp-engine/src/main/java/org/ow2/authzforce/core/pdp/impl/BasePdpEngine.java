@@ -177,14 +177,14 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		@Override
-		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn AttributeFqn, final AttributeBag<?> attributeValues)
+		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> attributeValues)
 		{
 			/*
 			 * Put the non-issued version of the attribute first
 			 */
-			final AttributeFqn nonAttributeFqn = AttributeFqns.newInstance(AttributeFqn.getCategory(), Optional.empty(), AttributeFqn.getId());
+			final AttributeFqn nonAttributeFqn = AttributeFqns.newInstance(attributeFqn.getCategory(), Optional.empty(), attributeFqn.getId());
 			super.putNamedAttributeIfAbsent(nonAttributeFqn, attributeValues);
-			return super.putNamedAttributeIfAbsent(AttributeFqn, attributeValues);
+			return super.putNamedAttributeIfAbsent(attributeFqn, attributeValues);
 		}
 	}
 
@@ -255,9 +255,9 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		/** {@inheritDoc} */
 		@Override
-		public <AV extends AttributeValue> AttributeBag<AV> getNamedAttributeValue(final AttributeFqn AttributeFqn, final BagDatatype<AV> attributeBagDatatype) throws IndeterminateEvaluationException
+		public <AV extends AttributeValue> AttributeBag<AV> getNamedAttributeValue(final AttributeFqn attributeFqn, final BagDatatype<AV> attributeBagDatatype) throws IndeterminateEvaluationException
 		{
-			final AttributeBag<?> bagResult = namedAttributes.get(AttributeFqn);
+			final AttributeBag<?> bagResult = namedAttributes.get(attributeFqn);
 			if (bagResult == null)
 			{
 				return null;
@@ -270,7 +270,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 						"Datatype ("
 								+ bagResult.getElementDatatype()
 								+ ") of AttributeDesignator "
-								+ AttributeFqn
+								+ attributeFqn
 								+ " in context is different from expected/requested ("
 								+ expectedElementDatatype
 								+ "). May be caused by refering to the same Attribute Category/Id/Issuer with different Datatypes in different policy elements and/or attribute providers, which is not allowed.",
@@ -281,14 +281,14 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			 * If datatype classes match, bagResult should have same type as datatypeClass.
 			 */
 			final AttributeBag<AV> result = (AttributeBag<AV>) bagResult;
-			this.listeners.forEach((lt, l) -> l.namedAttributeValueConsumed(AttributeFqn, result));
+			this.listeners.forEach((lt, l) -> l.namedAttributeValueConsumed(attributeFqn, result));
 			return result;
 		}
 
 		@Override
-		public boolean putNamedAttributeValueIfAbsent(final AttributeFqn AttributeFqn, final AttributeBag<?> result)
+		public boolean putNamedAttributeValueIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> result)
 		{
-			final Bag<?> duplicate = namedAttributes.putIfAbsent(AttributeFqn, result);
+			final Bag<?> duplicate = namedAttributes.putIfAbsent(attributeFqn, result);
 			if (duplicate != null)
 			{
 				/*
@@ -296,11 +296,11 @@ public final class BasePdpEngine implements CloseablePdpEngine
 				 * putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but different datatype URI/datatype class) in the same
 				 * context
 				 */
-				LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", AttributeFqn, result);
+				LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", attributeFqn, result);
 				return false;
 			}
 
-			this.listeners.forEach((lt, l) -> l.namedAttributeValueProduced(AttributeFqn, result));
+			this.listeners.forEach((lt, l) -> l.namedAttributeValueProduced(attributeFqn, result));
 			/*
 			 * Attribute value cannot change during evaluation context, so if old value already there, put it back
 			 */
