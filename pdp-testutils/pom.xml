@@ -270,7 +270,7 @@
                <properties>
                   <property>
                      <name>surefire.testng.verbose</name>
-                     <!-- verbosity level from 0 to 10 (10 is the most detailed), or -1 for debug More info: http://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html -->
+                     <!-- verbosity level from 0 to 10 (10 is the most detailed), or -1 for debug. More info: http://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html -->
                      <value>3</value>
                   </property>
                </properties>

@@ -24,6 +24,7 @@ import java.util.List;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
+import org.ow2.authzforce.core.pdp.api.expression.Expressions;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
 import org.ow2.authzforce.core.pdp.api.func.HigherOrderBagFunction;
@@ -62,28 +63,57 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 			private final Datatype<SUB_RETURN> returnBagElementType;
 			private final String indeterminateSubFuncEvalMessagePrefix;
 
-			private Call(final String functionId, final Datatype<Bag<SUB_RETURN>> returnType, final FirstOrderFunction<SUB_RETURN> subFunction, final List<Expression<?>> primitiveInputs,
-					final Expression<? extends Bag<?>> lastInputBag)
+			private Call(final String functionId, final Datatype<Bag<SUB_RETURN>> returnType, final FirstOrderFunction<SUB_RETURN> subFunction, final List<Expression<?>> primitiveInputsBeforeBag,
+					final Expression<? extends Bag<?>> bagInput, List<Expression<?>> primitiveInputsAfterBag)
 			{
-				super(functionId, returnType, subFunction, primitiveInputs, lastInputBag);
+				super(functionId, returnType, subFunction, primitiveInputsBeforeBag, bagInput, primitiveInputsAfterBag);
 				this.returnBagElementType = subFunction.getReturnType();
-				this.indeterminateSubFuncEvalMessagePrefix = "Function " + functionId + ": Error calling sub-function (first argument) with last arg=";
+				this.indeterminateSubFuncEvalMessagePrefix = "Function '" + functionId + "': Error calling sub-function (first argument) with bag arg (#" + this.bagArgIndex + ") = ";
 			}
 
 			@Override
-			protected Bag<SUB_RETURN> evaluate(final Bag<?> lastArgBag, final EvaluationContext context) throws IndeterminateEvaluationException
-			{
-				final Collection<SUB_RETURN> results = new ArrayDeque<>(lastArgBag.size());
-				for (final AttributeValue lastArgBagVal : lastArgBag)
+			protected Bag<SUB_RETURN> evaluate(final Bag<?> bagArg, final EvaluationContext context) throws IndeterminateEvaluationException {
+				/*
+				 * Prepare sub-function call's remaining args (bag arg and subsequent ones if any)
+				 */
+				final AttributeValue[] argsAfterBagInclusive = new AttributeValue[this.numOfArgsAfterBagInclusive];
+				/*
+				 * Index i=0 is for the bag element value, resolved in the second for loop below.
+				 */
+				int i = 1;
+				/*
+				 * See BaseFirstOrderFunctionCall#evalPrimitiveArgs(...)
+				 */
+				for (final Expression<?> primitiveArgExprAfterBag : this.primitiveArgExprsAfterBag)
 				{
+					// get and evaluate the next parameter
+					/*
+					 * The types of arguments have already been checked with checkInputs(), so casting to returnType should work.
+					 */
+					final AttributeValue argVal;
+					try
+					{
+						argVal = Expressions.evalPrimitive(primitiveArgExprAfterBag, context);
+					} catch (final IndeterminateEvaluationException e)
+					{
+						throw new IndeterminateEvaluationException("Indeterminate arg #" + (this.bagArgIndex + i), e.getStatusCode(), e);
+					}
+
+					argsAfterBagInclusive[i] = argVal;
+					i++;
+				}
+
+				final Collection<SUB_RETURN> results = new ArrayDeque<>(bagArg.size());
+				for (final AttributeValue bagElement : bagArg)
+				{
+					argsAfterBagInclusive[0] = bagElement;
 					final SUB_RETURN subResult;
 					try
 					{
-						subResult = subFuncCall.evaluate(context, lastArgBagVal);
-					}
-					catch (final IndeterminateEvaluationException e)
+						subResult = subFuncCall.evaluate(context, argsAfterBagInclusive);
+					} catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(indeterminateSubFuncEvalMessagePrefix + lastArgBagVal, e.getStatusCode(), e);
+						throw new IndeterminateEvaluationException(indeterminateSubFuncEvalMessagePrefix + bagElement, e.getStatusCode(), e);
 					}
 
 					results.add(subResult);
@@ -105,10 +135,9 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 		}
 
 		@Override
-		protected OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN_T>, SUB_RETURN_T> newFunctionCall(final FirstOrderFunction<SUB_RETURN_T> subFunc, final List<Expression<?>> primitiveInputs,
-				final Expression<? extends Bag<?>> lastInputBag)
-		{
-			return new Call<>(this.getId(), this.getReturnType(), subFunc, primitiveInputs, lastInputBag);
+		protected OneBagOnlyHigherOrderFunction.Call<Bag<SUB_RETURN_T>, SUB_RETURN_T> newFunctionCall(final FirstOrderFunction<SUB_RETURN_T> subFunc,
+				final List<Expression<?>> primitiveInputsBeforeBag, final Expression<? extends Bag<?>> bagInput, final List<Expression<?>> primitiveInputsAfterBag) {
+			return new Call<>(this.getId(), this.getReturnType(), subFunc, primitiveInputsBeforeBag, bagInput, primitiveInputsAfterBag);
 		}
 
 	}
@@ -121,14 +150,12 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 	}
 
 	@Override
-	public String getId()
-	{
+	public String getId() {
 		return functionId;
 	}
 
 	@Override
-	public <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(final Datatype<SUB_RETURN> subFunctionReturnType) throws IllegalArgumentException
-	{
+	public <SUB_RETURN extends AttributeValue> HigherOrderBagFunction<?, SUB_RETURN> getInstance(final Datatype<SUB_RETURN> subFunctionReturnType) throws IllegalArgumentException {
 		if (subFunctionReturnType == null)
 		{
 			throw NULL_SUB_FUNCTION_RETURN_TYPE_ARG_EXCEPTION;
@@ -136,8 +163,8 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 
 		if (!(subFunctionReturnType instanceof AttributeDatatype<?>))
 		{
-			throw new IllegalArgumentException("Invalid sub-function's return type specified for function '" + functionId + "': " + subFunctionReturnType
-					+ ". Expected: any primitive attribute datatype.");
+			throw new IllegalArgumentException(
+					"Invalid sub-function's return type specified for function '" + functionId + "': " + subFunctionReturnType + ". Expected: any primitive attribute datatype.");
 		}
 
 		return new MapFunction<>(functionId, (AttributeDatatype<SUB_RETURN>) subFunctionReturnType);

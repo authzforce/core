@@ -54,8 +54,7 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
  */
 final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<BooleanValue>
 {
-	private static String getInvalidArg0MessagePrefix(final FirstOrderFunctionSignature<?> funcsig)
-	{
+	private static String getInvalidArg0MessagePrefix(final FirstOrderFunctionSignature<?> funcsig) {
 		return "Function " + funcsig.getName() + ": Invalid arg #0 (number of required Trues): expected: 0 <= (integer) <= number_of_remaining_arguments; actual: ";
 	}
 
@@ -81,8 +80,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 		}
 
 		protected BooleanValue evaluate(final EvaluationContext context, final int requiredMinOfTrues, final Iterator<? extends Expression<?>> remainingArgExpsIterator,
-				final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
-		{
+				final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException {
 			assert requiredMinOfTrues <= this.numOfArgsAfterFirst;
 
 			int nOfRequiredTrues = requiredMinOfTrues;
@@ -111,8 +109,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 							return BooleanValue.TRUE;
 						}
 					}
-				}
-				catch (final IndeterminateEvaluationException e)
+				} catch (final IndeterminateEvaluationException e)
 				{
 					/*
 					 * Keep the indeterminate arg error to throw it later in exception, in case there was not enough TRUEs in the remaining args.
@@ -174,8 +171,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 					try
 					{
 						attrVal = BooleanValue.class.cast(arg);
-					}
-					catch (final ClassCastException e)
+					} catch (final ClassCastException e)
 					{
 						/*
 						 * Indicate arg index to help troubleshooting: argIndex (starting at 0) = max_index - number_of_args_remaining_to_evaluate = (totalArgCount - 1) - nOfRemainingArgs =
@@ -253,8 +249,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 		}
 
 		@Override
-		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... remainingArgs) throws IndeterminateEvaluationException
-		{
+		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... remainingArgs) throws IndeterminateEvaluationException {
 			return super.evaluate(context, requiredMinOfTrues, checkedArgExpressionsAfterFirst.iterator(), remainingArgs);
 		}
 
@@ -274,8 +269,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 		}
 
 		@Override
-		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
-		{
+		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException {
 			/*
 			 * Arg datatypes and number is already checked in superclass but we need to do further checks specific to this function such as the first argument which must be a positive integer
 			 */
@@ -290,8 +284,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			try
 			{
 				intAttrVal = Expressions.eval(input0, context, StandardDatatypes.INTEGER);
-			}
-			catch (final IndeterminateEvaluationException e)
+			} catch (final IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(indeterminateArgMsgPrefix + 0, e.getStatusCode(), e);
 			}
@@ -334,13 +327,19 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
-	{
+	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException {
 		/*
 		 * Optimization: check whether the first arg ('n' = number of Trues to reach) is constant
 		 */
 		final Iterator<? extends Expression<?>> argExpsIterator = argExpressions.iterator();
-		// Evaluate the first argument
+		/*
+		 * Evaluate the first argument if not in remainingArgTypes
+		 */
+		if (!argExpsIterator.hasNext())
+		{
+			return new CallWithVarArg0(functionSignature, argExpressions, remainingArgTypes);
+		}
+
 		final Optional<? extends Value> arg0 = argExpsIterator.next().getValue();
 		if (arg0.isPresent())
 		{
