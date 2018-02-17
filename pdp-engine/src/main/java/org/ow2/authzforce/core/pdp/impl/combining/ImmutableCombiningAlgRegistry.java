@@ -22,7 +22,9 @@ import java.util.Set;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
+import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 
 import com.google.common.base.Preconditions;
 
@@ -31,8 +33,7 @@ import com.google.common.base.Preconditions;
  *
  * @version $Id: $
  */
-public final class ImmutableCombiningAlgRegistry extends BasePdpExtensionRegistry<CombiningAlg<?>>
-		implements CombiningAlgRegistry
+public final class ImmutableCombiningAlgRegistry extends BasePdpExtensionRegistry<CombiningAlg<?>> implements CombiningAlgRegistry
 {
 	/**
 	 * <p>
@@ -44,15 +45,16 @@ public final class ImmutableCombiningAlgRegistry extends BasePdpExtensionRegistr
 	 */
 	public ImmutableCombiningAlgRegistry(Set<CombiningAlg<?>> algorithms)
 	{
-		super(CombiningAlg.class,
-				Preconditions.checkNotNull(algorithms, "Input Combining Algorithms undefined (algorithms == null)"));
+		super(CombiningAlg.class, Preconditions.checkNotNull(algorithms, "Input Combining Algorithms undefined (algorithms == null)"));
+	}
+
+	private static String toString(Class<? extends Decidable> combinedElementType) {
+		return combinedElementType == PolicyEvaluator.class ? "Policy(Set)" : combinedElementType == RuleEvaluator.class ? "Rule" : combinedElementType.getCanonicalName();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public <T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedEltType)
-			throws IllegalArgumentException
-	{
+	public <T extends Decidable> CombiningAlg<T> getAlgorithm(String algId, Class<T> combinedEltType) throws IllegalArgumentException {
 		final CombiningAlg<? extends Decidable> alg = this.getExtension(algId);
 		if (alg == null)
 		{
@@ -65,10 +67,9 @@ public final class ImmutableCombiningAlgRegistry extends BasePdpExtensionRegistr
 		}
 
 		// wrong type of alg
-		throw new IllegalArgumentException("Registered combining algorithm for ID=" + algId
-				+ " combines instances of type '" + alg.getCombinedElementType()
-				+ "' which is not compatible (not same or supertype) with requested type of combined elements : "
-				+ combinedEltType);
+		alg.getCombinedElementType();
+		throw new IllegalArgumentException(
+				"Combining algorithm '" + algId + "': invalid type of input elements (to be combined): " + toString(combinedEltType) + "; expected: " + toString(alg.getCombinedElementType()) + ".");
 	}
 
 }

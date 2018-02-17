@@ -71,8 +71,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		}
 
 		@Override
-		protected StringValue evaluate(final Deque<AttributeValue> args) throws IndeterminateEvaluationException
-		{
+		protected StringValue evaluate(final Deque<AttributeValue> args) throws IndeterminateEvaluationException {
 			final AttributeValue rawArg0 = args.poll();
 			final AttributeValue rawArg1 = args.poll();
 			final AttributeValue rawArg2 = args.poll();
@@ -85,8 +84,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				arg0 = param0Type.cast(rawArg0);
 				beginIndex = (IntegerValue) rawArg1;
 				endIndex = (IntegerValue) rawArg2;
-			}
-			catch (final ClassCastException e)
+			} catch (final ClassCastException e)
 			{
 				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType() + "," + rawArg2.getDataType(),
 						XacmlStatusCode.PROCESSING_ERROR.value(), e);
@@ -115,8 +113,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				final int beginIndexInt = beginIndex.intValueExact();
 				final int endIndexInt = endIndex.intValueExact();
 				substring = endIndexInt == -1 ? arg0.getUnderlyingValue().substring(beginIndexInt) : arg0.getUnderlyingValue().substring(beginIndexInt, endIndexInt);
-			}
-			catch (ArithmeticException | IndexOutOfBoundsException e)
+			} catch (ArithmeticException | IndexOutOfBoundsException e)
 			{
 				throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
@@ -141,23 +138,21 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		this.param0Type = param0Type;
 	}
 
-	private static String getInvalidArg1MessagePrefix(final FirstOrderFunctionSignature<?> funcsig)
-	{
+	private static String getInvalidArg1MessagePrefix(final FirstOrderFunctionSignature<?> funcsig) {
 		return "Function " + funcsig.getName() + ": Invalid arg #1 (beginIndex): expected: positive integer; actual: ";
 	}
 
-	private static String getInvalidArg2MessagePrefix(final FirstOrderFunctionSignature<?> funcsig)
-	{
+	private static String getInvalidArg2MessagePrefix(final FirstOrderFunctionSignature<?> funcsig) {
 		return "Function " + funcsig.getName() + ": Invalid arg #2 (endIndex): expected: -1 or positive integer >= beginIndex; actual: ";
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
-	{
-		if (argExpressions.size() != 3)
+	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) {
+		final int numOfArgs = argExpressions.size() + remainingArgTypes.length;
+		if (numOfArgs != 3)
 		{
-			throw new IllegalArgumentException("Function " + functionSignature.getName() + ": Invalid number of args: expected: 3; actual: " + argExpressions.size());
+			throw new IllegalArgumentException("Function " + functionSignature.getName() + ": Invalid number of args: expected: 3; actual: " + numOfArgs);
 		}
 
 		/*
@@ -165,10 +160,20 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		 * error
 		 */
 		final Iterator<? extends Expression<?>> argExpsIterator = argExpressions.iterator();
-		// Skip the first argument which is the string
+		if (!argExpsIterator.hasNext())
+		{
+			return new Call(functionSignature, param0Type, argExpressions, remainingArgTypes);
+		}
+
+		// Skip the first argument (arg #0) which is the string
 		argExpsIterator.next();
 
-		// Second arg
+		// Second arg (arg #1)
+		if (!argExpsIterator.hasNext())
+		{
+			return new Call(functionSignature, param0Type, argExpressions, remainingArgTypes);
+		}
+
 		final Expression<?> arg1Exp = argExpsIterator.next();
 		final Optional<? extends Value> arg1 = arg1Exp.getValue();
 		final int beginIndex;
@@ -185,13 +190,17 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 			{
 				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + beginIndex);
 			}
-		}
-		else
+		} else
 		{
 			beginIndex = -1; // undefined
 		}
 
 		// Third arg
+		if (!argExpsIterator.hasNext())
+		{
+			return new Call(functionSignature, param0Type, argExpressions, remainingArgTypes);
+		}
+
 		final Expression<?> arg2Exp = argExpsIterator.next();
 		final Optional<? extends Value> arg2 = arg2Exp.getValue();
 		if (arg2.isPresent())
