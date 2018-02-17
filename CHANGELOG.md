@@ -1,7 +1,16 @@
 # Change log
 All notable changes to this project are documented in this file following the [Keep a CHANGELOG](http://keepachangelog.com) conventions. 
 
-Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. Issues reported on [OW2](https://jira.ow2.org/browse/AUTHZFORCE/) are mentioned in the form of `[OW2-N]`, where N is the issue number.
+## Issue references
+- Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. 
+- Issues reported on [OW2's JIRA](https://jira.ow2.org/browse/AUTHZFORCE/) are referenced in the form of `[JIRA-N]`, where N is the issue number.
+- Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
+
+
+## 11.0.1
+### Fixed
+- [GL-6]: IllegalArgumentException when applying XACML 'map' function to substring with string bag as first arg
+- Dependency of pdp-testutils module - Jongo 1.3.0 - depends on jackson-databind 2.7.3 which is affected by CVE-2018-5968. Fixed by forcing version of jackson-databind to 2.9.4 in file 'pom.xml', until Jongo team fixes the issue (https://github.com/bguerout/jongo/issues/327)
 
 
 ## 11.0.0
@@ -118,10 +127,10 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 
 ## 7.1.0
 ### Added
-- [OW2-26] Simplify evaluation of Apply expression with commutative numeric function f (e.g. add and multiply): if multiple arguments are constants A, B..., then: `f(a1,...an, A, b1,...bn, B, c1,...) = f(C, a1,...an, b1,...bn, c1...)` where `C = f(A,B...)` and a1,...an, b1,...bn, c1,... are the other arguments (variables).
+- [JIRA-26] Simplify evaluation of Apply expression with commutative numeric function f (e.g. add and multiply): if multiple arguments are constants A, B..., then: `f(a1,...an, A, b1,...bn, B, c1,...) = f(C, a1,...an, b1,...bn, c1...)` where `C = f(A,B...)` and a1,...an, b1,...bn, c1,... are the other arguments (variables).
 
 ### Fixed
-- [OW2-25] - Reopened - NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. This is the final fix addressing higher-order functions. (Initial fix only addressed first-order ones.)
+- [JIRA-25] - Reopened - NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. This is the final fix addressing higher-order functions. (Initial fix only addressed first-order ones.)
 - Artifact `authzforce-ce-core` with `tests` classifier: missing classes.
 
 
@@ -174,10 +183,10 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 - Dependency on Koloboke, replaced by extension mechanism mentioned in *Added* section that would allow to switch from the default HashMap/HashSet implementation to Koloboke-based.
 
 ### Fixed
-- [OW2-23] Enforcement of RuleId/PolicyId/PolicySetId uniqueness:
+- [JIRA-23] Enforcement of RuleId/PolicyId/PolicySetId uniqueness:
 	- PolicyId (resp. PolicySetId) should be unique across all policies loaded by PDP so that PolicyIdReferences (resp. PolicySetIdReferences) in Responses' PolicyIdentifierList are absolute references to applicable policies (no ambiguity).
  	- [RuleId should be unique within a policy](https://lists.oasis-open.org/archives/xacml/201310/msg00025.html) -> A rule is globally uniquely identified by the parent PolicyId and the RuleId.
-- [OW2-25] NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. Partial fix addressing only invalid first-order functions. See release 7.0.1 for final fix addressing higher-order functions too.
+- [JIRA-25] NullPointerException when parsing Apply expressions using invalid/unsupported Function ID. Partial fix addressing only invalid first-order functions. See release 7.0.1 for final fix addressing higher-order functions too.
 
 
 ## 5.0.2
@@ -187,7 +196,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 
 ## 5.0.1
 ### Fixed
-- [OW2-22] When handling the same XACML Request twice in the same JVM with the root PolicySet using deny-unless-permit algorithm over a Policy returning simple Deny (no status/obligation/advice) and a Policy returning Permit/Deny with obligations/advice, the obligation is duplicated in the final result at the second time this situation occurs. 
+- [JIRA-22] When handling the same XACML Request twice in the same JVM with the root PolicySet using deny-unless-permit algorithm over a Policy returning simple Deny (no status/obligation/advice) and a Policy returning Permit/Deny with obligations/advice, the obligation is duplicated in the final result at the second time this situation occurs. 
 - XACML StatusCode XML serialization/marshalling error when Missing Attribute info that is no valid anyURI is returned by PDP in a Indeterminate Result
 - Memory management issue: native RootPolicyProvider modules keeping a reference to static refPolicyProvider, even after policies have been resolved statically at initialization time, preventing garbage collection and memory saving.
 - Calls to Logger impacted negatively by autoboxing
