@@ -25,7 +25,7 @@ import java.util.NavigableSet;
 import java.util.Optional;
 
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.UnmodifiableIterator;
@@ -33,8 +33,8 @@ import com.google.common.collect.UnmodifiableIterator;
 /**
  * Policy versions sorted from latest version to oldest.
  * <p>
- * The choice to have the latest version in first position is motivated by §5.10 of XACML core spec:
- * "In the case that more than one matching version can be obtained, then the most recent one SHOULD be used."
+ * The choice to have the latest version in first position is motivated by §5.10 of XACML core spec: "In the case that more than one matching version can be obtained, then the most recent one SHOULD
+ * be used."
  *
  * @param <P>
  *            policy type (or any other type of data corresponding to a specific policy version)
@@ -53,7 +53,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 */
 	public PolicyVersions(final Map<PolicyVersion, P> versions)
 	{
-		policiesByVersion = versions == null ? ImmutableSortedMap.<PolicyVersion, P> of() : ImmutableSortedMap.copyOf(versions, Collections.reverseOrder());
+		policiesByVersion = versions == null ? ImmutableSortedMap.<PolicyVersion, P>of() : ImmutableSortedMap.copyOf(versions, Collections.reverseOrder());
 	}
 
 	/**
@@ -63,25 +63,23 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 *            policy version
 	 * @return policy
 	 */
-	public P get(final PolicyVersion version)
-	{
+	public P get(final PolicyVersion version) {
 		return policiesByVersion.get(version);
 	}
 
 	/**
 	 * Get latest policy version matching specific version patterns
 	 *
-	 * @param versionPatterns
+	 * @param PolicyVersionPatterns
 	 *            version patterns
 	 * @return latest version; null if none matched
 	 */
-	public Entry<PolicyVersion, P> getLatest(final Optional<VersionPatterns> versionPatterns)
-	{
-		assert versionPatterns != null;
+	public Entry<PolicyVersion, P> getLatest(final Optional<PolicyVersionPatterns> PolicyVersionPatterns) {
+		assert PolicyVersionPatterns != null;
 
 		// policiesByVersion is not empty -> at least one value
 		final Iterator<Entry<PolicyVersion, P>> versionPolicyPairsIterator = policiesByVersion.entrySet().iterator();
-		if (!versionPatterns.isPresent())
+		if (!PolicyVersionPatterns.isPresent())
 		{
 			/*
 			 * Return the latest version which is the first element by design (TreeMap initialized with reverse order on version keys). See §5.10 of XACML core spec:
@@ -90,7 +88,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 			return versionPolicyPairsIterator.next();
 		}
 
-		final VersionPatterns nonNullVersionPatterns = versionPatterns.get();
+		final PolicyVersionPatterns nonNullPolicyVersionPatterns = PolicyVersionPatterns.get();
 
 		// constraints not null
 		// in the loop, go on until LatestVersion matched, then go on as long as
@@ -108,7 +106,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 			 */
 			if (!latestVersionMatched)
 			{
-				latestVersionMatched = nonNullVersionPatterns.matchLatestVersion(version);
+				latestVersionMatched = nonNullPolicyVersionPatterns.matchLatestVersion(version);
 			}
 
 			// If LatestVersion matched, check other constraints, else do
@@ -124,7 +122,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 				{
 					// EarliestVersion not checked yet
 					// check against EarliestVersion pattern
-					earliestVersionMatched = nonNullVersionPatterns.matchEarliestVersion(version);
+					earliestVersionMatched = nonNullPolicyVersionPatterns.matchEarliestVersion(version);
 					/*
 					 * If still not matched, version cannot be in the [EarliestVersion, LatestVersion] interval. All next versions are earlier, so they cannot be either -> no match
 					 */
@@ -136,7 +134,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 
 				// EarliestVersion and LatestVersion matched.
 				// Check against Version pattern
-				if (nonNullVersionPatterns.matchVersion(version))
+				if (nonNullPolicyVersionPatterns.matchVersion(version))
 				{
 					// all constraints matched, return the associated policy
 					return versionPolicyPair;
@@ -152,8 +150,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 
 	/** {@inheritDoc} */
 	@Override
-	public Iterator<Entry<PolicyVersion, P>> iterator()
-	{
+	public Iterator<Entry<PolicyVersion, P>> iterator() {
 		return policiesByVersion.entrySet().iterator();
 	}
 
@@ -162,8 +159,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 * 
 	 * @return number of policy versions
 	 */
-	public int size()
-	{
+	public int size() {
 		return this.policiesByVersion.size();
 	}
 
@@ -172,8 +168,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 * 
 	 * @return unmodifiable iterator over versions from oldest to latest
 	 */
-	public UnmodifiableIterator<Entry<PolicyVersion, P>> oldestToLatestIterator()
-	{
+	public UnmodifiableIterator<Entry<PolicyVersion, P>> oldestToLatestIterator() {
 		/*
 		 * The map is sorted from latest to oldest by default, so "descending" in this case means from oldest to latest
 		 */
@@ -185,8 +180,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 * 
 	 * @return versions from latest to oldest
 	 */
-	public NavigableSet<PolicyVersion> latestToOldestSet()
-	{
+	public NavigableSet<PolicyVersion> latestToOldestSet() {
 		return policiesByVersion.keySet();
 	}
 }

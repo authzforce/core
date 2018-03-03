@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 
 /**
  * Map that provides convenient access to a policy based on the policy ID and version pattern to help resolve policy references
@@ -63,12 +63,11 @@ public final class PolicyMap<P>
 	 * 
 	 * @param id
 	 *            policy ID
-	 * @param versionPatterns
+	 * @param PolicyVersionPatterns
 	 *            patterns that the returned policy version must match
-	 * @return policy version latest version of policy with ID {@code id} and version matching {@code versionPatterns}
+	 * @return policy version latest version of policy with ID {@code id} and version matching {@code PolicyVersionPatterns}
 	 */
-	public Entry<PolicyVersion, P> get(final String id, final Optional<VersionPatterns> versionPatterns)
-	{
+	public Entry<PolicyVersion, P> get(final String id, final Optional<PolicyVersionPatterns> PolicyVersionPatterns) {
 		final PolicyVersions<P> policyVersions = policiesById.get(id);
 		// id not matched
 		if (policyVersions == null)
@@ -76,7 +75,7 @@ public final class PolicyMap<P>
 			return null;
 		}
 
-		return policyVersions.getLatest(versionPatterns);
+		return policyVersions.getLatest(PolicyVersionPatterns);
 	}
 
 	/**
@@ -84,8 +83,7 @@ public final class PolicyMap<P>
 	 * 
 	 * @return all policies (with versions)
 	 */
-	public Set<Entry<String, PolicyVersions<P>>> entrySet()
-	{
+	public Set<Entry<String, PolicyVersions<P>>> entrySet() {
 		return policiesById.entrySet();
 	}
 }
