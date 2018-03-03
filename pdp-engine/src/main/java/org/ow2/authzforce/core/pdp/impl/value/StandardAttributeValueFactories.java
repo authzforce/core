@@ -41,8 +41,6 @@ import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
-import net.sf.saxon.s9api.XPathCompiler;
-
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
 import org.ow2.authzforce.core.pdp.api.XmlUtils;
@@ -73,6 +71,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
+import net.sf.saxon.s9api.XPathCompiler;
+
 /**
  * XACML standard datatypes
  *
@@ -90,8 +90,7 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public StringValue parse(final String val)
-		{
+		public StringValue parse(final String val) {
 			return StringValue.parse(val);
 		}
 
@@ -106,20 +105,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_BOOLEAN_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public BooleanValue parse(final String val)
-		{
+		public BooleanValue parse(final String val) {
 			return BooleanValue.getInstance(val);
 		}
 
 		@Override
-		public BooleanValue getInstance(final Serializable value)
-		{
+		public BooleanValue getInstance(final Serializable value) {
 			if (value instanceof Boolean)
 			{
 				return new BooleanValue((Boolean) value);
@@ -135,8 +131,8 @@ public final class StandardAttributeValueFactories
 
 	};
 
-	private static final Set<Class<? extends Serializable>> SUPPORTED_INTEGER_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(Short.class, Integer.class, Long.class,
-			BigInteger.class, String.class));
+	private static final Set<Class<? extends Serializable>> SUPPORTED_INTEGER_FACTORY_INPUT_TYPES = HashCollections
+			.newImmutableSet(Arrays.asList(Short.class, Integer.class, Long.class, BigInteger.class, String.class));
 
 	private static abstract class IntegerValueFactory extends SimpleValue.StringParseableValueFactory<IntegerValue>
 	{
@@ -147,8 +143,7 @@ public final class StandardAttributeValueFactories
 		}
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_INTEGER_FACTORY_INPUT_TYPES;
 		}
 
@@ -161,14 +156,12 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public IntegerValue parse(final String val) throws IllegalArgumentException
-		{
+		public IntegerValue parse(final String val) throws IllegalArgumentException {
 			final int i;
 			try
 			{
 				i = DatatypeConverter.parseInt(val);
-			}
-			catch (final NumberFormatException e)
+			} catch (final NumberFormatException e)
 			{
 				throw new IllegalArgumentException(this + ": input value not valid or too big for Java int: " + val);
 			}
@@ -177,8 +170,7 @@ public final class StandardAttributeValueFactories
 		}
 
 		@Override
-		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException {
 			if (value instanceof Short)
 			{
 				return IntegerValue.valueOf(((Short) value).intValue());
@@ -196,8 +188,7 @@ public final class StandardAttributeValueFactories
 				try
 				{
 					i = Math.toIntExact(l.longValue());
-				}
-				catch (final ArithmeticException e)
+				} catch (final ArithmeticException e)
 				{
 					throw new IllegalArgumentException(this + ": input value not supported (too big for Java int): " + value);
 				}
@@ -212,8 +203,7 @@ public final class StandardAttributeValueFactories
 				try
 				{
 					i = bigInt.intValueExact();
-				}
-				catch (final ArithmeticException e)
+				} catch (final ArithmeticException e)
 				{
 					throw new IllegalArgumentException(this + ": input value not supported (too big for Java int): " + value);
 				}
@@ -231,8 +221,7 @@ public final class StandardAttributeValueFactories
 
 	};
 
-	private static IntegerValue longOrSmallerIntToIntegerValue(final Serializable value)
-	{
+	private static IntegerValue longOrSmallerIntToIntegerValue(final Serializable value) {
 		if (value instanceof Short)
 		{
 			return IntegerValue.valueOf(((Short) value).intValue());
@@ -258,14 +247,12 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public IntegerValue parse(final String val) throws IllegalArgumentException
-		{
+		public IntegerValue parse(final String val) throws IllegalArgumentException {
 			final long i;
 			try
 			{
 				i = DatatypeConverter.parseLong(val);
-			}
-			catch (final NumberFormatException e)
+			} catch (final NumberFormatException e)
 			{
 				throw new IllegalArgumentException(this + ": input value not valid or too big for Java long: " + val);
 			}
@@ -274,8 +261,7 @@ public final class StandardAttributeValueFactories
 		}
 
 		@Override
-		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException {
 			final IntegerValue smallIntegerValue = longOrSmallerIntToIntegerValue(value);
 			if (smallIntegerValue != null)
 			{
@@ -289,8 +275,7 @@ public final class StandardAttributeValueFactories
 				try
 				{
 					i = bigInt.longValueExact();
-				}
-				catch (final ArithmeticException e)
+				} catch (final ArithmeticException e)
 				{
 					throw new IllegalArgumentException(this + ": input value not supported (too big for Java long): " + bigInt);
 				}
@@ -314,15 +299,13 @@ public final class StandardAttributeValueFactories
 	public static final SimpleValue.StringParseableValueFactory<IntegerValue> BIG_INTEGER = new IntegerValueFactory()
 	{
 
-		private IntegerValue getInstance(final BigInteger bigi)
-		{
+		private IntegerValue getInstance(final BigInteger bigi) {
 			final long i;
 			try
 			{
 				i = bigi.longValueExact();
 				return IntegerValue.valueOf(i);
-			}
-			catch (final ArithmeticException e)
+			} catch (final ArithmeticException e)
 			{
 				LOGGER.debug("Input integer too big to fit in a long: {}", bigi);
 			}
@@ -331,14 +314,12 @@ public final class StandardAttributeValueFactories
 		}
 
 		@Override
-		public IntegerValue parse(final String val) throws IllegalArgumentException
-		{
+		public IntegerValue parse(final String val) throws IllegalArgumentException {
 			final BigInteger bigInt;
 			try
 			{
 				bigInt = DatatypeConverter.parseInteger(val);
-			}
-			catch (final NumberFormatException e)
+			} catch (final NumberFormatException e)
 			{
 				throw new IllegalArgumentException(this + ": input value not valid: " + val);
 			}
@@ -347,8 +328,7 @@ public final class StandardAttributeValueFactories
 		}
 
 		@Override
-		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public IntegerValue getInstance(final Serializable value) throws IllegalArgumentException {
 			final IntegerValue smallIntegerValue = longOrSmallerIntToIntegerValue(value);
 			if (smallIntegerValue != null)
 			{
@@ -380,20 +360,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_DOUBLE_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public DoubleValue parse(final String val)
-		{
+		public DoubleValue parse(final String val) {
 			return new DoubleValue(val);
 		}
 
 		@Override
-		public DoubleValue getInstance(final Serializable value)
-		{
+		public DoubleValue getInstance(final Serializable value) {
 			if (value instanceof Float)
 			{
 				return new DoubleValue(Double.valueOf(((Float) value).doubleValue()));
@@ -414,8 +391,7 @@ public final class StandardAttributeValueFactories
 
 	};
 
-	private static TimeValue newUtcTimeValue(final int hours, final int minutes, final int seconds, final int nanoOfSec)
-	{
+	private static TimeValue newUtcTimeValue(final int hours, final int minutes, final int seconds, final int nanoOfSec) {
 		return TimeValue.getInstance(XmlUtils.XML_TEMPORAL_DATATYPE_FACTORY.newXMLGregorianCalendarTime(hours, minutes, seconds, BigDecimal.valueOf(nanoOfSec).movePointLeft(9), 0));
 	}
 
@@ -428,20 +404,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_TIME_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public TimeValue parse(final String val)
-		{
+		public TimeValue parse(final String val) {
 			return new TimeValue(val);
 		}
 
 		@Override
-		public TimeValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public TimeValue getInstance(final Serializable value) throws IllegalArgumentException {
 			if (value instanceof LocalTime)
 			{
 				final LocalTime time = (LocalTime) value;
@@ -475,20 +448,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_DATE_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public DateValue parse(final String val)
-		{
+		public DateValue parse(final String val) {
 			return new DateValue(val);
 		}
 
 		@Override
-		public DateValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public DateValue getInstance(final Serializable value) throws IllegalArgumentException {
 			if (value instanceof LocalDate)
 			{
 				final LocalDate date = (LocalDate) value;
@@ -507,14 +477,13 @@ public final class StandardAttributeValueFactories
 	};
 
 	private static DateTimeValue newDateTimeValue(final int year, final int month, final int dayOfMonth, final int hours, final int minutes, final int seconds, final int nanoOfSec,
-			final int timezoneOffsetMinutes)
-	{
-		return new DateTimeValue(XmlUtils.XML_TEMPORAL_DATATYPE_FACTORY.newXMLGregorianCalendar(BigInteger.valueOf(year), month, dayOfMonth, hours, minutes, seconds, BigDecimal.valueOf(nanoOfSec)
-				.movePointLeft(9), timezoneOffsetMinutes));
+			final int timezoneOffsetMinutes) {
+		return new DateTimeValue(XmlUtils.XML_TEMPORAL_DATATYPE_FACTORY.newXMLGregorianCalendar(BigInteger.valueOf(year), month, dayOfMonth, hours, minutes, seconds,
+				BigDecimal.valueOf(nanoOfSec).movePointLeft(9), timezoneOffsetMinutes));
 	}
 
-	private static final Set<Class<? extends Serializable>> SUPPORTED_DATETIME_FACTORY_INPUT_TYPES = HashCollections.newImmutableSet(Arrays.asList(LocalDateTime.class, OffsetDateTime.class,
-			ZonedDateTime.class, Instant.class, String.class));
+	private static final Set<Class<? extends Serializable>> SUPPORTED_DATETIME_FACTORY_INPUT_TYPES = HashCollections
+			.newImmutableSet(Arrays.asList(LocalDateTime.class, OffsetDateTime.class, ZonedDateTime.class, Instant.class, String.class));
 
 	/**
 	 * dateTime
@@ -523,20 +492,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_DATETIME_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public DateTimeValue parse(final String val)
-		{
+		public DateTimeValue parse(final String val) {
 			return new DateTimeValue(val);
 		}
 
 		@Override
-		public DateTimeValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public DateTimeValue getInstance(final Serializable value) throws IllegalArgumentException {
 			if (value instanceof LocalDateTime)
 			{
 				final LocalDateTime dateTime = (LocalDateTime) value;
@@ -585,20 +551,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_ANYURI_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public AnyUriValue parse(final String val)
-		{
+		public AnyUriValue parse(final String val) {
 			return new AnyUriValue(val);
 		}
 
 		@Override
-		public AnyUriValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public AnyUriValue getInstance(final Serializable value) throws IllegalArgumentException {
 			if (value instanceof URI)
 			{
 				final URI uri = (URI) value;
@@ -624,20 +587,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_HEXBINARY_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public HexBinaryValue parse(final String val)
-		{
+		public HexBinaryValue parse(final String val) {
 			return new HexBinaryValue(val);
 		}
 
 		@Override
-		public HexBinaryValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public HexBinaryValue getInstance(final Serializable value) throws IllegalArgumentException {
 			if (value instanceof byte[])
 			{
 				final byte[] bytes = (byte[]) value;
@@ -660,8 +620,7 @@ public final class StandardAttributeValueFactories
 	public static final SimpleValue.StringParseableValueFactory<Base64BinaryValue> BASE64BINARY = new SimpleValue.StringContentOnlyFactory<Base64BinaryValue>(StandardDatatypes.BASE64BINARY)
 	{
 		@Override
-		public Base64BinaryValue parse(final String val)
-		{
+		public Base64BinaryValue parse(final String val) {
 			return new Base64BinaryValue(val);
 		}
 
@@ -676,20 +635,17 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_X500NAME_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public X500NameValue parse(final String val)
-		{
+		public X500NameValue parse(final String val) {
 			return new X500NameValue(val);
 		}
 
 		@Override
-		public X500NameValue getInstance(final Serializable value) throws IllegalArgumentException
-		{
+		public X500NameValue getInstance(final Serializable value) throws IllegalArgumentException {
 			if (value instanceof X500Principal)
 			{
 				final X500Principal principal = (X500Principal) value;
@@ -712,8 +668,7 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Rfc822NameValue parse(final String val)
-		{
+		public Rfc822NameValue parse(final String val) {
 			return new Rfc822NameValue(val);
 		}
 	};
@@ -724,8 +679,7 @@ public final class StandardAttributeValueFactories
 	public static final SimpleValue.StringContentOnlyFactory<IpAddressValue> IPADDRESS = new SimpleValue.StringContentOnlyFactory<IpAddressValue>(StandardDatatypes.IPADDRESS)
 	{
 		@Override
-		public IpAddressValue parse(final String value)
-		{
+		public IpAddressValue parse(final String value) {
 			return new IpAddressValue(value);
 		}
 
@@ -738,8 +692,7 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public DnsNameWithPortRangeValue parse(final String value)
-		{
+		public DnsNameWithPortRangeValue parse(final String value) {
 			return new DnsNameWithPortRangeValue(value);
 		}
 
@@ -752,8 +705,7 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public DayTimeDurationValue parse(final String val)
-		{
+		public DayTimeDurationValue parse(final String val) {
 			return new DayTimeDurationValue(val);
 		}
 
@@ -767,8 +719,7 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public YearMonthDurationValue parse(final String val)
-		{
+		public YearMonthDurationValue parse(final String val) {
 			return new YearMonthDurationValue(val);
 		}
 
@@ -783,14 +734,12 @@ public final class StandardAttributeValueFactories
 	{
 
 		@Override
-		public Set<Class<? extends Serializable>> getSupportedInputTypes()
-		{
+		public Set<Class<? extends Serializable>> getSupportedInputTypes() {
 			return SUPPORTED_XPATH_FACTORY_INPUT_TYPES;
 		}
 
 		@Override
-		public XPathValue getInstance(final Serializable value, final Map<QName, String> otherXmlAttributes, final XPathCompiler xPathCompiler) throws IllegalArgumentException
-		{
+		public XPathValue getInstance(final Serializable value, final Map<QName, String> otherXmlAttributes, final XPathCompiler xPathCompiler) throws IllegalArgumentException {
 			if (!(value instanceof String))
 			{
 				throw new IllegalArgumentException("Invalid primitive AttributeValueType: content contains instance of " + value.getClass().getName() + ". Expected: " + String.class);
@@ -823,14 +772,13 @@ public final class StandardAttributeValueFactories
 	 *            true iff XPath-based function(s) support enabled
 	 * @param maxIntegerValue
 	 *            Maximum integer value. This is the expected maximum value for XACML attributes of standard type 'http://www.w3.org/2001/XMLSchema#integer'. Decreasing this value as much as possible
-	 *            helps the PDP engine optimize the processing of integer values (lower memory consumption, faster computations). In particular, the Java class used to represent an integer value is:
+	 *            helps the PDP engine optimize the processing of integer values (lower memory consumption, faster computations). By default, the Java class used to represent an integer value is:
 	 *            <ul>
-	 *            <li>{@code Byte}</li>
+	 *            <li>{@link Integer}</li>
 	 *            </ul>
 	 * @return standard registry of attribute value factories
 	 */
-	public static AttributeValueFactoryRegistry getRegistry(final boolean enableXPath, final Optional<BigInteger> maxIntegerValue)
-	{
+	public static AttributeValueFactoryRegistry getRegistry(final boolean enableXPath, final Optional<BigInteger> maxIntegerValue) {
 		/*
 		 * Ordered in which factories are added to the registry must be preserved to indicate order of preference; i.e. if two factories support a common input type, the first one in the list is
 		 * always used by default, unless a specific output XACML datatype is requested. For example, all factories support String type, but STRING factory must be first in the list, so that it is the
@@ -849,8 +797,7 @@ public final class StandardAttributeValueFactories
 		if (!maxIntegerValue.isPresent())
 		{
 			integerValFactory = MEDIUM_INTEGER;
-		}
-		else
+		} else
 		{
 
 			final BigInteger nonNullMaxInt = maxIntegerValue.get();
@@ -863,12 +810,10 @@ public final class StandardAttributeValueFactories
 			if (nonNullMaxInt.compareTo(INT_MAX_AS_BIG_INT) <= 0)
 			{
 				integerValFactory = MEDIUM_INTEGER;
-			}
-			else if (nonNullMaxInt.compareTo(LONG_MAX_AS_BIG_INT) <= 0)
+			} else if (nonNullMaxInt.compareTo(LONG_MAX_AS_BIG_INT) <= 0)
 			{
 				integerValFactory = LONG_INTEGER;
-			}
-			else
+			} else
 			{
 				integerValFactory = BIG_INTEGER;
 			}
