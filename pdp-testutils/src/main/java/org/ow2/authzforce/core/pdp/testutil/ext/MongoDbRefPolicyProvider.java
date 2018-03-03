@@ -29,9 +29,6 @@ import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
@@ -44,8 +41,8 @@ import org.ow2.authzforce.core.pdp.api.policy.BaseStaticRefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPattern;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
 import org.ow2.authzforce.core.pdp.impl.policy.PolicyEvaluators;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProvider;
 import org.ow2.authzforce.xacml.identifiers.XacmlNodeName;
@@ -55,6 +52,9 @@ import org.xml.sax.InputSource;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 
 /**
  * 
@@ -116,15 +116,13 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		private static final IllegalArgumentException NULL_CONF_ARGUMENT_EXCEPTION = new IllegalArgumentException("PolicyProvider configuration undefined");
 
 		@Override
-		public Class<MongoDBBasedPolicyProvider> getJaxbClass()
-		{
+		public Class<MongoDBBasedPolicyProvider> getJaxbClass() {
 			return MongoDBBasedPolicyProvider.class;
 		}
 
 		@Override
 		public CloseableRefPolicyProvider getInstance(final MongoDBBasedPolicyProvider conf, final XmlnsFilteringParserFactory xmlParserFactory, final int maxPolicySetRefDepth,
-				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties) throws IllegalArgumentException
-		{
+				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties) throws IllegalArgumentException {
 			if (conf == null)
 			{
 				throw NULL_CONF_ARGUMENT_EXCEPTION;
@@ -149,8 +147,7 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 			try
 			{
 				serverAddress = new ServerAddress(conf.getServerHost(), conf.getServerPort());
-			}
-			catch (final UnknownHostException e)
+			} catch (final UnknownHostException e)
 			{
 				throw new IllegalArgumentException("Invalid database server host", e);
 			}
@@ -161,8 +158,7 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 	}
 
 	@Override
-	public void close() throws IOException
-	{
+	public void close() throws IOException {
 		this.dbClient.close();
 	}
 
@@ -180,10 +176,10 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		}
 	}
 
-	private PolicyQueryResult getJaxbPolicyElement(final String policyTypeId, final String policyId, final Optional<VersionPatterns> policyVersionPatterns) throws IndeterminateEvaluationException
-	{
+	private PolicyQueryResult getJaxbPolicyElement(final String policyTypeId, final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns)
+			throws IndeterminateEvaluationException {
 		final Optional<PolicyVersionPattern> versionPattern;
-		if (policyVersionPatterns.isPresent())
+		if (policyPolicyVersionPatterns.isPresent())
 		{
 			/*
 			 * TODO: the following code does not support LatestVersion and EarliestVersion patterns. Beware that comparing versions (XACML VersionType) to each other - and also comparing literal
@@ -191,20 +187,19 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 			 * (VersionType) is a sequence/array of decimal numbers actually, therefore it relies on number comparison; and version pattern use wildcard characters '*' and '+' with a special meaning
 			 * that is different from PCRE or other regex engines.
 			 */
-			final VersionPatterns nonNullPolicyVersionPatterns = policyVersionPatterns.get();
-			if (nonNullPolicyVersionPatterns.getEarliestVersionPattern().isPresent())
+			final PolicyVersionPatterns nonNullPolicyPolicyVersionPatterns = policyPolicyVersionPatterns.get();
+			if (nonNullPolicyPolicyVersionPatterns.getEarliestVersionPattern().isPresent())
 			{
 				throw new IllegalArgumentException("PolicyProvider '" + id + "': EarliestVersion in input policy reference is not supported");
 			}
 
-			if (nonNullPolicyVersionPatterns.getLatestVersionPattern().isPresent())
+			if (nonNullPolicyPolicyVersionPatterns.getLatestVersionPattern().isPresent())
 			{
 				throw new IllegalArgumentException("PolicyProvider '" + id + "': LatestVersion in input policy reference is not supported");
 			}
 
-			versionPattern = nonNullPolicyVersionPatterns.getVersionPattern();
-		}
-		else
+			versionPattern = nonNullPolicyPolicyVersionPatterns.getVersionPattern();
+		} else
 		{
 			versionPattern = Optional.empty();
 		}
@@ -221,8 +216,7 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 			if (versionLiteral != null)
 			{
 				policyPOJO = policyCollection.findOne("{type: #, id: #, version: #}", policyTypeId, policyId, versionLiteral.toString()).as(PolicyPojo.class);
-			}
-			else
+			} else
 			{
 				/*
 				 * versionPattern is not a literal/constant version (contains wildcard '*' or '+') -> convert to PCRE regex for MongoDB server-side evaluation
@@ -230,8 +224,7 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 				final String regex = "^" + nonNullVersionPattern.toRegex() + "$";
 				policyPOJO = policyCollection.findOne("{type: #, id: #, version: { $regex: # }}", policyTypeId, policyId, regex).as(PolicyPojo.class);
 			}
-		}
-		else
+		} else
 		{
 			// no version pattern specified
 			policyPOJO = policyCollection.findOne("{type: #, id: #}", policyTypeId, policyId).as(PolicyPojo.class);
@@ -246,8 +239,7 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		try
 		{
 			xacmlParser = xacmlParserFactory.getInstance();
-		}
-		catch (final JAXBException e)
+		} catch (final JAXBException e)
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Failed to create JAXB unmarshaller for XACML Policy(Set)", XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
@@ -260,23 +252,22 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 			 * TODO: support more efficient formats of XML content, e.g. gzipped XML, Fast Infoset, EXI.
 			 */
 			resultJaxbObj = xacmlParser.parse(xmlInputSrc);
-		}
-		catch (final JAXBException e)
+		} catch (final JAXBException e)
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": failed to parse Policy(Set) XML document from 'content' value of the policy document " + policyPOJO
-					+ " retrieved from database", XacmlStatusCode.PROCESSING_ERROR.value(), e);
+			throw new IndeterminateEvaluationException(
+					"PolicyProvider " + id + ": failed to parse Policy(Set) XML document from 'content' value of the policy document " + policyPOJO + " retrieved from database",
+					XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
 
 		return new PolicyQueryResult(policyPOJO, resultJaxbObj, xacmlParser.getNamespacePrefixUriMap());
 	}
 
 	@Override
-	public StaticTopLevelPolicyElementEvaluator getPolicy(final String policyId, final Optional<VersionPatterns> policyVersionPatterns) throws IndeterminateEvaluationException
-	{
+	public StaticTopLevelPolicyElementEvaluator getPolicy(final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns) throws IndeterminateEvaluationException {
 		/*
 		 * TODO: use a policy cache and check it before requesting the database.
 		 */
-		final PolicyQueryResult xmlParsingResult = getJaxbPolicyElement(XACML3_POLICY_TYPE_ID, policyId, policyVersionPatterns);
+		final PolicyQueryResult xmlParsingResult = getJaxbPolicyElement(XACML3_POLICY_TYPE_ID, policyId, policyPolicyVersionPatterns);
 		if (xmlParsingResult == null)
 		{
 			return null;
@@ -310,23 +301,21 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		try
 		{
 			return PolicyEvaluators.getInstance(jaxbPolicy, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry);
-		}
-		catch (final IllegalArgumentException e)
+		} catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Invalid Policy in 'content' of the policy document " + policyPOJO + " retrieved from database", e);
 		}
 	}
 
 	@Override
-	public StaticTopLevelPolicyElementEvaluator getPolicySet(final String policyId, final Optional<VersionPatterns> policyVersionPatterns, final Deque<String> policySetRefChain)
-			throws IndeterminateEvaluationException
-	{
+	public StaticTopLevelPolicyElementEvaluator getPolicySet(final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns, final Deque<String> policySetRefChain)
+			throws IndeterminateEvaluationException {
 		/**
 		 * TODO: use a policy cache and check it before requesting the database. If we found a matching policy in cache, and it is a policyset, we would check the depth of policy references as well:
 		 * <p>
 		 * Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, cachedPolicy.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);
 		 */
-		final PolicyQueryResult xmlParsingResult = getJaxbPolicyElement(XACML3_POLICYSET_TYPE_ID, policyId, policyVersionPatterns);
+		final PolicyQueryResult xmlParsingResult = getJaxbPolicyElement(XACML3_POLICYSET_TYPE_ID, policyId, policyPolicyVersionPatterns);
 		if (xmlParsingResult == null)
 		{
 			return null;
@@ -360,8 +349,7 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		try
 		{
 			return PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry, this, policySetRefChain);
-		}
-		catch (final IllegalArgumentException e)
+		} catch (final IllegalArgumentException e)
 		{
 			throw new IndeterminateEvaluationException("Invalid PolicySet in 'content' of the policy document " + policyPOJO + " retrieved from database", XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
