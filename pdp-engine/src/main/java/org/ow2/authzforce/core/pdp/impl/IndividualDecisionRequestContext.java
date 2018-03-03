@@ -37,7 +37,6 @@ import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.Value;
@@ -117,18 +116,18 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public <AV extends AttributeValue> AttributeBag<AV> getNamedAttributeValue(final AttributeFqn attributeFqn, final BagDatatype<AV> attributeBagDatatype) throws IndeterminateEvaluationException {
+	public <AV extends AttributeValue> AttributeBag<AV> getNamedAttributeValue(final AttributeFqn attributeFqn, final Datatype<AV> datatype) throws IndeterminateEvaluationException
+	{
 		final AttributeBag<?> bagResult = namedAttributes.get(attributeFqn);
 		if (bagResult == null)
 		{
 			return null;
 		}
 
-		final Datatype<?> expectedElementDatatype = attributeBagDatatype.getElementType();
-		if (!bagResult.getElementDatatype().equals(expectedElementDatatype))
+		if (!bagResult.getElementDatatype().equals(datatype))
 		{
 			throw new IndeterminateEvaluationException("Datatype (" + bagResult.getElementDatatype() + ") of AttributeDesignator " + attributeFqn + " in context is different from expected/requested ("
-					+ expectedElementDatatype
+					+ datatype
 					+ "). May be caused by refering to the same Attribute Category/Id/Issuer with different Datatypes in different policy elements and/or attribute providers, which is not allowed.",
 					XacmlStatusCode.SYNTAX_ERROR.value());
 		}
@@ -142,7 +141,8 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	}
 
 	@Override
-	public boolean putNamedAttributeValueIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> result) {
+	public boolean putNamedAttributeValueIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> result)
+	{
 		final Bag<?> duplicate = namedAttributes.putIfAbsent(attributeFqn, result);
 		if (duplicate != null)
 		{
@@ -164,13 +164,15 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public XdmNode getAttributesContent(final String category) {
+	public XdmNode getAttributesContent(final String category)
+	{
 		return extraContentsByAttributeCategory.get(category);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(final AttributeSelectorExpression<AV> attributeSelector) throws IndeterminateEvaluationException {
+	public <AV extends AttributeValue> Bag<AV> getAttributeSelectorResult(final AttributeSelectorExpression<AV> attributeSelector) throws IndeterminateEvaluationException
+	{
 		final Bag<?> bagResult = attributeSelectorResults.get(attributeSelector.getAttributeSelectorId());
 		if (bagResult == null)
 		{
@@ -197,8 +199,8 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public <AV extends AttributeValue> boolean putAttributeSelectorResultIfAbsent(final AttributeSelectorExpression<AV> attributeSelector, final Bag<AV> result)
-			throws IndeterminateEvaluationException {
+	public <AV extends AttributeValue> boolean putAttributeSelectorResultIfAbsent(final AttributeSelectorExpression<AV> attributeSelector, final Bag<AV> result) throws IndeterminateEvaluationException
+	{
 		final AttributeSelectorId attSelectorId = attributeSelector.getAttributeSelectorId();
 		if (attributeSelectorResults.putIfAbsent(attSelectorId, result) != null)
 		{
@@ -210,7 +212,7 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 		{
 			final Optional<AttributeFqn> optionalContextSelectorFQN = attributeSelector.getContextSelectorFQN();
 			final Optional<AttributeBag<XPathValue>> contextSelectorValue = optionalContextSelectorFQN.isPresent()
-					? Optional.of(getNamedAttributeValue(optionalContextSelectorFQN.get(), StandardDatatypes.XPATH.getBagDatatype()))
+					? Optional.of(getNamedAttributeValue(optionalContextSelectorFQN.get(), StandardDatatypes.XPATH))
 					: Optional.empty();
 			listener.attributeSelectorResultProduced(attributeSelector, contextSelectorValue, result);
 		}
@@ -220,7 +222,8 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public <V extends Value> V getVariableValue(final String variableId, final Datatype<V> expectedDatatype) throws IndeterminateEvaluationException {
+	public <V extends Value> V getVariableValue(final String variableId, final Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
+	{
 		final Value val = varValsById.get(variableId);
 		if (val == null)
 		{
@@ -239,7 +242,8 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean putVariableIfAbsent(final String variableId, final Value value) {
+	public boolean putVariableIfAbsent(final String variableId, final Value value)
+	{
 		if (varValsById.putIfAbsent(variableId, value) != null)
 		{
 			LOGGER.error("Attempt to override value of Variable '{}' already set in evaluation context. Overriding value: {}", variableId, value);
@@ -251,53 +255,62 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 
 	/** {@inheritDoc} */
 	@Override
-	public Value removeVariable(final String variableId) {
+	public Value removeVariable(final String variableId)
+	{
 		return varValsById.remove(variableId);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public Object getOther(final String key) {
+	public Object getOther(final String key)
+	{
 		return mutableProperties.get(key);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean containsKey(final String key) {
+	public boolean containsKey(final String key)
+	{
 		return mutableProperties.containsKey(key);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public void putOther(final String key, final Object val) {
+	public void putOther(final String key, final Object val)
+	{
 		mutableProperties.put(key, val);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public Object remove(final String key) {
+	public Object remove(final String key)
+	{
 		return mutableProperties.remove(key);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public Iterator<Entry<AttributeFqn, AttributeBag<?>>> getNamedAttributes() {
+	public Iterator<Entry<AttributeFqn, AttributeBag<?>>> getNamedAttributes()
+	{
 		final Set<Entry<AttributeFqn, AttributeBag<?>>> immutableAttributeSet = Collections.unmodifiableSet(namedAttributes.entrySet());
 		return immutableAttributeSet.iterator();
 	}
 
 	@Override
-	public boolean isApplicablePolicyIdListRequested() {
+	public boolean isApplicablePolicyIdListRequested()
+	{
 		return returnApplicablePolicyIdList;
 	}
 
 	@Override
-	public <L extends Listener> L putListener(final Class<L> listenerType, final L listener) {
+	public <L extends Listener> L putListener(final Class<L> listenerType, final L listener)
+	{
 		return this.listeners.putInstance(listenerType, listener);
 	}
 
 	@Override
-	public <L extends Listener> L getListener(final Class<L> listenerType) {
+	public <L extends Listener> L getListener(final Class<L> listenerType)
+	{
 		return this.listeners.getInstance(listenerType);
 	}
 }

@@ -29,10 +29,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
 import org.ow2.authzforce.core.pdp.api.BaseDesignatedAttributeProvider;
@@ -48,9 +44,12 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 
 /**
  * 
@@ -94,8 +93,9 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 		}
 
 	}
-	
-	private static AttributeDesignatorType newAttributeDesignator(Entry<AttributeFqn, AttributeBag<?>> attributeEntry) {
+
+	private static AttributeDesignatorType newAttributeDesignator(Entry<AttributeFqn, AttributeBag<?>> attributeEntry)
+	{
 		final AttributeFqn attrKey = attributeEntry.getKey();
 		final Bag<?> attrVals = attributeEntry.getValue();
 		return new AttributeDesignatorType(attrKey.getCategory(), attrKey.getId(), attrVals.getElementDatatype().getId(), attrKey.getIssuer().orElse(null), false);
@@ -144,7 +144,7 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 	}
 
 	@Override
-	public <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeGUID, final BagDatatype<AV> returnDatatype, final EvaluationContext context)
+	public <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeGUID, final Datatype<AV> attributeDatatype, final EvaluationContext context)
 			throws IndeterminateEvaluationException
 	{
 		final AttributeBag<?> attrVals = attrMap.get(attributeGUID);
@@ -153,13 +153,12 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 			return null;
 		}
 
-		final Datatype<AV> valueType = returnDatatype.getElementType();
-		if (attrVals.getElementDatatype().equals(valueType))
+		if (attrVals.getElementDatatype().equals(attributeDatatype))
 		{
 			return (AttributeBag<AV>) attrVals;
 		}
 
-		throw new IndeterminateEvaluationException("Requested datatype (" + valueType + ") != provided by " + this + " (" + attrVals.getElementDatatype() + ")",
+		throw new IndeterminateEvaluationException("Requested datatype (" + attributeDatatype + ") != provided by " + this + " (" + attrVals.getElementDatatype() + ")",
 				XacmlStatusCode.MISSING_ATTRIBUTE.value());
 	}
 
