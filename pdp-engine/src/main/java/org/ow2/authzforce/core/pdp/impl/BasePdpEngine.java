@@ -83,7 +83,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	{
 
 		@Override
-		public Map<AttributeFqn, AttributeBag<?>> get() {
+		public Map<AttributeFqn, AttributeBag<?>> get()
+		{
 			return null;
 		}
 	};
@@ -92,7 +93,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	{
 
 		@Override
-		public Map<AttributeFqn, AttributeBag<?>> get() {
+		public Map<AttributeFqn, AttributeBag<?>> get()
+		{
 			/*
 			 * Set the standard current date/time attribute according to XACML core spec:
 			 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (§B.7). XACML standard (§10.2.5) says: "If
@@ -124,22 +126,26 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		@Override
-		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn attributeId, final AttributeBag<?> attributeValues) {
+		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn attributeId, final AttributeBag<?> attributeValues)
+		{
 			return namedAttributes.putIfAbsent(attributeId, attributeValues);
 		}
 
 		@Override
-		public final XdmNode putContentIfAbsent(final String category, final XdmNode content) {
+		public final XdmNode putContentIfAbsent(final String category, final XdmNode content)
+		{
 			return extraContentsByCategory.putIfAbsent(category, content);
 		}
 
 		@Override
-		public final ImmutableDecisionRequest build(final boolean returnApplicablePolicies) {
+		public final ImmutableDecisionRequest build(final boolean returnApplicablePolicies)
+		{
 			return ImmutableDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
 		}
 
 		@Override
-		public final void reset() {
+		public final void reset()
+		{
 			namedAttributes.clear();
 			extraContentsByCategory.clear();
 		}
@@ -156,7 +162,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		@Override
-		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> attributeValues) {
+		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> attributeValues)
+		{
 			/*
 			 * Put the non-issued version of the attribute first
 			 */
@@ -187,7 +194,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes);
 		}
 
-		private static final IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeFqn attrGUID) {
+		private static final IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeFqn attrGUID)
+		{
 			return new IndeterminateEvaluationException(
 					"The standard environment attribute ( " + attrGUID
 							+ " ) is not present in the REQUEST although at least one of the others is! (PDP standardEnvironmentAttributeSource = REQUEST_ELSE_PDP.)",
@@ -206,7 +214,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		{
 
 			@Override
-			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes) {
+			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
+			{
 				/*
 				 * Request attribute values override PDP issued ones. Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must
 				 * not modify it but clone it before individual decision request processing.
@@ -254,7 +263,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		{
 
 			@Override
-			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes) {
+			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
+			{
 
 				// PDP issued attribute values override request attribute values
 				/*
@@ -284,7 +294,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		{
 
 			@Override
-			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes) {
+			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
+			{
 				// PDP values completely ignored
 				return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
 			}
@@ -343,7 +354,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			}
 		}
 
-		protected final EvaluationContext newEvaluationContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) {
+		protected final EvaluationContext newEvaluationContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
+		{
 			final Map<AttributeFqn, AttributeBag<?>> mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, request.getNamedAttributes());
 			return new IndividualDecisionRequestContext(mergedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdListReturned());
 		}
@@ -357,7 +369,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 *            existing evaluation context
 		 * @return the evaluation result.
 		 */
-		protected final DecisionResult evaluateReusingContext(final EvaluationContext evalCtx) {
+		protected final DecisionResult evaluateReusingContext(final EvaluationContext evalCtx)
+		{
 			return rootPolicyEvaluator.findAndEvaluate(evalCtx);
 		}
 
@@ -372,7 +385,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 		 * @return the evaluation result.
 		 */
-		protected final DecisionResult evaluateInNewContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) {
+		protected final DecisionResult evaluateInNewContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
+		{
 			assert request != null;
 			LOGGER.debug("Evaluating Individual Decision Request: {}", request);
 			final EvaluationContext evalCtx = newEvaluationContext(request, pdpIssuedAttributes);
@@ -409,7 +423,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException {
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		{
 			assert individualDecisionRequests != null;
 
 			final Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> resultsByRequest = new ArrayDeque<>(individualDecisionRequests.size());
@@ -458,7 +473,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException {
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		{
 			final Map<INDIVIDUAL_DECISION_REQ_T, DecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
@@ -484,7 +500,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 					// result not in cache -> evaluate request
 					finalResult = evaluateInNewContext(individualDecisionRequest, pdpIssuedAttributes);
 					newResultsByRequest.put(individualDecisionRequest, finalResult);
-				} else
+				}
+				else
 				{
 					finalResult = cachedResult;
 				}
@@ -512,7 +529,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		private <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> DecisionResult evaluate(final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest,
-				final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) {
+				final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
+		{
 			/*
 			 * Check whether there is any decision result in cache for this request
 			 */
@@ -531,7 +549,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException {
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		{
 			/*
 			 * There will be at most as many new results (not in cache) as there are individual decision requests
 			 */
@@ -583,7 +602,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		if (staticRootPolicyEvaluator == null)
 		{
 			this.rootPolicyEvaluator = candidateRootPolicyEvaluator;
-		} else
+		}
+		else
 		{
 			this.rootPolicyEvaluator = staticRootPolicyEvaluator;
 		}
@@ -597,7 +617,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		if (this.decisionCache == null)
 		{
 			this.individualReqEvaluator = new NonCachingIndividualDecisionRequestEvaluator(rootPolicyEvaluator, stdEnvAttributeSource);
-		} else
+		}
+		else
 		{
 			this.individualReqEvaluator = this.decisionCache.isEvaluationContextRequired()
 					? new IndividualRequestEvaluatorWithCacheUsingEvaluationContext(rootPolicyEvaluator, stdEnvAttributeSource, this.decisionCache)
@@ -623,12 +644,14 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	}
 
 	@Override
-	public Iterable<PrimaryPolicyMetadata> getApplicablePolicies() {
+	public Iterable<PrimaryPolicyMetadata> getApplicablePolicies()
+	{
 		return this.rootPolicyEvaluator.getStaticApplicablePolicies();
 	}
 
 	@Override
-	public DecisionRequestBuilder<?> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes) {
+	public DecisionRequestBuilder<?> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
+	{
 		return this.strictAttributeIssuerMatch ? new NonIssuedLikeIssuedAttributeHandlingRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes)
 				: new IssuedToNonIssuedAttributeCopyingRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes);
 	}
@@ -637,7 +660,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DecisionResult evaluate(final DecisionRequest individualDecisionRequest) {
+	public DecisionResult evaluate(final DecisionRequest individualDecisionRequest)
+	{
 		if (individualDecisionRequest == null)
 		{
 			throw NULL_REQUEST_ARGUMENT_EXCEPTION;
@@ -654,7 +678,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	/** {@inheritDoc} */
 	@Override
 	public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-			final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests) throws IndeterminateEvaluationException {
+			final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests) throws IndeterminateEvaluationException
+	{
 		if (individualDecisionRequests == null)
 		{
 			throw NULL_REQUEST_ARGUMENT_EXCEPTION;
@@ -670,7 +695,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 	/** {@inheritDoc} */
 	@Override
-	public void close() throws IOException {
+	public void close() throws IOException
+	{
 		rootPolicyEvaluator.close();
 		if (decisionCache != null)
 		{
