@@ -95,25 +95,20 @@ public final class PdpEngineConfiguration
 	private static final IllegalArgumentException ILLEGAL_USE_STD_FUNCTIONS_ARGUMENT_EXCEPTION = new IllegalArgumentException(
 			"useStandardFunctions = true not allowed if useStandardDatatypes = false");
 
-	private static final IllegalArgumentException NULL_ROOTPOLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined rootPolicyProvider");
+	private static final IllegalArgumentException NULL_ROOTPOLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined rootPolicyProvider");
 
 	// the logger we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasePdpEngine.class);
 
-	private static final IllegalArgumentException NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined PDP configuration model handler");
+	private static final IllegalArgumentException NULL_PDP_MODEL_HANDLER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined PDP configuration model handler");
 
 	private static boolean isXpathBased(final Function<?> function)
 	{
 		/*
-		 * A function is said "XPath-based" iff it takes at least one (XACML) xpathExpression parameter. Regarding
-		 * higher-order function, as of now, we only provide higher-order functions defined in the XACML (3.0) Core
-		 * specification, which are not XPath-based, or if a higher-order function happens to take a XPathExpression
-		 * parameter, it is actually a parameter to the first-order sub-function. Plus it is not possible to add
-		 * extensions that are higher-order functions in this PDP implementation. Therefore, it is enough to check
-		 * first-order functions (class FirstOrderFunction) only. (Remember that such functions may be used as parameter
-		 * to a higher-order function.)
+		 * A function is said "XPath-based" iff it takes at least one (XACML) xpathExpression parameter. Regarding higher-order function, as of now, we only provide higher-order functions defined in
+		 * the XACML (3.0) Core specification, which are not XPath-based, or if a higher-order function happens to take a XPathExpression parameter, it is actually a parameter to the first-order
+		 * sub-function. Plus it is not possible to add extensions that are higher-order functions in this PDP implementation. Therefore, it is enough to check first-order functions (class
+		 * FirstOrderFunction) only. (Remember that such functions may be used as parameter to a higher-order function.)
 		 */
 		if (function instanceof FirstOrderFunction)
 		{
@@ -130,34 +125,32 @@ public final class PdpEngineConfiguration
 		return false;
 	}
 
-	private static <JAXB_CONF extends AbstractAttributeProvider> CloseableDesignatedAttributeProvider.DependencyAwareFactory newAttributeProviderProviderFactory(
-			final JAXB_CONF jaxbConf, final EnvironmentProperties envProps)
+	private static <JAXB_CONF extends AbstractAttributeProvider> CloseableDesignatedAttributeProvider.DependencyAwareFactory newAttributeProviderProviderFactory(final JAXB_CONF jaxbConf,
+			final EnvironmentProperties envProps)
 	{
-		final CloseableDesignatedAttributeProvider.FactoryBuilder<JAXB_CONF> attrProviderModBuilder = PdpExtensions
-				.getAttributeProviderFactoryBuilder((Class<JAXB_CONF>) jaxbConf.getClass());
+		final CloseableDesignatedAttributeProvider.FactoryBuilder<JAXB_CONF> attrProviderModBuilder = PdpExtensions.getAttributeProviderFactoryBuilder((Class<JAXB_CONF>) jaxbConf.getClass());
 		return attrProviderModBuilder.getInstance(jaxbConf, envProps);
 	}
 
-	private static <JAXB_CONF extends AbstractPolicyProvider> CloseableRefPolicyProvider newRefPolicyProvider(
-			final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
-			final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory,
-			final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps)
+	private static <JAXB_CONF extends AbstractPolicyProvider> CloseableRefPolicyProvider newRefPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
+			final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps)
 	{
-		final CloseableRefPolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions
-				.getRefPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
-		return refPolicyProviderModFactory.getInstance(jaxbConf, xacmlParserFactory, maxPolicySetRefDepth,
-				xacmlExprFactory, combiningAlgRegistry, envProps);
+		final CloseableRefPolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions.getRefPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
+		return refPolicyProviderModFactory.getInstance(jaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExprFactory, combiningAlgRegistry, envProps);
 	}
 
-	private static <JAXB_CONF extends AbstractPolicyProvider> RootPolicyProvider newRootPolicyProvider(
-			final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
-			final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry,
-			final Optional<CloseableRefPolicyProvider> refPolicyProvider, final EnvironmentProperties envProps)
+	private static <JAXB_CONF extends AbstractPolicyProvider> RootPolicyProvider newRootPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
+			final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> refPolicyProvider,
+			final EnvironmentProperties envProps)
 	{
-		final RootPolicyProvider.Factory<JAXB_CONF> rootPolicyProviderFactory = PdpExtensions
-				.getRootPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
-		return rootPolicyProviderFactory.getInstance(jaxbConf, xacmlParserFactory, xacmlExprFactory,
-				combiningAlgRegistry, refPolicyProvider, envProps);
+		final RootPolicyProvider.Factory<JAXB_CONF> rootPolicyProviderFactory = PdpExtensions.getRootPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
+		return rootPolicyProviderFactory.getInstance(jaxbConf, xacmlParserFactory, xacmlExprFactory, combiningAlgRegistry, refPolicyProvider, envProps);
+	}
+
+	private static <JAXB_CONF extends AbstractDecisionCache> DecisionCache newDecisionCache(final JAXB_CONF jaxbConf, final EnvironmentProperties envProps)
+	{
+		final DecisionCache.Factory<JAXB_CONF> decisionCacheFactory = PdpExtensions.getDecisionCacheFactory((Class<JAXB_CONF>) jaxbConf.getClass());
+		return decisionCacheFactory.getInstance(jaxbConf, envProps);
 	}
 
 	private final boolean enableXPath;
@@ -178,8 +171,7 @@ public final class PdpEngineConfiguration
 	private final int clientReqErrVerbosityLevel;
 
 	/**
-	 * Constructs configuration from PDP XML-schema-derived JAXB model (usually 'unmarshaled' from XML configuration
-	 * file)
+	 * Constructs configuration from PDP XML-schema-derived JAXB model (usually 'unmarshaled' from XML configuration file)
 	 *
 	 * @param pdpJaxbConf
 	 *            (JAXB-bound) PDP configuration
@@ -188,11 +180,9 @@ public final class PdpEngineConfiguration
 	 * @throws java.lang.IllegalArgumentException
 	 *             invalid PDP configuration
 	 * @throws java.io.IOException
-	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute
-	 *             Providers, decision cache)
+	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
 	 */
-	public PdpEngineConfiguration(final Pdp pdpJaxbConf, final EnvironmentProperties envProps)
-			throws IllegalArgumentException, IOException
+	public PdpEngineConfiguration(final Pdp pdpJaxbConf, final EnvironmentProperties envProps) throws IllegalArgumentException, IOException
 	{
 		/*
 		 * Check required args
@@ -213,12 +203,10 @@ public final class PdpEngineConfiguration
 
 		// Attribute datatypes (primitive)
 		final List<String> datatypeExtensionIdentifiers = pdpJaxbConf.getAttributeDatatypes();
-		final Set<AttributeValueFactory<?>> datatypeExtensions = HashCollections
-				.newUpdatableSet(datatypeExtensionIdentifiers.size());
+		final Set<AttributeValueFactory<?>> datatypeExtensions = HashCollections.newUpdatableSet(datatypeExtensionIdentifiers.size());
 		for (final String datatypeId : datatypeExtensionIdentifiers)
 		{
-			final AttributeValueFactory<?> datatypeFactory = PdpExtensions.getExtension(AttributeValueFactory.class,
-					datatypeId);
+			final AttributeValueFactory<?> datatypeFactory = PdpExtensions.getExtension(AttributeValueFactory.class, datatypeId);
 			datatypeExtensions.add(datatypeFactory);
 		}
 
@@ -228,16 +216,14 @@ public final class PdpEngineConfiguration
 		final boolean enableStdDatatypes = pdpJaxbConf.isUseStandardDatatypes();
 		if (enableStdDatatypes)
 		{
-			final AttributeValueFactoryRegistry stdRegistry = StandardAttributeValueFactories.getRegistry(enableXPath,
-					Optional.ofNullable(pdpJaxbConf.getMaxIntegerValue()));
+			final AttributeValueFactoryRegistry stdRegistry = StandardAttributeValueFactories.getRegistry(enableXPath, Optional.ofNullable(pdpJaxbConf.getMaxIntegerValue()));
 			if (datatypeExtensionIdentifiers.isEmpty())
 			{
 				attValFactoryRegistry = stdRegistry;
 			}
 			else
 			{
-				attValFactoryRegistry = new ImmutableAttributeValueFactoryRegistry(
-						HashCollections.newImmutableSet(stdRegistry.getExtensions(), datatypeExtensions));
+				attValFactoryRegistry = new ImmutableAttributeValueFactoryRegistry(HashCollections.newImmutableSet(stdRegistry.getExtensions(), datatypeExtensions));
 			}
 		}
 		else
@@ -246,25 +232,19 @@ public final class PdpEngineConfiguration
 		}
 
 		// Standard Environment Attribute source
-		final StandardEnvironmentAttributeSource stdEnvAttSourceFromJaxbConf = pdpJaxbConf
-				.getStandardEnvAttributeSource();
+		final StandardEnvironmentAttributeSource stdEnvAttSourceFromJaxbConf = pdpJaxbConf.getStandardEnvAttributeSource();
 		/*
-		 * The default behavior for getting the standard environment attributes (current date/time) is the one complying
-		 * strictly with the XACML spec: if request does not have values for these attributes, the "context handler"
-		 * (PDP in this case) must provide them. So we use PDP values if it does not override any existing value in the
-		 * request.
+		 * The default behavior for getting the standard environment attributes (current date/time) is the one complying strictly with the XACML spec: if request does not have values for these
+		 * attributes, the "context handler" (PDP in this case) must provide them. So we use PDP values if it does not override any existing value in the request.
 		 */
-		stdEnvAttributeSource = stdEnvAttSourceFromJaxbConf == null
-				? StandardEnvironmentAttributeSource.REQUEST_ELSE_PDP : stdEnvAttSourceFromJaxbConf;
+		stdEnvAttributeSource = stdEnvAttSourceFromJaxbConf == null ? StandardEnvironmentAttributeSource.REQUEST_ELSE_PDP : stdEnvAttSourceFromJaxbConf;
 
 		// Extra Attribute Providers
 		final List<AbstractAttributeProvider> attProviderJaxbConfs = pdpJaxbConf.getAttributeProviders();
-		final List<CloseableDesignatedAttributeProvider.DependencyAwareFactory> attProviderFactories = new ArrayList<>(
-				attProviderJaxbConfs.size());
+		final List<CloseableDesignatedAttributeProvider.DependencyAwareFactory> attProviderFactories = new ArrayList<>(attProviderJaxbConfs.size());
 		for (final AbstractAttributeProvider attProviderJaxbConf : attProviderJaxbConfs)
 		{
-			final CloseableDesignatedAttributeProvider.DependencyAwareFactory depAwareAttrProviderModFactory = newAttributeProviderProviderFactory(
-					attProviderJaxbConf, envProps);
+			final CloseableDesignatedAttributeProvider.DependencyAwareFactory depAwareAttrProviderModFactory = newAttributeProviderProviderFactory(attProviderJaxbConf, envProps);
 			attProviderFactories.add(depAwareAttrProviderModFactory);
 		}
 
@@ -284,16 +264,13 @@ public final class PdpEngineConfiguration
 
 		// Functions (only non-generic functions supported in configuration)
 		final List<String> nonGenericFunctionExtensionIdentifiers = pdpJaxbConf.getFunctions();
-		final Set<Function<?>> nonGenericFunctionExtensions = HashCollections
-				.newUpdatableSet(nonGenericFunctionExtensionIdentifiers.size());
+		final Set<Function<?>> nonGenericFunctionExtensions = HashCollections.newUpdatableSet(nonGenericFunctionExtensionIdentifiers.size());
 		for (final String funcId : nonGenericFunctionExtensionIdentifiers)
 		{
 			final Function<?> function = PdpExtensions.getExtension(Function.class, funcId);
 			if (!enableXPath && isXpathBased(function))
 			{
-				throw new IllegalArgumentException(
-						"XPath-based function not allowed (because configuration parameter 'enableXPath' = false): "
-								+ function);
+				throw new IllegalArgumentException("XPath-based function not allowed (because configuration parameter 'enableXPath' = false): " + function);
 			}
 
 			nonGenericFunctionExtensions.add(function);
@@ -310,21 +287,17 @@ public final class PdpEngineConfiguration
 				throw ILLEGAL_USE_STD_FUNCTIONS_ARGUMENT_EXCEPTION;
 			}
 
-			final AttributeValueFactory<?> intValFactory = attValFactoryRegistry
-					.getExtension(StandardDatatypes.INTEGER.getId());
-			assert intValFactory != null && intValFactory.getDatatype() == StandardDatatypes.INTEGER
-					&& intValFactory instanceof StringParseableValueFactory;
+			final AttributeValueFactory<?> intValFactory = attValFactoryRegistry.getExtension(StandardDatatypes.INTEGER.getId());
+			assert intValFactory != null && intValFactory.getDatatype() == StandardDatatypes.INTEGER && intValFactory instanceof StringParseableValueFactory;
 
-			final FunctionRegistry stdRegistry = StandardFunction.getRegistry(enableXPath,
-					(StringParseableValueFactory<IntegerValue>) intValFactory);
+			final FunctionRegistry stdRegistry = StandardFunction.getRegistry(enableXPath, (StringParseableValueFactory<IntegerValue>) intValFactory);
 			if (nonGenericFunctionExtensionIdentifiers.isEmpty())
 			{
 				functionRegistry = stdRegistry;
 			}
 			else
 			{
-				functionRegistry = new ImmutableFunctionRegistry(HashCollections
-						.newImmutableSet(stdRegistry.getNonGenericFunctions(), nonGenericFunctionExtensions),
+				functionRegistry = new ImmutableFunctionRegistry(HashCollections.newImmutableSet(stdRegistry.getNonGenericFunctions(), nonGenericFunctionExtensions),
 						stdRegistry.getGenericFunctionFactories());
 			}
 		}
@@ -365,8 +338,7 @@ public final class PdpEngineConfiguration
 			}
 			else
 			{
-				combiningAlgRegistry = new ImmutableCombiningAlgRegistry(HashCollections
-						.newImmutableSet(StandardCombiningAlgorithm.REGISTRY.getExtensions(), algExtensions));
+				combiningAlgRegistry = new ImmutableCombiningAlgRegistry(HashCollections.newImmutableSet(StandardCombiningAlgorithm.REGISTRY.getExtensions(), algExtensions));
 			}
 		}
 		else
@@ -391,8 +363,7 @@ public final class PdpEngineConfiguration
 		/*
 		 * XACML Expression factory/parser
 		 */
-		xacmlExpressionFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry,
-				attProviderFactories, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch);
+		xacmlExpressionFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry, attProviderFactories, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch);
 
 		/*
 		 * Policy Reference processing - Policy-by-reference Provider
@@ -405,15 +376,13 @@ public final class PdpEngineConfiguration
 		}
 		else
 		{
-			refPolicyProvider = Optional.of(newRefPolicyProvider(refPolicyProviderJaxbConf, xacmlParserFactory,
-					maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry, envProps));
+			refPolicyProvider = Optional.of(newRefPolicyProvider(refPolicyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry, envProps));
 		}
 
 		/*
 		 * Root Policy Provider
 		 */
-		rootPolicyProvider = newRootPolicyProvider(rootPolicyProviderJaxbConf, xacmlParserFactory,
-				xacmlExpressionFactory, combiningAlgRegistry, refPolicyProvider, envProps);
+		rootPolicyProvider = newRootPolicyProvider(rootPolicyProviderJaxbConf, xacmlParserFactory, xacmlExpressionFactory, combiningAlgRegistry, refPolicyProvider, envProps);
 
 		// Decision cache
 		final AbstractDecisionCache decisionCacheJaxbConf = pdpJaxbConf.getDecisionCache();
@@ -423,22 +392,18 @@ public final class PdpEngineConfiguration
 		}
 		else
 		{
-			final DecisionCache.Factory<AbstractDecisionCache> responseCacheStoreFactory = PdpExtensions
-					.getDecisionCacheFactory(decisionCacheJaxbConf);
-			decisionCache = Optional.of(responseCacheStoreFactory.getInstance(decisionCacheJaxbConf));
+			decisionCache = Optional.of(newDecisionCache(decisionCacheJaxbConf, envProps));
 		}
 
 		// Decision Result postprocessor
 		final BigInteger clientReqErrVerbosityBigInt = pdpJaxbConf.getClientRequestErrorVerbosityLevel();
 		try
 		{
-			this.clientReqErrVerbosityLevel = clientReqErrVerbosityBigInt == null ? 0
-					: clientReqErrVerbosityBigInt.intValueExact();
+			this.clientReqErrVerbosityLevel = clientReqErrVerbosityBigInt == null ? 0 : clientReqErrVerbosityBigInt.intValueExact();
 		}
 		catch (final ArithmeticException e)
 		{
-			throw new IllegalArgumentException(
-					"Invalid clientRequestErrorVerbosityLevel: " + clientReqErrVerbosityBigInt, e);
+			throw new IllegalArgumentException("Invalid clientRequestErrorVerbosityLevel: " + clientReqErrVerbosityBigInt, e);
 		}
 
 		final List<InOutProcChain> inoutProcChains = pdpJaxbConf.getIoProcChains();
@@ -451,8 +416,7 @@ public final class PdpEngineConfiguration
 		{
 			final Map<Class<?>, Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>>> mutableInoutProcChainsByInputType = HashCollections
 					.newUpdatableMap(inoutProcChains.size());
-			final Map<Class<?>, String> reqProcIdentifiersByInputType = HashCollections
-					.newUpdatableMap(inoutProcChains.size());
+			final Map<Class<?>, String> reqProcIdentifiersByInputType = HashCollections.newUpdatableMap(inoutProcChains.size());
 			for (final InOutProcChain chain : inoutProcChains)
 			{
 				// Decision Result postprocessor
@@ -464,8 +428,7 @@ public final class PdpEngineConfiguration
 				}
 				else
 				{
-					final DecisionResultPostprocessor.Factory<?, ?> resultPostprocFactory = PdpExtensions
-							.getExtension(DecisionResultPostprocessor.Factory.class, resultPostprocId);
+					final DecisionResultPostprocessor.Factory<?, ?> resultPostprocFactory = PdpExtensions.getExtension(DecisionResultPostprocessor.Factory.class, resultPostprocId);
 					decisionResultPostproc = resultPostprocFactory.getInstance(clientReqErrVerbosityLevel);
 				}
 
@@ -477,32 +440,23 @@ public final class PdpEngineConfiguration
 					throw NULL_REQPREPROC_EXCEPTION;
 				}
 
-				final DecisionRequestPreprocessor.Factory<?, ?> requestPreprocFactory = PdpExtensions
-						.getExtension(DecisionRequestPreprocessor.Factory.class, reqPreprocId);
-				final DecisionRequestPreprocessor<?, ?> decisionRequestPreproc = requestPreprocFactory.getInstance(
-						attValFactoryRegistry, strictAttributeIssuerMatch, enableXPath, XmlUtils.SAXON_PROCESSOR,
-						decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
-				if (decisionResultPostproc != null
-						&& decisionRequestPreproc.getOutputRequestType() != decisionResultPostproc.getRequestType())
+				final DecisionRequestPreprocessor.Factory<?, ?> requestPreprocFactory = PdpExtensions.getExtension(DecisionRequestPreprocessor.Factory.class, reqPreprocId);
+				final DecisionRequestPreprocessor<?, ?> decisionRequestPreproc = requestPreprocFactory.getInstance(attValFactoryRegistry, strictAttributeIssuerMatch, enableXPath,
+						XmlUtils.SAXON_PROCESSOR, decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
+				if (decisionResultPostproc != null && decisionRequestPreproc.getOutputRequestType() != decisionResultPostproc.getRequestType())
 				{
 					throw new IllegalArgumentException(
-							"Invalid 'ioProcChain': request pre-processor's output request type (requestPreproc.getOutputRequestType() = "
-									+ decisionRequestPreproc.getOutputRequestType()
-									+ ") and result post-processor's request type (resultPostproc.getRequestType() = "
-									+ decisionResultPostproc.getRequestType() + ") do not match");
+							"Invalid 'ioProcChain': request pre-processor's output request type (requestPreproc.getOutputRequestType() = " + decisionRequestPreproc.getOutputRequestType()
+									+ ") and result post-processor's request type (resultPostproc.getRequestType() = " + decisionResultPostproc.getRequestType() + ") do not match");
 				}
 
 				final Class<?> inputType = decisionRequestPreproc.getInputRequestType();
-				final Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>> oldEntry = mutableInoutProcChainsByInputType
-						.put(inputType,
-								new AbstractMap.SimpleImmutableEntry<>(decisionRequestPreproc, decisionResultPostproc));
+				final Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>> oldEntry = mutableInoutProcChainsByInputType.put(inputType,
+						new AbstractMap.SimpleImmutableEntry<>(decisionRequestPreproc, decisionResultPostproc));
 				if (oldEntry != null)
 				{
-					throw new IllegalArgumentException(
-							"Conflicting 'ioProcChain' (I/O processing chain) elements: request preprocessors '"
-									+ reqProcIdentifiersByInputType.get(inputType) + "' in one chain and '"
-									+ reqPreprocId
-									+ " in another handle the same input type (only one 'ioProcChain', i.e. 'requestPreproc', per input type is allowed)");
+					throw new IllegalArgumentException("Conflicting 'ioProcChain' (I/O processing chain) elements: request preprocessors '" + reqProcIdentifiersByInputType.get(inputType)
+							+ "' in one chain and '" + reqPreprocId + " in another handle the same input type (only one 'ioProcChain', i.e. 'requestPreproc', per input type is allowed)");
 				}
 
 				reqProcIdentifiersByInputType.put(inputType, reqPreprocId);
@@ -513,8 +467,7 @@ public final class PdpEngineConfiguration
 
 	}
 
-	private static PdpEngineConfiguration getInstance(final Source confXmlSrc, final PdpModelHandler modelHandler,
-			final EnvironmentProperties envProps) throws IOException, IllegalArgumentException
+	private static PdpEngineConfiguration getInstance(final Source confXmlSrc, final PdpModelHandler modelHandler, final EnvironmentProperties envProps) throws IOException, IllegalArgumentException
 	{
 		assert confXmlSrc != null && modelHandler != null;
 
@@ -535,11 +488,9 @@ public final class PdpEngineConfiguration
 	/**
 	 * Create PDP instance
 	 * <p>
-	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation)
-	 * anywhere in this configuration file (including in PDP extensions'), we define a property 'PARENT_DIR', so that
-	 * the placeholder ${PARENT_DIR} can be used as prefix for file paths in the configuration file. E.g. if
-	 * confLocation = 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced by 'file:///path/to'. If
-	 * confLocation is not a file on the filesystem, then ${PARENT_DIR} is undefined.
+	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file (including in PDP extensions'), we define a
+	 * property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then
+	 * ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation is not a file on the filesystem, then ${PARENT_DIR} is undefined.
 	 *
 	 * @param confFile
 	 *            PDP configuration file
@@ -551,8 +502,7 @@ public final class PdpEngineConfiguration
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration in {@code confFile}
 	 */
-	public static PdpEngineConfiguration getInstance(final File confFile, final PdpModelHandler modelHandler)
-			throws IOException, IllegalArgumentException
+	public static PdpEngineConfiguration getInstance(final File confFile, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
 	{
 		if (confFile == null || !confFile.exists())
 		{
@@ -567,8 +517,7 @@ public final class PdpEngineConfiguration
 		}
 
 		/*
-		 * Set property PARENT_DIR in environment properties for future replacement in configuration strings by PDP
-		 * extensions using file paths
+		 * Set property PARENT_DIR in environment properties for future replacement in configuration strings by PDP extensions using file paths
 		 */
 		final File confAbsFile = confFile.getAbsoluteFile();
 		LOGGER.debug("Config file's location - absolute path: {}", confAbsFile);
@@ -576,20 +525,17 @@ public final class PdpEngineConfiguration
 		LOGGER.debug("Config file's parent directory: {}", confAbsFileParent);
 		final String propVal = confAbsFileParent.toURI().toString();
 		LOGGER.debug("Property {} = {}", EnvironmentPropertyName.PARENT_DIR, propVal);
-		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(
-				Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propVal));
+		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propVal));
 		return getInstance(new StreamSource(confFile), modelHandler, envProps);
 	}
 
 	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html /resources.html.
+	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * /resources.html.
 	 * <p>
-	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation)
-	 * anywhere in this configuration file (including in PDP extensions'), we define a property 'PARENT_DIR', so that
-	 * the placeholder ${PARENT_DIR} can be used as prefix for file paths in the configuration file. E.g. if
-	 * confLocation = 'file:///path/to/configurationfile', then ${PARENT_DIR} will be replaced by 'file:///path/to'. If
-	 * confLocation is not a file on the filesystem, then ${PARENT_DIR} is undefined.
+	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file (including in PDP extensions'), we define a
+	 * property 'PARENT_DIR', so that the placeholder ${PARENT_DIR} can be used as prefix for file paths in the configuration file. E.g. if confLocation = 'file:///path/to/configurationfile', then
+	 * ${PARENT_DIR} will be replaced by 'file:///path/to'. If confLocation is not a file on the filesystem, then ${PARENT_DIR} is undefined.
 	 *
 	 * @param confLocation
 	 *            location of PDP configuration file
@@ -601,8 +547,7 @@ public final class PdpEngineConfiguration
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PdpEngineConfiguration getInstance(final String confLocation, final PdpModelHandler modelHandler)
-			throws IOException, IllegalArgumentException
+	public static PdpEngineConfiguration getInstance(final String confLocation, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
 	{
 
 		if (modelHandler == null)
@@ -635,10 +580,7 @@ public final class PdpEngineConfiguration
 		}
 		catch (final FileNotFoundException e)
 		{
-			throw new IllegalArgumentException(
-					"Invalid PDP configuration location (neither a file in the file system nor a valid URL): "
-							+ confLocation,
-					e);
+			throw new IllegalArgumentException("Invalid PDP configuration location (neither a file in the file system nor a valid URL): " + confLocation, e);
 		}
 
 		/*
@@ -650,16 +592,16 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html /resources.html
+	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * /resources.html
 	 *
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
 	 *
 	 * @param confFile
 	 *            PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD,
-	 *            there must be a XSD namespace import for each extension used in the PDP configuration, for example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
+	 *            configuration, for example:
 	 *
 	 *            <pre>
 	 * {@literal
@@ -678,8 +620,7 @@ public final class PdpEngineConfiguration
 	 * 			}
 	 *            </pre>
 	 *
-	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported
-	 *            namespace above using a line like this (for an XML-formatted catalog):
+	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
 	 * 
 	 *            <pre>
 	 *            {@literal
@@ -688,35 +629,32 @@ public final class PdpEngineConfiguration
 	 *            }
 	 *            </pre>
 	 * 
-	 *            We assume that this XML type is an extension of one the PDP extension base types,
-	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types)
-	 *            in this case.
+	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
+	 *            types) in this case.
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as
-	 *            'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
+	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
 	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PdpEngineConfiguration getInstance(final File confFile, final String catalogLocation,
-			final String extensionXsdLocation) throws IOException, IllegalArgumentException
+	public static PdpEngineConfiguration getInstance(final File confFile, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
 		return getInstance(confFile, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
 
 	/**
-	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info:
-	 * http://docs.spring.io/spring/docs/current/spring-framework-reference/html /resources.html
+	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * /resources.html
 	 *
 	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
 	 *
 	 * @param confLocation
 	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
 	 * @param extensionXsdLocation
-	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD,
-	 *            there must be a XSD namespace import for each extension used in the PDP configuration, for example:
+	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
+	 *            configuration, for example:
 	 *
 	 *            <pre>
 	 * {@literal
@@ -735,8 +673,7 @@ public final class PdpEngineConfiguration
 	 * 			}
 	 *            </pre>
 	 *
-	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported
-	 *            namespace above using a line like this (for an XML-formatted catalog):
+	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
 	 * 
 	 *            <pre>
 	 *            {@literal
@@ -745,20 +682,17 @@ public final class PdpEngineConfiguration
 	 *            }
 	 *            </pre>
 	 * 
-	 *            We assume that this XML type is an extension of one the PDP extension base types,
-	 *            'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types)
-	 *            in this case.
+	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
+	 *            types) in this case.
 	 * @param catalogLocation
-	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as
-	 *            'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
+	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
 	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PdpEngineConfiguration getInstance(final String confLocation, final String catalogLocation,
-			final String extensionXsdLocation) throws IOException, IllegalArgumentException
+	public static PdpEngineConfiguration getInstance(final String confLocation, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
 	{
 		return getInstance(confLocation, new PdpModelHandler(catalogLocation, extensionXsdLocation));
 	}
@@ -767,26 +701,22 @@ public final class PdpEngineConfiguration
 	 * Create PDP instance.
 	 *
 	 * @param confLocation
-	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd). This location may
-	 *            be any resource string supported by Spring ResourceLoader. For example: classpath:com/myapp/aaa.xsd,
-	 *            file:///data/bbb.xsd, http://myserver/ccc.xsd... More info:
-	 *            http://docs.spring.io/spring/docs/current/spring-framework- reference/html/resources.html
+	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd). This location may be any resource string supported by Spring ResourceLoader. For example:
+	 *            classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd... More info: http://docs.spring.io/spring/docs/current/spring-framework- reference/html/resources.html
 	 * @return PDP instance
 	 * @throws java.io.IOException
 	 *             I/O error reading from {@code confLocation}
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
-	public static PdpEngineConfiguration getInstance(final String confLocation)
-			throws IOException, IllegalArgumentException
+	public static PdpEngineConfiguration getInstance(final String confLocation) throws IOException, IllegalArgumentException
 	{
 		return getInstance(confLocation, null, null);
 	}
 
 	/**
-	 * Returns true iff XPath (AttributeSelectors, xpathExpression datatype and xpath functions) support is enabled. For
-	 * your information, AttributeSelector and xpathExpression datatype support is marked as optional in XACML 3.0 core
-	 * specification.
+	 * Returns true iff XPath (AttributeSelectors, xpathExpression datatype and xpath functions) support is enabled. For your information, AttributeSelector and xpathExpression datatype support is
+	 * marked as optional in XACML 3.0 core specification.
 	 * 
 	 * @return true iff XPath is supported.
 	 */
@@ -826,20 +756,15 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Returns true iff strict Attribute Issuer matching is enabled, in which case we require that all
-	 * AttributeDesignators set the Issuer field.
+	 * Returns true iff strict Attribute Issuer matching is enabled, in which case we require that all AttributeDesignators set the Issuer field.
 	 * <p>
-	 * "Strict Attribute Issuer matching" means that an AttributeDesignator without Issuer only match request Attributes
-	 * without Issuer. This mode is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is not
-	 * present in the Attribute Designator, but it performs better and is recommended when all AttributeDesignators have
-	 * an Issuer (best practice). Indeed, the XACML 3.0 Attribute Evaluation section §5.29 says: "If the Issuer is not
-	 * present in the AttributeDesignator, then the matching of the attribute to the named attribute SHALL be governed
-	 * by AttributeId and DataType attributes alone." Therefore, if {@code strictAttributeIssuerMatch} is false, since
-	 * policies may use AttributeDesignators without Issuer, if the requests are using matching Attributes but with
-	 * none, one or more different Issuers, this PDP engine has to gather all the values from all the attributes with
-	 * matching Category/AttributeId but with any Issuer or no Issuer. Therefore, in order to stay compliant with §5.29
-	 * and still enforce best practice, when {@code strictAttributeIssuerMatch} is true, we also require that all
-	 * AttributeDesignators set the Issuer field.
+	 * "Strict Attribute Issuer matching" means that an AttributeDesignator without Issuer only match request Attributes without Issuer. This mode is not fully compliant with XACML 3.0, §5.29, in the
+	 * case that the Issuer is not present in the Attribute Designator, but it performs better and is recommended when all AttributeDesignators have an Issuer (best practice). Indeed, the XACML 3.0
+	 * Attribute Evaluation section §5.29 says: "If the Issuer is not present in the AttributeDesignator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and
+	 * DataType attributes alone." Therefore, if {@code strictAttributeIssuerMatch} is false, since policies may use AttributeDesignators without Issuer, if the requests are using matching Attributes
+	 * but with none, one or more different Issuers, this PDP engine has to gather all the values from all the attributes with matching Category/AttributeId but with any Issuer or no Issuer.
+	 * Therefore, in order to stay compliant with §5.29 and still enforce best practice, when {@code strictAttributeIssuerMatch} is true, we also require that all AttributeDesignators set the Issuer
+	 * field.
 	 * 
 	 * @return the strictAttributeIssuerMatch
 	 */
@@ -849,8 +774,7 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Returns the type of source for standard Environment attributes specified in §10.2.5: current-time, current-date
-	 * and current-dateTime. If not defined in original PDP configuration,
+	 * Returns the type of source for standard Environment attributes specified in §10.2.5: current-time, current-date and current-dateTime. If not defined in original PDP configuration,
 	 * {@link StandardEnvironmentAttributeSource#REQUEST_ELSE_PDP} is returned by default.
 	 * 
 	 * @return the source type
@@ -861,12 +785,10 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Returns the level of verbosity of the error message trace returned in case of client request errors, e.g. invalid
-	 * requests. Increasing this value usually helps the clients better pinpoint the issue with their Requests. This
-	 * parameter is relevant to the Result postprocessor ('resultPostproc' parameter) which is expected to enforce this
-	 * verbosity level when returning Indeterminate Results due to client request errors. The Result postprocessor must
-	 * return all error messages in the Java stacktrace up to the same level as this parameter's value if the stacktrace
-	 * is bigger, else the full stacktrace.
+	 * Returns the level of verbosity of the error message trace returned in case of client request errors, e.g. invalid requests. Increasing this value usually helps the clients better pinpoint the
+	 * issue with their Requests. This parameter is relevant to the Result postprocessor ('resultPostproc' parameter) which is expected to enforce this verbosity level when returning Indeterminate
+	 * Results due to client request errors. The Result postprocessor must return all error messages in the Java stacktrace up to the same level as this parameter's value if the stacktrace is bigger,
+	 * else the full stacktrace.
 	 * 
 	 * @return client request error verbosity
 	 */
@@ -876,8 +798,7 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Returns the Decision Result cache that, for a given request, provides the XACML policy evaluation result from a
-	 * cache, if there is a cached Result for the given request.
+	 * Returns the Decision Result cache that, for a given request, provides the XACML policy evaluation result from a cache, if there is a cached Result for the given request.
 	 * 
 	 * @return the decision result cache
 	 */
