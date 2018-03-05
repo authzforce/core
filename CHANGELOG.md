@@ -7,6 +7,18 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 12.0.0
+### Changed
+- Dependency authzforce-ce-core-pdp-api: version 13.0.0 -> 14.0.0; changes APIs for PDP AttributeProvider and DecisionCache extensions:
+	- Interface method DecisionCache.Factory#getInstance(...): added EnvironmentProperties parameter to allow passing environment properties to DecisionCache implementations
+	- Interface method AttributeProvider#get(...): replaced parameter type BagDatatype with Datatype to simplify AttributeProviders' code
+
+### Added
+- Base implementations of a few interfaces to help implementing unit tests for PDP extensions:
+	- BasePrimaryPolicyMetadata, implements PrimaryPolicyMetadata
+	- IndividualDecisionRequestContext, implements EvaluationContext
+
+
 ## 11.0.1
 ### Fixed
 - [GL-6]: IllegalArgumentException when applying XACML 'map' function to substring with string bag as first arg

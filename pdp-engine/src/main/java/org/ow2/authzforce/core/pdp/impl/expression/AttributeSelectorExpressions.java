@@ -30,17 +30,6 @@ import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
-import net.sf.saxon.s9api.SaxonApiException;
-import net.sf.saxon.s9api.XPathCompiler;
-import net.sf.saxon.s9api.XPathExecutable;
-import net.sf.saxon.s9api.XPathSelector;
-import net.sf.saxon.s9api.XdmAtomicValue;
-import net.sf.saxon.s9api.XdmItem;
-import net.sf.saxon.s9api.XdmNode;
-import net.sf.saxon.s9api.XdmValue;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.AttributeFqns;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
@@ -57,6 +46,17 @@ import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.XPathValue;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XPathExecutable;
+import net.sf.saxon.s9api.XPathSelector;
+import net.sf.saxon.s9api.XdmAtomicValue;
+import net.sf.saxon.s9api.XdmItem;
+import net.sf.saxon.s9api.XdmNode;
+import net.sf.saxon.s9api.XdmValue;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 /**
  * Static utility methods pertaining to {@link AttributeSelectorExpression} instances.
@@ -102,7 +102,8 @@ public final class AttributeSelectorExpressions
 
 		// the logger we'll use for all messages
 		// private static final Logger LOGGER = LoggerFactory.getLogger(AttributeSelector.class);
-		private static final IllegalArgumentException NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("AttributeSelector's input XACML/JAXB AttributeSelector element undefined");
+		private static final IllegalArgumentException NULL_XACML_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException(
+				"AttributeSelector's input XACML/JAXB AttributeSelector element undefined");
 		private static final IllegalArgumentException NULL_XPATH_COMPILER_EXCEPTION = new IllegalArgumentException("XPath version/compiler undefined but required for AttributeSelector evaluation");
 		private static final IllegalArgumentException NULL_ATTRIBUTE_FACTORY_EXCEPTION = new IllegalArgumentException("AttributeSelector's returnType factory undefined");
 
@@ -128,7 +129,7 @@ public final class AttributeSelectorExpressions
 					 */
 				case TEXT:
 					otherAttributes = Collections.emptyMap();
-					content = Collections.<Serializable> singletonList(nodeStrVal);
+					content = Collections.<Serializable>singletonList(nodeStrVal);
 					break;
 
 				/*
@@ -365,7 +366,7 @@ public final class AttributeSelectorExpressions
 				if (xpathEvalResultItem instanceof XdmAtomicValue)
 				{
 					final String strVal = xpathEvalResultItem.getStringValue();
-					jaxbAttrVal = new AttributeValueType(Collections.<Serializable> singletonList(strVal), attributeDatatype.getId(), null);
+					jaxbAttrVal = new AttributeValueType(Collections.<Serializable>singletonList(strVal), attributeDatatype.getId(), null);
 				}
 				else if (xpathEvalResultItem instanceof XdmNode)
 				{
@@ -376,10 +377,11 @@ public final class AttributeSelectorExpressions
 					catch (final IllegalArgumentException e)
 					{
 						final Optional<String> contextSelectorId = attributeSelectorId.getContextSelectorId();
-						throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
-								+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
-								+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, XacmlStatusCode.SYNTAX_ERROR.value(),
-								e);
+						throw new IndeterminateEvaluationException(
+								this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
+										+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
+										+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem,
+								XacmlStatusCode.SYNTAX_ERROR.value(), e);
 					}
 				}
 				else
@@ -399,9 +401,11 @@ public final class AttributeSelectorExpressions
 				catch (final IllegalArgumentException e)
 				{
 					final Optional<String> contextSelectorId = attributeSelectorId.getContextSelectorId();
-					throw new IndeterminateEvaluationException(this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
-							+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory() + "'"
-							+ (contextSelectorId == null ? "" : " selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem, XacmlStatusCode.SYNTAX_ERROR.value(), e);
+					throw new IndeterminateEvaluationException(
+							this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
+									+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory() + "'"
+									+ (contextSelectorId == null ? "" : " selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem,
+							XacmlStatusCode.SYNTAX_ERROR.value(), e);
 				}
 
 				resultBag.add(attributeDatatype.cast(attrVal));
@@ -446,8 +450,9 @@ public final class AttributeSelectorExpressions
 					}
 					catch (final SaxonApiException e)
 					{
-						throw new IndeterminateEvaluationException(this + ": Error evaluating XPath = '" + contextPathEvaluator.get().getUnderlyingExpression().getInternalExpression().toString()
-								+ "' against <Content> element", XacmlStatusCode.PROCESSING_ERROR.value(), e);
+						throw new IndeterminateEvaluationException(
+								this + ": Error evaluating XPath = '" + contextPathEvaluator.get().getUnderlyingExpression().getInternalExpression().toString() + "' against <Content> element",
+								XacmlStatusCode.PROCESSING_ERROR.value(), e);
 					}
 
 					if (finalXPathEvaluationContextItem == null)
@@ -644,7 +649,7 @@ public final class AttributeSelectorExpressions
 		@Override
 		protected XdmItem getFinalXPathEvaluationContextItem(final XdmNode contentElement, final EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			final Bag<XPathValue> bag = attrProvider.get(contextSelectorFQN, StandardDatatypes.XPATH.getBagDatatype(), context);
+			final Bag<XPathValue> bag = attrProvider.get(contextSelectorFQN, StandardDatatypes.XPATH, context);
 			if (bag == null)
 			{
 				throw this.missingAttributeForUnknownReasonException;

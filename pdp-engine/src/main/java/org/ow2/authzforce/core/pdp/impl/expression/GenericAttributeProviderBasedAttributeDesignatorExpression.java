@@ -19,8 +19,6 @@ package org.ow2.authzforce.core.pdp.impl.expression;
 
 import java.util.Optional;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.AttributeFqns;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
@@ -33,6 +31,8 @@ import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
 /**
  * AttributeDesignator evaluator initialized with and using an {@link AttributeProvider} to retrieve the attribute value not only from the request but also possibly from extra Attribute Provider
@@ -98,8 +98,8 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 		this.mustBePresentEnforcer = mustBePresent ? new Bags.NonEmptinessValidator(missingAttributeMessage) : Bags.DUMB_VALIDATOR;
 
 		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", XacmlStatusCode.MISSING_ATTRIBUTE.value());
-		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID
-				+ "' because request context undefined", XacmlStatusCode.MISSING_ATTRIBUTE.value());
+		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException(
+				"Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 			throw missingAttributeBecauseNullContextException;
 		}
 
-		final Bag<AV> bag = attrProvider.get(attrGUID, this.returnType, context);
+		final Bag<AV> bag = attrProvider.get(attrGUID, this.returnType.getElementType(), context);
 		if (bag == null)
 		{
 			throw this.missingAttributeForUnknownReasonException;

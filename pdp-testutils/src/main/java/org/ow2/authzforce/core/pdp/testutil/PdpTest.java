@@ -64,7 +64,7 @@ import org.springframework.util.ResourceUtils;
  * Configuration 2 for advanced/custom PDP configuration:
  * <ul>
  * <li>{@value #PDP_CONF_FILENAME}: PDP configuration file</li>
- * <li>{@value #PDP_EXTENSION_XSD}: (optional) PDP extensions schema, required iff custom PDP extensions are required</li>
+ * <li>{@value #PDP_EXTENSION_XSD_FILENAME}: (optional) PDP extensions schema, required iff custom PDP extensions are required</li>
  * <li>{@value #REQUEST_FILENAME}: (optional) XACML request file sent to the PDP for evaluation. If not present, the test is considered as a static policy test, i.e. test for invalid policy detection,
  * such as invalid syntax, circular reference, etc.</li>
  * <li>{@value #EXPECTED_RESPONSE_FILENAME}: (optional) expected XACML response from the PDP, to be compared with the actual response. Required only if {@value #REQUEST_FILENAME} is present.</li>
@@ -86,7 +86,7 @@ public abstract class PdpTest
 	/**
 	 * PDP extensions schema
 	 */
-	public final static String PDP_EXTENSION_XSD = "pdp-ext.xsd";
+	public final static String PDP_EXTENSION_XSD_FILENAME = "pdp-ext.xsd";
 
 	/**
 	 * XACML policy filename used by default when no PDP configuration file found, i.e. no file named {@value #PDP_CONF_FILENAME} exists in the test directory
@@ -226,7 +226,7 @@ public abstract class PdpTest
 			else
 			{
 				// PDP configuration filename found in test directory -> create PDP from it
-				final String pdpExtXsdLocation = testResourceLocationPrefix + PDP_EXTENSION_XSD;
+				final String pdpExtXsdLocation = testResourceLocationPrefix + PDP_EXTENSION_XSD_FILENAME;
 				File pdpExtXsdFile = null;
 				try
 				{

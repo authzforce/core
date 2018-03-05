@@ -60,8 +60,8 @@ public final class PdpExtensions
 	/**
 	 * Types of zero-conf (non-JAXB-bound) extension
 	 */
-	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = HashCollections.newImmutableSet(Arrays.asList(AttributeValueFactory.class, Function.class,
-			CombiningAlg.class, DecisionRequestPreprocessor.Factory.class, DecisionResultPostprocessor.Factory.class));
+	private static final Set<Class<? extends PdpExtension>> NON_JAXB_BOUND_EXTENSION_CLASSES = HashCollections
+			.newImmutableSet(Arrays.asList(AttributeValueFactory.class, Function.class, CombiningAlg.class, DecisionRequestPreprocessor.Factory.class, DecisionResultPostprocessor.Factory.class));
 
 	/*
 	 * For each type of zero-conf (non-JAXB-bound) extension, have a map (extension ID -> extension instance), so that the extension ID is scoped to the extension type among the ones listed in
@@ -241,8 +241,8 @@ public final class PdpExtensions
 
 		if (!(ext instanceof CloseableRefPolicyProvider.Factory))
 		{
-			throw new IllegalArgumentException("No PDP extension of type " + CloseableRefPolicyProvider.Factory.class
-					+ " (Reference-based Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
+			throw new IllegalArgumentException(
+					"No PDP extension of type " + CloseableRefPolicyProvider.Factory.class + " (Reference-based Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
 		}
 
 		return (CloseableRefPolicyProvider.Factory<REF_POLICY_PROVIDER_CONF>) ext;
@@ -271,8 +271,8 @@ public final class PdpExtensions
 
 		if (!(ext instanceof RootPolicyProvider.Factory))
 		{
-			throw new IllegalArgumentException("No PDP extension of type " + RootPolicyProvider.Factory.class + " (Root Policy Provider factory) supporting JAXB/XML (configuration) type: "
-					+ jaxbConfClass);
+			throw new IllegalArgumentException(
+					"No PDP extension of type " + RootPolicyProvider.Factory.class + " (Root Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
 		}
 
 		return (RootPolicyProvider.Factory<ROOT_POLICY_PROVIDER_CONF>) ext;
@@ -287,7 +287,7 @@ public final class PdpExtensions
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.DecisionCache.Factory} supporting {@code jaxbPdpExtensionClass}
 	 */
-	public static <DECISION_CACHE_CONF extends AbstractDecisionCache> DecisionCache.Factory<DECISION_CACHE_CONF> getDecisionCacheFactory(final DECISION_CACHE_CONF jaxbConfClass)
+	public static <DECISION_CACHE_CONF extends AbstractDecisionCache> DecisionCache.Factory<DECISION_CACHE_CONF> getDecisionCacheFactory(final Class<DECISION_CACHE_CONF> jaxbConfClass)
 	{
 		final JaxbBoundPdpExtension<DECISION_CACHE_CONF> ext = (JaxbBoundPdpExtension<DECISION_CACHE_CONF>) JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbConfClass);
 		if (ext == null)

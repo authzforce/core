@@ -25,14 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
@@ -44,6 +36,14 @@ import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 
 import com.google.common.collect.ImmutableList;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail;
 
 /**
  * Convenient base class for {@link DecisionResultPostprocessor} implementations producing XACML/JSON (XACML-JSON-Profile-standard-compliant) output
@@ -274,22 +274,22 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 	}
 
 	/**
-	 *
-	 * Factory for this type of result postprocessor
-	 *
+	 * Convenient base class for {@link org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor.Factory} implementations supporting XACML/JSON output (JSON Profile of XACML)
+	 * 
 	 */
-	public static class Factory implements DecisionResultPostprocessor.Factory<IndividualXacmlJsonRequest, JSONObject>
+	public static abstract class Factory implements DecisionResultPostprocessor.Factory<IndividualXacmlJsonRequest, JSONObject>
 	{
+		private final String id;
 
-		/**
-		 * Request filter ID, as returned by {@link #getId()}
-		 */
-		public static final String ID = "urn:ow2:authzforce:feature:pdp:result-postproc:xacml-json:default";
+		protected Factory(final String id)
+		{
+			this.id = id;
+		}
 
 		@Override
 		public final String getId()
 		{
-			return ID;
+			return id;
 		}
 
 		@Override
@@ -302,6 +302,27 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		public final Class<JSONObject> getResponseType()
 		{
 			return JSONObject.class;
+		}
+	}
+
+	/**
+	 *
+	 * Default factory creating instances of {@link BaseXacmlJsonResultPostprocessor}
+	 *
+	 */
+	public static final class DefaultFactory extends Factory
+	{
+		/**
+		 * Result postprocessor ID, as returned by {@link #getId()}
+		 */
+		public static final String ID = "urn:ow2:authzforce:feature:pdp:result-postproc:xacml-json:default";
+
+		/**
+		 * No-arg constructor
+		 */
+		public DefaultFactory()
+		{
+			super(ID);
 		}
 
 		@Override

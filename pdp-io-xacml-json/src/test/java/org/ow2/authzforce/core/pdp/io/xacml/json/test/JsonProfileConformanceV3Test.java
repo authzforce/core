@@ -39,6 +39,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
+import org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocessor;
+import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.json.model.LimitsCheckingJSONObject;
 import org.ow2.authzforce.xacml.json.model.Xacml3JsonUtils;
@@ -84,9 +86,7 @@ public class JsonProfileConformanceV3Test
 
 	private static final boolean ENABLE_XPATH = false;
 
-	private static final String REQUEST_PREPROC_ID = "urn:ow2:authzforce:feature:pdp:request-preproc:xacml-json:default-lax";
-
-	private static final String RESULT_POSTPROC_ID = "urn:ow2:authzforce:feature:pdp:result-postproc:xacml-json:default";
+	// private static final String RESULT_POSTPROC_ID = "urn:ow2:authzforce:feature:pdp:result-postproc:xacml-json:default";
 
 	private static final int MAX_JSON_STRING_LENGTH = 100;
 
@@ -134,9 +134,9 @@ public class JsonProfileConformanceV3Test
 		// normalize responses for comparison
 		final JSONObject normalizedExpectedResponse = Xacml3JsonUtils.canonicalizeResponse(expectedResponse);
 		final JSONObject normalizedActualResponse = Xacml3JsonUtils.canonicalizeResponse(actualResponseFromPDP);
-		Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse), "Test '" + testId
-				+ "' (StatusMessage/StatusDetail/nested StatusCode elements removed/ignored for comparison): expected: <" + normalizedExpectedResponse + "> ; actual: <" + normalizedActualResponse
-				+ ">");
+		Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse),
+				"Test '" + testId + "' (StatusMessage/StatusDetail/nested StatusCode elements removed/ignored for comparison): expected: <" + normalizedExpectedResponse + "> ; actual: <"
+						+ normalizedActualResponse + ">");
 	}
 
 	public static Collection<Object[]> params(final String testResourcesRootDirectory) throws URISyntaxException, IOException
@@ -211,8 +211,10 @@ public class JsonProfileConformanceV3Test
 		 * So far we assume the PDP engine configuration files are valid, because for the moment we only test Request/Response in JSON Profile since JSON Profile only applies to these elements (not to
 		 * policies) at the moment. If some day, JSON Profile addresses policy format too, then we should do like in ConformanceV3fromV2 class from pdp-testutils package (policy syntax validation).
 		 */
-		final PdpEngineConfiguration pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile.toUri().toURL().toString(), Files.exists(refPoliciesDir) ? refPoliciesDir.toUri().toURL()
-				.toString() : null, ENABLE_XPATH, Files.exists(attributeProviderConfFile) ? attributeProviderConfFile.toUri().toURL().toString() : null, REQUEST_PREPROC_ID, RESULT_POSTPROC_ID);
+		final PdpEngineConfiguration pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile.toUri().toURL().toString(),
+				Files.exists(refPoliciesDir) ? refPoliciesDir.toUri().toURL().toString() : null, ENABLE_XPATH,
+				Files.exists(attributeProviderConfFile) ? attributeProviderConfFile.toUri().toURL().toString() : null, SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
+				BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
 		try (final PdpEngineInoutAdapter<JSONObject, JSONObject> pdp = PdpEngineXacmlJsonAdapters.newXacmlJsonInoutAdapter(pdpEngineConf))
 		{
 			// this is an evaluation test with request/response (not a policy syntax check)

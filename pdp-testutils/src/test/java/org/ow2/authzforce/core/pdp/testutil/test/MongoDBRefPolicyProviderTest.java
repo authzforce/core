@@ -32,11 +32,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-
 import org.apache.cxf.helpers.IOUtils;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -51,9 +46,9 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
 import org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
-import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
@@ -82,6 +77,10 @@ import com.mongodb.ServerAddress;
 
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 public class MongoDBRefPolicyProviderTest
 {
@@ -93,8 +92,7 @@ public class MongoDBRefPolicyProviderTest
 	private static CloseableRefPolicyProvider POLICY_PROVIDER_MODULE;
 
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception
-	{
+	public static void setUpBeforeClass() throws Exception {
 		final PdpModelHandler pdpModelHandler = new PdpModelHandler("classpath:catalog.xml", "classpath:pdp-ext.xsd");
 		final Pdp pdpConf;
 		try (final InputStream is = MongoDBRefPolicyProviderTest.class.getResourceAsStream(PdpTest.PDP_CONF_FILENAME))
@@ -157,8 +155,7 @@ public class MongoDBRefPolicyProviderTest
 				policyTypeId = MongoDbRefPolicyProvider.XACML3_POLICY_TYPE_ID;
 				policyId = policy.getPolicyId();
 				policyVersion = policy.getVersion();
-			}
-			else
+			} else
 			{
 				// PolicySet
 				policyTypeId = MongoDbRefPolicyProvider.XACML3_POLICYSET_TYPE_ID;
@@ -173,8 +170,7 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception
-	{
+	public static void tearDownAfterClass() throws Exception {
 
 		if (POLICY_PROVIDER_MODULE != null)
 		{
@@ -189,14 +185,12 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 
 	}
 
 	@After
-	public void tearDown() throws Exception
-	{
+	public void tearDown() throws Exception {
 	}
 
 	// @Test
@@ -209,16 +203,14 @@ public class MongoDBRefPolicyProviderTest
 	// }
 
 	@Test
-	public void testGetPolicyWithWrongId() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicyWithWrongId() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Wrong ID, no version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "unexpected-policy-id", Optional.empty(), null, null);
 		assertNull(policyEvaluator);
 	}
 
 	@Test
-	public void testGetPolicyWithValidIdWithoutVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicyWithValidIdWithoutVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, no version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.empty(), null, null);
 		assertNotNull(policyEvaluator);
@@ -227,20 +219,18 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@Test
-	public void testGetPolicyWithValidIdButInvalidLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicyWithValidIdButInvalidLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, invalid literal version pattern
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new VersionPatterns("1.0", null, null)), null,
-				null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("1.0", null, null)),
+				null, null);
 		assertNull(policyEvaluator);
 	}
 
 	@Test
-	public void testGetPolicyWithValidIdAndLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicyWithValidIdAndLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, valid literal version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new VersionPatterns("0.1.0", null, null)), null,
-				null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("0.1.0", null, null)),
+				null, null);
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY, policyEvaluator.getPolicyElementType());
 		assertEquals("permit-all", policyEvaluator.getPolicyId());
@@ -248,20 +238,18 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@Test
-	public void testGetPolicyWithValidIdButInvalidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicyWithValidIdButInvalidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, invalid version pattern
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new VersionPatterns("1.+", null, null)), null,
-				null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("1.+", null, null)),
+				null, null);
 		assertNull(policyEvaluator);
 	}
 
 	@Test
-	public void testGetPolicyWithValidIdAndValidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicyWithValidIdAndValidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, valid version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new VersionPatterns("0.*", null, null)), null,
-				null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("0.*", null, null)),
+				null, null);
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY, policyEvaluator.getPolicyElementType());
 		assertEquals("permit-all", policyEvaluator.getPolicyId());
@@ -269,16 +257,14 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@Test
-	public void testGetPolicySetWithWrongId() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicySetWithWrongId() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Wrong ID, no version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "unexpected-policyset-id", Optional.empty(), null, null);
 		assertNull(policyEvaluator);
 	}
 
 	@Test
-	public void testGetPolicySetWithValidIdWithoutVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicySetWithValidIdWithoutVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, no version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset", Optional.empty(), null, null);
 		assertNotNull(policyEvaluator);
@@ -287,20 +273,18 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@Test
-	public void testGetPolicySetWithValidIdButInvalidLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicySetWithValidIdButInvalidLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, invalid literal version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset",
-				Optional.of(new VersionPatterns("1.0", null, null)), null, null);
+				Optional.of(new PolicyVersionPatterns("1.0", null, null)), null, null);
 		assertNull(policyEvaluator);
 	}
 
 	@Test
-	public void testGetPolicySetWithValidIdAndLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicySetWithValidIdAndLiteralVersion() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, valid literal version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "permit-all", Optional.of(new VersionPatterns("0.1.0", null, null)),
-				null, null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "permit-all",
+				Optional.of(new PolicyVersionPatterns("0.1.0", null, null)), null, null);
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY_SET, policyEvaluator.getPolicyElementType());
 		assertEquals("permit-all", policyEvaluator.getPolicyId());
@@ -308,20 +292,18 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@Test
-	public void testGetPolicySetWithValidIdButInvalidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicySetWithValidIdButInvalidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, invalid version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset",
-				Optional.of(new VersionPatterns("2.+", null, null)), null, null);
+				Optional.of(new PolicyVersionPatterns("2.+", null, null)), null, null);
 		assertNull(policyEvaluator);
 	}
 
 	@Test
-	public void testGetPolicySetWithValidIdAndValidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
-	{
+	public void testGetPolicySetWithValidIdAndValidVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException {
 		// Valid ID, valid version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset",
-				Optional.of(new VersionPatterns("1.*", null, null)), null, null);
+				Optional.of(new PolicyVersionPatterns("1.*", null, null)), null, null);
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY_SET, policyEvaluator.getPolicyElementType());
 		assertEquals("root-rbac-policyset", policyEvaluator.getPolicyId());
@@ -329,14 +311,13 @@ public class MongoDBRefPolicyProviderTest
 	}
 
 	@Test
-	public void testPdpInstantiationWithMongoDBBasedPolicyProvider() throws IllegalArgumentException, IndeterminateEvaluationException, IOException, JAXBException
-	{
+	public void testPdpInstantiationWithMongoDBBasedPolicyProvider() throws IllegalArgumentException, IndeterminateEvaluationException, IOException, JAXBException {
 		final XmlnsFilteringParser xacmlParser = XacmlJaxbParsingUtils.getXacmlParserFactory(false).getInstance();
 		final Request req = TestUtils.createRequest("classpath:org/ow2/authzforce/core/pdp/testutil/test/request.xml", xacmlParser);
 		final Response expectedResp = TestUtils.createResponse("classpath:org/ow2/authzforce/core/pdp/testutil/test/response.xml", xacmlParser);
 		final Response actualResp;
-		try (final PdpEngineInoutAdapter<Request, Response> pdpEngine = PdpEngineAdapters.newXacmlJaxbInoutAdapter(PdpEngineConfiguration.getInstance(
-				"classpath:org/ow2/authzforce/core/pdp/testutil/test/pdp.xml", "classpath:catalog.xml", "classpath:pdp-ext.xsd")))
+		try (final PdpEngineInoutAdapter<Request, Response> pdpEngine = PdpEngineAdapters
+				.newXacmlJaxbInoutAdapter(PdpEngineConfiguration.getInstance("classpath:org/ow2/authzforce/core/pdp/testutil/test/pdp.xml", "classpath:catalog.xml", "classpath:pdp-ext.xsd")))
 		{
 			actualResp = pdpEngine.evaluate(req);
 		}

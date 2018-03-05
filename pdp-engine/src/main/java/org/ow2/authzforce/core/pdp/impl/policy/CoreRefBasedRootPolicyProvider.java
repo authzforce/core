@@ -19,23 +19,23 @@ package org.ow2.authzforce.core.pdp.impl.policy;
 
 import java.util.Optional;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticRootPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
-import org.ow2.authzforce.core.pdp.api.policy.VersionPatterns;
 import org.ow2.authzforce.core.xmlns.pdp.StaticRefBasedRootPolicyProvider;
 
 import com.google.common.base.Preconditions;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
 
 /**
  * This Root policy provider retrieves the root policy from a {@link CloseableRefPolicyProvider} statically (once and for all), based on a XACML PolicySetIdReference.
@@ -55,15 +55,13 @@ public class CoreRefBasedRootPolicyProvider implements StaticRootPolicyProvider
 	{
 
 		@Override
-		public Class<StaticRefBasedRootPolicyProvider> getJaxbClass()
-		{
+		public Class<StaticRefBasedRootPolicyProvider> getJaxbClass() {
 			return StaticRefBasedRootPolicyProvider.class;
 		}
 
 		@Override
 		public RootPolicyProvider getInstance(final StaticRefBasedRootPolicyProvider jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory, final ExpressionFactory expressionFactory,
-				final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> optionalRefPolicyProvider, final EnvironmentProperties environmentProperties)
-		{
+				final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> optionalRefPolicyProvider, final EnvironmentProperties environmentProperties) {
 			Preconditions.checkNotNull(jaxbConf, ILLEGAL_XML_CONF_ARG_MESSAGE);
 			Preconditions.checkArgument(optionalRefPolicyProvider.isPresent(), NULL_REF_POLICY_PROVIDER_CONF_MESSAGE);
 			return new CoreRefBasedRootPolicyProvider(jaxbConf.getPolicyRef(), optionalRefPolicyProvider.get());
@@ -87,36 +85,34 @@ public class CoreRefBasedRootPolicyProvider implements StaticRootPolicyProvider
 	{
 		Preconditions.checkNotNull(policyRef, ILLEGAL_XACML_POLICY_REF_ARG_MESSAGE);
 		Preconditions.checkNotNull(refPolicyProvider, NULL_REF_POLICY_PROVIDER_CONF_MESSAGE);
-		Preconditions.checkArgument(refPolicyProvider instanceof StaticRefPolicyProvider, "RefPolicyProvider arg '" + refPolicyProvider + "'  incompatible with "
-				+ CoreRefBasedRootPolicyProvider.class + ". Expected: instance of " + StaticRefPolicyProvider.class + ". Make sure the PDP extension of type "
-				+ CloseableRefPolicyProvider.Factory.class + " corresponding to the refPolicyProvider in PDP configuration can create instances of " + StaticRefPolicyProvider.class);
+		Preconditions.checkArgument(refPolicyProvider instanceof StaticRefPolicyProvider,
+				"RefPolicyProvider arg '" + refPolicyProvider + "'  incompatible with " + CoreRefBasedRootPolicyProvider.class + ". Expected: instance of " + StaticRefPolicyProvider.class
+						+ ". Make sure the PDP extension of type " + CloseableRefPolicyProvider.Factory.class + " corresponding to the refPolicyProvider in PDP configuration can create instances of "
+						+ StaticRefPolicyProvider.class);
 
 		final String policySetId = policyRef.getValue();
-		final VersionPatterns versionPatterns = new VersionPatterns(policyRef.getVersion(), policyRef.getEarliestVersion(), policyRef.getLatestVersion());
+		final PolicyVersionPatterns PolicyVersionPatterns = new PolicyVersionPatterns(policyRef.getVersion(), policyRef.getEarliestVersion(), policyRef.getLatestVersion());
 		try
 		{
-			rootPolicy = ((StaticRefPolicyProvider) refPolicyProvider).get(TopLevelPolicyElementType.POLICY_SET, policySetId, Optional.of(versionPatterns), null);
-		}
-		catch (final IndeterminateEvaluationException e)
+			rootPolicy = ((StaticRefPolicyProvider) refPolicyProvider).get(TopLevelPolicyElementType.POLICY_SET, policySetId, Optional.of(PolicyVersionPatterns), null);
+		} catch (final IndeterminateEvaluationException e)
 		{
-			throw new IllegalArgumentException("Failed to find a root PolicySet with id = '" + policySetId + "', " + versionPatterns, e);
+			throw new IllegalArgumentException("Failed to find a root PolicySet with id = '" + policySetId + "', " + PolicyVersionPatterns, e);
 		}
 
 		if (rootPolicy == null)
 		{
-			throw new IllegalArgumentException("No policy found by the refPolicyProvider for the specified PolicySetIdReference: PolicySetId = '" + policySetId + "'; " + versionPatterns);
+			throw new IllegalArgumentException("No policy found by the refPolicyProvider for the specified PolicySetIdReference: PolicySetId = '" + policySetId + "'; " + PolicyVersionPatterns);
 		}
 	}
 
 	@Override
-	public StaticTopLevelPolicyElementEvaluator getPolicy()
-	{
+	public StaticTopLevelPolicyElementEvaluator getPolicy() {
 		return rootPolicy;
 	}
 
 	@Override
-	public void close()
-	{
+	public void close() {
 		// Nothing to close - erase exception from the close() signature
 	}
 }
