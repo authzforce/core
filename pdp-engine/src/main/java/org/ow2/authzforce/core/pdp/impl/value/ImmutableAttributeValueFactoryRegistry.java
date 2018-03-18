@@ -49,7 +49,7 @@ import com.google.common.collect.ImmutableSet;
 import net.sf.saxon.s9api.XPathCompiler;
 
 /**
- * Immutable <code>DatatypeFactoryRegistry</code>.
+ * Immutable <code>AttributeValueFactoryRegistry</code>.
  *
  * 
  * @version $Id: $
