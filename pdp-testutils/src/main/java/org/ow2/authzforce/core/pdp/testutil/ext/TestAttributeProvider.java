@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
-import org.ow2.authzforce.core.pdp.api.BaseDesignatedAttributeProvider;
-import org.ow2.authzforce.core.pdp.api.CloseableDesignatedAttributeProvider;
+import org.ow2.authzforce.core.pdp.api.BaseNamedAttributeProvider;
+import org.ow2.authzforce.core.pdp.api.CloseableNamedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -56,13 +56,13 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
  * Fake AttributeProviderModule for test purposes only that can be configured to support a specific set of attribute Providers, but always return an empty bag as attribute value.
  * 
  */
-public class TestAttributeProvider extends BaseDesignatedAttributeProvider
+public class TestAttributeProvider extends BaseNamedAttributeProvider
 {
 	/**
 	 * Module factory
 	 * 
 	 */
-	public static class Factory extends CloseableDesignatedAttributeProvider.FactoryBuilder<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider>
+	public static class Factory extends CloseableNamedAttributeProvider.FactoryBuilder<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider>
 	{
 
 		@Override
@@ -85,7 +85,7 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 				}
 
 				@Override
-				public CloseableDesignatedAttributeProvider getInstance(final AttributeValueFactoryRegistry attrDatatypeFactory, final AttributeProvider depAttrProvider)
+				public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attrDatatypeFactory, final AttributeProvider depAttrProvider)
 				{
 					return new TestAttributeProvider(conf, attrDatatypeFactory);
 				}
@@ -105,7 +105,7 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 	private final Map<AttributeFqn, AttributeBag<?>> attrMap;
 
 	private TestAttributeProvider(final org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider conf, final AttributeValueFactoryRegistry attributeValueFactoryRegistry)
-			throws IllegalArgumentException
+	        throws IllegalArgumentException
 	{
 		super(conf.getId());
 		final NamedXacmlAttributeParser<Attribute> namedXacmlAttParser = new NamedXacmlJaxbAttributeParser(attributeValueFactoryRegistry);
@@ -145,7 +145,7 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 
 	@Override
 	public <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeGUID, final Datatype<AV> attributeDatatype, final EvaluationContext context)
-			throws IndeterminateEvaluationException
+	        throws IndeterminateEvaluationException
 	{
 		final AttributeBag<?> attrVals = attrMap.get(attributeGUID);
 		if (attrVals == null)
@@ -159,7 +159,7 @@ public class TestAttributeProvider extends BaseDesignatedAttributeProvider
 		}
 
 		throw new IndeterminateEvaluationException("Requested datatype (" + attributeDatatype + ") != provided by " + this + " (" + attrVals.getElementDatatype() + ")",
-				XacmlStatusCode.MISSING_ATTRIBUTE.value());
+		        XacmlStatusCode.MISSING_ATTRIBUTE.value());
 	}
 
 }

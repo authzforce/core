@@ -24,17 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
-
-import org.ow2.authzforce.core.pdp.api.CloseableDesignatedAttributeProvider;
+import org.ow2.authzforce.core.pdp.api.CloseableNamedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
@@ -54,6 +44,16 @@ import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.FunctionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableReferenceType;
 
 /**
  * Implementation of ExpressionFactory that supports the Expressions defined in VariableDefinitions in order to resolve VariableReferences. In particular, it makes sure the depth of recursivity of
@@ -200,8 +200,9 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			super(varId, longestVarRefChain);
 			assert varExpr != null;
 			this.expression = varExpr;
-			this.nullContextException = new IndeterminateEvaluationException("VariableReference[VariableId='" + this.variableId
-					+ "']: evaluate(context = null) not allowed because the variable requires context for evaluation (not constant)", XacmlStatusCode.PROCESSING_ERROR.value());
+			this.nullContextException = new IndeterminateEvaluationException(
+			        "VariableReference[VariableId='" + this.variableId + "']: evaluate(context = null) not allowed because the variable requires context for evaluation (not constant)",
+			        XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		/**
@@ -257,7 +258,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	private static final Logger LOGGER = LoggerFactory.getLogger(DepthLimitingExpressionFactory.class);
 
 	private static final IllegalArgumentException MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION = new IllegalArgumentException(
-			"Missing Issuer that is required on AttributeDesignators by PDP configuration");
+	        "Missing Issuer that is required on AttributeDesignators by PDP configuration");
 
 	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("Unsupported Expression type (optional XACML feature): AttributeSelector");
 
@@ -266,7 +267,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	private static final IllegalArgumentException NULL_ATTRIBUTE_DATATYPE_REGISTRY_EXCEPTION = new IllegalArgumentException("Undefined attribute datatype registry");
 
 	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_DESIGNATOR_OR_SELECTOR_BECAUSE_OF_NULL_ATTRIBUTE_PROVIDER_EXCEPTION = new IllegalArgumentException(
-			"Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute Provider defined");
+	        "Unsupported Expression type 'AttributeDesignator' and 'AttributeSelector' because no attribute Provider defined");
 
 	private static final int UNLIMITED_MAX_VARIABLE_REF_DEPTH = -1;
 
@@ -314,8 +315,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	 *             error closing the Attribute Providers created from {@code attributeProviderFactories}, when a {@link IllegalArgumentException} is raised
 	 */
 	public DepthLimitingExpressionFactory(final AttributeValueFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry,
-			final List<CloseableDesignatedAttributeProvider.DependencyAwareFactory> attributeProviderFactories, final int maxVariableRefDepth, final boolean allowAttributeSelectors,
-			final boolean strictAttributeIssuerMatch) throws IllegalArgumentException, IOException
+	        final List<CloseableNamedAttributeProvider.DependencyAwareFactory> attributeProviderFactories, final int maxVariableRefDepth, final boolean allowAttributeSelectors,
+	        final boolean strictAttributeIssuerMatch) throws IllegalArgumentException, IOException
 	{
 		if (attributeFactory == null)
 		{
@@ -388,9 +389,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			 */
 			if (maxVariableReferenceDepth != UNLIMITED_MAX_VARIABLE_REF_DEPTH && longestVarRefChainInCurrentVarExpression.size() > this.maxVariableReferenceDepth)
 			{
-				throw new IllegalArgumentException("Max allowed VariableReference depth (" + this.maxVariableReferenceDepth + ") exceeded by length ("
-						+ longestVarRefChainInCurrentVarExpression.size() + ") of longest VariableReference Reference chain found in Expression of Variable '" + varId + "': "
-						+ longestVarRefChainInCurrentVarExpression);
+				throw new IllegalArgumentException("Max allowed VariableReference depth (" + this.maxVariableReferenceDepth + ") exceeded by length (" + longestVarRefChainInCurrentVarExpression.size()
+				        + ") of longest VariableReference Reference chain found in Expression of Variable '" + varId + "': " + longestVarRefChainInCurrentVarExpression);
 			}
 
 			/*
@@ -473,7 +473,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			if (maxVariableReferenceDepth != UNLIMITED_MAX_VARIABLE_REF_DEPTH && inoutLongestVarRefChain.size() > this.maxVariableReferenceDepth)
 			{
 				throw new IllegalArgumentException("Max allowed VariableReference depth (" + this.maxVariableReferenceDepth + ") exceeded by length (" + inoutLongestVarRefChain.size()
-						+ ") of VariableReference Reference chain: " + inoutLongestVarRefChain);
+				        + ") of VariableReference Reference chain: " + inoutLongestVarRefChain);
 			}
 		}
 
@@ -532,8 +532,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		if (expr instanceof ApplyType)
 		{
 			expression = ApplyExpressions.newInstance((ApplyType) expr, xPathCompiler, this, longestVarRefChain);
-		}
-		else if (expr instanceof AttributeDesignatorType)
+		} else if (expr instanceof AttributeDesignatorType)
 		{
 			if (this.attributeProvider == null)
 			{
@@ -553,8 +552,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			}
 
 			expression = new GenericAttributeProviderBasedAttributeDesignatorExpression<>(jaxbAttrDes, attrFactory.getDatatype().getBagDatatype(), attributeProvider);
-		}
-		else if (expr instanceof AttributeSelectorType)
+		} else if (expr instanceof AttributeSelectorType)
 		{
 			if (!allowAttributeSelectors)
 			{
@@ -581,34 +579,29 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			}
 
 			expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector, xPathCompiler, attributeProvider, attrFactory);
-		}
-		else if (expr instanceof AttributeValueType)
+		} else if (expr instanceof AttributeValueType)
 		{
 			expression = getInstance((AttributeValueType) expr, xPathCompiler);
-		}
-		else if (expr instanceof FunctionType)
+		} else if (expr instanceof FunctionType)
 		{
 			final FunctionType jaxbFunc = (FunctionType) expr;
 			final FunctionExpression funcExp = getFunction(jaxbFunc.getFunctionId());
 			if (funcExp != null)
 			{
 				expression = funcExp;
-			}
-			else
+			} else
 			{
 				throw new IllegalArgumentException("Function " + jaxbFunc.getFunctionId()
-						+ " is not supported (at least) as standalone Expression: either a generic higher-order function supported only as Apply FunctionId, or function completely unknown.");
+				        + " is not supported (at least) as standalone Expression: either a generic higher-order function supported only as Apply FunctionId, or function completely unknown.");
 			}
-		}
-		else if (expr instanceof VariableReferenceType)
+		} else if (expr instanceof VariableReferenceType)
 		{
 			final VariableReferenceType varRefElt = (VariableReferenceType) expr;
 			expression = getVariable(varRefElt, longestVarRefChain);
-		}
-		else
+		} else
 		{
 			throw new IllegalArgumentException("Expressions of type " + expr.getClass().getSimpleName()
-					+ " are not supported. Expected: one of Apply, AttributeDesignator, AttributeSelector, AttributeValue, Function or VariableReference.");
+			        + " are not supported. Expected: one of Apply, AttributeDesignator, AttributeSelector, AttributeValue, Function or VariableReference.");
 		}
 
 		return expression;

@@ -39,7 +39,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import org.ow2.authzforce.core.pdp.api.CloseableDesignatedAttributeProvider;
+import org.ow2.authzforce.core.pdp.api.CloseableNamedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.DecisionCache;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
@@ -90,10 +90,10 @@ import com.google.common.collect.ImmutableMap;
 public final class PdpEngineConfiguration
 {
 	private static final IllegalArgumentException NULL_REQPREPROC_EXCEPTION = new IllegalArgumentException(
-			"Undefined request preprocessor ('requestPreproc' element) in I/O processing chain ('ioProcChain' element)");
+	        "Undefined request preprocessor ('requestPreproc' element) in I/O processing chain ('ioProcChain' element)");
 
 	private static final IllegalArgumentException ILLEGAL_USE_STD_FUNCTIONS_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"useStandardFunctions = true not allowed if useStandardDatatypes = false");
+	        "useStandardFunctions = true not allowed if useStandardDatatypes = false");
 
 	private static final IllegalArgumentException NULL_ROOTPOLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined rootPolicyProvider");
 
@@ -125,32 +125,33 @@ public final class PdpEngineConfiguration
 		return false;
 	}
 
-	private static <JAXB_CONF extends AbstractAttributeProvider> CloseableDesignatedAttributeProvider.DependencyAwareFactory newAttributeProviderProviderFactory(final JAXB_CONF jaxbConf,
-			final EnvironmentProperties envProps)
+	private static <JAXB_CONF extends AbstractAttributeProvider> CloseableNamedAttributeProvider.DependencyAwareFactory newAttributeProviderProviderFactory(final JAXB_CONF jaxbConf,
+	        final EnvironmentProperties envProps)
 	{
-		final CloseableDesignatedAttributeProvider.FactoryBuilder<JAXB_CONF> attrProviderModBuilder = PdpExtensions.getAttributeProviderFactoryBuilder((Class<JAXB_CONF>) jaxbConf.getClass());
+		final CloseableNamedAttributeProvider.FactoryBuilder<JAXB_CONF> attrProviderModBuilder = PdpExtensions.getAttributeProviderFactoryBuilder((Class<JAXB_CONF>) jaxbConf.getClass());
 		return attrProviderModBuilder.getInstance(jaxbConf, envProps);
 	}
 
 	private static <JAXB_CONF extends AbstractPolicyProvider> CloseableRefPolicyProvider newRefPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
-			final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps)
+	        final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps)
 	{
 		final CloseableRefPolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions.getRefPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
 		return refPolicyProviderModFactory.getInstance(jaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExprFactory, combiningAlgRegistry, envProps);
 	}
 
 	private static <JAXB_CONF extends AbstractPolicyProvider> RootPolicyProvider newRootPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
-			final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> refPolicyProvider,
-			final EnvironmentProperties envProps)
+	        final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> refPolicyProvider,
+	        final EnvironmentProperties envProps)
 	{
 		final RootPolicyProvider.Factory<JAXB_CONF> rootPolicyProviderFactory = PdpExtensions.getRootPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
 		return rootPolicyProviderFactory.getInstance(jaxbConf, xacmlParserFactory, xacmlExprFactory, combiningAlgRegistry, refPolicyProvider, envProps);
 	}
 
-	private static <JAXB_CONF extends AbstractDecisionCache> DecisionCache newDecisionCache(final JAXB_CONF jaxbConf, final EnvironmentProperties envProps)
+	private static <JAXB_CONF extends AbstractDecisionCache> DecisionCache newDecisionCache(final JAXB_CONF jaxbConf, final AttributeValueFactoryRegistry attValFactories,
+	        final EnvironmentProperties envProps)
 	{
 		final DecisionCache.Factory<JAXB_CONF> decisionCacheFactory = PdpExtensions.getDecisionCacheFactory((Class<JAXB_CONF>) jaxbConf.getClass());
-		return decisionCacheFactory.getInstance(jaxbConf, envProps);
+		return decisionCacheFactory.getInstance(jaxbConf, attValFactories, envProps);
 	}
 
 	private final boolean enableXPath;
@@ -220,13 +221,11 @@ public final class PdpEngineConfiguration
 			if (datatypeExtensionIdentifiers.isEmpty())
 			{
 				attValFactoryRegistry = stdRegistry;
-			}
-			else
+			} else
 			{
 				attValFactoryRegistry = new ImmutableAttributeValueFactoryRegistry(HashCollections.newImmutableSet(stdRegistry.getExtensions(), datatypeExtensions));
 			}
-		}
-		else
+		} else
 		{
 			attValFactoryRegistry = new ImmutableAttributeValueFactoryRegistry(datatypeExtensions);
 		}
@@ -241,10 +240,10 @@ public final class PdpEngineConfiguration
 
 		// Extra Attribute Providers
 		final List<AbstractAttributeProvider> attProviderJaxbConfs = pdpJaxbConf.getAttributeProviders();
-		final List<CloseableDesignatedAttributeProvider.DependencyAwareFactory> attProviderFactories = new ArrayList<>(attProviderJaxbConfs.size());
+		final List<CloseableNamedAttributeProvider.DependencyAwareFactory> attProviderFactories = new ArrayList<>(attProviderJaxbConfs.size());
 		for (final AbstractAttributeProvider attProviderJaxbConf : attProviderJaxbConfs)
 		{
-			final CloseableDesignatedAttributeProvider.DependencyAwareFactory depAwareAttrProviderModFactory = newAttributeProviderProviderFactory(attProviderJaxbConf, envProps);
+			final CloseableNamedAttributeProvider.DependencyAwareFactory depAwareAttrProviderModFactory = newAttributeProviderProviderFactory(attProviderJaxbConf, envProps);
 			attProviderFactories.add(depAwareAttrProviderModFactory);
 		}
 
@@ -256,8 +255,7 @@ public final class PdpEngineConfiguration
 		try
 		{
 			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : bigMaxVarRefDepth.intValueExact();
-		}
-		catch (final ArithmeticException e)
+		} catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxVariableRefDepth: " + bigMaxVarRefDepth, e);
 		}
@@ -294,14 +292,12 @@ public final class PdpEngineConfiguration
 			if (nonGenericFunctionExtensionIdentifiers.isEmpty())
 			{
 				functionRegistry = stdRegistry;
-			}
-			else
+			} else
 			{
 				functionRegistry = new ImmutableFunctionRegistry(HashCollections.newImmutableSet(stdRegistry.getNonGenericFunctions(), nonGenericFunctionExtensions),
-						stdRegistry.getGenericFunctionFactories());
+				        stdRegistry.getGenericFunctionFactories());
 			}
-		}
-		else
+		} else
 		{
 			functionRegistry = new ImmutableFunctionRegistry(nonGenericFunctionExtensions, null);
 		}
@@ -335,13 +331,11 @@ public final class PdpEngineConfiguration
 			if (algExtensions.isEmpty())
 			{
 				combiningAlgRegistry = StandardCombiningAlgorithm.REGISTRY;
-			}
-			else
+			} else
 			{
 				combiningAlgRegistry = new ImmutableCombiningAlgRegistry(HashCollections.newImmutableSet(StandardCombiningAlgorithm.REGISTRY.getExtensions(), algExtensions));
 			}
-		}
-		else
+		} else
 		{
 			combiningAlgRegistry = new ImmutableCombiningAlgRegistry(algExtensions);
 		}
@@ -354,8 +348,7 @@ public final class PdpEngineConfiguration
 		try
 		{
 			maxPolicySetRefDepth = bigMaxPolicyRefDepth == null ? -1 : bigMaxPolicyRefDepth.intValueExact();
-		}
-		catch (final ArithmeticException e)
+		} catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxPolicyRefDepth: " + bigMaxPolicyRefDepth, e);
 		}
@@ -373,8 +366,7 @@ public final class PdpEngineConfiguration
 		if (refPolicyProviderJaxbConf == null)
 		{
 			refPolicyProvider = Optional.empty();
-		}
-		else
+		} else
 		{
 			refPolicyProvider = Optional.of(newRefPolicyProvider(refPolicyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry, envProps));
 		}
@@ -389,10 +381,9 @@ public final class PdpEngineConfiguration
 		if (decisionCacheJaxbConf == null)
 		{
 			decisionCache = Optional.empty();
-		}
-		else
+		} else
 		{
-			decisionCache = Optional.of(newDecisionCache(decisionCacheJaxbConf, envProps));
+			decisionCache = Optional.of(newDecisionCache(decisionCacheJaxbConf, attValFactoryRegistry, envProps));
 		}
 
 		// Decision Result postprocessor
@@ -400,8 +391,7 @@ public final class PdpEngineConfiguration
 		try
 		{
 			this.clientReqErrVerbosityLevel = clientReqErrVerbosityBigInt == null ? 0 : clientReqErrVerbosityBigInt.intValueExact();
-		}
-		catch (final ArithmeticException e)
+		} catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid clientRequestErrorVerbosityLevel: " + clientReqErrVerbosityBigInt, e);
 		}
@@ -411,11 +401,10 @@ public final class PdpEngineConfiguration
 		if (inoutProcChains.isEmpty())
 		{
 			this.ioProcChainsByInputType = Collections.emptyMap();
-		}
-		else
+		} else
 		{
 			final Map<Class<?>, Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>>> mutableInoutProcChainsByInputType = HashCollections
-					.newUpdatableMap(inoutProcChains.size());
+			        .newUpdatableMap(inoutProcChains.size());
 			final Map<Class<?>, String> reqProcIdentifiersByInputType = HashCollections.newUpdatableMap(inoutProcChains.size());
 			for (final InOutProcChain chain : inoutProcChains)
 			{
@@ -425,8 +414,7 @@ public final class PdpEngineConfiguration
 				if (resultPostprocId == null)
 				{
 					decisionResultPostproc = null;
-				}
-				else
+				} else
 				{
 					final DecisionResultPostprocessor.Factory<?, ?> resultPostprocFactory = PdpExtensions.getExtension(DecisionResultPostprocessor.Factory.class, resultPostprocId);
 					decisionResultPostproc = resultPostprocFactory.getInstance(clientReqErrVerbosityLevel);
@@ -442,21 +430,21 @@ public final class PdpEngineConfiguration
 
 				final DecisionRequestPreprocessor.Factory<?, ?> requestPreprocFactory = PdpExtensions.getExtension(DecisionRequestPreprocessor.Factory.class, reqPreprocId);
 				final DecisionRequestPreprocessor<?, ?> decisionRequestPreproc = requestPreprocFactory.getInstance(attValFactoryRegistry, strictAttributeIssuerMatch, enableXPath,
-						XmlUtils.SAXON_PROCESSOR, decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
+				        XmlUtils.SAXON_PROCESSOR, decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
 				if (decisionResultPostproc != null && decisionRequestPreproc.getOutputRequestType() != decisionResultPostproc.getRequestType())
 				{
 					throw new IllegalArgumentException(
-							"Invalid 'ioProcChain': request pre-processor's output request type (requestPreproc.getOutputRequestType() = " + decisionRequestPreproc.getOutputRequestType()
-									+ ") and result post-processor's request type (resultPostproc.getRequestType() = " + decisionResultPostproc.getRequestType() + ") do not match");
+					        "Invalid 'ioProcChain': request pre-processor's output request type (requestPreproc.getOutputRequestType() = " + decisionRequestPreproc.getOutputRequestType()
+					                + ") and result post-processor's request type (resultPostproc.getRequestType() = " + decisionResultPostproc.getRequestType() + ") do not match");
 				}
 
 				final Class<?> inputType = decisionRequestPreproc.getInputRequestType();
 				final Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>> oldEntry = mutableInoutProcChainsByInputType.put(inputType,
-						new AbstractMap.SimpleImmutableEntry<>(decisionRequestPreproc, decisionResultPostproc));
+				        new AbstractMap.SimpleImmutableEntry<>(decisionRequestPreproc, decisionResultPostproc));
 				if (oldEntry != null)
 				{
 					throw new IllegalArgumentException("Conflicting 'ioProcChain' (I/O processing chain) elements: request preprocessors '" + reqProcIdentifiersByInputType.get(inputType)
-							+ "' in one chain and '" + reqPreprocId + " in another handle the same input type (only one 'ioProcChain', i.e. 'requestPreproc', per input type is allowed)");
+					        + "' in one chain and '" + reqPreprocId + " in another handle the same input type (only one 'ioProcChain', i.e. 'requestPreproc', per input type is allowed)");
 				}
 
 				reqProcIdentifiersByInputType.put(inputType, reqPreprocId);
@@ -476,8 +464,7 @@ public final class PdpEngineConfiguration
 		try
 		{
 			pdpJaxbConf = modelHandler.unmarshal(confXmlSrc, Pdp.class);
-		}
-		catch (final JAXBException e)
+		} catch (final JAXBException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration file", e);
 		}
@@ -559,14 +546,13 @@ public final class PdpEngineConfiguration
 		{
 			final File confFile = ResourceUtils.getFile(confLocation);
 			return getInstance(confFile, modelHandler);
-		}
-		catch (final FileNotFoundException e)
+		} catch (final FileNotFoundException e)
 		{
 			if (LOGGER.isInfoEnabled())
 			{
 				LOGGER.info(
-						"Could not resolve input PDP configuration location to a file in the file system ({}). Trying to resolve as generic URL instead (but PARENT_DIR property will remain undefined).",
-						e.getMessage());
+				        "Could not resolve input PDP configuration location to a file in the file system ({}). Trying to resolve as generic URL instead (but PARENT_DIR property will remain undefined).",
+				        e.getMessage());
 			}
 		}
 
@@ -577,8 +563,7 @@ public final class PdpEngineConfiguration
 		try
 		{
 			confUrl = ResourceUtils.getURL(confLocation);
-		}
-		catch (final FileNotFoundException e)
+		} catch (final FileNotFoundException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration location (neither a file in the file system nor a valid URL): " + confLocation, e);
 		}

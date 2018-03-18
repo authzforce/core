@@ -23,9 +23,9 @@ import java.util.Set;
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.AttributeFqns;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
-import org.ow2.authzforce.core.pdp.api.DesignatedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.NamedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
@@ -50,61 +50,47 @@ public class ModularAttributeProvider implements AttributeProvider
 {
 
 	private static final IndeterminateEvaluationException INDETERMINATE_EXCEPTION_NO_VALUE_FROM_ATTRIBUTE_PROVIDERS = new IndeterminateEvaluationException(
-			"No value found by any attribute provider module", XacmlStatusCode.PROCESSING_ERROR.value());
+	        "No value found by any attribute provider module", XacmlStatusCode.PROCESSING_ERROR.value());
 
 	private interface IssuedToNonIssuedAttributeCopyMode
 	{
 		void process(AttributeFqn attributeFqn, AttributeBag<?> result, EvaluationContext context);
 	}
 
-	private static final IssuedToNonIssuedAttributeCopyMode ISSUED_TO_NON_ISSUED_ATTRIBUTE_COPY_ENABLED_MODE = new IssuedToNonIssuedAttributeCopyMode()
-	{
-
-		@Override
-		public void process(final AttributeFqn attributeFqn, final AttributeBag<?> result, final EvaluationContext context)
-		{
-			if (!attributeFqn.getIssuer().isPresent())
-			{
-				// Attribute already without Issuer -> nothing to copy
-				return;
-			}
-			/*
-			 * Attribute with Issuer -> make Issuer-less copy and put same result in context for match by Issuer-less AttributeDesignator
-			 */
-			final AttributeFqn issuerLessAttributeFqn = AttributeFqns.newInstance(attributeFqn.getCategory(), Optional.empty(), attributeFqn.getId());
-
-			/*
-			 * Cache the attribute value(s) for the issuer-less attribute in context in case there is a matching Issuer-less AttributeDesignator to evaluate
-			 */
-			context.putNamedAttributeValueIfAbsent(issuerLessAttributeFqn, result);
-			LOGGER.debug("strictAttributeIssuerMatch=false -> Cached values of attribute {}, type={}, derived, by removing Issuer, from attribute {} provided by AttributeProvider module: values= {}",
-					attributeFqn, result.getElementDatatype(), attributeFqn, result);
-		}
-
-	};
-
-	private static final IssuedToNonIssuedAttributeCopyMode ISSUED_TO_NON_ISSUED_ATTRIBUTE_COPY_DISABLED_MODE = new IssuedToNonIssuedAttributeCopyMode()
-	{
-
-		@Override
-		public void process(final AttributeFqn attributeFqn, final AttributeBag<?> result, final EvaluationContext context)
-		{
-			// do not copy the result to any Issuer-less attribute
-		}
-
-	};
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(ModularAttributeProvider.class);
+
+	private static final IssuedToNonIssuedAttributeCopyMode ISSUED_TO_NON_ISSUED_ATTRIBUTE_COPY_ENABLED_MODE = (attributeFqn, result, context) -> {
+		if (!attributeFqn.getIssuer().isPresent())
+		{
+			// Attribute already without Issuer -> nothing to copy
+			return;
+		}
+		/*
+		 * Attribute with Issuer -> make Issuer-less copy and put same result in context for match by Issuer-less AttributeDesignator
+		 */
+		final AttributeFqn issuerLessAttributeFqn = AttributeFqns.newInstance(attributeFqn.getCategory(), Optional.empty(), attributeFqn.getId());
+
+		/*
+		 * Cache the attribute value(s) for the issuer-less attribute in context in case there is a matching Issuer-less AttributeDesignator to evaluate
+		 */
+		context.putNamedAttributeValueIfAbsent(issuerLessAttributeFqn, result);
+		LOGGER.debug("strictAttributeIssuerMatch=false -> Cached values of attribute {}, type={}, derived, by removing Issuer, from attribute {} provided by AttributeProvider module: values= {}",
+		        attributeFqn, result.getElementDatatype(), attributeFqn, result);
+	};
+
+	private static final IssuedToNonIssuedAttributeCopyMode ISSUED_TO_NON_ISSUED_ATTRIBUTE_COPY_DISABLED_MODE = (attributeFqn, result, context) -> {
+		// do not copy the result to any Issuer-less attribute
+	};
 
 	/*
 	 * AttributeDesignator Provider modules by supported/provided attribute ID (global ID: category, issuer, AttributeId)
 	 */
-	private final ImmutableListMultimap<AttributeFqn, DesignatedAttributeProvider> designatorModsByAttrId;
+	private final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> designatorModsByAttrId;
 
 	private final IssuedToNonIssuedAttributeCopyMode issuedToNonIssuedAttributeCopyMode;
 
-	protected ModularAttributeProvider(final ImmutableListMultimap<AttributeFqn, DesignatedAttributeProvider> attributeProviderModulesByAttributeId,
-			final Set<AttributeDesignatorType> selectedAttributeSupport, final boolean strictAttributeIssuerMatch)
+	protected ModularAttributeProvider(final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> attributeProviderModulesByAttributeId,
+	        final Set<AttributeDesignatorType> selectedAttributeSupport, final boolean strictAttributeIssuerMatch)
 	{
 		assert attributeProviderModulesByAttributeId != null;
 
@@ -113,11 +99,11 @@ public class ModularAttributeProvider implements AttributeProvider
 			designatorModsByAttrId = attributeProviderModulesByAttributeId;
 		} else
 		{
-			final ListMultimap<AttributeFqn, DesignatedAttributeProvider> mutableModsByAttrIdMap = ArrayListMultimap.create(selectedAttributeSupport.size(), 1);
+			final ListMultimap<AttributeFqn, NamedAttributeProvider> mutableModsByAttrIdMap = ArrayListMultimap.create(selectedAttributeSupport.size(), 1);
 			for (final AttributeDesignatorType requiredAttr : selectedAttributeSupport)
 			{
 				final AttributeFqn requiredAttrGUID = AttributeFqns.newInstance(requiredAttr);
-				final ImmutableList<DesignatedAttributeProvider> requiredAttrProviderMods = attributeProviderModulesByAttributeId.get(requiredAttrGUID);
+				final ImmutableList<NamedAttributeProvider> requiredAttrProviderMods = attributeProviderModulesByAttributeId.get(requiredAttrGUID);
 				/*
 				 * According to doc, a non-null empty list is returned if no mappings
 				 */
@@ -154,8 +140,8 @@ public class ModularAttributeProvider implements AttributeProvider
 	 * @return modular attribute provider instance; {@link #EVALUATION_CONTEXT_ONLY_SCOPED_ATTRIBUTE_PROVIDER} iff
 	 *         {@code attributeProviderModulesByAttributeId == null || attributeProviderModulesByAttributeId.isEmpty()},
 	 */
-	public static ModularAttributeProvider getInstance(final ImmutableListMultimap<AttributeFqn, DesignatedAttributeProvider> attributeProviderModulesByAttributeId,
-			final Set<AttributeDesignatorType> selectedAttributeSupport, final boolean strictAttributeIssuerMatch)
+	public static ModularAttributeProvider getInstance(final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> attributeProviderModulesByAttributeId,
+	        final Set<AttributeDesignatorType> selectedAttributeSupport, final boolean strictAttributeIssuerMatch)
 	{
 		if (attributeProviderModulesByAttributeId == null || attributeProviderModulesByAttributeId.isEmpty())
 		{
@@ -180,7 +166,7 @@ public class ModularAttributeProvider implements AttributeProvider
 
 			// else attribute not found in context, ask the Provider modules, if any
 			LOGGER.debug("Requesting attribute {} from Provider modules (by provided attribute ID): {}", attributeFqn, designatorModsByAttrId);
-			final ImmutableList<DesignatedAttributeProvider> attrProviders = designatorModsByAttrId.get(attributeFqn);
+			final ImmutableList<NamedAttributeProvider> attrProviders = designatorModsByAttrId.get(attributeFqn);
 			/*
 			 * According to doc, a non-null empty list is returned if no mappings
 			 */
@@ -189,14 +175,14 @@ public class ModularAttributeProvider implements AttributeProvider
 			{
 				LOGGER.debug("No value found for required attribute {}, type={} in evaluation context and not supported by any Attribute Provider module", attributeFqn, datatype);
 				throw new IndeterminateEvaluationException("Not in context and no Attribute Provider module supporting requested attribute: " + attributeFqn,
-						XacmlStatusCode.MISSING_ATTRIBUTE.value());
+				        XacmlStatusCode.MISSING_ATTRIBUTE.value());
 			}
 
 			AttributeBag<AV> result = null;
 			/*
 			 * Try all modules supporting this attribute until value found
 			 */
-			for (final DesignatedAttributeProvider attrProvider : attrProviders)
+			for (final NamedAttributeProvider attrProvider : attrProviders)
 			{
 				result = attrProvider.get(attributeFqn, datatype, context);
 				if (result != null && !result.isEmpty())
@@ -259,13 +245,13 @@ public class ModularAttributeProvider implements AttributeProvider
 			 */
 			context.putNamedAttributeValueIfAbsent(attributeFqn, result);
 			return result;
-		} catch (UnsupportedOperationException e)
+		} catch (final UnsupportedOperationException e)
 		{
 			/*
 			 * Should not happen, this is highly unexpected and should be considered a fatal error (it means the AttributeProvider does not respect its contract)
 			 */
 			throw new RuntimeException("Inconsistent AttributeProvider: throwing UnsupportedOperationException for an attribute (name=" + attributeFqn + ", type=" + datatype
-					+ ") that should be supported according to the provider's contract (getProvidedAttributes() result) ", e);
+			        + ") that should be supported according to the provider's contract (getProvidedAttributes() result) ", e);
 		}
 	}
 
