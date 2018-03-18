@@ -193,6 +193,9 @@ public class ModularAttributeProvider implements AttributeProvider
 
 			if (result == null)
 			{
+				/*
+				 * If no attribute provider can provide the attribute, it is as if it was a request attribute with no value, therefore implicitly setting AttributeSource to REQUEST.
+				 */
 				result = Bags.emptyAttributeBag(datatype, INDETERMINATE_EXCEPTION_NO_VALUE_FROM_ATTRIBUTE_PROVIDERS);
 			}
 

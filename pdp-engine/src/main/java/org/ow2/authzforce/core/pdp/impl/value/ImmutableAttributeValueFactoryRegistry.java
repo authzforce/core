@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
-import net.sf.saxon.s9api.XPathCompiler;
-
+import org.ow2.authzforce.core.pdp.api.AttributeSource;
+import org.ow2.authzforce.core.pdp.api.AttributeSources;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantPrimitiveAttributeValueExpression;
@@ -45,6 +45,8 @@ import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+
+import net.sf.saxon.s9api.XPathCompiler;
 
 /**
  * Immutable <code>DatatypeFactoryRegistry</code>.
@@ -74,15 +76,14 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	 *             if any.
 	 */
 	private static <V extends AttributeValue> V newAttributeValue(final AttributeValueFactory<V> attValFactory, final List<Serializable> content, final Map<QName, String> otherAttributes,
-			final XPathCompiler xPathCompiler) throws IllegalArgumentException
+	        final XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		assert attValFactory != null;
 		final V attrVal;
 		try
 		{
 			attrVal = attValFactory.getInstance(content, otherAttributes, xPathCompiler);
-		}
-		catch (final IllegalArgumentException e)
+		} catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Invalid Attribute value for datatype '" + attValFactory.getDatatype() + "'", e);
 		}
@@ -91,7 +92,7 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	}
 
 	private static <V extends AttributeValue> ConstantExpression<V> newExpression(final AttributeValueFactory<V> attValFactory, final List<Serializable> content,
-			final Map<QName, String> otherAttributes, final XPathCompiler xPathCompiler) throws IllegalArgumentException
+	        final Map<QName, String> otherAttributes, final XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		assert attValFactory != null;
 		final V rawValue = newAttributeValue(attValFactory, content, otherAttributes, xPathCompiler);
@@ -112,8 +113,8 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	 *             if {@code attributeValueFactory == null } or {@code rawValues} has at least one element which is null:
 	 *             {@code rawValues != null && !rawValues.isEmpty() && rawValues.iterator().next() == null}
 	 */
-	private static <AV extends AttributeValue> AttributeBag<AV> newAttributeBag(final StringParseableValueFactory<AV> attributeValueFactory, final Collection<? extends Serializable> rawValues)
-			throws IllegalArgumentException
+	private static <AV extends AttributeValue> AttributeBag<AV> newAttributeBag(final StringParseableValueFactory<AV> attributeValueFactory, final Collection<? extends Serializable> rawValues,
+	        final AttributeSource attValSrc) throws IllegalArgumentException
 	{
 		assert attributeValueFactory != null;
 
@@ -121,10 +122,10 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 
 		if (rawValues == null || rawValues.isEmpty())
 		{
-			return Bags.emptyAttributeBag(elementDatatype, null);
+			return Bags.emptyAttributeBag(elementDatatype, null, attValSrc);
 		}
 
-		return Bags.newAttributeBag(elementDatatype, rawValues.stream().map(rawValue -> attributeValueFactory.getInstance(rawValue)).collect(Collectors.toList()));
+		return Bags.newAttributeBag(elementDatatype, rawValues.stream().map(rawValue -> attributeValueFactory.getInstance(rawValue)).collect(Collectors.toList()), attValSrc);
 	}
 
 	private final Map<Class<? extends Serializable>, StringParseableValueFactory<?>> inputClassToAttValFactory;
@@ -140,8 +141,8 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	 */
 	public ImmutableAttributeValueFactoryRegistry(final Collection<? extends AttributeValueFactory<?>> attributeValueFactories)
 	{
-		super(AttributeValueFactory.class, HashCollections.newImmutableSet(Preconditions.checkNotNull(attributeValueFactories,
-				"Input attribute datatype factories undefined (attributeValueFactories == null)")));
+		super(AttributeValueFactory.class,
+		        HashCollections.newImmutableSet(Preconditions.checkNotNull(attributeValueFactories, "Input attribute datatype factories undefined (attributeValueFactories == null)")));
 
 		final Map<Class<? extends Serializable>, StringParseableValueFactory<?>> mutableJavaClassToAttValFactory = HashCollections.newUpdatableMap();
 		attributeValueFactories.forEach(factory -> {
@@ -159,14 +160,14 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 		 * necessary iff no equal match.
 		 */
 		final Set<Entry<Class<? extends Serializable>, StringParseableValueFactory<?>>> mutableSet = inputClassToAttValFactory.entrySet().stream()
-				.filter(e -> !Modifier.isFinal(e.getKey().getModifiers())).collect(Collectors.toSet());// HashCollections.newUpdatableSet(JAVA_TYPE_TO_ATT_VALUE_FACTORY.size());
+		        .filter(e -> !Modifier.isFinal(e.getKey().getModifiers())).collect(Collectors.toSet());// HashCollections.newUpdatableSet(JAVA_TYPE_TO_ATT_VALUE_FACTORY.size());
 		nonFinalInputClassToAttValFactory = ImmutableSet.copyOf(mutableSet);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public ConstantExpression<? extends AttributeValue> newExpression(final String datatypeId, final List<Serializable> content, final Map<QName, String> otherAttributes,
-			final XPathCompiler xPathCompiler) throws IllegalArgumentException
+	        final XPathCompiler xPathCompiler) throws IllegalArgumentException
 	{
 		if (datatypeId == null)
 		{
@@ -195,7 +196,7 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 			 * http://javarevisited.blogspot.fr/2016/03/how-to-find-first-element-of-stream-in.html)
 			 */
 			final Optional<Entry<Class<? extends Serializable>, StringParseableValueFactory<?>>> optionalResult = nonFinalInputClassToAttValFactory.stream()
-					.filter(e -> e.getKey().isAssignableFrom(rawValueClass)).findFirst();
+			        .filter(e -> e.getKey().isAssignableFrom(rawValueClass)).findFirst();
 			if (optionalResult.isPresent())
 			{
 				return optionalResult.get().getValue();
@@ -220,7 +221,7 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	}
 
 	@Override
-	public AttributeBag<?> newAttributeBag(final Collection<? extends Serializable> rawVals) throws UnsupportedOperationException, IllegalArgumentException
+	public AttributeBag<?> newAttributeBag(final Collection<? extends Serializable> rawVals, AttributeSource attributeValueSource) throws UnsupportedOperationException, IllegalArgumentException
 	{
 		Preconditions.checkArgument(rawVals != null && !rawVals.isEmpty(), "Null/empty arg");
 		final Serializable rawVal0 = rawVals.iterator().next();
@@ -230,7 +231,13 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 			throw new UnsupportedOperationException("Unsupported input value type: '" + rawVal0.getClass() + "' (no suitable XACML datatype factory found)");
 		}
 
-		return newAttributeBag(factory, rawVals);
+		return newAttributeBag(factory, rawVals, attributeValueSource);
+	}
+
+	@Override
+	public AttributeBag<?> newAttributeBag(final Collection<? extends Serializable> rawVals) throws UnsupportedOperationException, IllegalArgumentException
+	{
+		return newAttributeBag(rawVals, AttributeSources.REQUEST);
 	}
 
 }
