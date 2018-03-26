@@ -572,7 +572,7 @@ public final class PdpEngineConfiguration
 		 * Leave PARENT_DIR environment property undefined since we cannot get the file's parent directory
 		 */
 		LOGGER.debug("Property {} = <undefined>", EnvironmentPropertyName.PARENT_DIR);
-		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.emptyMap());
+		final EnvironmentProperties envProps = new DefaultEnvironmentProperties();
 		return getInstance(new StreamSource(confUrl.toExternalForm()), modelHandler, envProps);
 	}
 

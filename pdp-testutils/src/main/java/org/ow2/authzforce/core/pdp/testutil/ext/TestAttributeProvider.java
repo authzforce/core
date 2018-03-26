@@ -58,41 +58,6 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
  */
 public class TestAttributeProvider extends BaseNamedAttributeProvider
 {
-	/**
-	 * Module factory
-	 * 
-	 */
-	public static class Factory extends CloseableNamedAttributeProvider.FactoryBuilder<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider>
-	{
-
-		@Override
-		public Class<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider> getJaxbClass()
-		{
-			return org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider.class;
-		}
-
-		@Override
-		public DependencyAwareFactory getInstance(final org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider conf, final EnvironmentProperties environmentProperties)
-		{
-			return new DependencyAwareFactory()
-			{
-
-				@Override
-				public Set<AttributeDesignatorType> getDependencies()
-				{
-					// no dependency
-					return null;
-				}
-
-				@Override
-				public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attrDatatypeFactory, final AttributeProvider depAttrProvider)
-				{
-					return new TestAttributeProvider(conf, attrDatatypeFactory);
-				}
-			};
-		}
-
-	}
 
 	private static AttributeDesignatorType newAttributeDesignator(Entry<AttributeFqn, AttributeBag<?>> attributeEntry)
 	{
@@ -160,6 +125,42 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 
 		throw new IndeterminateEvaluationException("Requested datatype (" + attributeDatatype + ") != provided by " + this + " (" + attrVals.getElementDatatype() + ")",
 		        XacmlStatusCode.MISSING_ATTRIBUTE.value());
+	}
+
+	/**
+	 * {@link TestAttributeProvider} factory
+	 * 
+	 */
+	public static class Factory extends CloseableNamedAttributeProvider.FactoryBuilder<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider>
+	{
+
+		@Override
+		public Class<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider> getJaxbClass()
+		{
+			return org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider.class;
+		}
+
+		@Override
+		public DependencyAwareFactory getInstance(final org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider conf, final EnvironmentProperties environmentProperties)
+		{
+			return new DependencyAwareFactory()
+			{
+
+				@Override
+				public Set<AttributeDesignatorType> getDependencies()
+				{
+					// no dependency
+					return null;
+				}
+
+				@Override
+				public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attrDatatypeFactory, final AttributeProvider depAttrProvider)
+				{
+					return new TestAttributeProvider(conf, attrDatatypeFactory);
+				}
+			};
+		}
+
 	}
 
 }
