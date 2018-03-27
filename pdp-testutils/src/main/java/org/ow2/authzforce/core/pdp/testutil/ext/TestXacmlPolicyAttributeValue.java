@@ -112,7 +112,7 @@ public final class TestXacmlPolicyAttributeValue extends AttributeValue
 	 *
 	 * @return the value
 	 */
-	public final Policy getUnderlyingValue()
+	public Policy getUnderlyingValue()
 	{
 		return policy;
 	}
