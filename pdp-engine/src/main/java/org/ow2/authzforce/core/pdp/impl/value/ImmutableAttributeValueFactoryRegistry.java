@@ -211,7 +211,7 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	@Override
 	public AttributeValue newAttributeValue(final Serializable rawValue) throws IllegalArgumentException, UnsupportedOperationException
 	{
-		Preconditions.checkArgument(rawValue != null, "Null arg");
+		Preconditions.checkArgument(rawValue != null, "Null input value");
 		final StringParseableValueFactory<?> factory = getCompatibleFactory(rawValue.getClass());
 		if (factory == null)
 		{
@@ -223,8 +223,9 @@ public final class ImmutableAttributeValueFactoryRegistry extends BasePdpExtensi
 	@Override
 	public AttributeBag<?> newAttributeBag(final Collection<? extends Serializable> rawVals, AttributeSource attributeValueSource) throws UnsupportedOperationException, IllegalArgumentException
 	{
-		Preconditions.checkArgument(rawVals != null && !rawVals.isEmpty(), "Null/empty arg");
+		Preconditions.checkArgument(rawVals != null && !rawVals.isEmpty(), "Null/empty list of input values");
 		final Serializable rawVal0 = rawVals.iterator().next();
+		Preconditions.checkArgument(rawVal0 != null, "One of the input values (#0) is null");
 		final StringParseableValueFactory<?> factory = getCompatibleFactory(rawVal0.getClass());
 		if (factory == null)
 		{
