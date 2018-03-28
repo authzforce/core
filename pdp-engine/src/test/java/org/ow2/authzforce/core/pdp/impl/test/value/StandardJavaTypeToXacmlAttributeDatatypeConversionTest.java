@@ -18,6 +18,8 @@
 package org.ow2.authzforce.core.pdp.impl.test.value;
 
 import java.io.Serializable;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.URI;
 import java.time.Instant;
@@ -27,13 +29,19 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.security.auth.x500.X500Principal;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,9 +50,16 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
+import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
+
+import com.google.common.collect.HashMultiset;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 
 /**
  * 
@@ -71,6 +86,8 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 	private static final AttributeValueFactoryRegistry ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT = StandardAttributeValueFactories.getRegistry(false, Optional.empty());
 	private static final AttributeValueFactoryRegistry ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT = StandardAttributeValueFactories.getRegistry(false, Optional.of(BigInteger.valueOf(Long.MAX_VALUE)));
 	private static final AttributeValueFactoryRegistry ATT_VALUE_FACTORIES_WITH_BIG_INT_SUPPORT = StandardAttributeValueFactories.getRegistry(false, Optional.of(INTEGER_GREATER_THAN_MAX_LONG));
+
+	private static volatile AtomicInteger testId = new AtomicInteger(0);
 
 	@Parameters(name = "{index}: {1} -> {2}")
 	public static Collection<Object[]> data()
@@ -283,6 +300,31 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		{
 			final AttributeBag<?> attBag = attValFactories.newAttributeBag(rawValues);
 			Assert.assertEquals("Invalid datatype for created attribute values", attBag.getElementDatatype().getId(), expectedAttributeDatatypeId);
+
+			/*
+			 * Marshall to XACML and try to unmarshall to original Java value to make sure marshalling is OK
+			 */
+			final Attribute xacmlAtt = new Attribute(new ArrayList<>(attBag.elements()), testId.toString(), null, false);
+			final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
+			final StringWriter strWriter = new StringWriter();
+			marshaller.marshal(xacmlAtt, strWriter);
+			final String marshalledStr = strWriter.toString();
+
+			final Unmarshaller unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
+			final Attribute unmarshalledXacmlAtt = (Attribute) unmarshaller.unmarshal(new StringReader(marshalledStr));
+			final List<AttributeValueType> xacmlAttVals = unmarshalledXacmlAtt.getAttributeValues();
+			if (xacmlAttVals.isEmpty())
+			{
+				Assert.fail("Marshalling/unmarshalling failed: no AttributeValue after unmarshalling: " + marshalledStr);
+				return;
+			}
+
+			final AttributeValueType xacmlAttVal0 = xacmlAttVals.get(0);
+			final AttributeValueFactory<?> attValFactory = this.attValFactories.getExtension(xacmlAttVal0.getDataType());
+			final List<AttributeValue> attVals = unmarshalledXacmlAtt.getAttributeValues().stream()
+			        .map(inputXacmlAttValue -> attValFactory.getInstance(inputXacmlAttValue.getContent(), inputXacmlAttValue.getOtherAttributes(), null)).collect(Collectors.toList());
+
+			Assert.assertEquals("AttributeValues after unmarshalling do not match original AttributeValues before marshalling: " + marshalledStr, attBag.elements(), HashMultiset.create(attVals));
 		} catch (final Exception e)
 		{
 			Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));
