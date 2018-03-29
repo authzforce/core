@@ -25,7 +25,8 @@ import java.util.regex.Pattern;
 
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
-import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
+import org.ow2.authzforce.core.pdp.api.value.StringContentOnlyValueFactory;
+import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
 
 /**
  * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David Brossard,
@@ -39,15 +40,15 @@ import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
  * 
  * @version $Id: $
  */
-public final class TestDnsNameWithPortValue extends SimpleValue<String>
+public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 {
 	/**
 	 * Data type
 	 */
 	public static final AttributeDatatype<TestDnsNameWithPortValue> DATATYPE = new AttributeDatatype<>(TestDnsNameWithPortValue.class, "urn:oasis:names:tc:xacml:3.0:data-type:dnsName-value",
-			Function.XACML_NS_3_0 + "dnsName-value");
+	        Function.XACML_NS_3_0 + "dnsName-value");
 
-	public static final class Factory extends SimpleValue.StringContentOnlyFactory<TestDnsNameWithPortValue>
+	public static final class Factory extends StringContentOnlyValueFactory<TestDnsNameWithPortValue>
 	{
 
 		public Factory()
@@ -121,8 +122,7 @@ public final class TestDnsNameWithPortValue extends SimpleValue<String>
 			// there is no port portRange, so just use the name
 			host = dnsName;
 			port = UNDEFINED_PORT;
-		}
-		else
+		} else
 		{
 			// split the name and the port
 			host = dnsName.substring(0, portSep);
@@ -149,7 +149,7 @@ public final class TestDnsNameWithPortValue extends SimpleValue<String>
 	 */
 	public TestDnsNameWithPortValue(final String val) throws IllegalArgumentException
 	{
-		super(DATATYPE.getId(), val);
+		super(val);
 		final Entry<String, Integer> hostAndPort = parseDnsName(this.value);
 		this.hostname = hostAndPort.getKey();
 		this.port = hostAndPort.getValue();

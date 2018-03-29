@@ -20,8 +20,6 @@ package org.ow2.authzforce.core.pdp.impl.func;
 import java.util.Arrays;
 import java.util.List;
 
-import net.sf.saxon.s9api.XdmValue;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -37,6 +35,8 @@ import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.XPathValue;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import net.sf.saxon.s9api.XdmValue;
 
 /**
  * A class that implements the optional XACML 3.0 xpath-node-count function.
@@ -64,7 +64,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
-				invalidArgTypeMsg = "Function " + functionSig.getName() + ": Invalid type (expected = " + StandardDatatypes.XPATH + ") of arg#0: ";
+				invalidArgTypeMsg = "Function " + functionSig.getName() + ": Invalid type of arg #0. Expected: " + StandardDatatypes.XPATH;
 				indeterminateArgMsg = "Function " + functionSig.getName() + ": Indeterminate arg #0";
 				indeterminateArgEvalMsg = "Function " + functionSig.getName() + ": Error evaluating xpathExpression arg #0";
 			}
@@ -80,21 +80,18 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 					try
 					{
 						xpathVal = XPathValue.class.cast(remainingArgs[0]);
-					}
-					catch (final ClassCastException e)
+					} catch (final ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException(invalidArgTypeMsg + remainingArgs[0].getDataType(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
+						throw new IndeterminateEvaluationException(invalidArgTypeMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
 					}
-				}
-				else
+				} else
 				{
 					final Expression<?> arg = checkedArgExpressions.get(0);
 					try
 					{
 						xpathVal = Expressions.eval(arg, context, StandardDatatypes.XPATH);
 
-					}
-					catch (final IndeterminateEvaluationException e)
+					} catch (final IndeterminateEvaluationException e)
 					{
 						throw new IndeterminateEvaluationException(indeterminateArgMsg, e.getStatusCode(), e);
 					}
@@ -104,8 +101,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 				try
 				{
 					xdmResult = xpathVal.evaluate(context);
-				}
-				catch (final IndeterminateEvaluationException e)
+				} catch (final IndeterminateEvaluationException e)
 				{
 					throw new IndeterminateEvaluationException(indeterminateArgEvalMsg, e.getStatusCode(), e);
 				}

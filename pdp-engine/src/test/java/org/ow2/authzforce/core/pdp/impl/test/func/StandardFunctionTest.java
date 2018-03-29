@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,16 +39,18 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
+import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.PrimitiveValue;
+import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
-import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 /**
@@ -67,12 +71,14 @@ public abstract class StandardFunctionTest
 		try
 		{
 			STD_EXPRESSION_FACTORY = new DepthLimitingExpressionFactory(StandardAttributeValueFactories.getRegistry(true, Optional.empty()),
-					StandardFunction.getRegistry(true, StandardAttributeValueFactories.BIG_INTEGER), null, 0, false, false);
+			        StandardFunction.getRegistry(true, StandardAttributeValueFactories.BIG_INTEGER), null, 0, false, false);
 		} catch (IllegalArgumentException | IOException e)
 		{
 			throw new RuntimeException(e);
 		}
 	}
+
+	private static final Map<Class<?>, AttributeDatatype<?>> JAVA_CLASS_TO_DATATYPE_MAP = StandardDatatypes.MANDATORY_SET.stream().collect(Collectors.toMap(dt -> dt.getInstanceClass(), dt -> dt));
 
 	private FunctionCall<?> funcCall;
 	private final Value expectedResult;
@@ -116,7 +122,7 @@ public abstract class StandardFunctionTest
 		if (functionExp == null)
 		{
 			throw new IllegalArgumentException("Function " + functionName + " not valid/supported "
-					+ (subFuncReturnType == null ? "as first-order function" : "as higher-order function with sub-function return type = " + subFuncReturnType));
+			        + (subFuncReturnType == null ? "as first-order function" : "as higher-order function with sub-function return type = " + subFuncReturnType));
 		}
 
 		final Function<?> function = functionExp.getValue().get();
@@ -163,12 +169,14 @@ public abstract class StandardFunctionTest
 	// org.junit.Assume.assumeTrue(function == null);
 	// }
 
-	private static <V extends AttributeValue> Expression<?> createValueExpression(final Datatype<V> datatype, final AttributeValue rawValue) {
+	private static <V extends AttributeValue> Expression<?> createValueExpression(final Datatype<V> datatype, final AttributeValue rawValue)
+	{
 		// static expression only if not xpathExpression
 		return new ConstantPrimitiveAttributeValueExpression<>(datatype, datatype.cast(rawValue));
 	}
 
-	private static <V extends Bag<?>> Expression<?> createValueExpression(final Datatype<V> datatype, final Bag<?> rawValue) {
+	private static <V extends Bag<?>> Expression<?> createValueExpression(final Datatype<V> datatype, final Bag<?> rawValue)
+	{
 		return new BagValueExpression<>(datatype, datatype.cast(rawValue));
 	}
 
@@ -182,17 +190,20 @@ public abstract class StandardFunctionTest
 		}
 
 		@Override
-		public Datatype<V> getReturnType() {
+		public Datatype<V> getReturnType()
+		{
 			return returnType;
 		}
 
 		@Override
-		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException {
+		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		{
 			throw new IndeterminateEvaluationException("Missing attribute", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		}
 
 		@Override
-		public Optional<V> getValue() {
+		public Optional<V> getValue()
+		{
 			throw new UnsupportedOperationException("No constant defined for Indeterminate expression");
 		}
 
@@ -200,7 +211,8 @@ public abstract class StandardFunctionTest
 
 	// private static <V extends Value> IndeterminateExpression<V> newIndeterminateExpression
 
-	private static final List<Expression<?>> toExpressions(final String subFunctionName, final List<Value> values) {
+	private static final List<Expression<?>> toExpressions(final String subFunctionName, final List<Value> values)
+	{
 		final List<Expression<?>> inputExpressions = new ArrayList<>();
 		if (subFunctionName != null)
 		{
@@ -235,7 +247,7 @@ public abstract class StandardFunctionTest
 			} else if (val instanceof AttributeValue)
 			{
 				final AttributeValue primVal = (AttributeValue) val;
-				final AttributeValueFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(primVal.getDataType());
+				final AttributeValueFactory<?> datatypeFactory = stdDatatypeFactoryRegistry.getExtension(JAVA_CLASS_TO_DATATYPE_MAP.get(primVal.getClass()).getId());
 				valExpr = createValueExpression(datatypeFactory.getDatatype(), primVal);
 			} else if (val instanceof Bag)
 			{
@@ -291,7 +303,8 @@ public abstract class StandardFunctionTest
 		this(functionName, subFunctionName, inputs, false, expectedResult);
 	}
 
-	private static final Set<PrimitiveValue> bagToSet(final Bag<?> bag) {
+	private static final Set<PrimitiveValue> bagToSet(final Bag<?> bag)
+	{
 		final Set<PrimitiveValue> set = new HashSet<>();
 		for (final PrimitiveValue val : bag)
 		{
@@ -302,7 +315,8 @@ public abstract class StandardFunctionTest
 	}
 
 	@Test
-	public void testEvaluate() throws IndeterminateEvaluationException {
+	public void testEvaluate() throws IndeterminateEvaluationException
+	{
 		if (isTestOkBeforeFuncCall)
 		{
 			/*

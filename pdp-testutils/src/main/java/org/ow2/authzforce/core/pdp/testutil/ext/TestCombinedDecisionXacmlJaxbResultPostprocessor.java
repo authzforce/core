@@ -23,24 +23,25 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
-
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
+import org.ow2.authzforce.core.pdp.api.PepAction;
 import org.ow2.authzforce.core.pdp.api.StatusHelper;
 import org.ow2.authzforce.core.pdp.api.io.BaseXacmlJaxbResultPostprocessor;
 import org.ow2.authzforce.core.pdp.api.io.IndividualXacmlJaxbRequest;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
+
 /**
- * XACML Result postprocessor implementing the functionality 'urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision' from <a
- * href="http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/xacml-3.0-multiple-v1.0.html">XACML v3.0 Multiple Decision Profile Version 1.0</a>. Edited by Erik Rissanen. 18 May 2014. OASIS Committee
+ * XACML Result postprocessor implementing the functionality 'urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision' from
+ * <a href="http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/xacml-3.0-multiple-v1.0.html">XACML v3.0 Multiple Decision Profile Version 1.0</a>. Edited by Erik Rissanen. 18 May 2014. OASIS Committee
  * Specification 02.
  * <p>
  * Used here for testing Authzforce Result postprocessor extension mechanism, i.e. plugging a custom decision Result postprocessor into the PDP engine.
@@ -53,8 +54,8 @@ public class TestCombinedDecisionXacmlJaxbResultPostprocessor extends BaseXacmlJ
 {
 	private static final Set<String> FEATURES = ImmutableSet.of(DecisionResultPostprocessor.Features.XACML_MULTIPLE_DECISION_PROFILE_COMBINED_DECISION);
 
-	private static final Response SIMPLE_INDETERMINATE_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(XacmlStatusCode.PROCESSING_ERROR
-			.value(), Optional.empty()), null, null, null, null)));
+	private static final Response SIMPLE_INDETERMINATE_RESPONSE = new Response(
+	        Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.empty()), null, null, null, null)));
 
 	// private static final List<Result> INDETERMINATE_RESULT_SINGLETON_LIST_BECAUSE_NO_INDIVIDUAL = Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
 	// StatusHelper.STATUS_PROCESSING_ERROR, "No <Result> to combine!"), null, null, null, null));
@@ -92,8 +93,10 @@ public class TestCombinedDecisionXacmlJaxbResultPostprocessor extends BaseXacmlJ
 				return SIMPLE_INDETERMINATE_RESPONSE;
 			}
 
-			final ImmutablePepActions pepActions = result.getPepActions();
-			if (pepActions != null && (!pepActions.getObligatory().isEmpty() || !pepActions.getAdvisory().isEmpty()))
+			final ImmutableList<PepAction> pepActions = result.getPepActions();
+			assert pepActions != null;
+
+			if (!pepActions.isEmpty())
 			{
 				return SIMPLE_INDETERMINATE_RESPONSE;
 			}
@@ -103,8 +106,7 @@ public class TestCombinedDecisionXacmlJaxbResultPostprocessor extends BaseXacmlJ
 			if (combinedDecision == DecisionType.INDETERMINATE)
 			{
 				combinedDecision = individualDecision;
-			}
-			else
+			} else
 			// combinedDecision != Indeterminate
 			if (individualDecision != combinedDecision)
 			{

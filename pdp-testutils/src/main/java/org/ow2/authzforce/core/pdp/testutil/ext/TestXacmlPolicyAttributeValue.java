@@ -18,10 +18,10 @@
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
@@ -38,13 +38,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
  * Used here for testing Authzforce datatype extension mechanism, i.e. plugging a custom complex datatype into the PDP engine.
  * 
  */
-public final class TestXacmlPolicyAttributeValue extends AttributeValue
+public final class TestXacmlPolicyAttributeValue implements AttributeValue
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Datatype
@@ -57,10 +52,10 @@ public final class TestXacmlPolicyAttributeValue extends AttributeValue
 
 	private final Policy policy;
 
+	private transient volatile List<Serializable> content = null;
+
 	private TestXacmlPolicyAttributeValue(final List<Serializable> content) throws IllegalArgumentException
 	{
-		super(DATATYPE.getId(), content, Optional.empty());
-
 		/*
 		 * If content is empty, e.g. <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string"/>, assume value is empty string.
 		 */
@@ -115,6 +110,23 @@ public final class TestXacmlPolicyAttributeValue extends AttributeValue
 	public Policy getUnderlyingValue()
 	{
 		return policy;
+	}
+
+	@Override
+	public List<Serializable> getContent()
+	{
+		if (content == null)
+		{
+			content = Collections.singletonList(policy);
+		}
+
+		return content;
+	}
+
+	@Override
+	public Map<QName, String> getXmlAttributes()
+	{
+		return Collections.emptyMap();
 	}
 
 	/**

@@ -59,17 +59,17 @@ import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.ImmutableAttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.SimpleValue.StringParseableValueFactory;
+import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
 import org.ow2.authzforce.core.pdp.impl.combining.ImmutableCombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgorithm;
 import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.ImmutableFunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
-import org.ow2.authzforce.core.pdp.impl.value.ImmutableAttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
 import org.ow2.authzforce.core.xmlns.pdp.InOutProcChain;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.core.xmlns.pdp.StandardEnvironmentAttributeSource;
@@ -286,9 +286,9 @@ public final class PdpEngineConfiguration
 			}
 
 			final AttributeValueFactory<?> intValFactory = attValFactoryRegistry.getExtension(StandardDatatypes.INTEGER.getId());
-			assert intValFactory != null && intValFactory.getDatatype() == StandardDatatypes.INTEGER && intValFactory instanceof StringParseableValueFactory;
+			assert intValFactory != null && intValFactory.getDatatype() == StandardDatatypes.INTEGER && intValFactory instanceof StringParseableValue.Factory;
 
-			final FunctionRegistry stdRegistry = StandardFunction.getRegistry(enableXPath, (StringParseableValueFactory<IntegerValue>) intValFactory);
+			final FunctionRegistry stdRegistry = StandardFunction.getRegistry(enableXPath, (StringParseableValue.Factory<IntegerValue>) intValFactory);
 			if (nonGenericFunctionExtensionIdentifiers.isEmpty())
 			{
 				functionRegistry = stdRegistry;

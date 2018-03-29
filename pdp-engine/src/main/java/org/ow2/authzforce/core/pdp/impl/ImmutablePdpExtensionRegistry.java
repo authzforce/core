@@ -22,6 +22,7 @@ package org.ow2.authzforce.core.pdp.impl;
 
 import java.util.Set;
 
+import org.ow2.authzforce.core.pdp.api.BasePdpExtensionRegistry;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 
 import com.google.common.base.Preconditions;

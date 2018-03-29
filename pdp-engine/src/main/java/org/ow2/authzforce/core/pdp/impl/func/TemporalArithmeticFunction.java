@@ -59,10 +59,10 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 		private final StaticOperation<TV, DV> op;
 
 		private Call(final FirstOrderFunctionSignature<TV> functionSig, final Datatype<TV> timeParamType, final Datatype<DV> durationParamType, final StaticOperation<TV, DV> op,
-				final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		        final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types (expected: " + timeParamType + "," + durationParamType + "): ";
+			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types. Expected: " + timeParamType + "," + durationParamType;
 			this.timeParamType = timeParamType;
 			this.durationParamType = durationParamType;
 			this.op = op;
@@ -80,10 +80,9 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 			{
 				arg0 = timeParamType.cast(rawArg0);
 				arg1 = durationParamType.cast(rawArg1);
-			}
-			catch (final ClassCastException e)
+			} catch (final ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
+				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
 
 			return op.eval(arg0, arg1);

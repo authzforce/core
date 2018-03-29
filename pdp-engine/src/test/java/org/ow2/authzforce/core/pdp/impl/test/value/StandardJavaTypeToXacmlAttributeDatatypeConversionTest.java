@@ -29,7 +29,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.security.auth.x500.X500Principal;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
@@ -52,11 +52,11 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
+import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 
-import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMultiset;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
@@ -222,8 +222,10 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		         */
 		        /* invalid: null */
 		        { null, Arrays.asList((byte[]) null), StandardDatatypes.HEXBINARY.getId(), IllegalArgumentException.class },
-		        /* invalid byte array (empty) */
-		        { null, Arrays.asList(new byte[] {}), StandardDatatypes.HEXBINARY.getId(), IllegalArgumentException.class },
+		        /* Empty byte array is considered like empty XML value which is valid xs:hexBinary */
+		        { null, Arrays.asList(new byte[] {}), StandardDatatypes.HEXBINARY.getId(), null },
+		        /* singleton byte */
+		        { null, Arrays.asList(new byte[] { 0x01 }), StandardDatatypes.HEXBINARY.getId(), null },
 		        /* from bytes */
 		        { null, Arrays.asList(new byte[] { 0x01, 0x23 }), StandardDatatypes.HEXBINARY.getId(), null },
 
@@ -286,13 +288,33 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		// rawValues has at least one value
 		if (rawValues.size() == 1)
 		{
-			try
+			final Serializable rawVal = rawValues.iterator().next();
+			if (rawVal == null)
 			{
-				final AttributeValue attVal = attValFactories.newAttributeValue(rawValues.iterator().next());
-				Assert.assertEquals("Invalid datatype for created attribute value", attVal.getDataType(), expectedAttributeDatatypeId);
-			} catch (final Exception e)
+				/*
+				 * Instantiate using expected datatype to check if null is spotted as invalid value
+				 */
+				try
+				{
+					attValFactories.newExpression(expectedAttributeDatatypeId, Collections.singletonList(rawVal), null, null);
+					Assert.assertTrue("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass == null);
+				} catch (final Exception e)
+				{
+					Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));
+				}
+			} else
 			{
-				Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));
+				try
+				{
+					final AttributeValueFactory<?> attValFactory = attValFactories.getCompatibleFactory(rawVal.getClass());
+					final String actualDatatypeId = attValFactory.getDatatype().getId();
+					Assert.assertEquals("Invalid datatype for created attribute value", actualDatatypeId, expectedAttributeDatatypeId);
+					attValFactories.newAttributeValue(rawVal);
+					Assert.assertTrue("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass == null);
+				} catch (final Exception e)
+				{
+					Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));
+				}
 			}
 		}
 
@@ -304,30 +326,40 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 			/*
 			 * Marshall to XACML and try to unmarshall to original Java value to make sure marshalling is OK
 			 */
-			final Attribute xacmlAtt = new Attribute(new ArrayList<>(attBag.elements()), testId.toString(), null, false);
+			final List<AttributeValueType> outXacmlAttVals = attBag.elements().stream()
+			        .map(attVal -> new AttributeValueType(attVal.getContent(), attBag.getElementDatatype().getId(), attVal.getXmlAttributes())).collect(Collectors.toList());
+			final Attribute outXacmlAtt = new Attribute(outXacmlAttVals, testId.toString(), null, false);
 			final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
 			final StringWriter strWriter = new StringWriter();
-			marshaller.marshal(xacmlAtt, strWriter);
-			final String marshalledStr = strWriter.toString();
+			marshaller.marshal(outXacmlAtt, strWriter);
+			final String outStr = strWriter.toString();
 
 			final Unmarshaller unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
-			final Attribute unmarshalledXacmlAtt = (Attribute) unmarshaller.unmarshal(new StringReader(marshalledStr));
-			final List<AttributeValueType> xacmlAttVals = unmarshalledXacmlAtt.getAttributeValues();
-			if (xacmlAttVals.isEmpty())
+			final Attribute inXacmlAtt = (Attribute) unmarshaller.unmarshal(new StringReader(outStr));
+			final List<AttributeValueType> inXacmlAttVals = inXacmlAtt.getAttributeValues();
+			if (inXacmlAttVals.isEmpty())
 			{
-				Assert.fail("Marshalling/unmarshalling failed: no AttributeValue after unmarshalling: " + marshalledStr);
+				Assert.fail("Marshalling/unmarshalling failed: no AttributeValue after unmarshalling: " + outStr);
 				return;
 			}
 
-			final AttributeValueType xacmlAttVal0 = xacmlAttVals.get(0);
-			final AttributeValueFactory<?> attValFactory = this.attValFactories.getExtension(xacmlAttVal0.getDataType());
-			final List<AttributeValue> attVals = unmarshalledXacmlAtt.getAttributeValues().stream()
+			final AttributeValueType inXacmlAttVal0 = inXacmlAttVals.get(0);
+			final AttributeValueFactory<?> attValFactory = this.attValFactories.getExtension(inXacmlAttVal0.getDataType());
+			final List<AttributeValue> inAttVals = inXacmlAttVals.stream()
 			        .map(inputXacmlAttValue -> attValFactory.getInstance(inputXacmlAttValue.getContent(), inputXacmlAttValue.getOtherAttributes(), null)).collect(Collectors.toList());
 
-			Assert.assertEquals("AttributeValues after unmarshalling do not match original AttributeValues before marshalling: " + marshalledStr, attBag.elements(), HashMultiset.create(attVals));
+			Assert.assertEquals("AttributeValues after unmarshalling do not match original AttributeValues before marshalling: " + outStr, attBag.elements(), ImmutableMultiset.copyOf(inAttVals));
+			Assert.assertTrue("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass == null);
 		} catch (final Exception e)
 		{
 			Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));
 		}
 	}
+
+	public static void main(String[] args)
+	{
+		final byte[] hex = DatatypeConverter.parseHexBinary("01");
+		System.out.println(hex);
+	}
+
 }

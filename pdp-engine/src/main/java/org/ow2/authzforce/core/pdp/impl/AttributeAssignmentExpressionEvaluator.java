@@ -20,27 +20,31 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
+import javax.xml.bind.JAXBElement;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepActionAttributeAssignment;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.PrimitiveValue;
-import org.ow2.authzforce.core.pdp.api.value.Value;
-import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 /**
  * XACML AttributeAssignmentExpression evaluator
@@ -49,17 +53,73 @@ import com.google.common.base.Preconditions;
  */
 public final class AttributeAssignmentExpressionEvaluator
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeAssignmentExpressionEvaluator.class);
+	private static abstract class AttributeValueExpression<AV extends AttributeValue>
+	{
+		private final Datatype<AV> datatype;
 
-	private final Expression<?> evaluatableExpression;
+		private AttributeValueExpression(Datatype<AV> attributeDatatype)
+		{
+			this.datatype = attributeDatatype;
+		}
+
+		private final Datatype<AV> getDatatype()
+		{
+			return datatype;
+		}
+
+		protected abstract Collection<AV> evaluate(final EvaluationContext ctx) throws IndeterminateEvaluationException;
+	}
+
+	private static final class SingleAttributeValueExpression<AV extends AttributeValue> extends AttributeValueExpression<AV>
+	{
+
+		private final Expression<AV> valueExpr;
+
+		private SingleAttributeValueExpression(Expression<AV> valueExpression)
+		{
+			super(valueExpression.getReturnType());
+			this.valueExpr = valueExpression;
+		}
+
+		@Override
+		protected Collection<AV> evaluate(EvaluationContext ctx) throws IndeterminateEvaluationException
+		{
+			// atomic (see spec §5.30, 5.40) / primitive attribute value
+			return Collections.singleton(valueExpr.evaluate(ctx));
+		}
+
+	}
+
+	private static final class AttributeBagExpression<AV extends AttributeValue> extends AttributeValueExpression<AV>
+	{
+
+		private final Expression<? extends Bag<AV>> valueExpr;
+
+		private <B extends Bag<AV>> AttributeBagExpression(Expression<B> valueExpression)
+		{
+			super((Datatype<AV>) valueExpression.getReturnType().getTypeParameter().get());
+			this.valueExpr = valueExpression;
+		}
+
+		@Override
+		protected Collection<AV> evaluate(EvaluationContext ctx) throws IndeterminateEvaluationException
+		{
+			return valueExpr.evaluate(ctx).elements();
+		}
+
+	}
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(AttributeAssignmentExpressionEvaluator.class);
 
 	private final String attributeId;
 
-	private final String category;
+	private final Optional<String> category;
 
-	private final String issuer;
+	private final Optional<String> issuer;
 
-	private transient volatile String toString = null; // Effective Java - Item 71
+	private final AttributeValueExpression<?> attValExpr;
+
+	private transient final String toString;
 
 	/**
 	 * Instantiates evaluatable AttributeAssignment expression evaluator from XACML-Schema-derived JAXB {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
@@ -74,20 +134,81 @@ public final class AttributeAssignmentExpressionEvaluator
 	 *             invalid AttributeAssignmentExpression's Expression
 	 */
 	public AttributeAssignmentExpressionEvaluator(final AttributeAssignmentExpression jaxbAttrAssignExp, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory)
-			throws IllegalArgumentException
+	        throws IllegalArgumentException
 	{
 		/*
 		 * Cannot used AttributeFQN class to handle metadata because AttributeAssignment Category is not required like in AttributeDesignator which is what the AttributeFQN is used for
 		 */
-		this.attributeId = Preconditions.checkNotNull(jaxbAttrAssignExp.getAttributeId(), "Undefined AttributeAssignment/AttributeId");
-		this.category = jaxbAttrAssignExp.getCategory();
-		this.issuer = jaxbAttrAssignExp.getIssuer();
-		this.evaluatableExpression = expFactory.getInstance(jaxbAttrAssignExp.getExpression().getValue(), xPathCompiler, null);
+		this.attributeId = jaxbAttrAssignExp.getAttributeId();
+		Preconditions.checkArgument(attributeId != null, "Undefined AttributeAssignment/AttributeId");
+		this.category = Optional.ofNullable(jaxbAttrAssignExp.getCategory());
+		this.issuer = Optional.ofNullable(jaxbAttrAssignExp.getIssuer());
+		this.toString = "AttributeAssignmentExpression [attributeId=" + attributeId + ", category=" + category.orElse(null) + ", issuer=" + issuer.orElse(null) + "]";
+
+		final JAXBElement<? extends ExpressionType> xacmlExpr = jaxbAttrAssignExp.getExpression();
+		Preconditions.checkArgument(xacmlExpr != null, "Undefined AttributeAssignment/Expression");
+		final Expression<?> evaluatableExpression = expFactory.getInstance(xacmlExpr.getValue(), xPathCompiler, null);
+
+		/*
+		 * As stated in section 5.41 of XACML spec, the expression must evaluate to a constant attribute value or a bag of zero or more attribute values.
+		 */
+		final Datatype<?> expReturnType = evaluatableExpression.getReturnType();
+		final Optional<? extends Datatype<?>> expReturnTypeParam = expReturnType.getTypeParameter();
+		if (expReturnTypeParam.isPresent())
+		{
+			/*
+			 * RexpReturnTypeParam is generic. Make sure it is a bag of AttributeValues
+			 */
+			final Datatype<?> nonNullTypeParam = expReturnTypeParam.get();
+			/*
+			 * Make sure typeParam is not itself generic like a bag
+			 */
+			if (nonNullTypeParam.getTypeParameter().isPresent() || nonNullTypeParam == StandardDatatypes.FUNCTION)
+			{
+				throw new IllegalArgumentException(
+				        "Invalid " + toString + ": invalid Expression's return type (" + expReturnType + ")'. Expected: AttributeValue or bag (of AttributeValues) datatype.");
+			}
+
+			/*
+			 * So we assume that if type parameter is not Function or generic (bag), it is AttributeValue subtype and expReturnType is Bag<?> datatype. (This is not formally guaranteed :-( but can we
+			 * do better?)
+			 */
+			this.attValExpr = new AttributeBagExpression<>((Expression<Bag>) evaluatableExpression);
+		} else
+		{
+			/*
+			 * expReturnType assumed primitive (Function or AttributeValue a priori)
+			 */
+			if (expReturnType == StandardDatatypes.FUNCTION)
+			{
+				throw new IllegalArgumentException(
+				        "Invalid " + toString + ": invalid Expression's return type (" + expReturnType + ")'. Expected: AttributeValue or bag (of AttributeValues) datatype.");
+			}
+
+			/*
+			 * So we assume that if expReturnType is not Function, it is AttributeValue subtype. (This is not formally guaranteed :-( but can we do better?)
+			 */
+			this.attValExpr = new SingleAttributeValueExpression<>((Expression<? extends AttributeValue>) evaluatableExpression);
+		}
+
 	}
 
-	private AttributeAssignment newAttributeAssignment(final AttributeValue attrVal)
+	private <AV extends AttributeValue> PepActionAttributeAssignment<AV> newAttributeAssignment(Datatype<AV> datatype, final AV attrVal)
 	{
-		return new AttributeAssignment(attrVal.getContent(), attrVal.getDataType(), attrVal.getOtherAttributes(), this.attributeId, this.category, this.issuer);
+		return new PepActionAttributeAssignment<>(this.attributeId, this.category, this.issuer, datatype, attrVal);
+	}
+
+	private <AV extends AttributeValue> List<PepActionAttributeAssignment<?>> newAttributeAssignments(final AttributeValueExpression<AV> expression, final EvaluationContext context)
+	        throws IndeterminateEvaluationException
+	{
+		final Collection<AV> vals = expression.evaluate(context);
+		LOGGER.debug("{}/Expression -> {}", this, vals);
+
+		/*
+		 * vals may be empty bag, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
+		 * "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
+		 */
+		return vals.stream().map(av -> newAttributeAssignment(expression.getDatatype(), av)).collect(Collectors.toList());
 	}
 
 	/**
@@ -101,67 +222,15 @@ public final class AttributeAssignmentExpressionEvaluator
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if evaluation of the Expression in this context fails (Indeterminate)
 	 */
-	public List<AttributeAssignment> evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+	public Collection<PepActionAttributeAssignment<?>> evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
 	{
-		final Value result = this.evaluatableExpression.evaluate(context);
-		LOGGER.debug("{}/Expression -> {}", this, result);
-
-		final List<AttributeAssignment> attrAssignList;
-		if (result instanceof Bag)
-		{
-			// result is a bag
-			final Bag<?> bag = (Bag<?>) result;
-			attrAssignList = new ArrayList<>(bag.size());
-			/*
-			 * Bag may be empty, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
-			 * "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
-			 */
-			for (final PrimitiveValue attrVal : bag)
-			{
-				if (!(attrVal instanceof AttributeValue))
-				{
-					LOGGER.error("Error evaluating {}: one of the elements in the result bag is not an AttributeValue");
-					throw new IndeterminateEvaluationException("Error evaluating " + this, XacmlStatusCode.PROCESSING_ERROR.value());
-				}
-
-				attrAssignList.add(newAttributeAssignment((AttributeValue) attrVal));
-			}
-		}
-		else if (result instanceof AttributeValue)
-		{
-			// atomic (see spec §5.30, 5.40) / primitive attribute value
-			attrAssignList = Collections.singletonList(newAttributeAssignment((AttributeValue) result));
-		}
-		else
-		{
-			LOGGER.error("Error evaluating {}: the result value is not an AttributeValue");
-			throw new IndeterminateEvaluationException("Error evaluating " + this, XacmlStatusCode.PROCESSING_ERROR.value());
-		}
-
-		return attrAssignList;
+		return newAttributeAssignments(this.attValExpr, context);
 	}
 
 	@Override
 	public String toString()
 	{
-		if (toString == null)
-		{
-			toString = "AttributeAssignmentExpression [attributeId=" + attributeId + ", category=" + category + ", issuer=" + issuer + "]";
-		}
 		return toString;
 	}
-
-	// public static void main(String[] args) throws JAXBException
-	// {
-	// THIS WILL FAIL: com.sun.istack.internal.SAXException2: unable to marshal type "java.lang.Double" as an element
-	// because it is missing an
-	// @XmlRootElement annotation; but it succeeds with java.lang.String
-	// final AttributeAssignment attrAssignment = new AttributeAssignment(Collections.<Serializable>
-	// singletonList("1.0"), "mytype", null, "myattribute1",
-	// "mycategory", null);
-	//
-	// Marshaller marshaller = XACMLBindingUtils.createXacml3Marshaller();
-	// marshaller.marshal(attrAssignment, System.out);
-	// }
 
 }
