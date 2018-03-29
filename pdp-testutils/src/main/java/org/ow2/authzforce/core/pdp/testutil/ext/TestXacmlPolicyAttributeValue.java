@@ -54,6 +54,8 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 
 	private transient volatile List<Serializable> content = null;
 
+	private transient volatile int hashCode = 0;
+
 	private TestXacmlPolicyAttributeValue(final List<Serializable> content) throws IllegalArgumentException
 	{
 		/*
@@ -81,7 +83,8 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 		if (content0 instanceof Policy)
 		{
 			policy = (Policy) content0;
-		} else if (content0 instanceof String)
+		}
+		else if (content0 instanceof String)
 		{
 			if (!contentIterator.hasNext())
 			{
@@ -92,11 +95,13 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 			if (content1 instanceof Policy)
 			{
 				policy = (Policy) content1;
-			} else
+			}
+			else
 			{
 				throw new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': second item (after text) is not a XACML <Policy>, but: " + content1.getClass());
 			}
-		} else
+		}
+		else
 		{
 			throw new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': first item is neither text nor a XACML <Policy>, but: " + content0.getClass());
 		}
@@ -127,6 +132,34 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 	public Map<QName, String> getXmlAttributes()
 	{
 		return Collections.emptyMap();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = this.policy.hashCode();
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (!(obj instanceof TestXacmlPolicyAttributeValue))
+		{
+			return false;
+		}
+
+		final TestXacmlPolicyAttributeValue other = (TestXacmlPolicyAttributeValue) obj;
+		return this.policy.equals(other.policy);
 	}
 
 	/**
