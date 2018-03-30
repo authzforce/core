@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
@@ -30,17 +31,16 @@ import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.ImmutablePepActions;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.PepAction;
+import org.ow2.authzforce.core.pdp.api.PepActionAttributeAssignment;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 
 import com.google.common.collect.ImmutableList;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Advice;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignment;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Obligation;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusDetail;
@@ -53,7 +53,7 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 {
 
 	private static final RuntimeException ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION = new RuntimeException(
-			"Unsupported AttributeAssignment value with no content or mixed content with more than one node");
+	        "Unsupported AttributeAssignment value for JSON output: no content or mixed content with more than one node or XML attribute(s)");
 
 	private static JSONObject toJson(final Status status)
 	{
@@ -88,6 +88,55 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		return new JSONObject(resultJsonObject);
 	}
 
+	private static JSONObject toJson(final PepActionAttributeAssignment<?> aa)
+	{
+		final Map<String, Object> aaJsonPropMap = HashCollections.newUpdatableMap(5);
+		aaJsonPropMap.put("AttributeId", aa.getAttributeId());
+		final AttributeValue aaVal = aa.getValue();
+		if (!aaVal.getXmlAttributes().isEmpty())
+		{
+			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
+		}
+
+		final List<Serializable> contentParts = aaVal.getContent();
+		if (contentParts.isEmpty() || contentParts.size() > 1)
+		{
+			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
+		}
+
+		aaJsonPropMap.put("Value", contentParts.get(0).toString());
+
+		final Optional<String> category = aa.getCategory();
+		if (category.isPresent())
+		{
+			aaJsonPropMap.put("Category", category.get());
+		}
+
+		aaJsonPropMap.put("DataType", aa.getDatatype().getId());
+
+		final Optional<String> issuer = aa.getIssuer();
+		if (issuer.isPresent())
+		{
+			aaJsonPropMap.put("Issuer", issuer.get());
+		}
+
+		return new JSONObject(aaJsonPropMap);
+	}
+
+	private static JSONObject toJson(final String obligationOrAdviceId, final List<PepActionAttributeAssignment<?>> aaList)
+	{
+		assert obligationOrAdviceId != null && aaList != null;
+		final Map<String, Object> obligationOrAdviceJsonPropMap = HashCollections.newUpdatableMap(2);
+		obligationOrAdviceJsonPropMap.put("Id", obligationOrAdviceId);
+		if (!aaList.isEmpty())
+		{
+			final List<JSONObject> jsonAttAssignments = aaList.stream().map(e -> toJson(e)).collect(Collectors.toList());
+			obligationOrAdviceJsonPropMap.put("AttributeAssignment", new JSONArray(jsonAttAssignments));
+		}
+
+		return new JSONObject(obligationOrAdviceJsonPropMap);
+	}
+
 	private static JSONObject convert(final IndividualXacmlJsonRequest request, final DecisionResult result)
 	{
 		assert request != null && result != null;
@@ -104,18 +153,27 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		}
 
 		// Obligations/Advice
-		final ImmutablePepActions pepActions = result.getPepActions();
-		if (pepActions != null && !pepActions.isEmpty())
+		final ImmutableList<PepAction> pepActions = result.getPepActions();
+		assert pepActions != null;
+		if (!pepActions.isEmpty())
 		{
-			final List<Obligation> obligationList = pepActions.getObligatory();
-			if (!obligationList.isEmpty())
+			final int numOfPepActions = pepActions.size();
+			final List<JSONObject> jsonObligations = new ArrayList<>(numOfPepActions);
+			final List<JSONObject> jsonAdvices = new ArrayList<>(numOfPepActions);
+			pepActions.forEach(pepAction -> {
+				final JSONObject pepActionJsonObject = toJson(pepAction.getId(), pepAction.getAttributeAssignments());
+				final List<JSONObject> pepActionJsonObjects = pepAction.isMandatory() ? jsonObligations : jsonAdvices;
+				pepActionJsonObjects.add(pepActionJsonObject);
+			});
+
+			if (!jsonObligations.isEmpty())
 			{
-				jsonPropertyMap.put("Obligations", new JSONArray(obligationList.stream().map(e -> toJson(e)).collect(Collectors.toList())));
+				jsonPropertyMap.put("Obligations", new JSONArray(jsonObligations));
 			}
-			final List<Advice> adviceList = pepActions.getAdvisory();
-			if (!adviceList.isEmpty())
+
+			if (!jsonAdvices.isEmpty())
 			{
-				jsonPropertyMap.put("AssociatedAdvice", new JSONArray(adviceList.stream().map(e -> toJson(e)).collect(Collectors.toList())));
+				jsonPropertyMap.put("AssociatedAdvice", new JSONArray(jsonAdvices));
 			}
 		}
 
@@ -155,60 +213,6 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 
 		// final Result
 		return new JSONObject(jsonPropertyMap);
-	}
-
-	private static JSONObject toJson(final String obligationOrAdviceId, final List<AttributeAssignment> aaList)
-	{
-		assert obligationOrAdviceId != null && aaList != null;
-		final Map<String, Object> obligationOrAdviceJsonPropMap = HashCollections.newUpdatableMap(2);
-		obligationOrAdviceJsonPropMap.put("Id", obligationOrAdviceId);
-		if (!aaList.isEmpty())
-		{
-			obligationOrAdviceJsonPropMap.put("AttributeAssignment", new JSONArray(aaList.stream().map(e -> toJson(e)).collect(Collectors.toList())));
-		}
-
-		return new JSONObject(obligationOrAdviceJsonPropMap);
-	}
-
-	private static JSONObject toJson(final Obligation o)
-	{
-		return toJson(o.getObligationId(), o.getAttributeAssignments());
-	}
-
-	private static JSONObject toJson(final Advice a)
-	{
-		return toJson(a.getAdviceId(), a.getAttributeAssignments());
-	}
-
-	private static JSONObject toJson(final AttributeAssignment aa)
-	{
-		final Map<String, Object> aaJsonPropMap = HashCollections.newUpdatableMap(5);
-		aaJsonPropMap.put("AttributeId", aa.getAttributeId());
-		final List<Serializable> contentParts = aa.getContent();
-		if (contentParts.isEmpty() || contentParts.size() > 1)
-		{
-			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
-		}
-
-		aaJsonPropMap.put("Value", contentParts.get(0).toString());
-		final String category = aa.getCategory();
-		if (category != null)
-		{
-			aaJsonPropMap.put("Category", category);
-		}
-
-		final String datatype = aa.getDataType();
-		if (datatype != null)
-		{
-			aaJsonPropMap.put("DataType", datatype);
-		}
-
-		final String issuer = aa.getIssuer();
-		if (issuer != null)
-		{
-			aaJsonPropMap.put("Issuer", issuer);
-		}
-		return new JSONObject(aaJsonPropMap);
 	}
 
 	private final int maxDepthOfErrorCauseIncludedInResult;

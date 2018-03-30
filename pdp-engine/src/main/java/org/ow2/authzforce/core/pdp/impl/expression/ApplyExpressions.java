@@ -25,11 +25,6 @@ import java.util.Optional;
 
 import javax.xml.bind.JAXBElement;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
@@ -40,9 +35,15 @@ import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
 /**
  * Static utility methods pertaining to {@link ApplyType} evaluators.
@@ -110,8 +111,7 @@ public final class ApplyExpressions
 		{
 			staticEvalResult = functionCall.evaluate(null);
 			LOGGER.debug("Apply[Description = " + description + "]: static evaluation OK -> expression is constant -> optimizing: using constant result as evaluation result");
-		}
-		catch (final IndeterminateEvaluationException e)
+		} catch (final IndeterminateEvaluationException e)
 		{
 			LOGGER.debug("Apply[Description = " + description + "]: static evaluation failed -> expression is not constant -> not optimizing");
 		}
@@ -138,7 +138,7 @@ public final class ApplyExpressions
 	 *             function; or if all {@code xprs} are static but calling the function statically (with these static arguments) failed
 	 */
 	public static Expression<?> newInstance(final ApplyType xacmlApply, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory, final Deque<String> longestVarRefChain)
-			throws IllegalArgumentException
+	        throws IllegalArgumentException
 	{
 		if (xacmlApply == null)
 		{
@@ -160,8 +160,7 @@ public final class ApplyExpressions
 			try
 			{
 				exprHandler = expFactory.getInstance(exprElt.getValue(), xPathCompiler, longestVarRefChain);
-			}
-			catch (final IllegalArgumentException e)
+			} catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Error parsing one of Apply [description=" + applyDesc + "]'s function arguments (Expressions)", e);
 			}
@@ -169,41 +168,49 @@ public final class ApplyExpressions
 			funcInputs.add(exprHandler);
 		}
 
+		final String functionId = xacmlApply.getFunctionId();
+
 		// get the function instance
 		// Determine whether this is a higher-order function, i.e. first parameter is a sub-function
-		final Datatype<? extends AttributeValue> subFuncReturnType;
+		final Datatype<? extends AttributeValue> subFuncPrimReturnType;
 		if (funcInputs.isEmpty())
 		{
-			subFuncReturnType = null;
-		}
-		else
+			subFuncPrimReturnType = null;
+		} else
 		{
 			final Expression<?> xpr0 = funcInputs.get(0);
 			if (xpr0 instanceof FunctionExpression)
 			{
-				subFuncReturnType = ((FunctionExpression) xpr0).getValue().get().getReturnType();
-			}
-			else
+				final Datatype<?> subFuncReturnType = ((FunctionExpression) xpr0).getValue().get().getReturnType();
+				if (subFuncReturnType.getTypeParameter().isPresent() || subFuncReturnType == StandardDatatypes.FUNCTION)
+				{
+					throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
+					        + ") of sub-function (first-parameter) of Apply Function '" + functionId + "'. Expected: AttributeValue datatype.");
+				}
+
+				/*
+				 * FIXME: is there a cleaner way to cast?
+				 */
+				subFuncPrimReturnType = (Datatype<? extends AttributeValue>) subFuncReturnType;
+			} else
 			{
-				subFuncReturnType = null;
+				subFuncPrimReturnType = null;
 			}
 		}
 
-		final String functionId = xacmlApply.getFunctionId();
 		final FunctionExpression functionExp;
 		try
 		{
-			functionExp = expFactory.getFunction(functionId, subFuncReturnType);
-		}
-		catch (final IllegalArgumentException e)
+			functionExp = expFactory.getFunction(functionId, subFuncPrimReturnType);
+		} catch (final IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
-					+ ") of sub-function (first-parameter) of Apply Function '" + functionId + "'", e);
+			throw new IllegalArgumentException(
+			        "Invalid Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncPrimReturnType + ") of sub-function (first-parameter) of Apply Function '" + functionId + "'", e);
 		}
 
 		if (functionExp == null)
 		{
-			throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId + "' not supported");
+			throw new IllegalArgumentException("Invalid Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId + "' not supported");
 		}
 
 		final Function<?> function = functionExp.getValue().get();
@@ -213,10 +220,9 @@ public final class ApplyExpressions
 		try
 		{
 			funcCall = function.newCall(Collections.unmodifiableList(funcInputs));
-		}
-		catch (final IllegalArgumentException e)
+		} catch (final IllegalArgumentException e)
 		{
-			throw new IllegalArgumentException("Error parsing Apply[Description = " + applyDesc + "]: Invalid args for function " + function, e);
+			throw new IllegalArgumentException("Invalid Apply[Description = " + applyDesc + "]: Invalid args for function " + function, e);
 		}
 
 		return newInstance(funcCall, applyDesc);

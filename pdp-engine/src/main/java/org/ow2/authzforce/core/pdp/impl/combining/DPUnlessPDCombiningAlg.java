@@ -22,16 +22,14 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
+import org.ow2.authzforce.core.pdp.api.PepAction;
+import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
-import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
@@ -41,6 +39,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
 
 /**
  * *-unless-* combining algorithm (deny-unless-permit or permit-unless-deny)
@@ -67,8 +68,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 				this.overridingEffectAsExtDecision = ExtendedDecisions.SIMPLE_DENY;
 				this.overriddenEffectAsDecision = DecisionType.PERMIT;
 				this.overriddenEffectAsExtDecision = ExtendedDecisions.SIMPLE_PERMIT;
-			}
-			else
+			} else
 			{
 				// deny-unless-permit
 				this.overridingEffectAsDecision = DecisionType.PERMIT;
@@ -79,14 +79,14 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 			/*
 			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to outApplicablePolicyIdList
 			 */
 
-			UpdatablePepActions pepActionsInOverriddenEffect = null;
+			UpdatableList<PepAction> pepActionsInOverriddenEffect = null;
 			for (final Decidable combinedElement : getCombinedElements())
 			{
 				final DecisionResult result = combinedElement.evaluate(context);
@@ -104,7 +104,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 				 */
 				if (decision == this.overridingEffectAsDecision)
 				{
-					outPepActions.add(result.getPepActions());
+					outPepActions.addAll(result.getPepActions());
 					return this.overridingEffectAsExtDecision;
 				}
 
@@ -115,17 +115,21 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 				{
 					if (pepActionsInOverriddenEffect == null)
 					{
-						pepActionsInOverriddenEffect = new UpdatablePepActions();
+						pepActionsInOverriddenEffect = UpdatableCollections.newUpdatableList();
 					}
 
-					pepActionsInOverriddenEffect.add(result.getPepActions());
+					pepActionsInOverriddenEffect.addAll(result.getPepActions());
 				}
 			}
 
 			/*
 			 * All applicable policies are already in outApplicablePolicyIdList at this point, so nothing else to do with it
 			 */
-			outPepActions.add(pepActionsInOverriddenEffect);
+			if (pepActionsInOverriddenEffect != null)
+			{
+				outPepActions.addAll(pepActionsInOverriddenEffect);
+			}
+
 			return this.overriddenEffectAsExtDecision;
 		}
 
@@ -137,11 +141,11 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 	 */
 	private static final class OverridingEffectFirstRuleCombiningAlgEvaluator implements CombiningAlg.Evaluator
 	{
-		private static boolean haveSameEffect(final EffectType expectedEffect, final Collection<? extends RuleEvaluator> rules, final boolean mustHavePepAction)
+		private static boolean verifyRuleEffectsAndPepActions(final EffectType expectedEffect, final Collection<? extends RuleEvaluator> rules, final boolean mustHavePepAction)
 		{
 			for (final RuleEvaluator rule : rules)
 			{
-				if (rule.getEffect() != expectedEffect || mustHavePepAction && rule.hasNoPepAction())
+				if (rule.getEffect() != expectedEffect || mustHavePepAction && !rule.hasAnyPepAction())
 				{
 					return false;
 				}
@@ -170,7 +174,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 
 			// first rule's effect assumed the same for all
 			final EffectType overridingEffect = rulesWithOverridingEffect.iterator().next().getEffect();
-			assert haveSameEffect(overridingEffect, rulesWithOverridingEffect, false);
+			assert verifyRuleEffectsAndPepActions(overridingEffect, rulesWithOverridingEffect, false);
 
 			final EffectType overriddenEffect;
 			if (overridingEffect == EffectType.DENY)
@@ -179,8 +183,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 				this.overridingEffectAsDecision = DecisionType.DENY;
 				this.overriddenEffectAsDecision = DecisionType.PERMIT;
 				this.overriddenEffectAsExtDecision = ExtendedDecisions.SIMPLE_PERMIT;
-			}
-			else
+			} else
 			{
 				overriddenEffect = EffectType.DENY;
 				this.overridingEffectAsDecision = DecisionType.PERMIT;
@@ -189,14 +192,15 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 
 			}
 
-			assert haveSameEffect(overriddenEffect, otherRulesWithPepActions, true);
+			assert verifyRuleEffectsAndPepActions(overriddenEffect, otherRulesWithPepActions, true);
 
 			this.rulesWithOverridingEffect = ImmutableList.copyOf(rulesWithOverridingEffect);
 			this.otherRulesWithPepActions = ImmutableList.copyOf(otherRulesWithPepActions);
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions updatablePepActions, final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> updatablePepActions,
+		        final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
 			for (final RuleEvaluator rule : rulesWithOverridingEffect)
 			{
@@ -204,7 +208,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 				final DecisionType decision = evalResult.getDecision();
 				if (decision == this.overridingEffectAsDecision)
 				{
-					updatablePepActions.add(evalResult.getPepActions());
+					updatablePepActions.addAll(evalResult.getPepActions());
 					return evalResult;
 				}
 
@@ -221,7 +225,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 				if (decision == overriddenEffectAsDecision)
 				{
 					// Permit/Deny
-					updatablePepActions.add(evalResult.getPepActions());
+					updatablePepActions.addAll(evalResult.getPepActions());
 				}
 			}
 
@@ -254,8 +258,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 			overriddenEffect = EffectType.PERMIT;
 			constantOverridingEffectDecisionEvaluator = CombiningAlgEvaluators.DENY_CONSTANT_EVALUATOR;
 			constantOverriddenEffectDecisionEvaluator = CombiningAlgEvaluators.PERMIT_CONSTANT_EVALUATOR;
-		}
-		else
+		} else
 		{
 			// Overriding Effect is Permit
 			overriddenEffect = EffectType.DENY;
@@ -266,8 +269,8 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends T>> params, final Iterable<? extends T> combinedElements) throws UnsupportedOperationException,
-			IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends T>> params, final Iterable<? extends T> combinedElements)
+	        throws UnsupportedOperationException, IllegalArgumentException
 	{
 		// if no element combined -> decision is overridden Effect
 		if (combinedElements == null)
@@ -318,8 +321,8 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 				if (rule.isEmptyEquivalent())
 				{
 					LOGGER.warn(
-							"{}: {} with Effect={} is empty (no target/condition/pep_actions) => always returns {} => algorithm will always return {} => other combined rules have no effect => will be ignored/removed.",
-							this, rule, this.overridingEffect, this.overridingEffect, this.overridingEffect);
+					        "{}: {} with Effect={} is empty (no target/condition/pep_actions) => always returns {} => algorithm will always return {} => other combined rules have no effect => will be ignored/removed.",
+					        this, rule, this.overridingEffect, this.overridingEffect, this.overridingEffect);
 					return constantOverridingEffectDecisionEvaluator;
 				}
 
@@ -336,7 +339,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 			 * In the end, if there is no applicable rule with overridING Effect, we already know that the result is always the overridden Effect with PEP actions from all other rules with same
 			 * (overridden) Effect and PEP action(s).
 			 */
-			if (rule.hasNoPepAction())
+			if (!rule.hasAnyPepAction())
 			{
 				/*
 				 * Ignore this new Rule with overridden Effect and no PEP action; it will have no effect.
@@ -358,8 +361,8 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 		if (nonEmptyRulesWithOverridingEffect.isEmpty() && rulesWithOverriddenEffectAndPepActions.isEmpty())
 		{
 			LOGGER.warn(
-					"{}: the only combined rule(s) is/are {} Rule(s) without PEP action => algorithm will always return {} => optimization: replacing with equivalent evaluator returning constant {} decision",
-					this, this.overriddenEffect, this.overriddenEffect, this.overriddenEffect);
+			        "{}: the only combined rule(s) is/are {} Rule(s) without PEP action => algorithm will always return {} => optimization: replacing with equivalent evaluator returning constant {} decision",
+			        this, this.overriddenEffect, this.overriddenEffect, this.overriddenEffect);
 			return constantOverriddenEffectDecisionEvaluator;
 		}
 
@@ -367,8 +370,8 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 		 * (All rules have same overridden Effect, and) either there is no empty rule OR there is at least one with PEP action
 		 */
 		LOGGER.debug(
-				"{}: 'children may be processed in any order' (XACML). This implementation will process Rules with overriding Effect first, then the others (with PEP actions only, others without are ignored)",
-				this);
+		        "{}: 'children may be processed in any order' (XACML). This implementation will process Rules with overriding Effect first, then the others (with PEP actions only, others without are ignored)",
+		        this);
 		return new OverridingEffectFirstRuleCombiningAlgEvaluator(nonEmptyRulesWithOverridingEffect, rulesWithOverriddenEffectAndPepActions);
 	}
 

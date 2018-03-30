@@ -20,13 +20,13 @@ package org.ow2.authzforce.core.pdp.impl.test.value;
 import java.util.Arrays;
 import java.util.Collection;
 
-import net.sf.saxon.lib.StandardURIChecker;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import net.sf.saxon.lib.StandardURIChecker;
 
 /**
  * 
@@ -44,11 +44,11 @@ public class AnyURIAttributeTest
 	@Parameters
 	public static Collection<Object[]> data()
 	{
-		Object[][] data = new Object[][] { { "http://datypic.com", "absolute URI (also a URL)", true }, { "mailto:info@datypic.com", "absolute URI", true },
-				{ "../%C3%A9dition.html", "relative URI containing escaped non-ASCII character", true }, { "../édition.html", "relative URI containing escaped non-ASCII character", true },
-				{ "http://datypic.com/prod.html#shirt", "URI with fragment identifier", true }, { "../prod.html#shirt", "relative URI with fragment identifier", true },
-				{ "", "an empty value is allowed", true }, { "http://datypic.com#frag1#frag2", "too many # characters", false },
-				{ "http://datypic.com#f% rag", "% character followed by something other than two hexadecimal digits", false } };
+		final Object[][] data = new Object[][] { { "http://datypic.com", "absolute URI (also a URL)", true }, { "mailto:info@datypic.com", "absolute URI", true },
+		        { "../%C3%A9dition.html", "relative URI containing escaped non-ASCII character", true }, { "../édition.html", "relative URI containing escaped non-ASCII character", true },
+		        { "http://datypic.com/prod.html#shirt", "URI with fragment identifier", true }, { "../prod.html#shirt", "relative URI with fragment identifier", true },
+		        { "", "an empty value is allowed", true }, { "http://datypic.com#frag1#frag2", "too many # characters", false },
+		        { "http://datypic.com#f% rag", "% character followed by something other than two hexadecimal digits", false } };
 		return Arrays.asList(data);
 	}
 

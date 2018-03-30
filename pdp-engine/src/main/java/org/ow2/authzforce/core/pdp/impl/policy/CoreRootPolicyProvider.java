@@ -24,9 +24,6 @@ import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
@@ -38,6 +35,9 @@ import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticRootPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.springframework.util.ResourceUtils;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 
 /**
  * This is a simple {@link StaticRootPolicyProvider} implementation that supports static retrieval of the root policy. Its constructor accepts a location that represent a Spring-compatible resource
@@ -55,6 +55,8 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 	public static class Factory extends RootPolicyProvider.Factory<org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider>
 	{
 
+		private static final IllegalArgumentException ILLEGAL_JAXBCONF_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined RootPolicyProvider configuration (JAXB/XML)");
+
 		@Override
 		public Class<org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider> getJaxbClass()
 		{
@@ -63,17 +65,23 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 
 		@Override
 		public RootPolicyProvider getInstance(final org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
-				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> refPolicyProvider,
-				final EnvironmentProperties environmentProperties)
+		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> refPolicyProvider,
+		        final EnvironmentProperties environmentProperties)
 		{
-			final String policyLocation = environmentProperties.replacePlaceholders(jaxbConf.getPolicyLocation());
+
+			if (jaxbConf == null)
+			{
+				throw ILLEGAL_JAXBCONF_ARGUMENT_EXCEPTION;
+			}
+			final String jaxbConfPolicyLocationFromConf = jaxbConf.getPolicyLocation();
+
+			final String policyLocation = environmentProperties == null ? jaxbConfPolicyLocationFromConf : environmentProperties.replacePlaceholders(jaxbConfPolicyLocationFromConf);
 			final URL rootPolicyURL;
 			try
 			{
 				// try to load the policy location as a Spring resource
 				rootPolicyURL = ResourceUtils.getURL(policyLocation);
-			}
-			catch (final FileNotFoundException ioe)
+			} catch (final FileNotFoundException ioe)
 			{
 				throw new IllegalArgumentException("No root policy (as Spring resource) found at the following URL: " + jaxbConf.getPolicyLocation(), ioe);
 			}
@@ -85,13 +93,12 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 				if (!(refPolicyProvider.get() instanceof StaticRefPolicyProvider))
 				{
 					throw new IllegalArgumentException("RefPolicyProvider arg '" + refPolicyProvider + "'  is not compatible with " + CoreRootPolicyProvider.class + ". Expected: instance of "
-							+ StaticRefPolicyProvider.class + ". Make sure the PDP extension of type " + CloseableRefPolicyProvider.Factory.class
-							+ " corresponding to the refPolicyProvider in PDP configuration can create instances of " + StaticRefPolicyProvider.class);
+					        + StaticRefPolicyProvider.class + ". Make sure the PDP extension of type " + CloseableRefPolicyProvider.Factory.class
+					        + " corresponding to the refPolicyProvider in PDP configuration can create instances of " + StaticRefPolicyProvider.class);
 				}
 
 				staticRefPolicyProvider = (StaticRefPolicyProvider) refPolicyProvider.get();
-			}
-			else
+			} else
 			{
 				staticRefPolicyProvider = null;
 			}
@@ -119,8 +126,7 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 		try
 		{
 			rootPolicy = PolicyEvaluators.getInstance(jaxbPolicy, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry);
-		}
-		catch (final IllegalArgumentException e)
+		} catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Invalid Policy: " + jaxbPolicy.getPolicyId(), e);
 		}
@@ -143,7 +149,7 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 	 *             if {@code jaxbPolicySet } null/invalid, or {@code expressionFactory == null || combiningAlgRegistry == null})
 	 */
 	public CoreRootPolicyProvider(final PolicySet jaxbPolicySet, final Map<String, String> namespacePrefixesByURI, final ExpressionFactory expressionFactory,
-			final CombiningAlgRegistry combiningAlgRegistry, final Optional<StaticRefPolicyProvider> refPolicyProvider) throws IllegalArgumentException
+	        final CombiningAlgRegistry combiningAlgRegistry, final Optional<StaticRefPolicyProvider> refPolicyProvider) throws IllegalArgumentException
 	{
 		if (!refPolicyProvider.isPresent())
 		{
@@ -151,8 +157,7 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 			try
 			{
 				rootPolicy = PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry, null, null);
-			}
-			catch (final IllegalArgumentException e)
+			} catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Invalid PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
 			}
@@ -164,8 +169,7 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 		try
 		{
 			rootPolicy = PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, namespacePrefixesByURI, expressionFactory, combiningAlgRegistry, refPolicyProvider.get(), null);
-		}
-		catch (final IllegalArgumentException e)
+		} catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Invalid PolicySet: " + jaxbPolicySet.getPolicySetId(), e);
 		}
@@ -188,7 +192,7 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 	 * 
 	 */
 	public static CoreRootPolicyProvider getInstance(final URL rootPolicyURL, final XmlnsFilteringParserFactory xacmlParserFactory, final ExpressionFactory expressionFactory,
-			final CombiningAlgRegistry combiningAlgRegistry, final Optional<StaticRefPolicyProvider> refPolicyProvider)
+	        final CombiningAlgRegistry combiningAlgRegistry, final Optional<StaticRefPolicyProvider> refPolicyProvider)
 	{
 		if (rootPolicyURL == null)
 		{
@@ -204,8 +208,7 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 		try
 		{
 			xacmlParser = xacmlParserFactory.getInstance();
-		}
-		catch (final JAXBException e)
+		} catch (final JAXBException e)
 		{
 			throw new IllegalArgumentException("Failed to create JAXB unmarshaller for XML Policy(Set)", e);
 		}
@@ -214,8 +217,7 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 		try
 		{
 			jaxbPolicyOrPolicySetObj = xacmlParser.parse(rootPolicyURL);
-		}
-		catch (final JAXBException e)
+		} catch (final JAXBException e)
 		{
 			throw new IllegalArgumentException("Failed to unmarshall Policy(Set) XML document from policy location: " + rootPolicyURL, e);
 		}
@@ -223,12 +225,10 @@ public class CoreRootPolicyProvider implements StaticRootPolicyProvider
 		if (jaxbPolicyOrPolicySetObj instanceof Policy)
 		{
 			return new CoreRootPolicyProvider((Policy) jaxbPolicyOrPolicySetObj, xacmlParser.getNamespacePrefixUriMap(), expressionFactory, combiningAlgRegistry);
-		}
-		else if (jaxbPolicyOrPolicySetObj instanceof PolicySet)
+		} else if (jaxbPolicyOrPolicySetObj instanceof PolicySet)
 		{
 			return new CoreRootPolicyProvider((PolicySet) jaxbPolicyOrPolicySetObj, xacmlParser.getNamespacePrefixUriMap(), expressionFactory, combiningAlgRegistry, refPolicyProvider);
-		}
-		else
+		} else
 		{
 			throw new IllegalArgumentException("Unexpected element found as root of the policy document: " + jaxbPolicyOrPolicySetObj.getClass().getSimpleName());
 		}

@@ -22,6 +22,7 @@ import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
+import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 
 /**
@@ -32,42 +33,26 @@ import org.ow2.authzforce.core.pdp.api.value.StringValue;
 final class StandardDatatypeConverters
 {
 
-	static final TypeConverter<IntegerValue, DoubleValue> DOUBLE_TO_INTEGER = new TypeConverter<IntegerValue, DoubleValue>()
-	{
-
-		@Override
-		public final IntegerValue convert(final DoubleValue arg)
-		{
-
-			return IntegerValue.valueOf(arg.longValue());
-		}
-
-	};
+	static final TypeConverter<IntegerValue, DoubleValue> DOUBLE_TO_INTEGER = arg -> IntegerValue.valueOf(arg.longValue());
 
 	private static final IllegalArgumentException INTEGER_OUT_OF_RANGE_EXCEPTION = new IllegalArgumentException("Integer argument is outside the range which can be represented by a double");
 
-	static final TypeConverter<DoubleValue, IntegerValue> INTEGER_TO_DOUBLE = new TypeConverter<DoubleValue, IntegerValue>()
-	{
-
-		@Override
-		public final DoubleValue convert(final IntegerValue arg)
+	static final TypeConverter<DoubleValue, IntegerValue> INTEGER_TO_DOUBLE = arg -> {
+		try
 		{
-			try
-			{
-				return new DoubleValue(Double.valueOf(arg.doubleValue()));
-			}
-			catch (final IllegalArgumentException e)
-			{
-				throw INTEGER_OUT_OF_RANGE_EXCEPTION;
-			}
+			return new DoubleValue(Double.valueOf(arg.doubleValue()));
+		}
+		catch (final IllegalArgumentException e)
+		{
+			throw INTEGER_OUT_OF_RANGE_EXCEPTION;
 		}
 	};
 
 	static class FromStringConverter<RETURN extends SimpleValue<?>> implements TypeConverter<RETURN, StringValue>
 	{
-		private final SimpleValue.StringParseableValueFactory<RETURN> returnTypeFactory;
+		private final StringParseableValue.Factory<RETURN> returnTypeFactory;
 
-		FromStringConverter(final SimpleValue.StringParseableValueFactory<RETURN> returnTypeFactory)
+		FromStringConverter(final StringParseableValue.Factory<RETURN> returnTypeFactory)
 		{
 			this.returnTypeFactory = returnTypeFactory;
 		}

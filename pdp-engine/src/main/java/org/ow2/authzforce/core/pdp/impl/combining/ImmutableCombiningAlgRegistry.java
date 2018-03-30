@@ -19,11 +19,11 @@ package org.ow2.authzforce.core.pdp.impl.combining;
 
 import java.util.Set;
 
+import org.ow2.authzforce.core.pdp.api.BasePdpExtensionRegistry;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
-import org.ow2.authzforce.core.pdp.impl.BasePdpExtensionRegistry;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 
 import com.google.common.base.Preconditions;

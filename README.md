@@ -78,7 +78,7 @@ Java (JRE) 8 or later.
 ## Usage
 ### Getting started
 #### CLI
-Get the latest executable jar from Maven Central: groupId/artifactId = `org.ow2.authzforce`/`authzforce-ce-core-pdp-cli` and make sure you are allowed to run it (it is a fully executable JAR), e.g. with command:
+Get the [latest executable jar from Maven Central](http://central.maven.org/maven2/org/ow2/authzforce/authzforce-ce-core-pdp-cli/) with groupId/artifactId = `org.ow2.authzforce`/`authzforce-ce-core-pdp-cli` and make sure you are allowed to run it (it is a fully executable JAR), e.g. with command:
 
 ```
 $ chmod a+x authzforce-ce-core-pdp-cli-10.0.0.jar

@@ -18,19 +18,19 @@
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.xml.namespace.QName;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 
 import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BaseAttributeValueFactory;
+
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 
 /**
  * Represents a XACML Policy datatype (from XACML schema), to be used as AttributeValue.
@@ -38,29 +38,26 @@ import org.ow2.authzforce.core.pdp.api.value.BaseAttributeValueFactory;
  * Used here for testing Authzforce datatype extension mechanism, i.e. plugging a custom complex datatype into the PDP engine.
  * 
  */
-public class TestXacmlPolicyAttributeValue extends AttributeValue
+public final class TestXacmlPolicyAttributeValue implements AttributeValue
 {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Datatype
 	 */
 	public static final AttributeDatatype<TestXacmlPolicyAttributeValue> DATATYPE = new AttributeDatatype<>(TestXacmlPolicyAttributeValue.class,
-			"urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy", "urn:ow2:authzforce:feature:pdp:function:test-xacml-policy");
+	        "urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy", "urn:ow2:authzforce:feature:pdp:function:test-xacml-policy");
 
 	private static final IllegalArgumentException NO_CONTENT_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': empty");
 	private static final IllegalArgumentException NO_ELEMENT_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': no XML element");
 
 	private final Policy policy;
 
+	private transient volatile List<Serializable> content = null;
+
+	private transient volatile int hashCode = 0;
+
 	private TestXacmlPolicyAttributeValue(final List<Serializable> content) throws IllegalArgumentException
 	{
-		super(DATATYPE.getId(), content, Optional.empty());
-
 		/*
 		 * If content is empty, e.g. <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string"/>, assume value is empty string.
 		 */
@@ -115,32 +112,84 @@ public class TestXacmlPolicyAttributeValue extends AttributeValue
 	 *
 	 * @return the value
 	 */
-	public final Policy getUnderlyingValue()
+	public Policy getUnderlyingValue()
 	{
 		return policy;
 	}
 
+	@Override
+	public List<Serializable> getContent()
+	{
+		if (content == null)
+		{
+			content = Collections.singletonList(policy);
+		}
+
+		return content;
+	}
+
+	@Override
+	public Map<QName, String> getXmlAttributes()
+	{
+		return Collections.emptyMap();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		if (hashCode == 0)
+		{
+			hashCode = this.policy.hashCode();
+		}
+
+		return hashCode;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (!(obj instanceof TestXacmlPolicyAttributeValue))
+		{
+			return false;
+		}
+
+		final TestXacmlPolicyAttributeValue other = (TestXacmlPolicyAttributeValue) obj;
+		return this.policy.equals(other.policy);
+	}
+
+	/**
+	 * {@link TestXacmlPolicyAttributeValue} factory
+	 *
+	 */
 	public static class Factory extends BaseAttributeValueFactory<TestXacmlPolicyAttributeValue>
 	{
+		/**
+		 * No-arg constructor
+		 */
 		public Factory()
 		{
 			super(DATATYPE);
 		}
 
-		private static final IllegalArgumentException NON_NULL_OTHER_XML_ATTRIBUTES_ARG_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE
-				+ "': extra XML attributes are not supported by this primitive datatype, only one XML element.");
+		private static final IllegalArgumentException NON_NULL_OTHER_XML_ATTRIBUTES_ARG_EXCEPTION = new IllegalArgumentException(
+		        "Invalid content for datatype '" + DATATYPE + "': extra XML attributes are not supported by this primitive datatype, only one XML element.");
 		private static final IllegalArgumentException UNDEFINED_CONTENT_ARG_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': null.");
 
 		@Override
 		public TestXacmlPolicyAttributeValue getInstance(final List<Serializable> content, final Map<QName, String> otherXmlAttributes, final XPathCompiler xPathCompiler)
-				throws IllegalArgumentException
+		        throws IllegalArgumentException
 		{
 			if (content == null || content.isEmpty())
 			{
 				throw UNDEFINED_CONTENT_ARG_EXCEPTION;
 			}
 
-			if (!otherXmlAttributes.isEmpty())
+			if (otherXmlAttributes != null && !otherXmlAttributes.isEmpty())
 			{
 				throw NON_NULL_OTHER_XML_ATTRIBUTES_ARG_EXCEPTION;
 			}

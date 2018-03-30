@@ -68,8 +68,9 @@ import org.ow2.authzforce.core.pdp.api.value.HexBinaryValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.IpAddressValue;
 import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
-import org.ow2.authzforce.core.pdp.api.value.SimpleValue.StringParseableValueFactory;
+import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
 import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
@@ -90,7 +91,6 @@ import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions.Any
 import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions.BooleanOneBagOnlyFunction;
 import org.ow2.authzforce.core.pdp.impl.func.TemporalArithmeticOperators.TimeAddDurationOperator;
 import org.ow2.authzforce.core.pdp.impl.func.TemporalArithmeticOperators.TimeSubtractDurationOperator;
-import org.ow2.authzforce.core.pdp.impl.value.StandardAttributeValueFactories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,9 +103,9 @@ import com.google.common.collect.Maps;
  */
 public enum StandardFunction
 {
-	/**
-	 * Equal-type match
-	 */
+    /**
+     * Equal-type match
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:function:string-equal
@@ -207,9 +207,9 @@ public enum StandardFunction
 	 */
 	STRING_REGEXP_MATCH(Function.XACML_NS_1_0 + "string-regexp-match"),
 
-	/**
-	 * Numeric arithmetic functions
-	 */
+    /**
+     * Numeric arithmetic functions
+     */
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:function:integer-abs function URI
 	 */
@@ -275,9 +275,9 @@ public enum StandardFunction
 	 */
 	FLOOR(Function.XACML_NS_1_0 + "floor"),
 
-	/**
-	 * String normalization functions
-	 */
+    /**
+     * String normalization functions
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:function:string-normalize-space
@@ -289,9 +289,9 @@ public enum StandardFunction
 	 */
 	STRING_NORMALIZE_TO_LOWER_CASE(Function.XACML_NS_1_0 + "string-normalize-to-lower-case"),
 
-	/**
-	 * Primitive datatype conversion functions
-	 */
+    /**
+     * Primitive datatype conversion functions
+     */
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:function:double-to-integer function.
 	 */
@@ -432,9 +432,9 @@ public enum StandardFunction
 	 */
 	STRING_FROM_DNSNAME(Function.XACML_NS_3_0 + "string-from-dnsName"),
 
-	/**
-	 * Logical functions
-	 */
+    /**
+     * Logical functions
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:function:or
@@ -456,9 +456,9 @@ public enum StandardFunction
 	 */
 	NOT(Function.XACML_NS_1_0 + "not"),
 
-	/**
-	 * Temporal arithmetic functions
-	 */
+    /**
+     * Temporal arithmetic functions
+     */
 	/**
 	 * urn:oasis:names:tc:xacml:3.0:function:dateTime-add-dayTimeDuration function.
 	 */
@@ -489,27 +489,27 @@ public enum StandardFunction
 	 */
 	DATE_SUBTRACT_YEARMONTHDURATION(Function.XACML_NS_3_0 + "date-subtract-yearMonthDuration"),
 
-	/**
-	 * Time range comparison function
-	 */
+    /**
+     * Time range comparison function
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:2.0:function:time-in-range
 	 */
 	TIME_IN_RANGE(Function.XACML_NS_2_0 + "time-in-range"),
 
-	/**
-	 * String concatenation function
-	 */
+    /**
+     * String concatenation function
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:2.0:function:string-concatenate function.
 	 */
 	STRING_CONCATENATE(Function.XACML_NS_2_0 + "string-concatenate"),
 
-	/**
-	 * Non-equal type match
-	 */
+    /**
+     * Non-equal type match
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match function (different from rfc822Name-regexp-match down below).
@@ -556,9 +556,9 @@ public enum StandardFunction
 	 */
 	ANYURI_CONTAINS(Function.XACML_NS_3_0 + "anyURI-contains"),
 
-	/**
-	 * Substring functions
-	 */
+    /**
+     * Substring functions
+     */
 	/**
 	 * urn:oasis:names:tc:xacml:3.0:function:string-substring function.
 	 */
@@ -569,9 +569,9 @@ public enum StandardFunction
 	 */
 	ANYURI_SUBSTRING(Function.XACML_NS_3_0 + "anyURI-substring"),
 
-	/**
-	 * Higher-order bag functions
-	 */
+    /**
+     * Higher-order bag functions
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:3.0:function:any-of function. WARNING: XACML 1.0 any-of planned for deprecation as of XACML 3.0. Only 3.0 version supported henceforth.
@@ -603,9 +603,9 @@ public enum StandardFunction
 	 */
 	ALL_OF_ALL(Function.XACML_NS_1_0 + "all-of-all"),
 
-	/**
-	 * Generic functions
-	 */
+    /**
+     * Generic functions
+     */
 
 	/**
 	 * urn:oasis:names:tc:xacml:3.0:function:map function.
@@ -641,17 +641,11 @@ public enum StandardFunction
 	private static final PdpExtensionComparator<Function<?>> FUNCTION_COMPARATOR = new PdpExtensionComparator<>();
 	private static final PdpExtensionComparator<GenericHigherOrderFunctionFactory> FUNCTION_FACTORY_COMPARATOR = new PdpExtensionComparator<>();
 
-	private static final Map<String, StandardFunction> ID_TO_STD_FUNC_MAP = Maps.uniqueIndex(Arrays.asList(StandardFunction.values()), new com.google.common.base.Function<StandardFunction, String>()
-	{
-
-		@Override
-		public String apply(final StandardFunction input)
-		{
-			assert input != null;
-			return input.getId();
-		}
-
-	});
+	private static final Map<String, StandardFunction> ID_TO_STD_FUNC_MAP = Maps.uniqueIndex(Arrays.asList(StandardFunction.values()),
+	        (com.google.common.base.Function<StandardFunction, String>) input -> {
+		        assert input != null;
+		        return input.getId();
+	        });
 
 	/**
 	 * Get the standard function with a given ID
@@ -674,7 +668,7 @@ public enum StandardFunction
 	 *            attribute value factory for standard integer datatype
 	 * @return standard function registry
 	 */
-	public static FunctionRegistry getRegistry(final boolean enableXPath, final StringParseableValueFactory<IntegerValue> stdIntValueFactory)
+	public static FunctionRegistry getRegistry(final boolean enableXPath, final StringParseableValue.Factory<IntegerValue> stdIntValueFactory)
 	{
 		if (stdIntValueFactory == null)
 		{
@@ -689,8 +683,7 @@ public enum StandardFunction
 			 * A.3.15. Optional XPath-based functions: only xpath-node-count supported
 			 */
 			nonGenericFunctions.add(new XPathNodeCountFunction(StandardFunction.XPATH_NODE_COUNT.id));
-		}
-		else
+		} else
 		{
 			nonGenericFunctions = HashCollections.newUpdatableSet(249);
 		}
@@ -729,23 +722,23 @@ public enum StandardFunction
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_ABS.id, false, Arrays.asList(StandardDatatypes.INTEGER), new AbsOperator<IntegerValue>()));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_ABS.id, false, Arrays.asList(StandardDatatypes.DOUBLE), new AbsOperator<DoubleValue>()));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_ADD.id, true, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
-				new AddOperator<IntegerValue>()));
+		        new AddOperator<IntegerValue>()));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_ADD.id, true, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
-				new AddOperator<DoubleValue>()));
-		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_MULTIPLY.id, true, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER,
-				StandardDatatypes.INTEGER), new MultiplyOperator<IntegerValue>()));
+		        new AddOperator<DoubleValue>()));
+		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_MULTIPLY.id, true,
+		        Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER, StandardDatatypes.INTEGER), new MultiplyOperator<IntegerValue>()));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_MULTIPLY.id, true, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
-				new MultiplyOperator<DoubleValue>()));
+		        new MultiplyOperator<DoubleValue>()));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_SUBTRACT.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
-				new SubtractOperator<IntegerValue>()));
-		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_SUBTRACT.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
-				new SubtractOperator<DoubleValue>()));
-		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_DIVIDE.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
-				new DivideOperator<IntegerValue>()));
-		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_DIVIDE.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE),
-				new DivideOperator<DoubleValue>()));
+		        new SubtractOperator<IntegerValue>()));
+		nonGenericFunctions.add(
+		        new NumericArithmeticFunction<>(StandardFunction.DOUBLE_SUBTRACT.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE), new SubtractOperator<DoubleValue>()));
+		nonGenericFunctions.add(
+		        new NumericArithmeticFunction<>(StandardFunction.INTEGER_DIVIDE.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER), new DivideOperator<IntegerValue>()));
+		nonGenericFunctions
+		        .add(new NumericArithmeticFunction<>(StandardFunction.DOUBLE_DIVIDE.id, false, Arrays.asList(StandardDatatypes.DOUBLE, StandardDatatypes.DOUBLE), new DivideOperator<DoubleValue>()));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.INTEGER_MOD.id, false, Arrays.asList(StandardDatatypes.INTEGER, StandardDatatypes.INTEGER),
-				NumericArithmeticOperators.INTEGER_MOD_OPERATOR));
+		        NumericArithmeticOperators.INTEGER_MOD_OPERATOR));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.FLOOR.id, false, Arrays.asList(StandardDatatypes.DOUBLE), NumericArithmeticOperators.FLOOR_OPERATOR));
 		nonGenericFunctions.add(new NumericArithmeticFunction<>(StandardFunction.ROUND.id, false, Arrays.asList(StandardDatatypes.DOUBLE), NumericArithmeticOperators.ROUND_OPERATOR));
 
@@ -759,57 +752,57 @@ public enum StandardFunction
 		 * Primitive data-type conversion functions: A.3.4 Numeric data-type conversion functions, and all {type}-from-string / string-from-{type} functions from A.3.9 (other parts of A.3.9 addressed
 		 * below by StringConcatenateFunction, NonEqualTypeMatchFunction, SubstringFunction)
 		 */
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DOUBLE_TO_INTEGER.id, StandardDatatypes.DOUBLE, StandardDatatypes.INTEGER,
-				StandardDatatypeConverters.DOUBLE_TO_INTEGER));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.INTEGER_TO_DOUBLE.id, StandardDatatypes.INTEGER, StandardDatatypes.DOUBLE,
-				StandardDatatypeConverters.INTEGER_TO_DOUBLE));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.BOOLEAN_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.BOOLEAN, new FromStringConverter<>(
-				StandardAttributeValueFactories.BOOLEAN)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_BOOLEAN.id, StandardDatatypes.BOOLEAN, StandardDatatypes.STRING,
-				StandardDatatypeConverters.BOOLEAN_TO_STRING));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.INTEGER_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.INTEGER, new FromStringConverter<>(
-				stdIntValueFactory)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_INTEGER.id, StandardDatatypes.INTEGER, StandardDatatypes.STRING, new ToStringConverter<IntegerValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DOUBLE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DOUBLE, new FromStringConverter<>(
-				StandardAttributeValueFactories.DOUBLE)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DOUBLE.id, StandardDatatypes.DOUBLE, StandardDatatypes.STRING, new ToStringConverter<DoubleValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.TIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.TIME, new FromStringConverter<>(
-				StandardAttributeValueFactories.TIME)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_TIME.id, StandardDatatypes.TIME, StandardDatatypes.STRING, new ToStringConverter<TimeValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DATE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATE, new FromStringConverter<>(
-				StandardAttributeValueFactories.DATE)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DATE.id, StandardDatatypes.DATE, StandardDatatypes.STRING, new ToStringConverter<DateValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DATETIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATETIME, new FromStringConverter<>(
-				StandardAttributeValueFactories.DATETIME)));
 		nonGenericFunctions
-				.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DATETIME.id, StandardDatatypes.DATETIME, StandardDatatypes.STRING, new ToStringConverter<DateTimeValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.ANYURI_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, new FromStringConverter<>(
-				StandardAttributeValueFactories.ANYURI)));
+		        .add(new DatatypeConversionFunction<>(StandardFunction.DOUBLE_TO_INTEGER.id, StandardDatatypes.DOUBLE, StandardDatatypes.INTEGER, StandardDatatypeConverters.DOUBLE_TO_INTEGER));
+		nonGenericFunctions
+		        .add(new DatatypeConversionFunction<>(StandardFunction.INTEGER_TO_DOUBLE.id, StandardDatatypes.INTEGER, StandardDatatypes.DOUBLE, StandardDatatypeConverters.INTEGER_TO_DOUBLE));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.BOOLEAN_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.BOOLEAN,
+		        new FromStringConverter<>(StandardAttributeValueFactories.BOOLEAN)));
+		nonGenericFunctions
+		        .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_BOOLEAN.id, StandardDatatypes.BOOLEAN, StandardDatatypes.STRING, StandardDatatypeConverters.BOOLEAN_TO_STRING));
+		nonGenericFunctions
+		        .add(new DatatypeConversionFunction<>(StandardFunction.INTEGER_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.INTEGER, new FromStringConverter<>(stdIntValueFactory)));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_INTEGER.id, StandardDatatypes.INTEGER, StandardDatatypes.STRING, new ToStringConverter<IntegerValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DOUBLE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DOUBLE,
+		        new FromStringConverter<>(StandardAttributeValueFactories.DOUBLE)));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DOUBLE.id, StandardDatatypes.DOUBLE, StandardDatatypes.STRING, new ToStringConverter<DoubleValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.TIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.TIME,
+		        new FromStringConverter<>(StandardAttributeValueFactories.TIME)));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_TIME.id, StandardDatatypes.TIME, StandardDatatypes.STRING, new ToStringConverter<TimeValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DATE_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATE,
+		        new FromStringConverter<>(StandardAttributeValueFactories.DATE)));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DATE.id, StandardDatatypes.DATE, StandardDatatypes.STRING, new ToStringConverter<DateValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DATETIME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DATETIME,
+		        new FromStringConverter<>(StandardAttributeValueFactories.DATETIME)));
+		nonGenericFunctions
+		        .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DATETIME.id, StandardDatatypes.DATETIME, StandardDatatypes.STRING, new ToStringConverter<DateTimeValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.ANYURI_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI,
+		        new FromStringConverter<>(StandardAttributeValueFactories.ANYURI)));
 		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_ANYURI.id, StandardDatatypes.ANYURI, StandardDatatypes.STRING, new ToStringConverter<AnyUriValue>()));
 		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DAYTIMEDURATION_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DAYTIMEDURATION,
-				new FromStringConverter<>(StandardAttributeValueFactories.DAYTIMEDURATION)));
+		        new FromStringConverter<>(StandardAttributeValueFactories.DAYTIMEDURATION)));
 		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DAYTIMEDURATION.id, StandardDatatypes.DAYTIMEDURATION, StandardDatatypes.STRING,
-				new ToStringConverter<DayTimeDurationValue>()));
+		        new ToStringConverter<DayTimeDurationValue>()));
 		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.YEARMONTHDURATION_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.YEARMONTHDURATION,
-				new FromStringConverter<>(StandardAttributeValueFactories.YEARMONTHDURATION)));
+		        new FromStringConverter<>(StandardAttributeValueFactories.YEARMONTHDURATION)));
 		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_YEARMONTHDURATION.id, StandardDatatypes.YEARMONTHDURATION, StandardDatatypes.STRING,
-				new ToStringConverter<YearMonthDurationValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.X500NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME, new FromStringConverter<>(
-				StandardAttributeValueFactories.X500NAME)));
+		        new ToStringConverter<YearMonthDurationValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.X500NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME,
+		        new FromStringConverter<>(StandardAttributeValueFactories.X500NAME)));
 		nonGenericFunctions
-				.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_X500NAME.id, StandardDatatypes.X500NAME, StandardDatatypes.STRING, new ToStringConverter<X500NameValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.RFC822NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME, new FromStringConverter<>(
-				StandardAttributeValueFactories.RFC822NAME)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_RFC822NAME.id, StandardDatatypes.RFC822NAME, StandardDatatypes.STRING,
-				new ToStringConverter<Rfc822NameValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.IPADDRESS_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.IPADDRESS, new FromStringConverter<>(
-				StandardAttributeValueFactories.IPADDRESS)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_IPADDRESS.id, StandardDatatypes.IPADDRESS, StandardDatatypes.STRING,
-				new ToStringConverter<IpAddressValue>()));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DNSNAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DNSNAME, new FromStringConverter<>(
-				StandardAttributeValueFactories.DNSNAME)));
-		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DNSNAME.id, StandardDatatypes.DNSNAME, StandardDatatypes.STRING,
-				new ToStringConverter<DnsNameWithPortRangeValue>()));
+		        .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_X500NAME.id, StandardDatatypes.X500NAME, StandardDatatypes.STRING, new ToStringConverter<X500NameValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.RFC822NAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME,
+		        new FromStringConverter<>(StandardAttributeValueFactories.RFC822NAME)));
+		nonGenericFunctions
+		        .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_RFC822NAME.id, StandardDatatypes.RFC822NAME, StandardDatatypes.STRING, new ToStringConverter<Rfc822NameValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.IPADDRESS_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.IPADDRESS,
+		        new FromStringConverter<>(StandardAttributeValueFactories.IPADDRESS)));
+		nonGenericFunctions
+		        .add(new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_IPADDRESS.id, StandardDatatypes.IPADDRESS, StandardDatatypes.STRING, new ToStringConverter<IpAddressValue>()));
+		nonGenericFunctions.add(new DatatypeConversionFunction<>(StandardFunction.DNSNAME_FROM_STRING.id, StandardDatatypes.STRING, StandardDatatypes.DNSNAME,
+		        new FromStringConverter<>(StandardAttributeValueFactories.DNSNAME)));
+		nonGenericFunctions.add(
+		        new DatatypeConversionFunction<>(StandardFunction.STRING_FROM_DNSNAME.id, StandardDatatypes.DNSNAME, StandardDatatypes.STRING, new ToStringConverter<DnsNameWithPortRangeValue>()));
 
 		/*
 		 * Logical functions (A.3.5)
@@ -833,17 +826,17 @@ public enum StandardFunction
 		 * Date and time arithmetic functions (A.3.7)
 		 */
 		nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_ADD_DAYTIMEDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.DAYTIMEDURATION,
-				new TimeAddDurationOperator<DateTimeValue, DayTimeDurationValue>()));
+		        new TimeAddDurationOperator<DateTimeValue, DayTimeDurationValue>()));
 		nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_SUBTRACT_DAYTIMEDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.DAYTIMEDURATION,
-				new TimeSubtractDurationOperator<DateTimeValue, DayTimeDurationValue>()));
+		        new TimeSubtractDurationOperator<DateTimeValue, DayTimeDurationValue>()));
 		nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_ADD_YEARMONTHDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.YEARMONTHDURATION,
-				new TimeAddDurationOperator<DateTimeValue, YearMonthDurationValue>()));
+		        new TimeAddDurationOperator<DateTimeValue, YearMonthDurationValue>()));
 		nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATETIME_SUBTRACT_YEARMONTHDURATION.id, StandardDatatypes.DATETIME, StandardDatatypes.YEARMONTHDURATION,
-				new TimeSubtractDurationOperator<DateTimeValue, YearMonthDurationValue>()));
+		        new TimeSubtractDurationOperator<DateTimeValue, YearMonthDurationValue>()));
 		nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATE_ADD_YEARMONTHDURATION.id, StandardDatatypes.DATE, StandardDatatypes.YEARMONTHDURATION,
-				new TimeAddDurationOperator<DateValue, YearMonthDurationValue>()));
+		        new TimeAddDurationOperator<DateValue, YearMonthDurationValue>()));
 		nonGenericFunctions.add(new TemporalArithmeticFunction<>(StandardFunction.DATE_SUBTRACT_YEARMONTHDURATION.id, StandardDatatypes.DATE, StandardDatatypes.YEARMONTHDURATION,
-				new TimeSubtractDurationOperator<DateValue, YearMonthDurationValue>()));
+		        new TimeSubtractDurationOperator<DateValue, YearMonthDurationValue>()));
 
 		/*
 		 * Date and time comparison functions (second part of A.3.8, first part already addressed previously), i.e. not imposing total ordering of compared objects, as opposed to total-ordering
@@ -868,24 +861,24 @@ public enum StandardFunction
 		 * DatatypeConversionFunction, StringConcatenateFunction, and below by SubstringFunction), regexp-match (A.3.13) and special match 'rfc822Name-match' (part of A.3.14, other part addressed
 		 * above by EqualTypeMatchFunction)
 		 */
-		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.RFC822NAME_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME,
-				StandardNonEqualTypeMatchers.RFC822NAME_MATCHER));
-		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_STARTS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI,
-				StandardNonEqualTypeMatchers.ANYURI_STARTS_WITH_MATCHER));
-		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_ENDS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI,
-				StandardNonEqualTypeMatchers.ANYURI_ENDS_WITH_MATCHER));
-		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_CONTAINS.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI,
-				StandardNonEqualTypeMatchers.ANYURI_CONTAINS_MATCHER));
-		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI,
-				new RegexpMatchCallFactoryBuilder<AnyUriValue>()));
+		nonGenericFunctions
+		        .add(new NonEqualTypeMatchFunction<>(StandardFunction.RFC822NAME_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME, StandardNonEqualTypeMatchers.RFC822NAME_MATCHER));
+		nonGenericFunctions.add(
+		        new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_STARTS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_STARTS_WITH_MATCHER));
+		nonGenericFunctions
+		        .add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_ENDS_WITH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_ENDS_WITH_MATCHER));
+		nonGenericFunctions
+		        .add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_CONTAINS.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, StandardNonEqualTypeMatchers.ANYURI_CONTAINS_MATCHER));
+		nonGenericFunctions
+		        .add(new NonEqualTypeMatchFunction<>(StandardFunction.ANYURI_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.ANYURI, new RegexpMatchCallFactoryBuilder<AnyUriValue>()));
 		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.IPADDRESS_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.IPADDRESS,
-				new RegexpMatchCallFactoryBuilder<IpAddressValue>()));
+		        new RegexpMatchCallFactoryBuilder<IpAddressValue>()));
 		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.DNSNAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.DNSNAME,
-				new RegexpMatchCallFactoryBuilder<DnsNameWithPortRangeValue>()));
+		        new RegexpMatchCallFactoryBuilder<DnsNameWithPortRangeValue>()));
 		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.RFC822NAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.RFC822NAME,
-				new RegexpMatchCallFactoryBuilder<Rfc822NameValue>()));
-		nonGenericFunctions.add(new NonEqualTypeMatchFunction<>(StandardFunction.X500NAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME,
-				new RegexpMatchCallFactoryBuilder<X500NameValue>()));
+		        new RegexpMatchCallFactoryBuilder<Rfc822NameValue>()));
+		nonGenericFunctions.add(
+		        new NonEqualTypeMatchFunction<>(StandardFunction.X500NAME_REGEXP_MATCH.id, StandardDatatypes.STRING, StandardDatatypes.X500NAME, new RegexpMatchCallFactoryBuilder<X500NameValue>()));
 
 		/*
 		 * Substring functions (last part of A.3.9, other parts addressed above by DatatypeConversionFunction, StringConcatenateFunction, NonEqualTypeMatchFunction)
@@ -919,7 +912,7 @@ public enum StandardFunction
 		 */
 
 		// Generic functions, e.g. map function
-		final Set<GenericHigherOrderFunctionFactory> genericFuncFactories = Collections.<GenericHigherOrderFunctionFactory> singleton(new MapFunctionFactory(StandardFunction.MAP.id));
+		final Set<GenericHigherOrderFunctionFactory> genericFuncFactories = Collections.<GenericHigherOrderFunctionFactory>singleton(new MapFunctionFactory(StandardFunction.MAP.id));
 
 		/*
 		 * A.3.16. Optional function(s) not supported

@@ -164,6 +164,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		@Override
 		public Bag<?> putNamedAttributeIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> attributeValues)
 		{
+			assert attributeFqn != null;
+
 			/*
 			 * Put the non-issued version of the attribute first
 			 */
@@ -180,7 +182,6 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 */
 	private static abstract class IndividualDecisionRequestEvaluator
 	{
-		private static final Logger LOGGER = LoggerFactory.getLogger(IndividualDecisionRequestEvaluator.class);
 
 		private interface RequestAndPdpIssuedNamedAttributesMerger
 		{
@@ -356,8 +357,16 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		protected final EvaluationContext newEvaluationContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
 		{
+			assert request != null;
 			final Map<AttributeFqn, AttributeBag<?>> mergedNamedAttributes = reqAndPdpIssuedAttributesMerger.merge(pdpIssuedAttributes, request.getNamedAttributes());
 			return new IndividualDecisionRequestContext(mergedNamedAttributes, request.getExtraContentsByCategory(), request.isApplicablePolicyIdListReturned());
+		}
+
+		protected final DecisionResult evaluateInNewContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
+		{
+			assert request != null;
+			final EvaluationContext evalCtx = newEvaluationContext(request, pdpIssuedAttributes);
+			return rootPolicyEvaluator.findAndEvaluate(evalCtx);
 		}
 
 		/**
@@ -379,19 +388,13 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 * Evaluate an Individual Decision Request from which a new request context is created to evaluate the request
 		 * </p>
 		 *
-		 * @param request
-		 *            a non-null {@link DecisionRequest} object.
+		 * @param individualDecisionRequest
+		 *            a non-null {@link DecisionRequest} object, i.e. representation of Individual Decision Request (as defined by Multiple Decision Profile of XACML).
 		 * @param pdpIssuedAttributes
 		 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 		 * @return the evaluation result.
 		 */
-		protected final DecisionResult evaluateInNewContext(final DecisionRequest request, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
-		{
-			assert request != null;
-			LOGGER.debug("Evaluating Individual Decision Request: {}", request);
-			final EvaluationContext evalCtx = newEvaluationContext(request, pdpIssuedAttributes);
-			return rootPolicyEvaluator.findAndEvaluate(evalCtx);
-		}
+		protected abstract DecisionResult evaluate(final DecisionRequest individualDecisionRequest, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer);
 
 		/**
 		 * <p>
@@ -400,19 +403,21 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 *
 		 * @param individualDecisionRequests
 		 *            a {@link java.util.List} of individual decision requests.
-		 * @param pdpIssuedAttributes
+		 * @param pdpStdEnvAttributeIssuer
 		 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 		 * @return individual decision request-result pairs, where the list of the requests is the same as {@code individualDecisionRequests}.
 		 * @throws IndeterminateEvaluationException
 		 *             if an error occurred preventing any request evaluation
 		 */
 		protected abstract <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException;
+				List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException;
 
 	}
 
 	private static final class NonCachingIndividualDecisionRequestEvaluator extends IndividualDecisionRequestEvaluator
 	{
+		private static final Logger LOGGER = LoggerFactory.getLogger(NonCachingIndividualDecisionRequestEvaluator.class);
+
 		private static final RuntimeException NULL_INDIVIDUAL_DECISION_REQUEST_EXCEPTION = new RuntimeException(
 				"One of the individual decision requests returned by the request filter is invalid (null).");
 
@@ -422,11 +427,20 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		@Override
-		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		protected DecisionResult evaluate(DecisionRequest request, StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
-			assert individualDecisionRequests != null;
+			assert request != null;
+			LOGGER.debug("Evaluating Individual Decision Request: {}", request);
+			return evaluateInNewContext(request, pdpStdEnvAttributeIssuer.get());
+		}
 
+		@Override
+		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
+		{
+			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
+
+			final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes = pdpStdEnvAttributeIssuer.get();
 			final Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> resultsByRequest = new ArrayDeque<>(individualDecisionRequests.size());
 			for (final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest : individualDecisionRequests)
 			{
@@ -444,45 +458,57 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 	}
 
-	private static abstract class CachingIndividualRequestEvaluator extends IndividualDecisionRequestEvaluator
+	private static final class IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext extends IndividualDecisionRequestEvaluator
 	{
+		private static final Logger LOGGER = LoggerFactory.getLogger(IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext.class);
 
-		protected static final IndeterminateEvaluationException INDETERMINATE_EVALUATION_EXCEPTION = new IndeterminateEvaluationException("Internal error in decision cache: null result",
+		private static final IndeterminateEvaluationException INDETERMINATE_EVALUATION_EXCEPTION = new IndeterminateEvaluationException("Internal error in decision cache: null result",
 				XacmlStatusCode.PROCESSING_ERROR.value());
 
-		protected final DecisionCache decisionCache;
+		private final DecisionCache decisionCache;
 
-		private CachingIndividualRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource, final DecisionCache decisionCache)
+		private IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource,
+				final DecisionCache decisionCache)
 		{
 			super(rootPolicyEvaluator, stdEnvAttributeSource);
 			assert decisionCache != null;
 			this.decisionCache = decisionCache;
 		}
-	}
 
-	private static final class IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext extends CachingIndividualRequestEvaluator
-	{
-		// the logger we'll use for all messages
-		private static final Logger _LOGGER = LoggerFactory.getLogger(IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext.class);
-
-		private IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource,
-				final DecisionCache decisionCache)
+		@Override
+		protected DecisionResult evaluate(DecisionRequest individualDecisionRequest, StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
-			super(rootPolicyEvaluator, stdEnvAttributeSource, decisionCache);
+			assert individualDecisionRequest != null;
+			LOGGER.debug("Evaluating Individual Decision Request: {}", individualDecisionRequest);
+			final DecisionResult cachedResult = decisionCache.get(individualDecisionRequest, null);
+			if (cachedResult == null)
+			{
+				LOGGER.debug("No result found in cache for Individual Decision Request: {}. Computing new result from policy evaluation...", individualDecisionRequest);
+				final DecisionResult newResult = evaluateInNewContext(individualDecisionRequest, pdpStdEnvAttributeIssuer.get());
+				LOGGER.debug("Caching new Result for Individual Decision Request: {} -> {}", individualDecisionRequest, newResult);
+				decisionCache.put(individualDecisionRequest, newResult, null);
+				return newResult;
+			}
+
+			LOGGER.debug("Result found in cache for Individual Decision Request: {} -> {}", individualDecisionRequest, cachedResult);
+			return cachedResult;
 		}
 
 		@Override
-		public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
 		{
+			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
+
 			final Map<INDIVIDUAL_DECISION_REQ_T, DecisionResult> cachedResultsByRequest = decisionCache.getAll(individualDecisionRequests);
 			if (cachedResultsByRequest == null)
 			{
 				// error, return indeterminate result as only result
-				_LOGGER.error("Invalid decision cache result: null");
+				LOGGER.error("Invalid decision cache result: null");
 				throw INDETERMINATE_EVALUATION_EXCEPTION;
 			}
 
+			final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes = pdpStdEnvAttributeIssuer.get();
 			/*
 			 * There will be at most as many new results (not in cache) as there are individual decision requests
 			 */
@@ -490,6 +516,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			final Map<INDIVIDUAL_DECISION_REQ_T, DecisionResult> newResultsByRequest = HashCollections.newUpdatableMap(individualDecisionRequests.size());
 			for (final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest : individualDecisionRequests)
 			{
+				LOGGER.debug("Evaluating Individual Decision Request: {}", individualDecisionRequest);
 				final DecisionResult finalResult;
 				/*
 				 * Check whether there is any decision result in cache for this request
@@ -497,12 +524,15 @@ public final class BasePdpEngine implements CloseablePdpEngine
 				final DecisionResult cachedResult = cachedResultsByRequest.get(individualDecisionRequest);
 				if (cachedResult == null)
 				{
-					// result not in cache -> evaluate request
+					LOGGER.debug("No result found in cache for Individual Decision Request: {}. Computing new result from policy evaluation...", individualDecisionRequest);
 					finalResult = evaluateInNewContext(individualDecisionRequest, pdpIssuedAttributes);
+					LOGGER.debug("Caching new Result for Individual Decision Request: {} -> {}", individualDecisionRequest, finalResult);
 					newResultsByRequest.put(individualDecisionRequest, finalResult);
 				}
 				else
 				{
+
+					LOGGER.debug("Result found in cache for Individual Decision Request: {} -> {}", individualDecisionRequest, cachedResult);
 					finalResult = cachedResult;
 				}
 
@@ -519,38 +549,57 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 	}
 
-	private static final class IndividualRequestEvaluatorWithCacheUsingEvaluationContext extends CachingIndividualRequestEvaluator
+	private static final class IndividualRequestEvaluatorWithCacheUsingEvaluationContext extends IndividualDecisionRequestEvaluator
 	{
+		private static final Logger LOGGER = LoggerFactory.getLogger(IndividualRequestEvaluatorWithCacheUsingEvaluationContext.class);
 
-		public IndividualRequestEvaluatorWithCacheUsingEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource validStdEnvAttrSrc,
+		private final DecisionCache decisionCache;
+
+		private IndividualRequestEvaluatorWithCacheUsingEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource validStdEnvAttrSrc,
 				final DecisionCache decisionCache)
 		{
-			super(rootPolicyEvaluator, validStdEnvAttrSrc, decisionCache);
+			super(rootPolicyEvaluator, validStdEnvAttrSrc);
+			assert decisionCache != null;
+			this.decisionCache = decisionCache;
 		}
 
 		private <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> DecisionResult evaluate(final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest,
 				final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
 		{
+			assert individualDecisionRequest != null;
+			LOGGER.debug("Evaluating Individual Decision Request: {}", individualDecisionRequest);
 			/*
 			 * Check whether there is any decision result in cache for this request
 			 */
 			final EvaluationContext evalCtx = newEvaluationContext(individualDecisionRequest, pdpIssuedAttributes);
 			final DecisionResult cachedResult = decisionCache.get(individualDecisionRequest, evalCtx);
-			if (cachedResult != null)
+			if (cachedResult == null)
 			{
-				return cachedResult;
+				LOGGER.debug("No result found in cache for Individual Decision Request: {}. Computing new result from policy evaluation...", individualDecisionRequest);
+				final DecisionResult finalResult = evaluateReusingContext(evalCtx);
+				LOGGER.debug("Caching new Result for Individual Decision Request: {} -> {}", individualDecisionRequest, finalResult);
+				decisionCache.put(individualDecisionRequest, finalResult, evalCtx);
+				return finalResult;
 			}
 
-			// result not in cache -> evaluate request
-			final DecisionResult finalResult = evaluateReusingContext(evalCtx);
-			decisionCache.put(individualDecisionRequest, finalResult, evalCtx);
-			return finalResult;
+			LOGGER.debug("Result found in cache for Individual Decision Request: {} -> {}", individualDecisionRequest, cachedResult);
+			return cachedResult;
 		}
 
 		@Override
-		public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes) throws IndeterminateEvaluationException
+		protected DecisionResult evaluate(DecisionRequest individualDecisionRequest, StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
+			assert individualDecisionRequest != null && pdpStdEnvAttributeIssuer != null;
+			return evaluate(individualDecisionRequest, pdpStdEnvAttributeIssuer.get());
+		}
+
+		@Override
+		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
+				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
+		{
+			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
+
+			final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes = pdpStdEnvAttributeIssuer.get();
 			/*
 			 * There will be at most as many new results (not in cache) as there are individual decision requests
 			 */
@@ -672,7 +721,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 * "If values for these attributes are not present in the decision request, then their values MUST be supplied by the context handler" . These current date/time values must be set here once
 		 * before an individual request is evaluated to make sure it uses the same value for current-time/current-date/current-dateTime during the entire evaluation, if they use the one from PDP.
 		 */
-		return individualReqEvaluator.evaluateInNewContext(individualDecisionRequest, this.pdpStdEnvAttributeIssuer.get());
+		return individualReqEvaluator.evaluate(individualDecisionRequest, this.pdpStdEnvAttributeIssuer);
 	}
 
 	/** {@inheritDoc} */
@@ -690,7 +739,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 * "If values for these attributes are not present in the decision request, then their values MUST be supplied by the context handler" . These current date/time values must be set here once
 		 * before every individual request is evaluated to make sure they all use the same value for current-time/current-date/current-dateTime, if they use the one from PDP.
 		 */
-		return individualReqEvaluator.evaluate(individualDecisionRequests, this.pdpStdEnvAttributeIssuer.get());
+		return individualReqEvaluator.evaluate(individualDecisionRequests, this.pdpStdEnvAttributeIssuer);
 	}
 
 	/** {@inheritDoc} */

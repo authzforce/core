@@ -21,15 +21,13 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
 import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
+import org.ow2.authzforce.core.pdp.api.PepAction;
 import org.ow2.authzforce.core.pdp.api.UpdatableList;
-import org.ow2.authzforce.core.pdp.api.UpdatablePepActions;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
@@ -37,6 +35,8 @@ import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 /**
  * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
@@ -55,7 +55,7 @@ final class FirstApplicableCombiningAlg<T extends Decidable> extends BaseCombini
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatablePepActions outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			for (final Decidable combinedElement : getCombinedElements())
 			{
@@ -74,7 +74,7 @@ final class FirstApplicableCombiningAlg<T extends Decidable> extends BaseCombini
 							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
 						}
 
-						outPepActions.add(result.getPepActions());
+						outPepActions.addAll(result.getPepActions());
 						return ExtendedDecisions.SIMPLE_PERMIT;
 					case DENY:
 						if (outApplicablePolicyIdList != null)
@@ -82,7 +82,7 @@ final class FirstApplicableCombiningAlg<T extends Decidable> extends BaseCombini
 							outApplicablePolicyIdList.addAll(result.getApplicablePolicies());
 						}
 
-						outPepActions.add(result.getPepActions());
+						outPepActions.addAll(result.getPepActions());
 						return ExtendedDecisions.SIMPLE_DENY;
 					case INDETERMINATE:
 						if (outApplicablePolicyIdList != null)
@@ -107,8 +107,8 @@ final class FirstApplicableCombiningAlg<T extends Decidable> extends BaseCombini
 
 	/** {@inheritDoc} */
 	@Override
-	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends T>> params, final Iterable<? extends T> combinedElements) throws UnsupportedOperationException,
-			IllegalArgumentException
+	public CombiningAlg.Evaluator getInstance(final Iterable<CombiningAlgParameter<? extends T>> params, final Iterable<? extends T> combinedElements)
+	        throws UnsupportedOperationException, IllegalArgumentException
 	{
 		// if no element combined -> decision is overridden Effect
 		if (combinedElements == null)

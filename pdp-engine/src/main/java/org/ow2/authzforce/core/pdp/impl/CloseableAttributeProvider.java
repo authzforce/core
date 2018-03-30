@@ -23,19 +23,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.AttributeFqns;
 import org.ow2.authzforce.core.pdp.api.AttributeProvider;
-import org.ow2.authzforce.core.pdp.api.CloseableDesignatedAttributeProvider;
-import org.ow2.authzforce.core.pdp.api.DesignatedAttributeProvider;
+import org.ow2.authzforce.core.pdp.api.CloseableNamedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
+import org.ow2.authzforce.core.pdp.api.NamedAttributeProvider;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
 /**
  * Closeable AttributeProvider
@@ -51,9 +51,9 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 
 	private static final class ModuleAdapter
 	{
-		private final CloseableDesignatedAttributeProvider module;
+		private final CloseableNamedAttributeProvider module;
 
-		private ModuleAdapter(final CloseableDesignatedAttributeProvider module) throws IOException
+		private ModuleAdapter(final CloseableNamedAttributeProvider module) throws IOException
 		{
 			final Set<AttributeDesignatorType> providedAttributes = module.getProvidedAttributes();
 			if (providedAttributes == null || providedAttributes.isEmpty())
@@ -81,7 +81,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 			return module.toString();
 		}
 
-		private DesignatedAttributeProvider getAdaptedModule()
+		private NamedAttributeProvider getAdaptedModule()
 		{
 			return this.module;
 		}
@@ -99,8 +99,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 			try
 			{
 				mod.close();
-			}
-			catch (final IOException e)
+			} catch (final IOException e)
 			{
 				latestEx = e;
 			}
@@ -115,8 +114,8 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	// not-null
 	private final Set<ModuleAdapter> moduleClosers;
 
-	private CloseableAttributeProvider(final ImmutableListMultimap<AttributeFqn, DesignatedAttributeProvider> modulesByAttributeId, final Set<ModuleAdapter> moduleClosers,
-			final boolean strictAttributeIssuerMatch)
+	private CloseableAttributeProvider(final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> modulesByAttributeId, final Set<ModuleAdapter> moduleClosers,
+	        final boolean strictAttributeIssuerMatch)
 	{
 		super(modulesByAttributeId, null, strictAttributeIssuerMatch);
 		assert moduleClosers != null;
@@ -124,7 +123,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	}
 
 	private static final CloseableAttributeProvider EVALUATION_CONTEXT_ONLY_SCOPED_CLOSEABLE_ATTRIBUTE_PROVIDER = new CloseableAttributeProvider(ImmutableListMultimap.of(),
-			Collections.<ModuleAdapter> emptySet(), true);
+	        Collections.<ModuleAdapter>emptySet(), true);
 
 	/**
 	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the requested attribute ID, if any.
@@ -144,18 +143,18 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	 * @throws java.io.IOException
 	 *             error closing the Attribute Providers created from {@code attributeProviderFactories}, when a {@link IllegalArgumentException} is raised
 	 */
-	public static CloseableAttributeProvider getInstance(final List<CloseableDesignatedAttributeProvider.DependencyAwareFactory> attributeProviderFactories,
-			final AttributeValueFactoryRegistry attributeFactory, final boolean strictAttributeIssuerMatch) throws IOException
+	public static CloseableAttributeProvider getInstance(final List<CloseableNamedAttributeProvider.DependencyAwareFactory> attributeProviderFactories,
+	        final AttributeValueFactoryRegistry attributeFactory, final boolean strictAttributeIssuerMatch) throws IOException
 	{
 		if (attributeProviderFactories == null || attributeProviderFactories.isEmpty())
 		{
 			return EVALUATION_CONTEXT_ONLY_SCOPED_CLOSEABLE_ATTRIBUTE_PROVIDER;
 		}
 
-		final ListMultimap<AttributeFqn, DesignatedAttributeProvider> modulesByAttributeId = ArrayListMultimap.create();
+		final ListMultimap<AttributeFqn, NamedAttributeProvider> modulesByAttributeId = ArrayListMultimap.create();
 		final int moduleCount = attributeProviderFactories.size();
 		final Set<ModuleAdapter> mutableModuleCloserSet = HashCollections.newUpdatableSet(moduleCount);
-		for (final CloseableDesignatedAttributeProvider.DependencyAwareFactory attProviderFactory : attributeProviderFactories)
+		for (final CloseableNamedAttributeProvider.DependencyAwareFactory attProviderFactory : attributeProviderFactories)
 		{
 			try
 			{
@@ -169,10 +168,9 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 				if (requiredAttrs == null)
 				{
 					depAttrProvider = ModularAttributeProvider.EVALUATION_CONTEXT_ONLY_SCOPED_ATTRIBUTE_PROVIDER;
-				}
-				else
+				} else
 				{
-					final ImmutableListMultimap<AttributeFqn, DesignatedAttributeProvider> immutableCopyOfAttrProviderModsByAttrId = ImmutableListMultimap.copyOf(modulesByAttributeId);
+					final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> immutableCopyOfAttrProviderModsByAttrId = ImmutableListMultimap.copyOf(modulesByAttributeId);
 					depAttrProvider = new ModularAttributeProvider(immutableCopyOfAttrProviderModsByAttrId, requiredAttrs, strictAttributeIssuerMatch);
 				}
 
@@ -190,8 +188,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 					 */
 					modulesByAttributeId.put(attrGUID, moduleAdapter.getAdaptedModule());
 				}
-			}
-			catch (final IllegalArgumentException e)
+			} catch (final IllegalArgumentException e)
 			{
 				close(mutableModuleCloserSet);
 				throw e;

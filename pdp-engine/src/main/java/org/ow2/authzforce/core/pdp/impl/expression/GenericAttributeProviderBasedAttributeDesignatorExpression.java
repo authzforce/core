@@ -99,7 +99,7 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 
 		this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(missingAttributeMessage + " for unknown reason", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException(
-				"Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", XacmlStatusCode.MISSING_ATTRIBUTE.value());
+		        "Missing Attributes/Attribute for evaluation of AttributeDesignator '" + this.attrGUID + "' because request context undefined", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 		mustBePresentEnforcer.validate(bag);
 
 		/*
-		 * if we got here the bag wasn't empty, or mustBePresent was false, so we just return the result
+		 * if we got here, it means that the bag wasn't empty, or bag was empty AND mustBePresent was false (so validate() succeeded), so we just return the result
 		 */
 		return bag;
 	}
@@ -160,7 +160,7 @@ public final class GenericAttributeProviderBasedAttributeDesignatorExpression<AV
 		if (toString == null)
 		{
 			toString = "AttributeDesignator [" + this.attrGUID + ", dataType= " + this.returnType.getElementType() + ", mustBePresent= "
-					+ (mustBePresentEnforcer == Bags.DUMB_VALIDATOR ? "false" : "true") + "]";
+			        + (mustBePresentEnforcer == Bags.DUMB_VALIDATOR ? "false" : "true") + "]";
 		}
 
 		return toString;

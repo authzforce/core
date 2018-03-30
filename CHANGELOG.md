@@ -7,6 +7,16 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 13.0.0 
+### Changed
+- authzforce-ce-core-pdp-api version: 15.0.0. [More info](https://github.com/authzforce/core-pdp-api/blob/develop/CHANGELOG.md#1500).
+
+### Fixed
+- pdp-testutils module depends on jongo version which depends on jackson-databind version < 2.9.5 affected by CVE-2018-7489. Fix: upgrade to 2.9.5.
+- NPE in `CoreRootPolicyProvider#getInstance(...)` with null `environmentProperties` arg
+- `BasePdpEngine#evaluate(IndividualDecisionRequest)` not using enabled decision cache
+
+
 ## 12.0.0
 ### Changed
 - Dependency authzforce-ce-core-pdp-api: version 13.0.0 -> 14.0.0; changes APIs for PDP AttributeProvider and DecisionCache extensions:

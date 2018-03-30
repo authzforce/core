@@ -61,17 +61,17 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		private final Datatype<? extends SimpleValue<String>> param0Type;
 
 		private Call(final FirstOrderFunctionSignature<StringValue> functionSig, final Datatype<? extends SimpleValue<String>> param0Type, final List<Expression<?>> args,
-				final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
+		        final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types: expected: " + param0Type + ", " + StandardDatatypes.INTEGER + ", " + StandardDatatypes.INTEGER
-					+ "; actual: ";
+			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types. Expected: " + param0Type + ", " + StandardDatatypes.INTEGER + ", " + StandardDatatypes.INTEGER;
 			this.argsOutOfBoundsErrorMessage = "Function " + functionId + ": either beginIndex is out of bounds, or endIndex =/= -1 and out of bounds";
 			this.param0Type = param0Type;
 		}
 
 		@Override
-		protected StringValue evaluate(final Deque<AttributeValue> args) throws IndeterminateEvaluationException {
+		protected StringValue evaluate(final Deque<AttributeValue> args) throws IndeterminateEvaluationException
+		{
 			final AttributeValue rawArg0 = args.poll();
 			final AttributeValue rawArg1 = args.poll();
 			final AttributeValue rawArg2 = args.poll();
@@ -86,8 +86,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				endIndex = (IntegerValue) rawArg2;
 			} catch (final ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg + rawArg0.getDataType() + "," + rawArg1.getDataType() + "," + rawArg2.getDataType(),
-						XacmlStatusCode.PROCESSING_ERROR.value(), e);
+				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
 
 			/**
@@ -138,17 +137,20 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		this.param0Type = param0Type;
 	}
 
-	private static String getInvalidArg1MessagePrefix(final FirstOrderFunctionSignature<?> funcsig) {
+	private static String getInvalidArg1MessagePrefix(final FirstOrderFunctionSignature<?> funcsig)
+	{
 		return "Function " + funcsig.getName() + ": Invalid arg #1 (beginIndex): expected: positive integer; actual: ";
 	}
 
-	private static String getInvalidArg2MessagePrefix(final FirstOrderFunctionSignature<?> funcsig) {
+	private static String getInvalidArg2MessagePrefix(final FirstOrderFunctionSignature<?> funcsig)
+	{
 		return "Function " + funcsig.getName() + ": Invalid arg #2 (endIndex): expected: -1 or positive integer >= beginIndex; actual: ";
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) {
+	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
+	{
 		final int numOfArgs = argExpressions.size() + remainingArgTypes.length;
 		if (numOfArgs != 3)
 		{
