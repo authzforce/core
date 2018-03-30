@@ -7,7 +7,7 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
-## Unreleased
+## 13.0.0 
 ### Changed
 - authzforce-ce-core-pdp-api version: 15.0.0. [More info](https://github.com/authzforce/core-pdp-api/blob/develop/CHANGELOG.md#1500).
 
