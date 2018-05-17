@@ -81,13 +81,13 @@ Java (JRE) 8 or later.
 Get the [latest executable jar from Maven Central](http://central.maven.org/maven2/org/ow2/authzforce/authzforce-ce-core-pdp-cli/) with groupId/artifactId = `org.ow2.authzforce`/`authzforce-ce-core-pdp-cli` and make sure you are allowed to run it (it is a fully executable JAR), e.g. with command:
 
 ```
-$ chmod a+x authzforce-ce-core-pdp-cli-10.0.0.jar
+$ chmod a+x authzforce-ce-core-pdp-cli-13.0.0.jar
 ```
 
 Copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory, and run the executable as follows:
 
 ```
-$ ./authzforce-ce-core-pdp-cli-10.0.0.jar pdp.xml IIA001/Request.xml
+$ ./authzforce-ce-core-pdp-cli-13.0.0.jar pdp.xml IIA001/Request.xml
 ```
 
 * `pdp.xml`: PDP configuration file, that defines the location(s) of XACML policy(ies), among other PDP engine parameters; the content of this file is a XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd), so you can read the documentation of every configuration parameter in that schema file;
@@ -95,7 +95,7 @@ $ ./authzforce-ce-core-pdp-cli-10.0.0.jar pdp.xml IIA001/Request.xml
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
 ```
-$ ./authzforce-ce-core-pdp-cli-10.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.json
+$ ./authzforce-ce-core-pdp-cli-13.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.json
 ```
 * `Request.json`: XACML request in XACML 3.0/JSON (Profile) format.
 
@@ -114,7 +114,7 @@ Since this is a Maven artifact and it requires dependencies, you should build yo
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>10.2.0</version>
+         <version>13.0.0</version>
       </dependency>
 ...
 
