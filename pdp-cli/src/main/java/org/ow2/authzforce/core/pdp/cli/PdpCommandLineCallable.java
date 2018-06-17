@@ -27,9 +27,6 @@ import java.util.concurrent.Callable;
 
 import javax.xml.bind.Marshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
@@ -44,8 +41,10 @@ import org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocesso
 import org.ow2.authzforce.core.pdp.io.xacml.json.IndividualXacmlJsonRequest;
 import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
-import org.ow2.authzforce.xacml.json.model.Xacml3JsonUtils;
+import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -68,23 +67,25 @@ public final class PdpCommandLineCallable implements Callable<Void>
 	/*
 	 * WARNING: do not make picocli-annoated fields final here! Known issue: https://github.com/remkop/picocli/issues/68. Planned to be fixed in release 2.1.0.
 	 */
-	@Option(names = { "-t", "--type" }, description = "Type of XACML request/response: 'XACML_XML' for XACML 3.0/XML (XACML core specification), 'XACML_JSON' for XACML 3.0/JSON (JSON Profile of XACML 3.0)")
-	private RequestType requestType = RequestType.XACML_XML;
+	@Option(names = { "-t",
+	        "--type" }, description = "Type of XACML request/response: 'XACML_XML' for XACML 3.0/XML (XACML core specification), 'XACML_JSON' for XACML 3.0/JSON (JSON Profile of XACML 3.0)")
+	private final RequestType requestType = RequestType.XACML_XML;
 
 	@Parameters(index = "0", description = "Path to PDP configuration file, valid against schema located at https://github.com/authzforce/core/blob/release-X.Y.Z/pdp-engine/src/main/resources/pdp.xsd (X.Y.Z is the version provided by -v option)")
 	private File confFile;
 
 	@Option(names = { "-c", "--catalog" }, description = "Path to XML catalog for resolving schemas used in extensions XSD specified by -e option, required only if -e specified")
-	private String catalogLocation = null;
+	private final String catalogLocation = null;
 
-	@Option(names = { "-e", "--extensions" }, description = "Path to extensions XSD (contains XSD namespace imports for all extensions used in the PDP configuration), required only if using any extension in the PDP configuration file")
-	private String extensionXsdLocation = null;
+	@Option(names = { "-e",
+	        "--extensions" }, description = "Path to extensions XSD (contains XSD namespace imports for all extensions used in the PDP configuration), required only if using any extension in the PDP configuration file")
+	private final String extensionXsdLocation = null;
 
 	@Parameters(index = "1", description = "XACML Request (format determined by -t option)")
 	private File reqFile;
 
 	@Option(names = { "-p", "--prettyprint" }, description = "Pretty-print output with line feeds and indentation")
-	private boolean formattedOutput = false;
+	private final boolean formattedOutput = false;
 
 	@Override
 	public Void call() throws Exception
@@ -104,17 +105,17 @@ public final class PdpCommandLineCallable implements Callable<Void>
 						throw new IllegalArgumentException("Invalid XACML JSON Request file: " + reqFile + ". Expected root key: \"Request\"");
 					}
 
-					Xacml3JsonUtils.REQUEST_SCHEMA.validate(jsonRequest);
+					XacmlJsonUtils.REQUEST_SCHEMA.validate(jsonRequest);
 				}
 
 				final DecisionResultPostprocessor<IndividualXacmlJsonRequest, JSONObject> defaultResultPostproc = new BaseXacmlJsonResultPostprocessor(
-						configuration.getClientRequestErrorVerbosityLevel());
+				        configuration.getClientRequestErrorVerbosityLevel());
 				final DecisionRequestPreprocessor<JSONObject, IndividualXacmlJsonRequest> defaultReqPreproc = SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.INSTANCE.getInstance(
-						configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXpathEnabled(), XmlUtils.SAXON_PROCESSOR,
-						defaultResultPostproc.getFeatures());
+				        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXpathEnabled(), XmlUtils.SAXON_PROCESSOR,
+				        defaultResultPostproc.getFeatures());
 
 				final PdpEngineInoutAdapter<JSONObject, JSONObject> jsonPdpEngineAdapter = PdpEngineAdapters.newInoutAdapter(JSONObject.class, JSONObject.class, configuration, defaultReqPreproc,
-						defaultResultPostproc);
+				        defaultResultPostproc);
 				final JSONObject jsonResponse = jsonPdpEngineAdapter.evaluate(jsonRequest);
 				System.out.println(jsonResponse.toString(formattedOutput ? 4 : 0));
 				break;

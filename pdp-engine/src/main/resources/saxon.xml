@@ -35,7 +35,6 @@
       preEvaluateDoc="false"
       serializerFactory=""
       errorListener="net.sf.saxon.lib.StandardErrorListener"
-      traceListener="net.sf.saxon.trace.XSLTTraceListener"
       usePiDisableOutputEscaping="false"
       validationWarnings="true" />
    <serialization
@@ -92,7 +91,7 @@
       stylesheetParser="">
    </xslt>
    <xquery
-      version="1.1"
+      version="3.1"
       allowUpdate="false"
       errorListener="net.sf.saxon.StandardErrorListener"
       moduleUriResolver="net.sf.saxon.lib.StandardModuleURIResolver"
@@ -103,12 +102,5 @@
       defaultElementNamespace=""
       preserveBoundarySpace="false"
       requiredContextItemType="document-node()"
-      emptyLeast="true" />
-      
-      <!-- XSD occurrenceLimits property is not considered valid by SAXON 9.6 although it is in the doc:
-      http://www.saxonica.com/documentation9.6/index.html#!configuration/configuration-file/config-xsd 
-      Bug reported here: https://saxonica.plan.io/issues/2731
-      -->
-  <xsd
-      version="1.1" />    
+      emptyLeast="true" />   
 </configuration>

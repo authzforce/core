@@ -44,7 +44,7 @@ import org.ow2.authzforce.core.pdp.io.xacml.json.XacmlJsonParsingUtils.ContentSk
 import org.ow2.authzforce.core.pdp.io.xacml.json.XacmlJsonParsingUtils.FullXacmlJsonAttributesParserFactory;
 import org.ow2.authzforce.core.pdp.io.xacml.json.XacmlJsonParsingUtils.NamedXacmlJsonAttributeParser;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
-import org.ow2.authzforce.xacml.json.model.Xacml3JsonUtils;
+import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,7 +208,7 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 
 		try
 		{
-			Xacml3JsonUtils.REQUEST_SCHEMA.validate(request);
+			XacmlJsonUtils.REQUEST_SCHEMA.validate(request);
 		}
 		catch (final ValidationException e)
 		{

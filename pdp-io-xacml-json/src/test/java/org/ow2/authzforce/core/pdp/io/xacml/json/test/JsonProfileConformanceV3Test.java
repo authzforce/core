@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -43,7 +42,7 @@ import org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocesso
 import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.json.model.LimitsCheckingJSONObject;
-import org.ow2.authzforce.xacml.json.model.Xacml3JsonUtils;
+import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
@@ -132,11 +131,11 @@ public class JsonProfileConformanceV3Test
 		}
 
 		// normalize responses for comparison
-		final JSONObject normalizedExpectedResponse = Xacml3JsonUtils.canonicalizeResponse(expectedResponse);
-		final JSONObject normalizedActualResponse = Xacml3JsonUtils.canonicalizeResponse(actualResponseFromPDP);
+		final JSONObject normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(expectedResponse);
+		final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(actualResponseFromPDP);
 		Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse),
-				"Test '" + testId + "' (StatusMessage/StatusDetail/nested StatusCode elements removed/ignored for comparison): expected: <" + normalizedExpectedResponse + "> ; actual: <"
-						+ normalizedActualResponse + ">");
+		        "Test '" + testId + "' (StatusMessage/StatusDetail/nested StatusCode elements removed/ignored for comparison): expected: <" + normalizedExpectedResponse + "> ; actual: <"
+		                + normalizedActualResponse + ">");
 	}
 
 	public static Collection<Object[]> params(final String testResourcesRootDirectory) throws URISyntaxException, IOException
@@ -176,7 +175,7 @@ public class JsonProfileConformanceV3Test
 		// Response file
 		final Path expectedRespFile = testDirectoryPath.resolve(EXPECTED_RESPONSE_FILENAME_SUFFIX);
 		final JSONObject expectedResponse;
-		try (final BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(expectedRespFile.toFile()), StandardCharsets.UTF_8)))
+		try (final BufferedReader reader = Files.newBufferedReader(expectedRespFile, StandardCharsets.UTF_8))
 		{
 			expectedResponse = new LimitsCheckingJSONObject(reader, MAX_JSON_STRING_LENGTH, MAX_JSON_CHILDREN_COUNT, MAX_JSON_DEPTH);
 			if (!expectedResponse.has("Response"))
@@ -184,7 +183,7 @@ public class JsonProfileConformanceV3Test
 				throw new IllegalArgumentException("Invalid XACML JSON Response file: " + expectedRespFile + ". Expected root key: \"Response\"");
 			}
 
-			Xacml3JsonUtils.RESPONSE_SCHEMA.validate(expectedResponse);
+			XacmlJsonUtils.RESPONSE_SCHEMA.validate(expectedResponse);
 		}
 
 		// Request file
@@ -198,7 +197,7 @@ public class JsonProfileConformanceV3Test
 				throw new IllegalArgumentException("Invalid XACML JSON Request file: " + reqFile + ". Expected root key: \"Request\"");
 			}
 
-			Xacml3JsonUtils.REQUEST_SCHEMA.validate(jsonRequest);
+			XacmlJsonUtils.REQUEST_SCHEMA.validate(jsonRequest);
 		}
 
 		final Path rootPolicyFile = testDirectoryPath.resolve(ROOT_POLICY_FILENAME_SUFFIX);
@@ -212,9 +211,9 @@ public class JsonProfileConformanceV3Test
 		 * policies) at the moment. If some day, JSON Profile addresses policy format too, then we should do like in ConformanceV3fromV2 class from pdp-testutils package (policy syntax validation).
 		 */
 		final PdpEngineConfiguration pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile.toUri().toURL().toString(),
-				Files.exists(refPoliciesDir) ? refPoliciesDir.toUri().toURL().toString() : null, ENABLE_XPATH,
-				Files.exists(attributeProviderConfFile) ? attributeProviderConfFile.toUri().toURL().toString() : null, SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
-				BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
+		        Files.exists(refPoliciesDir) ? refPoliciesDir.toUri().toURL().toString() : null, ENABLE_XPATH,
+		        Files.exists(attributeProviderConfFile) ? attributeProviderConfFile.toUri().toURL().toString() : null, SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
+		        BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
 		try (final PdpEngineInoutAdapter<JSONObject, JSONObject> pdp = PdpEngineXacmlJsonAdapters.newXacmlJsonInoutAdapter(pdpEngineConf))
 		{
 			// this is an evaluation test with request/response (not a policy syntax check)
