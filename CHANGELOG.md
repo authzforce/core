@@ -6,6 +6,25 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's JIRA](https://jira.ow2.org/browse/AUTHZFORCE/) are referenced in the form of `[JIRA-N]`, where N is the issue number.
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+## 13.1.0
+### Changed
+- Maven parent project version: 7.3.0
+- Maven dependencies:
+  - authzforce-ce-core-pdp-api: 15.1.0
+  - Spring: 4.3.14.RELEASE
+  - logback-classic: 1.2.3
+  - authzforce-ce-xacml-json-model: 2.0.0
+   
+### Fixed
+- Fixed #13: changed pdp-testutils module's dependencies: 
+  - mongo-java-driver: 2.14.12 -> 3.5.0
+  - jongo: 1.3.0 -> 1.4.0
+
+### Added
+- PDP configuration schema (`pdp.xsd`) / StaticRefPolicyProvider XML type: 
+  - Added support for recursive directory searching of policies, e.g. pattern '.../*/*.xml' for searching on two directory levels
+  - Added option to ignore old versions (keep only the latest) when multiple versions of same policy ID found: `ignoreOldVersions=true`
+
 
 ## 13.0.0 
 ### Changed
