@@ -22,7 +22,6 @@ package org.ow2.authzforce.core.pdp.testutil.ext;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.UnknownHostException;
 import java.util.Deque;
 import java.util.Map;
 import java.util.Optional;
@@ -89,11 +88,11 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 	private final CombiningAlgRegistry combiningAlgRegistry;
 
 	private MongoDbRefPolicyProvider(final String id, final ServerAddress serverAddress, final String dbName, final String collectionName, final XmlnsFilteringParserFactory xacmlParserFactory,
-			final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final int maxPolicySetRefDepth)
+	        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final int maxPolicySetRefDepth)
 	{
 		super(maxPolicySetRefDepth);
 		assert id != null && !id.isEmpty() && dbName != null && !dbName.isEmpty() && collectionName != null && !collectionName.isEmpty() && xacmlParserFactory != null && expressionFactory != null
-				&& combiningAlgRegistry != null;
+		        && combiningAlgRegistry != null;
 
 		this.id = id;
 		this.dbClient = new MongoClient(serverAddress);
@@ -116,13 +115,15 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		private static final IllegalArgumentException NULL_CONF_ARGUMENT_EXCEPTION = new IllegalArgumentException("PolicyProvider configuration undefined");
 
 		@Override
-		public Class<MongoDBBasedPolicyProvider> getJaxbClass() {
+		public Class<MongoDBBasedPolicyProvider> getJaxbClass()
+		{
 			return MongoDBBasedPolicyProvider.class;
 		}
 
 		@Override
 		public CloseableRefPolicyProvider getInstance(final MongoDBBasedPolicyProvider conf, final XmlnsFilteringParserFactory xmlParserFactory, final int maxPolicySetRefDepth,
-				final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties) throws IllegalArgumentException {
+		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties) throws IllegalArgumentException
+		{
 			if (conf == null)
 			{
 				throw NULL_CONF_ARGUMENT_EXCEPTION;
@@ -143,22 +144,16 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 				throw ILLEGAL_COMBINING_ALG_REGISTRY_ARGUMENT_EXCEPTION;
 			}
 
-			final ServerAddress serverAddress;
-			try
-			{
-				serverAddress = new ServerAddress(conf.getServerHost(), conf.getServerPort());
-			} catch (final UnknownHostException e)
-			{
-				throw new IllegalArgumentException("Invalid database server host", e);
-			}
+			final ServerAddress serverAddress = new ServerAddress(conf.getServerHost(), conf.getServerPort());
 			return new MongoDbRefPolicyProvider(conf.getId(), serverAddress, conf.getDbName(), conf.getCollectionName(), xmlParserFactory, expressionFactory, combiningAlgRegistry,
-					maxPolicySetRefDepth);
+			        maxPolicySetRefDepth);
 		}
 
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() throws IOException
+	{
 		this.dbClient.close();
 	}
 
@@ -177,7 +172,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 	}
 
 	private PolicyQueryResult getJaxbPolicyElement(final String policyTypeId, final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns)
-			throws IndeterminateEvaluationException {
+	        throws IndeterminateEvaluationException
+	{
 		final Optional<PolicyVersionPattern> versionPattern;
 		if (policyPolicyVersionPatterns.isPresent())
 		{
@@ -199,7 +195,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 			}
 
 			versionPattern = nonNullPolicyPolicyVersionPatterns.getVersionPattern();
-		} else
+		}
+		else
 		{
 			versionPattern = Optional.empty();
 		}
@@ -216,7 +213,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 			if (versionLiteral != null)
 			{
 				policyPOJO = policyCollection.findOne("{type: #, id: #, version: #}", policyTypeId, policyId, versionLiteral.toString()).as(PolicyPojo.class);
-			} else
+			}
+			else
 			{
 				/*
 				 * versionPattern is not a literal/constant version (contains wildcard '*' or '+') -> convert to PCRE regex for MongoDB server-side evaluation
@@ -224,7 +222,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 				final String regex = "^" + nonNullVersionPattern.toRegex() + "$";
 				policyPOJO = policyCollection.findOne("{type: #, id: #, version: { $regex: # }}", policyTypeId, policyId, regex).as(PolicyPojo.class);
 			}
-		} else
+		}
+		else
 		{
 			// no version pattern specified
 			policyPOJO = policyCollection.findOne("{type: #, id: #}", policyTypeId, policyId).as(PolicyPojo.class);
@@ -239,7 +238,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		try
 		{
 			xacmlParser = xacmlParserFactory.getInstance();
-		} catch (final JAXBException e)
+		}
+		catch (final JAXBException e)
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Failed to create JAXB unmarshaller for XACML Policy(Set)", XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
@@ -252,18 +252,20 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 			 * TODO: support more efficient formats of XML content, e.g. gzipped XML, Fast Infoset, EXI.
 			 */
 			resultJaxbObj = xacmlParser.parse(xmlInputSrc);
-		} catch (final JAXBException e)
+		}
+		catch (final JAXBException e)
 		{
 			throw new IndeterminateEvaluationException(
-					"PolicyProvider " + id + ": failed to parse Policy(Set) XML document from 'content' value of the policy document " + policyPOJO + " retrieved from database",
-					XacmlStatusCode.PROCESSING_ERROR.value(), e);
+			        "PolicyProvider " + id + ": failed to parse Policy(Set) XML document from 'content' value of the policy document " + policyPOJO + " retrieved from database",
+			        XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
 
 		return new PolicyQueryResult(policyPOJO, resultJaxbObj, xacmlParser.getNamespacePrefixUriMap());
 	}
 
 	@Override
-	public StaticTopLevelPolicyElementEvaluator getPolicy(final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns) throws IndeterminateEvaluationException {
+	public StaticTopLevelPolicyElementEvaluator getPolicy(final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns) throws IndeterminateEvaluationException
+	{
 		/*
 		 * TODO: use a policy cache and check it before requesting the database.
 		 */
@@ -279,8 +281,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		if (!(jaxbPolicyOrPolicySetObj instanceof Policy))
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": 'content' of the policy document " + policyPOJO
-					+ " retrieved from database is not consistent with its 'type' (expected: Policy). Actual content type: " + jaxbPolicyOrPolicySetObj.getClass() + " (corrupted database?).",
-					XacmlStatusCode.PROCESSING_ERROR.value());
+			        + " retrieved from database is not consistent with its 'type' (expected: Policy). Actual content type: " + jaxbPolicyOrPolicySetObj.getClass() + " (corrupted database?).",
+			        XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		final Policy jaxbPolicy = (Policy) jaxbPolicyOrPolicySetObj;
@@ -288,20 +290,21 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		if (!contentPolicyId.equals(policyPOJO.getId()))
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": PolicyId in 'content' of the policy document " + policyPOJO
-					+ " retrieved from database is not consistent with 'id'. Actual PolicyId: " + contentPolicyId + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
+			        + " retrieved from database is not consistent with 'id'. Actual PolicyId: " + contentPolicyId + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		final String contentPolicyVersion = jaxbPolicy.getVersion();
 		if (!contentPolicyVersion.equals(policyPOJO.getVersion()))
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Version in 'content' of the policy document " + policyPOJO
-					+ " retrieved from database is not consistent with 'version'. Actual Version: " + contentPolicyVersion + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
+			        + " retrieved from database is not consistent with 'version'. Actual Version: " + contentPolicyVersion + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		try
 		{
 			return PolicyEvaluators.getInstance(jaxbPolicy, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry);
-		} catch (final IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			throw new IllegalArgumentException("Invalid Policy in 'content' of the policy document " + policyPOJO + " retrieved from database", e);
 		}
@@ -309,7 +312,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 
 	@Override
 	public StaticTopLevelPolicyElementEvaluator getPolicySet(final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns, final Deque<String> policySetRefChain)
-			throws IndeterminateEvaluationException {
+	        throws IndeterminateEvaluationException
+	{
 		/**
 		 * TODO: use a policy cache and check it before requesting the database. If we found a matching policy in cache, and it is a policyset, we would check the depth of policy references as well:
 		 * <p>
@@ -327,8 +331,8 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		if (!(jaxbPolicyOrPolicySetObj instanceof PolicySet))
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": 'content' of the policy document " + policyPOJO
-					+ " retrieved from database is not consistent with 'type' (expected: PolicySet). Actual content type: " + jaxbPolicyOrPolicySetObj.getClass() + " (corrupted database?).",
-					XacmlStatusCode.PROCESSING_ERROR.value());
+			        + " retrieved from database is not consistent with 'type' (expected: PolicySet). Actual content type: " + jaxbPolicyOrPolicySetObj.getClass() + " (corrupted database?).",
+			        XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		final PolicySet jaxbPolicySet = (PolicySet) jaxbPolicyOrPolicySetObj;
@@ -336,20 +340,21 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		if (!contentPolicyId.equals(policyPOJO.getId()))
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": PolicyId in 'content' of the policy document " + policyPOJO
-					+ " retrieved from database is not consistent with 'id'. Actual PolicyId: " + contentPolicyId + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
+			        + " retrieved from database is not consistent with 'id'. Actual PolicyId: " + contentPolicyId + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		final String contentPolicyVersion = jaxbPolicySet.getVersion();
 		if (!contentPolicyVersion.equals(policyPOJO.getVersion()))
 		{
 			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Version in 'content' of the policy document " + policyPOJO
-					+ " retrieved from database is not consistent with 'version'. Actual Version: " + contentPolicyVersion + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
+			        + " retrieved from database is not consistent with 'version'. Actual Version: " + contentPolicyVersion + " (corrupted database?).", XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
 		try
 		{
 			return PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry, this, policySetRefChain);
-		} catch (final IllegalArgumentException e)
+		}
+		catch (final IllegalArgumentException e)
 		{
 			throw new IndeterminateEvaluationException("Invalid PolicySet in 'content' of the policy document " + policyPOJO + " retrieved from database", XacmlStatusCode.PROCESSING_ERROR.value(), e);
 		}
