@@ -172,6 +172,9 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 *
 		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable expression (eg, a single Function)
 		 * then this will throw an exception.
+		 * <p>
+		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
+		 * {@link EvaluationContext#putVariableIfAbsent(String, Value)}.
 		 */
 		@Override
 		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
@@ -234,6 +237,9 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 *
 		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable expression (eg, a single Function)
 		 * then this will throw an exception.
+		 * <p>
+		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
+		 * {@link EvaluationContext#putVariableIfAbsent(String, Value)}.
 		 */
 		@Override
 		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
@@ -413,6 +419,12 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 
 		final BaseVariableReference<?> var = newVariableReference(varId, varExpr, longestVarRefChainInCurrentVarExpression);
 		return idToVariableMap.putIfAbsent(varId, var);
+	}
+
+	@Override
+	public VariableReference<?> getVariableExpression(final String varId)
+	{
+		return idToVariableMap.get(varId);
 	}
 
 	/** {@inheritDoc} */

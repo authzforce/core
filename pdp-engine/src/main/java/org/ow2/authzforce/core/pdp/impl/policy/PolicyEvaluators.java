@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import javax.xml.bind.JAXBElement;
@@ -63,6 +64,7 @@ import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
+import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluators;
@@ -373,7 +375,7 @@ public final class PolicyEvaluators
 		private final DPResultFactory decisionResultFactory;
 
 		// non-null
-		private final Set<String> localVariableIds;
+		private final List<VariableReference<?>> localVariableAssignmentExpressions;
 
 		private transient final Set<PrimaryPolicyMetadata> enclosedPolicies;
 
@@ -411,7 +413,7 @@ public final class PolicyEvaluators
 		 */
 		protected BaseTopLevelPolicyElementEvaluator(final Class<T> combinedElementClass, final PrimaryPolicyMetadata policyMetadata, final Target policyTarget, final String combiningAlgId,
 		        final Iterable<T> combinedElements, final Iterable<CombiningAlgParameter<? extends T>> combinerParameters, final List<ObligationExpression> obligationExps,
-		        final List<AdviceExpression> adviceExps, final Set<String> localVariableIds, final XPathCompiler defaultXPathCompiler, final ExpressionFactory expressionFactory,
+		        final List<AdviceExpression> adviceExps, final List<String> localVariableIds, final XPathCompiler defaultXPathCompiler, final ExpressionFactory expressionFactory,
 		        final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 		{
 			if (policyMetadata == null)
@@ -471,7 +473,8 @@ public final class PolicyEvaluators
 				this.decisionResultFactory = new PepActionAppendingDPResultFactory(this.policyMetadata.toString(), denyPepActionExpressions, permitPepActionExpressions);
 			}
 
-			this.localVariableIds = localVariableIds == null ? Collections.<String>emptySet() : localVariableIds;
+			this.localVariableAssignmentExpressions = localVariableIds == null ? Collections.<VariableReference<?>>emptyList()
+			        : localVariableIds.stream().map(id -> expressionFactory.getVariableExpression(id)).collect(Collectors.toList());
 
 			final Set<PrimaryPolicyMetadata> mutableEnclosedPolicies = HashCollections.newUpdatableSet();
 			mutableEnclosedPolicies.add(policyMetadata);
@@ -515,8 +518,17 @@ public final class PolicyEvaluators
 			return this.enclosedPolicies;
 		}
 
+		private void assignVariables(final EvaluationContext context) throws IndeterminateEvaluationException
+		{
+			for (final VariableReference<?> varRef : this.localVariableAssignmentExpressions)
+			{
+				final Value varVal = varRef.evaluate(context);
+				context.putVariableIfAbsent(varRef.getVariableId(), varVal);
+			}
+		}
+
 		/**
-		 * Policy(Set) evaluation which option to skip Target evaluation. The option is to be used by Only-one-applicable algorithm with value 'true', after calling
+		 * Policy(Set) evaluation with option to skip Target evaluation. The option is to be used by Only-one-applicable algorithm with value 'true', after calling
 		 * {@link TopLevelPolicyElementEvaluator#isApplicableByTarget(EvaluationContext)} in particular.
 		 * 
 		 * @param context
@@ -563,9 +575,27 @@ public final class PolicyEvaluators
 					}
 
 					// evaluate with combining algorithm
+					/*
+					 * But first compute the variables that maybe used in this scope
+					 */
+					/*
+					 * Make the value of local variables available in this scope. Note that not only Apply expressions may use variables but also PDP extensions such as Attribute/Policy Providers
+					 * possibly.
+					 */
+					try
+					{
+						assignVariables(context);
+					}
+					catch (final IndeterminateEvaluationException e)
+					{
+						LOGGER.error("{} -> Indeterminate (failed to evaluate one of the local Variables defined in this policy))", this);
+						return DecisionResults.newIndeterminate(null, e, ImmutableList.of());
+					}
+
 					updatablePepActions = UpdatableCollections.newUpdatableList();
 					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.<PrimaryPolicyMetadata>newUpdatableList()
 					        : UpdatableCollections.<PrimaryPolicyMetadata>emptyList();
+
 					algResult = combiningAlgEvaluator.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
 					LOGGER.debug("{}/Algorithm -> {}", this, algResult);
 				}
@@ -602,6 +632,20 @@ public final class PolicyEvaluators
 					}
 
 					// evaluate with combining algorithm
+					/*
+					 * First make the value of local variables available in this scope. Note that not only Apply expressions may use variables but also PDP extensions such as Attribute/Policy
+					 * Providers possibly.
+					 */
+					try
+					{
+						assignVariables(context);
+					}
+					catch (final IndeterminateEvaluationException e)
+					{
+						LOGGER.error("{} -> Indeterminate (failed to evaluate one of the local Variables defined in this policy))", this);
+						return DecisionResults.newIndeterminate(null, e, ImmutableList.of());
+					}
+
 					updatablePepActions = UpdatableCollections.newUpdatableList();
 					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.<PrimaryPolicyMetadata>newUpdatableList()
 					        : UpdatableCollections.<PrimaryPolicyMetadata>emptyList();
@@ -691,9 +735,9 @@ public final class PolicyEvaluators
 			finally
 			{
 				// remove local variables from context
-				for (final String varId : this.localVariableIds)
+				for (final VariableReference<?> varRef : this.localVariableAssignmentExpressions)
 				{
-					context.removeVariable(varId);
+					context.removeVariable(varRef.getVariableId());
 				}
 
 				// update cache with new result
@@ -790,7 +834,7 @@ public final class PolicyEvaluators
 
 		private StaticBaseTopLevelPolicyElementEvaluator(final Class<T> combinedElementClass, final PrimaryPolicyMetadata policyMetadata, final Optional<PolicyRefsMetadata> extraPolicyMetadata,
 		        final Target policyTarget, final String combiningAlgId, final Iterable<T> combinedElements, final Iterable<CombiningAlgParameter<? extends T>> combinerParameters,
-		        final List<ObligationExpression> obligationExps, final List<AdviceExpression> adviceExps, final Set<String> localVariableIds, final XPathCompiler defaultXPathCompiler,
+		        final List<ObligationExpression> obligationExps, final List<AdviceExpression> adviceExps, final List<String> localVariableIds, final XPathCompiler defaultXPathCompiler,
 		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 		{
 			super(combinedElementClass, policyMetadata, policyTarget, combiningAlgId, combinedElements, combinerParameters, obligationExps, adviceExps, localVariableIds, defaultXPathCompiler,
@@ -1083,7 +1127,7 @@ public final class PolicyEvaluators
 
 		private DynamicPolicySetEvaluator(final PrimaryPolicyMetadata policyMetadata, final DynamicPolicySetChildRefsMetadataProvider extraPolicyMetadataProvider, final Target policyTarget,
 		        final String combiningAlgId, final Iterable<PolicyEvaluator> combinedElements, final Iterable<CombiningAlgParameter<? extends PolicyEvaluator>> combinerParameters,
-		        final List<ObligationExpression> obligationExps, final List<AdviceExpression> adviceExps, final Set<String> localVariableIds, final XPathCompiler defaultXPathCompiler,
+		        final List<ObligationExpression> obligationExps, final List<AdviceExpression> adviceExps, final List<String> localVariableIds, final XPathCompiler defaultXPathCompiler,
 		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry) throws IllegalArgumentException
 		{
 			super(PolicyEvaluator.class, policyMetadata, policyTarget, combiningAlgId, combinedElements, combinerParameters, obligationExps, adviceExps, localVariableIds, defaultXPathCompiler,
@@ -1459,7 +1503,7 @@ public final class PolicyEvaluators
 		 * Keep a copy of locally-defined variable IDs defined in this policy, to remove them from the global manager at the end of parsing this policy. They should not be visible outside the scope of
 		 * this policy. There are at most as many VariableDefinitions as policyChoiceElements.size().
 		 */
-		final Set<String> localVariableIds = HashCollections.newUpdatableSet(policyChoiceElements.size());
+		final List<String> localVariableIds = new ArrayList<>(policyChoiceElements.size());
 		/*
 		 * We keep a record of the size of the longest chain of VariableReference in this policy, and update it when a VariableDefinition occurs
 		 */
@@ -1574,7 +1618,7 @@ public final class PolicyEvaluators
 		final StaticTopLevelPolicyElementEvaluator policyEvaluator = new StaticBaseTopLevelPolicyElementEvaluator<>(RuleEvaluator.class, primaryPolicyMetadata, Optional.empty(),
 		        policyElement.getTarget(), policyElement.getRuleCombiningAlgId(), ruleEvaluatorsByRuleIdInOrderOfDeclaration.values(), combiningAlgParameters,
 		        obligationExps == null ? null : obligationExps.getObligationExpressions(), adviceExps == null ? null : adviceExps.getAdviceExpressions(),
-		        Collections.<String>unmodifiableSet(localVariableIds), defaultXPathCompiler, expressionFactory, combiningAlgRegistry);
+		        Collections.<String>unmodifiableList(localVariableIds), defaultXPathCompiler, expressionFactory, combiningAlgRegistry);
 
 		/*
 		 * We are done parsing expressions in this policy, including VariableReferences, it's time to remove variables scoped to this policy from the variable manager
@@ -1802,7 +1846,7 @@ public final class PolicyEvaluators
 
 		protected abstract INSTANCE getInstance(PrimaryPolicyMetadata primaryPolicyMetadata, Target target, String policyCombiningAlgId, Iterable<COMBINED_ELT> combinedElements,
 		        Iterable<CombiningAlgParameter<? extends COMBINED_ELT>> policyCombinerParameters, List<ObligationExpression> obligationExpressions, List<AdviceExpression> adviceExpressions,
-		        Set<String> localVariableIDs);
+		        List<String> localVariableIds);
 	}
 
 	private static final class StaticPolicySetElementEvaluatorFactory extends PolicySetElementEvaluatorFactory<StaticTopLevelPolicyElementEvaluator, StaticPolicyEvaluator>
@@ -1880,10 +1924,10 @@ public final class PolicyEvaluators
 		@Override
 		protected StaticTopLevelPolicyElementEvaluator getInstance(final PrimaryPolicyMetadata primaryPolicyMetadata, final Target policyTarget, final String policyCombiningAlgId,
 		        final Iterable<StaticPolicyEvaluator> combinedElements, final Iterable<CombiningAlgParameter<? extends StaticPolicyEvaluator>> policyCombinerParameters,
-		        final List<ObligationExpression> obligationExpressions, final List<AdviceExpression> adviceExpressions, final Set<String> localVariableIDs)
+		        final List<ObligationExpression> obligationExpressions, final List<AdviceExpression> adviceExpressions, final List<String> localVariableIds)
 		{
 			return new StaticBaseTopLevelPolicyElementEvaluator<>(StaticPolicyEvaluator.class, primaryPolicyMetadata, extraMetadataProvider.getMetadata(), policyTarget, policyCombiningAlgId,
-			        combinedElements, policyCombinerParameters, obligationExpressions, adviceExpressions, localVariableIDs, defaultXPathCompiler, expressionFactory, combiningAlgorithmRegistry);
+			        combinedElements, policyCombinerParameters, obligationExpressions, adviceExpressions, localVariableIds, defaultXPathCompiler, expressionFactory, combiningAlgorithmRegistry);
 		}
 	}
 
@@ -1952,10 +1996,10 @@ public final class PolicyEvaluators
 		@Override
 		protected TopLevelPolicyElementEvaluator getInstance(final PrimaryPolicyMetadata primaryPolicyMetadata, final Target policyTarget, final String policyCombiningAlgId,
 		        final Iterable<PolicyEvaluator> combinedElements, final Iterable<CombiningAlgParameter<? extends PolicyEvaluator>> policyCombinerParameters,
-		        final List<ObligationExpression> obligationExpressions, final List<AdviceExpression> adviceExpressions, final Set<String> localVariableIDs)
+		        final List<ObligationExpression> obligationExpressions, final List<AdviceExpression> adviceExpressions, final List<String> localVariableIds)
 		{
 			return new DynamicPolicySetEvaluator(primaryPolicyMetadata, extraMetadataProvider, policyTarget, policyCombiningAlgId, combinedElements, policyCombinerParameters, obligationExpressions,
-			        adviceExpressions, localVariableIDs, defaultXPathCompiler, expressionFactory, combiningAlgorithmRegistry);
+			        adviceExpressions, localVariableIds, defaultXPathCompiler, expressionFactory, combiningAlgorithmRegistry);
 		}
 	}
 
@@ -2211,7 +2255,7 @@ public final class PolicyEvaluators
 
 		final ObligationExpressions obligationExps = policyElement.getObligationExpressions();
 		final AdviceExpressions adviceExps = policyElement.getAdviceExpressions();
-		final Set<String> localVariableIds = Collections.emptySet();
+		final List<String> localVariableIds = Collections.emptyList();
 		return policyEvaluatorFactory.getInstance(policyEvaluatorFactory.policyMetadata, policyElement.getTarget(), policyElement.getPolicyCombiningAlgId(), combinedEvaluators, combiningAlgParameters,
 		        obligationExps == null ? null : obligationExps.getObligationExpressions(), adviceExps == null ? null : adviceExps.getAdviceExpressions(), localVariableIds);
 	}

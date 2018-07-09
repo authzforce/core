@@ -67,18 +67,6 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 		private static final TimeZone DEFAULT_TZ = TimeZone.getDefault();
 
 		/**
-		 * Set {@code cal}'s date to the same as {@code ref}'s date
-		 * 
-		 * @param cal
-		 * @param ref
-		 */
-		private static void setSameDate(final Calendar cal, final Calendar ref)
-		{
-			cal.set(Calendar.YEAR, ref.get(Calendar.YEAR));
-			cal.set(Calendar.DAY_OF_YEAR, ref.get(Calendar.DAY_OF_YEAR));
-		}
-
-		/**
 		 * Evaluates the time-in-range function, which takes three <code>TimeAttributeValue</code> values. This function return true if the first value falls between the second and third values (ie.,
 		 * on or after the second time and on or before the third time). If no time zone is specified for the second and/or third time value, then the timezone from the first time value is used. This
 		 * lets you say time-in-range(current-time, 9am, 5pm) and always have the evaluation happen in your current-time timezone.
@@ -114,12 +102,9 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 			}
 
 			/*
-			 * Use start time as reference for the day in time comparisons, so set the timeChecked day to the one of the start time
-			 */
-			setSameDate(calCheckedWhetherInRange, startCal);
-			/*
-			 * Now we date does not matter in calendar comparison, we only compare times of the day so ignoring the date, the checked time of the day might be before the lower time bound but still be
-			 * in range if considered this is the time on the next day. In this case, startCal is on day N, and calCheckedWhetherInRange on day N+1.
+			 * Reminder: year/month/day of underlying Calendars in TimeValues are all set to DatatypeConstants.FIELD_UNDEFINED. So the date does not matter in calendar comparison, we only compare
+			 * times of the day so ignoring the date, the checked time of the day might be before the lower time bound but still be in range if considered this is the time on the next day. In this
+			 * case, startCal is on day N, and calCheckedWhetherInRange on day N+1.
 			 */
 			/*
 			 * Boolean below says whether the checked time is strictly after the start time if considered on the *same day*, i.e. in terms of time of day.
@@ -127,7 +112,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 			final boolean isCheckedDayTimeStrictlyBeforeStartDayTime = calCheckedWhetherInRange.before(startCal);
 			if (startCal.after(endCal))
 			{
-				/**
+				/*
 				 * start time of the day > end time of the day, for instance 02:00:00 > 01:00:00 so we consider the end time (01:00:00) on the next day (later than the second argument - end time - by
 				 * less than 24h, the spec says). So we interpret the time interval as the date interval [startTime on day N, endTime on day N+1]. If checked time of day < start time of day (compared
 				 * on the same day), then checked time can only be on day after to be in range
@@ -135,14 +120,9 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 				if (isCheckedDayTimeStrictlyBeforeStartDayTime)
 				{
 					/*
-					 * time checked is strictly before start time if considered on the same day, so not in range unless considered on day N+1 So let's compared with end time after considering them on
-					 * the same day
+					 * Time checked is strictly before start time. If considered on the same day, it is not in range. Else considered on day N+1, ie same day as end time. So let's compare with end
+					 * time. Time checked is in range if and only if before or equals end time (on day N+1), i.e. not strictly after
 					 */
-					// calCheckedWhetherInRange.add(Calendar.DAY_OF_YEAR, 1);
-					// set checked time to same day as end time for comparison
-					setSameDate(calCheckedWhetherInRange, endCal);
-					// time checked is in range if and only if before or equals end time (on day N+1),
-					// i.e. not strictly after
 					return !calCheckedWhetherInRange.after(endCal);
 				}
 
@@ -152,18 +132,18 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 				return true;
 			}
 
-			// start time <= end time -> all considered on the same day
+			/*
+			 * Start time <= end time -> all considered on the same day
+			 */
 			if (isCheckedDayTimeStrictlyBeforeStartDayTime)
 			{
 				// checked time < start time -> out of range
 				return false;
 			}
 
-			// checked time >= start time
-
-			// set checked time to same day as end time for comparison
-			setSameDate(calCheckedWhetherInRange, endCal);
-			// time checked is in range if and only if before or equals end time, so not strictly after
+			/*
+			 * Checked time >= start time. Time checked is in range if and only if before or equals end time, so not strictly after
+			 */
 			return !calCheckedWhetherInRange.after(endCal);
 		}
 
