@@ -6,6 +6,16 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's JIRA](https://jira.ow2.org/browse/AUTHZFORCE/) are referenced in the form of `[JIRA-N]`, where N is the issue number.
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+
+## 13.2.0
+### Changed
+- Maven dependency versions:
+  - `authzforce-ce-core-pdp-api`: 15.2.0 (change in `ExpressionFactory` interface: new method `getVariableExpression(variableId)`)
+- Policy / `VariableDefinition` evaluation: a XACML Variable expressions is now evaluated and the Variable assigned in the EvaluationContext where the `VariableDefinition` is defined (as opposed to previous behavior which consisted in lazy evaluation, ie only when used in a corresponding `VariableReference`), making the Variable's value available not only to `VariableReference` but also PDP extensions such as Attribute Providers, even if no corresponding `VariableReference` occurs in the policy)
+- `Time-in-range` function optimized (removed useless code)
+- `GenericAttributeProviderBasedAttributeDesignatorExpression` class moved to dependency authzforce-ce-core-pdp-api
+
+
 ## 13.1.0
 ### Changed
 - Maven parent project version: 7.3.0
