@@ -32,6 +32,7 @@ import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
+import org.ow2.authzforce.core.pdp.api.expression.GenericAttributeProviderBasedAttributeDesignatorExpression;
 import org.ow2.authzforce.core.pdp.api.expression.VariableReference;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -171,6 +172,9 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 *
 		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable expression (eg, a single Function)
 		 * then this will throw an exception.
+		 * <p>
+		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
+		 * {@link EvaluationContext#putVariableIfAbsent(String, Value)}.
 		 */
 		@Override
 		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
@@ -233,6 +237,9 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 *
 		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable expression (eg, a single Function)
 		 * then this will throw an exception.
+		 * <p>
+		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
+		 * {@link EvaluationContext#putVariableIfAbsent(String, Value)}.
 		 */
 		@Override
 		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
@@ -414,6 +421,12 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		return idToVariableMap.putIfAbsent(varId, var);
 	}
 
+	@Override
+	public VariableReference<?> getVariableExpression(final String varId)
+	{
+		return idToVariableMap.get(varId);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public VariableReference<?> removeVariable(final String varId)
@@ -532,7 +545,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		if (expr instanceof ApplyType)
 		{
 			expression = ApplyExpressions.newInstance((ApplyType) expr, xPathCompiler, this, longestVarRefChain);
-		} else if (expr instanceof AttributeDesignatorType)
+		}
+		else if (expr instanceof AttributeDesignatorType)
 		{
 			if (this.attributeProvider == null)
 			{
@@ -552,7 +566,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			}
 
 			expression = new GenericAttributeProviderBasedAttributeDesignatorExpression<>(jaxbAttrDes, attrFactory.getDatatype().getBagDatatype(), attributeProvider);
-		} else if (expr instanceof AttributeSelectorType)
+		}
+		else if (expr instanceof AttributeSelectorType)
 		{
 			if (!allowAttributeSelectors)
 			{
@@ -579,26 +594,31 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			}
 
 			expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector, xPathCompiler, attributeProvider, attrFactory);
-		} else if (expr instanceof AttributeValueType)
+		}
+		else if (expr instanceof AttributeValueType)
 		{
 			expression = getInstance((AttributeValueType) expr, xPathCompiler);
-		} else if (expr instanceof FunctionType)
+		}
+		else if (expr instanceof FunctionType)
 		{
 			final FunctionType jaxbFunc = (FunctionType) expr;
 			final FunctionExpression funcExp = getFunction(jaxbFunc.getFunctionId());
 			if (funcExp != null)
 			{
 				expression = funcExp;
-			} else
+			}
+			else
 			{
 				throw new IllegalArgumentException("Function " + jaxbFunc.getFunctionId()
 				        + " is not supported (at least) as standalone Expression: either a generic higher-order function supported only as Apply FunctionId, or function completely unknown.");
 			}
-		} else if (expr instanceof VariableReferenceType)
+		}
+		else if (expr instanceof VariableReferenceType)
 		{
 			final VariableReferenceType varRefElt = (VariableReferenceType) expr;
 			expression = getVariable(varRefElt, longestVarRefChain);
-		} else
+		}
+		else
 		{
 			throw new IllegalArgumentException("Expressions of type " + expr.getClass().getSimpleName()
 			        + " are not supported. Expected: one of Apply, AttributeDesignator, AttributeSelector, AttributeValue, Function or VariableReference.");

@@ -56,115 +56,255 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 	private static final String STRING_SUBSTRING_FUNCTION_ID = "urn:oasis:names:tc:xacml:3.0:function:string-substring";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception {
+	public static Collection<Object[]> params() throws Exception
+	{
 
 		return Arrays.asList(
-				// urn:oasis:names:tc:xacml:3.0:function:any-of
-				new Object[] { NAME_ANY_OF, //
-						STRING_EQUAL_FUNCTION_ID, //
-						Arrays.asList(new StringValue("Paul"), //
-								Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George"), new StringValue("Ringo")))), //
-						BooleanValue.TRUE },
+		        // urn:oasis:names:tc:xacml:3.0:function:any-of
 
-				new Object[] { NAME_ANY_OF, //
-						STRING_EQUAL_FUNCTION_ID, //
-						Arrays.asList(new StringValue("Paul"), //
-								Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("George"), new StringValue("Ringo")))), //
-						BooleanValue.FALSE },
+		        /*
+		         * Invalid number of args
+		         */
+		        new Object[] { NAME_ANY_OF, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(), //
+		                null },
 
-				// urn:oasis:names:tc:xacml:3.0:function:all-of
-				new Object[] { NAME_ALL_OF, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
-						Arrays.asList(IntegerValue.valueOf(10), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(9), IntegerValue.valueOf(3), IntegerValue.valueOf(4), IntegerValue.valueOf(2)))), //
-						BooleanValue.TRUE },
+		        /*
+		         * Invalid arg type (no bag)
+		         */
+		        new Object[] { NAME_ANY_OF, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(new StringValue("Paul"), //
+		                        new StringValue("Paul")), //
+		                null },
+		        /*
+		         * Valid args
+		         */
+		        new Object[] { NAME_ANY_OF, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(new StringValue("Paul"), //
+		                        Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George"), new StringValue("Ringo")))), //
+		                BooleanValue.TRUE },
 
-				new Object[] { NAME_ALL_OF, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
-						Arrays.asList(IntegerValue.valueOf(10), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(9), IntegerValue.valueOf(3), IntegerValue.valueOf(14), IntegerValue.valueOf(2)))), //
-						BooleanValue.FALSE },
+		        new Object[] { NAME_ANY_OF, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(new StringValue("Paul"), //
+		                        Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("George"), new StringValue("Ringo")))), //
+		                BooleanValue.FALSE },
 
-				// urn:oasis:names:tc:xacml:3.0:function:any-of-any
-				new Object[] { NAME_ANY_OF_ANY, //
-						STRING_EQUAL_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))), //
-								Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George"), new StringValue("Ringo")))), //
-						BooleanValue.TRUE }, //
-				// Example with matching string in last position in first bag
-				new Object[] { NAME_ANY_OF_ANY, //
-						STRING_EQUAL_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))), //
-								Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("Mary"), new StringValue("Ringo")))), //
-						BooleanValue.TRUE },
+		        // urn:oasis:names:tc:xacml:3.0:function:all-of
+		        /*
+		         * Invalid number of args
+		         */
+		        new Object[] { NAME_ALL_OF, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(), //
+		                null },
+		        /*
+		         * Invalid arg type (no bag)
+		         */
+		        new Object[] { NAME_ALL_OF, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(IntegerValue.valueOf(10), //
+		                        IntegerValue.valueOf(10)), //
+		                null }, //
 
-				new Object[] { NAME_ANY_OF_ANY, //
-						STRING_EQUAL_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))), //
-								Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George")))), //
-						BooleanValue.FALSE },
+		        /*
+		         * Valid args
+		         */
+		        new Object[] { NAME_ALL_OF, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(IntegerValue.valueOf(10), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(9), IntegerValue.valueOf(3), IntegerValue.valueOf(4), IntegerValue.valueOf(2)))), //
+		                BooleanValue.TRUE }, //
 
-				// urn:oasis:names:tc:xacml:1.0:function:all-of-any
-				new Object[] { NAME_ALL_OF_ANY, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20))), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(3)))), //
-						BooleanValue.TRUE },
+		        new Object[] { NAME_ALL_OF, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(IntegerValue.valueOf(10), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(9), IntegerValue.valueOf(3), IntegerValue.valueOf(14), IntegerValue.valueOf(2)))), //
+		                BooleanValue.FALSE },
 
-				new Object[] { NAME_ALL_OF_ANY, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20))), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(11), IntegerValue.valueOf(13), IntegerValue.valueOf(15), IntegerValue.valueOf(19)))), //
-						BooleanValue.FALSE },
+		        // urn:oasis:names:tc:xacml:3.0:function:any-of-any
+		        /*
+		         * Invalid number of args
+		         */
+		        new Object[] { NAME_ANY_OF_ANY, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(), //
+		                null },
+		        /*
+		         * Invalid arg type
+		         */
+		        new Object[] { NAME_ANY_OF_ANY, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(new StringValue("Ringo"), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(9), IntegerValue.valueOf(3), IntegerValue.valueOf(14), IntegerValue.valueOf(2)))), //
+		                null },
 
-				// urn:oasis:names:tc:xacml:1.0:function:any-of-all
-				new Object[] { NAME_ANY_OF_ALL, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
+		        /*
+		         * Valid args
+		         */
+		        new Object[] { NAME_ANY_OF_ANY, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))), //
+		                        Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George"), new StringValue("Ringo")))), //
+		                BooleanValue.TRUE }, //
+		        // Example with matching string in last position in first bag
+		        new Object[] { NAME_ANY_OF_ANY, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))), //
+		                        Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("Mary"), new StringValue("Ringo")))), //
+		                BooleanValue.TRUE }, //
 
-						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(3), IntegerValue.valueOf(5))), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
-						BooleanValue.TRUE },
+		        new Object[] { NAME_ANY_OF_ANY, //
+		                STRING_EQUAL_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Ringo"), new StringValue("Mary"))), //
+		                        Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("John"), new StringValue("Paul"), new StringValue("George")))), //
+		                BooleanValue.FALSE },
 
-				new Object[] { NAME_ANY_OF_ALL, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(3), IntegerValue.valueOf(4))), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
-						BooleanValue.FALSE },
+		        // urn:oasis:names:tc:xacml:1.0:function:all-of-any
+		        /*
+		         * Invalid number of args
+		         */
+		        new Object[] { NAME_ALL_OF_ANY, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20)))), //
+		                null },
 
-				// urn:oasis:names:tc:xacml:1.0:function:all-of-all
-				new Object[] { NAME_ALL_OF_ALL, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(5))), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
-						BooleanValue.TRUE },
+		        /*
+		         * Invalid type of arg
+		         */
+		        new Object[] { NAME_ALL_OF_ANY, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20))), //
+		                        IntegerValue.valueOf(1)), //
+		                null },
 
-				new Object[] { NAME_ALL_OF_ALL, //
-						INTEGER_GREATER_THAN_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(3), IntegerValue.valueOf(5))), //
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
-						BooleanValue.FALSE },
+		        /*
+		         * Valid args
+		         */
+		        new Object[] { NAME_ALL_OF_ANY, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(3)))), //
+		                BooleanValue.TRUE }, //
 
-				// urn:oasis:names:tc:xacml:3.0:function:map
-				new Object[] { NAME_MAP, // only one arg (bag)
-						STRING_NORMALIZE_TO_LC_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World")))), //
-						Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("hello"), new StringValue("world"))) },
+		        new Object[] { NAME_ALL_OF_ANY, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(11), IntegerValue.valueOf(13), IntegerValue.valueOf(15), IntegerValue.valueOf(19)))), //
+		                BooleanValue.FALSE },
 
-				new Object[] { NAME_MAP, // multiple args starting with bag, but invalid primitive datatype
-						STRING_SUBSTRING_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(0), IntegerValue.valueOf(0))), IntegerValue.valueOf(0), IntegerValue.valueOf(1)), //
-						null },
+		        // urn:oasis:names:tc:xacml:1.0:function:any-of-all
+		        /*
+		         * Invalid number of args
+		         */
+		        new Object[] { NAME_ALL_OF_ANY, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(3))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(3)))), //
+		                null },
+		        /*
+		         * Invalid type of arg
+		         */
+		        new Object[] { NAME_ALL_OF_ANY, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20))), //
+		                        IntegerValue.valueOf(1)), //
+		                null },
 
-				new Object[] { NAME_MAP, // multiple args starting with bag, with two bags (invalid)
-						STRING_SUBSTRING_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World"))),
-								Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(0), IntegerValue.valueOf(0))), IntegerValue.valueOf(1)), //
-						null }, //
+		        /*
+		         * Valid args
+		         */
+		        new Object[] { NAME_ANY_OF_ALL, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
 
-				new Object[] { NAME_MAP, // multiple args starting with bag, with valid datatypes
-						STRING_SUBSTRING_FUNCTION_ID, //
-						Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World"))), IntegerValue.valueOf(0), IntegerValue.valueOf(1)), //
-						Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("H"), new StringValue("W"))) }//
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(3), IntegerValue.valueOf(5))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
+		                BooleanValue.TRUE }, //
+
+		        new Object[] { NAME_ANY_OF_ALL, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(3), IntegerValue.valueOf(4))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
+		                BooleanValue.FALSE },
+
+		        // urn:oasis:names:tc:xacml:1.0:function:all-of-all
+		        /*
+		         * Invalid number of args
+		         */
+		        new Object[] { NAME_ALL_OF_ALL, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(5))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(5))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(5)))), //
+		                null },
+
+		        /*
+		         * Invalid type of arg
+		         */
+		        new Object[] { NAME_ALL_OF_ALL, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(5))), //
+		                        IntegerValue.valueOf(1)), //
+		                null },
+
+		        /*
+		         * Valid args
+		         */
+		        new Object[] { NAME_ALL_OF_ALL, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(6), IntegerValue.valueOf(5))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
+		                BooleanValue.TRUE }, //
+
+		        new Object[] { NAME_ALL_OF_ALL, //
+		                INTEGER_GREATER_THAN_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(3), IntegerValue.valueOf(5))), //
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(1), IntegerValue.valueOf(2), IntegerValue.valueOf(3), IntegerValue.valueOf(4)))), //
+		                BooleanValue.FALSE },
+
+		        // urn:oasis:names:tc:xacml:3.0:function:map
+		        /*
+		         * Invalid number of args
+		         */
+		        new Object[] { NAME_MAP, // only one arg (bag)
+		                STRING_NORMALIZE_TO_LC_FUNCTION_ID, //
+		                Arrays.asList(), null },
+
+		        /*
+		         * Invalid type of arg
+		         */
+		        new Object[] { NAME_MAP, // only one arg (bag)
+		                STRING_NORMALIZE_TO_LC_FUNCTION_ID, //
+		                Arrays.asList(new StringValue("Hello")), //
+		                null },
+
+		        /*
+		         * Valid args
+		         */
+		        new Object[] { NAME_MAP, // only one arg (bag)
+		                STRING_NORMALIZE_TO_LC_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World")))), //
+		                Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("hello"), new StringValue("world"))) },
+
+		        new Object[] { NAME_MAP, // multiple args starting with bag, but invalid primitive datatype
+		                STRING_SUBSTRING_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(0), IntegerValue.valueOf(0))), IntegerValue.valueOf(0), IntegerValue.valueOf(1)), //
+		                null },
+
+		        new Object[] { NAME_MAP, // multiple args starting with bag, with two bags (invalid)
+		                STRING_SUBSTRING_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World"))),
+		                        Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(0), IntegerValue.valueOf(0))), IntegerValue.valueOf(1)), //
+		                null }, //
+
+		        new Object[] { NAME_MAP, // multiple args starting with bag, with valid datatypes
+		                STRING_SUBSTRING_FUNCTION_ID, //
+		                Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World"))), IntegerValue.valueOf(0), IntegerValue.valueOf(1)), //
+		                Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("H"), new StringValue("W"))) }//
 		);
 	}
 
