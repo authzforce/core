@@ -31,9 +31,6 @@
 				etc. -->
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<!-- Mitigation for CVE-2018-1257, CVE-2018-1258, CVE-2018-1275, CVE-2018-1271, CVE-2018-1270, CVE-2018-1272.
- 			TODO: fix it in authzforce-ce-parent's managed version -->
-			<version>4.3.17.RELEASE</version>
 		</dependency>
 		<dependency>
 			<!-- For loading XML schemas with OASIS catalog (CatalogManager) -->
