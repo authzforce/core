@@ -232,7 +232,7 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 
 ## Support
 
-You should use [AuthzForce users' mailing list](https://mail.ow2.org/wws/arc/authzforce-users/) as first contact for any communication about AuthzForce: question, feature request, notification, potential issue (unconfirmed), etc.
+You should use [AuthzForce users' mailing list](https://mail.ow2.org/wws/info/authzforce-users) as first contact for any communication about AuthzForce: question, feature request, notification, potential issue (unconfirmed), etc.
 
 If you are experiencing any bug with this project and you indeed confirm this is not an issue with your environment (contact the users mailing list first if you are unsure), please report it on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/).
 Please include as much information as possible; the more we know, the better the chance of a quicker resolution:
