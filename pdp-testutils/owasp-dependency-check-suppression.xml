@@ -10,4 +10,13 @@
       <cve>CVE-2007-6059</cve>
       <cve>CVE-2015-9097</cve>
    </suppress>
+
+ <suppress>
+	       <notes><![CDATA[
+		             file name: spring-core-4.3.17.RELEASE.jar,
+			           false positive for CVE-2018-1258
+				         ]]></notes>
+				      <gav>org.springframework:spring-core:4.3.17.RELEASE</gav>
+				           <cve>CVE-2018-1258</cve>
+					      </suppress>
 </suppressions>
