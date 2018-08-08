@@ -143,15 +143,14 @@
             </executions>
          </plugin>
          <plugin>
-            <!-- Override license-maven-plugin configuration to exclude Sunxacml files from adding GPL license headers (different license) -->
             <groupId>com.mycila</groupId>
             <artifactId>license-maven-plugin</artifactId>
             <configuration>
                <header>license/alv2-header.txt</header>
                <includes>
-                  <include>src/main/java/org/ow2/authzforce/**</include>
+                  <include>src/main/java/**</include>
                   <!-- Include test files also -->
-                  <include>src/test/java/org/ow2/authzforce/**</include>
+                  <include>src/test/java/**</include>
                </includes>
             </configuration>
             <executions>
