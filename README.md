@@ -89,20 +89,20 @@ Get the [latest executable jar from Maven Central](http://central.maven.org/mave
 $ chmod a+x authzforce-ce-core-pdp-cli-13.0.0.jar
 ```
 
-Copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory, and run the executable as follows:
+To give you an example on how to test a XACML Policy (or PolicySet) and Request, you may copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory as the executable, and run the executable as follows:
 
 ```
 $ ./authzforce-ce-core-pdp-cli-13.0.0.jar pdp.xml IIA001/Request.xml
 ```
 
-* `pdp.xml`: PDP configuration file, that defines the location(s) of XACML policy(ies), among other PDP engine parameters; the content of this file is a XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd), so you can read the documentation of every configuration parameter in that schema file;
-* `Request.xml`: XACML request in XACML 3.0/XML (core specification) format.
+* `pdp.xml`: PDP configuration file, that defines the location(s) of XACML policy(ies), among other PDP engine parameters; the content of this file is a XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd), so you can read the documentation of every configuration parameter in that schema file; **Feel free to change the policy location to point to your own for testing.**
+* `Request.xml`: XACML request in XACML 3.0/XML (core specification) format. **Feel free to replace with your own for testing.**
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
 ```
 $ ./authzforce-ce-core-pdp-cli-13.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.json
 ```
-* `Request.json`: XACML request in XACML 3.0/JSON (Profile) format.
+* `Request.json`: XACML request in XACML 3.0/JSON (Profile) format. **Feel free to replace with your own for testing.**
 
 For more info, run it without parameters and you'll get detailed information on usage.
 
