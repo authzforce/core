@@ -238,7 +238,7 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 
 You should use [AuthzForce users' mailing list](https://mail.ow2.org/wws/info/authzforce-users) as first contact for any communication about AuthzForce: question, feature request, notification, potential issue (unconfirmed), etc.
 
-If you are experiencing any bug with this project and you indeed confirm this is not an issue with your environment (contact the users mailing list first if you are unsure), please report it on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/).
+If you are experiencing any bug with this project and you indeed confirm this is not an issue with your environment (contact the users mailing list first if you are unsure), please report it on the [OW2 Issue Tracker](https://gitlab.ow2.org/authzforce/core/issues).
 Please include as much information as possible; the more we know, the better the chance of a quicker resolution:
 
 * Software version
@@ -248,7 +248,7 @@ Please include as much information as possible; the more we know, the better the
 * Your code & configuration files are often useful.
 
 ## Security - Vulnerability reporting
-If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/) with *Security Level* set to **Private**. Then, if the AuthzForce team can confirm it, they will change it to **Public** and set a fix version.
+If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://gitlab.ow2.org/authzforce/core/issues) and **make sure the checkbox** *This issue is confidential and should only be visible to team members with at least Reporter access* **is checked when creating the issue**. Then, if the AuthzForce team can confirm it, they will uncheck it to make the issue public.
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).
