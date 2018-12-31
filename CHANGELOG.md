@@ -7,6 +7,26 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 13.3.0
+### Changed
+- Maven parent project version: 7.5.0
+- Maven dependencies:
+  - authzforce-ce-core-pdp-api: 15.3.0
+  	  - Guava: 24.1.1-jre
+  	  - jaxb2-basics: 1.11.1
+  	  - mailapi replaced with javax.mail-api: 1.6.0
+  - Spring: 4.3.18 (fixes CVE)
+  - authzforce-ce-xacml-json-model: 2.0.0
+- Copyright company name
+
+### Added
+- Dependency: javax.mail 1.6.0 (mail-api implementation for XACML RFC822Name support)
+- Feature: 
+	- DefaultEnvironmentProperties#replacePlaceholders() method now supports system properties and environment variables.
+	- 'policyLocation' elements in PDP's Policy Providers configuration now supports (not only PARENT_DIR property but also) system
+properties and environment variables (enclosed between '${...}') with default value if property/variable undefined.
+
+
 ## 13.2.0
 ### Changed
 - Maven dependency versions:
