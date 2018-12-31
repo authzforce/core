@@ -22,7 +22,7 @@ All notable changes to this project are documented in this file following the [K
 ### Added
 - Dependency: javax.mail 1.6.0 (mail-api implementation for XACML RFC822Name support)
 - Feature: 
-	- DefaultEnvironmentProperties#replacePlaceholders() method now supports system properties and environment variables.
+	- EnvironmentProperties#replacePlaceholders() method now supports system properties and environment variables; and a default value (separated from the property name by '!') if the property is undefined.
 	- 'policyLocation' elements in PDP's Policy Providers configuration now supports (not only PARENT_DIR property but also) system
 properties and environment variables (enclosed between '${...}') with default value if property/variable undefined.
 
