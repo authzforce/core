@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2018 Thales Services SAS.
+ * Copyright 2012-2018 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -66,7 +66,7 @@ import org.ow2.authzforce.core.pdp.testutil.PdpTest;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.core.pdp.testutil.ext.MongoDbRefPolicyProvider;
 import org.ow2.authzforce.core.pdp.testutil.ext.PolicyPojo;
-import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProvider;
+import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProviderDescriptor;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
@@ -102,12 +102,12 @@ public class MongoDBRefPolicyProviderTest
 		}
 
 		final AbstractPolicyProvider policyProviderConf = pdpConf.getRefPolicyProvider();
-		if (!(policyProviderConf instanceof MongoDBBasedPolicyProvider))
+		if (!(policyProviderConf instanceof MongoDBBasedPolicyProviderDescriptor))
 		{
-			throw new RuntimeException("Invalid type of refPolicyProvider in pdp.xml. Expected: " + MongoDBBasedPolicyProvider.class);
+			throw new RuntimeException("Invalid type of refPolicyProvider in pdp.xml. Expected: " + MongoDBBasedPolicyProviderDescriptor.class);
 		}
 
-		final MongoDBBasedPolicyProvider mongodbBasedPolicyProviderConf = (MongoDBBasedPolicyProvider) policyProviderConf;
+		final MongoDBBasedPolicyProviderDescriptor mongodbBasedPolicyProviderConf = (MongoDBBasedPolicyProviderDescriptor) policyProviderConf;
 		final BigInteger maxAllowedIntVal = BigInteger.valueOf(Integer.MAX_VALUE);
 
 		final AttributeValueFactoryRegistry valFactoryReg = StandardAttributeValueFactories.getRegistry(false, Optional.of(maxAllowedIntVal));
@@ -156,7 +156,8 @@ public class MongoDBRefPolicyProviderTest
 				policyTypeId = MongoDbRefPolicyProvider.XACML3_POLICY_TYPE_ID;
 				policyId = policy.getPolicyId();
 				policyVersion = policy.getVersion();
-			} else
+			}
+			else
 			{
 				// PolicySet
 				policyTypeId = MongoDbRefPolicyProvider.XACML3_POLICYSET_TYPE_ID;

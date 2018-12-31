@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2018 Thales Services SAS.
+ * Copyright 2012-2018 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -42,17 +42,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
-
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.impl.DefaultEnvironmentProperties;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
-import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider;
+import org.ow2.authzforce.core.pdp.testutil.ext.TestAttributeProvider;
+import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProviderDescriptor;
 import org.ow2.authzforce.core.xmlns.pdp.InOutProcChain;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider;
@@ -62,6 +56,13 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
 
 public class TestUtils
 {
@@ -139,7 +140,7 @@ public class TestUtils
 	{
 		try
 		{
-			TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT = JAXBContext.newInstance(TestAttributeProvider.class);
+			TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT = JAXBContext.newInstance(TestAttributeProviderDescriptor.class);
 		}
 		catch (final JAXBException e)
 		{
@@ -272,27 +273,20 @@ public class TestUtils
 				}
 			}
 
-			results.add(new Result(result.getDecision(), newStatus, result.getObligations(), result.getAssociatedAdvice(), normalizeAttributeCategories(result.getAttributes()), result
-					.getPolicyIdentifierList()));
+			results.add(new Result(result.getDecision(), newStatus, result.getObligations(), result.getAssociatedAdvice(), normalizeAttributeCategories(result.getAttributes()),
+			        result.getPolicyIdentifierList()));
 		}
 
 		return new Response(results);
 	}
 
-	private static final Comparator<Attributes> ATTRIBUTES_COMPARATOR = new Comparator<Attributes>()
-	{
-
-		@Override
-		public int compare(final Attributes arg0, final Attributes arg1)
+	private static final Comparator<Attributes> ATTRIBUTES_COMPARATOR = (arg0, arg1) -> {
+		if (arg0 == null || arg1 == null)
 		{
-			if (arg0 == null || arg1 == null)
-			{
-				throw new IllegalArgumentException("Invalid Attribtues args for comparator");
-			}
-
-			return arg0.getCategory().compareTo(arg1.getCategory());
+			throw new IllegalArgumentException("Invalid Attribtues args for comparator");
 		}
 
+		return arg0.getCategory().compareTo(arg1.getCategory());
 	};
 
 	private static List<Attributes> normalizeAttributeCategories(final List<Attributes> attributesList)
@@ -337,7 +331,7 @@ public class TestUtils
 	 *             cannot create Attribute Provider configuration (XML) unmarshaller
 	 */
 	public static PdpEngineConfiguration newPdpEngineConfiguration(final String rootPolicyLocation, final String refPoliciesDirectoryLocation, final boolean enableXPath,
-			final String attributeProviderConfLocation, final String requestPreprocId, final String resultPostprocId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
+	        final String attributeProviderConfLocation, final String requestPreprocId, final String resultPostprocId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
 		final Pdp jaxbPDP = new Pdp();
 		jaxbPDP.setEnableXPath(enableXPath);
@@ -403,7 +397,7 @@ public class TestUtils
 			{
 				final URL testAttrProviderURL = ResourceUtils.getURL(attributeProviderConfLocation);
 				final Unmarshaller unmarshaller = TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT.createUnmarshaller();
-				final JAXBElement<TestAttributeProvider> testAttributeProviderElt = (JAXBElement<TestAttributeProvider>) unmarshaller.unmarshal(testAttrProviderURL);
+				final JAXBElement<TestAttributeProviderDescriptor> testAttributeProviderElt = (JAXBElement<TestAttributeProviderDescriptor>) unmarshaller.unmarshal(testAttrProviderURL);
 				jaxbPDP.getAttributeProviders().add(testAttributeProviderElt.getValue());
 			}
 			catch (final FileNotFoundException e)
@@ -454,7 +448,7 @@ public class TestUtils
 		final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP);
 		final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", new MarshallableWithToString(normalizedExpectedResponse, marshaller), new MarshallableWithToString(
-				normalizedActualResponse, marshaller));
+		assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", new MarshallableWithToString(normalizedExpectedResponse, marshaller),
+		        new MarshallableWithToString(normalizedActualResponse, marshaller));
 	}
 }

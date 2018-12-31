@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2018 Thales Services SAS.
+ * Copyright 2012-2018 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -45,6 +45,7 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProviderDescriptor;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
@@ -59,7 +60,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 public class TestAttributeProvider extends BaseNamedAttributeProvider
 {
 
-	private static AttributeDesignatorType newAttributeDesignator(Entry<AttributeFqn, AttributeBag<?>> attributeEntry)
+	private static AttributeDesignatorType newAttributeDesignator(final Entry<AttributeFqn, AttributeBag<?>> attributeEntry)
 	{
 		final AttributeFqn attrKey = attributeEntry.getKey();
 		final Bag<?> attrVals = attributeEntry.getValue();
@@ -69,29 +70,10 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 	private final Set<AttributeDesignatorType> supportedDesignatorTypes;
 	private final Map<AttributeFqn, AttributeBag<?>> attrMap;
 
-	private TestAttributeProvider(final org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider conf, final AttributeValueFactoryRegistry attributeValueFactoryRegistry)
-	        throws IllegalArgumentException
+	private TestAttributeProvider(final String id, final Map<AttributeFqn, AttributeBag<?>> attributeMap) throws IllegalArgumentException
 	{
-		super(conf.getId());
-		final NamedXacmlAttributeParser<Attribute> namedXacmlAttParser = new NamedXacmlJaxbAttributeParser(attributeValueFactoryRegistry);
-		final XacmlRequestAttributeParser<Attribute, AttributeBag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictXacmlAttributeParser<>(namedXacmlAttParser);
-		final Set<String> attrCategoryNames = new HashSet<>();
-		final Map<AttributeFqn, AttributeBag<?>> mutableAttMap = new HashMap<>();
-		for (final Attributes jaxbAttributes : conf.getAttributes())
-		{
-			final String categoryName = jaxbAttributes.getCategory();
-			if (!attrCategoryNames.add(categoryName))
-			{
-				throw new IllegalArgumentException("Unsupported repetition of Attributes[@Category='" + categoryName + "']");
-			}
-
-			for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
-			{
-				xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, null, mutableAttMap);
-			}
-		}
-
-		attrMap = Collections.unmodifiableMap(mutableAttMap);
+		super(id);
+		attrMap = Collections.unmodifiableMap(attributeMap);
 		final Set<AttributeDesignatorType> mutableSupportedAttDesignatorSet = attrMap.entrySet().stream().map(attEntry -> newAttributeDesignator(attEntry)).collect(Collectors.toSet());
 		this.supportedDesignatorTypes = Collections.unmodifiableSet(mutableSupportedAttDesignatorSet);
 	}
@@ -131,17 +113,17 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 	 * {@link TestAttributeProvider} factory
 	 * 
 	 */
-	public static class Factory extends CloseableNamedAttributeProvider.FactoryBuilder<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider>
+	public static class Factory extends CloseableNamedAttributeProvider.FactoryBuilder<TestAttributeProviderDescriptor>
 	{
 
 		@Override
-		public Class<org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider> getJaxbClass()
+		public Class<TestAttributeProviderDescriptor> getJaxbClass()
 		{
-			return org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider.class;
+			return TestAttributeProviderDescriptor.class;
 		}
 
 		@Override
-		public DependencyAwareFactory getInstance(final org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProvider conf, final EnvironmentProperties environmentProperties)
+		public DependencyAwareFactory getInstance(final TestAttributeProviderDescriptor conf, final EnvironmentProperties environmentProperties)
 		{
 			return new DependencyAwareFactory()
 			{
@@ -154,9 +136,27 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 				}
 
 				@Override
-				public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attrDatatypeFactory, final AttributeProvider depAttrProvider)
+				public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attributeValueFactories, final AttributeProvider depAttrProvider)
 				{
-					return new TestAttributeProvider(conf, attrDatatypeFactory);
+					final NamedXacmlAttributeParser<Attribute> namedXacmlAttParser = new NamedXacmlJaxbAttributeParser(attributeValueFactories);
+					final XacmlRequestAttributeParser<Attribute, AttributeBag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictXacmlAttributeParser<>(namedXacmlAttParser);
+					final Set<String> attrCategoryNames = new HashSet<>();
+					final Map<AttributeFqn, AttributeBag<?>> mutableAttMap = new HashMap<>();
+					for (final Attributes jaxbAttributes : conf.getAttributes())
+					{
+						final String categoryName = jaxbAttributes.getCategory();
+						if (!attrCategoryNames.add(categoryName))
+						{
+							throw new IllegalArgumentException("Unsupported repetition of Attributes[@Category='" + categoryName + "']");
+						}
+
+						for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
+						{
+							xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, null, mutableAttMap);
+						}
+					}
+
+					return new TestAttributeProvider(conf.getId(), mutableAttMap);
 				}
 			};
 		}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2018 Thales Services SAS.
+ * Copyright 2012-2018 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -26,23 +26,27 @@ import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
 import org.springframework.util.PropertyPlaceholderHelper;
 
 /**
- * Default implementation of PDP configuration parser's environment properties.
+ * Default implementation of PDP configuration parser's environment properties, that supports user-defined properties, Java system properties and system-dependent environment variables.
  *
  * @version $Id: $
  */
 public final class DefaultEnvironmentProperties implements EnvironmentProperties
 {
+
 	private static final String PROPERTY_PLACEHOLDER_PREFIX = "${";
 	private static final String PROPERTY_PLACEHOLDER_SUFFIX = "}";
-	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = ":";
+	/*
+	 * We cannot use ':' as default value separator because not valid in XML anyURI
+	 */
+	private static final String PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR = "!";
 
 	private static final PropertyPlaceholderHelper PROPERTY_PLACEHOLDER_HELPER = new PropertyPlaceholderHelper(PROPERTY_PLACEHOLDER_PREFIX, PROPERTY_PLACEHOLDER_SUFFIX,
-			PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
+	        PROPERTY_PLACEHOLDER_DEFAULT_VALUE_SEPARATOR, false);
 
 	private final Properties props = new Properties();
 
 	/**
-	 * Empty properties
+	 * Empty properties. Placeholders are resolved as system properties and environment variables only.
 	 */
 	public DefaultEnvironmentProperties()
 	{
@@ -50,12 +54,13 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 	}
 
 	/**
-	 * Constructs instance from existing properties in a map
+	 * Constructs instance from existing properties in a map. Placeholders are resolved from {@code envProps} if the property name matches any, else as Java system property if the name matches any,
+	 * else as system environment variables.
 	 *
 	 * @param envProps
-	 *            environment properties
+	 *            environment properties taking precedence over system properties or environment variables.
 	 */
-	public DefaultEnvironmentProperties(Map<EnvironmentPropertyName, String> envProps)
+	public DefaultEnvironmentProperties(final Map<EnvironmentPropertyName, String> envProps)
 	{
 		if (envProps == null)
 		{
@@ -73,13 +78,29 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 
 	/** {@inheritDoc} */
 	@Override
-	public String replacePlaceholders(String input)
+	public String replacePlaceholders(final String input)
 	{
 		if (input == null)
 		{
 			return null;
 		}
 
-		return PROPERTY_PLACEHOLDER_HELPER.replacePlaceholders(input, props);
+		return PROPERTY_PLACEHOLDER_HELPER.replacePlaceholders(input, placeholderName -> {
+			assert placeholderName != null;
+
+			final String userDefinedPropVal = props.getProperty(placeholderName);
+			if (userDefinedPropVal != null)
+			{
+				return userDefinedPropVal;
+			}
+
+			final String sysPropVal = System.getProperty(placeholderName);
+			if (sysPropVal != null)
+			{
+				return sysPropVal;
+			}
+			// Fall back to searching the system environment.
+			return System.getenv(placeholderName);
+		});
 	}
 }

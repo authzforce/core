@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2018 Thales Services SAS.
+ * Copyright 2012-2018 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -43,7 +43,7 @@ import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPattern;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.impl.policy.PolicyEvaluators;
-import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProvider;
+import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProviderDescriptor;
 import org.ow2.authzforce.xacml.identifiers.XacmlNodeName;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.ow2.authzforce.xacml.identifiers.XacmlVersion;
@@ -107,7 +107,7 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 	 * Factory
 	 * 
 	 */
-	public static class Factory extends CloseableRefPolicyProvider.Factory<MongoDBBasedPolicyProvider>
+	public static class Factory extends CloseableRefPolicyProvider.Factory<MongoDBBasedPolicyProviderDescriptor>
 	{
 		private static final IllegalArgumentException ILLEGAL_COMBINING_ALG_REGISTRY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined CombiningAlgorithm registry");
 		private static final IllegalArgumentException ILLEGAL_EXPRESSION_FACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Expression factory");
@@ -115,13 +115,13 @@ public final class MongoDbRefPolicyProvider extends BaseStaticRefPolicyProvider
 		private static final IllegalArgumentException NULL_CONF_ARGUMENT_EXCEPTION = new IllegalArgumentException("PolicyProvider configuration undefined");
 
 		@Override
-		public Class<MongoDBBasedPolicyProvider> getJaxbClass()
+		public Class<MongoDBBasedPolicyProviderDescriptor> getJaxbClass()
 		{
-			return MongoDBBasedPolicyProvider.class;
+			return MongoDBBasedPolicyProviderDescriptor.class;
 		}
 
 		@Override
-		public CloseableRefPolicyProvider getInstance(final MongoDBBasedPolicyProvider conf, final XmlnsFilteringParserFactory xmlParserFactory, final int maxPolicySetRefDepth,
+		public CloseableRefPolicyProvider getInstance(final MongoDBBasedPolicyProviderDescriptor conf, final XmlnsFilteringParserFactory xmlParserFactory, final int maxPolicySetRefDepth,
 		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties) throws IllegalArgumentException
 		{
 			if (conf == null)

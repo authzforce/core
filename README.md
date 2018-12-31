@@ -1,5 +1,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/dee3e6f5cdd240fc80dfdcc1ee419ac8)](https://www.codacy.com/app/coder103/authzforce-ce-core?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=authzforce/core&amp;utm_campaign=Badge_Grade)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/389/badge)](https://bestpractices.coreinfrastructure.org/projects/389)
+[![Build Status](https://travis-ci.org/authzforce/core.svg?branch=develop)](https://travis-ci.org/authzforce/core)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_shield)
 
 Javadocs: PDP engine [![Javadocs](http://javadoc.io/badge/org.ow2.authzforce/authzforce-ce-core-pdp-engine.svg)](http://javadoc.io/doc/org.ow2.authzforce/authzforce-ce-core-pdp-engine), XACML/JSON extension [![Javadocs](http://javadoc.io/badge/org.ow2.authzforce/authzforce-ce-core-pdp-io-xacml-json.svg)](http://javadoc.io/doc/org.ow2.authzforce/authzforce-ce-core-pdp-io-xacml-json), Test utilities [![Javadocs](http://javadoc.io/badge/org.ow2.authzforce/authzforce-ce-core-pdp-testutils.svg)](http://javadoc.io/doc/org.ow2.authzforce/authzforce-ce-core-pdp-testutils)
 
@@ -68,6 +70,9 @@ See the [change log](CHANGELOG.md) following the *Keep a CHANGELOG* [conventions
 See the [license file](LICENSE).
 
 
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
+
 ## System requirements
 Java (JRE) 8 or later. 
 
@@ -84,20 +89,20 @@ Get the [latest executable jar from Maven Central](http://central.maven.org/mave
 $ chmod a+x authzforce-ce-core-pdp-cli-13.0.0.jar
 ```
 
-Copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory, and run the executable as follows:
+To give you an example on how to test a XACML Policy (or PolicySet) and Request, you may copy the content of [that folder](pdp-cli/src/test/resources/conformance/xacml-3.0-core/mandatory) to the same directory as the executable, and run the executable as follows:
 
 ```
 $ ./authzforce-ce-core-pdp-cli-13.0.0.jar pdp.xml IIA001/Request.xml
 ```
 
-* `pdp.xml`: PDP configuration file, that defines the location(s) of XACML policy(ies), among other PDP engine parameters; the content of this file is a XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd), so you can read the documentation of every configuration parameter in that schema file;
-* `Request.xml`: XACML request in XACML 3.0/XML (core specification) format.
+* `pdp.xml`: PDP configuration file, that defines the location(s) of XACML policy(ies), among other PDP engine parameters; the content of this file is a XML document compliant with the PDP configuration [XML schema](pdp-engine/src/main/resources/pdp.xsd), so you can read the documentation of every configuration parameter in that schema file; **Feel free to change the policy location to point to your own for testing.**
+* `Request.xml`: XACML request in XACML 3.0/XML (core specification) format. **Feel free to replace with your own for testing.**
 
 If you want to test the JSON Profile of XACML 3.0, run it with extra option `-t XACML_JSON`:
 ```
 $ ./authzforce-ce-core-pdp-cli-13.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.json
 ```
-* `Request.json`: XACML request in XACML 3.0/JSON (Profile) format.
+* `Request.json`: XACML request in XACML 3.0/JSON (Profile) format. **Feel free to replace with your own for testing.**
 
 For more info, run it without parameters and you'll get detailed information on usage.
 
@@ -233,7 +238,7 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 
 You should use [AuthzForce users' mailing list](https://mail.ow2.org/wws/info/authzforce-users) as first contact for any communication about AuthzForce: question, feature request, notification, potential issue (unconfirmed), etc.
 
-If you are experiencing any bug with this project and you indeed confirm this is not an issue with your environment (contact the users mailing list first if you are unsure), please report it on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/).
+If you are experiencing any bug with this project and you indeed confirm this is not an issue with your environment (contact the users mailing list first if you are unsure), please report it on the [OW2 Issue Tracker](https://gitlab.ow2.org/authzforce/core/issues).
 Please include as much information as possible; the more we know, the better the chance of a quicker resolution:
 
 * Software version
@@ -243,7 +248,7 @@ Please include as much information as possible; the more we know, the better the
 * Your code & configuration files are often useful.
 
 ## Security - Vulnerability reporting
-If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://jira.ow2.org/browse/AUTHZFORCE/) with *Security Level* set to **Private**. Then, if the AuthzForce team can confirm it, they will change it to **Public** and set a fix version.
+If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker](https://gitlab.ow2.org/authzforce/core/issues) and **make sure the checkbox** *This issue is confidential and should only be visible to team members with at least Reporter access* **is checked when creating the issue**. Then, if the AuthzForce team can confirm it, they will uncheck it to make the issue public.
 
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md).

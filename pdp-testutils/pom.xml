@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>13.2.0</version>
+      <version>13.3.0</version>
       <relativePath>..</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
@@ -23,7 +23,7 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>${artifactId.prefix}-core-pdp-engine</artifactId>
-         <version>13.2.0</version>
+         <version>13.3.0</version>
       </dependency>
       <dependency>
          <groupId>org.mongodb</groupId>
@@ -138,7 +138,6 @@
             </executions>
          </plugin>
          <plugin>
-            <!-- Override license-maven-plugin configuration to exclude Sunxacml files from adding GPL license headers (different license) -->
             <groupId>com.mycila</groupId>
             <artifactId>license-maven-plugin</artifactId>
             <configuration>

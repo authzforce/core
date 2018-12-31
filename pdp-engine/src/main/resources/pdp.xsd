@@ -78,35 +78,27 @@
 					before X.
 				</p>
 				<p>
-					AttributeProvider configurations (XML instances of this schema)
-					may use the variable
-					'PARENT_DIR' as the path to the parent
-					directory of this
-					PDP
-					configuration file, so that
-					AttributeProvider
-					implementations can use
+					Such configurations (XML instances of this schema)
+					may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
+					
+					Implementation classes can use
 					org.ow2.authzforce.pd.api.EnvironmentProperties#replacePlaceholders()
-					to
-					replace ${PARENT_DIR} placeholder with this
-					value, and therefore
-					use
-					file
-					paths relative to the PDP configuration file. If
-					the
-					location to the
-					configuration file is not resolved to a file on
-					the
-					file system, 'PARENT_DIR' is undefined. You may use the
-					colon ':' as
-					a
-					separating character
-					between the placeholder variable
-					and an
-					associated default value, if PARENT_DIR is initially undefined.
-					E.g. ${PARENT_DIR:/home/foo/conf} will be
+					to replace ${property_name} placeholders with such properties. 
+					You may use '!' as a separating character
+					between the placeholder property name
+					and a default value that is used if the property is undefined.
+					E.g. ${PARENT_DIR!/home/foo/conf} will be
 					replaced with
 					'/home/foo/conf' if PARENT_DIR is undefined.
+					
+					In the location, you may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
+					
 				</p>
 			</documentation>
 		</annotation>
@@ -209,34 +201,26 @@
 							elements, and
 							not PolicySet elements.
 							<p>
-								Such configurations (XML instances of this schema) may use the
-								variable 'PARENT_DIR' as the path to the parent directory of
-								this
-								PDP
-								configuration file, so that Policy Provider
-								implementations can use
-								org.ow2.authzforce.pdp.api.EnvironmentProperties#replacePlaceholders()
-								to
-								replace ${PARENT_DIR} placeholder with this
-								value, and
-								therefore use file paths
-								relative to the PDP configuration file.
-								If
-								the location to the
-								configuration file is not resolved to a
-								file on
-								the file system, 'PARENT_DIR' is undefined. You may use
-								the
-								colon
-								':' as
-								a separating character
-								between the placeholder
-								variable
-								and an associated default value, if PARENT_DIR is
-								initially
-								undefined. E.g. ${PARENT_DIR:/home/foo/conf} will be
-								replaced with
-								'/home/foo/conf' if PARENT_DIR is undefined.
+								Such configurations (XML instances of this schema)
+					may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
+					
+					Implementation classes can use
+					org.ow2.authzforce.pd.api.EnvironmentProperties#replacePlaceholders()
+					to replace ${property_name} placeholders with such properties. 
+					You may use '!' as a separating character
+					between the placeholder property name
+					and a default value that is used if the property is undefined.
+					E.g. ${PARENT_DIR!/home/foo/conf} will be
+					replaced with
+					'/home/foo/conf' if PARENT_DIR is undefined.
+					
+					In the location, you may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
 							</p>
 						</documentation>
 					</annotation>
@@ -271,34 +255,26 @@
 							Policy(Set)IdReference
 							resolution.
 							<p>
-								Such configurations (XML instances of this schema) may use the
-								variable 'PARENT_DIR' as the path to the parent directory of
-								this
-								PDP
-								configuration file, so that Policy Provider
-								implementations can use
-								org.ow2.authzforce.pdp.api.EnvironmentProperties#replacePlaceholders()
-								to
-								replace ${PARENT_DIR} placeholder with this
-								value, and
-								therefore use file paths
-								relative to the PDP configuration file.
-								If
-								the location to the
-								configuration file is not resolved to a
-								file on
-								the file system, 'PARENT_DIR' is undefined. You may use
-								the
-								colon
-								':' as
-								a separating character
-								between the placeholder
-								variable
-								and an associated default value, if PARENT_DIR is
-								initially
-								undefined. E.g. ${PARENT_DIR:/home/foo/conf} will be
-								replaced with
-								'/home/foo/conf' if PARENT_DIR is undefined.
+								Such configurations (XML instances of this schema)
+					may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
+					
+					Implementation classes can use
+					org.ow2.authzforce.pd.api.EnvironmentProperties#replacePlaceholders()
+					to replace ${property_name} placeholders with such properties. 
+					You may use '!' as a separating character
+					between the placeholder property name
+					and a default value that is used if the property is undefined.
+					E.g. ${PARENT_DIR!/home/foo/conf} will be
+					replaced with
+					'/home/foo/conf' if PARENT_DIR is undefined.
+					
+					In the location, you may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
 							</p>
 						</documentation>
 					</annotation>
@@ -792,11 +768,19 @@
 					<annotation>
 						<documentation> Location of a XML file that is expected to contain
 							the root (aka top-level) Policy or PolicySet. The location may be either a "classpath:" pseudo URL, a "file:" URL,
-							or a plain file path. Use the global
-							property
-							'PARENT_DIR' for plain file paths under the parent
-							directory to the
-							XML file where this is used.
+							or a plain file path. 
+							
+							In the location, you may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
+
+					You may use '!' as a separating character
+					between the placeholder property name
+					and a default value that is used if the property is undefined.
+					E.g. ${PARENT_DIR!/home/foo/conf} will be
+					replaced with
+					'/home/foo/conf' if PARENT_DIR is undefined.
 						</documentation>
 					</annotation>
 				</attribute>
@@ -845,13 +829,18 @@
 								a SUFFIX; in
 								other words, SUFFIX may be an empty
 								string). The number of wildcards in the sequence '**....*' defines the maximum number of directory levels to search.
-								Use the global property
-								'PARENT_DIR' for defining - in a
-								generic way - a path relative to
-								the parent
-								directory
-								to the XML file
-								where this is used.
+								
+								In the location, you may use placeholders enclosed between '${' and '}' for the following properties:
+								- the global property 'PARENT_DIR' for defining - in a generic way - a path relative to the parent directory to the XML file where this is used;
+								- Java system properties;
+								- System environment variables.
+
+					You may use '!' as a separating character
+					between the placeholder property name
+					and a default value that is used if the property is undefined.
+					E.g. ${PARENT_DIR!/home/foo/conf} will be
+					replaced with
+					'/home/foo/conf' if PARENT_DIR is undefined.
 							</documentation>
 						</annotation>
 					</element>
