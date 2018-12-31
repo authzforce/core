@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>13.2.1-SNAPSHOT</version>
+      <version>13.3.1-SNAPSHOT</version>
       <relativePath>..</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
@@ -23,7 +23,7 @@
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>${artifactId.prefix}-core-pdp-engine</artifactId>
-         <version>13.2.1-SNAPSHOT</version>
+         <version>13.3.1-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.mongodb</groupId>
