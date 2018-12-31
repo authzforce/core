@@ -1,71 +1,67 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-   <modelVersion>4.0.0</modelVersion>
-   <parent>
-      <groupId>org.ow2.authzforce</groupId>
-      <artifactId>authzforce-ce-parent</artifactId>
-      <version>7.3.0</version>
-   </parent>
-   <artifactId>authzforce-ce-core</artifactId>
-   <version>13.2.1-SNAPSHOT</version>
-   <packaging>pom</packaging>
-   <name>${project.groupId}:${project.artifactId}</name>
-   <description>AuthzForce - XACML-compliant Core PDP Engine and associated test modules</description>
-   <url>${project.url}</url>
-   <scm>
-      <!-- Used by Jenkins - Maven release plugin -->
-      <connection>scm:git:${git.url.base}/core.git</connection>
-      <developerConnection>scm:git:${git.url.base}/core.git</developerConnection>
-      <tag>HEAD</tag>
-      <!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
-      <url>${git.url.base}/core</url>
-   </scm>
-   <repositories>
-      <repository>
-         <!-- Required by owasp dependency-check plugin for find info (POM) about dependency org.everit.json.schema in child modules -->
-         <id>jitpack.io</id>
-         <url>https://jitpack.io</url>
-      </repository>
-   </repositories>
-   <!-- distributionManagement defined in parent POM already -->
-   <dependencyManagement>
-      <dependencies>
-         <!-- AuthzForce dependencies -->
-         <dependency>
-            <groupId>org.ow2.authzforce</groupId>
-            <artifactId>authzforce-ce-core-pdp-api</artifactId>
-            <version>15.2.0</version>
-         </dependency>
-         <!-- /AuthzForce dependencies -->
-	 <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-	    <!-- Mitigation for CVE-2018-1257, CVE-2018-1258, CVE-2018-1275, CVE-2018-1271, CVE-2018-1270, CVE-2018-1272.
-		                         TODO: fix it in authzforce-ce-parent's managed version -->
-	    <version>4.3.17.RELEASE</version>
-         </dependency>
-         <!-- Test dependencies -->
-         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-         </dependency>
-         <!-- /Test dependencies -->
-      </dependencies>
-   </dependencyManagement>
-   <build>
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <artifactId>maven-resources-plugin</artifactId>
-               <version>3.0.1</version>
-            </plugin>
-         </plugins>
-      </pluginManagement>
-   </build>
-   <modules>
-      <module>pdp-engine</module>
-      <module>pdp-testutils</module>
-      <module>pdp-io-xacml-json</module>
-      <module>pdp-cli</module>
-   </modules>
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.ow2.authzforce</groupId>
+		<artifactId>authzforce-ce-parent</artifactId>
+		<version>7.5.0</version>
+	</parent>
+	<artifactId>authzforce-ce-core</artifactId>
+	<version>13.2.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>AuthzForce - XACML-compliant Core PDP Engine and associated test modules</description>
+	<url>${project.url}</url>
+	<scm>
+		<!-- Used by Jenkins - Maven release plugin -->
+		<connection>scm:git:${git.url.base}/core.git</connection>
+		<developerConnection>scm:git:${git.url.base}/core.git</developerConnection>
+		<tag>HEAD</tag>
+		<!-- Publicly browsable repository URL. For example, via Gitlab web UI. -->
+		<url>${git.url.base}/core</url>
+	</scm>
+	<repositories>
+		<repository>
+			<!-- Required by owasp dependency-check plugin for find info (POM) about dependency org.everit.json.schema in child modules -->
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+	<!-- distributionManagement defined in parent POM already -->
+	<dependencyManagement>
+		<dependencies>
+			<!-- AuthzForce dependencies -->
+			<dependency>
+				<groupId>org.ow2.authzforce</groupId>
+				<artifactId>authzforce-ce-core-pdp-api</artifactId>
+				<version>15.3.0</version>
+			</dependency>
+			<!-- /AuthzForce dependencies -->
+			<!-- Test dependencies -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.11</version>
+			</dependency>
+			<!-- /Test dependencies -->
+		</dependencies>
+	</dependencyManagement>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.0.1</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<modules>
+		<module>pdp-engine</module>
+		<module>pdp-testutils</module>
+		<module>pdp-io-xacml-json</module>
+		<module>pdp-cli</module>
+	</modules>
 </project>

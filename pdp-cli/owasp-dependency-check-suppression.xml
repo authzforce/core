@@ -1,13 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
-   <suppress>
-      <notes><![CDATA[
-      file name: mailapi-1.5.6.jar, 
-      false positive reported: https://github.com/jeremylong/DependencyCheck/issues/912
-      ]]></notes>
-      <cpe>cpe:/a:mail_project:mail</cpe>
-      <cpe>cpe:/a:sun:javamail</cpe>
-      <cve>CVE-2007-6059</cve>
-      <cve>CVE-2015-9097</cve>
-   </suppress>
 </suppressions>
