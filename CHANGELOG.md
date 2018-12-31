@@ -16,7 +16,7 @@ All notable changes to this project are documented in this file following the [K
   	  - jaxb2-basics: 1.11.1
   	  - mailapi replaced with javax.mail-api: 1.6.0
   - Spring: 4.3.18 (fixes CVE)
-  - authzforce-ce-xacml-json-model: 2.0.0
+  - authzforce-ce-xacml-json-model: 2.1.0
 - Copyright company name
 
 ### Added
