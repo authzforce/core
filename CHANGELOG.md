@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's JIRA](https://jira.ow2.org/browse/AUTHZFORCE/) are referenced in the form of `[JIRA-N]`, where N is the issue number.
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+## 13.3.1
+### Fixed
+- CVE affecting Spring v4.3.18: upgraded dependencies to depend on
+4.3.20:
+	- upgraded authzforce-ce-parent: 7.5.1
+	- authzforce-ce-xacml-json-model: 2.1.1
+- CVE-2018-1000873 on Jackson (Jongo dependency): upgraded:
+	- jackson-databind: 2.9.8
+
 
 ## 13.3.0
 ### Changed
@@ -16,14 +25,14 @@ All notable changes to this project are documented in this file following the [K
   	  - jaxb2-basics: 1.11.1
   	  - mailapi replaced with javax.mail-api: 1.6.0
   - Spring: 4.3.18 (fixes CVE)
-  - authzforce-ce-xacml-json-model: 2.0.0
+  - authzforce-ce-xacml-json-model: 2.1.0
 - Copyright company name
 
 ### Added
 - Dependency: javax.mail 1.6.0 (mail-api implementation for XACML RFC822Name support)
 - Feature: 
-	- DefaultEnvironmentProperties#replacePlaceholders() method now supports system properties and environment variables.
-	- 'policyLocation' elements in PDP's Policy Providers configuration now supports (not only PARENT_DIR property but also) system
+	- EnvironmentProperties#replacePlaceholders() method now supports system properties and environment variables; and a default value (separated from the property name by '!') if the property is undefined. Therefore, PDP extensions such as Attribute and Policy Providers can accept placeholders for system properties and environment variables in their string configuration parameters (as part of PDP configuration) and perform placeholder replacements with their factory method's input EnvironmentProperties.
+	- In particular, 'policyLocation' elements in PDP's Policy Providers configuration now supports (not only PARENT_DIR property but also) system
 properties and environment variables (enclosed between '${...}') with default value if property/variable undefined.
 
 
