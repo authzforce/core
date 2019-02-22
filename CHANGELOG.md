@@ -6,6 +6,15 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's JIRA](https://jira.ow2.org/browse/AUTHZFORCE/) are referenced in the form of `[JIRA-N]`, where N is the issue number.
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+## 13.3.1
+### Fixed
+- CVE affecting Spring v4.3.18: upgraded dependencies to depend on
+4.3.20:
+	- upgraded authzforce-ce-parent: 7.5.1
+	- authzforce-ce-xacml-json-model: 2.1.1
+- CVE-2018-1000873 on Jackson (Jongo dependency): upgraded:
+	- jackson-databind: 2.9.8
+
 
 ## 13.3.0
 ### Changed
