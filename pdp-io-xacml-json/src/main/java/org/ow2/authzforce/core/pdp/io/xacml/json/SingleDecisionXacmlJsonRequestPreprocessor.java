@@ -24,10 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XPathCompiler;
-import net.sf.saxon.s9api.XdmNode;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
@@ -44,24 +40,21 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 import com.google.common.collect.ImmutableList;
 
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XdmNode;
+
 /**
- * Default XACML/JSON - according to XACML JSON Proifle - Request preprocessor for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
+ * Default XACML/JSON - according to XACML JSON Profile - Request preprocessor for Individual Decision Requests only (no support of Multiple Decision Profile in particular)
  *
  * @version $Id: $
  */
 public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJsonRequestPreprocessor
 {
 	private static final IndeterminateEvaluationException INVALID_REQUEST_CATEGORY_ARRAY_ELEMENT_TYPE_EXCEPTION = new IndeterminateEvaluationException(
-			"Invalid Request/Category array: the type of one of the items is invalid (not JSON object as expected)", XacmlStatusCode.SYNTAX_ERROR.value());
-	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = new DecisionRequestFactory<ImmutableDecisionRequest>()
-	{
-
-		@Override
-		public ImmutableDecisionRequest getInstance(final Map<AttributeFqn, AttributeBag<?>> namedAttributes, final Map<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicies)
-		{
-			return ImmutableDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
-		}
-	};
+	        "Invalid Request/Category array: the type of one of the items is invalid (not JSON object as expected)", XacmlStatusCode.SYNTAX_ERROR.value());
+	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = (namedAttributes, extraContentsByCategory, returnApplicablePolicies) -> ImmutableDecisionRequest
+	        .getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
 
 	/**
 	 *
@@ -86,10 +79,10 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 
 		@Override
 		public DecisionRequestPreprocessor<JSONObject, IndividualXacmlJsonRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-				final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
 		{
 			return new SingleDecisionXacmlJsonRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, true, requireContentForXPath/* , xmlProcessor */,
-					extraPdpFeatures);
+			        extraPdpFeatures);
 		}
 
 		/**
@@ -122,10 +115,10 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 
 		@Override
 		public DecisionRequestPreprocessor<JSONObject, IndividualXacmlJsonRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-				final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
 		{
 			return new SingleDecisionXacmlJsonRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, false, requireContentForXPath/* , xmlProcessor */,
-					extraPdpFeatures);
+			        extraPdpFeatures);
 		}
 	}
 
@@ -149,7 +142,8 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 	 *            request further.
 	 */
 	public SingleDecisionXacmlJsonRequestPreprocessor(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final DecisionRequestFactory<ImmutableDecisionRequest> requestFactory,
-			final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates, final boolean requireContentForXPath/* , final Processor xmlProcessor */, final Set<String> extraPdpFeatures)
+	        final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates, final boolean requireContentForXPath/* , final Processor xmlProcessor */,
+	        final Set<String> extraPdpFeatures)
 	{
 		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, /* xmlProcessor, */extraPdpFeatures);
 		assert requestFactory != null;
@@ -158,8 +152,8 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 
 	@Override
 	public List<IndividualXacmlJsonRequest> process(final JSONArray jsonArrayOfRequestAttributeCategoryObjects, final SingleCategoryXacmlAttributesParser<JSONObject> xacmlAttrsParser,
-			final boolean isApplicablePolicyIdListReturned, final boolean combinedDecision, final XPathCompiler xPathCompiler, final Map<String, String> namespaceURIsByPrefix)
-			throws IndeterminateEvaluationException
+	        final boolean isApplicablePolicyIdListReturned, final boolean combinedDecision, final XPathCompiler xPathCompiler, final Map<String, String> namespaceURIsByPrefix)
+	        throws IndeterminateEvaluationException
 	{
 		final Map<AttributeFqn, AttributeBag<?>> namedAttributes = HashCollections.newUpdatableMap(jsonArrayOfRequestAttributeCategoryObjects.length());
 		/*
