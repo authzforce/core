@@ -156,7 +156,8 @@ public class CoreRefPolicyProvider extends BaseStaticRefPolicyProvider
 			int policyLocationIndex = 0;
 			for (final String policyLocationPatternBeforePlaceholderReplacement : conf.getPolicyLocations())
 			{
-				final String policyLocationPattern = environmentProperties.replacePlaceholders(policyLocationPatternBeforePlaceholderReplacement);
+				final String policyLocationPattern = environmentProperties == null ? policyLocationPatternBeforePlaceholderReplacement
+				        : environmentProperties.replacePlaceholders(policyLocationPatternBeforePlaceholderReplacement);
 				// Check whether the location is a file path pattern
 				if (policyLocationPattern.startsWith(ResourceUtils.FILE_URL_PREFIX))
 				{
