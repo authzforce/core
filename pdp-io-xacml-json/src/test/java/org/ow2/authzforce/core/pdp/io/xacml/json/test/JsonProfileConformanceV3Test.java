@@ -39,6 +39,7 @@ import org.json.JSONTokener;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocessor;
+import org.ow2.authzforce.core.pdp.io.xacml.json.MultipleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.json.model.LimitsCheckingJSONObject;
@@ -166,6 +167,16 @@ public class JsonProfileConformanceV3Test
 		return testParams;
 	}
 
+	/**
+	 * Multiple Decision Profile support activation status
+	 */
+	private boolean isMdpEnabled = false;
+
+	protected void setMdpEnabled(final boolean isEnabled)
+	{
+		this.isMdpEnabled = isEnabled;
+	}
+
 	@Test(dataProvider = "getTestDirectories")
 	public void test(final Path testDirectoryPath) throws Exception
 	{
@@ -212,7 +223,8 @@ public class JsonProfileConformanceV3Test
 		 */
 		final PdpEngineConfiguration pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile.toUri().toURL().toString(),
 		        Files.exists(refPoliciesDir) ? refPoliciesDir.toUri().toURL().toString() : null, ENABLE_XPATH,
-		        Files.exists(attributeProviderConfFile) ? attributeProviderConfFile.toUri().toURL().toString() : null, SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
+		        Files.exists(attributeProviderConfFile) ? attributeProviderConfFile.toUri().toURL().toString() : null,
+		        this.isMdpEnabled ? MultipleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID : SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
 		        BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
 		try (final PdpEngineInoutAdapter<JSONObject, JSONObject> pdp = PdpEngineXacmlJsonAdapters.newXacmlJsonInoutAdapter(pdpEngineConf))
 		{

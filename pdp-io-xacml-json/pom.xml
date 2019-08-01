@@ -172,6 +172,13 @@
                            <property name="target.dir" value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-core/mandatory" />
                         </ant>
                      </target>
+                     <target>
+                        <taskdef resource="net/sf/antcontrib/antlib.xml" />
+                        <ant antfile="${project.basedir}/src/test/resources.xacml/build.xml" inheritAll="false" inheritRefs="false">
+                           <property name="src.dir" value="${project.basedir}/src/test/resources.xacml/conformance/xacml-3.0-multiple" />
+                           <property name="target.dir" value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-multiple" />
+                        </ant>
+                     </target>
                   </configuration>
                </execution>
             </executions>

@@ -1,5 +1,5 @@
 <!-- Markdown syntax -->
-This folder contains OASIS XACML Committee's 2.0 version of conformance tests upgraded to conform to the XACML 3.0 standard, including new tests for new features introducted in XACML 3.0. Most of them have been submitted to the OASIS XACML Committee in April 2014 by AT&T.
+This folder contains OASIS XACML Committee's 2.0 version of conformance tests upgraded to conform to the XACML 3.0 standard, including new tests for new features introduced in XACML 3.0. Most of them have been submitted to the OASIS XACML Committee in April 2014 by AT&T.
 The original files are available on the xacml-comment mailing list: 
 https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html
 and on AT&T's Github repository (MIT License): 
