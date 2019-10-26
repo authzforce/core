@@ -39,8 +39,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
+import org.ow2.authzforce.core.pdp.impl.io.SingleDecisionXacmlJaxbRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocessor;
-import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.json.model.LimitsCheckingJSONObject;
 import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
@@ -139,7 +139,7 @@ public class JsonProfileConformanceV3Test
 		                + normalizedActualResponse + ">");
 	}
 
-	public static Collection<Object[]> params(final String testResourcesRootDirectory) throws URISyntaxException, IOException
+	public static Collection<Object[]> params(final String testResourcesRootDirectory, final String requestFilterId) throws URISyntaxException, IOException
 	{
 		final Collection<Object[]> testParams = new ArrayList<>();
 		/*
@@ -154,7 +154,7 @@ public class JsonProfileConformanceV3Test
 				if (Files.isDirectory(path))
 				{
 					// specific test's resources directory location, used as parameter to PdpTest(String)
-					testParams.add(new Object[] { path });
+					testParams.add(new Object[] { path, requestFilterId });
 				}
 			}
 		}
@@ -168,7 +168,7 @@ public class JsonProfileConformanceV3Test
 	}
 
 	@Test(dataProvider = "getTestDirectories")
-	public void test(final Path testDirectoryPath) throws Exception
+	public void test(final Path testDirectoryPath, final String requestFilterId) throws Exception
 	{
 		LOGGER.debug("******************************");
 		LOGGER.debug("Starting PDP test of directory '{}'", testDirectoryPath);
@@ -212,9 +212,9 @@ public class JsonProfileConformanceV3Test
 		 * policies) at the moment. If some day, JSON Profile addresses policy format too, then we should do like in ConformanceV3fromV2 class from pdp-testutils package (policy syntax validation).
 		 */
 		final PdpEngineConfiguration pdpEngineConf = Files.exists(policiesDir)
-		        ? TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), policiesDir, ENABLE_XPATH, optAttProviderConfFile, null, null)
-		        : TestUtils.newPdpEngineConfiguration(rootPolicyFile, ENABLE_XPATH, optAttProviderConfFile, SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
-		                BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
+		        ? TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), policiesDir, ENABLE_XPATH, optAttProviderConfFile, requestFilterId,
+		                BaseXacmlJsonResultPostprocessor.DefaultFactory.ID)
+		        : TestUtils.newPdpEngineConfiguration(rootPolicyFile, ENABLE_XPATH, optAttProviderConfFile, requestFilterId, BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
 
 		try (final PdpEngineInoutAdapter<JSONObject, JSONObject> pdp = PdpEngineXacmlJsonAdapters.newXacmlJsonInoutAdapter(pdpEngineConf))
 		{
@@ -237,6 +237,6 @@ public class JsonProfileConformanceV3Test
 		 */
 		final URL testDir = ResourceUtils.getURL("target/generated-test-resources/conformance/xacml-3.0-core/mandatory/IIIA004");
 		final Path testDirPath = Paths.get(testDir.toURI());
-		new JsonProfileConformanceV3Test().test(testDirPath);
+		new JsonProfileConformanceV3Test().test(testDirPath, SingleDecisionXacmlJaxbRequestPreprocessor.LaxVariantFactory.ID);
 	}
 }

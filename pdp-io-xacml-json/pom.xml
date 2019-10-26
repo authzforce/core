@@ -132,7 +132,6 @@
          </plugin>
          <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.6</version>
             <dependencies>
                <dependency>
                   <groupId>net.sourceforge.saxon</groupId>

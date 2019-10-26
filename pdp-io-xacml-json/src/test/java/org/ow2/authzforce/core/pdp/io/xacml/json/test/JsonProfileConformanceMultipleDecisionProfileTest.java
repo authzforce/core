@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 
-import org.testng.annotations.BeforeTest;
+import org.ow2.authzforce.core.pdp.io.xacml.json.MultipleDecisionXacmlJsonRequestPreprocessor;
 import org.testng.annotations.DataProvider;
 
 /**
@@ -40,13 +40,7 @@ public class JsonProfileConformanceMultipleDecisionProfileTest extends JsonProfi
 	@DataProvider
 	public static Iterator<Object[]> getTestDirectories() throws URISyntaxException, IOException
 	{
-		return params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION).iterator();
-	}
-
-	@BeforeTest
-	public void setUpTest()
-	{
-		this.setMdpEnabled(true);
+		return params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION, MultipleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID).iterator();
 	}
 
 }
