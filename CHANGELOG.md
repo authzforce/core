@@ -3,8 +3,26 @@ All notable changes to this project are documented in this file following the [K
 
 ## Issue references
 - Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. 
-- Issues reported on [OW2's JIRA](https://jira.ow2.org/browse/AUTHZFORCE/) are referenced in the form of `[JIRA-N]`, where N is the issue number.
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
+
+
+## 14.0.0
+### Changed
+- [GH-28]: simplified the PolicyProvider model, i.e. changed the following:
+  - **PDP configuration format** (XML Schema 'pdp.xsd') v7.0.0 (more info in [migration guide](MIGRATION.md) )
+	- Replaced 'refPolicyProvider' and 'rootPolicyProvider' XML elements with 'policyProvider' and 'rootPolicyRef'.
+	- StaticRootPolicyProvider and StaticRefPolicyProvider XML types replaced by one StaticPolicyProvider type.
+  - **PolicyProvider extension API** (interfaces): 
+    - Upgraded core-pdp-api dependency version: 16.0.0 (more info in [core-pdp-api's changelog](https://github.com/authzforce/core-pdp-api/blob/develop/CHANGELOG.md#1600) ):
+      - Replaced CloseableRefPolicyProvider and BaseStaticRefPolicyProvider classes with CloseablePolicyProvider and BaseStaticPolicyProvider
+- pdp-testutils module's dependency 'jackson-databind' upgraded to v2.9.10 (CVE fix)
+
+### Fixed
+- CVE-2019-14439
+
+### Added
+- Support for **Multiple Decision Profile when used with XACML/JSON Profile** (JSON input)
+
 
 ## 13.3.1
 ### Fixed
@@ -55,7 +73,7 @@ properties and environment variables (enclosed between '${...}') with default va
   - authzforce-ce-xacml-json-model: 2.0.0
    
 ### Fixed
-- Fixed #13: changed pdp-testutils module's dependencies: 
+- [GH-13]: changed pdp-testutils module's dependencies: 
   - mongo-java-driver: 2.14.12 -> 3.5.0
   - jongo: 1.3.0 -> 1.4.0
 
