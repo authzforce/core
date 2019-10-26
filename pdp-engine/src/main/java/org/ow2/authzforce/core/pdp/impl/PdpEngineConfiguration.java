@@ -54,8 +54,9 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
-import org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
+import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -73,6 +74,7 @@ import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.xmlns.pdp.InOutProcChain;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.core.xmlns.pdp.StandardEnvironmentAttributeSource;
+import org.ow2.authzforce.core.xmlns.pdp.TopLevelPolicyElementRef;
 import org.ow2.authzforce.xacml.identifiers.XacmlDatatypeId;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
@@ -95,7 +97,7 @@ public final class PdpEngineConfiguration
 	private static final IllegalArgumentException ILLEGAL_USE_STD_FUNCTIONS_ARGUMENT_EXCEPTION = new IllegalArgumentException(
 	        "useStandardFunctions = true not allowed if useStandardDatatypes = false");
 
-	private static final IllegalArgumentException NULL_ROOTPOLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined rootPolicyProvider");
+	private static final IllegalArgumentException NULL_POLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined policyProvider");
 
 	// the logger we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasePdpEngine.class);
@@ -132,19 +134,11 @@ public final class PdpEngineConfiguration
 		return attrProviderModBuilder.getInstance(jaxbConf, envProps);
 	}
 
-	private static <JAXB_CONF extends AbstractPolicyProvider> CloseableRefPolicyProvider newRefPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
+	private static <JAXB_CONF extends AbstractPolicyProvider> CloseablePolicyProvider<?> newPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
 	        final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps)
 	{
-		final CloseableRefPolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions.getRefPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
+		final CloseablePolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions.getRefPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
 		return refPolicyProviderModFactory.getInstance(jaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExprFactory, combiningAlgRegistry, envProps);
-	}
-
-	private static <JAXB_CONF extends AbstractPolicyProvider> RootPolicyProvider newRootPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
-	        final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final Optional<CloseableRefPolicyProvider> refPolicyProvider,
-	        final EnvironmentProperties envProps)
-	{
-		final RootPolicyProvider.Factory<JAXB_CONF> rootPolicyProviderFactory = PdpExtensions.getRootPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
-		return rootPolicyProviderFactory.getInstance(jaxbConf, xacmlParserFactory, xacmlExprFactory, combiningAlgRegistry, refPolicyProvider, envProps);
 	}
 
 	private static <JAXB_CONF extends AbstractDecisionCache> DecisionCache newDecisionCache(final JAXB_CONF jaxbConf, final AttributeValueFactoryRegistry attValFactories,
@@ -159,7 +153,13 @@ public final class PdpEngineConfiguration
 
 	private final ExpressionFactory xacmlExpressionFactory;
 
-	private final RootPolicyProvider rootPolicyProvider;
+	private final CloseablePolicyProvider<?> policyProvider;
+
+	private final String rootPolicyId;
+
+	private final Optional<TopLevelPolicyElementType> rootPolicyElementType;
+
+	private final Optional<PolicyVersionPatterns> rootPolicyVersionPatterns;
 
 	private final boolean strictAttributeIssuerMatch;
 
@@ -189,12 +189,12 @@ public final class PdpEngineConfiguration
 		 * Check required args
 		 */
 		/*
-		 * Root policy provider
+		 * Policy provider
 		 */
-		final AbstractPolicyProvider rootPolicyProviderJaxbConf = pdpJaxbConf.getRootPolicyProvider();
+		final AbstractPolicyProvider rootPolicyProviderJaxbConf = pdpJaxbConf.getPolicyProvider();
 		if (rootPolicyProviderJaxbConf == null)
 		{
-			throw NULL_ROOTPOLICYPROVIDER_ARGUMENT_EXCEPTION;
+			throw NULL_POLICYPROVIDER_ARGUMENT_EXCEPTION;
 		}
 
 		/*
@@ -221,11 +221,13 @@ public final class PdpEngineConfiguration
 			if (datatypeExtensionIdentifiers.isEmpty())
 			{
 				attValFactoryRegistry = stdRegistry;
-			} else
+			}
+			else
 			{
 				attValFactoryRegistry = new ImmutableAttributeValueFactoryRegistry(HashCollections.newImmutableSet(stdRegistry.getExtensions(), datatypeExtensions));
 			}
-		} else
+		}
+		else
 		{
 			attValFactoryRegistry = new ImmutableAttributeValueFactoryRegistry(datatypeExtensions);
 		}
@@ -255,7 +257,8 @@ public final class PdpEngineConfiguration
 		try
 		{
 			maxVarRefDepth = bigMaxVarRefDepth == null ? -1 : bigMaxVarRefDepth.intValueExact();
-		} catch (final ArithmeticException e)
+		}
+		catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxVariableRefDepth: " + bigMaxVarRefDepth, e);
 		}
@@ -292,12 +295,14 @@ public final class PdpEngineConfiguration
 			if (nonGenericFunctionExtensionIdentifiers.isEmpty())
 			{
 				functionRegistry = stdRegistry;
-			} else
+			}
+			else
 			{
 				functionRegistry = new ImmutableFunctionRegistry(HashCollections.newImmutableSet(stdRegistry.getNonGenericFunctions(), nonGenericFunctionExtensions),
 				        stdRegistry.getGenericFunctionFactories());
 			}
-		} else
+		}
+		else
 		{
 			functionRegistry = new ImmutableFunctionRegistry(nonGenericFunctionExtensions, null);
 		}
@@ -331,11 +336,13 @@ public final class PdpEngineConfiguration
 			if (algExtensions.isEmpty())
 			{
 				combiningAlgRegistry = StandardCombiningAlgorithm.REGISTRY;
-			} else
+			}
+			else
 			{
 				combiningAlgRegistry = new ImmutableCombiningAlgRegistry(HashCollections.newImmutableSet(StandardCombiningAlgorithm.REGISTRY.getExtensions(), algExtensions));
 			}
-		} else
+		}
+		else
 		{
 			combiningAlgRegistry = new ImmutableCombiningAlgRegistry(algExtensions);
 		}
@@ -348,7 +355,8 @@ public final class PdpEngineConfiguration
 		try
 		{
 			maxPolicySetRefDepth = bigMaxPolicyRefDepth == null ? -1 : bigMaxPolicyRefDepth.intValueExact();
-		} catch (final ArithmeticException e)
+		}
+		catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid maxPolicyRefDepth: " + bigMaxPolicyRefDepth, e);
 		}
@@ -359,29 +367,29 @@ public final class PdpEngineConfiguration
 		xacmlExpressionFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry, attProviderFactories, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch);
 
 		/*
-		 * Policy Reference processing - Policy-by-reference Provider
+		 * Policy Provider
 		 */
-		final AbstractPolicyProvider refPolicyProviderJaxbConf = pdpJaxbConf.getRefPolicyProvider();
-		final Optional<CloseableRefPolicyProvider> refPolicyProvider;
-		if (refPolicyProviderJaxbConf == null)
-		{
-			refPolicyProvider = Optional.empty();
-		} else
-		{
-			refPolicyProvider = Optional.of(newRefPolicyProvider(refPolicyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry, envProps));
-		}
+		final AbstractPolicyProvider policyProviderJaxbConf = pdpJaxbConf.getPolicyProvider();
+		policyProvider = newPolicyProvider(policyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry, envProps);
 
+		final TopLevelPolicyElementRef rootPolicyRef = pdpJaxbConf.getRootPolicyRef();
 		/*
-		 * Root Policy Provider
+		 * PDP XSD assumed to ensure rootPolicyRef is defined
 		 */
-		rootPolicyProvider = newRootPolicyProvider(rootPolicyProviderJaxbConf, xacmlParserFactory, xacmlExpressionFactory, combiningAlgRegistry, refPolicyProvider, envProps);
+		assert rootPolicyRef != null;
+		final Boolean mustBePolicySet = rootPolicyRef.isPolicySet();
+		this.rootPolicyElementType = mustBePolicySet == null ? Optional.empty()
+		        : mustBePolicySet.booleanValue() ? Optional.of(TopLevelPolicyElementType.POLICY_SET) : Optional.of(TopLevelPolicyElementType.POLICY);
+		this.rootPolicyId = rootPolicyRef.getValue();
+		this.rootPolicyVersionPatterns = Optional.ofNullable(new PolicyVersionPatterns(rootPolicyRef.getVersion(), null, null));
 
 		// Decision cache
 		final AbstractDecisionCache decisionCacheJaxbConf = pdpJaxbConf.getDecisionCache();
 		if (decisionCacheJaxbConf == null)
 		{
 			decisionCache = Optional.empty();
-		} else
+		}
+		else
 		{
 			decisionCache = Optional.of(newDecisionCache(decisionCacheJaxbConf, attValFactoryRegistry, envProps));
 		}
@@ -391,7 +399,8 @@ public final class PdpEngineConfiguration
 		try
 		{
 			this.clientReqErrVerbosityLevel = clientReqErrVerbosityBigInt == null ? 0 : clientReqErrVerbosityBigInt.intValueExact();
-		} catch (final ArithmeticException e)
+		}
+		catch (final ArithmeticException e)
 		{
 			throw new IllegalArgumentException("Invalid clientRequestErrorVerbosityLevel: " + clientReqErrVerbosityBigInt, e);
 		}
@@ -401,7 +410,8 @@ public final class PdpEngineConfiguration
 		if (inoutProcChains.isEmpty())
 		{
 			this.ioProcChainsByInputType = Collections.emptyMap();
-		} else
+		}
+		else
 		{
 			final Map<Class<?>, Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>>> mutableInoutProcChainsByInputType = HashCollections
 			        .newUpdatableMap(inoutProcChains.size());
@@ -414,7 +424,8 @@ public final class PdpEngineConfiguration
 				if (resultPostprocId == null)
 				{
 					decisionResultPostproc = null;
-				} else
+				}
+				else
 				{
 					final DecisionResultPostprocessor.Factory<?, ?> resultPostprocFactory = PdpExtensions.getExtension(DecisionResultPostprocessor.Factory.class, resultPostprocId);
 					decisionResultPostproc = resultPostprocFactory.getInstance(clientReqErrVerbosityLevel);
@@ -464,7 +475,8 @@ public final class PdpEngineConfiguration
 		try
 		{
 			pdpJaxbConf = modelHandler.unmarshal(confXmlSrc, Pdp.class);
-		} catch (final JAXBException e)
+		}
+		catch (final JAXBException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration file", e);
 		}
@@ -546,7 +558,8 @@ public final class PdpEngineConfiguration
 		{
 			final File confFile = ResourceUtils.getFile(confLocation);
 			return getInstance(confFile, modelHandler);
-		} catch (final FileNotFoundException e)
+		}
+		catch (final FileNotFoundException e)
 		{
 			if (LOGGER.isInfoEnabled())
 			{
@@ -563,7 +576,8 @@ public final class PdpEngineConfiguration
 		try
 		{
 			confUrl = ResourceUtils.getURL(confLocation);
-		} catch (final FileNotFoundException e)
+		}
+		catch (final FileNotFoundException e)
 		{
 			throw new IllegalArgumentException("Invalid PDP configuration location (neither a file in the file system nor a valid URL): " + confLocation, e);
 		}
@@ -603,19 +617,19 @@ public final class PdpEngineConfiguration
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
 	 * 			}
-	 *            </pre>
+	 * </pre>
 	 *
-	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
+	 * In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
 	 * 
-	 *            <pre>
+	 * <pre>
 	 *            {@literal
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
 	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
 	 *            }
-	 *            </pre>
+	 * </pre>
 	 * 
-	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
-	 *            types) in this case.
+	 * We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this
+	 * case.
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
@@ -656,19 +670,19 @@ public final class PdpEngineConfiguration
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
 	 * 			}
-	 *            </pre>
+	 * </pre>
 	 *
-	 *            In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
+	 * In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
 	 * 
-	 *            <pre>
+	 * <pre>
 	 *            {@literal
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
 	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
 	 *            }
-	 *            </pre>
+	 * </pre>
 	 * 
-	 *            We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base
-	 *            types) in this case.
+	 * We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this
+	 * case.
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
@@ -735,9 +749,39 @@ public final class PdpEngineConfiguration
 	 * 
 	 * @return the Root Policy Provider
 	 */
-	public RootPolicyProvider getRootPolicyProvider()
+	public CloseablePolicyProvider<?> getPolicyProvider()
 	{
-		return rootPolicyProvider;
+		return policyProvider;
+	}
+
+	/**
+	 * Returns the type of the root policy element where the evaluation starts
+	 * 
+	 * @return type of the root policy element (XACML Policy or XACML PolicySet)
+	 */
+	public Optional<TopLevelPolicyElementType> getRootPolicyElementType()
+	{
+		return rootPolicyElementType;
+	}
+
+	/**
+	 * Returns ID of policy where to start the evaluation
+	 * 
+	 * @return root policy ID
+	 */
+	public String getRootPolicyId()
+	{
+		return rootPolicyId;
+	}
+
+	/**
+	 * Returns the version matching rules for the root policy
+	 * 
+	 * @return the version or version matching rules for the root policy
+	 */
+	public Optional<PolicyVersionPatterns> getRootPolicyVersionPatterns()
+	{
+		return rootPolicyVersionPatterns;
 	}
 
 	/**

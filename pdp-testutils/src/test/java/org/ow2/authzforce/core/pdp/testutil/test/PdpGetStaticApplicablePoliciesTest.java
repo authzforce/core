@@ -22,16 +22,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.Test;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
@@ -44,6 +43,10 @@ import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.ow2.authzforce.core.pdp.testutil.PdpTest;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+
 /**
  * Test of {@link BasePdpEngine#getApplicablePolicies()}
  *
@@ -53,7 +56,7 @@ public class PdpGetStaticApplicablePoliciesTest
 	/**
 	 * Name of directory that contains test resources for each test
 	 */
-	public final static String TEST_RESOURCES_DIRECTORY_LOCATION = "classpath:conformance/others/PolicyReference.Valid";
+	public final static String TEST_RESOURCES_DIRECTORY_LOCATION = "target/test-classes/conformance/others/PolicyReference.Valid";
 
 	private static final class MinimalPolicySetMetadata implements PrimaryPolicyMetadata
 	{
@@ -166,7 +169,7 @@ public class PdpGetStaticApplicablePoliciesTest
 
 	}
 
-	private final static PrimaryPolicyMetadata ROOT_POLICYSET_METADATA = new MinimalPolicySetMetadata("root:policyset-with-refs", "1.0");
+	private final static PrimaryPolicyMetadata ROOT_POLICYSET_METADATA = new MinimalPolicySetMetadata("root", "1.0");
 
 	private final static List<PrimaryPolicyMetadata> REF_POLICYSET_METADATA_SET = Collections.singletonList(new MinimalPolicySetMetadata("PPS:Employee", "1.0"));
 
@@ -174,9 +177,33 @@ public class PdpGetStaticApplicablePoliciesTest
 	public void test() throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
 		final String testResourceLocationPrefix = TEST_RESOURCES_DIRECTORY_LOCATION + "/";
-		// Create PDP
-		final PdpEngineConfiguration pdpEngineConf = TestUtils.newPdpEngineConfiguration(testResourceLocationPrefix + PdpTest.POLICY_FILENAME, testResourceLocationPrefix
-				+ PdpTest.REF_POLICIES_DIR_NAME, false, null, null, null);
+
+		/*
+		 * Policies
+		 * 
+		 * If there is a "$TEST_DIR/$POLICIES_DIR_NAME" directory, then load all policies from there, including root policy from "$TEST_DIR/$POLICIES_DIR_NAME/$ROOT_POLICY_FILENAME" Else load only the
+		 * root policy from "$TEST_DIR/$ROOT_POLICY_FILENAME"
+		 */
+		final Path policiesDir = Paths.get(testResourceLocationPrefix + PdpTest.POLICIES_DIR_NAME);
+		final Optional<Path> optPoliciesDir;
+		final Path rootPolicyFile;
+		if (Files.isDirectory(policiesDir))
+		{
+			optPoliciesDir = Optional.of(policiesDir);
+			rootPolicyFile = policiesDir.resolve(PdpTest.ROOT_POLICY_FILENAME);
+		}
+		else
+		{
+			optPoliciesDir = Optional.empty();
+			rootPolicyFile = Paths.get(testResourceLocationPrefix + PdpTest.ROOT_POLICY_FILENAME);
+		}
+
+		/*
+		 * Create PDP
+		 */
+		final PdpEngineConfiguration pdpEngineConf = optPoliciesDir.isPresent()
+		        ? TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), optPoliciesDir.get(), false, Optional.empty(), null, null)
+		        : TestUtils.newPdpEngineConfiguration(rootPolicyFile, false, Optional.empty(), null, null);
 		try (final PdpEngineInoutAdapter<Request, Response> pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConf))
 		{
 			final Iterator<PrimaryPolicyMetadata> staticApplicablePolicies = pdp.getApplicablePolicies().iterator();

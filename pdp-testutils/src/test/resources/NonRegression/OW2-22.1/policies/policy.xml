@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="root"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit"
+	Version="1.0">
+	<Description>
+		Policy for non-regression test of issue 22.
+	</Description>
+	<Target />
+	<Policy 
+		PolicyId="urn:ow2:authzforce:xacml:3.0:non-regression-test:22:PS1:not-applicable-policy" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">XXX</AttributeValue>
+						<AttributeDesignator
+							AttributeId="urn:ow2:authzforce:xacml:attribute:id:not-in-the-request"
+							Category="urn:ow2:authzforce:xacml:attribute:category:not-in-the-request"
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+	</Policy>
+	<Policy 
+		PolicyId="urn:ow2:authzforce:xacml:3.0:non-regression-test:22:PS1:policy2" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Target />
+		<ObligationExpressions>
+			<ObligationExpression FulfillOn="Deny"
+				ObligationId="urn:ow2:authzforce:xacml:3.0:non-regression-test:22:PS1:policy2:obligation">
+			</ObligationExpression>
+		</ObligationExpressions>
+	</Policy>
+</PolicySet>

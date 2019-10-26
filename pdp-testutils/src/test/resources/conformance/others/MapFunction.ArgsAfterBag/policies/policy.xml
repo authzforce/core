@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicyId="root"
+	RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit"
+	Version="1.0">
+	<Description>
+		Policy for Conformance Test of map function with multiple
+		arguments, starting with bag (see also conformance test
+		IIC170 for
+		other map function tests).
+	</Description>
+	<Target />
+	<Rule Effect="Permit" RuleId="policy-with-args-after-bag-to-map-function:rule">
+		<Condition>
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-set-equals">
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">H</AttributeValue>
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">W</AttributeValue>
+				</Apply>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:3.0:function:map">
+					<Function FunctionId="urn:oasis:names:tc:xacml:3.0:function:string-substring" />
+					<AttributeDesignator AttributeId="urn:oasis:names:tc:xacml:2.0:conformance-test:test-attr"
+						Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+						DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">0</AttributeValue>
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">1</AttributeValue>
+				</Apply>
+			</Apply>
+		</Condition>
+	</Rule>
+</Policy>

@@ -1,5 +1,5 @@
 org.ow2.authzforce.core.pdp.testutil.ext.TestAttributeProvider$Factory
-org.ow2.authzforce.core.pdp.testutil.ext.MongoDbRefPolicyProvider$Factory
+org.ow2.authzforce.core.pdp.testutil.ext.MongoDbPolicyProvider$Factory
 org.ow2.authzforce.core.pdp.testutil.ext.TestXacmlPolicyAttributeValue$Factory
 org.ow2.authzforce.core.pdp.testutil.ext.TestDnsNameWithPortValue$Factory
 org.ow2.authzforce.core.pdp.testutil.ext.TestDnsNameValueEqualFunction

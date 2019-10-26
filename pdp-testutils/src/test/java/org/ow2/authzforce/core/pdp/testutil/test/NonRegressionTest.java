@@ -39,7 +39,7 @@ public class NonRegressionTest extends PdpTest
 	/**
 	 * Name of root directory that contains test resources for each non-regression test
 	 */
-	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "classpath:NonRegression";
+	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "target/test-classes/NonRegression";
 
 	/**
 	 * the logger we'll use for all messages

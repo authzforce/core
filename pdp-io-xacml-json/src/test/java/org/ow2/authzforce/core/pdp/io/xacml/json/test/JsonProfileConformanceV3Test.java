@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
 
@@ -39,7 +40,6 @@ import org.json.JSONTokener;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocessor;
-import org.ow2.authzforce.core.pdp.io.xacml.json.MultipleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.json.model.LimitsCheckingJSONObject;
@@ -77,7 +77,7 @@ public class JsonProfileConformanceV3Test
 	 * Suffix of name of directory containing files of XACML Policy(Set) that can be referenced from root policy via Policy(Set)IdReference. The actual directory name is the concatenation of the test
 	 * ID and this suffix.
 	 */
-	public final static String REF_POLICIES_DIRNAME_SUFFIX = "Repository";
+	public final static String POLICIES_DIRNAME_SUFFIX = "Policies";
 
 	/**
 	 * Suffix of filename of an AttributeProvider configuration. The actual filename is the concatenation of the test ID and this suffix.
@@ -167,16 +167,6 @@ public class JsonProfileConformanceV3Test
 		return testParams;
 	}
 
-	/**
-	 * Multiple Decision Profile support activation status
-	 */
-	private boolean isMdpEnabled = false;
-
-	protected void setMdpEnabled(final boolean isEnabled)
-	{
-		this.isMdpEnabled = isEnabled;
-	}
-
 	@Test(dataProvider = "getTestDirectories")
 	public void test(final Path testDirectoryPath) throws Exception
 	{
@@ -212,20 +202,20 @@ public class JsonProfileConformanceV3Test
 		}
 
 		final Path rootPolicyFile = testDirectoryPath.resolve(ROOT_POLICY_FILENAME_SUFFIX);
-		// referenced policies if any
-		final Path refPoliciesDir = testDirectoryPath.resolve(REF_POLICIES_DIRNAME_SUFFIX);
+		final Path policiesDir = testDirectoryPath.resolve(POLICIES_DIRNAME_SUFFIX);
 
 		final Path attributeProviderConfFile = testDirectoryPath.resolve(ATTRIBUTE_PROVIDER_FILENAME_SUFFIX);
+		final Optional<Path> optAttProviderConfFile = Files.exists(attributeProviderConfFile) ? Optional.of(attributeProviderConfFile) : Optional.empty();
 
 		/*
 		 * So far we assume the PDP engine configuration files are valid, because for the moment we only test Request/Response in JSON Profile since JSON Profile only applies to these elements (not to
 		 * policies) at the moment. If some day, JSON Profile addresses policy format too, then we should do like in ConformanceV3fromV2 class from pdp-testutils package (policy syntax validation).
 		 */
-		final PdpEngineConfiguration pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile.toUri().toURL().toString(),
-		        Files.exists(refPoliciesDir) ? refPoliciesDir.toUri().toURL().toString() : null, ENABLE_XPATH,
-		        Files.exists(attributeProviderConfFile) ? attributeProviderConfFile.toUri().toURL().toString() : null,
-		        this.isMdpEnabled ? MultipleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID : SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
-		        BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
+		final PdpEngineConfiguration pdpEngineConf = Files.exists(policiesDir)
+		        ? TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), policiesDir, ENABLE_XPATH, optAttProviderConfFile, null, null)
+		        : TestUtils.newPdpEngineConfiguration(rootPolicyFile, ENABLE_XPATH, optAttProviderConfFile, SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID,
+		                BaseXacmlJsonResultPostprocessor.DefaultFactory.ID);
+
 		try (final PdpEngineInoutAdapter<JSONObject, JSONObject> pdp = PdpEngineXacmlJsonAdapters.newXacmlJsonInoutAdapter(pdpEngineConf))
 		{
 			// this is an evaluation test with request/response (not a policy syntax check)

@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Testing parameter 'maxPolicySetRefDepth' -->
-<pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/6.0" version="6.0.0">
-   <combiningAlgorithm>urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:on-permit-apply-second</combiningAlgorithm>
-   <rootPolicyProvider id="rootPolicyProvider" xsi:type="StaticRootPolicyProvider" policyLocation="${PARENT_DIR}/policy.xml" />
-   <ioProcChain>
-      <requestPreproc>urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:multiple:repeated-attribute-categories-lax</requestPreproc>
-   </ioProcChain>
+<pdp
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://authzforce.github.io/core/xmlns/pdp/7.0"
+	version="7.0.0">
+	<combiningAlgorithm>urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:on-permit-apply-second</combiningAlgorithm>
+	<policyProvider
+		id="refPolicyprovider"
+		xsi:type="StaticPolicyProvider">
+		<policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
+	</policyProvider>
+	<rootPolicyRef>root</rootPolicyRef>
+	<ioProcChain>
+		<requestPreproc>urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:multiple:repeated-attribute-categories-lax</requestPreproc>
+	</ioProcChain>
 </pdp>
 
