@@ -41,16 +41,16 @@ AuthzForce Core may be used in the following ways:
 * Optional **strict multivalued attribute parsing**: if enabled, multivalued attributes must be formed by grouping all `AttributeValue` elements in the same Attribute element (instead of duplicate Attribute elements); this does not fully comply with [XACML 3.0 Core specification of Multivalued attributes (§7.3.3)](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047176), but it usually performs better than the default mode since it simplifies the parsing of attribute values in the request.
 * Optional **strict attribute Issuer matching**: if enabled, `AttributeDesignators` without Issuer only match request Attributes without Issuer (and same AttributeId, Category...); this option is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it is the recommended option when all AttributeDesignators have an Issuer (the XACML 3.0 specification (5.29) says: *If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone.*);
 * Extensibility points:
-  * **Attribute Datatypes**: you may extend the PDP engine with custom XACML attribute datatypes;
-  * **Functions**: you may extend the PDP engine with custom XACML functions;
-  * **Combining Algorithms**: you may extend the PDP engine with custom XACML policy/rule combining algorithms;
-  * **Attribute Providers a.k.a. PIPs** (Policy Information Points): you may plug custom attribute providers into the PDP engine to allow it to retrieve attributes from other attribute sources (e.g. remote service) than the input XACML Request during evaluation; 
-  * **Request Preprocessor**: you may customize the processing of XACML Requests before evaluation by the PDP core engine, e.g. used for supporting new XACML Request formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Repeated attribute categories](http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/cs02/xacml-3.0-multiple-v1.0-cs02.html#_Toc388943334);
-  * **Result Postprocessor**: you may customize the processing of XACML Results after evaluation by the PDP engine, e.g. used for supporting new XACML Response formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890);
+  * **[Attribute Datatypes](https://github.com/authzforce/core/wiki/XACML-Data-Types)**: you may extend the PDP engine with custom XACML attribute datatypes;
+  * **[Functions](https://github.com/authzforce/core/wiki/XACML-Functions)**: you may extend the PDP engine with custom XACML functions;
+  * **[Combining Algorithms](https://github.com/authzforce/core/wiki/XACML-Combining-Algorithms)**: you may extend the PDP engine with custom XACML policy/rule combining algorithms;
+  * **[Attribute Providers a.k.a. PIPs](https://github.com/authzforce/core/wiki/Attribute-Providers)** (Policy Information Points): you may plug custom attribute providers into the PDP engine to allow it to retrieve attributes from other attribute sources (e.g. remote service) than the input XACML Request during evaluation; 
+  * **[Request Preprocessor](https://github.com/authzforce/core/wiki/XACML-Request-Preprocessors)**: you may customize the processing of XACML Requests before evaluation by the PDP core engine, e.g. used for supporting new XACML Request formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Repeated attribute categories](http://docs.oasis-open.org/xacml/3.0/multiple/v1.0/cs02/xacml-3.0-multiple-v1.0-cs02.html#_Toc388943334);
+  * **[Result Postprocessor](https://github.com/authzforce/core/wiki/XACML-Result-Postprocessors)**: you may customize the processing of XACML Results after evaluation by the PDP engine, e.g. used for supporting new XACML Response formats, and/or implementing [XACML v3.0 Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890);
   * **Root Policy Provider**: you may plug custom policy providers into the PDP engine to allow it to retrieve the root policy from specific sources (e.g. remote service);
-  * **Policy-by-reference Provider**: you may plug custom policy providers into the PDP engine to allow it to resolve `PolicyIdReference` or `PolicySetIdReference`;
+  * **[Policy-by-reference Provider](https://github.com/authzforce/core/wiki/Policy-Providers)**: you may plug custom policy providers into the PDP engine to allow it to resolve `PolicyIdReference` or `PolicySetIdReference`;
   * **Decision Cache**: you may extend the PDP engine with a custom XACML decision cache, allowing the PDP to skip evaluation and retrieve XACML decisions from cache for recurring XACML Requests;
-  * Java extension mechanism to switch HashMap/HashSet implementations (e.g. to get different performance results).
+  * Java [extension mechanism to switch HashMap/HashSet implementations](https://github.com/authzforce/core/wiki/Hashed-Collections) (e.g. to get different performance results).
 * PIP (Policy Information Point): AuthzForce provides XACML PIP features in the form of extensions called *Attribute Providers*. More information in the previous list of *Extensibility points*.
 
 
@@ -131,7 +131,7 @@ Then instantiate a PDP engine configuration with method [PdpEngineConfiguration#
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/6.0" version="6.0.0">
+   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7.0" version="7.0.0">
 	   <rootPolicyProvider id="rootPolicyProvider" xsi:type="StaticRootPolicyProvider" policyLocation="${PARENT_DIR}/policy.xml" />
    </pdp>
    ```

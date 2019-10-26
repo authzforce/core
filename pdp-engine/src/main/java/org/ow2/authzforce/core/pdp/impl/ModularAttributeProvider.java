@@ -42,7 +42,7 @@ import com.google.common.collect.ListMultimap;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 
 /**
- * AttributeProvider that tries to resolve attributes in current request context first, else delegates to {@link DesignatedAttributeProvider}s.
+ * AttributeProvider that tries to resolve attributes in current request context first, else delegates to {@link NamedAttributeProvider}s.
  *
  * @version $Id: $
  */
@@ -97,7 +97,8 @@ public class ModularAttributeProvider implements AttributeProvider
 		if (selectedAttributeSupport == null)
 		{
 			designatorModsByAttrId = attributeProviderModulesByAttributeId;
-		} else
+		}
+		else
 		{
 			final ListMultimap<AttributeFqn, NamedAttributeProvider> mutableModsByAttrIdMap = ArrayListMultimap.create(selectedAttributeSupport.size(), 1);
 			for (final AttributeDesignatorType requiredAttr : selectedAttributeSupport)
@@ -206,7 +207,8 @@ public class ModularAttributeProvider implements AttributeProvider
 			LOGGER.debug("Values of attribute {}, type={} returned by attribute Provider module #{} (cached in context): {}", attributeFqn, datatype, attrProviders, result);
 			issuedToNonIssuedAttributeCopyMode.process(attributeFqn, result, context);
 			return result;
-		} catch (final IndeterminateEvaluationException e)
+		}
+		catch (final IndeterminateEvaluationException e)
 		{
 			/*
 			 * This error does not necessarily matter, it depends on whether the attribute is required, i.e. MustBePresent=true for AttributeDesignator/Selector So we let
@@ -248,7 +250,8 @@ public class ModularAttributeProvider implements AttributeProvider
 			 */
 			context.putNamedAttributeValueIfAbsent(attributeFqn, result);
 			return result;
-		} catch (final UnsupportedOperationException e)
+		}
+		catch (final UnsupportedOperationException e)
 		{
 			/*
 			 * Should not happen, this is highly unexpected and should be considered a fatal error (it means the AttributeProvider does not respect its contract)

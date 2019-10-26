@@ -43,8 +43,10 @@ import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.ImmutableDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Bags;
@@ -79,39 +81,25 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		Map<AttributeFqn, AttributeBag<?>> get();
 	}
 
-	private static final StandardEnvironmentAttributeIssuer NULL_STD_ENV_ATTRIBUTE_ISSUER = new StandardEnvironmentAttributeIssuer()
-	{
+	private static final StandardEnvironmentAttributeIssuer NULL_STD_ENV_ATTRIBUTE_ISSUER = () -> null;
 
-		@Override
-		public Map<AttributeFqn, AttributeBag<?>> get()
-		{
-			return null;
-		}
-	};
-
-	private static final StandardEnvironmentAttributeIssuer DEFAULT_TZ_BASED_STD_ENV_ATTRIBUTE_ISSUER = new StandardEnvironmentAttributeIssuer()
-	{
-
-		@Override
-		public Map<AttributeFqn, AttributeBag<?>> get()
-		{
-			/*
-			 * Set the standard current date/time attribute according to XACML core spec:
-			 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (§B.7). XACML standard (§10.2.5) says: "If
-			 * values for these attributes are not present in the decision request, then their values MUST be supplied by the context handler".
-			 */
-			// current datetime in default timezone
-			final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
-			return HashCollections.<AttributeFqn, AttributeBag<?>>newImmutableMap(
-					// current date-time
-					StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(), Bags.singletonAttributeBag(StandardDatatypes.DATETIME, currentDateTimeValue, AttributeSources.PDP),
-					// current date
-					StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
-					Bags.singletonAttributeBag(StandardDatatypes.DATE, DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP),
-					// current time
-					StandardEnvironmentAttribute.CURRENT_TIME.getFQN(),
-					Bags.singletonAttributeBag(StandardDatatypes.TIME, TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP));
-		}
+	private static final StandardEnvironmentAttributeIssuer DEFAULT_TZ_BASED_STD_ENV_ATTRIBUTE_ISSUER = () -> {
+		/*
+		 * Set the standard current date/time attribute according to XACML core spec:
+		 * "This identifier indicates the current time at the context handler. In practice it is the time at which the request context was created." (§B.7). XACML standard (§10.2.5) says: "If values
+		 * for these attributes are not present in the decision request, then their values MUST be supplied by the context handler".
+		 */
+		// current datetime in default timezone
+		final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
+		return HashCollections.<AttributeFqn, AttributeBag<?>>newImmutableMap(
+		        // current date-time
+		        StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(), Bags.singletonAttributeBag(StandardDatatypes.DATETIME, currentDateTimeValue, AttributeSources.PDP),
+		        // current date
+		        StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
+		        Bags.singletonAttributeBag(StandardDatatypes.DATE, DateValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP),
+		        // current time
+		        StandardEnvironmentAttribute.CURRENT_TIME.getFQN(),
+		        Bags.singletonAttributeBag(StandardDatatypes.TIME, TimeValue.getInstance((XMLGregorianCalendar) currentDateTimeValue.getUnderlyingValue().clone()), AttributeSources.PDP));
 	};
 
 	private static class NonIssuedLikeIssuedAttributeHandlingRequestBuilder implements DecisionRequestBuilder<ImmutableDecisionRequest>
@@ -198,110 +186,87 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		private static final IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeFqn attrGUID)
 		{
 			return new IndeterminateEvaluationException(
-					"The standard environment attribute ( " + attrGUID
-							+ " ) is not present in the REQUEST although at least one of the others is! (PDP standardEnvironmentAttributeSource = REQUEST_ELSE_PDP.)",
-					XacmlStatusCode.MISSING_ATTRIBUTE.value());
+			        "The standard environment attribute ( " + attrGUID
+			                + " ) is not present in the REQUEST although at least one of the others is! (PDP standardEnvironmentAttributeSource = REQUEST_ELSE_PDP.)",
+			        XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		}
 
 		private static final Map<AttributeFqn, AttributeBag<?>> STD_ENV_RESET_MAP = HashCollections.<AttributeFqn, AttributeBag<?>>newImmutableMap(
-				StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(),
-				Bags.emptyAttributeBag(StandardDatatypes.DATETIME, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN())),
-				StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
-				Bags.emptyAttributeBag(StandardDatatypes.DATE, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())),
-				StandardEnvironmentAttribute.CURRENT_TIME.getFQN(),
-				Bags.emptyAttributeBag(StandardDatatypes.TIME, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_TIME.getFQN())));
+		        StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(),
+		        Bags.emptyAttributeBag(StandardDatatypes.DATETIME, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN())),
+		        StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
+		        Bags.emptyAttributeBag(StandardDatatypes.DATE, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())),
+		        StandardEnvironmentAttribute.CURRENT_TIME.getFQN(),
+		        Bags.emptyAttributeBag(StandardDatatypes.TIME, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_TIME.getFQN())));
 
-		private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_OVERRIDES_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
-		{
-
-			@Override
-			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
+		private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_OVERRIDES_ATTRIBUTES_MERGER = (pdpIssuedAttributes, requestAttributes) -> {
+		    /*
+		     * Request attribute values override PDP issued ones. Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must not
+		     * modify it but clone it before individual decision request processing.
+		     */
+		    if (pdpIssuedAttributes == null)
 			{
-				/*
-				 * Request attribute values override PDP issued ones. Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must
-				 * not modify it but clone it before individual decision request processing.
-				 */
-				if (pdpIssuedAttributes == null)
-				{
-					return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
-				}
-
-				// pdpIssuedAttributes != null
-				if (requestAttributes == null)
-				{
-					return HashCollections.newUpdatableMap(pdpIssuedAttributes);
-				}
-				// requestAttributes != null
-
-				/**
-				 * 
-				 * XACML standard (§10.2.5) says: "If values for these [the standard environment attributes, i.e. current-time, current-date, current-dateTime] attributes are not present in the
-				 * decision request, then their values MUST be supplied by the context handler ". In our case, "context handler" means the PDP. In other words, the attribute values come from request
-				 * by default, or from the PDP if (and *only if* in this case) they are not set in the request. More precisely, if any of these standard environment attributes is provided in the
-				 * request, none of the PDP values is used, even if some policy requires one that is missing from the request. Indeed, this is to avoid such case when the decision request specifies at
-				 * least one date/time attribute, e.g. current-time, but not all of them, e.g. not current-dateTime, and the policy requires both the one(s) provided and the one(s) not provided. In
-				 * this case, if the PDP provides its own value(s) for the missing attributes (e.g. current-dateTime), this may cause some inconsistencies since we end up having date/time attributes
-				 * coming from two different sources/environments (current-time and current-dateTime for instance).
-				 */
-				if (requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN()) || requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())
-						|| requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_TIME.getFQN()))
-				{
-					/*
-					 * Request has at least one standard env attribute -> make sure all PDP values are ignored (overridden by STD_ENV_RESET_MAP no matter whether requestAttributes contains all of them
-					 * or not)
-					 */
-					// mappings in order of increasing priority
-					return HashCollections.newUpdatableMap(pdpIssuedAttributes, STD_ENV_RESET_MAP, requestAttributes);
-				}
-
-				// mappings in order of increasing priority
-				return HashCollections.newUpdatableMap(pdpIssuedAttributes, requestAttributes);
-			}
-
-		};
-
-		private static final RequestAndPdpIssuedNamedAttributesMerger PDP_OVERRIDES_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
-		{
-
-			@Override
-			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
-			{
-
-				// PDP issued attribute values override request attribute values
-				/*
-				 * Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must not modify it but clone it before individual
-				 * decision request processing.
-				 */
-				if (pdpIssuedAttributes == null)
-				{
-					return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
-				}
-
-				// pdpIssuedAttributes != null
-				if (requestAttributes == null)
-				{
-					return HashCollections.newUpdatableMap(pdpIssuedAttributes);
-				}
-				// requestAttributes != null
-
-				// mappings of pdpIssuedAttributes have priority
-				return HashCollections.newUpdatableMap(requestAttributes, pdpIssuedAttributes);
-
-			}
-
-		};
-
-		private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_ONLY_ATTRIBUTES_MERGER = new RequestAndPdpIssuedNamedAttributesMerger()
-		{
-
-			@Override
-			public Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes)
-			{
-				// PDP values completely ignored
 				return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
 			}
 
+		    // pdpIssuedAttributes != null
+		    if (requestAttributes == null)
+			{
+				return HashCollections.newUpdatableMap(pdpIssuedAttributes);
+			}
+		    // requestAttributes != null
+
+		    /**
+		     * 
+		     * XACML standard (§10.2.5) says: "If values for these [the standard environment attributes, i.e. current-time, current-date, current-dateTime] attributes are not present in the decision
+		     * request, then their values MUST be supplied by the context handler ". In our case, "context handler" means the PDP. In other words, the attribute values come from request by default, or
+		     * from the PDP if (and *only if* in this case) they are not set in the request. More precisely, if any of these standard environment attributes is provided in the request, none of the PDP
+		     * values is used, even if some policy requires one that is missing from the request. Indeed, this is to avoid such case when the decision request specifies at least one date/time
+		     * attribute, e.g. current-time, but not all of them, e.g. not current-dateTime, and the policy requires both the one(s) provided and the one(s) not provided. In this case, if the PDP
+		     * provides its own value(s) for the missing attributes (e.g. current-dateTime), this may cause some inconsistencies since we end up having date/time attributes coming from two different
+		     * sources/environments (current-time and current-dateTime for instance).
+		     */
+		    if (requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN()) || requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_DATE.getFQN())
+		            || requestAttributes.containsKey(StandardEnvironmentAttribute.CURRENT_TIME.getFQN()))
+			{
+				/*
+				 * Request has at least one standard env attribute -> make sure all PDP values are ignored (overridden by STD_ENV_RESET_MAP no matter whether requestAttributes contains all of them or
+				 * not)
+				 */
+				// mappings in order of increasing priority
+				return HashCollections.newUpdatableMap(pdpIssuedAttributes, STD_ENV_RESET_MAP, requestAttributes);
+			}
+
+		    // mappings in order of increasing priority
+		    return HashCollections.newUpdatableMap(pdpIssuedAttributes, requestAttributes);
 		};
+
+		private static final RequestAndPdpIssuedNamedAttributesMerger PDP_OVERRIDES_ATTRIBUTES_MERGER = (pdpIssuedAttributes, requestAttributes) -> {
+
+		    // PDP issued attribute values override request attribute values
+		    /*
+		     * Do not modify pdpIssuedAttributes directly as this may be used for other requests (Multiple Decision Profile) as well. so we must not modify it but clone it before individual decision
+		     * request processing.
+		     */
+		    if (pdpIssuedAttributes == null)
+			{
+				return requestAttributes == null ? null : HashCollections.newUpdatableMap(requestAttributes);
+			}
+
+		    // pdpIssuedAttributes != null
+		    if (requestAttributes == null)
+			{
+				return HashCollections.newUpdatableMap(pdpIssuedAttributes);
+			}
+		    // requestAttributes != null
+
+		    // mappings of pdpIssuedAttributes have priority
+		    return HashCollections.newUpdatableMap(requestAttributes, pdpIssuedAttributes);
+
+		};
+
+		private static final RequestAndPdpIssuedNamedAttributesMerger REQUEST_ONLY_ATTRIBUTES_MERGER = (pdpIssuedAttributes, requestAttributes) -> requestAttributes == null ? null
+		        : HashCollections.newUpdatableMap(requestAttributes);
 
 		private final RootPolicyEvaluator rootPolicyEvaluator;
 		private final RequestAndPdpIssuedNamedAttributesMerger reqAndPdpIssuedAttributesMerger;
@@ -351,7 +316,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 					break;
 				default:
 					throw new IllegalArgumentException(
-							"Unsupported standardEnvAttributeSource: " + stdEnvAttributeSource + ". Expected: " + Arrays.toString(StandardEnvironmentAttributeSource.values()));
+					        "Unsupported standardEnvAttributeSource: " + stdEnvAttributeSource + ". Expected: " + Arrays.toString(StandardEnvironmentAttributeSource.values()));
 			}
 		}
 
@@ -410,7 +375,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 *             if an error occurred preventing any request evaluation
 		 */
 		protected abstract <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException;
+		        List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException;
 
 	}
 
@@ -419,7 +384,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		private static final Logger LOGGER = LoggerFactory.getLogger(NonCachingIndividualDecisionRequestEvaluator.class);
 
 		private static final RuntimeException NULL_INDIVIDUAL_DECISION_REQUEST_EXCEPTION = new RuntimeException(
-				"One of the individual decision requests returned by the request filter is invalid (null).");
+		        "One of the individual decision requests returned by the request filter is invalid (null).");
 
 		private NonCachingIndividualDecisionRequestEvaluator(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource)
 		{
@@ -427,7 +392,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		@Override
-		protected DecisionResult evaluate(DecisionRequest request, StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
+		protected DecisionResult evaluate(final DecisionRequest request, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
 			assert request != null;
 			LOGGER.debug("Evaluating Individual Decision Request: {}", request);
@@ -436,7 +401,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
+		        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
 		{
 			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
 
@@ -463,12 +428,12 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		private static final Logger LOGGER = LoggerFactory.getLogger(IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext.class);
 
 		private static final IndeterminateEvaluationException INDETERMINATE_EVALUATION_EXCEPTION = new IndeterminateEvaluationException("Internal error in decision cache: null result",
-				XacmlStatusCode.PROCESSING_ERROR.value());
+		        XacmlStatusCode.PROCESSING_ERROR.value());
 
 		private final DecisionCache decisionCache;
 
 		private IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource stdEnvAttributeSource,
-				final DecisionCache decisionCache)
+		        final DecisionCache decisionCache)
 		{
 			super(rootPolicyEvaluator, stdEnvAttributeSource);
 			assert decisionCache != null;
@@ -476,7 +441,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		@Override
-		protected DecisionResult evaluate(DecisionRequest individualDecisionRequest, StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
+		protected DecisionResult evaluate(final DecisionRequest individualDecisionRequest, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
 			assert individualDecisionRequest != null;
 			LOGGER.debug("Evaluating Individual Decision Request: {}", individualDecisionRequest);
@@ -496,7 +461,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
+		        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
 		{
 			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
 
@@ -556,7 +521,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		private final DecisionCache decisionCache;
 
 		private IndividualRequestEvaluatorWithCacheUsingEvaluationContext(final RootPolicyEvaluator rootPolicyEvaluator, final StandardEnvironmentAttributeSource validStdEnvAttrSrc,
-				final DecisionCache decisionCache)
+		        final DecisionCache decisionCache)
 		{
 			super(rootPolicyEvaluator, validStdEnvAttrSrc);
 			assert decisionCache != null;
@@ -564,7 +529,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		private <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> DecisionResult evaluate(final INDIVIDUAL_DECISION_REQ_T individualDecisionRequest,
-				final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
+		        final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes)
 		{
 			assert individualDecisionRequest != null;
 			LOGGER.debug("Evaluating Individual Decision Request: {}", individualDecisionRequest);
@@ -587,7 +552,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 
 		@Override
-		protected DecisionResult evaluate(DecisionRequest individualDecisionRequest, StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
+		protected DecisionResult evaluate(final DecisionRequest individualDecisionRequest, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
 			assert individualDecisionRequest != null && pdpStdEnvAttributeIssuer != null;
 			return evaluate(individualDecisionRequest, pdpStdEnvAttributeIssuer.get());
@@ -595,7 +560,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-				final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
+		        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
 		{
 			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
 
@@ -626,8 +591,14 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 *
 	 * @param xacmlExpressionFactory
 	 *            XACML Expression parser/factory - mandatory
-	 * @param rootPolicyProvider
-	 *            Root Policy Provider - mandatory
+	 * @param policyProvider
+	 *            Policy Provider - mandatory
+	 * @param rootPolicyId
+	 *            root Policy(Set) ID
+	 * @param rootPolicyElementType
+	 *            type of root policy element (XACML Policy or XACML PolicySet)
+	 * @param rootPolicyVersionPatterns
+	 *            version pattern to be matched by root policy version
 	 * @param decisionCache
 	 *            (optional) decision response cache
 	 * @param strictAttributeIssuerMatch
@@ -642,12 +613,23 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 * @throws java.io.IOException
 	 *             error closing the root policy Provider when static resolution is to be used
 	 */
-	public BasePdpEngine(final ExpressionFactory xacmlExpressionFactory, final RootPolicyProvider rootPolicyProvider, final boolean strictAttributeIssuerMatch,
-			final StandardEnvironmentAttributeSource stdEnvAttributeSource, final Optional<DecisionCache> decisionCache) throws IllegalArgumentException, IOException
+	public BasePdpEngine(final ExpressionFactory xacmlExpressionFactory, final CloseablePolicyProvider<?> policyProvider, final Optional<TopLevelPolicyElementType> rootPolicyElementType,
+	        final String rootPolicyId, final Optional<PolicyVersionPatterns> rootPolicyVersionPatterns, final boolean strictAttributeIssuerMatch,
+	        final StandardEnvironmentAttributeSource stdEnvAttributeSource, final Optional<DecisionCache> decisionCache) throws IllegalArgumentException, IOException
 	{
-		final RootPolicyEvaluators.Base candidateRootPolicyEvaluator = new RootPolicyEvaluators.Base(xacmlExpressionFactory, rootPolicyProvider);
+		final RootPolicyEvaluators.Base candidateRootPolicyEvaluator = new RootPolicyEvaluators.Base(policyProvider, rootPolicyElementType, rootPolicyId, rootPolicyVersionPatterns,
+		        xacmlExpressionFactory);
 		// Use static resolution if possible
-		final RootPolicyEvaluator staticRootPolicyEvaluator = candidateRootPolicyEvaluator.toStatic();
+		final RootPolicyEvaluator staticRootPolicyEvaluator;
+		try
+		{
+			staticRootPolicyEvaluator = candidateRootPolicyEvaluator.toStatic();
+		}
+		catch (final IndeterminateEvaluationException e)
+		{
+			throw new IllegalArgumentException(
+			        rootPolicyElementType + " '" + rootPolicyId + "' matching version (pattern): " + (rootPolicyVersionPatterns.isPresent() ? rootPolicyVersionPatterns.get() : "latest"), e);
+		}
 		if (staticRootPolicyEvaluator == null)
 		{
 			this.rootPolicyEvaluator = candidateRootPolicyEvaluator;
@@ -670,8 +652,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		else
 		{
 			this.individualReqEvaluator = this.decisionCache.isEvaluationContextRequired()
-					? new IndividualRequestEvaluatorWithCacheUsingEvaluationContext(rootPolicyEvaluator, stdEnvAttributeSource, this.decisionCache)
-					: new IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(rootPolicyEvaluator, stdEnvAttributeSource, this.decisionCache);
+			        ? new IndividualRequestEvaluatorWithCacheUsingEvaluationContext(rootPolicyEvaluator, stdEnvAttributeSource, this.decisionCache)
+			        : new IndividualRequestEvaluatorWithCacheIgnoringEvaluationContext(rootPolicyEvaluator, stdEnvAttributeSource, this.decisionCache);
 		}
 	}
 
@@ -688,8 +670,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 */
 	public BasePdpEngine(final PdpEngineConfiguration configuration) throws IllegalArgumentException, IOException
 	{
-		this(configuration.getXacmlExpressionFactory(), configuration.getRootPolicyProvider(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.getStdEnvAttributeSource(),
-				configuration.getDecisionCache());
+		this(configuration.getXacmlExpressionFactory(), configuration.getPolicyProvider(), configuration.getRootPolicyElementType(), configuration.getRootPolicyId(),
+		        configuration.getRootPolicyVersionPatterns(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.getStdEnvAttributeSource(), configuration.getDecisionCache());
 	}
 
 	@Override
@@ -702,7 +684,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	public DecisionRequestBuilder<?> newRequestBuilder(final int expectedNumOfAttributeCategories, final int expectedTotalNumOfAttributes)
 	{
 		return this.strictAttributeIssuerMatch ? new NonIssuedLikeIssuedAttributeHandlingRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes)
-				: new IssuedToNonIssuedAttributeCopyingRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes);
+		        : new IssuedToNonIssuedAttributeCopyingRequestBuilder(expectedNumOfAttributeCategories, expectedTotalNumOfAttributes);
 	}
 
 	/**
@@ -727,7 +709,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	/** {@inheritDoc} */
 	@Override
 	public <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-			final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests) throws IndeterminateEvaluationException
+	        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests) throws IndeterminateEvaluationException
 	{
 		if (individualDecisionRequests == null)
 		{

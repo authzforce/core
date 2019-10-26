@@ -1,5 +1,5 @@
 <!-- Markdown syntax -->
-This folder contains OASIS XACML Committee's 2.0 version of conformance tests upgraded to conform to the XACML 3.0 standard, including new tests for new features introducted in XACML 3.0. Most of them have been submitted to the OASIS XACML Committee in April 2014 by AT&T.
+This folder contains OASIS XACML Committee's 2.0 version of conformance tests upgraded to conform to the XACML 3.0 standard, including new tests for new features introduced in XACML 3.0. Most of them have been submitted to the OASIS XACML Committee in April 2014 by AT&T.
 The original files are available on the xacml-comment mailing list: 
 https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html
 and on AT&T's Github repository (MIT License): 
@@ -50,5 +50,5 @@ For a description of the tests, see file `ConformanceTests.html` which is the or
 1. IIA010, IIA012, IIA024: the test Requests contain attributes with same AttributeId in same Category but different Datatypes. We don't support different Datatypes for the same Attribute meta-data (Category/AttributeId), i.e. the PDP replies with INDETERMINATE, as we consider that a bad practice.
 1. IID029, IID030: for PDP using multiple root/initial policies. Does not apply to our implementation.
 1. III.C: Except for 001 (original is not XACML schema-compliant, because of ResourceId attribute on Result, so we fixed it by removing ResourceId), the tests are using Hierarchical Resource Profile which is not supported (except Immediate scope).
-1. IIIE - Multiple Decision Profile: only IIIE301 is supported, i.e. scheme 2.3 (repetition of Attributes elements) is supported. Other schemes of Multiple Decision Profile not supported (MultiRequests, use of multiple:content-selector attribute in Attributes), so IIIE302 and IIIE303 not supported.
+1. IIIE - Multiple Decision Profile: only IIIE302 is supported, i.e. scheme 2.3 (repetition of Attributes elements) is supported. Other schemes of Multiple Decision Profile not supported (MultiRequests, use of multiple:content-selector attribute in Attributes), so IIIE301 and IIIE303 not supported.
 1. IIIG: IIIG001 - xpath-node-count is the only XPath function supported, so IIIG002-6 not supported.

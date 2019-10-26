@@ -1,0 +1,1 @@
+See authzforce-ce-core project's folder ``pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md`` for more info.

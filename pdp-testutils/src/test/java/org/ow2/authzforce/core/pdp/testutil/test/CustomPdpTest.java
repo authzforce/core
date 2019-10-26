@@ -36,7 +36,7 @@ public class CustomPdpTest extends PdpTest
 	/**
 	 * Name of root directory that contains test resources for each test
 	 */
-	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "classpath:custom";
+	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "target/test-classes/custom";
 
 	// private static final Logger LOGGER = LoggerFactory.getLogger(CustomPdpTest.class);
 
@@ -45,7 +45,7 @@ public class CustomPdpTest extends PdpTest
 	 * @param testDir
 	 *            subdirectory of {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} where test data are located
 	 */
-	public CustomPdpTest(String testDir)
+	public CustomPdpTest(final String testDir)
 	{
 		super(testDir);
 	}

@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import net.sf.saxon.s9api.XdmNode;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
@@ -50,6 +47,9 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 import com.google.common.collect.ImmutableList;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XdmNode;
+
 /**
  * XACML/JSON (Profile) processing utilities
  * 
@@ -65,7 +65,7 @@ public final class XacmlJsonParsingUtils
 		private static final IllegalArgumentException NULL_ATTRIBUTE_ID_ARGUMENT_EXCEPTION = new IllegalArgumentException("Invalid XACML Attribute: AttributeId property undefined (but required).");
 
 		private static <AV extends AttributeValue> NamedXacmlAttributeParsingResult<AV> parseNamedAttribute(final AttributeFqn attName, final Iterable<Object> nonEmptyInputXacmlJsonAttValues,
-				final int numOfValues, final AttributeValueFactory<AV> attValFactory, final XPathCompiler xPathCompiler) throws UnsupportedOperationException, IllegalArgumentException
+		        final int numOfValues, final AttributeValueFactory<AV> attValFactory, final XPathCompiler xPathCompiler) throws UnsupportedOperationException, IllegalArgumentException
 		{
 			assert attName != null && nonEmptyInputXacmlJsonAttValues != null && numOfValues > 0 && attValFactory != null;
 
@@ -100,7 +100,7 @@ public final class XacmlJsonParsingUtils
 
 		@Override
 		protected NamedXacmlAttributeParsingResult<?> parseNamedAttribute(final String attributeCategoryId, final JSONObject inputXacmlAttribute, final XPathCompiler xPathCompiler)
-				throws IllegalArgumentException
+		        throws IllegalArgumentException
 		{
 			final String attrId = inputXacmlAttribute.optString("AttributeId", null);
 			if (attrId == null)
@@ -199,7 +199,8 @@ public final class XacmlJsonParsingUtils
 		private final XacmlRequestAttributeParser<JSONObject, BAG> xacmlReqAttributeParser;
 		private final NamedAttributeIteratorConverter<BAG> namedAttrIterConverter;
 
-		private BaseXacmlJsonAttributesParser(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlRequestAttributeParser, final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter)
+		private BaseXacmlJsonAttributesParser(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlRequestAttributeParser,
+		        final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter)
 		{
 			assert xacmlRequestAttributeParser != null && namedAttributeIteratorConverter != null;
 
@@ -271,7 +272,7 @@ public final class XacmlJsonParsingUtils
 					if (!(attrObj instanceof JSONObject))
 					{
 						throw new IndeterminateEvaluationException("Invalid XACML Attribute: invalid JSON element type (" + attrObj.getClass().getSimpleName() + "). Expected: JSON object.",
-								XacmlStatusCode.SYNTAX_ERROR.value());
+						        XacmlStatusCode.SYNTAX_ERROR.value());
 					}
 
 					final JSONObject attrJsonObj = (JSONObject) attrObj;
@@ -331,7 +332,7 @@ public final class XacmlJsonParsingUtils
 	private static final class ContentSkippingXacmlJsonAttributesParser<BAG extends Iterable<? extends AttributeValue>> extends BaseXacmlJsonAttributesParser<BAG>
 	{
 		private ContentSkippingXacmlJsonAttributesParser(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser,
-				final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter)
+		        final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter)
 		{
 			super(xacmlJsonAttributeParser, namedAttributeIteratorConverter);
 		}
@@ -348,7 +349,7 @@ public final class XacmlJsonParsingUtils
 
 	private static final IllegalArgumentException NULL_NAMED_ATTRIBUTE_ITERATOR_CONVERTER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined namedAttributeIteratorConverter");
 	private static final IllegalArgumentException NULL_XACML_JSON_ATTRIBUTE_PARSER_ARGUMENT_EXCEPTION = new IllegalArgumentException(
-			"Undefined XACML/JSON Attribute parser (null xacmlJsonAttributeParser)");
+	        "Undefined XACML/JSON Attribute parser (null xacmlJsonAttributeParser)");
 
 	/**
 	 * 
@@ -372,7 +373,7 @@ public final class XacmlJsonParsingUtils
 		 *             {@code if(xacmlJsonAttributeParser == null || namedAttributeIteratorConverter == null)}
 		 */
 		public ContentSkippingXacmlJsonAttributesParserFactory(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser,
-				final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter) throws IllegalArgumentException
+		        final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter) throws IllegalArgumentException
 		{
 			if (xacmlJsonAttributeParser == null)
 			{
@@ -400,12 +401,10 @@ public final class XacmlJsonParsingUtils
 		// XML document builder for parsing Content to XPath data model for XPath evaluation
 		// private final DocumentBuilder xmlDocBuilder;
 
-		private FullXacmlJsonAttributesParser(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser, final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter/*
-																																																	 * ,
-																																																	 * final
-																																																	 * DocumentBuilder
-																																																	 * xmlDocBuilder
-																																																	 */)
+		private FullXacmlJsonAttributesParser(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser,
+		        final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter/*
+		                                                                                   * , final DocumentBuilder xmlDocBuilder
+		                                                                                   */)
 		{
 			super(xacmlJsonAttributeParser, namedAttributeIteratorConverter);
 			// assert xmlDocBuilder != null;
@@ -482,7 +481,7 @@ public final class XacmlJsonParsingUtils
 		 *             {@code if(xacmlJsonAttributeParser == null || namedAttributeIteratorConverter == null || xmlProcessor == null)}
 		 */
 		public FullXacmlJsonAttributesParserFactory(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser,
-				final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter/* , final Processor xmlProcessor */)
+		        final NamedAttributeIteratorConverter<BAG> namedAttributeIteratorConverter/* , final Processor xmlProcessor */)
 		{
 			if (xacmlJsonAttributeParser == null)
 			{

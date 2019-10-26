@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
@@ -45,7 +46,7 @@ import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
-import org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
@@ -64,7 +65,7 @@ import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.ow2.authzforce.core.pdp.testutil.PdpTest;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
-import org.ow2.authzforce.core.pdp.testutil.ext.MongoDbRefPolicyProvider;
+import org.ow2.authzforce.core.pdp.testutil.ext.MongoDbPolicyProvider;
 import org.ow2.authzforce.core.pdp.testutil.ext.PolicyPojo;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProviderDescriptor;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
@@ -89,7 +90,7 @@ public class MongoDBRefPolicyProviderTest
 	private static String[] SAMPLE_POLICY_FILENAMES = { "permit-all-policy-0.1.0.xml", "permit-all-policy-0.1.xml", "permit-all-policyset-0.1.0.xml", "root-rbac-policyset-0.1.xml",
 	        "root-rbac-policyset-1.2.xml", "rbac-pps-employee-1.0.xml" };
 
-	private static CloseableRefPolicyProvider POLICY_PROVIDER_MODULE;
+	private static CloseablePolicyProvider POLICY_PROVIDER_MODULE;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception
@@ -101,7 +102,7 @@ public class MongoDBRefPolicyProviderTest
 			pdpConf = pdpModelHandler.unmarshal(new StreamSource(is), Pdp.class);
 		}
 
-		final AbstractPolicyProvider policyProviderConf = pdpConf.getRefPolicyProvider();
+		final AbstractPolicyProvider policyProviderConf = pdpConf.getPolicyProvider();
 		if (!(policyProviderConf instanceof MongoDBBasedPolicyProviderDescriptor))
 		{
 			throw new RuntimeException("Invalid type of refPolicyProvider in pdp.xml. Expected: " + MongoDBBasedPolicyProviderDescriptor.class);
@@ -115,7 +116,7 @@ public class MongoDBRefPolicyProviderTest
 		final FunctionRegistry funcReg = StandardFunction.getRegistry(false, (StringParseableValue.Factory<IntegerValue>) intValFactory);
 		try (final ExpressionFactory expressionFactory = new DepthLimitingExpressionFactory(valFactoryReg, funcReg, null, 0, false, false))
 		{
-			POLICY_PROVIDER_MODULE = new MongoDbRefPolicyProvider.Factory().getInstance(mongodbBasedPolicyProviderConf, XacmlJaxbParsingUtils.getXacmlParserFactory(false), 10, expressionFactory,
+			POLICY_PROVIDER_MODULE = new MongoDbPolicyProvider.Factory().getInstance(mongodbBasedPolicyProviderConf, XacmlJaxbParsingUtils.getXacmlParserFactory(false), 10, expressionFactory,
 			        StandardCombiningAlgorithm.REGISTRY, null);
 		}
 
@@ -153,14 +154,14 @@ public class MongoDBRefPolicyProviderTest
 			if (jaxbObj instanceof Policy)
 			{
 				final Policy policy = (Policy) jaxbObj;
-				policyTypeId = MongoDbRefPolicyProvider.XACML3_POLICY_TYPE_ID;
+				policyTypeId = MongoDbPolicyProvider.XACML3_POLICY_TYPE_ID;
 				policyId = policy.getPolicyId();
 				policyVersion = policy.getVersion();
 			}
 			else
 			{
 				// PolicySet
-				policyTypeId = MongoDbRefPolicyProvider.XACML3_POLICYSET_TYPE_ID;
+				policyTypeId = MongoDbPolicyProvider.XACML3_POLICYSET_TYPE_ID;
 				final PolicySet policySet = (PolicySet) jaxbObj;
 				policyId = policySet.getPolicySetId();
 				policyVersion = policySet.getVersion();
@@ -331,8 +332,8 @@ public class MongoDBRefPolicyProviderTest
 	public void testPdpInstantiationWithMongoDBBasedPolicyProvider() throws IllegalArgumentException, IndeterminateEvaluationException, IOException, JAXBException
 	{
 		final XmlnsFilteringParser xacmlParser = XacmlJaxbParsingUtils.getXacmlParserFactory(false).getInstance();
-		final Request req = TestUtils.createRequest("classpath:org/ow2/authzforce/core/pdp/testutil/test/request.xml", xacmlParser);
-		final Response expectedResp = TestUtils.createResponse("classpath:org/ow2/authzforce/core/pdp/testutil/test/response.xml", xacmlParser);
+		final Request req = TestUtils.createRequest(Paths.get("target/test-classes/org/ow2/authzforce/core/pdp/testutil/test/request.xml"), xacmlParser);
+		final Response expectedResp = TestUtils.createResponse(Paths.get("target/test-classes/org/ow2/authzforce/core/pdp/testutil/test/response.xml"), xacmlParser);
 		final Response actualResp;
 		try (final PdpEngineInoutAdapter<Request, Response> pdpEngine = PdpEngineAdapters
 		        .newXacmlJaxbInoutAdapter(PdpEngineConfiguration.getInstance("classpath:org/ow2/authzforce/core/pdp/testutil/test/pdp.xml", "classpath:catalog.xml", "classpath:pdp-ext.xsd")))

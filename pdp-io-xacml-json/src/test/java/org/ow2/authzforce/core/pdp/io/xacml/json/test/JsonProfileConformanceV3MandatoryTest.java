@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 
+import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
 import org.testng.annotations.DataProvider;
 
 /**
@@ -38,7 +39,7 @@ public class JsonProfileConformanceV3MandatoryTest extends JsonProfileConformanc
 	@DataProvider
 	public static Iterator<Object[]> getTestDirectories() throws URISyntaxException, IOException
 	{
-		return params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION).iterator();
+		return params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION, SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.ID).iterator();
 	}
 
 }
