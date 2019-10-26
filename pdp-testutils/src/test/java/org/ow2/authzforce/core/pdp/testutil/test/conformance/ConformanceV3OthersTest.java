@@ -39,7 +39,7 @@ public class ConformanceV3OthersTest extends PdpTest
 	/**
 	 * Name of root directory that contains test resources for each test
 	 */
-	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "classpath:conformance/others";
+	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "target/test-classes/conformance/others";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3OthersTest.class);
 

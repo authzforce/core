@@ -32,8 +32,7 @@ import org.ow2.authzforce.core.pdp.api.JaxbBoundPdpExtension;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.func.Function;
-import org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.RootPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
@@ -97,7 +96,8 @@ public final class PdpExtensions
 				}
 
 				isValidExt = true;
-			} else
+			}
+			else
 			{
 				for (final Class<? extends PdpExtension> extClass : NON_JAXB_BOUND_EXTENSION_CLASSES)
 				{
@@ -229,7 +229,7 @@ public final class PdpExtensions
 	 * @throws java.lang.IllegalArgumentException
 	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider.Factory} supporting {@code jaxbPdpExtensionClass}
 	 */
-	public static <REF_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> CloseableRefPolicyProvider.Factory<REF_POLICY_PROVIDER_CONF> getRefPolicyProviderFactory(
+	public static <REF_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> CloseablePolicyProvider.Factory<REF_POLICY_PROVIDER_CONF> getRefPolicyProviderFactory(
 	        final Class<REF_POLICY_PROVIDER_CONF> jaxbConfClass) throws IllegalArgumentException
 	{
 		final JaxbBoundPdpExtension<REF_POLICY_PROVIDER_CONF> ext = (JaxbBoundPdpExtension<REF_POLICY_PROVIDER_CONF>) JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbConfClass);
@@ -238,43 +238,43 @@ public final class PdpExtensions
 			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: " + jaxbConfClass + ". Expected types: " + JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
 		}
 
-		if (!(ext instanceof CloseableRefPolicyProvider.Factory))
+		if (!(ext instanceof CloseablePolicyProvider.Factory))
 		{
 			throw new IllegalArgumentException(
-			        "No PDP extension of type " + CloseableRefPolicyProvider.Factory.class + " (Reference-based Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
+			        "No PDP extension of type " + CloseablePolicyProvider.Factory.class + " (Reference-based Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
 		}
 
-		return (CloseableRefPolicyProvider.Factory<REF_POLICY_PROVIDER_CONF>) ext;
+		return (CloseablePolicyProvider.Factory<REF_POLICY_PROVIDER_CONF>) ext;
 	}
 
 	/**
-	 * Create RootPolicyProvider
+	 * Create PolicyProvider
 	 * 
 	 * @param jaxbConfClass
 	 *            XML-schema-derived type of policy provider configuration
 	 * 
-	 * @return Root Policy Provider
+	 * @return Policy Provider
 	 * @throws java.lang.IllegalArgumentException
-	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.policy.RootPolicyProvider.Factory} supporting {@code jaxbPdpExtensionClass} or invalid
+	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider.Factory} supporting {@code jaxbPdpExtensionClass} or invalid
 	 *             {@code jaxbRootPolicyProviderConf}
 	 */
 
-	public static <ROOT_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> RootPolicyProvider.Factory<ROOT_POLICY_PROVIDER_CONF> getRootPolicyProviderFactory(
-	        final Class<ROOT_POLICY_PROVIDER_CONF> jaxbConfClass) throws IllegalArgumentException
+	public static <POLICY_PROVIDER_CONF extends AbstractPolicyProvider> CloseablePolicyProvider.Factory<POLICY_PROVIDER_CONF> getRootPolicyProviderFactory(
+	        final Class<POLICY_PROVIDER_CONF> jaxbConfClass) throws IllegalArgumentException
 	{
-		final JaxbBoundPdpExtension<ROOT_POLICY_PROVIDER_CONF> ext = (JaxbBoundPdpExtension<ROOT_POLICY_PROVIDER_CONF>) JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbConfClass);
+		final JaxbBoundPdpExtension<POLICY_PROVIDER_CONF> ext = (JaxbBoundPdpExtension<POLICY_PROVIDER_CONF>) JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.get(jaxbConfClass);
 		if (ext == null)
 		{
 			throw new IllegalArgumentException("No PDP extension found supporting JAXB (configuration) type: " + jaxbConfClass + ". Expected types: " + JAXB_BOUND_EXTENSIONS_BY_JAXB_CLASS.keySet());
 		}
 
-		if (!(ext instanceof RootPolicyProvider.Factory))
+		if (!(ext instanceof CloseablePolicyProvider.Factory))
 		{
 			throw new IllegalArgumentException(
-			        "No PDP extension of type " + RootPolicyProvider.Factory.class + " (Root Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
+			        "No PDP extension of type " + CloseablePolicyProvider.Factory.class + " (Policy Provider factory) supporting JAXB/XML (configuration) type: " + jaxbConfClass);
 		}
 
-		return (RootPolicyProvider.Factory<ROOT_POLICY_PROVIDER_CONF>) ext;
+		return (CloseablePolicyProvider.Factory<POLICY_PROVIDER_CONF>) ext;
 	}
 
 	/**

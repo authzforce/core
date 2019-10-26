@@ -54,13 +54,13 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.expression.VariableReference;
 import org.ow2.authzforce.core.pdp.api.policy.BasePrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyRefsMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.RefPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.StaticRefPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
@@ -1234,13 +1234,15 @@ public final class PolicyEvaluators
 			}
 		}
 
-		// this policyProvider to use in finding the referenced policy
-		private final RefPolicyProvider refPolicyProvider;
+		/*
+		 * This policyProvider to use in finding the referenced policy
+		 */
+		private final PolicyProvider<?> refPolicyProvider;
 
 		private final String requestScopedCacheKey;
 
 		private DynamicTopLevelPolicyElementRefEvaluator(final TopLevelPolicyElementType policyType, final String policyId, final Optional<PolicyVersionPatterns> versionConstraints,
-		        final RefPolicyProvider refPolicyProvider)
+		        final PolicyProvider<?> refPolicyProvider)
 		{
 			super(policyType, policyId, versionConstraints);
 			assert refPolicyProvider != null;
@@ -1371,7 +1373,7 @@ public final class PolicyEvaluators
 	 */
 	private static final class DynamicPolicyRefEvaluator extends DynamicTopLevelPolicyElementRefEvaluator
 	{
-		private DynamicPolicyRefEvaluator(final String policyId, final Optional<PolicyVersionPatterns> versionConstraints, final RefPolicyProvider refPolicyProvider)
+		private DynamicPolicyRefEvaluator(final String policyId, final Optional<PolicyVersionPatterns> versionConstraints, final PolicyProvider<?> refPolicyProvider)
 		{
 			super(TopLevelPolicyElementType.POLICY, policyId, versionConstraints, refPolicyProvider);
 		}
@@ -1398,7 +1400,7 @@ public final class PolicyEvaluators
 		 */
 		private final Deque<String> policySetRefChainToThisRefTarget;
 
-		private DynamicPolicySetRefEvaluator(final String policyId, final Optional<PolicyVersionPatterns> versionConstraints, final RefPolicyProvider refPolicyProvider,
+		private DynamicPolicySetRefEvaluator(final String policyId, final Optional<PolicyVersionPatterns> versionConstraints, final PolicyProvider<?> refPolicyProvider,
 		        final Deque<String> policySetRefChainWithPolicyIdArgIfPolicySet) throws IllegalArgumentException
 		{
 			super(TopLevelPolicyElementType.POLICY_SET, policyId, versionConstraints, refPolicyProvider);
@@ -1639,9 +1641,9 @@ public final class PolicyEvaluators
 
 	private static final class StaticPolicyRefEvaluatorFactory implements PolicyRefEvaluatorFactory<StaticPolicyRefEvaluator>
 	{
-		private final StaticRefPolicyProvider refPolicyProvider;
+		private final StaticPolicyProvider refPolicyProvider;
 
-		private StaticPolicyRefEvaluatorFactory(final StaticRefPolicyProvider refPolicyProvider)
+		private StaticPolicyRefEvaluatorFactory(final StaticPolicyProvider refPolicyProvider)
 		{
 			assert refPolicyProvider != null;
 			this.refPolicyProvider = refPolicyProvider;
@@ -1673,9 +1675,9 @@ public final class PolicyEvaluators
 
 	private static final class DynamicPolicyRefEvaluatorFactory implements PolicyRefEvaluatorFactory<PolicyRefEvaluator>
 	{
-		private final RefPolicyProvider refPolicyProvider;
+		private final PolicyProvider<?> refPolicyProvider;
 
-		private DynamicPolicyRefEvaluatorFactory(final RefPolicyProvider refPolicyProvider)
+		private DynamicPolicyRefEvaluatorFactory(final PolicyProvider<?> refPolicyProvider)
 		{
 			assert refPolicyProvider != null;
 			this.refPolicyProvider = refPolicyProvider;
@@ -1729,11 +1731,11 @@ public final class PolicyEvaluators
 	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
 	 *             loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
 	 */
-	public static PolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final RefPolicyProvider refPolicyProvider,
+	public static PolicyRefEvaluator getInstance(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final PolicyProvider<?> refPolicyProvider,
 	        final Deque<String> policySetRefChainWithIdRefIfPolicySet) throws IllegalArgumentException
 	{
-		final PolicyRefEvaluatorFactory<? extends PolicyRefEvaluator> factory = refPolicyProvider instanceof StaticRefPolicyProvider
-		        ? new StaticPolicyRefEvaluatorFactory((StaticRefPolicyProvider) refPolicyProvider)
+		final PolicyRefEvaluatorFactory<? extends PolicyRefEvaluator> factory = refPolicyProvider instanceof StaticPolicyProvider
+		        ? new StaticPolicyRefEvaluatorFactory((StaticPolicyProvider) refPolicyProvider)
 		        : new DynamicPolicyRefEvaluatorFactory(refPolicyProvider);
 		return getInstanceGeneric(factory, refPolicyType, idRef, policySetRefChainWithIdRefIfPolicySet);
 	}
@@ -1764,11 +1766,103 @@ public final class PolicyEvaluators
 	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
 	 *             loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
 	 */
-	public static StaticPolicyRefEvaluator getInstanceStatic(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final StaticRefPolicyProvider refPolicyProvider,
+	public static StaticPolicyRefEvaluator getInstanceStatic(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final StaticPolicyProvider refPolicyProvider,
 	        final Deque<String> ancestorPolicySetRefChain) throws IllegalArgumentException
 	{
 		final StaticPolicyRefEvaluatorFactory factory = new StaticPolicyRefEvaluatorFactory(refPolicyProvider);
 		return getInstanceGeneric(factory, refPolicyType, idRef, ancestorPolicySetRefChain);
+	}
+
+	/**
+	 * Creates statically defined PolicySet handler from XACML PolicySet element
+	 *
+	 * @param policyElement
+	 *            PolicySet (XACML) without any dynamic policy references
+	 * @param parentDefaultXPathCompiler
+	 *            XPath compiler corresponding to parent PolicySet's default XPath version, or null if either no parent or no default XPath version defined in parent
+	 * @param namespacePrefixesByURI
+	 *            namespace prefix-URI mappings from the original XACML PolicySet (XML) document, to be used for namespace-aware XPath evaluation; null or empty iff XPath support disabled
+	 * @param expressionFactory
+	 *            Expression factory/parser
+	 * @param combiningAlgorithmRegistry
+	 *            policy/rule combining algorithm registry
+	 * @param refPolicyProvider
+	 *            static policy-by-reference (Policy(Set)IdReference) Provider - all references statically resolved - to find references used in this policyset
+	 * @param policySetRefChainWithPolicyElementIfRefTarget
+	 *            null/empty if {@code policyElement} is a root PolicySet; else it is the chain of top-level (as opposed to nested inline) PolicySets linked via PolicySetIdReferences, from the root
+	 *            PolicySet up to - and including - the top-level PolicySet that encloses or is {@code policyElement} (i.e. it a reference's target). Each item is a PolicySetId of a PolicySet that is
+	 *            referenced by the previous item (except the first item which is the root policy) and references the next one. This chain is used to control PolicySetIdReferences found within the
+	 *            result policy, in order to detect loops (circular references) and prevent exceeding reference depth.
+	 *            <p>
+	 *            Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what the version is.
+	 *            <p>
+	 *            (Do not use a Queue for {@code ancestorPolicySetRefChain} as it is FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as
+	 *            well.)
+	 *            </p>
+	 * @return instance
+	 * @throws java.lang.IllegalArgumentException
+	 *             if any argument (e.g. {@code policyElement}) is invalid
+	 */
+	public static StaticTopLevelPolicyElementEvaluator getInstanceStatic(final PolicySet policyElement, final XPathCompiler parentDefaultXPathCompiler,
+	        final Map<String, String> namespacePrefixesByURI, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry,
+	        final StaticPolicyProvider refPolicyProvider, final Deque<String> policySetRefChainWithPolicyElementIfRefTarget) throws IllegalArgumentException
+	{
+		if (policyElement == null)
+		{
+			throw NULL_XACML_POLICYSET_ARG_EXCEPTION;
+		}
+
+		final PrimaryPolicyMetadata policyMetadata = new BasePrimaryPolicyMetadata(TopLevelPolicyElementType.POLICY_SET, policyElement.getPolicySetId(), new PolicyVersion(policyElement.getVersion()));
+		final StaticPolicySetElementEvaluatorFactory factory = new StaticPolicySetElementEvaluatorFactory(policyMetadata, policyElement.getPolicySetDefaults(), refPolicyProvider,
+		        parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
+		return getInstanceGeneric(factory, policyElement, policySetRefChainWithPolicyElementIfRefTarget);
+	}
+
+	/**
+	 * Creates PolicySet handler from XACML PolicySet element with additional check of duplicate Policy(Set)Ids against a list of Policy(Set)s parsed during the PDP initialization so far
+	 *
+	 * @param policyElement
+	 *            PolicySet (XACML)
+	 * @param parentDefaultXPathCompiler
+	 *            XPath compiler corresponding to parent PolicySet's default XPath version, or null if either no parent or no default XPath version defined in parent
+	 * @param namespacePrefixesByURI
+	 *            namespace prefix-URI mappings from the original XACML PolicySet (XML) document, to be used for namespace-aware XPath evaluation; null or empty iff XPath support disabled
+	 * @param expressionFactory
+	 *            Expression factory/parser
+	 * @param combiningAlgorithmRegistry
+	 *            policy/rule combining algorithm registry
+	 * @param refPolicyProvider
+	 *            policy-by-reference (Policy(Set)IdReference) Provider to find references used in this policyset
+	 * @param ancestorPolicySetRefChain
+	 *            chain of ancestor PolicySets linked via PolicySetIdReferences, from the root PolicySet up to {@code policyElement} (excluded). <b>Null/empty if {@code policyElement} is the root
+	 *            PolicySet (no ancestor).</b> Each item is a PolicySetId of a PolicySet that is referenced by the previous item (except the first item which is the root policy) and references the
+	 *            next one. This chain is used to control PolicySetIdReferences found within the result policy, in order to detect loops (circular references) and prevent exceeding reference depth.
+	 *            <p>
+	 *            Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what the version is.
+	 *            <p>
+	 *            (Do not use a Queue for {@code ancestorPolicySetRefChain} as it is FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as
+	 *            well.)
+	 *            </p>
+	 * @return instance
+	 * @throws java.lang.IllegalArgumentException
+	 *             if any argument (e.g. {@code policyElement}) is invalid
+	 */
+	public static TopLevelPolicyElementEvaluator getInstance(final PolicySet policyElement, final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI,
+	        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry, final PolicyProvider<?> refPolicyProvider, final Deque<String> ancestorPolicySetRefChain)
+	        throws IllegalArgumentException
+	{
+		if (policyElement == null)
+		{
+			throw NULL_XACML_POLICYSET_ARG_EXCEPTION;
+		}
+
+		final PrimaryPolicyMetadata policyMetadata = new BasePrimaryPolicyMetadata(TopLevelPolicyElementType.POLICY_SET, policyElement.getPolicySetId(), new PolicyVersion(policyElement.getVersion()));
+		final PolicySetElementEvaluatorFactory<?, ?> factory = refPolicyProvider instanceof StaticPolicyProvider
+		        ? new StaticPolicySetElementEvaluatorFactory(policyMetadata, policyElement.getPolicySetDefaults(), (StaticPolicyProvider) refPolicyProvider, parentDefaultXPathCompiler,
+		                namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry)
+		        : new DynamicPolicySetElementEvaluatorFactory(policyMetadata, policyElement.getPolicySetDefaults(), refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI,
+		                expressionFactory, combiningAlgorithmRegistry);
+		return getInstanceGeneric(factory, policyElement, ancestorPolicySetRefChain);
 	}
 
 	private static abstract class PolicySetElementEvaluatorFactory<INSTANCE extends TopLevelPolicyElementEvaluator, COMBINED_ELT extends PolicyEvaluator>
@@ -1852,9 +1946,9 @@ public final class PolicyEvaluators
 	private static final class StaticPolicySetElementEvaluatorFactory extends PolicySetElementEvaluatorFactory<StaticTopLevelPolicyElementEvaluator, StaticPolicyEvaluator>
 	{
 		private final StaticPolicySetChildRefsMetadataProvider extraMetadataProvider;
-		private final StaticRefPolicyProvider refPolicyProvider;
+		private final StaticPolicyProvider refPolicyProvider;
 
-		private StaticPolicySetElementEvaluatorFactory(final PrimaryPolicyMetadata primaryPolicyMetadata, final DefaultsType policyDefaults, final StaticRefPolicyProvider refPolicyProvider,
+		private StaticPolicySetElementEvaluatorFactory(final PrimaryPolicyMetadata primaryPolicyMetadata, final DefaultsType policyDefaults, final StaticPolicyProvider refPolicyProvider,
 		        final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI, final ExpressionFactory expressionFactory,
 		        final CombiningAlgRegistry combiningAlgorithmRegistry)
 		{
@@ -1934,9 +2028,9 @@ public final class PolicyEvaluators
 	private static final class DynamicPolicySetElementEvaluatorFactory extends PolicySetElementEvaluatorFactory<TopLevelPolicyElementEvaluator, PolicyEvaluator>
 	{
 		private final DynamicPolicySetChildRefsMetadataProvider extraMetadataProvider;
-		private final RefPolicyProvider refPolicyProvider;
+		private final PolicyProvider<?> refPolicyProvider;
 
-		private DynamicPolicySetElementEvaluatorFactory(final PrimaryPolicyMetadata primaryPolicyMetadata, final DefaultsType policyDefaults, final RefPolicyProvider refPolicyProvider,
+		private DynamicPolicySetElementEvaluatorFactory(final PrimaryPolicyMetadata primaryPolicyMetadata, final DefaultsType policyDefaults, final PolicyProvider<?> refPolicyProvider,
 		        final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI, final ExpressionFactory expressionFactory,
 		        final CombiningAlgRegistry combiningAlgorithmRegistry)
 		{
@@ -2258,98 +2352,6 @@ public final class PolicyEvaluators
 		final List<String> localVariableIds = Collections.emptyList();
 		return policyEvaluatorFactory.getInstance(policyEvaluatorFactory.policyMetadata, policyElement.getTarget(), policyElement.getPolicyCombiningAlgId(), combinedEvaluators, combiningAlgParameters,
 		        obligationExps == null ? null : obligationExps.getObligationExpressions(), adviceExps == null ? null : adviceExps.getAdviceExpressions(), localVariableIds);
-	}
-
-	/**
-	 * Creates statically defined PolicySet handler from XACML PolicySet element
-	 *
-	 * @param policyElement
-	 *            PolicySet (XACML) without any dynamic policy references
-	 * @param parentDefaultXPathCompiler
-	 *            XPath compiler corresponding to parent PolicySet's default XPath version, or null if either no parent or no default XPath version defined in parent
-	 * @param namespacePrefixesByURI
-	 *            namespace prefix-URI mappings from the original XACML PolicySet (XML) document, to be used for namespace-aware XPath evaluation; null or empty iff XPath support disabled
-	 * @param expressionFactory
-	 *            Expression factory/parser
-	 * @param combiningAlgorithmRegistry
-	 *            policy/rule combining algorithm registry
-	 * @param refPolicyProvider
-	 *            static policy-by-reference (Policy(Set)IdReference) Provider - all references statically resolved - to find references used in this policyset
-	 * @param policySetRefChainWithPolicyElementIfRefTarget
-	 *            null/empty if {@code policyElement} is a root PolicySet; else it is the chain of top-level (as opposed to nested inline) PolicySets linked via PolicySetIdReferences, from the root
-	 *            PolicySet up to - and including - the top-level PolicySet that encloses or is {@code policyElement} (i.e. it a reference's target). Each item is a PolicySetId of a PolicySet that is
-	 *            referenced by the previous item (except the first item which is the root policy) and references the next one. This chain is used to control PolicySetIdReferences found within the
-	 *            result policy, in order to detect loops (circular references) and prevent exceeding reference depth.
-	 *            <p>
-	 *            Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what the version is.
-	 *            <p>
-	 *            (Do not use a Queue for {@code ancestorPolicySetRefChain} as it is FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as
-	 *            well.)
-	 *            </p>
-	 * @return instance
-	 * @throws java.lang.IllegalArgumentException
-	 *             if any argument (e.g. {@code policyElement}) is invalid
-	 */
-	public static StaticTopLevelPolicyElementEvaluator getInstanceStatic(final PolicySet policyElement, final XPathCompiler parentDefaultXPathCompiler,
-	        final Map<String, String> namespacePrefixesByURI, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry,
-	        final StaticRefPolicyProvider refPolicyProvider, final Deque<String> policySetRefChainWithPolicyElementIfRefTarget) throws IllegalArgumentException
-	{
-		if (policyElement == null)
-		{
-			throw NULL_XACML_POLICYSET_ARG_EXCEPTION;
-		}
-
-		final PrimaryPolicyMetadata policyMetadata = new BasePrimaryPolicyMetadata(TopLevelPolicyElementType.POLICY_SET, policyElement.getPolicySetId(), new PolicyVersion(policyElement.getVersion()));
-		final StaticPolicySetElementEvaluatorFactory factory = new StaticPolicySetElementEvaluatorFactory(policyMetadata, policyElement.getPolicySetDefaults(), refPolicyProvider,
-		        parentDefaultXPathCompiler, namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry);
-		return getInstanceGeneric(factory, policyElement, policySetRefChainWithPolicyElementIfRefTarget);
-	}
-
-	/**
-	 * Creates PolicySet handler from XACML PolicySet element with additional check of duplicate Policy(Set)Ids against a list of Policy(Set)s parsed during the PDP initialization so far
-	 *
-	 * @param policyElement
-	 *            PolicySet (XACML)
-	 * @param parentDefaultXPathCompiler
-	 *            XPath compiler corresponding to parent PolicySet's default XPath version, or null if either no parent or no default XPath version defined in parent
-	 * @param namespacePrefixesByURI
-	 *            namespace prefix-URI mappings from the original XACML PolicySet (XML) document, to be used for namespace-aware XPath evaluation; null or empty iff XPath support disabled
-	 * @param expressionFactory
-	 *            Expression factory/parser
-	 * @param combiningAlgorithmRegistry
-	 *            policy/rule combining algorithm registry
-	 * @param refPolicyProvider
-	 *            policy-by-reference (Policy(Set)IdReference) Provider to find references used in this policyset
-	 * @param ancestorPolicySetRefChain
-	 *            chain of ancestor PolicySets linked via PolicySetIdReferences, from the root PolicySet up to {@code policyElement} (excluded). <b>Null/empty if {@code policyElement} is the root
-	 *            PolicySet (no ancestor).</b> Each item is a PolicySetId of a PolicySet that is referenced by the previous item (except the first item which is the root policy) and references the
-	 *            next one. This chain is used to control PolicySetIdReferences found within the result policy, in order to detect loops (circular references) and prevent exceeding reference depth.
-	 *            <p>
-	 *            Beware that we only keep the IDs in the chain, and not the version, because we consider that a reference loop on the same policy ID is not allowed, no matter what the version is.
-	 *            <p>
-	 *            (Do not use a Queue for {@code ancestorPolicySetRefChain} as it is FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as
-	 *            well.)
-	 *            </p>
-	 * @return instance
-	 * @throws java.lang.IllegalArgumentException
-	 *             if any argument (e.g. {@code policyElement}) is invalid
-	 */
-	public static TopLevelPolicyElementEvaluator getInstance(final PolicySet policyElement, final XPathCompiler parentDefaultXPathCompiler, final Map<String, String> namespacePrefixesByURI,
-	        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry, final RefPolicyProvider refPolicyProvider, final Deque<String> ancestorPolicySetRefChain)
-	        throws IllegalArgumentException
-	{
-		if (policyElement == null)
-		{
-			throw NULL_XACML_POLICYSET_ARG_EXCEPTION;
-		}
-
-		final PrimaryPolicyMetadata policyMetadata = new BasePrimaryPolicyMetadata(TopLevelPolicyElementType.POLICY_SET, policyElement.getPolicySetId(), new PolicyVersion(policyElement.getVersion()));
-		final PolicySetElementEvaluatorFactory<?, ?> factory = refPolicyProvider instanceof StaticRefPolicyProvider
-		        ? new StaticPolicySetElementEvaluatorFactory(policyMetadata, policyElement.getPolicySetDefaults(), (StaticRefPolicyProvider) refPolicyProvider, parentDefaultXPathCompiler,
-		                namespacePrefixesByURI, expressionFactory, combiningAlgorithmRegistry)
-		        : new DynamicPolicySetElementEvaluatorFactory(policyMetadata, policyElement.getPolicySetDefaults(), refPolicyProvider, parentDefaultXPathCompiler, namespacePrefixesByURI,
-		                expressionFactory, combiningAlgorithmRegistry);
-		return getInstanceGeneric(factory, policyElement, ancestorPolicySetRefChain);
 	}
 
 }

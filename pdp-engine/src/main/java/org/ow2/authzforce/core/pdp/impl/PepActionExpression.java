@@ -56,12 +56,8 @@ public final class PepActionExpression
 	/**
 	 * Constructor that takes all the data associated with an PEP action (obligation/advice) expression.
 	 *
-	 * @param pepActionFactory
-	 *            PEP action factory
 	 * @param pepActionId
 	 *            the obligation's id
-	 * @param appliesTo
-	 *            the type of decision to which the PEP action applies (ObligationExpression's FulfillOn / AdviceExpression's AppliesTo)
 	 * @param isMandatory
 	 *            true iff the PEP action is mandatory (XACML Obligation, as opposed to Advice)
 	 * @param jaxbAssignmentExps
@@ -84,7 +80,8 @@ public final class PepActionExpression
 		if (jaxbAssignmentExps == null || jaxbAssignmentExps.isEmpty())
 		{
 			this.evaluatableAttributeAssignmentExpressions = Collections.emptyList();
-		} else
+		}
+		else
 		{
 			this.evaluatableAttributeAssignmentExpressions = new ArrayList<>(jaxbAssignmentExps.size());
 			for (final AttributeAssignmentExpression jaxbAttrAssignExp : jaxbAssignmentExps)
@@ -93,7 +90,8 @@ public final class PepActionExpression
 				try
 				{
 					attrAssignExp = new AttributeAssignmentExpressionEvaluator(jaxbAttrAssignExp, xPathCompiler, expFactory);
-				} catch (final IllegalArgumentException e)
+				}
+				catch (final IllegalArgumentException e)
 				{
 					throw new IllegalArgumentException("Invalid " + toString + ": Invalid AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId() + "]", e);
 				}
@@ -142,7 +140,8 @@ public final class PepActionExpression
 			{
 				attrAssignsFromExpr = attrAssignmentExpr.evaluate(context);
 				LOGGER.debug("{}/{} -> {}", this, attrAssignmentExpr, attrAssignsFromExpr);
-			} catch (final IndeterminateEvaluationException e)
+			}
+			catch (final IndeterminateEvaluationException e)
 			{
 				throw new IndeterminateEvaluationException(this + ": Error evaluating " + attrAssignmentExpr, e.getStatusCode(), e);
 			}

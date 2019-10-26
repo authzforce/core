@@ -19,20 +19,20 @@ package org.ow2.authzforce.core.pdp.testutil;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -49,15 +49,18 @@ import org.ow2.authzforce.core.pdp.testutil.ext.TestAttributeProvider;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProviderDescriptor;
 import org.ow2.authzforce.core.xmlns.pdp.InOutProcChain;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
-import org.ow2.authzforce.core.xmlns.pdp.StaticRefPolicyProvider;
-import org.ow2.authzforce.core.xmlns.pdp.StaticRootPolicyProvider;
+import org.ow2.authzforce.core.xmlns.pdp.StaticPolicyProvider;
+import org.ow2.authzforce.core.xmlns.pdp.TopLevelPolicyElementRef;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
+
+import com.google.common.base.Preconditions;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
@@ -156,57 +159,41 @@ public class TestUtils
 	/**
 	 * This creates the XACML request from file on classpath
 	 * 
-	 * @param requestFileLocation
+	 * @param requestFile
 	 *            file path (with Spring-supported URL prefixes: 'classpath:', etc.) path to the request file, relative to classpath
 	 * @param unmarshaller
 	 *            XACML unmarshaller
 	 * @return the XML/JAXB Request or null if any error
 	 * @throws JAXBException
 	 *             error reading XACML 3.0 Request from the file at {@code requestFileLocation}
-	 * @throws FileNotFoundException
-	 *             no file found at {@code requestFileLocation}
+	 * @throws MalformedURLException
+	 * @throws IllegalArgumentException
 	 */
-	public static Request createRequest(final String requestFileLocation, final XmlnsFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
+	public static Request createRequest(final Path requestFile, final XmlnsFilteringParser unmarshaller) throws JAXBException, IllegalArgumentException, MalformedURLException
 	{
-		/**
-		 * Get absolute path/URL to request file in a portable way, using current class loader. As per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path
-		 * name that identifies the resource. So let's build it. Note: do not use File.separator as path separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c)
-		 * by the getResource() method (not considered path separator by this method), and file will not be found as a result.
-		 */
-		final URL requestFileURL = ResourceUtils.getURL(requestFileLocation);
-		if (requestFileURL == null)
-		{
-			throw new FileNotFoundException("No XACML Request file found at location: 'classpath:" + requestFileLocation + "'");
-		}
 
-		LOGGER.debug("Request file to read: {}", requestFileURL);
-		final Request request = (Request) unmarshaller.parse(requestFileURL);
+		LOGGER.debug("Request file to read: {}", requestFile);
+		final Request request = (Request) unmarshaller.parse(requestFile.toUri().toURL());
 		return request;
 	}
 
 	/**
 	 * This creates the XACML response from file on classpath
 	 * 
-	 * @param responseFileLocation
-	 *            path to the response file (with Spring-supported URL prefixes: 'classpath:', etc.)
+	 * @param responseFile
+	 *            path to the response file
 	 * @param unmarshaller
 	 *            XACML unmarshaller
 	 * @return the XML/JAXB Response or null if any error
 	 * @throws JAXBException
 	 *             error reading XACML 3.0 Request from the file at {@code responseFileLocation}
-	 * @throws FileNotFoundException
-	 *             no file found at {@code responseFileLocation}
+	 * @throws MalformedURLException
+	 * @throws IllegalArgumentException
 	 */
-	public static Response createResponse(final String responseFileLocation, final XmlnsFilteringParser unmarshaller) throws JAXBException, FileNotFoundException
+	public static Response createResponse(final Path responseFile, final XmlnsFilteringParser unmarshaller) throws JAXBException, IllegalArgumentException, MalformedURLException
 	{
-		/**
-		 * Get absolute path/URL to response file in a portable way, using current class loader. As per javadoc, the name of the resource passed to ClassLoader.getResource() is a '/'-separated path
-		 * name that identifies the resource. So let's build it. Note: do not use File.separator as path separator, as it will be turned into backslash "\\" on Windows, and will be URL-encoded (%5c)
-		 * by the getResource() method (not considered path separator by this method), and file will not be found as a result.
-		 */
-		final URL responseFileURL = ResourceUtils.getURL(responseFileLocation);
-		LOGGER.debug("Response file to read: {}", responseFileLocation);
-		final Response response = (Response) unmarshaller.parse(responseFileURL);
+		LOGGER.debug("Response file to read: {}", responseFile);
+		final Response response = (Response) unmarshaller.parse(responseFile.toUri().toURL());
 		return response;
 	}
 
@@ -303,18 +290,134 @@ public class TestUtils
 	}
 
 	/**
+	 * Gets policy ref from XACML policy file
+	 * 
+	 * @param path
+	 *            path to XACML Policy(Set) file
+	 * @return Policy(Set)Id
+	 * @throws JAXBException
+	 *             unmarshalling error
+	 */
+	public static TopLevelPolicyElementRef getPolicyRef(final Path path) throws JAXBException
+	{
+		/*
+		 * Unmarshall without schema validation because some test policy files are intendedly invalid to test XACML syntax validation
+		 */
+		final Object policyOrPolicySet = Xacml3JaxbHelper.XACML_3_0_JAXB_CONTEXT.createUnmarshaller().unmarshal(path.toFile());
+		final boolean isPolicySet;
+		final String policyId;
+		if (policyOrPolicySet instanceof PolicySet)
+		{
+			isPolicySet = true;
+			policyId = ((PolicySet) policyOrPolicySet).getPolicySetId();
+		}
+		else
+		{
+			isPolicySet = false;
+			policyId = ((Policy) policyOrPolicySet).getPolicyId();
+		}
+
+		return new TopLevelPolicyElementRef(policyId, null, isPolicySet);
+	}
+
+	private static PdpEngineConfiguration newPdpEngineConfiguration(final TopLevelPolicyElementRef rootPolicyRef, final List<String> policyLocations, final boolean enableXPath,
+	        final Optional<Path> attributeProviderConfFile, final String requestPreprocId, final String resultPostprocId) throws JAXBException, IllegalArgumentException, IOException
+	{
+		Preconditions.checkNotNull(rootPolicyRef, "Root policy reference (ID, version) undefined");
+		Preconditions.checkNotNull(policyLocations, "Policy location(s) undefined");
+
+		final Pdp jaxbPDP = new Pdp();
+		jaxbPDP.setEnableXPath(enableXPath);
+
+		final StaticPolicyProvider jaxbPolicyProvider = new StaticPolicyProvider();
+		jaxbPolicyProvider.setId("policyProvider");
+		jaxbPolicyProvider.getPolicyLocations().addAll(policyLocations);
+		jaxbPDP.setPolicyProvider(jaxbPolicyProvider);
+
+		// set max PolicySet reference depth to max possible depth automatically
+		jaxbPDP.setMaxPolicyRefDepth(BigInteger.valueOf(jaxbPolicyProvider.getPolicyLocations().size()));
+		jaxbPDP.setRootPolicyRef(rootPolicyRef);
+
+		// test attribute provider
+		if (attributeProviderConfFile.isPresent())
+		{
+			final Unmarshaller unmarshaller = TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT.createUnmarshaller();
+			@SuppressWarnings("unchecked")
+			final JAXBElement<TestAttributeProviderDescriptor> testAttributeProviderElt = (JAXBElement<TestAttributeProviderDescriptor>) unmarshaller
+			        .unmarshal(attributeProviderConfFile.get().toFile());
+			jaxbPDP.getAttributeProviders().add(testAttributeProviderElt.getValue());
+		}
+
+		if (requestPreprocId != null)
+		{
+			final InOutProcChain ioProcChain = new InOutProcChain(requestPreprocId, resultPostprocId);
+			jaxbPDP.getIoProcChains().add(ioProcChain);
+		}
+
+		return new PdpEngineConfiguration(jaxbPDP, new DefaultEnvironmentProperties());
+
+	}
+
+	/**
 	 * Creates PDP engine configuration
 	 * 
-	 * @param rootPolicyLocation
-	 *            root XACML policy location (with Spring-supported URL prefixes: 'classpath:', etc.)
-	 * @param refPoliciesDirectoryLocation
-	 *            (optional) directory containing files of XACML Policy(Set) that can be referred to from root policy at {@code policyLocation} via Policy(Set)IdReference; required only if there is
-	 *            any Policy(Set)IdReference in {@code rootPolicyLocation} to resolve. If file not found, support for Policy(Set)IdReference is disabled, i.e. any presence of such reference is
-	 *            considered invalid.
+	 * @param policiesDirectory
+	 *            directory containing files of XACML Policy(Set)s, including the root policy and other policies referred to from the root policy {@code rootPolicyId} via Policy(Set)IdReference.
+	 * @param rootPolicyRef
+	 *            ID (and optional version) of root XACML policy, to be located in <code>policiesDirectory</code>
 	 * @param enableXPath
 	 *            Enable support for AttributeSelectors and xpathExpression datatype. Reminder: AttributeSelector and xpathExpression datatype support are marked as optional in XACML 3.0 core
 	 *            specification, so set this to false if you are testing mandatory features only.
-	 * @param attributeProviderConfLocation
+	 * @param attributeProviderConfFile
+	 *            (optional) {@link TestAttributeProvider} XML configuration location
+	 * @param requestPreprocId
+	 *            Request preprocessor ID
+	 * @param resultPostprocId
+	 *            Result postprocessor ID
+	 * @return PDP instance
+	 * @throws IllegalArgumentException
+	 *             invalid XACML policy located at {@code rootPolicyLocation} or {@code refPoliciesDirectoryLocation}
+	 * @throws IOException
+	 *             if error closing some resources used by the PDP after {@link IllegalArgumentException} occurred
+	 * @throws JAXBException
+	 *             cannot create Attribute Provider configuration (XML) unmarshaller
+	 */
+	public static PdpEngineConfiguration newPdpEngineConfiguration(final TopLevelPolicyElementRef rootPolicyRef, final Path policiesDirectory, final boolean enableXPath,
+	        final Optional<Path> attributeProviderConfFile, final String requestPreprocId, final String resultPostprocId) throws IllegalArgumentException, IOException, JAXBException
+	{
+		final List<String> policyLocations = new ArrayList<>();
+
+		/*
+		 * Root policy expected to be in the policies directory as well
+		 */
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(policiesDirectory))
+		{
+			for (final Path path : stream)
+			{
+				if (Files.isRegularFile(path))
+				{
+					policyLocations.add(path.toString());
+				}
+			}
+		}
+		catch (final DirectoryIteratorException ex)
+		{
+			// I/O error encounted during the iteration, the cause is an IOException
+			throw ex.getCause();
+		}
+
+		return newPdpEngineConfiguration(rootPolicyRef, policyLocations, enableXPath, attributeProviderConfFile, requestPreprocId, resultPostprocId);
+	}
+
+	/**
+	 * Creates PDP engine configuration
+	 * 
+	 * @param rootPolicyFile
+	 *            ID of root XACML policy, to be located in <code>policiesDirectoryLocation</code> (with Spring-supported URL prefixes: 'classpath:', etc.)
+	 * @param enableXPath
+	 *            Enable support for AttributeSelectors and xpathExpression datatype. Reminder: AttributeSelector and xpathExpression datatype support are marked as optional in XACML 3.0 core
+	 *            specification, so set this to false if you are testing mandatory features only.
+	 * @param attributeProviderConfFile
 	 *            (optional) {@link TestAttributeProvider} XML configuration location
 	 * @param requestPreprocId
 	 *            Request preprocessor ID
@@ -330,89 +433,11 @@ public class TestUtils
 	 * @throws JAXBException
 	 *             cannot create Attribute Provider configuration (XML) unmarshaller
 	 */
-	public static PdpEngineConfiguration newPdpEngineConfiguration(final String rootPolicyLocation, final String refPoliciesDirectoryLocation, final boolean enableXPath,
-	        final String attributeProviderConfLocation, final String requestPreprocId, final String resultPostprocId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
+	public static PdpEngineConfiguration newPdpEngineConfiguration(final Path rootPolicyFile, final boolean enableXPath, final Optional<Path> attributeProviderConfFile, final String requestPreprocId,
+	        final String resultPostprocId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
 	{
-		final Pdp jaxbPDP = new Pdp();
-		jaxbPDP.setEnableXPath(enableXPath);
-
-		/**
-		 * Get absolute path/URL to PolicySet file and, if any, the directory of referenceable sub-PolicySets, in a portable way, using current class loader. As per javadoc, the name of the resource
-		 * passed to ClassLoader.getResource() is a '/'-separated path name that identifies the resource. So let's build it. Note: do not use File.separator as path separator, as it will be turned
-		 * into backslash "\\" on Windows, and will be URL-encoded (%5c) by the getResource() method (not considered path separator by this method), and file will not be found as a result.
-		 */
-		if (refPoliciesDirectoryLocation != null)
-		{
-			URL refPoliciesDirectoryURL = null;
-			try
-			{
-				refPoliciesDirectoryURL = ResourceUtils.getURL(refPoliciesDirectoryLocation);
-			}
-			catch (final FileNotFoundException e)
-			{
-				LOGGER.info("No refPolicies directory: {} -> Policy(Set)IdReference(s) not supported for this test.", refPoliciesDirectoryLocation);
-			}
-
-			if (refPoliciesDirectoryURL != null)
-			{
-				final StaticRefPolicyProvider jaxbRefPolicyProvider = new StaticRefPolicyProvider();
-				jaxbRefPolicyProvider.setId("refPolicyProvider");
-				final List<String> jaxbRefPolicyProviderPolicyLocations = jaxbRefPolicyProvider.getPolicyLocations();
-				final Path refPoliciesDirectoryPath = Paths.get(refPoliciesDirectoryURL.toURI());
-				try (DirectoryStream<Path> stream = Files.newDirectoryStream(refPoliciesDirectoryPath))
-				{
-					for (final Path path : stream)
-					{
-						if (Files.isRegularFile(path))
-						{
-							jaxbRefPolicyProviderPolicyLocations.add(path.toString());
-						}
-					}
-				}
-				catch (final DirectoryIteratorException ex)
-				{
-					// I/O error encounted during the iteration, the cause is an IOException
-					throw ex.getCause();
-				}
-
-				// set max PolicySet reference depth to max possible depth automatically
-				if (!jaxbRefPolicyProviderPolicyLocations.isEmpty())
-				{
-					jaxbPDP.setMaxPolicyRefDepth(BigInteger.valueOf(jaxbRefPolicyProviderPolicyLocations.size()));
-					jaxbPDP.setRefPolicyProvider(jaxbRefPolicyProvider);
-				}
-			}
-		}
-
-		final URL rootPolicyFileURL = ResourceUtils.getURL(rootPolicyLocation);
-		final StaticRootPolicyProvider jaxbRootPolicyProvider = new StaticRootPolicyProvider();
-		jaxbRootPolicyProvider.setId("rootPolicyProvider");
-		jaxbRootPolicyProvider.setPolicyLocation(rootPolicyFileURL.toString());
-		jaxbPDP.setRootPolicyProvider(jaxbRootPolicyProvider);
-
-		// test attribute provider
-		if (attributeProviderConfLocation != null)
-		{
-			try
-			{
-				final URL testAttrProviderURL = ResourceUtils.getURL(attributeProviderConfLocation);
-				final Unmarshaller unmarshaller = TEST_ATTRIBUTE_PROVIDER_JAXB_CONTEXT.createUnmarshaller();
-				final JAXBElement<TestAttributeProviderDescriptor> testAttributeProviderElt = (JAXBElement<TestAttributeProviderDescriptor>) unmarshaller.unmarshal(testAttrProviderURL);
-				jaxbPDP.getAttributeProviders().add(testAttributeProviderElt.getValue());
-			}
-			catch (final FileNotFoundException e)
-			{
-				LOGGER.info("No test attribute provider configuration found at: {} -> TestAttributeProvider not supported for this test.", attributeProviderConfLocation);
-			}
-		}
-
-		if (requestPreprocId != null)
-		{
-			final InOutProcChain ioProcChain = new InOutProcChain(requestPreprocId, resultPostprocId);
-			jaxbPDP.getIoProcChains().add(ioProcChain);
-		}
-
-		return new PdpEngineConfiguration(jaxbPDP, new DefaultEnvironmentProperties());
+		final TopLevelPolicyElementRef rootPolicyRef = TestUtils.getPolicyRef(rootPolicyFile);
+		return newPdpEngineConfiguration(rootPolicyRef, Collections.singletonList(rootPolicyFile.toString()), enableXPath, attributeProviderConfFile, requestPreprocId, resultPostprocId);
 	}
 
 	/**
@@ -425,6 +450,7 @@ public class TestUtils
 	 * @param actualResponseFromPDP
 	 *            actual response
 	 * @throws JAXBException
+	 *             error creating JAXB Marshaller for XACML output
 	 */
 	public static void assertNormalizedEquals(final String testId, final Response expectedResponse, final Response actualResponseFromPDP) throws JAXBException
 	{

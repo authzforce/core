@@ -17,14 +17,14 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.conformance;
 
-import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,6 +39,9 @@ import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 /**
  * XACML 3.0 conformance tests (published on OASIS xacml-comments mailing list). For tests testing validation of XACML policy syntax, the PDP is expected to reject the policy before receiving any
@@ -68,7 +71,7 @@ public class ConformanceV3FromV2
 	 * Suffix of name of directory containing files of XACML Policy(Set) that can be referenced from root policy via Policy(Set)IdReference. The actual directory name is the concatenation of the test
 	 * ID and this suffix.
 	 */
-	public final static String REF_POLICIES_DIRNAME_SUFFIX = "Repository";
+	public final static String POLICIES_DIRNAME_SUFFIX = "Policies";
 
 	/**
 	 * Suffix of filename of an AttributeProvider configuration. The actual filename is the concatenation of the test ID and this suffix.
@@ -104,7 +107,7 @@ public class ConformanceV3FromV2
 	 * @return test data
 	 */
 	protected static Collection<? extends Object[]> getTestData(final String rootDirectoryPath, final String testSubDirectoryName, final String testFilenamePrefixBeforeNum, final int startTestNum,
-			final int endTestNum, final String requestFilterId)
+	        final int endTestNum, final String requestFilterId)
 	{
 		final Collection<Object[]> testData = new ArrayList<>();
 		for (int testNum = startTestNum; testNum <= endTestNum; testNum++)
@@ -151,55 +154,72 @@ public class ConformanceV3FromV2
 		LOGGER.debug("Starting conformance test with files '{}*.xml'", testFilePathPrefix);
 
 		final XmlnsFilteringParser respUnmarshaller = xacmlParserFactory.getInstance();
-		Response expectedResponse = null;
-		final String expectedRespFilepath = testFilePathPrefix + EXPECTED_RESPONSE_FILENAME_SUFFIX;
-		try
+		final Response expectedResponse;
+		final Path expectedRespFilepath = Paths.get(testFilePathPrefix + EXPECTED_RESPONSE_FILENAME_SUFFIX);
+		if (Files.exists(expectedRespFilepath))
 		{
 			expectedResponse = TestUtils.createResponse(expectedRespFilepath, respUnmarshaller);
 		}
-		catch (final FileNotFoundException notFoundErr)
+		else
 		{
+			expectedResponse = null;
 			// do nothing except logging -> request = null
 			LOGGER.debug("Response file '{}' does not exist -> Static Policy/Request syntax error check", expectedRespFilepath);
 		}
 
 		final XmlnsFilteringParser reqUnmarshaller = xacmlParserFactory.getInstance();
-		Request request = null;
+		final Request request;
 		// if no Request file, it is just a static policy syntax error check
-		final String reqFilepath = testFilePathPrefix + REQUEST_FILENAME_SUFFIX;
-		try
+		final Path reqFilepath = Paths.get(testFilePathPrefix + REQUEST_FILENAME_SUFFIX);
+		if (Files.exists(reqFilepath))
 		{
-			request = TestUtils.createRequest(reqFilepath, reqUnmarshaller);
+			try
+			{
+				request = TestUtils.createRequest(reqFilepath, reqUnmarshaller);
+			}
+			catch (final JAXBException e)
+			{
+				// we found syntax error in request
+				if (expectedResponse == null)
+				{
+					// this is a Request syntax error check and we found the syntax error as
+					// expected -> success
+					LOGGER.debug("Successfully found syntax error as expected in Request located at: {}", reqFilepath);
+					return;
+				}
+
+				// Unexpected error
+				throw e;
+			}
 		}
-		catch (final FileNotFoundException notFoundErr)
+		else
 		{
+			request = null;
 			// do nothing except logging -> request = null
 			LOGGER.debug("Request file '{}' does not exist -> Static policy syntax error check (Request/Response ignored)", reqFilepath);
 		}
-		catch (final JAXBException e)
-		{
-			// we found syntax error in request
-			if (expectedResponse == null)
-			{
-				// this is a Request syntax error check and we found the syntax error as
-				// expected -> success
-				LOGGER.debug("Successfully found syntax error as expected in Request located at: {}", reqFilepath);
-				return;
-			}
 
-			// Unexpected error
-			throw e;
-		}
+		/*
+		 * Policies directory. If it exists, root Policy file is expected to be in there. This is the case for IIE*** conformance tests
+		 */
+		final Path policiesDir = Paths.get(testFilePathPrefix + POLICIES_DIRNAME_SUFFIX);
 
-		final String rootPolicyFilepath = testFilePathPrefix + ROOT_POLICY_FILENAME_SUFFIX;
-		// referenced policies if any
-		final String refPoliciesDirLocation = testFilePathPrefix + REF_POLICIES_DIRNAME_SUFFIX;
+		final Path attributeProviderConfFile = Paths.get(testFilePathPrefix + ATTRIBUTE_PROVIDER_FILENAME_SUFFIX);
+		final Optional<Path> optAttributeProviderConfFile = Files.isRegularFile(attributeProviderConfFile) ? Optional.of(attributeProviderConfFile) : Optional.empty();
 
-		final String attributeProviderConfLocation = testFilePathPrefix + ATTRIBUTE_PROVIDER_FILENAME_SUFFIX;
 		final PdpEngineConfiguration pdpEngineConf;
 		try
 		{
-			pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFilepath, refPoliciesDirLocation, enableXPath, attributeProviderConfLocation, this.reqFilter, null);
+			if (Files.isDirectory(policiesDir))
+			{
+				final Path rootPolicyFile = policiesDir.resolve(ROOT_POLICY_FILENAME_SUFFIX);
+				pdpEngineConf = TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), policiesDir, enableXPath, optAttributeProviderConfFile, this.reqFilter, null);
+			}
+			else
+			{
+				final Path rootPolicyFile = Paths.get(testFilePathPrefix + ROOT_POLICY_FILENAME_SUFFIX);
+				pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile, enableXPath, optAttributeProviderConfFile, this.reqFilter, null);
+			}
 		}
 		catch (final IllegalArgumentException e)
 		{
@@ -208,7 +228,7 @@ public class ConformanceV3FromV2
 			{
 				// this is a policy syntax error check and we found the syntax error as
 				// expected -> success
-				LOGGER.debug("Successfully found syntax error as expected in policy located at: {}", rootPolicyFilepath);
+				LOGGER.debug("Successfully found syntax error as expected in policy(ies) with path: {}*", testFilePathPrefix);
 				return;
 			}
 
@@ -222,15 +242,15 @@ public class ConformanceV3FromV2
 			{
 				// this is a policy syntax error check and we didn't found the syntax error as
 				// expected
-				Assert.fail("Failed to find syntax error as expected in policy located at: " + rootPolicyFilepath);
+				Assert.fail("Failed to find syntax error as expected in policy(ies)  with path: " + testFilePathPrefix + "*");
 			}
 			else if (expectedResponse == null)
 			{
 				/*
 				 * No expected response, so it is not a PDP evaluation test, but request or policy syntax error check. We got here, so request and policy OK. This is unexpected.
 				 */
-				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '" + reqFilepath + "' or policy located at '"
-						+ rootPolicyFilepath + "'");
+				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '" + reqFilepath
+				        + "' or policy(ies) with path '" + testFilePathPrefix + "*'");
 
 			}
 			else
@@ -253,7 +273,7 @@ public class ConformanceV3FromV2
 			{
 				// this is a policy syntax error check and we found the syntax error as
 				// expected -> success
-				LOGGER.debug("Successfully found syntax error as expected in policy located at: {}", rootPolicyFilepath);
+				LOGGER.debug("Successfully found syntax error as expected in policy(ies) with path: {}*", testFilePathPrefix);
 				return;
 			}
 

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="root"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:on-permit-apply-second" Version="1.0">
+	<Description>
+		Policy with combining algorithm extension
+	</Description>
+	<Target />
+	<Policy PolicyId="urn:ow2:authzforce:core:pdp:test:policy:custom-combining-alg:P1" Version="1.0"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Target />
+		<Rule Effect="Permit" RuleId="urn:ow2:authzforce:core:pdp:test:policy:custom-combining-alg:R11">
+			<Condition>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+					<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id"
+							DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+					</Apply>
+					<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-one-and-only">
+						<AttributeDesignator AttributeId="urn:ow2:authzforce:core:pdp:test:attribute-id:resource-owner" DataType="http://www.w3.org/2001/XMLSchema#string"
+							Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource" MustBePresent="true" />
+					</Apply>
+				</Apply>
+			</Condition>
+		</Rule>
+	</Policy>
+	<Policy PolicyId="urn:ow2:authzforce:core:pdp:test:policy:custom-combining-alg:P2" Version="1.0"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Target />
+		<Rule Effect="Permit" RuleId="urn:ow2:authzforce:core:pdp:test:policy:custom-combining-alg:R21">
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+								DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+						</Match>
+					</AllOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">write</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+								DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+		</Rule>
+	</Policy>
+	<Policy PolicyId="urn:ow2:authzforce:core:pdp:test:policy:custom-combining-alg:P3" Version="1.0"
+		RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Target />
+		<Rule Effect="Permit" RuleId="urn:ow2:authzforce:core:pdp:test:policy:custom-combining-alg:R31">
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">read</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action" AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+								DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+		</Rule>
+	</Policy>
+</PolicySet>

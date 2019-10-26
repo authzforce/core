@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Testing parameter 'maxPolicySetRefDepth' -->
-<pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/6.0" xmlns:ext="http://authzforce.github.io/core/xmlns/test/3" version="6.0.0">
-   <refPolicyProvider id="refPolicyProvider" xsi:type="ext:MongoDBBasedPolicyProviderDescriptor" serverHost="localhost" serverPort="27017" dbName="Test" collectionName="policies" />
-   <rootPolicyProvider id="rootPolicyProvider" xsi:type="StaticRefBasedRootPolicyProvider">
-      <policyRef>root-rbac-policyset</policyRef>
-   </rootPolicyProvider>
+<pdp
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://authzforce.github.io/core/xmlns/pdp/7.0"
+	xmlns:ext="http://authzforce.github.io/core/xmlns/test/3"
+	version="7.0.0">
+	<policyProvider
+		id="refPolicyProvider"
+		xsi:type="ext:MongoDBBasedPolicyProviderDescriptor"
+		serverHost="localhost"
+		serverPort="27017"
+		dbName="Test"
+		collectionName="policies" />
+	<rootPolicyRef>root-rbac-policyset</rootPolicyRef>
 
 </pdp>
