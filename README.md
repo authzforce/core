@@ -73,11 +73,31 @@ See the [license file](LICENSE).
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
 
 ## System requirements
-Java (JRE) 8 or later. 
+Java (JRE) version: 8 or later. 
 
-**Make sure** the value - comma-separated list - of the system property `javax.xml.accessExternalSchema` is set to include `http`, to work around Java 8+ external schema access restriction, e.g. with a JVM argument:
+### Java 8+ requirements 
+- System property `javax.xml.accessExternalSchema` must be set to include `http`, to work around Java 8+ external schema access restriction, e.g. with a JVM argument:
+
 `-Djavax.xml.accessExternalSchema=http`
 
+### Java 9+ requirements 
+In addition to Java 8+ ones, you need to add JAXB dependencies (no longer part of JDK), e.g. [in Maven](https://javaee.github.io/jaxb-v2/doc/user-guide/ch03.html#deployment-maven-coordinates):  
+
+```xml
+                <!-- API -->
+                <dependency>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                    <version>${jaxb.version}</version>
+                </dependency>
+
+                <!-- Runtime -->
+                <dependency>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                    <version>${jaxb.version}</version>
+                </dependency>
+```
 
 ## Usage
 ### Getting started
