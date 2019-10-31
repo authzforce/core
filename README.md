@@ -28,6 +28,7 @@ AuthzForce Core may be used in the following ways:
     * [XACML v3.0 - Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision`). 
 
   *For further details on what is actually supported with regards to the XACML specifications, please refer to the conformance tests [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
+* [GeoXACML](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic).
 * Interfaces: 
   * Java API: basically a library for instantiating and using a PDP engine from your Java (or any Java-compatible) code;
   * CLI (Command-Line Interface): basically an executable that you can run from the command-line to test the engine;
