@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2019 THALES.
+ * Copyright 2012-2020 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -24,14 +24,14 @@ import java.util.Collection;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.testutil.PdpTest;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 
 /**
  * AuthZForce-specific PDP tests
  *
  */
 @RunWith(value = Parameterized.class)
-public class CustomPdpTest extends PdpTest
+public class CustomPdpTest extends XacmlXmlPdpTest
 {
 	/**
 	 * Name of root directory that contains test resources for each test
@@ -53,7 +53,7 @@ public class CustomPdpTest extends PdpTest
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> params() throws URISyntaxException, IOException
 	{
-		return PdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
 	}
 
 }

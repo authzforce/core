@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2019 THALES.
+ * Copyright 2012-2020 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -69,29 +69,28 @@ public final class PdpCommandLineCallable implements Callable<Void>
 	 */
 	@Option(names = { "-t",
 	        "--type" }, description = "Type of XACML request/response: 'XACML_XML' for XACML 3.0/XML (XACML core specification), 'XACML_JSON' for XACML 3.0/JSON (JSON Profile of XACML 3.0)")
-	private final RequestType requestType = RequestType.XACML_XML;
+	private RequestType requestType = RequestType.XACML_XML;
 
 	@Parameters(index = "0", description = "Path to PDP configuration file, valid against schema located at https://github.com/authzforce/core/blob/release-X.Y.Z/pdp-engine/src/main/resources/pdp.xsd (X.Y.Z is the version provided by -v option)")
 	private File confFile;
 
 	@Option(names = { "-c", "--catalog" }, description = "Path to XML catalog for resolving schemas used in extensions XSD specified by -e option, required only if -e specified")
-	private final String catalogLocation = null;
+	private String catalogLocation = null;
 
 	@Option(names = { "-e",
 	        "--extensions" }, description = "Path to extensions XSD (contains XSD namespace imports for all extensions used in the PDP configuration), required only if using any extension in the PDP configuration file")
-	private final String extensionXsdLocation = null;
+	private String extensionXsdLocation = null;
 
 	@Parameters(index = "1", description = "XACML Request (format determined by -t option)")
 	private File reqFile;
 
 	@Option(names = { "-p", "--prettyprint" }, description = "Pretty-print output with line feeds and indentation")
-	private final boolean formattedOutput = false;
+	private boolean formattedOutput = false;
 
 	@Override
 	public Void call() throws Exception
 	{
 		final PdpEngineConfiguration configuration = PdpEngineConfiguration.getInstance(confFile, catalogLocation, extensionXsdLocation);
-		System.out.println();
 		switch (requestType)
 		{
 
@@ -131,12 +130,12 @@ public final class PdpCommandLineCallable implements Callable<Void>
 				final PdpEngineInoutAdapter<Request, Response> xmlPdpEngineAdapter = PdpEngineAdapters.newXacmlJaxbInoutAdapter(configuration);
 				final Response xmlResponse = xmlPdpEngineAdapter.evaluate((Request) request, parser.getNamespacePrefixUriMap());
 				final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
-				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, formattedOutput);
+				final Boolean formatted = Boolean.valueOf(formattedOutput);
+				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, formatted);
 				marshaller.marshal(xmlResponse, System.out);
 				break;
 		}
 
-		System.out.println();
 		return null;
 	}
 

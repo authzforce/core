@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2019 THALES.
+ * Copyright 2012-2020 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.testutil.PdpTest;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * src/test/resources/NonRegression.
  */
 @RunWith(value = Parameterized.class)
-public class NonRegressionTest extends PdpTest
+public class NonRegressionTest extends XacmlXmlPdpTest
 {
 	/**
 	 * Name of root directory that contains test resources for each non-regression test
@@ -58,7 +58,7 @@ public class NonRegressionTest extends PdpTest
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> params() throws URISyntaxException, IOException
 	{
-		return PdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
 	}
 
 	/**

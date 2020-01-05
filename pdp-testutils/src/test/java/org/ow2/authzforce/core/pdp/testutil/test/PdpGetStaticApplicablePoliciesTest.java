@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2019 THALES.
+ * Copyright 2012-2020 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -40,7 +40,7 @@ import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
-import org.ow2.authzforce.core.pdp.testutil.PdpTest;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer;
@@ -184,18 +184,18 @@ public class PdpGetStaticApplicablePoliciesTest
 		 * If there is a "$TEST_DIR/$POLICIES_DIR_NAME" directory, then load all policies from there, including root policy from "$TEST_DIR/$POLICIES_DIR_NAME/$ROOT_POLICY_FILENAME" Else load only the
 		 * root policy from "$TEST_DIR/$ROOT_POLICY_FILENAME"
 		 */
-		final Path policiesDir = Paths.get(testResourceLocationPrefix + PdpTest.POLICIES_DIR_NAME);
+		final Path policiesDir = Paths.get(testResourceLocationPrefix + XacmlXmlPdpTest.POLICIES_DIR_NAME);
 		final Optional<Path> optPoliciesDir;
 		final Path rootPolicyFile;
 		if (Files.isDirectory(policiesDir))
 		{
 			optPoliciesDir = Optional.of(policiesDir);
-			rootPolicyFile = policiesDir.resolve(PdpTest.ROOT_POLICY_FILENAME);
+			rootPolicyFile = policiesDir.resolve(XacmlXmlPdpTest.ROOT_POLICY_FILENAME);
 		}
 		else
 		{
 			optPoliciesDir = Optional.empty();
-			rootPolicyFile = Paths.get(testResourceLocationPrefix + PdpTest.ROOT_POLICY_FILENAME);
+			rootPolicyFile = Paths.get(testResourceLocationPrefix + XacmlXmlPdpTest.ROOT_POLICY_FILENAME);
 		}
 
 		/*
