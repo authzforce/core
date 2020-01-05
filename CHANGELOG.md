@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. 
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+## 14.0.1
+### Fixed
+- [GH-42]: Incorrectly formed JSON responses when StatusCode is other than "ok"
+- CLI option `--pretty-print` (had no effect on XML)
+- Security vulnerability in `pdp-testutils` module's dependency `jackson-databind`: upgraded to v2.9.10.1.
+
 
 ## 14.0.0
 ### Changed
