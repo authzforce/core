@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2019 THALES.
+ * Copyright 2012-2020 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.io.xacml.json;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -264,7 +265,8 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 	@Override
 	public JSONObject processInternalError(final IndeterminateEvaluationException error)
 	{
-		return new JSONObject(HashCollections.newImmutableMap("Decision", DecisionType.INDETERMINATE.value(), "Status", toJson(error.getTopLevelStatus())));
+		final JSONObject result = new JSONObject(HashCollections.newImmutableMap("Decision", DecisionType.INDETERMINATE.value(), "Status", toJson(error.getTopLevelStatus())));
+		return new JSONObject(HashCollections.newImmutableMap("Response", new JSONArray(Collections.singleton(result))));
 	}
 
 	@Override
@@ -274,7 +276,8 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		final Status finalStatus = error.getTopLevelStatus();
 		// FIXME: maxDepthOfErrorCauseIncludedInResult > 0 not supported so far
 
-		return new JSONObject(HashCollections.newImmutableMap("Decision", DecisionType.INDETERMINATE.value(), "Status", toJson(finalStatus)));
+		final JSONObject result = new JSONObject(HashCollections.newImmutableMap("Decision", DecisionType.INDETERMINATE.value(), "Status", toJson(finalStatus)));
+		return new JSONObject(HashCollections.newImmutableMap("Response", new JSONArray(Collections.singleton(result))));
 	}
 
 	/**

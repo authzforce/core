@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2019 THALES.
+ * Copyright 2012-2020 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -63,7 +63,7 @@ import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactor
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
-import org.ow2.authzforce.core.pdp.testutil.PdpTest;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.core.pdp.testutil.ext.MongoDbPolicyProvider;
 import org.ow2.authzforce.core.pdp.testutil.ext.PolicyPojo;
@@ -97,7 +97,7 @@ public class MongoDBRefPolicyProviderTest
 	{
 		final PdpModelHandler pdpModelHandler = new PdpModelHandler("classpath:catalog.xml", "classpath:pdp-ext.xsd");
 		final Pdp pdpConf;
-		try (final InputStream is = MongoDBRefPolicyProviderTest.class.getResourceAsStream(PdpTest.PDP_CONF_FILENAME))
+		try (final InputStream is = MongoDBRefPolicyProviderTest.class.getResourceAsStream(XacmlXmlPdpTest.PDP_CONF_FILENAME))
 		{
 			pdpConf = pdpModelHandler.unmarshal(new StreamSource(is), Pdp.class);
 		}

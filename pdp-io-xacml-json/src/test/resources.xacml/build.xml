@@ -1,23 +1,3 @@
-<!--
-
-    Copyright (C) 2017 Thales Services SAS.
-
-    This file is part of AuthZForce CE.
-
-    AuthZForce CE is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    AuthZForce CE is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with AuthZForce CE.  If not, see <http://www.gnu.org/licenses/>.
-
--->
 <!-- On Ubuntu, do this first: $ sudo apt-get install ivy ant-contrib-->
 <project name="authzforce-upgrader" default="upgrade" xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:ac="antlib:net.sf.antcontrib">
 	<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant">
@@ -37,8 +17,8 @@
 		<attribute name="style" />
 		<sequential>
 			<xslt processor="trax" basedir="@{basedir}" destdir="@{destdir}" style="@{style}" includes="@{includes}" extension=".json" classpathref="lib.path.id">
-				<!-- parameters used by pdp-upgrade.xsl -->
-				<param name="basedir" expression="@{basedir}" />
+				<!-- parameters used by XSL stylesheet -->
+				<param name="useJsonProfile" expression="yes" />
 				<!--
         			    		http://www.saxonica.com/html/documentation/using-xsl/xsltfromant.html
         			    		-->
@@ -53,7 +33,8 @@
         							<attribute name="http://saxon.sf.net/feature/configuration-file" 
         							               value="config-de.xml"/>
         							               -->
-
+					<!-- XML 1.1 required to support backspace character -->
+					<attribute name="http://saxon.sf.net/feature/xml-version" value="1.1" />
 					<!--
 					<attribute name="http://saxon.sf.net/feature/traceListenerClass" value="net.sf.saxon.trace.XSLTTraceListener" />
 					-->
@@ -88,10 +69,10 @@
 		<copy verbose="true" file="${src.sub.dir.path}/Policy.xml" tofile="${target.sub.dir.path}/Policy.xml"/>
 
 		<!-- Convert Request.xml -->
-		<saxon-xslt basedir="${src.sub.dir.path}" destdir="${target.sub.dir.path}" includes="Request.xml" style="xacml3-request-xml-to-json.xsl" />
+		<saxon-xslt basedir="${src.sub.dir.path}" destdir="${target.sub.dir.path}" includes="Request.xml" style="xacml-request-xml-to-json.xsl" />
 
 		<!-- Convert Response.xml -->
-		<saxon-xslt basedir="${src.sub.dir.path}" destdir="${target.sub.dir.path}" includes="Response.xml" style="xacml3-response-xml-to-json.xsl" />
+		<saxon-xslt basedir="${src.sub.dir.path}" destdir="${target.sub.dir.path}" includes="Response.xml" style="xacml-response-xml-to-json.xsl" />
 	</target>
 
 	<!-- ================================= 

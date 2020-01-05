@@ -1,0 +1,17 @@
+{
+"Request" : {
+"ReturnPolicyIdList" : false,
+"CombinedDecision" : false,
+"Category" : [ {
+"CategoryId" : "names:tc:xacml:1.0:subject-category:access-subject",
+"Attribute" : [ {
+"AttributeId" : "urn:oasis:names:tc:xacml:1.0:subject:subject-id",
+"IncludeInResult" : false,
+"DataType" : "http://www.w3.org/2001/XMLSchema#in",
+"Value" : 1
+}
+]
+}
+]
+}
+}

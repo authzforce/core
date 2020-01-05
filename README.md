@@ -28,6 +28,7 @@ AuthzForce Core may be used in the following ways:
     * [XACML v3.0 - Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision`). 
 
   *For further details on what is actually supported with regards to the XACML specifications, please refer to the conformance tests [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
+* [GeoXACML](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic).
 * Interfaces: 
   * Java API: basically a library for instantiating and using a PDP engine from your Java (or any Java-compatible) code;
   * CLI (Command-Line Interface): basically an executable that you can run from the command-line to test the engine;
@@ -73,11 +74,31 @@ See the [license file](LICENSE).
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
 
 ## System requirements
-Java (JRE) 8 or later. 
+Java (JRE) version: 8 or later. 
 
-**Make sure** the value - comma-separated list - of the system property `javax.xml.accessExternalSchema` is set to include `http`, to work around Java 8+ external schema access restriction, e.g. with a JVM argument:
+### Java 8+ requirements 
+- System property `javax.xml.accessExternalSchema` must be set to include `http`, to work around Java 8+ external schema access restriction, e.g. with a JVM argument:
+
 `-Djavax.xml.accessExternalSchema=http`
 
+### Java 9+ requirements 
+In addition to Java 8+ ones, you need to add JAXB dependencies (no longer part of JDK), e.g. [in Maven](https://javaee.github.io/jaxb-v2/doc/user-guide/ch03.html#deployment-maven-coordinates):  
+
+```xml
+                <!-- API -->
+                <dependency>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                    <version>${jaxb.version}</version>
+                </dependency>
+
+                <!-- Runtime -->
+                <dependency>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                    <version>${jaxb.version}</version>
+                </dependency>
+```
 
 ## Usage
 ### Getting started
