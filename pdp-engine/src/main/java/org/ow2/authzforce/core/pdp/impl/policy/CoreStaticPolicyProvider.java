@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,12 +45,15 @@ import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.BasePrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.BaseStaticPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyRefsMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
@@ -714,6 +718,73 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
 		}
 
 		return policy;
+	}
+
+	/**
+	 * Returns the latest version of the policy if there is only one in #{@code policyMap}; else null.
+	 */
+	private static final <P> PrimaryPolicyMetadata getCandidateRootPolicy(final TopLevelPolicyElementType policyElementType, final PolicyMap<P> policyMap)
+	{
+		final Iterator<Entry<String, PolicyVersions<P>>> policyEvaluatorsIt = policyMap.entrySet().iterator();
+		if (!policyEvaluatorsIt.hasNext())
+		{
+			/*
+			 * No policy
+			 */
+			return null;
+		}
+
+		/*
+		 * There is at least one policy
+		 */
+
+		final Entry<String, PolicyVersions<P>> firstPolicyEvaluatorEntry = policyEvaluatorsIt.next();
+		/*
+		 * If there is only one policy, it is the candidate root policy; else we don't know which one so return none.
+		 */
+		if (policyEvaluatorsIt.hasNext())
+		{
+			return null;
+		}
+
+		/*
+		 * There is only one policy, use latest version as candidate root policy
+		 */
+		final Entry<PolicyVersion, P> latestPolicyVersion = firstPolicyEvaluatorEntry.getValue().getLatest(Optional.empty());
+		assert latestPolicyVersion != null;
+		final BasePrimaryPolicyMetadata candidateRootPolicyMeta = new BasePrimaryPolicyMetadata(policyElementType, firstPolicyEvaluatorEntry.getKey(), latestPolicyVersion.getKey());
+		return candidateRootPolicyMeta;
+	}
+
+	/**
+	 * Returns the candidate root policy which is in this case determined as follows: if there is one and only one Policy provided, return the latest version of this Policy; else if there is one and
+	 * only one PolicySet, return the latest version of this PolicySet; else none.
+	 */
+	@Override
+	public Optional<PrimaryPolicyMetadata> getCandidateRootPolicy()
+	{
+		/*
+		 * Look for the one and only Policy
+		 */
+		final PrimaryPolicyMetadata candidateRootPolicy = getCandidateRootPolicy(TopLevelPolicyElementType.POLICY, this.policyEvaluatorMap);
+		if (candidateRootPolicy != null)
+		{
+			return Optional.of(candidateRootPolicy);
+		}
+
+		/*
+		 * No single Policy, try with PolicySet
+		 */
+		final PrimaryPolicyMetadata candidateRootPolicySet = getCandidateRootPolicy(TopLevelPolicyElementType.POLICY_SET, this.policySetEvaluatorMap);
+		if (candidateRootPolicySet != null)
+		{
+			return Optional.of(candidateRootPolicySet);
+		}
+
+		/*
+		 * No single policy(set)
+		 */
+		return Optional.empty();
 	}
 
 	@Override

@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [GitHub](https://github.com/authzforce/core/issues) are referenced in the form of `[GH-N]`, where N is the issue number. 
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
+
+## Unreleased (15.0.0) 
+** XML namespaces in PDP configuration files must be updated according to [migration guide](MIGRATION.md).**
+
+### Changed
+- Upgraded authzforce-ce-core-pdp-api to v16.1.0 (`PolicyProvider` interface defines new method (with default implementation): `getCandidateRootPolicy()`)
+- [GH-43]: PDP configuration has been simplified: 'rootPolicyRef' made optional (if undefined, the PDP gets the root policy via the PolicyProvider's new method `getCandidateRootPolicy()` as aforementioned.)
+- PDP configuration XSD versioning has been simplified: 
+	- Simplified namespace (removed minor version) to `http://authzforce.github.io/core/xmlns/pdp/7` 
+	- Schema version set to `7.1` (removed patch version).
+
+
 ## 14.0.1
 ### Fixed
 - [GH-42]: Incorrectly formed JSON responses when StatusCode is other than "ok"

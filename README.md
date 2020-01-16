@@ -151,11 +151,10 @@ Then instantiate a PDP engine configuration with method [PdpEngineConfiguration#
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7.0" version="7.0.0">
+   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7">
 	  <policyProvider id="policyProvider" xsi:type="StaticPolicyProvider">
 	    <policyLocation>${PARENT_DIR}/policy.xml</policyLocation>
 	  </policyProvider>
-	  <rootPolicyRef>root</rootPolicyRef>
    </pdp>
    ```
    This is a basic PDP configuration with basic settings and the root policy (XACML 3.0 Policy document) loaded from a file `policy.xml` located in the same directory as this PDP configuration file (see previous paragraph for an example of policy).

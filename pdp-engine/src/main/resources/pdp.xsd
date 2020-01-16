@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema
 	xmlns="http://www.w3.org/2001/XMLSchema"
-	targetNamespace="http://authzforce.github.io/core/xmlns/pdp/7.0"
-	xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/7.0"
+	targetNamespace="http://authzforce.github.io/core/xmlns/pdp/7"
+	xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/7"
 	elementFormDefault="qualified"
 	xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
 	xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"
-	version="7.0.0">
+	version="7.1">
 	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
 	<import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
 	<annotation>
@@ -190,12 +190,12 @@
 				<element
 					name="rootPolicyRef"
 					type="tns:TopLevelPolicyElementRef"
-					minOccurs="1"
+					minOccurs="0"
 					maxOccurs="1">
 					<annotation>
 						<documentation>
 							Identifies the root policy from which the policy evaluation begins. This identifier must be resolved by the Policy Provider configured previously (cf. 'policyProvider'
-							element).
+							element). In case this is not specified, the policy returned by the PolicyProvider#getCandidateRootPolicy() method is used as root policy. Refer to the respective PolicyProvider's documentation for more information.
 						</documentation>
 					</annotation>
 				</element>
@@ -702,6 +702,10 @@
 				of declaration of policyLocations, the order
 				matters for
 				PolicySetIdReference resolution.
+				This PolicyProvider implements the 'PolicyProvider#getCandidateRootPolicy()' - the method provides a default root policy to be used when the PDP's configuration parameter 'rootPolicyRef' is undefined - as follows:
+				- If there is one and only one XACML Policy provided (e.g. one or more 'policyLocations' are defined, pointing to one or more versions of the same XACML Policy), return the latest version of this Policy;
+				- Else apply the same rule to XACML PolicySet(s); 
+				- Else no candidate (e.g. there is more than one XACML Policy and more than one XACML PolicySet, in which case the 'rootPolicyRef' must be explicitly defined in PDP's configuration to make the choice).
 			</documentation>
 		</annotation>
 		<complexContent>
