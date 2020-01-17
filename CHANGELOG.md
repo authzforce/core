@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
-## Unreleased (15.0.0) 
+## 15.0.0 
 ** XML namespaces in PDP configuration files must be updated according to [migration guide](MIGRATION.md).**
 
 ### Changed
