@@ -5,6 +5,6 @@
 		id="rootPolicyProvider"
 		xsi:type="StaticPolicyProvider">
 		<policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
-	</policyProvider>cyRef>
+	</policyProvider>
 </pdp>
 
