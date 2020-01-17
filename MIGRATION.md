@@ -1,3 +1,6 @@
+## Migration from v14.x to 15.x
+- Modify the PDP configuration (XML): replace the XML namespace `http://authzforce.github.io/core/xmlns/pdp/7.0` with `http://authzforce.github.io/core/xmlns/pdp/7`.
+
 ## Migration from v13.x to v14.x
 - Make sure all your custom PolicyProviders implement the new PolicyProvider interfaces, i.e. BaseStaticPolicyProvider or, as fallback option, CloseableStaticPolicyProvider
 - Modify the PDP configuration (XML):

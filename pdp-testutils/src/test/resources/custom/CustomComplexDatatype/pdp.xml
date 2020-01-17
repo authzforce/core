@@ -2,14 +2,13 @@
 <!-- Testing parameter 'maxPolicySetRefDepth' -->
 <pdp
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://authzforce.github.io/core/xmlns/pdp/7.0"
-	version="7.0.0">
+	xmlns="http://authzforce.github.io/core/xmlns/pdp/7"
+	version="7.1">
 	<attributeDatatype>urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy</attributeDatatype>
 	<policyProvider
 		id="refPolicyprovider"
 		xsi:type="StaticPolicyProvider">
 		<policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
 	</policyProvider>
-	<rootPolicyRef>root</rootPolicyRef>
 </pdp>
 

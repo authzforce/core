@@ -56,6 +56,7 @@ import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
 import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
+import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
@@ -91,6 +92,9 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class PdpEngineConfiguration
 {
+	private static final IllegalArgumentException ILLEGAL_ROOT_POLICY_REF_CONFIG_EXCEPTION = new IllegalArgumentException(
+	        "Configuration parameter 'rootPolicyRef' is undefined and 'policyProvider' does not provide any candidate root policy. Please define 'rootPolicyRef' parameter or modify the Policy Provider to return a candidate root policy.");
+
 	private static final IllegalArgumentException NULL_REQPREPROC_EXCEPTION = new IllegalArgumentException(
 	        "Undefined request preprocessor ('requestPreproc' element) in I/O processing chain ('ioProcChain' element)");
 
@@ -374,14 +378,31 @@ public final class PdpEngineConfiguration
 
 		final TopLevelPolicyElementRef rootPolicyRef = pdpJaxbConf.getRootPolicyRef();
 		/*
-		 * PDP XSD assumed to ensure rootPolicyRef is defined
+		 * If rootPolicyRef is undefined, we expect the Policy Provider to provide one and only once static policy, the one to be used as root policy.
 		 */
-		assert rootPolicyRef != null;
-		final Boolean mustBePolicySet = rootPolicyRef.isPolicySet();
-		this.rootPolicyElementType = mustBePolicySet == null ? Optional.empty()
-		        : mustBePolicySet.booleanValue() ? Optional.of(TopLevelPolicyElementType.POLICY_SET) : Optional.of(TopLevelPolicyElementType.POLICY);
-		this.rootPolicyId = rootPolicyRef.getValue();
-		this.rootPolicyVersionPatterns = Optional.ofNullable(new PolicyVersionPatterns(rootPolicyRef.getVersion(), null, null));
+		if (rootPolicyRef == null)
+		{
+			LOGGER.debug("'rootPolicyRef' configuration parameter undefined. Getting root policy reference from 'policyProvider': {}", policyProvider);
+			final Optional<PrimaryPolicyMetadata> candidateRootPolicyMeta = policyProvider.getCandidateRootPolicy();
+			if (!candidateRootPolicyMeta.isPresent())
+			{
+				throw ILLEGAL_ROOT_POLICY_REF_CONFIG_EXCEPTION;
+			}
+
+			final PrimaryPolicyMetadata nonNullCandidateRootPolicyRef = candidateRootPolicyMeta.get();
+			LOGGER.info("'rootPolicyRef' undefined in PDP configuration -> setting root policy to the one candidate returned by the PolicyProvider: {}", nonNullCandidateRootPolicyRef);
+			this.rootPolicyElementType = Optional.of(nonNullCandidateRootPolicyRef.getType());
+			this.rootPolicyId = nonNullCandidateRootPolicyRef.getId();
+			this.rootPolicyVersionPatterns = Optional.of(new PolicyVersionPatterns(nonNullCandidateRootPolicyRef.getVersion().toString(), null, null));
+		}
+		else
+		{
+			final Boolean mustBePolicySet = rootPolicyRef.isPolicySet();
+			this.rootPolicyElementType = mustBePolicySet == null ? Optional.empty()
+			        : mustBePolicySet.booleanValue() ? Optional.of(TopLevelPolicyElementType.POLICY_SET) : Optional.of(TopLevelPolicyElementType.POLICY);
+			this.rootPolicyId = rootPolicyRef.getValue();
+			this.rootPolicyVersionPatterns = Optional.ofNullable(new PolicyVersionPatterns(rootPolicyRef.getVersion(), null, null));
+		}
 
 		// Decision cache
 		final AbstractDecisionCache decisionCacheJaxbConf = pdpJaxbConf.getDecisionCache();
