@@ -3,11 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-<<<<<<< HEAD
-		<version>14.0.1</version>
-=======
 		<version>15.0.0</version>
->>>>>>> refs/heads/release/15.0.0
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>authzforce-ce-core-pdp-engine</artifactId>
