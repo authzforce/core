@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema targetNamespace="http://authzforce.github.io/core/xmlns/pdp/7" elementFormDefault="qualified" version="7.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/7" xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3" xmlns="http://www.w3.org/1999/xhtml">
-	<import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
-	<import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
-	<xs:annotation id="testeststset">
+	<xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
+	<xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
+	<xs:annotation>
 		<xs:documentation xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
 		<p>
 			Data model of AuthZForce PDP configuration.
@@ -231,7 +231,7 @@
 					</xs:documentation>
 				</xs:annotation>
 			</xs:attribute>
-			<xs:attribute name="maxIntegerValue" type="positiveInteger" use="optional" default="2147483647">
+			<xs:attribute name="maxIntegerValue" type="xs:positiveInteger" use="optional" default="2147483647">
 				<xs:annotation>
 					<xs:documentation> Maximum absolute integer value. This is the expected maximum absolute value for XACML attributes of standard type <i>http://www.w3.org/2001/XMLSchema#integer</i> (requires
 						<i>useStandardDatatypes
