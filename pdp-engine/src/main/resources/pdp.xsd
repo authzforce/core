@@ -2,7 +2,7 @@
 <xs:schema targetNamespace="http://authzforce.github.io/core/xmlns/pdp/7" elementFormDefault="qualified" version="7.1" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/7" xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3" xmlns="http://www.w3.org/1999/xhtml">
 	<xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
 	<xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
-	<xs:annotation id="testeststset">
+	<xs:annotation>
 		<xs:documentation xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
 		<p>
 			Data model of AuthZForce PDP configuration.

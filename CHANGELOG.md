@@ -6,8 +6,13 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 15.1.0
+### Changed
+- Dependency authzforce-ce-core-pdp-api version changed to 16.2.0: removes class overlap at runtime between dependency `javax.mail:javax.mail-api` of `authzforce-ce-core-pdp-api` and `com.sun.mail:javax.mail` that this project depends on  
+
+
 ## 15.0.0 
-** XML namespaces in PDP configuration files must be updated according to [migration guide](MIGRATION.md).**
+**XML namespaces in PDP configuration files must be updated according to [migration guide](MIGRATION.md).**
 
 ### Changed
 - Upgraded authzforce-ce-core-pdp-api to v16.1.0 (`PolicyProvider` interface defines new method (with default implementation): `getCandidateRootPolicy()`)
