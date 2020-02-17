@@ -7,7 +7,7 @@ All notable changes to this project are documented in this file following the [K
 
 
 ## 15.0.0 
-** XML namespaces in PDP configuration files must be updated according to [migration guide](MIGRATION.md).**
+**XML namespaces in PDP configuration files must be updated according to [migration guide](MIGRATION.md).**
 
 ### Changed
 - Upgraded authzforce-ce-core-pdp-api to v16.1.0 (`PolicyProvider` interface defines new method (with default implementation): `getCandidateRootPolicy()`)
