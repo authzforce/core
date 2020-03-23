@@ -12,7 +12,7 @@ AuthzForce Core may be used in the following ways:
 - Java API: you may use AuthzForce Core from your Java code to instantiate an embedded Java PDP. 
 - CLI (Command-Line Interface): you may call AuthzForce Core PDP engine from the command-line (e.g. in a script) by running the provided executable.
 
-*HTTP/REST server: if you are interested in using a HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html), check the [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) and [AuthzForce server project](http://github.com/authzforce/server).*
+***HTTP/REST server**: if you are interested in using a HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html), check the [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) and [AuthzForce server project](http://github.com/authzforce/server).*
 
 ## Features
 * Compliance with the following OASIS XACML 3.0 standards:
