@@ -67,6 +67,9 @@ All notable changes to this project are documented in this file following the [K
   	  - mailapi replaced with javax.mail-api: 1.6.0
   - Spring: 4.3.18 (fixes CVE)
   - authzforce-ce-xacml-json-model: 2.1.0
+- XML schema for AuthzForce test extensions (namespace `http://authzforce.github.io/core/xmlns/test/3`, located in file `org.ow2.authzforce.core.pdp.testutil.ext.xsd`) has been modified, esp. names of XML types, in order to avoid confusion between schema-derived (JAXB-annotated) classes describing the configuration of an AuthzForce extension, and its corresponding Java (logic) implementation:
+	- XML type `TestAttributeProvider` renamed to `TestAttributeProviderDescriptor`;
+	- XML type `MongoDBBasedPolicyProvider`renamed to `MongoDBBasedPolicyProviderDescriptor`.	
 - Copyright company name
 
 ### Added
