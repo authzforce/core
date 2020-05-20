@@ -83,6 +83,52 @@
 			<version>1.7.0</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- Other XACML engines -->
+		<dependency>
+			<groupId>com.att.research.xacml</groupId>
+			<artifactId>xacml-pdp</artifactId>
+			<version>2.0.1</version>
+			<exclusions>
+				<exclusion>
+					<!-- Replaced with jcl-over-slf4j depended on by AuthzForce -->
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.wso2.balana</groupId>
+			<artifactId>org.wso2.balana</artifactId>
+			<version>1.2.3</version>
+			<exclusions>
+				<exclusion>
+					<!-- Replaced with jcl-over-slf4j depended on by AuthzForce -->
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- already in org.wso2.balana bundle -->
+					<groupId>org.wso2.balana</groupId>
+					<artifactId>org.wso2.balana.utils</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- Overlaps slf4j, logback -->
+					<groupId>org.ops4j.pax.logging</groupId>
+					<artifactId>pax-logging-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- <dependency> -->
+		<!-- Do not use WSO2 version of xercesImpl. See https://github.com/wso2/balana/issues/82 . This org.wso2.balana.utils runtime dependency overlaps with att xacml-pdp's dependency xml-apis -->
+		<!-- <groupId>xerces.wso2</groupId> -->
+		<!-- <artifactId>xercesImpl</artifactId> -->
+		<!-- <version>2.8.1.wso2v2</version> -->
+		<!-- </dependency> -->
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.12.0</version>
+		</dependency>
 		<!-- /Test dependencies -->
 	</dependencies>
 	<build>

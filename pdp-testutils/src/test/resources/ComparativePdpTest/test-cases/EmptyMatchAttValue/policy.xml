@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicySetId="root"
+	PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit" Version="1.0">
+	<Target />
+	<Policy PolicyId="1" Version="1.0" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit">
+		<Target />
+		<Rule RuleId="1.1" Effect="Permit">
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string" />
+							<AttributeDesignator AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+								DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+		</Rule>
+	</Policy>
+</PolicySet>
