@@ -12,7 +12,7 @@ AuthzForce Core may be used in the following ways:
 - Java API: you may use AuthzForce Core from your Java code to instantiate an embedded Java PDP. 
 - CLI (Command-Line Interface): you may call AuthzForce Core PDP engine from the command-line (e.g. in a script) by running the provided executable.
 
-*HTTP/REST API: if you are interested in using a HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html), check the [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) and [AuthzForce server project](http://github.com/authzforce/server).*
+***HTTP/REST server**: if you are interested in using a HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html), check the [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) and [AuthzForce server project](http://github.com/authzforce/server).*
 
 ## Features
 * Compliance with the following OASIS XACML 3.0 standards:
@@ -34,13 +34,16 @@ AuthzForce Core may be used in the following ways:
   * CLI (Command-Line Interface): basically an executable that you can run from the command-line to test the engine;
   
   *HTTP/REST API compliant with [REST Profile of XACML 3.0](http://docs.oasis-open.org/xacml/xacml-rest/v1.0/xacml-rest-v1.0.html) is provided by [AuthzForce RESTful PDP project](http://github.com/authzforce/restful-pdp) for PDP only, and [AuthzForce server project](http://github.com/authzforce/server) for PDP and PAP with multi-tenancy.*
-* Safety/Security:
+* Safety & Security:
   * Prevention of circular XACML policy references (PolicyIdReference/PolicySetIdReference) as mandated by [XACML 3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047192);
   * Control of the **maximum XACML PolicyIdReference/PolicySetIdReference depth**;
   * Prevention of circular XACML variable references (VariableReference) as mandated by [XACML 3.0](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047185); 
   * Control of the **maximum XACML VariableReference depth**;
-* Optional **strict multivalued attribute parsing**: if enabled, multivalued attributes must be formed by grouping all `AttributeValue` elements in the same Attribute element (instead of duplicate Attribute elements); this does not fully comply with [XACML 3.0 Core specification of Multivalued attributes (§7.3.3)](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047176), but it usually performs better than the default mode since it simplifies the parsing of attribute values in the request.
-* Optional **strict attribute Issuer matching**: if enabled, `AttributeDesignators` without Issuer only match request Attributes without Issuer (and same AttributeId, Category...); this option is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it is the recommended option when all AttributeDesignators have an Issuer (the XACML 3.0 specification (5.29) says: *If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone.*);
+* Performance:
+  * Optional **strict multivalued attribute parsing**: if enabled, multivalued attributes must be formed by grouping all `AttributeValue` elements in the same Attribute element (instead of duplicate Attribute elements); this does not fully comply with [XACML 3.0 Core specification of Multivalued attributes (§7.3.3)](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html#_Toc325047176), but it usually performs better than the default mode since it simplifies the parsing of attribute values in the request.
+  * Optional **strict attribute Issuer matching**: if enabled, `AttributeDesignators` without Issuer only match request Attributes without Issuer (and same AttributeId, Category...); this option is not fully compliant with XACML 3.0, §5.29, in the case that the Issuer is indeed not present on a AttributeDesignator; but it is the recommended option for better performance when all AttributeDesignators have an Issuer (the XACML 3.0 specification (5.29) says: *If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by AttributeId and DataType attributes alone.*);
+  * **Optimal integer data-type** implementation: the `maxIntegerValue` configuration parameter (expected maximum absolute value in XACML attributes of type `http://www.w3.org/2001/XMLSchema#integer`) helps the PDP choose the most efficient Java data-type. By default, the XACML/XML type `http://www.w3.org/2001/XMLSchema#integer` is mapped to the larger Java data-type: `BigInteger`. However, this may be overkill for example in the case of integer attributes representing the age of a person; in this case, the `Short` type is more appropriate and especially more efficient. Therefore, decreasing the `maxIntegerValue` value as much as possible, based on the range you expect your integer values to fit in, makes the PDP engine more efficient on integer handling: lower memory consumption, faster computations.
+  * **Pluggable Decision Cache**: you can plug-in your own XACML Decision Cache mechanism to speed up evaluation of (repetitive) requests. See down below for more info (Decision Cache extension).
 * Extensibility points:
   * **[Attribute Datatypes](https://github.com/authzforce/core/wiki/XACML-Data-Types)**: you may extend the PDP engine with custom XACML attribute datatypes;
   * **[Functions](https://github.com/authzforce/core/wiki/XACML-Functions)**: you may extend the PDP engine with custom XACML functions;
@@ -68,8 +71,6 @@ See the [change log](CHANGELOG.md) following the *Keep a CHANGELOG* [conventions
 
 ## License
 See the [license file](LICENSE).
-
-
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
 
@@ -234,6 +235,9 @@ You will need an extra dependency as well, available from Maven Central:
 * groupId: `org.ow2.authzforce`;
 * artifactId: `authzforce-ce-core-pdp-io-xacml-json`;
 * packaging: `jar`.
+
+##### Evaluating Requests in other formats
+You can support other non-XACML formats of access requests (resp. responses), including your own, by implementing your own [Request Preprocessor](https://github.com/authzforce/core/wiki/XACML-Request-Preprocessors) (resp. [Result Postprocessor](https://github.com/authzforce/core/wiki/XACML-Result-Postprocessors) ).
 
 ##### Logging
 Our PDP implementation uses SLF4J for logging so you can use any SLF4J implementation to manage logging. The CLI executable includes logback implementation, so you can use logback configuration file, e.g. [logback.xml](pdp-testutils/src/test/resources/logback.xml), for configuring loggers, appenders, etc.

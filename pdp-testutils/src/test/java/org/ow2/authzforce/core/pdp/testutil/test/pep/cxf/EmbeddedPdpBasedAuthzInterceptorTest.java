@@ -17,6 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.net.URL;
 
 import javax.xml.namespace.QName;
@@ -78,13 +82,13 @@ public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServe
 	public static void startServers() throws Exception
 	{
 		assertTrue("Server failed to launch",
-		// run the server for the target service (DoubleIt) in the same process
-		// set this to false to fork
-				launchServer(Server.class, true));
+		        // run the server for the target service (DoubleIt) in the same process
+		        // set this to false to fork
+		        launchServer(Server.class, true));
 		assertTrue("Server failed to launch",
-		// run the server in the same process
-		// set this to false to fork
-				launchServer(STSServer.class, true));
+		        // run the server in the same process
+		        // set this to false to fork
+		        launchServer(STSServer.class, true));
 	}
 
 	@org.junit.Test

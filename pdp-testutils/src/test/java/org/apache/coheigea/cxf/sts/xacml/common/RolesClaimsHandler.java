@@ -18,7 +18,6 @@
  */
 package org.apache.coheigea.cxf.sts.xacml.common;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,39 +31,48 @@ import org.apache.cxf.sts.claims.ProcessedClaimCollection;
 /**
  * A ClaimsHandler implementation that works with Roles.
  */
-public class RolesClaimsHandler implements ClaimsHandler {
+public class RolesClaimsHandler implements ClaimsHandler
+{
 
-    public static final URI ROLE = 
-            URI.create("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role");  
-    
-    public ProcessedClaimCollection retrieveClaimValues(
-            ClaimCollection claims, ClaimsParameters parameters) {
-      
-        if (claims != null && claims.size() > 0) {
-            ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
-            for (Claim requestClaim : claims) {
-                ProcessedClaim claim = new ProcessedClaim();
-                claim.setClaimType(requestClaim.getClaimType());
-                if (ROLE.equals(requestClaim.getClaimType())) {
-                    claim.setIssuer("STS");
-                    if ("alice".equals(parameters.getPrincipal().getName())) {
-                        claim.addValue("boss");
-                        claim.addValue("employee");
-                    } else if ("bob".equals(parameters.getPrincipal().getName())) {
-                        claim.addValue("employee");
-                    }
-                }
-                claimCollection.add(claim);
-            }
-            return claimCollection;
-        }
-        return null;
-    }
+	public static final String ROLE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/role";
 
-    public List<URI> getSupportedClaimTypes() {
-        List<URI> list = new ArrayList<URI>();
-        list.add(ROLE);
-        return list;
-    }
+	@Override
+	public ProcessedClaimCollection retrieveClaimValues(final ClaimCollection claims, final ClaimsParameters parameters)
+	{
+
+		if (claims != null && claims.size() > 0)
+		{
+			final ProcessedClaimCollection claimCollection = new ProcessedClaimCollection();
+			for (final Claim requestClaim : claims)
+			{
+				final ProcessedClaim claim = new ProcessedClaim();
+				claim.setClaimType(requestClaim.getClaimType());
+				if (ROLE.equals(requestClaim.getClaimType()))
+				{
+					claim.setIssuer("STS");
+					if ("alice".equals(parameters.getPrincipal().getName()))
+					{
+						claim.addValue("boss");
+						claim.addValue("employee");
+					}
+					else if ("bob".equals(parameters.getPrincipal().getName()))
+					{
+						claim.addValue("employee");
+					}
+				}
+				claimCollection.add(claim);
+			}
+			return claimCollection;
+		}
+		return null;
+	}
+
+	@Override
+	public List<String> getSupportedClaimTypes()
+	{
+		final List<String> list = new ArrayList<>();
+		list.add(ROLE);
+		return list;
+	}
 
 }

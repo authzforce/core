@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7"
+	version="7.1">
+	<policyProvider
+		id="rootPolicyProvider"
+		xsi:type="StaticPolicyProvider">
+		<policyLocation>${org.ow2.authzforce.test.case.dir}/policy.xml</policyLocation>
+	</policyProvider>
+	<ioProcChain>
+		<!-- Replace requestPreproc value with "urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:multiple:repeated-attribute-categories-lax" 
+			for Multiple Decision Profile support. -->
+		<requestPreproc>urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:default-lax</requestPreproc>
+	</ioProcChain>
+</pdp>
+
