@@ -6,7 +6,7 @@
 		<version>7.6.0</version>
 	</parent>
 	<artifactId>authzforce-ce-core</artifactId>
-	<version>15.2.0-SNAPSHOT</version>
+	<version>15.2.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>AuthzForce - XACML-compliant Core PDP Engine and associated test modules</description>
