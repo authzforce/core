@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 15.2.0
+### Changed
+- Upgraded parent project: 7.6.0
+- Upgraded dependencies:
+  - authzforce-ce-xacml-json-model: 2.3.0
+    - org.everit.json.schema: 1.12.1
+  - authzforce-ce-core-pdp-api: 16.3.0
+  - jongo: 1.4.1
+  - spring-core: 5.1.14
+
+
 ## 15.1.0
 ### Changed
 - Dependency authzforce-ce-core-pdp-api version changed to 16.2.0: removes class overlap at runtime between dependency `javax.mail:javax.mail-api` of `authzforce-ce-core-pdp-api` and `com.sun.mail:javax.mail` that this project depends on  
