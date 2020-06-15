@@ -8,6 +8,18 @@ Follow these Java coding guidelines:
 ### Testing
 For every new major functionality, there must be unit tests added to some unit test class that is part of the automated test suite of [pdp-engine's MainTest.java](pdp-engine/src/test/java/org/ow2/authzforce/core/pdp/impl/test/MainTest.java). If the functionality has any impact on XACML - any Request/Response/Policy(Set) element - processing and/or change XACML standard conformance in anyway, make sure you add relevant integration and/or conformance tests to the test suite run by [pdp-testutils's MainTest.java](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MainTest.java).
 
+You may run the tests as follows from your local copy of the repository:
+<pre><code>
+    $ mvn test
+</code></pre>
+
+### Building the project
+
+You may build the project and generate the JAR as follows from your local copy of the repository:
+<pre><code>
+    $ mvn package
+</code></pre>
+
 ### Dependency management
 1. No SNAPSHOT dependencies on "develop" and obviously "master" branches
 
