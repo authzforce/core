@@ -20,6 +20,8 @@ You may build the project and generate the JAR as follows from your local copy o
     $ mvn package
 </code></pre>
 
+Note that you must use Java 8 to run Maven when building the project.
+
 ### Dependency management
 1. No SNAPSHOT dependencies on "develop" and obviously "master" branches
 
