@@ -27,6 +27,7 @@ import java.io.StringReader;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
@@ -63,8 +64,8 @@ import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactor
 import org.ow2.authzforce.core.pdp.impl.func.FunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
-import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 import org.ow2.authzforce.core.pdp.testutil.ext.MongoDbPolicyProvider;
 import org.ow2.authzforce.core.pdp.testutil.ext.PolicyPojo;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProviderDescriptor;
@@ -72,7 +73,6 @@ import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 
-import com.google.common.base.Charsets;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 
@@ -83,29 +83,34 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
-public class MongoDBRefPolicyProviderTest
+/**
+ * Test class for {@link MongoDbPolicyProvider}
+ *
+ */
+public class MongoDbPolicyProviderTest
 {
 	private static MongoServer DB_SERVER;
 	private static MongoCollection POLICY_COLLECTION;
 	private static String[] SAMPLE_POLICY_FILENAMES = { "permit-all-policy-0.1.0.xml", "permit-all-policy-0.1.xml", "permit-all-policyset-0.1.0.xml", "root-rbac-policyset-0.1.xml",
 	        "root-rbac-policyset-1.2.xml", "rbac-pps-employee-1.0.xml" };
 
-	private static CloseablePolicyProvider POLICY_PROVIDER_MODULE;
+	private static CloseablePolicyProvider<?> POLICY_PROVIDER_MODULE;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception
 	{
 		final PdpModelHandler pdpModelHandler = new PdpModelHandler("classpath:catalog.xml", "classpath:pdp-ext.xsd");
 		final Pdp pdpConf;
-		try (final InputStream is = MongoDBRefPolicyProviderTest.class.getResourceAsStream(XacmlXmlPdpTest.PDP_CONF_FILENAME))
+		try (final InputStream is = MongoDbPolicyProviderTest.class.getResourceAsStream(XacmlXmlPdpTest.PDP_CONF_FILENAME))
 		{
 			pdpConf = pdpModelHandler.unmarshal(new StreamSource(is), Pdp.class);
 		}
 
-		final AbstractPolicyProvider policyProviderConf = pdpConf.getPolicyProvider();
-		if (!(policyProviderConf instanceof MongoDBBasedPolicyProviderDescriptor))
+		final List<AbstractPolicyProvider> policyProviderConfs = pdpConf.getPolicyProviders();
+		final AbstractPolicyProvider policyProviderConf;
+		if (policyProviderConfs.size() != 1 || !((policyProviderConf = policyProviderConfs.get(0)) instanceof MongoDBBasedPolicyProviderDescriptor))
 		{
-			throw new RuntimeException("Invalid type of refPolicyProvider in pdp.xml. Expected: " + MongoDBBasedPolicyProviderDescriptor.class);
+			throw new RuntimeException("Not exactly one or invalid type of policyProvider in pdp.xml. Expected: one " + MongoDBBasedPolicyProviderDescriptor.class);
 		}
 
 		final MongoDBBasedPolicyProviderDescriptor mongodbBasedPolicyProviderConf = (MongoDBBasedPolicyProviderDescriptor) policyProviderConf;
@@ -117,7 +122,7 @@ public class MongoDBRefPolicyProviderTest
 		try (final ExpressionFactory expressionFactory = new DepthLimitingExpressionFactory(valFactoryReg, funcReg, null, 0, false, false))
 		{
 			POLICY_PROVIDER_MODULE = new MongoDbPolicyProvider.Factory().getInstance(mongodbBasedPolicyProviderConf, XacmlJaxbParsingUtils.getXacmlParserFactory(false), 10, expressionFactory,
-			        StandardCombiningAlgorithm.REGISTRY, null);
+			        StandardCombiningAlgorithm.REGISTRY, null, Optional.empty());
 		}
 
 		/*
@@ -143,9 +148,9 @@ public class MongoDBRefPolicyProviderTest
 		for (final String policyFilename : SAMPLE_POLICY_FILENAMES)
 		{
 			final String policyContent;
-			try (final InputStream is = MongoDBRefPolicyProviderTest.class.getResourceAsStream(policyFilename))
+			try (final InputStream is = MongoDbPolicyProviderTest.class.getResourceAsStream(policyFilename))
 			{
-				policyContent = IOUtils.toString(is, Charsets.UTF_8.name());
+				policyContent = IOUtils.toString(is, IOUtils.UTF8_CHARSET.name());
 			}
 			final Object jaxbObj = unmarshaller.unmarshal(new StringReader(policyContent));
 			final String policyTypeId;

@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 @RunWith(Suite.class)
 @SuiteClasses(value = { ConformanceV3FromV2MandatoryTest.class, ConformanceV3FromV2OptionalTest.class, ConformanceV3OthersTest.class, PdpGetStaticApplicablePoliciesTest.class, CustomPdpTest.class,
-		MongoDBRefPolicyProviderTest.class, EmbeddedPdpBasedAuthzInterceptorTest.class, NonRegressionTest.class })
+		MongoDbPolicyProviderTest.class, EmbeddedPdpBasedAuthzInterceptorTest.class, NonRegressionTest.class })
 public class MainTest
 {
 	/**

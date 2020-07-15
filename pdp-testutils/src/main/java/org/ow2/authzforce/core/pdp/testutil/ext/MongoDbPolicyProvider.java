@@ -38,6 +38,7 @@ import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.policy.BaseStaticPolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPattern;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
@@ -124,8 +125,9 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 		}
 
 		@Override
-		public CloseablePolicyProvider getInstance(final MongoDBBasedPolicyProviderDescriptor conf, final XmlnsFilteringParserFactory xmlParserFactory, final int maxPolicySetRefDepth,
-		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties) throws IllegalArgumentException
+		public CloseablePolicyProvider<?> getInstance(final MongoDBBasedPolicyProviderDescriptor conf, final XmlnsFilteringParserFactory xmlParserFactory, final int maxPolicySetRefDepth,
+		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties,
+		        final Optional<PolicyProvider<?>> otherHelpingPolicyProvider) throws IllegalArgumentException
 		{
 			if (conf == null)
 			{
@@ -148,8 +150,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 			}
 
 			final ServerAddress serverAddress = new ServerAddress(conf.getServerHost(), conf.getServerPort());
-			return new MongoDbPolicyProvider(conf.getId(), serverAddress, conf.getDbName(), conf.getCollectionName(), xmlParserFactory, expressionFactory, combiningAlgRegistry,
-			        maxPolicySetRefDepth);
+			return new MongoDbPolicyProvider(conf.getId(), serverAddress, conf.getDbName(), conf.getCollectionName(), xmlParserFactory, expressionFactory, combiningAlgRegistry, maxPolicySetRefDepth);
 		}
 
 	}

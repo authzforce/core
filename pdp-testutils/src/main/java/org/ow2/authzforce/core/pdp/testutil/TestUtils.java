@@ -331,11 +331,11 @@ public class TestUtils
 
 		final StaticPolicyProvider jaxbPolicyProvider = new StaticPolicyProvider();
 		jaxbPolicyProvider.setId("policyProvider");
-		jaxbPolicyProvider.getPolicyLocations().addAll(policyLocations);
-		jaxbPDP.setPolicyProvider(jaxbPolicyProvider);
+		jaxbPolicyProvider.getPolicySetsAndPolicyLocations().addAll(policyLocations);
+		jaxbPDP.getPolicyProviders().add(jaxbPolicyProvider);
 
 		// set max PolicySet reference depth to max possible depth automatically
-		jaxbPDP.setMaxPolicyRefDepth(BigInteger.valueOf(jaxbPolicyProvider.getPolicyLocations().size()));
+		jaxbPDP.setMaxPolicyRefDepth(BigInteger.valueOf(jaxbPolicyProvider.getPolicySetsAndPolicyLocations().size()));
 		jaxbPDP.setRootPolicyRef(rootPolicyRef);
 
 		// test attribute provider

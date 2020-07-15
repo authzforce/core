@@ -27,8 +27,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.AbstractMap;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +48,9 @@ import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
+import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.XmlUtils;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
@@ -55,8 +60,13 @@ import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
 import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.CloseableStaticPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
+import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyProvider;
+import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
@@ -92,6 +102,155 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class PdpEngineConfiguration
 {
+	/**
+	 * 
+	 * Composite Policy Provider that "composes" multiple Policy Providers into one.
+	 */
+	private static class CompositePolicyProvider<PE extends TopLevelPolicyElementEvaluator, COMPONENT extends PolicyProvider<? extends PE>> implements PolicyProvider<PE>
+	{
+
+		private final int maxPolicySetRefDepth;
+		protected final Iterable<? extends COMPONENT> composedProviders;
+
+		protected CompositePolicyProvider(final List<? extends COMPONENT> composedProviders, final int maxPolicySetRefDepth)
+		{
+			this.maxPolicySetRefDepth = maxPolicySetRefDepth < 0 ? UNLIMITED_POLICY_REF_DEPTH : maxPolicySetRefDepth;
+
+			/*
+			 * Defensive copy
+			 */
+			this.composedProviders = new ArrayDeque<>(composedProviders);
+		}
+
+		@Override
+		public Deque<String> joinPolicyRefChains(final Deque<String> policyRefChain1, final List<String> policyRefChain2) throws IllegalArgumentException
+		{
+			return PolicyProvider.joinPolicyRefChains(policyRefChain1, policyRefChain2, maxPolicySetRefDepth);
+		}
+
+		@Override
+		public PE get(final TopLevelPolicyElementType policyType, final String policyId, final Optional<PolicyVersionPatterns> policyVersionConstraints, final Deque<String> policySetRefChain,
+		        final EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+		{
+			for (final COMPONENT provider : composedProviders)
+			{
+				final PE policyEvaluator = provider.get(policyType, policyId, policyVersionConstraints, policySetRefChain, evaluationCtx);
+				if (policyEvaluator != null)
+				{
+					return policyEvaluator;
+				}
+			}
+
+			return null;
+		}
+
+		@Override
+		public Optional<PrimaryPolicyMetadata> getCandidateRootPolicy()
+		{
+			for (final PolicyProvider<?> provider : composedProviders)
+			{
+				final Optional<PrimaryPolicyMetadata> candidateRootPolicy = provider.getCandidateRootPolicy();
+				if (candidateRootPolicy.isPresent())
+				{
+					return candidateRootPolicy;
+				}
+			}
+
+			return Optional.empty();
+		}
+
+	}
+
+	/**
+	 * Closeable version of CompositePolicyProvider
+	 */
+	private static final class CompositeCloseablePolicyProvider<PE extends TopLevelPolicyElementEvaluator> extends CompositePolicyProvider<PE, CloseablePolicyProvider<? extends PE>>
+	        implements CloseablePolicyProvider<PE>
+	{
+		private CompositeCloseablePolicyProvider(final List<? extends CloseablePolicyProvider<? extends PE>> composedProviders, final int maxPolicySetRefDepth)
+		{
+			super(composedProviders, maxPolicySetRefDepth);
+		}
+
+		@Override
+		public void close() throws IOException
+		{
+			for (final CloseablePolicyProvider<?> provider : composedProviders)
+			{
+				provider.close();
+			}
+		}
+	}
+
+	/**
+	 * Static version of CompositePolicyProvider. This one is no use so far because all PolicyProviders in PDP configuration are assumed Closeable, therefore CompositeCloseableStaticPolicyProvider
+	 * class is used instead. But this may change in the future. Let's keep this commented for now.
+	 */
+	// private static class CompositeStaticPolicyProvider extends CompositePolicyProvider<StaticTopLevelPolicyElementEvaluator, StaticPolicyProvider> implements StaticPolicyProvider
+	// {
+	// private CompositeStaticPolicyProvider(final List<? extends StaticPolicyProvider> composedProviders, final int maxPolicySetRefDepth)
+	// {
+	// super(composedProviders, maxPolicySetRefDepth);
+	// }
+	//
+	// @Override
+	// public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId, final Optional<PolicyVersionPatterns> versionConstraints,
+	// final Deque<String> policySetRefChain) throws IndeterminateEvaluationException
+	// {
+	// for (final StaticPolicyProvider provider : composedProviders)
+	// {
+	// final StaticTopLevelPolicyElementEvaluator policyEvaluator = provider.get(policyType, policyId, versionConstraints, policySetRefChain);
+	// if (policyEvaluator != null)
+	// {
+	// return policyEvaluator;
+	// }
+	// }
+	//
+	// return null;
+	// }
+	//
+	// }
+
+	/**
+	 * 
+	 * Static and Closeable version of CompositePolicyProvider
+	 * 
+	 */
+	private static final class CompositeCloseableStaticPolicyProvider extends CompositePolicyProvider<StaticTopLevelPolicyElementEvaluator, CloseableStaticPolicyProvider>
+	        implements CloseableStaticPolicyProvider
+	{
+		private CompositeCloseableStaticPolicyProvider(final List<? extends CloseableStaticPolicyProvider> composedProviders, final int maxPolicySetRefDepth)
+		{
+			super(composedProviders, maxPolicySetRefDepth);
+		}
+
+		@Override
+		public StaticTopLevelPolicyElementEvaluator get(final TopLevelPolicyElementType policyType, final String policyId, final Optional<PolicyVersionPatterns> versionConstraints,
+		        final Deque<String> policySetRefChain) throws IndeterminateEvaluationException
+		{
+			for (final StaticPolicyProvider provider : composedProviders)
+			{
+				final StaticTopLevelPolicyElementEvaluator policyEvaluator = provider.get(policyType, policyId, versionConstraints, policySetRefChain);
+				if (policyEvaluator != null)
+				{
+					return policyEvaluator;
+				}
+			}
+
+			return null;
+		}
+
+		@Override
+		public void close() throws IOException
+		{
+			for (final CloseablePolicyProvider<?> provider : composedProviders)
+			{
+				provider.close();
+			}
+		}
+
+	}
+
 	private static final IllegalArgumentException ILLEGAL_ROOT_POLICY_REF_CONFIG_EXCEPTION = new IllegalArgumentException(
 	        "Configuration parameter 'rootPolicyRef' is undefined and 'policyProvider' does not provide any candidate root policy. Please define 'rootPolicyRef' parameter or modify the Policy Provider to return a candidate root policy.");
 
@@ -101,7 +260,7 @@ public final class PdpEngineConfiguration
 	private static final IllegalArgumentException ILLEGAL_USE_STD_FUNCTIONS_ARGUMENT_EXCEPTION = new IllegalArgumentException(
 	        "useStandardFunctions = true not allowed if useStandardDatatypes = false");
 
-	private static final IllegalArgumentException NULL_POLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined policyProvider");
+	private static final IllegalArgumentException NO_POLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined policyProviders");
 
 	// the logger we'll use for all messages
 	private static final Logger LOGGER = LoggerFactory.getLogger(BasePdpEngine.class);
@@ -139,10 +298,11 @@ public final class PdpEngineConfiguration
 	}
 
 	private static <JAXB_CONF extends AbstractPolicyProvider> CloseablePolicyProvider<?> newPolicyProvider(final JAXB_CONF jaxbConf, final XmlnsFilteringParserFactory xacmlParserFactory,
-	        final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps)
+	        final int maxPolicySetRefDepth, final ExpressionFactory xacmlExprFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties envProps,
+	        final Optional<PolicyProvider<?>> otherHelpingPolicyProvider)
 	{
 		final CloseablePolicyProvider.Factory<JAXB_CONF> refPolicyProviderModFactory = PdpExtensions.getRefPolicyProviderFactory((Class<JAXB_CONF>) jaxbConf.getClass());
-		return refPolicyProviderModFactory.getInstance(jaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExprFactory, combiningAlgRegistry, envProps);
+		return refPolicyProviderModFactory.getInstance(jaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExprFactory, combiningAlgRegistry, envProps, otherHelpingPolicyProvider);
 	}
 
 	private static <JAXB_CONF extends AbstractDecisionCache> DecisionCache newDecisionCache(final JAXB_CONF jaxbConf, final AttributeValueFactoryRegistry attValFactories,
@@ -157,7 +317,10 @@ public final class PdpEngineConfiguration
 
 	private final ExpressionFactory xacmlExpressionFactory;
 
-	private final CloseablePolicyProvider<?> policyProvider;
+	/*
+	 * Policy Provider combining all policyProviders declared in PDP configuration
+	 */
+	private CloseablePolicyProvider<?> combinedPolicyProvider = null;
 
 	private final String rootPolicyId;
 
@@ -189,18 +352,6 @@ public final class PdpEngineConfiguration
 	 */
 	public PdpEngineConfiguration(final Pdp pdpJaxbConf, final EnvironmentProperties envProps) throws IllegalArgumentException, IOException
 	{
-		/*
-		 * Check required args
-		 */
-		/*
-		 * Policy provider
-		 */
-		final AbstractPolicyProvider rootPolicyProviderJaxbConf = pdpJaxbConf.getPolicyProvider();
-		if (rootPolicyProviderJaxbConf == null)
-		{
-			throw NULL_POLICYPROVIDER_ARGUMENT_EXCEPTION;
-		}
-
 		/*
 		 * Enable support for XPath expressions, XPath functions, etc.
 		 */
@@ -371,10 +522,36 @@ public final class PdpEngineConfiguration
 		xacmlExpressionFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry, attProviderFactories, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch);
 
 		/*
-		 * Policy Provider
+		 * Policy providers
 		 */
-		final AbstractPolicyProvider policyProviderJaxbConf = pdpJaxbConf.getPolicyProvider();
-		policyProvider = newPolicyProvider(policyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry, envProps);
+		final List<AbstractPolicyProvider> policyProviderJaxbConfs = pdpJaxbConf.getPolicyProviders();
+		if (policyProviderJaxbConfs.isEmpty())
+		{
+			throw NO_POLICYPROVIDER_ARGUMENT_EXCEPTION;
+		}
+
+		for (final AbstractPolicyProvider policyProviderJaxbConf : policyProviderJaxbConfs)
+		{
+			final CloseablePolicyProvider<?> newPolicyProvider = newPolicyProvider(policyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry,
+			        envProps, Optional.ofNullable(combinedPolicyProvider));
+
+			/*
+			 * Update combinedPolicyProvider with new policy provider
+			 */
+			if (combinedPolicyProvider == null)
+			{
+				combinedPolicyProvider = newPolicyProvider;
+			}
+			else if (combinedPolicyProvider instanceof CloseableStaticPolicyProvider && newPolicyProvider instanceof CloseableStaticPolicyProvider)
+			{
+				combinedPolicyProvider = new CompositeCloseableStaticPolicyProvider(
+				        Arrays.asList((CloseableStaticPolicyProvider) combinedPolicyProvider, (CloseableStaticPolicyProvider) newPolicyProvider), maxPolicySetRefDepth);
+			}
+			else
+			{
+				combinedPolicyProvider = new CompositeCloseablePolicyProvider<>(Arrays.asList(combinedPolicyProvider, newPolicyProvider), maxPolicySetRefDepth);
+			}
+		}
 
 		final TopLevelPolicyElementRef rootPolicyRef = pdpJaxbConf.getRootPolicyRef();
 		/*
@@ -382,18 +559,13 @@ public final class PdpEngineConfiguration
 		 */
 		if (rootPolicyRef == null)
 		{
-			LOGGER.debug("'rootPolicyRef' configuration parameter undefined. Getting root policy reference from 'policyProvider': {}", policyProvider);
-			final Optional<PrimaryPolicyMetadata> candidateRootPolicyMeta = policyProvider.getCandidateRootPolicy();
-			if (!candidateRootPolicyMeta.isPresent())
-			{
-				throw ILLEGAL_ROOT_POLICY_REF_CONFIG_EXCEPTION;
-			}
-
-			final PrimaryPolicyMetadata nonNullCandidateRootPolicyRef = candidateRootPolicyMeta.get();
-			LOGGER.info("'rootPolicyRef' undefined in PDP configuration -> setting root policy to the one candidate returned by the PolicyProvider: {}", nonNullCandidateRootPolicyRef);
-			this.rootPolicyElementType = Optional.of(nonNullCandidateRootPolicyRef.getType());
-			this.rootPolicyId = nonNullCandidateRootPolicyRef.getId();
-			this.rootPolicyVersionPatterns = Optional.of(new PolicyVersionPatterns(nonNullCandidateRootPolicyRef.getVersion().toString(), null, null));
+			LOGGER.debug("'rootPolicyRef' configuration parameter undefined. Getting root policy reference from 'policyProvider': {}", combinedPolicyProvider);
+			final Optional<PrimaryPolicyMetadata> candidateRootPolicyMeta = combinedPolicyProvider.getCandidateRootPolicy();
+			final PrimaryPolicyMetadata nonNullRootPolicyMeta = candidateRootPolicyMeta.orElseThrow(() -> ILLEGAL_ROOT_POLICY_REF_CONFIG_EXCEPTION);
+			LOGGER.info("'rootPolicyRef' undefined in PDP configuration -> setting root policy to the one candidate returned by the PolicyProvider: {}", nonNullRootPolicyMeta);
+			this.rootPolicyElementType = Optional.of(nonNullRootPolicyMeta.getType());
+			this.rootPolicyId = nonNullRootPolicyMeta.getId();
+			this.rootPolicyVersionPatterns = Optional.of(new PolicyVersionPatterns(nonNullRootPolicyMeta.getVersion().toString(), null, null));
 		}
 		else
 		{
@@ -766,13 +938,13 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Returns the Root Policy Provider in charge of providing the root policy where the PDP starts evaluation
+	 * Returns the Policy Provider in charge of providing the root policy where the PDP starts evaluation, and any other referenced policy
 	 * 
-	 * @return the Root Policy Provider
+	 * @return the Policy Provider
 	 */
 	public CloseablePolicyProvider<?> getPolicyProvider()
 	{
-		return policyProvider;
+		return combinedPolicyProvider;
 	}
 
 	/**

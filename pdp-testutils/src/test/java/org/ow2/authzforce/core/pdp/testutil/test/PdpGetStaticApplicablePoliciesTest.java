@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.testutil.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -40,8 +41,8 @@ import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
-import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
+import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyIssuer;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
@@ -206,14 +207,16 @@ public class PdpGetStaticApplicablePoliciesTest
 		        : TestUtils.newPdpEngineConfiguration(rootPolicyFile, false, Optional.empty(), null, null);
 		try (final PdpEngineInoutAdapter<Request, Response> pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConf))
 		{
-			final Iterator<PrimaryPolicyMetadata> staticApplicablePolicies = pdp.getApplicablePolicies().iterator();
-			assertTrue("No root policy in PDP's applicable policies (statically resolved)", staticApplicablePolicies != null && staticApplicablePolicies.hasNext());
-			assertEquals("Invalid root policy in PDP's applicable policies (statically resolved)", ROOT_POLICYSET_METADATA, staticApplicablePolicies.next());
+			final Iterable<PrimaryPolicyMetadata> staticApplicablePolicies = pdp.getApplicablePolicies();
+			assertNotNull("One of the policies may not be statically resolved", staticApplicablePolicies);
+			final Iterator<PrimaryPolicyMetadata> staticApplicablePoliciesIterator = pdp.getApplicablePolicies().iterator();
+			assertTrue("No root policy in PDP's applicable policies (statically resolved)", staticApplicablePoliciesIterator.hasNext());
+			assertEquals("Invalid root policy in PDP's applicable policies (statically resolved)", ROOT_POLICYSET_METADATA, staticApplicablePoliciesIterator.next());
 
 			for (final PrimaryPolicyMetadata expectedRefPolicyMeta : REF_POLICYSET_METADATA_SET)
 			{
-				assertTrue("No (more) referenced policy in PDP's applicable policies (statically resolved) although expected", staticApplicablePolicies.hasNext());
-				assertEquals("Invalid referenced policy in PDP's applicable policies (statically resolved)", expectedRefPolicyMeta, staticApplicablePolicies.next());
+				assertTrue("No (more) referenced policy in PDP's applicable policies (statically resolved) although expected", staticApplicablePoliciesIterator.hasNext());
+				assertEquals("Invalid referenced policy in PDP's applicable policies (statically resolved)", expectedRefPolicyMeta, staticApplicablePoliciesIterator.next());
 			}
 
 		}

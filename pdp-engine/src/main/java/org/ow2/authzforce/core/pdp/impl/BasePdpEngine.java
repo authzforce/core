@@ -596,7 +596,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 * @param rootPolicyId
 	 *            root Policy(Set) ID
 	 * @param rootPolicyElementType
-	 *            type of root policy element (XACML Policy or XACML PolicySet)
+	 *            type of root policy element (XACML Policy or XACML PolicySet). If undefined, try with XACML Policy, and else (if it fails) with XACML PolicySet.
 	 * @param rootPolicyVersionPatterns
 	 *            version pattern to be matched by root policy version
 	 * @param decisionCache
@@ -627,8 +627,8 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		}
 		catch (final IndeterminateEvaluationException e)
 		{
-			throw new IllegalArgumentException(
-			        rootPolicyElementType + " '" + rootPolicyId + "' matching version (pattern): " + (rootPolicyVersionPatterns.isPresent() ? rootPolicyVersionPatterns.get() : "latest"), e);
+			throw new IllegalArgumentException("No valid " + (rootPolicyElementType.isPresent() ? rootPolicyElementType.get() : "Policy(Set)") + " '" + rootPolicyId + "' matching version (pattern): "
+			        + (rootPolicyVersionPatterns.isPresent() ? rootPolicyVersionPatterns.get() : "latest"), e);
 		}
 		if (staticRootPolicyEvaluator == null)
 		{

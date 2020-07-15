@@ -45,6 +45,20 @@ import org.slf4j.LoggerFactory;
  */
 public final class RootPolicyEvaluators
 {
+	/**
+	 * 
+	 * @param <PE>
+	 * @param rootPolicyProvider
+	 * @param rootPolicyElementType
+	 *            type of policy element (XACML Policy or XACML PolicySet); if undefined, try with XACML Policy first, and if fails, try XACML PolicySet
+	 * @param rootPolicyId
+	 * @param optRootPolicyVersionPatterns
+	 * @param context
+	 * @param logger
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @throws IndeterminateEvaluationException
+	 */
 	private static <PE extends TopLevelPolicyElementEvaluator> PE getRootPolicyEvaluator(final CloseablePolicyProvider<PE> rootPolicyProvider,
 	        final Optional<TopLevelPolicyElementType> rootPolicyElementType, final String rootPolicyId, final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns,
 	        final EvaluationContext context, final Logger logger) throws IllegalArgumentException, IndeterminateEvaluationException
@@ -97,7 +111,7 @@ public final class RootPolicyEvaluators
 		 * @param policyProvider
 		 *            Root Policy Provider - mandatory
 		 * @param rootPolicyElementType
-		 *            type of root policy element (XACML Policy or XACML PolicySet)
+		 *            type of root policy element (XACML Policy or XACML PolicySet). If undefined, try with XACML Policy, and else (if it fails) with XACML PolicySet.
 		 * @param rootPolicyId
 		 *            root Policy(Set) ID
 		 * @param optRootPolicyVersionPatterns
