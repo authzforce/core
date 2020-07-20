@@ -20,9 +20,7 @@ package org.ow2.authzforce.core.pdp.impl.io;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import java.util.function.Supplier;
 
 import org.ow2.authzforce.core.pdp.api.CloseablePdpEngine;
 import org.ow2.authzforce.core.pdp.api.DecisionRequest;
@@ -36,7 +34,8 @@ import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 
-import com.google.common.base.Supplier;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 
 /**
  * PDP engine adapter utilities
@@ -54,12 +53,12 @@ public final class PdpEngineAdapters
 	}
 
 	private static <ADAPTER_INPUT, ADAPTEE_INPUT_DECISION_REQUEST extends DecisionRequest, ADAPTER_OUTPUT> PdpEngineInoutAdapter<ADAPTER_INPUT, ADAPTER_OUTPUT> newInoutAdapter(
-			final CloseablePdpEngine adaptee, final DecisionRequestPreprocessor<ADAPTER_INPUT, ?> rawReqPreproc, final DecisionResultPostprocessor<?, ADAPTER_OUTPUT> rawResultPostproc)
-			throws IllegalArgumentException
+	        final CloseablePdpEngine adaptee, final DecisionRequestPreprocessor<ADAPTER_INPUT, ?> rawReqPreproc, final DecisionResultPostprocessor<?, ADAPTER_OUTPUT> rawResultPostproc)
+	        throws IllegalArgumentException
 	{
 		assert adaptee != null && rawReqPreproc != null && rawResultPostproc != null;
 		return new BasePdpEngineAdapter<>(adaptee, (DecisionRequestPreprocessor<ADAPTER_INPUT, ADAPTEE_INPUT_DECISION_REQUEST>) rawReqPreproc,
-				(DecisionResultPostprocessor<ADAPTEE_INPUT_DECISION_REQUEST, ADAPTER_OUTPUT>) rawResultPostproc);
+		        (DecisionResultPostprocessor<ADAPTEE_INPUT_DECISION_REQUEST, ADAPTER_OUTPUT>) rawResultPostproc);
 	}
 
 	/**
@@ -87,8 +86,8 @@ public final class PdpEngineAdapters
 	 *             {@code rawReqPreproc.getInputRequestType() != adapterInputClass || rawResultPostproc.getResponseType() != adapterOutputClass || rawReqPreproc.getOutputRequestType() != rawResultPostproc.getRequestType()}
 	 */
 	public static <ADAPTER_INPUT, ADAPTER_OUTPUT> PdpEngineInoutAdapter<ADAPTER_INPUT, ADAPTER_OUTPUT> newInoutAdapter(final Class<ADAPTER_INPUT> adapterInputClass,
-			final Class<ADAPTER_OUTPUT> adapterOutputClass, final CloseablePdpEngine adaptee, final DecisionRequestPreprocessor<?, ?> rawReqPreproc,
-			final DecisionResultPostprocessor<?, ?> rawResultPostproc) throws IllegalArgumentException
+	        final Class<ADAPTER_OUTPUT> adapterOutputClass, final CloseablePdpEngine adaptee, final DecisionRequestPreprocessor<?, ?> rawReqPreproc,
+	        final DecisionResultPostprocessor<?, ?> rawResultPostproc) throws IllegalArgumentException
 	{
 		/*
 		 * Decision result processor
@@ -100,8 +99,8 @@ public final class PdpEngineAdapters
 
 		if (rawResultPostproc.getResponseType() != adapterOutputClass)
 		{
-			throw new IllegalArgumentException("Invalid response type for " + DecisionResultPostprocessor.class.getCanonicalName() + " extension: " + rawResultPostproc.getResponseType()
-					+ ". Expected: " + adapterOutputClass);
+			throw new IllegalArgumentException(
+			        "Invalid response type for " + DecisionResultPostprocessor.class.getCanonicalName() + " extension: " + rawResultPostproc.getResponseType() + ". Expected: " + adapterOutputClass);
 		}
 
 		/*
@@ -114,14 +113,14 @@ public final class PdpEngineAdapters
 
 		if (rawReqPreproc.getInputRequestType() != adapterInputClass)
 		{
-			throw new IllegalArgumentException("Invalid request type for " + DecisionRequestPreprocessor.class.getCanonicalName() + " extension: " + rawReqPreproc.getInputRequestType()
-					+ ". Expected: " + adapterInputClass);
+			throw new IllegalArgumentException(
+			        "Invalid request type for " + DecisionRequestPreprocessor.class.getCanonicalName() + " extension: " + rawReqPreproc.getInputRequestType() + ". Expected: " + adapterInputClass);
 		}
 
 		if (rawReqPreproc.getOutputRequestType() != rawResultPostproc.getRequestType())
 		{
 			throw new IllegalArgumentException("Decision request preprocessor is not compatible with decision result postprocessor: output request type of preprocessor ("
-					+ rawReqPreproc.getOutputRequestType() + ") != input request type of postprocessor (" + rawResultPostproc.getRequestType() + ")");
+			        + rawReqPreproc.getOutputRequestType() + ") != input request type of postprocessor (" + rawResultPostproc.getRequestType() + ")");
 		}
 
 		return newInoutAdapter(adaptee, (DecisionRequestPreprocessor<ADAPTER_INPUT, ?>) rawReqPreproc, (DecisionResultPostprocessor<?, ADAPTER_OUTPUT>) rawResultPostproc);
@@ -154,9 +153,9 @@ public final class PdpEngineAdapters
 	 *             {@code defaultResultPostprocSupplier}
 	 */
 	public static <ADAPTER_INPUT, ADAPTER_OUTPUT> PdpEngineInoutAdapter<ADAPTER_INPUT, ADAPTER_OUTPUT> newInoutAdapter(final Class<ADAPTER_INPUT> adapterInputClass,
-			final Class<ADAPTER_OUTPUT> adapterOutputClass, final CloseablePdpEngine adaptee,
-			final Map<Class<?>, Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>>> ioProcChainsByInputType,
-			final DecisionRequestPreprocessorSupplier defaultReqPreprocSupplier, final Supplier<DecisionResultPostprocessor<?, ?>> defaultResultPostprocSupplier) throws IllegalArgumentException
+	        final Class<ADAPTER_OUTPUT> adapterOutputClass, final CloseablePdpEngine adaptee,
+	        final Map<Class<?>, Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>>> ioProcChainsByInputType,
+	        final DecisionRequestPreprocessorSupplier defaultReqPreprocSupplier, final Supplier<DecisionResultPostprocessor<?, ?>> defaultResultPostprocSupplier) throws IllegalArgumentException
 	{
 		final Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>> ioProcChain = ioProcChainsByInputType.get(adapterInputClass);
 		final DecisionResultPostprocessor<?, ?> rawResultPostproc;
@@ -205,9 +204,9 @@ public final class PdpEngineAdapters
 	 *             error closing {@code configuration.getRootPolicyProvider()} when static resolution is to be used
 	 */
 	public static <ADAPTER_INPUT, ADAPTEE_INPUT_DECISION_REQUEST extends DecisionRequest, ADAPTER_OUTPUT> PdpEngineInoutAdapter<ADAPTER_INPUT, ADAPTER_OUTPUT> newInoutAdapter(
-			final Class<ADAPTER_INPUT> adapterInputClass, final Class<ADAPTER_OUTPUT> adapterOutputClass, final PdpEngineConfiguration configuration,
-			final DecisionRequestPreprocessor<ADAPTER_INPUT, ADAPTEE_INPUT_DECISION_REQUEST> defaultReqPreproc,
-			final DecisionResultPostprocessor<ADAPTEE_INPUT_DECISION_REQUEST, ADAPTER_OUTPUT> defaultResultPostproc) throws IllegalArgumentException, IOException
+	        final Class<ADAPTER_INPUT> adapterInputClass, final Class<ADAPTER_OUTPUT> adapterOutputClass, final PdpEngineConfiguration configuration,
+	        final DecisionRequestPreprocessor<ADAPTER_INPUT, ADAPTEE_INPUT_DECISION_REQUEST> defaultReqPreproc,
+	        final DecisionResultPostprocessor<ADAPTEE_INPUT_DECISION_REQUEST, ADAPTER_OUTPUT> defaultResultPostproc) throws IllegalArgumentException, IOException
 	{
 		// use intermediate Java-friendly PdpEngineConfiguration (higher-level than JAXB) that has #getAttributeValueFactory()
 		try (final BasePdpEngine adaptedPdpEngine = new BasePdpEngine(configuration))
@@ -228,7 +227,7 @@ public final class PdpEngineAdapters
 			}
 
 			return newInoutAdapter(adapterInputClass, adapterOutputClass, adaptedPdpEngine, rawReqPreproc == null ? defaultReqPreproc : rawReqPreproc,
-					rawResultPostProc == null ? defaultResultPostproc : rawResultPostProc);
+			        rawResultPostProc == null ? defaultResultPostproc : rawResultPostProc);
 		}
 	}
 
@@ -249,8 +248,8 @@ public final class PdpEngineAdapters
 	{
 		final DecisionResultPostprocessor<IndividualXacmlJaxbRequest, Response> defaultResultPostproc = new BaseXacmlJaxbResultPostprocessor(configuration.getClientRequestErrorVerbosityLevel());
 		final DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> defaultReqPreproc = SingleDecisionXacmlJaxbRequestPreprocessor.LaxVariantFactory.INSTANCE.getInstance(
-				configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXpathEnabled(), XmlUtils.SAXON_PROCESSOR,
-				defaultResultPostproc.getFeatures());
+		        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXpathEnabled(), XmlUtils.SAXON_PROCESSOR,
+		        defaultResultPostproc.getFeatures());
 
 		return newInoutAdapter(Request.class, Response.class, configuration, defaultReqPreproc, defaultResultPostproc);
 	}

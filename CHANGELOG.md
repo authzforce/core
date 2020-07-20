@@ -6,6 +6,20 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 16.0.0
+### Changed
+- Upgraded parent project: 7.6.1
+	- Upgraded dependency `slf4j-api`: 1.7.30
+- Upgraded dependency `authzforce-ce-core-pdp-api`: 17.0.0
+	- PolicyProvider extensions must now support new parameter `otherHelpingPolicyProvider` in API method `CloseablePolicyProvider.Factory#getInstance(...)` which allows any new Policy Provider to call other(s) previously instantiated ones for help - during instantiation or later - in order to resolve policy references it cannot resolve on its own.
+- Support for combining multiple Policy Providers corresponding to multiple `policyProvider` elements in PDP configuration (change to XML schema) 
+- Support for inline PolicySets in a `StaticPolicyProvider` configuration, may be combined with already existing `policyLocation` elements
+- Core StaticPolicyProvider enhanced to support the two previously mentioned changes, with the limitation that it can be combined with other previously declared policy providers only if they are static (implement `StaticPolicyProvider` interface).
+
+### Fixed
+- #35 : CVE-2018-8088 affecting slf4j
+
+
 ## 15.2.0
 ### Changed
 - Upgraded parent project: 7.6.0
