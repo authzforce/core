@@ -11,4 +11,8 @@
    -->
     <Bug pattern="CRLF_INJECTION_LOGS" />
   </Match>
+  <Match>
+    <Class name="org.ow2.authzforce.core.pdp.cli.PdpCommandLineCallable" />
+    <Bug pattern="UWF_NULL_FIELD" />
+  </Match>
 </FindBugsFilter>

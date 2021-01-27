@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -123,8 +123,9 @@ public class PdpGetStaticApplicablePoliciesTest
 		{
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((id == null) ? 0 : id.hashCode());
-			result = prime * result + ((version == null) ? 0 : version.hashCode());
+			// id != null (see constructor)
+			result = prime * result + id.hashCode();
+			result = prime * result + version.hashCode();
 			return result;
 		}
 
@@ -150,7 +151,7 @@ public class PdpGetStaticApplicablePoliciesTest
 			// Description metadata is ignored
 			if (this.getIssuer().isPresent())
 			{
-				if (!(other.getIssuer().isPresent()))
+				if (other.getIssuer().isEmpty())
 				{
 					return false;
 				}

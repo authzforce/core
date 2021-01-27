@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -35,7 +35,7 @@ import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
 /**
  * Standard match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates, special match function x500Name-match, string-starts-with/contains/ends-with.
  * <p>
- * Note that there are no such functions as ipAddress-equal and dnsName-equal functions in the XACML core specification. Regexp-match alternatives should be used intead. More info:
+ * Note that there are no such functions as ipAddress-equal and dnsName-equal functions in the XACML core specification. Regexp-match alternatives should be used instead. More info:
  * https://lists.oasis-open.org/archives/xacml-comment/200411/msg00002.html
  *
  * @version $Id: $
@@ -47,19 +47,12 @@ final class StandardEqualTypeMatchers
 	 * x500Name-match function matcher
 	 * 
 	 */
-	static final Matcher<X500NameValue> X500NAME_MATCHER = new Matcher<X500NameValue>()
-	{
-		@Override
-		public boolean match(final X500NameValue arg0, final X500NameValue arg1)
-		{
-			return arg0.match(arg1);
-		}
-	};
+	static final Matcher<X500NameValue> X500NAME_MATCHER = (arg0, arg1) -> arg0.match(arg1);
 
 	/**
 	 * string-starts-with function matcher. For other *-starts-with functions, see {@link org.ow2.authzforce.core.pdp.api.func.NonEqualTypeMatchFunction} class.
 	 */
-	static final Matcher<StringValue> STRING_STARTS_WITH_MATCHER = new Matcher<StringValue>()
+	static final Matcher<StringValue> STRING_STARTS_WITH_MATCHER = new Matcher<>()
 	{
 		/**
 		 * WARNING: the XACML spec defines the first argument as the prefix
@@ -74,7 +67,7 @@ final class StandardEqualTypeMatchers
 	/**
 	 * string-ends-with function matcher
 	 */
-	static final Matcher<StringValue> STRING_ENDS_WITH_MATCHER = new Matcher<StringValue>()
+	static final Matcher<StringValue> STRING_ENDS_WITH_MATCHER = new Matcher<>()
 	{
 
 		/**
@@ -91,7 +84,7 @@ final class StandardEqualTypeMatchers
 	 * string-contains function matcher
 	 * 
 	 */
-	static final Matcher<StringValue> STRING_CONTAINS_MATCHER = new Matcher<StringValue>()
+	static final Matcher<StringValue> STRING_CONTAINS_MATCHER = new Matcher<>()
 	{
 
 		/**
@@ -106,14 +99,7 @@ final class StandardEqualTypeMatchers
 
 	private static final class StringRegexpMatchCallFactory extends CallFactory<StringValue>
 	{
-		private static final Matcher<StringValue> STRING_REGEXP_MATCHER = new Matcher<StringValue>()
-		{
-			@Override
-			public boolean match(final StringValue regex, final StringValue arg1)
-			{
-				return RegexpMatchFunctionHelper.match(regex, arg1);
-			}
-		};
+		private static final Matcher<StringValue> STRING_REGEXP_MATCHER = (regex, arg1) -> RegexpMatchFunctionHelper.match(regex, arg1);
 
 		private final RegexpMatchFunctionHelper regexFuncHelper;
 
@@ -136,16 +122,7 @@ final class StandardEqualTypeMatchers
 
 	}
 
-	static final CallFactoryBuilder<StringValue> STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER = new CallFactoryBuilder<StringValue>()
-	{
-
-		@Override
-		public CallFactory<StringValue> build(final SingleParameterTypedFirstOrderFunctionSignature<BooleanValue, StringValue> functionSignature)
-		{
-			return new StringRegexpMatchCallFactory(functionSignature);
-		}
-
-	};
+	static final CallFactoryBuilder<StringValue> STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER = functionSignature -> new StringRegexpMatchCallFactory(functionSignature);
 
 	private StandardEqualTypeMatchers()
 	{

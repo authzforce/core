@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -50,7 +50,7 @@ public class DateTimeArithmeticFunctionsTest extends StandardFunctionTest
 	private static final String NAME_DATE_SUBTRACT_YEARMONTHDURATION = "urn:oasis:names:tc:xacml:3.0:function:date-subtract-yearMonthDuration";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
+	public static Collection<Object[]> params()
 	{
 		return Arrays
 				.asList(

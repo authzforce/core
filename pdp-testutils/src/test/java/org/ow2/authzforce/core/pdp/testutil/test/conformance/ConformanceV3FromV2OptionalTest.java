@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -36,7 +36,7 @@ public class ConformanceV3FromV2OptionalTest extends ConformanceV3FromV2
 	 */
 	private final static String ROOT_DIRECTORY = "target/test-classes/conformance/xacml-3.0-from-2.0-ct/optional";
 
-	private static enum TestParameters
+	private enum TestParameters
 	{
 	    // enum constant name gives the sub-directory with all test files
 	    // first param is the file prefix (before number) if different from enum constant name, then
@@ -49,12 +49,7 @@ public class ConformanceV3FromV2OptionalTest extends ConformanceV3FromV2
 		private final int endNum;
 		private final String requestFilterId;
 
-		private TestParameters(final int startNum, final int endNum)
-		{
-			this(null, startNum, endNum);
-		}
-
-		private TestParameters(final String filenamePrefix, final int startNum, final int endNum, final String requestFilterId)
+		TestParameters(final String filenamePrefix, final int startNum, final int endNum, final String requestFilterId)
 		{
 			this.filenamePrefixBeforeNum = filenamePrefix == null ? this.name() : filenamePrefix;
 			this.startNum = startNum;
@@ -62,7 +57,7 @@ public class ConformanceV3FromV2OptionalTest extends ConformanceV3FromV2
 			this.requestFilterId = requestFilterId;
 		}
 
-		private TestParameters(final String filenamePrefix, final int startNum, final int endNum)
+		TestParameters(final String filenamePrefix, final int startNum, final int endNum)
 		{
 			this(filenamePrefix, startNum, endNum, null);
 		}

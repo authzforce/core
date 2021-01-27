@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -22,6 +22,7 @@ package org.ow2.authzforce.core.pdp.impl.test.func;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.runner.RunWith;
@@ -43,16 +44,16 @@ public class StringConversionFunctionsTest extends StandardFunctionTest
 	private static final String NAME_STRING_NORMALIZE_TO_LOWER_CASE = "urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
+	public static Collection<Object[]> params()
 	{
 		return Arrays.asList(
 		// urn:oasis:names:tc:xacml:1.0:function:string-normalize-space
-				new Object[] { NAME_STRING_NORMALIZE_SPACE, Arrays.asList(new StringValue("test")), new StringValue("test") },//
-				new Object[] { NAME_STRING_NORMALIZE_SPACE, Arrays.asList(new StringValue("   test   ")), new StringValue("test") },
+				new Object[] { NAME_STRING_NORMALIZE_SPACE, Collections.singletonList(new StringValue("test")), new StringValue("test") },//
+				new Object[] { NAME_STRING_NORMALIZE_SPACE, Collections.singletonList(new StringValue("   test   ")), new StringValue("test") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:string-normalize-to-lower-case
-				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringValue("test")), new StringValue("test") },//
-				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Arrays.asList(new StringValue("TeST")), new StringValue("test") });
+				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Collections.singletonList(new StringValue("test")), new StringValue("test") },//
+				new Object[] { NAME_STRING_NORMALIZE_TO_LOWER_CASE, Collections.singletonList(new StringValue("TeST")), new StringValue("test") });
 	}
 
 }

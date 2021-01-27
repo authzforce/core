@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -115,7 +115,7 @@ public final class MatchEvaluator
 		}
 
 		final Function<BooleanValue> anyOfFunc = funcExp.getValue().get();
-		final List<Expression<?>> anyOfFuncInputs = Arrays.<Expression<?>> asList(matchFunction, attrValueExpr, bagExpression);
+		final List<Expression<?>> anyOfFuncInputs = Arrays.asList(matchFunction, attrValueExpr, bagExpression);
 		try
 		{
 			this.anyOfFuncCall = anyOfFunc.newCall(anyOfFuncInputs);
@@ -147,7 +147,7 @@ public final class MatchEvaluator
 			throw new IndeterminateEvaluationException("Error evaluating Match (with equivalent 'any-of' function)", e.getStatusCode(), e);
 		}
 
-		return anyOfFuncCallResult.getUnderlyingValue().booleanValue();
+		return anyOfFuncCallResult.getUnderlyingValue();
 	}
 
 }

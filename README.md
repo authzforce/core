@@ -75,31 +75,7 @@ See the [license file](LICENSE).
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fauthzforce%2Fcore.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fauthzforce%2Fcore?ref=badge_large)
 
 ## System requirements
-Java (JRE) version: 8 or later. 
-
-### Java 8+ requirements 
-- System property `javax.xml.accessExternalSchema` must be set to include `http`, to work around Java 8+ external schema access restriction, e.g. with a JVM argument:
-
-`-Djavax.xml.accessExternalSchema=http`
-
-### Java 9+ requirements 
-In addition to Java 8+ ones, you need to add JAXB dependencies (no longer part of JDK), e.g. [in Maven](https://javaee.github.io/jaxb-v2/doc/user-guide/ch03.html#deployment-maven-coordinates):  
-
-```xml
-                <!-- API -->
-                <dependency>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                    <version>${jaxb.version}</version>
-                </dependency>
-
-                <!-- Runtime -->
-                <dependency>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-runtime</artifactId>
-                    <version>${jaxb.version}</version>
-                </dependency>
-```
+Java (JRE) version: 11 or later. Java 8 is no longer supported.
 
 ## Usage
 ### Getting started
@@ -140,7 +116,7 @@ Since this is a Maven artifact and it requires dependencies, you should build yo
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>14.0.0</version>
+         <version>${latest.version}</version>
       </dependency>
 ...
 
@@ -152,7 +128,7 @@ Then instantiate a PDP engine configuration with method [PdpEngineConfiguration#
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
-   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7">
+   <pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7" version="7.1">
 	  <policyProvider id="policyProvider" xsi:type="StaticPolicyProvider">
 	    <policyLocation>${PARENT_DIR}/policy.xml</policyLocation>
 	  </policyProvider>

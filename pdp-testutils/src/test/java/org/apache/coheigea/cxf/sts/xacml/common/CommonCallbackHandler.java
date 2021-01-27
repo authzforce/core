@@ -30,7 +30,7 @@ public class CommonCallbackHandler implements CallbackHandler
 {
 
 	@Override
-	public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException
+	public void handle(final Callback[] callbacks)
 	{
 		for (final Callback callback : callbacks)
 		{

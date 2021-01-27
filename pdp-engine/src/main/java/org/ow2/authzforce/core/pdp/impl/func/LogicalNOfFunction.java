@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -98,7 +98,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 				try
 				{
 					attrVal = Expressions.eval(input, context, StandardDatatypes.BOOLEAN);
-					if (attrVal.getUnderlyingValue().booleanValue())
+					if (attrVal.getUnderlyingValue())
 					{
 						/*
 						 * Arg evaluation result = TRUE -> We're one step closer to our goal...check if we met it
@@ -170,7 +170,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 					final BooleanValue attrVal;
 					try
 					{
-						attrVal = BooleanValue.class.cast(arg);
+						attrVal = (BooleanValue) arg;
 					} catch (final ClassCastException e)
 					{
 						/*
@@ -181,7 +181,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 						throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
 					}
 
-					if (attrVal.getUnderlyingValue().booleanValue())
+					if (attrVal.getUnderlyingValue())
 					{
 						/*
 						 * Arg = TRUE -> We're one step closer to our goal...check if we met it
@@ -346,7 +346,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			// arg0 is constant
 			// We downsize the BigInteger value to int right away, because anyway inputs.size() is an
 			// int, so we cannot do better and don't need to.
-			final int nOfRequiredTrues = IntegerValue.class.cast(arg0.get()).getUnderlyingValue().intValueExact();
+			final int nOfRequiredTrues = ((IntegerValue) arg0.get()).getUnderlyingValue().intValueExact();
 			if (nOfRequiredTrues < 0)
 			{
 				throw new IllegalArgumentException(getInvalidArg0MessagePrefix(functionSignature) + nOfRequiredTrues);

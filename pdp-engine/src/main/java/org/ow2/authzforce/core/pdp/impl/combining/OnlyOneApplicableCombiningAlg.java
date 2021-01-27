@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,13 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PepAction;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
@@ -32,8 +27,6 @@ import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 
 /**
  * This is the standard only-one-applicable policy combining algorithm.
@@ -53,7 +46,7 @@ final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluat
 		{
 			super(policyElements);
 			this.tooManyApplicablePoliciesIndeterminateResult = ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE,
-			        new IndeterminateEvaluationException("Too many (more than one) applicable policies for algorithm: " + algId, XacmlStatusCode.PROCESSING_ERROR.value()));
+					new IndeterminateEvaluationException("Too many (more than one) applicable policies for algorithm: " + algId, XacmlStatusCode.PROCESSING_ERROR.value()));
 		}
 
 		@Override

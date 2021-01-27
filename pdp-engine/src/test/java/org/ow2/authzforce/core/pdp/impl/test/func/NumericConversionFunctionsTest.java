@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -19,6 +19,7 @@ package org.ow2.authzforce.core.pdp.impl.test.func;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.runner.RunWith;
@@ -41,15 +42,15 @@ public class NumericConversionFunctionsTest extends StandardFunctionTest
 	private static final String NAME_INTEGER_TO_DOUBLE = "urn:oasis:names:tc:xacml:1.0:function:integer-to-double";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
-	{
+	public static Collection<Object[]> params()
+    {
 		return Arrays.asList(
 		// urn:oasis:names:tc:xacml:1.0:function:double-to-integer
-				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleValue("5.25")), IntegerValue.valueOf(5) },//
-				new Object[] { NAME_DOUBLE_TO_INTEGER, Arrays.asList(new DoubleValue("5.75")), IntegerValue.valueOf(5) },
+				new Object[] { NAME_DOUBLE_TO_INTEGER, Collections.singletonList(new DoubleValue("5.25")), IntegerValue.valueOf(5) },//
+				new Object[] { NAME_DOUBLE_TO_INTEGER, Collections.singletonList(new DoubleValue("5.75")), IntegerValue.valueOf(5) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-to-double
-				new Object[] { NAME_INTEGER_TO_DOUBLE, Arrays.asList(IntegerValue.valueOf(5)), new DoubleValue("5.") });
+				new Object[] { NAME_INTEGER_TO_DOUBLE, Collections.singletonList(IntegerValue.valueOf(5)), new DoubleValue("5.") });
 	}
 
 }

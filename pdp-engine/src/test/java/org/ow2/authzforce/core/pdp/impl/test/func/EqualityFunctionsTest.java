@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -69,7 +69,7 @@ public class EqualityFunctionsTest extends StandardFunctionTest
 	private static final String NAME_BASE64BINARY_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:base64Binary-equal";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
+	public static Collection<Object[]> params()
 	{
 		return Arrays
 				.asList(

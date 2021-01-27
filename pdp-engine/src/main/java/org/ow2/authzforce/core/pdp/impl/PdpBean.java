@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -101,7 +101,7 @@ public final class PdpBean implements PdpEngine
 		init();
 	}
 
-	private boolean init()
+	private void init()
 	{
 		if (!initialized && catalogLocation != null && extSchemaLocation != null && confLocation != null)
 		{
@@ -119,7 +119,6 @@ public final class PdpBean implements PdpEngine
 			initialized = true;
 		}
 
-		return initialized;
 	}
 
 	@Override

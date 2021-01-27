@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -32,8 +32,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.xml.bind.JAXBElement;
 
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
@@ -99,6 +97,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParameters;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
+
+import javax.xml.bind.JAXBElement;
 
 /**
  * This class consists exclusively of static methods that operate on or return {@link PolicyEvaluator}s
@@ -473,8 +473,8 @@ public final class PolicyEvaluators
 				this.decisionResultFactory = new PepActionAppendingDPResultFactory(this.policyMetadata.toString(), denyPepActionExpressions, permitPepActionExpressions);
 			}
 
-			this.localVariableAssignmentExpressions = localVariableIds == null ? Collections.<VariableReference<?>>emptyList()
-			        : localVariableIds.stream().map(id -> expressionFactory.getVariableExpression(id)).collect(Collectors.toList());
+			this.localVariableAssignmentExpressions = localVariableIds == null ? Collections.emptyList()
+			        : localVariableIds.stream().map(expressionFactory::getVariableExpression).collect(Collectors.toList());
 
 			final Set<PrimaryPolicyMetadata> mutableEnclosedPolicies = HashCollections.newUpdatableSet();
 			mutableEnclosedPolicies.add(policyMetadata);
@@ -593,8 +593,8 @@ public final class PolicyEvaluators
 					}
 
 					updatablePepActions = UpdatableCollections.newUpdatableList();
-					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.<PrimaryPolicyMetadata>newUpdatableList()
-					        : UpdatableCollections.<PrimaryPolicyMetadata>emptyList();
+					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.newUpdatableList()
+					        : UpdatableCollections.emptyList();
 
 					algResult = combiningAlgEvaluator.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
 					LOGGER.debug("{}/Algorithm -> {}", this, algResult);
@@ -647,8 +647,8 @@ public final class PolicyEvaluators
 					}
 
 					updatablePepActions = UpdatableCollections.newUpdatableList();
-					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.<PrimaryPolicyMetadata>newUpdatableList()
-					        : UpdatableCollections.<PrimaryPolicyMetadata>emptyList();
+					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.newUpdatableList()
+					        : UpdatableCollections.emptyList();
 					algResult = combiningAlgEvaluator.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
 					LOGGER.debug("{}/Algorithm -> {}", this, algResult);
 
@@ -967,7 +967,7 @@ public final class PolicyEvaluators
 
 	/**
 	 * 
-	 * @param referredPolicy
+	 * @param referredPolicy policy that this Policy reference refers to
 	 * @return extra policy metadata
 	 * @throws IndeterminateEvaluationException
 	 *             if the extra policy metadata of {@code referredPolicy} could not be determined in {@code evalCtx} (with
@@ -997,7 +997,7 @@ public final class PolicyEvaluators
 		else
 		{
 			newRefPolicies = Sets.newHashSet(referredPolicyMetadata);
-			newLongestPolicyRefChain = Arrays.asList(referredPolicy.getPolicyId());
+			newLongestPolicyRefChain = Collections.singletonList(referredPolicy.getPolicyId());
 		}
 
 		return new BasePolicyRefsMetadata(newRefPolicies, newLongestPolicyRefChain);
@@ -1043,21 +1043,13 @@ public final class PolicyEvaluators
 		private static final class GetMetadataResult
 		{
 			private final Optional<PolicyRefsMetadata> extraMetadata;
-			private final IndeterminateEvaluationException exception;
 
 			private GetMetadataResult(final Optional<PolicyRefsMetadata> metadata)
 			{
 				assert metadata != null;
-				this.exception = null;
 				this.extraMetadata = metadata;
 			}
 
-			private GetMetadataResult(final IndeterminateEvaluationException exception)
-			{
-				assert exception != null;
-				this.exception = exception;
-				this.extraMetadata = null;
-			}
 		}
 
 		private final List<PolicyEvaluator> childPolicySetElementsOrRefs = new ArrayList<>();
@@ -1086,12 +1078,7 @@ public final class PolicyEvaluators
 			if (cachedValue instanceof GetMetadataResult)
 			{
 				final GetMetadataResult result = (GetMetadataResult) cachedValue;
-				if (result.exception == null)
-				{
 					return result.extraMetadata;
-				}
-
-				throw result.exception;
 			}
 
 			/*
@@ -1230,7 +1217,7 @@ public final class PolicyEvaluators
 				assert exception != null;
 				this.exception = exception;
 				this.resolvedPolicy = null;
-				this.extraMetadata = null;
+				this.extraMetadata = Optional.empty();
 			}
 		}
 
@@ -1417,10 +1404,7 @@ public final class PolicyEvaluators
 			 * Check PolicySet reference depth resulting from resolving this new PolicySet ref
 			 */
 			final Optional<PolicyRefsMetadata> optionalRefsMetadata = nonNullRefResultPolicy.getPolicyRefsMetadata(evalCtx);
-			if (optionalRefsMetadata.isPresent())
-			{
-				checkJoinedPolicySetRefChain(policySetRefChainToThisRefTarget, optionalRefsMetadata.get().getLongestPolicyRefChain());
-			}
+			optionalRefsMetadata.ifPresent(policyRefsMetadata -> checkJoinedPolicySetRefChain(policySetRefChainToThisRefTarget, policyRefsMetadata.getLongestPolicyRefChain()));
 		}
 
 		@Override
@@ -1620,7 +1604,7 @@ public final class PolicyEvaluators
 		final StaticTopLevelPolicyElementEvaluator policyEvaluator = new StaticBaseTopLevelPolicyElementEvaluator<>(RuleEvaluator.class, primaryPolicyMetadata, Optional.empty(),
 		        policyElement.getTarget(), policyElement.getRuleCombiningAlgId(), ruleEvaluatorsByRuleIdInOrderOfDeclaration.values(), combiningAlgParameters,
 		        obligationExps == null ? null : obligationExps.getObligationExpressions(), adviceExps == null ? null : adviceExps.getAdviceExpressions(),
-		        Collections.<String>unmodifiableList(localVariableIds), defaultXPathCompiler, expressionFactory, combiningAlgRegistry);
+		        Collections.unmodifiableList(localVariableIds), defaultXPathCompiler, expressionFactory, combiningAlgRegistry);
 
 		/*
 		 * We are done parsing expressions in this policy, including VariableReferences, it's time to remove variables scoped to this policy from the variable manager
@@ -1987,10 +1971,7 @@ public final class PolicyEvaluators
 			 * This child PolicySet may have extra metadata such as nested policy references that we need to merge into the parent PolicySet's metadata
 			 */
 			final Optional<PolicyRefsMetadata> childPolicyRefsMetadata = childElement.getPolicyRefsMetadata();
-			if (childPolicyRefsMetadata.isPresent())
-			{
-				extraMetadataProvider.updateMetadata(childPolicyRefsMetadata.get());
-			}
+			childPolicyRefsMetadata.ifPresent(extraMetadataProvider::updateMetadata);
 
 			return childElement;
 		}
@@ -2007,10 +1988,7 @@ public final class PolicyEvaluators
 
 			final StaticPolicyRefEvaluator childElement = PolicyEvaluators.getInstanceStatic(refPolicyType, idRef, refPolicyProvider, ancestorPolicySetRefChain);
 			final Optional<PolicyRefsMetadata> childPolicyRefsMetadata = childElement.getPolicyRefsMetadata();
-			if (childPolicyRefsMetadata.isPresent())
-			{
-				extraMetadataProvider.updateMetadata(childPolicyRefsMetadata.get());
-			}
+			childPolicyRefsMetadata.ifPresent(extraMetadataProvider::updateMetadata);
 
 			return childElement;
 		}

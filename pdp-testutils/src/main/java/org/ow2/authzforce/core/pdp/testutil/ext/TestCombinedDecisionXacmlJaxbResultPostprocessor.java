@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -56,9 +56,6 @@ public class TestCombinedDecisionXacmlJaxbResultPostprocessor extends BaseXacmlJ
 
 	private static final Response SIMPLE_INDETERMINATE_RESPONSE = new Response(
 	        Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.empty()), null, null, null, null)));
-
-	// private static final List<Result> INDETERMINATE_RESULT_SINGLETON_LIST_BECAUSE_NO_INDIVIDUAL = Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(
-	// StatusHelper.STATUS_PROCESSING_ERROR, "No <Result> to combine!"), null, null, null, null));
 
 	private static final Response SIMPLE_PERMIT_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.PERMIT, StatusHelper.OK, null, null, null, null)));
 	private static final Response SIMPLE_DENY_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.DENY, StatusHelper.OK, null, null, null, null)));

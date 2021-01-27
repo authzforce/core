@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -18,7 +18,6 @@
 package org.ow2.authzforce.core.pdp.impl.func;
 
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -50,7 +49,7 @@ public final class ConstantResultFirstOrderFunctionCall<RETURN_T extends Value> 
 	}
 
 	@Override
-	public RETURN_T evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+	public RETURN_T evaluate(final EvaluationContext context)
 	{
 		return constant;
 	}
@@ -62,13 +61,13 @@ public final class ConstantResultFirstOrderFunctionCall<RETURN_T extends Value> 
 	}
 
 	@Override
-	public RETURN_T evaluate(final EvaluationContext context, final AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+	public RETURN_T evaluate(final EvaluationContext context, final AttributeValue... remainingArgs)
 	{
 		return constant;
 	}
 
 	@Override
-	public RETURN_T evaluate(final EvaluationContext context, final boolean checkRemainingArgTypes, final AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+	public RETURN_T evaluate(final EvaluationContext context, final boolean checkRemainingArgTypes, final AttributeValue... remainingArgs)
 	{
 		return constant;
 	}

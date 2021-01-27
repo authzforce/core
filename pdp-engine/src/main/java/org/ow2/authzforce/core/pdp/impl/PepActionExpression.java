@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -49,7 +49,7 @@ public final class PepActionExpression
 
 	private final boolean isMandatory;
 
-	private final List<AttributeAssignmentExpressionEvaluator> evaluatableAttributeAssignmentExpressions;
+	private final List<AttributeAssignmentExpressionEvaluator> evaluableAttributeAssignmentExpressions;
 
 	private transient final String toString;
 
@@ -79,11 +79,11 @@ public final class PepActionExpression
 
 		if (jaxbAssignmentExps == null || jaxbAssignmentExps.isEmpty())
 		{
-			this.evaluatableAttributeAssignmentExpressions = Collections.emptyList();
+			this.evaluableAttributeAssignmentExpressions = Collections.emptyList();
 		}
 		else
 		{
-			this.evaluatableAttributeAssignmentExpressions = new ArrayList<>(jaxbAssignmentExps.size());
+			this.evaluableAttributeAssignmentExpressions = new ArrayList<>(jaxbAssignmentExps.size());
 			for (final AttributeAssignmentExpression jaxbAttrAssignExp : jaxbAssignmentExps)
 			{
 				final AttributeAssignmentExpressionEvaluator attrAssignExp;
@@ -96,7 +96,7 @@ public final class PepActionExpression
 					throw new IllegalArgumentException("Invalid " + toString + ": Invalid AttributeAssignmentExpression[@AttributeId=" + jaxbAttrAssignExp.getAttributeId() + "]", e);
 				}
 
-				this.evaluatableAttributeAssignmentExpressions.add(attrAssignExp);
+				this.evaluableAttributeAssignmentExpressions.add(attrAssignExp);
 			}
 		}
 	}
@@ -130,7 +130,7 @@ public final class PepActionExpression
 	{
 		// else there are assignmentExpressions
 		final List<PepActionAttributeAssignment<?>> assignments = new ArrayList<>();
-		for (final AttributeAssignmentExpressionEvaluator attrAssignmentExpr : this.evaluatableAttributeAssignmentExpressions)
+		for (final AttributeAssignmentExpressionEvaluator attrAssignmentExpr : this.evaluableAttributeAssignmentExpressions)
 		{
 			/*
 			 * Section 5.39 of XACML 3.0 core spec says there may be multiple AttributeAssignments resulting from one AttributeAssignmentExpression

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,11 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
@@ -29,6 +24,10 @@ import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFuncti
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
 
 /**
  * Implements the XACML not function
@@ -47,10 +46,10 @@ final class LogicalNotFunction extends SingleParameterTypedFirstOrderFunction<Bo
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return new BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<BooleanValue, BooleanValue>(functionSignature, argExpressions, remainingArgTypes)
+		return new BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval<>(functionSignature, argExpressions, remainingArgTypes)
 		{
 			@Override
-			protected BooleanValue evaluate(final Deque<BooleanValue> args) throws IndeterminateEvaluationException
+			protected BooleanValue evaluate(final Deque<BooleanValue> args)
 			{
 				return args.getFirst().not();
 			}

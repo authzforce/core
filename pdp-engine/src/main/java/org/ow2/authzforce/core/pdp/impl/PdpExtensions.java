@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -200,7 +200,7 @@ public final class PdpExtensions
 	 *            XML-schema-derived type of attribute provider configuration
 	 * @return Attribute Provider factory builder
 	 * @throws java.lang.IllegalArgumentException
-	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.CloseableDesignatedAttributeProvider.FactoryBuilder} supporting {@code jaxbPdpExtensionClass}
+	 *             if there is no extension of type {@link CloseableNamedAttributeProvider.FactoryBuilder} supporting {@code jaxbPdpExtensionClass}
 	 */
 	public static <ATTRIBUTE_PROVIDER_CONF extends AbstractAttributeProvider> CloseableNamedAttributeProvider.FactoryBuilder<ATTRIBUTE_PROVIDER_CONF> getAttributeProviderFactoryBuilder(
 	        final Class<ATTRIBUTE_PROVIDER_CONF> jaxbConfClass)
@@ -227,7 +227,7 @@ public final class PdpExtensions
 	 *            XML-schema-derived type of policy provider configuration
 	 * @return Policy-by-reference Provider
 	 * @throws java.lang.IllegalArgumentException
-	 *             if there is no extension of type {@link org.ow2.authzforce.core.pdp.api.policy.CloseableRefPolicyProvider.Factory} supporting {@code jaxbPdpExtensionClass}
+	 *             if there is no extension of type {@link CloseablePolicyProvider.Factory} supporting {@code jaxbPdpExtensionClass}
 	 */
 	public static <REF_POLICY_PROVIDER_CONF extends AbstractPolicyProvider> CloseablePolicyProvider.Factory<REF_POLICY_PROVIDER_CONF> getRefPolicyProviderFactory(
 	        final Class<REF_POLICY_PROVIDER_CONF> jaxbConfClass) throws IllegalArgumentException

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -158,9 +158,8 @@ public class ComparativePdpTest
 		 * @param testCaseDirPath
 		 *            case directory where policy, request and expected response file for the given test case are located input XACML request
 		 * @return output XACML response
-		 * @throws IOException
-		 * @throws JAXBException
-		 *             error unmarshalling output XACML response with JAXB API
+		 * @throws IOException I/O error trying to call the PDP engine
+		 * @throws JAXBException error unmarshalling output XACML response with JAXB API
 		 */
 		Response eval(Path testCaseDirPath) throws IOException, JAXBException;
 
@@ -221,7 +220,7 @@ public class ComparativePdpTest
 			 * WARNING: No XACML schema validation for fair comparison with other PdpEngines, because there is none in other PdpEngines, although it is easy to do with AuthzForce
 			 */
 			final Request xacmlRequest;
-			try (final FileInputStream fis = new FileInputStream(requestFilePath.toFile()); final BufferedInputStream is = new BufferedInputStream(fis);)
+			try (final FileInputStream fis = new FileInputStream(requestFilePath.toFile()); final BufferedInputStream is = new BufferedInputStream(fis))
 			{
 
 				// xacmlRequest = (Request) unmarshaller.unmarshal(is);
@@ -236,8 +235,7 @@ public class ComparativePdpTest
 			try (final PdpEngineInoutAdapter<Request, Response> xacmlJaxbIoPdp = PdpEngineAdapters.newInoutAdapter(Request.class, Response.class, new BasePdpEngine(pdpConf),
 			        DEFAULT_XACML_JAXB_REQ_PREPROC, DEFAULT_XACML_JAXB_RESULT_POSTPROC))
 			{
-				final Response xacmlResponse = xacmlJaxbIoPdp.evaluate(xacmlRequest);
-				return xacmlResponse;
+				return xacmlJaxbIoPdp.evaluate(xacmlRequest);
 			}
 		}
 	}
@@ -290,7 +288,7 @@ public class ComparativePdpTest
 			// final JAXBElement<RequestType> jaxbElementRequest;
 			final com.att.research.xacml.api.Request attXacmlRequest;
 			// final com.att.research.xacml.api.Request attXacmlRequest = JaxpRequest.newInstance(jaxbElementRequest.getValue());
-			try (final FileInputStream fis = new FileInputStream(requestFilePath.toFile()); final BufferedInputStream is = new BufferedInputStream(fis);)
+			try (final FileInputStream fis = new FileInputStream(requestFilePath.toFile()); final BufferedInputStream is = new BufferedInputStream(fis))
 			{
 				// jaxbElementRequest = unmarshaller.unmarshal(new StreamSource(is), RequestType.class);
 				// alternative
@@ -322,8 +320,7 @@ public class ComparativePdpTest
 			}
 
 			final Unmarshaller schemaValidatingUnmarshaller = Xacml3JaxbHelper.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-			final Response actualXacmlResponse = (Response) schemaValidatingUnmarshaller.unmarshal(new ByteArrayInputStream(os.toByteArray()));
-			return actualXacmlResponse;
+			return (Response) schemaValidatingUnmarshaller.unmarshal(new ByteArrayInputStream(os.toByteArray()));
 
 		}
 	}
@@ -357,7 +354,7 @@ public class ComparativePdpTest
 
 			final Path requestFilePath = testCaseDirPath.resolve(REQUEST_FILENAME);
 			final AbstractRequestCtx balanaRequest;
-			try (final FileInputStream fis = new FileInputStream(requestFilePath.toFile()); final BufferedInputStream is = new BufferedInputStream(fis);)
+			try (final FileInputStream fis = new FileInputStream(requestFilePath.toFile()); final BufferedInputStream is = new BufferedInputStream(fis))
 			{
 				balanaRequest = REQUEST_FACTORY.getRequestCtx(is);
 			}
@@ -369,8 +366,7 @@ public class ComparativePdpTest
 			final ResponseCtx balanaResponse = pdp.evaluate(balanaRequest);
 
 			final Unmarshaller schemaValidatingUnmarshaller = Xacml3JaxbHelper.XACML_3_0_JAXB_CONTEXT.createUnmarshaller();
-			final Response actualXacmlResponse = (Response) schemaValidatingUnmarshaller.unmarshal(new StringReader(balanaResponse.encode()));
-			return actualXacmlResponse;
+			return (Response) schemaValidatingUnmarshaller.unmarshal(new StringReader(balanaResponse.encode()));
 		}
 
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -142,13 +142,13 @@ public class BagFunctionsTest extends StandardFunctionTest
 
 		// case 1: empty bag {}
 		// one-and-only({}) -> Indeterminate
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(bagElementType.getEmptyBag()), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Collections.singletonList(bagElementType.getEmptyBag()), null });
 
 		// one-and-only({primitiveValue}) -> primitiveValue
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.singleton(bagElementType, primitiveValue)), primitiveValue });
+		params.add(new Object[] { oneAndOnlyFunctionId, Collections.singletonList(Bags.singleton(bagElementType, primitiveValue)), primitiveValue });
 
 		// one-and-only({primitiveValue, primitiveValue}) -> Indeterminate
-		params.add(new Object[] { oneAndOnlyFunctionId, Arrays.asList(Bags.newBag(bagElementType, Collections.nCopies(2, primitiveValue))), null });
+		params.add(new Object[] { oneAndOnlyFunctionId, Collections.singletonList(Bags.newBag(bagElementType, Collections.nCopies(2, primitiveValue))), null });
 
 		return params;
 	}
@@ -165,13 +165,13 @@ public class BagFunctionsTest extends StandardFunctionTest
 		final Collection<Object[]> params = new ArrayList<>();
 
 		// bag-size({}) -> 0
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(bagElementType.getEmptyBag()), ZERO_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Collections.singletonList(bagElementType.getEmptyBag()), ZERO_AS_INT });
 
 		// bag-size({primitiveValue}) -> 1
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.singleton(bagElementType, primitiveValue)), ONE_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Collections.singletonList(Bags.singleton(bagElementType, primitiveValue)), ONE_AS_INT });
 
 		// bag-size({primitiveValue, primitiveValue}) -> 2
-		params.add(new Object[] { bagSizeFunctionId, Arrays.asList(Bags.newBag(bagElementType, Collections.nCopies(2, primitiveValue))), TWO_AS_INT });
+		params.add(new Object[] { bagSizeFunctionId, Collections.singletonList(Bags.newBag(bagElementType, Collections.nCopies(2, primitiveValue))), TWO_AS_INT });
 		return params;
 	}
 
@@ -214,7 +214,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 	}
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
+	public static Collection<Object[]> params()
 	{
 		final Collection<Object[]> params = new ArrayList<>();
 
@@ -233,7 +233,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 		params.addAll(newOneAndOnlyFunctionTestParams(NAME_YEARMONTHDURATION_ONE_AND_ONLY, StandardDatatypes.YEARMONTHDURATION, new YearMonthDurationValue("P1Y2M")));
 		params.addAll(newOneAndOnlyFunctionTestParams(NAME_X500NAME_ONE_AND_ONLY, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US")));
 		params.addAll(newOneAndOnlyFunctionTestParams(NAME_RFC822NAME_ONE_AND_ONLY, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com")));
-		params.addAll(newOneAndOnlyFunctionTestParams(NAME_IPADDRESS_ONE_AND_ONLY, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10")));
+		params.addAll(newOneAndOnlyFunctionTestParams(NAME_IPADDRESS_ONE_AND_ONLY, StandardDatatypes.IPADDRESS, IpAddressValue.valueOf("192.168.1.10")));
 		params.addAll(newOneAndOnlyFunctionTestParams(NAME_DNSNAME_ONE_AND_ONLY, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com")));
 
 		// *-bag-size functions
@@ -251,7 +251,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 		params.addAll(newBagSizeFunctionTestParams(NAME_YEARMONTHDURATION_BAG_SIZE, StandardDatatypes.YEARMONTHDURATION, new YearMonthDurationValue("P1Y2M")));
 		params.addAll(newBagSizeFunctionTestParams(NAME_X500NAME_BAG_SIZE, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US")));
 		params.addAll(newBagSizeFunctionTestParams(NAME_RFC822NAME_BAG_SIZE, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com")));
-		params.addAll(newBagSizeFunctionTestParams(NAME_IPADDRESS_BAG_SIZE, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10")));
+		params.addAll(newBagSizeFunctionTestParams(NAME_IPADDRESS_BAG_SIZE, StandardDatatypes.IPADDRESS, IpAddressValue.valueOf("192.168.1.10")));
 		params.addAll(newBagSizeFunctionTestParams(NAME_DNSNAME_BAG_SIZE, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com")));
 
 		// *-is-in functions
@@ -270,7 +270,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 		params.addAll(newIsInFunctionTestParams(NAME_X500NAME_IS_IN, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue(
 				"cn=John Smith, o=Other Corp, c=US")));
 		params.addAll(newIsInFunctionTestParams(NAME_RFC822NAME_IS_IN, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("Smith@sun.com")));
-		params.addAll(newIsInFunctionTestParams(NAME_IPADDRESS_IS_IN, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10"), new IpAddressValue("192.168.1.11")));
+		params.addAll(newIsInFunctionTestParams(NAME_IPADDRESS_IS_IN, StandardDatatypes.IPADDRESS, IpAddressValue.valueOf("192.168.1.10"), IpAddressValue.valueOf("192.168.1.11")));
 		params.addAll(newIsInFunctionTestParams(NAME_DNSNAME_IS_IN, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com"), new DnsNameWithPortRangeValue("example1.com")));
 
 		// *-bag functions
@@ -289,7 +289,7 @@ public class BagFunctionsTest extends StandardFunctionTest
 		params.addAll(newBagOfFunctionTestParams(NAME_X500NAME_BAG, StandardDatatypes.X500NAME, new X500NameValue("cn=John Smith, o=Medico Corp, c=US"), new X500NameValue(
 				"cn=John Smith, o=Other Corp, c=US")));
 		params.addAll(newBagOfFunctionTestParams(NAME_RFC822NAME_BAG, StandardDatatypes.RFC822NAME, new Rfc822NameValue("Anderson@sun.com"), new Rfc822NameValue("Smith@sun.com")));
-		params.addAll(newBagOfFunctionTestParams(NAME_IPADDRESS_BAG, StandardDatatypes.IPADDRESS, new IpAddressValue("192.168.1.10"), new IpAddressValue("192.168.1.11")));
+		params.addAll(newBagOfFunctionTestParams(NAME_IPADDRESS_BAG, StandardDatatypes.IPADDRESS, IpAddressValue.valueOf("192.168.1.10"), IpAddressValue.valueOf("192.168.1.11")));
 		params.addAll(newBagOfFunctionTestParams(NAME_DNSNAME_BAG, StandardDatatypes.DNSNAME, new DnsNameWithPortRangeValue("example.com"), new DnsNameWithPortRangeValue("example1.com")));
 
 		return params;

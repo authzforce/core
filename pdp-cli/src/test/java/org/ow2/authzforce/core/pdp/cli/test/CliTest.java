@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.cli.test;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -53,7 +54,7 @@ public class CliTest
 	public void testXml() throws UnsupportedEncodingException, JAXBException
 	{
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (PrintStream ps = new PrintStream(baos, true, "UTF-8"))
+		try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
 		{
 			/*
 			 * Redirect system.out to the byte stream
@@ -66,7 +67,7 @@ public class CliTest
 			System.setOut(System.out);
 		}
 
-		final String output = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+		final String output = baos.toString(StandardCharsets.UTF_8);
 		System.out.println(output);
 		final Response expectedXacmlJaxbObj = (Response) Xacml3JaxbHelper.createXacml3Unmarshaller().unmarshal(new File(TEST_DATA_DIR + "/IIA001/Response.xml"));
 
@@ -88,7 +89,7 @@ public class CliTest
 	{
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		try (PrintStream ps = new PrintStream(baos, true, "UTF-8"))
+		try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
 		{
 			/*
 			 * Redirect system.out to the byte stream
@@ -101,7 +102,7 @@ public class CliTest
 			System.setOut(System.out);
 		}
 
-		final String output = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+		final String output = baos.toString(StandardCharsets.UTF_8);
 		System.out.println(output);
 
 		final JSONObject normalizedExpectedResponse;
@@ -128,7 +129,7 @@ public class CliTest
 		}
 		catch (final CommandLine.ExecutionException e)
 		{
-			assertTrue(e.getCause().getClass() == IllegalArgumentException.class);
+			assertSame(e.getCause().getClass(), IllegalArgumentException.class);
 		}
 	}
 

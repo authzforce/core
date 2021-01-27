@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -46,15 +46,10 @@ public final class TargetEvaluators
 	/**
 	 * Empty Target evaluator that always evaluates to True (match all requests)
 	 */
-	public static final BooleanEvaluator MATCH_ALL_TARGET_EVALUATOR = new BooleanEvaluator()
+	public static final BooleanEvaluator MATCH_ALL_TARGET_EVALUATOR = context ->
 	{
-
-		@Override
-		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
-		{
-			LOGGER.debug("Target null/empty -> True");
-			return true;
-		}
+		LOGGER.debug("Target null/empty -> True");
+		return true;
 	};
 
 	private static final class NonEmptyTargetEvaluator implements BooleanEvaluator
@@ -102,8 +97,7 @@ public final class TargetEvaluators
 		 * @param context
 		 *            the representation of the request
 		 * @return true if and only if Match (else No-match)
-		 * @throws org.ow2.authzforce.core.pdp.api.
-		 *             IndeterminateEvaluationException if Indeterminate (error
+		 * @throws IndeterminateEvaluationException if Indeterminate (error
 		 *             evaluating target)
 		 */
 		@Override

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -22,6 +22,7 @@ package org.ow2.authzforce.core.pdp.impl.test.func;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.runner.RunWith;
@@ -56,8 +57,8 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 	private static final String STRING_SUBSTRING_FUNCTION_ID = "urn:oasis:names:tc:xacml:3.0:function:string-substring";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
-	{
+	public static Collection<Object[]> params()
+    {
 
 		return Arrays.asList(
 		        // urn:oasis:names:tc:xacml:3.0:function:any-of
@@ -67,7 +68,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 		         */
 		        new Object[] { NAME_ANY_OF, //
 		                STRING_EQUAL_FUNCTION_ID, //
-		                Arrays.asList(), //
+						Collections.emptyList(), //
 		                null },
 
 		        /*
@@ -99,7 +100,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 		         */
 		        new Object[] { NAME_ALL_OF, //
 		                INTEGER_GREATER_THAN_FUNCTION_ID, //
-		                Arrays.asList(), //
+						Collections.emptyList(), //
 		                null },
 		        /*
 		         * Invalid arg type (no bag)
@@ -131,7 +132,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 		         */
 		        new Object[] { NAME_ANY_OF_ANY, //
 		                STRING_EQUAL_FUNCTION_ID, //
-		                Arrays.asList(), //
+						Collections.emptyList(), //
 		                null },
 		        /*
 		         * Invalid arg type
@@ -169,7 +170,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 		         */
 		        new Object[] { NAME_ALL_OF_ANY, //
 		                INTEGER_GREATER_THAN_FUNCTION_ID, //
-		                Arrays.asList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20)))), //
+						Collections.singletonList(Bags.newBag(StandardDatatypes.INTEGER, Arrays.asList(IntegerValue.valueOf(10), IntegerValue.valueOf(20)))), //
 		                null },
 
 		        /*
@@ -272,14 +273,14 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 		         */
 		        new Object[] { NAME_MAP, // only one arg (bag)
 		                STRING_NORMALIZE_TO_LC_FUNCTION_ID, //
-		                Arrays.asList(), null },
+						Collections.emptyList(), null },
 
 		        /*
 		         * Invalid type of arg
 		         */
 		        new Object[] { NAME_MAP, // only one arg (bag)
 		                STRING_NORMALIZE_TO_LC_FUNCTION_ID, //
-		                Arrays.asList(new StringValue("Hello")), //
+						Collections.singletonList(new StringValue("Hello")), //
 		                null },
 
 		        /*
@@ -287,7 +288,7 @@ public class HigherOrderFunctionsTest extends StandardFunctionTest
 		         */
 		        new Object[] { NAME_MAP, // only one arg (bag)
 		                STRING_NORMALIZE_TO_LC_FUNCTION_ID, //
-		                Arrays.asList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World")))), //
+						Collections.singletonList(Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("Hello"), new StringValue("World")))), //
 		                Bags.newBag(StandardDatatypes.STRING, Arrays.asList(new StringValue("hello"), new StringValue("world"))) },
 
 		        new Object[] { NAME_MAP, // multiple args starting with bag, but invalid primitive datatype

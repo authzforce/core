@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -54,7 +54,7 @@ public class ConformanceV3OthersTest extends XacmlXmlPdpTest
 	}
 
 	@BeforeClass
-	public static void setUp() throws Exception
+	public static void setUp()
 	{
 		LOGGER.debug("Launching tests in '{}'", TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -48,8 +48,8 @@ public class NumericComparisonFunctionsTest extends StandardFunctionTest
 	private static final String NAME_DOUBLE_LESS_THAN_OR_EQUAL = "urn:oasis:names:tc:xacml:1.0:function:double-less-than-or-equal";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
-	{
+	public static Collection<Object[]> params()
+    {
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-greater-than
 				new Object[] { NAME_INTEGER_GREATER_THAN, Arrays.asList(IntegerValue.valueOf(5), IntegerValue.valueOf(4)), BooleanValue.TRUE },

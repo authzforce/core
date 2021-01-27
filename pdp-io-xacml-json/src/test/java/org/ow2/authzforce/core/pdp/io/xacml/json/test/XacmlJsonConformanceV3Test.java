@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -113,8 +113,8 @@ public class XacmlJsonConformanceV3Test
 	 * @param actualResponseFromPDP
 	 *            actual response
 	 */
-	public static void assertNormalizedEquals(final String testId, final JSONObject expectedResponse, final JSONObject actualResponseFromPDP) throws JAXBException
-	{
+	public static void assertNormalizedEquals(final String testId, final JSONObject expectedResponse, final JSONObject actualResponseFromPDP)
+    {
 		if (testId == null)
 		{
 			throw new IllegalArgumentException("Undefined test ID");
@@ -159,7 +159,7 @@ public class XacmlJsonConformanceV3Test
 		}
 		catch (final DirectoryIteratorException ex)
 		{
-			// I/O error encounted during the iteration, the cause is an IOException
+			// I/O error encountered during the iteration, the cause is an IOException
 			throw ex.getCause();
 		}
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -59,13 +59,13 @@ import picocli.CommandLine.Parameters;
 @Command(name = "authzforce-ce-core-pdp-cli", description = "Evaluates a XACML Request against a XACML Policy(Set) using AuthzForce PDP engine")
 public final class PdpCommandLineCallable implements Callable<Void>
 {
-	private static enum RequestType
+	private enum RequestType
 	{
-		XACML_XML, XACML_JSON;
+		XACML_XML, XACML_JSON
 	}
 
 	/*
-	 * WARNING: do not make picocli-annoated fields final here! Known issue: https://github.com/remkop/picocli/issues/68. Planned to be fixed in release 2.1.0.
+	 * WARNING: do not make picocli-annotated fields final here! Known issue: https://github.com/remkop/picocli/issues/68. Planned to be fixed in release 2.1.0.
 	 */
 	@Option(names = { "-t",
 	        "--type" }, description = "Type of XACML request/response: 'XACML_XML' for XACML 3.0/XML (XACML core specification), 'XACML_JSON' for XACML 3.0/JSON (JSON Profile of XACML 3.0)")
@@ -130,7 +130,7 @@ public final class PdpCommandLineCallable implements Callable<Void>
 				final PdpEngineInoutAdapter<Request, Response> xmlPdpEngineAdapter = PdpEngineAdapters.newXacmlJaxbInoutAdapter(configuration);
 				final Response xmlResponse = xmlPdpEngineAdapter.evaluate((Request) request, parser.getNamespacePrefixUriMap());
 				final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
-				final Boolean formatted = Boolean.valueOf(formattedOutput);
+				final Boolean formatted = formattedOutput;
 				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, formatted);
 				marshaller.marshal(xmlResponse, System.out);
 				break;

@@ -9,7 +9,7 @@
     <Rule Effect="Permit" RuleId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIA1:rule">
         <Description>
             Julius Hibbert can read or write Bart Simpson's medical
-            record: syntax for the SubjectAttributeDesignator omits
+            record: syntax for the Subject AttributeDesignator omits
             the required AttributeId xml attribute, however.
          </Description>
         <Target>

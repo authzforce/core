@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -47,17 +47,17 @@ public final class RootPolicyEvaluators
 {
 	/**
 	 * 
-	 * @param <PE>
-	 * @param rootPolicyProvider
+	 * @param <PE> type of top-level policy evaluator to be returned
+	 * @param rootPolicyProvider root policy provider
 	 * @param rootPolicyElementType
 	 *            type of policy element (XACML Policy or XACML PolicySet); if undefined, try with XACML Policy first, and if fails, try XACML PolicySet
-	 * @param rootPolicyId
-	 * @param optRootPolicyVersionPatterns
-	 * @param context
-	 * @param logger
-	 * @return
-	 * @throws IllegalArgumentException
-	 * @throws IndeterminateEvaluationException
+	 * @param rootPolicyId root policy ID
+	 * @param optRootPolicyVersionPatterns optional root policy version pattern to be matched
+	 * @param context policy evaluation context
+	 * @param logger logger
+	 * @return instance of the policy evaluator for the root policy
+	 * @throws IllegalArgumentException the resolved policy is invalid
+	 * @throws IndeterminateEvaluationException error in the root policy provider trying to get the matching root policy
 	 */
 	private static <PE extends TopLevelPolicyElementEvaluator> PE getRootPolicyEvaluator(final CloseablePolicyProvider<PE> rootPolicyProvider,
 	        final Optional<TopLevelPolicyElementType> rootPolicyElementType, final String rootPolicyId, final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns,
@@ -190,7 +190,7 @@ public final class RootPolicyEvaluators
 		 * 
 		 * @return static view of this policy evaluator; or null if none could be created because the internal root policy provider depends on the evaluation context to find the root policy (no static
 		 *         resolution is possible). If not null, this evaluator's policy provider responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext)} is closed (calling
-		 *         {@link CloseableStaticPolicyProvider#close()} and therefore not useable anymore. The resulting static view must be used instead.
+		 *         {@link CloseableStaticPolicyProvider#close()} and therefore not usable anymore. The resulting static view must be used instead.
 		 * @throws IOException
 		 *             error closing the evaluator's policy provider responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext)}
 		 * @throws IndeterminateEvaluationException
@@ -233,7 +233,7 @@ public final class RootPolicyEvaluators
 			if (this.staticRootPolicyEvaluator == null)
 			{
 				throw new IllegalArgumentException("No such " + (rootPolicyElementType.isPresent() ? rootPolicyElementType.get() : "Policy(Set)") + " found: ID = '" + rootPolicyId + "'"
-				        + (optRootPolicyVersionPatterns.isPresent() ? ", version pattern = " + optRootPolicyVersionPatterns.get() : ""));
+				        + (optRootPolicyVersionPatterns.map(policyVersionPatterns -> ", version pattern = " + policyVersionPatterns).orElse("")));
 			}
 
 			this.staticApplicablePolicies = new FlattenedPolicyTree(staticRootPolicyEvaluator.getPrimaryPolicyMetadata(), staticRootPolicyEvaluator.getPolicyRefsMetadata());

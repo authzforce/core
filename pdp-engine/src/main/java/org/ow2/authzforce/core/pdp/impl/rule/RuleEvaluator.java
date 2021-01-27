@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -207,9 +207,9 @@ public final class RuleEvaluator implements Decidable
 		}
 	}
 
-	private static final class PermitDecisionWithPepActionResutFactory extends DecisionWithPepActionResultFactory
+	private static final class PermitDecisionWithPepActionResultFactory extends DecisionWithPepActionResultFactory
 	{
-		private PermitDecisionWithPepActionResutFactory(final String ruleId, final List<PepActionExpression> rulePepActionExpressions)
+		private PermitDecisionWithPepActionResultFactory(final String ruleId, final List<PepActionExpression> rulePepActionExpressions)
 		{
 			super(ruleId, DecisionType.PERMIT, rulePepActionExpressions);
 		}
@@ -227,9 +227,9 @@ public final class RuleEvaluator implements Decidable
 		}
 	}
 
-	private static final class DenyDecisionWithPepActionResutFactory extends DecisionWithPepActionResultFactory
+	private static final class DenyDecisionWithPepActionResultFactory extends DecisionWithPepActionResultFactory
 	{
-		private DenyDecisionWithPepActionResutFactory(final String ruleId, final List<PepActionExpression> rulePepActionExpressions)
+		private DenyDecisionWithPepActionResultFactory(final String ruleId, final List<PepActionExpression> rulePepActionExpressions)
 		{
 			super(ruleId, DecisionType.DENY, rulePepActionExpressions);
 		}
@@ -369,8 +369,8 @@ public final class RuleEvaluator implements Decidable
 			this.decisionResultFactory = effect == EffectType.DENY ? DENY_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY : PERMIT_DECISION_WITHOUT_PEP_ACTION_RESULT_FACTORY;
 		} else
 		{
-			this.decisionResultFactory = effect == EffectType.DENY ? new DenyDecisionWithPepActionResutFactory(ruleId, pepActionExpressions)
-			        : new PermitDecisionWithPepActionResutFactory(ruleId, pepActionExpressions);
+			this.decisionResultFactory = effect == EffectType.DENY ? new DenyDecisionWithPepActionResultFactory(ruleId, pepActionExpressions)
+			        : new PermitDecisionWithPepActionResultFactory(ruleId, pepActionExpressions);
 		}
 	}
 

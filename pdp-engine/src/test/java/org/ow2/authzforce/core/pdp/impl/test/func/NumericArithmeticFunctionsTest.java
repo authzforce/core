@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -22,6 +22,7 @@ package org.ow2.authzforce.core.pdp.impl.test.func;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.runner.RunWith;
@@ -55,8 +56,8 @@ public class NumericArithmeticFunctionsTest extends StandardFunctionTest
 	private static final String NAME_FLOOR = "urn:oasis:names:tc:xacml:1.0:function:floor";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
-	{
+	public static Collection<Object[]> params()
+    {
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:integer-add
 				new Object[] { NAME_INTEGER_ADD, Arrays.asList(IntegerValue.valueOf(2), IntegerValue.valueOf(1)), IntegerValue.valueOf(3) },
@@ -116,24 +117,24 @@ public class NumericArithmeticFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_INTEGER_MOD, Arrays.asList(IntegerValue.valueOf(0), IntegerValue.valueOf(-3)), IntegerValue.valueOf(0) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:integer-abs
-				new Object[] { NAME_INTEGER_ABS, Arrays.asList(IntegerValue.valueOf(5)), IntegerValue.valueOf(5) },//
-				new Object[] { NAME_INTEGER_ABS, Arrays.asList(IntegerValue.valueOf(-5)), IntegerValue.valueOf(5) },
+				new Object[] { NAME_INTEGER_ABS, Collections.singletonList(IntegerValue.valueOf(5)), IntegerValue.valueOf(5) },//
+				new Object[] { NAME_INTEGER_ABS, Collections.singletonList(IntegerValue.valueOf(-5)), IntegerValue.valueOf(5) },
 
 				// urn:oasis:names:tc:xacml:1.0:function:double-abs
-				new Object[] { NAME_DOUBLE_ABS, Arrays.asList(new DoubleValue("5.25")), new DoubleValue("5.25") },//
-				new Object[] { NAME_DOUBLE_ABS, Arrays.asList(new DoubleValue("-5.0")), new DoubleValue("5.0") },
+				new Object[] { NAME_DOUBLE_ABS, Collections.singletonList(new DoubleValue("5.25")), new DoubleValue("5.25") },//
+				new Object[] { NAME_DOUBLE_ABS, Collections.singletonList(new DoubleValue("-5.0")), new DoubleValue("5.0") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:round
-				new Object[] { NAME_ROUND, Arrays.asList(new DoubleValue("5.25")), new DoubleValue("5.") },
+				new Object[] { NAME_ROUND, Collections.singletonList(new DoubleValue("5.25")), new DoubleValue("5.") },
 				//
-				new Object[] { NAME_ROUND, Arrays.asList(new DoubleValue("-5.75")), new DoubleValue("-6.") },//
-				new Object[] { NAME_ROUND, Arrays.asList(new DoubleValue("5.5")), new DoubleValue("6.") },
+				new Object[] { NAME_ROUND, Collections.singletonList(new DoubleValue("-5.75")), new DoubleValue("-6.") },//
+				new Object[] { NAME_ROUND, Collections.singletonList(new DoubleValue("5.5")), new DoubleValue("6.") },
 
 				// urn:oasis:names:tc:xacml:1.0:function:floor
-				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleValue("5.25")), new DoubleValue("5.") },
+				new Object[] { NAME_FLOOR, Collections.singletonList(new DoubleValue("5.25")), new DoubleValue("5.") },
 				//
-				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleValue("-5.25")), new DoubleValue("-6.") },//
-				new Object[] { NAME_FLOOR, Arrays.asList(new DoubleValue("5.5")), new DoubleValue("5.0") });
+				new Object[] { NAME_FLOOR, Collections.singletonList(new DoubleValue("-5.25")), new DoubleValue("-6.") },//
+				new Object[] { NAME_FLOOR, Collections.singletonList(new DoubleValue("5.5")), new DoubleValue("5.0") });
 	}
 
 }

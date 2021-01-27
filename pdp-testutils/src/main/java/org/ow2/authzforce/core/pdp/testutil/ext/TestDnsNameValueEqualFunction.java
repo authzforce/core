@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -34,14 +34,10 @@ public class TestDnsNameValueEqualFunction extends EqualTypeMatchFunction<TestDn
 	 */
 	public static final String ID = "urn:oasis:names:tc:xacml:3.0:function:dnsName-value-equal";
 
-	private static final Matcher<TestDnsNameWithPortValue> MATCHER = new Matcher<TestDnsNameWithPortValue>()
+	private static final Matcher<TestDnsNameWithPortValue> MATCHER = (arg0, arg1) ->
 	{
-		@Override
-		public boolean match(TestDnsNameWithPortValue arg0, TestDnsNameWithPortValue arg1)
-		{
-			// ports are ignored as per spec
-			return arg0.getHostName().equalsIgnoreCase(arg1.getHostName());
-		}
+		// ports are ignored as per spec
+		return arg0.getHostName().equalsIgnoreCase(arg1.getHostName());
 	};
 
 	public TestDnsNameValueEqualFunction()

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -67,7 +67,6 @@ public final class ImmutableCombiningAlgRegistry extends BasePdpExtensionRegistr
 		}
 
 		// wrong type of alg
-		alg.getCombinedElementType();
 		throw new IllegalArgumentException(
 				"Combining algorithm '" + algId + "': invalid type of input elements (to be combined): " + toString(combinedEltType) + "; expected: " + toString(alg.getCombinedElementType()) + ".");
 	}

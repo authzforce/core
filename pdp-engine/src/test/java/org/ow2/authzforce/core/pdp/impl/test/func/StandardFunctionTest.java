@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -39,16 +39,7 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
-import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.PrimitiveValue;
-import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
@@ -78,7 +69,7 @@ public abstract class StandardFunctionTest
 		}
 	}
 
-	private static final Map<Class<?>, AttributeDatatype<?>> JAVA_CLASS_TO_DATATYPE_MAP = StandardDatatypes.MANDATORY_SET.stream().collect(Collectors.toMap(dt -> dt.getInstanceClass(), dt -> dt));
+	private static final Map<Class<?>, AttributeDatatype<?>> JAVA_CLASS_TO_DATATYPE_MAP = StandardDatatypes.MANDATORY_SET.stream().collect(Collectors.toMap(PrimitiveDatatype::getInstanceClass, dt -> dt));
 
 	private FunctionCall<?> funcCall;
 	private final Value expectedResult;
@@ -97,7 +88,6 @@ public abstract class StandardFunctionTest
 	 *            The expected function evaluation result, according to the given inputs; null if evaluation expected to throw an error (IndeterminateEvaluationException)
 	 * @param compareBagsAsSets
 	 *            true iff result bags should be compared as sets for equality check
-	 * @throws UnknownIdentifierException
 	 */
 	private StandardFunctionTest(final String functionName, final List<Expression<?>> inputs, final boolean compareBagsAsSets, final Value expectedResult)
 	{
@@ -211,7 +201,7 @@ public abstract class StandardFunctionTest
 
 	// private static <V extends Value> IndeterminateExpression<V> newIndeterminateExpression
 
-	private static final List<Expression<?>> toExpressions(final String subFunctionName, final List<Value> values)
+	private static List<Expression<?>> toExpressions(final String subFunctionName, final List<Value> values)
 	{
 		final List<Expression<?>> inputExpressions = new ArrayList<>();
 		if (subFunctionName != null)
@@ -303,7 +293,7 @@ public abstract class StandardFunctionTest
 		this(functionName, subFunctionName, inputs, false, expectedResult);
 	}
 
-	private static final Set<PrimitiveValue> bagToSet(final Bag<?> bag)
+	private static Set<PrimitiveValue> bagToSet(final Bag<?> bag)
 	{
 		final Set<PrimitiveValue> set = new HashSet<>();
 		for (final PrimitiveValue val : bag)
@@ -320,7 +310,7 @@ public abstract class StandardFunctionTest
 		if (isTestOkBeforeFuncCall)
 		{
 			/*
-			 * Test already OK (syntax error was expected and occured when creating the function call already), no need to carry on the function call
+			 * Test already OK (syntax error was expected and occurred when creating the function call already), no need to carry on the function call
 			 */
 			return;
 		}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -165,7 +165,7 @@ public enum StandardCombiningAlgorithm
 
 	private final String id;
 
-	private StandardCombiningAlgorithm(final String id)
+	StandardCombiningAlgorithm(final String id)
 	{
 		this.id = id;
 	}
@@ -229,7 +229,7 @@ public enum StandardCombiningAlgorithm
 			standardAlgorithms.add(new LegacyDenyOverridesCombiningAlg(alg.id));
 		}
 
-		// (orderered-)permit-overrides
+		// (ordered-)permit-overrides
 		for (final StandardCombiningAlgorithm alg : EnumSet.range(StandardCombiningAlgorithm.XACML_1_0_POLICY_COMBINING_PERMIT_OVERRIDES,
 				StandardCombiningAlgorithm.XACML_1_1_RULE_COMBINING_ORDERED_PERMIT_OVERRIDES))
 		{
@@ -246,16 +246,10 @@ public enum StandardCombiningAlgorithm
 	}
 
 	private static final Map<String, StandardCombiningAlgorithm> ID_TO_STD_ALG_MAP = Maps.uniqueIndex(Arrays.asList(StandardCombiningAlgorithm.values()),
-			new com.google.common.base.Function<StandardCombiningAlgorithm, String>()
+			input ->
 			{
-
-				@Override
-				public String apply(final StandardCombiningAlgorithm input)
-				{
-					assert input != null;
-					return input.getId();
-				}
-
+				assert input != null;
+				return input.getId();
 			});
 
 	/**

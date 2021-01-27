@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -46,8 +46,8 @@ public class SpecialMatchFunctionsTest extends StandardFunctionTest
 	private static final String NAME_RFC822NAME_MATCH = "urn:oasis:names:tc:xacml:1.0:function:rfc822Name-match";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
-	{
+	public static Collection<Object[]> params()
+    {
 		return Arrays.asList(
 		// urn:oasis:names:tc:xacml:1.0:function:x500Name-match
 				new Object[] { NAME_X500NAME_MATCH, Arrays.asList(new X500NameValue("O=Medico Corp,C=US"), new X500NameValue("cn=John Smith,o=Medico Corp, c=US")), BooleanValue.TRUE },

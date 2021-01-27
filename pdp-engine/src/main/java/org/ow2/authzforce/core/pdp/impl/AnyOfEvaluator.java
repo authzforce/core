@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -44,10 +44,13 @@ public final class AnyOfEvaluator
 	private static final IllegalArgumentException NO_ALL_OF_EXCEPTION = new IllegalArgumentException(
 			"<AnyOf> empty. Must contain at least one <AllOf>");
 
-	// Store the list of AllOf as evaluatable AllOf types to avoid casting from
-	// JAXB AllOfType
-	// during evaluation
-	private final transient List<AllOfEvaluator> evaluatableAllOfList;
+	/*
+	 Store the list of AllOf as evaluable AllOf types to avoid casting from
+	 JAXB AllOfType
+	 during evaluation
+	 */
+
+	private final transient List<AllOfEvaluator> evaluableAllOfList;
 
 	/**
 	 * Constructor that creates a new <code>AnyOf</code> evaluator based on the
@@ -73,7 +76,7 @@ public final class AnyOfEvaluator
 			throw NO_ALL_OF_EXCEPTION;
 		}
 
-		this.evaluatableAllOfList = new ArrayList<>(jaxbAllOfList.size());
+		this.evaluableAllOfList = new ArrayList<>(jaxbAllOfList.size());
 		int matchIndex = 0;
 		for (final AllOf jaxbAllOf : jaxbAllOfList)
 		{
@@ -87,7 +90,7 @@ public final class AnyOfEvaluator
 				throw new IllegalArgumentException("Invalid <AnyOf>'s <AllOf>#" + matchIndex, e);
 			}
 
-			evaluatableAllOfList.add(allOfEvaluator);
+			evaluableAllOfList.add(allOfEvaluator);
 			matchIndex++;
 		}
 	}
@@ -126,7 +129,7 @@ public final class AnyOfEvaluator
 		/*
 		 * By construction, there must be at least one AllOf
 		 */
-		for (final AllOfEvaluator allOfEvaluator : evaluatableAllOfList)
+		for (final AllOfEvaluator allOfEvaluator : evaluableAllOfList)
 		{
 			final boolean isMatched;
 			try

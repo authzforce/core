@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,15 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.MalformedURLException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,7 +73,7 @@ public final class SchemaHandler
 		@Override
 		public LSInput resolveResource(final String type, final String namespaceURI, final String publicId, final String systemId, final String baseURI)
 		{
-			_LOGGER.debug("resolveResource(type = {}, namespaceURI = {}, publicId = {}, systemId = {}, baseURI = {}) -> {}", type, namespaceURI, publicId, systemId, baseURI);
+			_LOGGER.debug("Calling resolveResource(type = {}, namespaceURI = {}, publicId = {}, systemId = {}, baseURI = {})", type, namespaceURI, publicId, systemId, baseURI);
 			try
 			{
 				String resolvedLocation = null;
@@ -100,11 +95,10 @@ public final class SchemaHandler
 				}
 				if (resolvedLocation != null)
 				{
+					// Fails with ResourceUtils.getFile(...)
+					// final File resourceFile = ResourceUtils.getFile(resolvedLocation);
 					final URL resourceURL = ResourceUtils.getURL(resolvedLocation);
-					if (resourceURL != null)
-					{
-						return new LSInputImpl(publicId, systemId, resourceURL.openStream());
-					}
+					return new LSInputImpl(publicId, systemId, new BufferedInputStream(resourceURL.openStream()));
 				}
 			}
 			catch (final IOException ex)
@@ -168,7 +162,7 @@ public final class SchemaHandler
 
 				catalogManager.setUseStaticCatalog(false);
 				catalogManager.setIgnoreMissingProperties(true);
-				final CatalogResolver catalogResolver = new CatalogResolver(catalogManager)
+				return new CatalogResolver(catalogManager)
 				{
 					@Override
 					public String getResolvedEntity(final String publicId, final String systemId)
@@ -179,20 +173,16 @@ public final class SchemaHandler
 							try
 							{
 								final URL resourceURL = ResourceUtils.getURL(s);
-								if (resourceURL != null)
-								{
-									return resourceURL.toExternalForm();
-								}
+								return resourceURL.toExternalForm();
 							}
 							catch (final IOException e)
 							{
-								_LOGGER.warn("Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}", e);
+								_LOGGER.warn("Error resolving resource needed by org.apache.xml.resolver.CatalogResolver for OASIS CatalogManager with URL: {}", s, e);
 							}
 						}
 						return s;
 					}
 				};
-				return catalogResolver;
 			}
 			catch (final Throwable t)
 			{
@@ -239,7 +229,7 @@ public final class SchemaHandler
 
 				if (catalog == null)
 				{
-					_LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpatch for an xmlresolver jar.", catalogURL);
+					_LOGGER.warn("Catalog found at {} but no org.apache.xml.resolver.CatalogManager was found. Check the classpath for an xmlresolver jar.", catalogURL);
 				}
 				else
 				{
@@ -249,7 +239,7 @@ public final class SchemaHandler
 			}
 		}
 
-		private String resolveSystem(final String sys) throws MalformedURLException, IOException
+		private String resolveSystem(final String sys) throws IOException
 		{
 			assert sys != null;
 			if (catalog == null)
@@ -259,7 +249,7 @@ public final class SchemaHandler
 			return catalog.resolveSystem(sys);
 		}
 
-		private String resolveURI(final String uri) throws MalformedURLException, IOException
+		private String resolveURI(final String uri) throws IOException
 		{
 			assert uri != null;
 			if (catalog == null)
@@ -269,7 +259,7 @@ public final class SchemaHandler
 			return catalog.resolveURI(uri);
 		}
 
-		private String resolvePublic(final String uri, final String parent) throws MalformedURLException, IOException
+		private String resolvePublic(final String uri, final String parent) throws IOException
 		{
 			assert uri != null;
 			if (resolver == null)
@@ -466,11 +456,7 @@ public final class SchemaHandler
 		{
 			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		}
-		catch (final SAXNotRecognizedException e)
-		{
-			throw new RuntimeException("Error configuring the XML schema factory for secure processing", e);
-		}
-		catch (final SAXNotSupportedException e)
+		catch (final SAXNotRecognizedException | SAXNotSupportedException e)
 		{
 			throw new RuntimeException("Error configuring the XML schema factory for secure processing", e);
 		}
@@ -481,9 +467,13 @@ public final class SchemaHandler
 		{
 			for (final String schemaLocation : schemaLocations)
 			{
+				//final File schemaFile;
 				final URL schemaURL;
 				try
 				{
+					/*
+					Fails with ResourceUtils.getFile(...)
+					 */
 					schemaURL = ResourceUtils.getURL(schemaLocation);
 				}
 				catch (final FileNotFoundException e)
@@ -491,7 +481,8 @@ public final class SchemaHandler
 					throw new RuntimeException("No resource found for XML schema location: " + schemaLocation, e);
 				}
 
-				final Reader r = new BufferedReader(new InputStreamReader(schemaURL.openStream(), "UTF-8"));
+				//final Reader r = new BufferedReader(new FileReader(schemaFile, StandardCharsets.UTF_8));
+				final Reader r = new BufferedReader(new InputStreamReader(schemaURL.openStream(), StandardCharsets.UTF_8));
 				final StreamSource source = new StreamSource(r);
 				source.setSystemId(schemaURL.toString());
 				sources.add(source);
@@ -534,7 +525,7 @@ public final class SchemaHandler
 		final Schema s;
 		try
 		{
-			s = factory.newSchema(sources.toArray(new Source[sources.size()]));
+			s = factory.newSchema(sources.toArray(new Source[0]));
 		}
 		catch (final SAXException e)
 		{

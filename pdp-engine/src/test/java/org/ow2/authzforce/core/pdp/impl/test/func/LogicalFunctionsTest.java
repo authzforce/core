@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -47,8 +47,8 @@ public class LogicalFunctionsTest extends StandardFunctionTest
 	private static final NullValue NULL_BOOLEAN_VALUE = new NullValue(XacmlDatatypeId.BOOLEAN.value());
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
-	{
+	public static Collection<Object[]> params()
+    {
 		return Arrays.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:or
 				new Object[] { NAME_OR, Collections.EMPTY_LIST, BooleanValue.FALSE },
@@ -79,7 +79,7 @@ public class LogicalFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_AND, Arrays.asList(BooleanValue.TRUE, NULL_BOOLEAN_VALUE, BooleanValue.TRUE), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:n-of
-				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(0)), BooleanValue.TRUE },//
+				new Object[] { NAME_N_OF, Collections.singletonList(IntegerValue.valueOf(0)), BooleanValue.TRUE },//
 				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(0), BooleanValue.FALSE, BooleanValue.FALSE, BooleanValue.FALSE), BooleanValue.TRUE },//
 				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, BooleanValue.FALSE, BooleanValue.FALSE), BooleanValue.FALSE },
 				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, BooleanValue.TRUE, BooleanValue.FALSE), BooleanValue.TRUE },
@@ -104,7 +104,7 @@ public class LogicalFunctionsTest extends StandardFunctionTest
 				new Object[] { NAME_N_OF, Arrays.asList(IntegerValue.valueOf(2), BooleanValue.TRUE, NULL_BOOLEAN_VALUE, BooleanValue.FALSE), null },
 
 				// urn:oasis:names:tc:xacml:1.0:function:not
-				new Object[] { NAME_NOT, Arrays.asList(BooleanValue.TRUE), BooleanValue.FALSE }, new Object[] { NAME_NOT, Arrays.asList(BooleanValue.FALSE), BooleanValue.TRUE });
+				new Object[] { NAME_NOT, Collections.singletonList(BooleanValue.TRUE), BooleanValue.FALSE }, new Object[] { NAME_NOT, Collections.singletonList(BooleanValue.FALSE), BooleanValue.TRUE });
 	}
 
 }

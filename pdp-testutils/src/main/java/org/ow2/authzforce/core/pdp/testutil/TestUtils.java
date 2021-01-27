@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,31 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.testutil;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
+import com.google.common.base.Preconditions;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.impl.DefaultEnvironmentProperties;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
@@ -56,16 +33,18 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
+import javax.xml.bind.*;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.StatusCode;
+import static org.junit.Assert.assertEquals;
 
 public class TestUtils
 {
@@ -166,15 +145,14 @@ public class TestUtils
 	 * @return the XML/JAXB Request or null if any error
 	 * @throws JAXBException
 	 *             error reading XACML 3.0 Request from the file at {@code requestFileLocation}
-	 * @throws MalformedURLException
-	 * @throws IllegalArgumentException
+	 * @throws MalformedURLException requestFile could not be converted to a URL
+	 * @throws IllegalArgumentException requestFile is invalid
 	 */
 	public static Request createRequest(final Path requestFile, final XmlnsFilteringParser unmarshaller) throws JAXBException, IllegalArgumentException, MalformedURLException
 	{
 
 		LOGGER.debug("Request file to read: {}", requestFile);
-		final Request request = (Request) unmarshaller.parse(requestFile.toUri().toURL());
-		return request;
+		return (Request) unmarshaller.parse(requestFile.toUri().toURL());
 	}
 
 	/**
@@ -187,14 +165,13 @@ public class TestUtils
 	 * @return the XML/JAXB Response or null if any error
 	 * @throws JAXBException
 	 *             error reading XACML 3.0 Request from the file at {@code responseFileLocation}
-	 * @throws MalformedURLException
-	 * @throws IllegalArgumentException
+	 * @throws MalformedURLException requestFile could not be converted to a URL
+	 * @throws IllegalArgumentException invalid requestFile
 	 */
 	public static Response createResponse(final Path responseFile, final XmlnsFilteringParser unmarshaller) throws JAXBException, IllegalArgumentException, MalformedURLException
 	{
 		LOGGER.debug("Response file to read: {}", responseFile);
-		final Response response = (Response) unmarshaller.parse(responseFile.toUri().toURL());
-		return response;
+		return (Response) unmarshaller.parse(responseFile.toUri().toURL());
 	}
 
 	public static String printResponse(final Response response)
@@ -281,11 +258,7 @@ public class TestUtils
 		// Attributes categories may be in different order than expected although it is still compliant (order does not matter to the spec)
 		// always use the same order (lexicographical here)
 		final SortedSet<Attributes> sortedSet = new TreeSet<>(ATTRIBUTES_COMPARATOR);
-		for (final Attributes attributes : attributesList)
-		{
-			sortedSet.add(attributes);
-		}
-
+		sortedSet.addAll(attributesList);
 		return new ArrayList<>(sortedSet);
 	}
 
@@ -428,13 +401,11 @@ public class TestUtils
 	 *             invalid XACML policy located at {@code rootPolicyLocation} or {@code refPoliciesDirectoryLocation}
 	 * @throws IOException
 	 *             if error closing some resources used by the PDP after {@link IllegalArgumentException} occurred
-	 * @throws URISyntaxException
-	 *             invalid {@code refPoliciesDirectoryLocation}
 	 * @throws JAXBException
 	 *             cannot create Attribute Provider configuration (XML) unmarshaller
 	 */
 	public static PdpEngineConfiguration newPdpEngineConfiguration(final Path rootPolicyFile, final boolean enableXPath, final Optional<Path> attributeProviderConfFile, final String requestPreprocId,
-	        final String resultPostprocId) throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
+	        final String resultPostprocId) throws IllegalArgumentException, IOException, JAXBException
 	{
 		final TopLevelPolicyElementRef rootPolicyRef = TestUtils.getPolicyRef(rootPolicyFile);
 		return newPdpEngineConfiguration(rootPolicyRef, Collections.singletonList(rootPolicyFile.toString()), enableXPath, attributeProviderConfFile, requestPreprocId, resultPostprocId);

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -40,7 +40,7 @@ final class StandardDatatypeConverters
 	static final TypeConverter<DoubleValue, IntegerValue> INTEGER_TO_DOUBLE = arg -> {
 		try
 		{
-			return new DoubleValue(Double.valueOf(arg.doubleValue()));
+			return new DoubleValue(arg.doubleValue());
 		}
 		catch (final IllegalArgumentException e)
 		{
@@ -68,7 +68,7 @@ final class StandardDatatypeConverters
 
 	static class ToStringConverter<PARAM extends SimpleValue<?>> implements TypeConverter<StringValue, PARAM>
 	{
-		// not final because overriden specially by BooleanToString
+		// not final because overridden specially by BooleanToString
 		@Override
 		public StringValue convert(final PARAM arg)
 		{
@@ -77,7 +77,7 @@ final class StandardDatatypeConverters
 
 	}
 
-	static final ToStringConverter<BooleanValue> BOOLEAN_TO_STRING = new ToStringConverter<BooleanValue>()
+	static final ToStringConverter<BooleanValue> BOOLEAN_TO_STRING = new ToStringConverter<>()
 	{
 		@Override
 		public final StringValue convert(final BooleanValue arg)

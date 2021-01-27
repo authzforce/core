@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -53,7 +53,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	 */
 	public PolicyVersions(final Map<PolicyVersion, P> versions)
 	{
-		policiesByVersion = versions == null ? ImmutableSortedMap.<PolicyVersion, P>of() : ImmutableSortedMap.copyOf(versions, Collections.reverseOrder());
+		policiesByVersion = versions == null ? ImmutableSortedMap.of() : ImmutableSortedMap.copyOf(versions, Collections.reverseOrder());
 	}
 
 	/**
@@ -79,7 +79,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 
 		// policiesByVersion is not empty -> at least one value
 		final Iterator<Entry<PolicyVersion, P>> versionPolicyPairsIterator = policiesByVersion.entrySet().iterator();
-		if (!PolicyVersionPatterns.isPresent())
+		if (PolicyVersionPatterns.isEmpty())
 		{
 			/*
 			 * Return the latest version which is the first element by design (TreeMap initialized with reverse order on version keys). See §5.10 of XACML core spec:

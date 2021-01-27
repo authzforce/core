@@ -127,12 +127,8 @@
             </executions>
          </plugin>
          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <configuration>
-               <onlyAnalyze>org.ow2.authzforce.*</onlyAnalyze>
-               <excludeFilterFile>findbugs-exclude-filter.xml</excludeFilterFile>
-            </configuration>
+            <groupId>com.github.spotbugs</groupId>
+               <artifactId>spotbugs-maven-plugin</artifactId>
             <executions>
                <execution>
                   <phase>verify</phase>

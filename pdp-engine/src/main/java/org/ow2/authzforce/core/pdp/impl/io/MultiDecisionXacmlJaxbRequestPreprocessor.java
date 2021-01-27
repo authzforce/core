@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -41,12 +41,12 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
  */
 public final class MultiDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJaxbRequestPreprocessor
 {
-	private static final MultipleXacmlRequestPreprocHelper<IndividualXacmlJaxbRequest, Attributes, Attributes> MDP_PREPROC_HELPER = new MultipleXacmlRequestPreprocHelper<IndividualXacmlJaxbRequest, Attributes, Attributes>(
-	        (pdpEngineIndividualRequest, inputAttributeCategory) -> new IndividualXacmlJaxbRequest(pdpEngineIndividualRequest, inputAttributeCategory))
+	private static final MultipleXacmlRequestPreprocHelper<IndividualXacmlJaxbRequest, Attributes, Attributes> MDP_PREPROC_HELPER = new MultipleXacmlRequestPreprocHelper<>(
+			IndividualXacmlJaxbRequest::new)
 	{
 
 		@Override
-		protected Attributes validate(final Attributes inputRawAttributeCategoryObject) throws IndeterminateEvaluationException
+		protected Attributes validate(final Attributes inputRawAttributeCategoryObject)
 		{
 			/*
 			 * Same type as input/output, nothing to do.

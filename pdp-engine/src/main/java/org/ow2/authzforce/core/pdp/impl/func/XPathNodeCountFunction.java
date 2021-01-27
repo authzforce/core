@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,26 +17,17 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Arrays;
-import java.util.List;
-
+import net.sf.saxon.s9api.XdmValue;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
-import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
-import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.XPathValue;
+import org.ow2.authzforce.core.pdp.api.func.*;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
-import net.sf.saxon.s9api.XdmValue;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A class that implements the optional XACML 3.0 xpath-node-count function.
@@ -79,7 +70,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 				{
 					try
 					{
-						xpathVal = XPathValue.class.cast(remainingArgs[0]);
+						xpathVal = (XPathValue) remainingArgs[0];
 					} catch (final ClassCastException e)
 					{
 						throw new IndeterminateEvaluationException(invalidArgTypeMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
@@ -127,7 +118,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 
 	XPathNodeCountFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.INTEGER, true, Arrays.asList(StandardDatatypes.XPATH));
+		super(functionId, StandardDatatypes.INTEGER, true, Collections.singletonList(StandardDatatypes.XPATH));
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
 

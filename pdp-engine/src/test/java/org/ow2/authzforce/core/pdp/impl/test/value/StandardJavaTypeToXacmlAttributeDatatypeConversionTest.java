@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -87,7 +87,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 	private static final AttributeValueFactoryRegistry ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT = StandardAttributeValueFactories.getRegistry(false, Optional.of(BigInteger.valueOf(Long.MAX_VALUE)));
 	private static final AttributeValueFactoryRegistry ATT_VALUE_FACTORIES_WITH_BIG_INT_SUPPORT = StandardAttributeValueFactories.getRegistry(false, Optional.of(INTEGER_GREATER_THAN_MAX_LONG));
 
-	private static volatile AtomicInteger testId = new AtomicInteger(0);
+	private static final AtomicInteger testId = new AtomicInteger(0);
 
 	@Parameters(name = "{index}: {1} -> {2}")
 	public static Collection<Object[]> data()
@@ -101,19 +101,19 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		        { null, Collections.emptyList(), StandardDatatypes.STRING.getId(), IllegalArgumentException.class },
 
 		        /* string type */
-		        { null, Arrays.asList("string"), StandardDatatypes.STRING.getId(), null },
+		        { null, Collections.singletonList("string"), StandardDatatypes.STRING.getId(), null },
 		        /* multiple values (strings) */
 		        { null, Arrays.asList("string1", "string2"), StandardDatatypes.STRING.getId(), null },
 
 		        /* boolean type */
 		        /* invalid */
 		        /* invalid */
-		        { null, Arrays.asList((Boolean) null), StandardDatatypes.BOOLEAN.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((Boolean) null), StandardDatatypes.BOOLEAN.getId(), IllegalArgumentException.class },
 
 		        /*
 		         * singleton
 		         */
-		        { null, Arrays.asList(true), StandardDatatypes.BOOLEAN.getId(), null },
+		        { null, Collections.singletonList(true), StandardDatatypes.BOOLEAN.getId(), null },
 		        /* multiple values of type boolean */
 		        { null, Arrays.asList(true, false), StandardDatatypes.BOOLEAN.getId(), null },
 
@@ -121,39 +121,39 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		         * integer
 		         */
 		        /* invalid */
-		        { null, Arrays.asList((Integer) null), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((Integer) null), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
 
 		        /* Short */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(Short.MIN_VALUE), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Collections.singletonList(Short.MIN_VALUE), StandardDatatypes.INTEGER.getId(), null },
 		        /* Integer */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(Integer.MIN_VALUE), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Collections.singletonList(Integer.MIN_VALUE), StandardDatatypes.INTEGER.getId(), null },
 
 		        /* Long */
 		        /* Using medium integer support (Long converted to Integer) */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(Long.valueOf(0)), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Collections.singletonList(0L), StandardDatatypes.INTEGER.getId(), null },
 		        /* Max long unsupported by attribute value factory for small/medium integers */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(Long.MAX_VALUE), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Collections.singletonList(Long.MAX_VALUE), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
 		        /* Max long supported by attribute value factory for long integers */
-		        { ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT, Arrays.asList(Long.MAX_VALUE), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT, Collections.singletonList(Long.MAX_VALUE), StandardDatatypes.INTEGER.getId(), null },
 
 		        /* BigInteger (non-final!) */
 		        /* Using medium integer support (BigInteger converted to Integer) */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(BigInteger.ZERO), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Collections.singletonList(BigInteger.ZERO), StandardDatatypes.INTEGER.getId(), null },
 		        /*
 		         * Using long integer support (BigInteger converted to Long)
 		         */
-		        { ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT, Arrays.asList(BigInteger.ZERO), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT, Collections.singletonList(BigInteger.ZERO), StandardDatatypes.INTEGER.getId(), null },
 		        /* subtype of BigInteger */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(MyBigInteger.valueOf(0)), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Collections.singletonList(MyBigInteger.valueOf(0)), StandardDatatypes.INTEGER.getId(), null },
 		        /* BigInteger too big to be supported by attribute value factory for small/medium integers */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(INTEGER_GREATER_THAN_MAX_LONG), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Collections.singletonList(INTEGER_GREATER_THAN_MAX_LONG), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
 		        /* BigInteger too big to be supported by attribute value factory for long integers */
-		        { ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT, Arrays.asList(INTEGER_GREATER_THAN_MAX_LONG), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
+		        { ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT, Collections.singletonList(INTEGER_GREATER_THAN_MAX_LONG), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
 		        /* BigInteger bigger than max long, supported by attribute value factory for big integers */
-		        { ATT_VALUE_FACTORIES_WITH_BIG_INT_SUPPORT, Arrays.asList(INTEGER_GREATER_THAN_MAX_LONG), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_BIG_INT_SUPPORT, Collections.singletonList(INTEGER_GREATER_THAN_MAX_LONG), StandardDatatypes.INTEGER.getId(), null },
 
 		        /* Mix of different integer types */
-		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(Short.MAX_VALUE, Integer.MAX_VALUE, Long.valueOf(0), BigInteger.ZERO), StandardDatatypes.INTEGER.getId(), null },
+		        { ATT_VALUE_FACTORIES_WITH_MEDIUM_INT_SUPPORT, Arrays.asList(Short.MAX_VALUE, Integer.MAX_VALUE, 0L, BigInteger.ZERO), StandardDatatypes.INTEGER.getId(), null },
 
 		        { ATT_VALUE_FACTORIES_WITH_LONG_INT_SUPPORT, Arrays.asList(Short.MAX_VALUE, Integer.MAX_VALUE, Long.MAX_VALUE, BigInteger.ZERO), StandardDatatypes.INTEGER.getId(), null },
 
@@ -163,11 +163,11 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		         * double
 		         */
 		        /* invalid */
-		        { null, Arrays.asList((Double) null), StandardDatatypes.DOUBLE.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((Double) null), StandardDatatypes.DOUBLE.getId(), IllegalArgumentException.class },
 		        /* from Double */
-		        { null, Arrays.asList(Double.MIN_NORMAL), StandardDatatypes.DOUBLE.getId(), null },
+		        { null, Collections.singletonList(Double.MIN_NORMAL), StandardDatatypes.DOUBLE.getId(), null },
 		        /* from Float */
-		        { null, Arrays.asList(Float.MIN_NORMAL), StandardDatatypes.DOUBLE.getId(), null },
+		        { null, Collections.singletonList(Float.MIN_NORMAL), StandardDatatypes.DOUBLE.getId(), null },
 		        /* Mix of float and double */
 		        { null, Arrays.asList(Float.MIN_NORMAL, Double.MIN_NORMAL), StandardDatatypes.DOUBLE.getId(), null },
 
@@ -175,11 +175,11 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		         * time
 		         */
 		        /* invalid */
-		        { null, Arrays.asList((LocalTime) null), StandardDatatypes.TIME.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((LocalTime) null), StandardDatatypes.TIME.getId(), IllegalArgumentException.class },
 		        /* from LocalTime */
-		        { null, Arrays.asList(LocalTime.now()), StandardDatatypes.TIME.getId(), null },
+		        { null, Collections.singletonList(LocalTime.now()), StandardDatatypes.TIME.getId(), null },
 		        /* from OffsetTime */
-		        { null, Arrays.asList(OffsetTime.now()), StandardDatatypes.TIME.getId(), null },
+		        { null, Collections.singletonList(OffsetTime.now()), StandardDatatypes.TIME.getId(), null },
 		        /* Mix of LocalTime and OffsetTime */
 		        { null, Arrays.asList(LocalTime.now(), OffsetTime.now()), StandardDatatypes.TIME.getId(), null },
 
@@ -187,58 +187,58 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		         * date
 		         */
 		        /* invalid */
-		        { null, Arrays.asList((LocalDate) null), StandardDatatypes.DATE.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((LocalDate) null), StandardDatatypes.DATE.getId(), IllegalArgumentException.class },
 		        /*
 		         * From LocalDate
 		         */
-		        { null, Arrays.asList(LocalDate.now()), StandardDatatypes.DATE.getId(), null },
+		        { null, Collections.singletonList(LocalDate.now()), StandardDatatypes.DATE.getId(), null },
 
 		        /*
 		         * date-time
 		         */
 		        /* invalid */
-		        { null, Arrays.asList((LocalDateTime) null), StandardDatatypes.DATETIME.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((LocalDateTime) null), StandardDatatypes.DATETIME.getId(), IllegalArgumentException.class },
 		        /* from LocalDateTime */
-		        { null, Arrays.asList(LocalDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
+		        { null, Collections.singletonList(LocalDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
 		        /* from OffsetDateTime */
-		        { null, Arrays.asList(OffsetDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
+		        { null, Collections.singletonList(OffsetDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
 		        /* from ZonedDateTime */
-		        { null, Arrays.asList(ZonedDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
+		        { null, Collections.singletonList(ZonedDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
 		        /* from ZonedDateTime */
-		        { null, Arrays.asList(Instant.now()), StandardDatatypes.DATETIME.getId(), null },
+		        { null, Collections.singletonList(Instant.now()), StandardDatatypes.DATETIME.getId(), null },
 		        /* Mix of LocalDateTime, OffsetDateTime... */
 		        { null, Arrays.asList(LocalDateTime.now(), OffsetDateTime.now(), ZonedDateTime.now(), Instant.now()), StandardDatatypes.DATETIME.getId(), null },
 		        /* from LocalDateTime */
-		        { null, Arrays.asList(LocalDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
+		        { null, Collections.singletonList(LocalDateTime.now()), StandardDatatypes.DATETIME.getId(), null },
 
 		        /*
 		         * anyURI
 		         */
 		        /* from URI */
-		        { null, Arrays.asList(URI.create("")), StandardDatatypes.ANYURI.getId(), null },
+		        { null, Collections.singletonList(URI.create("")), StandardDatatypes.ANYURI.getId(), null },
 
 		        /*
 		         * hexBinary
 		         */
 		        /* invalid: null */
-		        { null, Arrays.asList((byte[]) null), StandardDatatypes.HEXBINARY.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((byte[]) null), StandardDatatypes.HEXBINARY.getId(), IllegalArgumentException.class },
 		        /* Empty byte array is considered like empty XML value which is valid xs:hexBinary */
-		        { null, Arrays.asList(new byte[] {}), StandardDatatypes.HEXBINARY.getId(), null },
+		        { null, Collections.singletonList(new byte[]{}), StandardDatatypes.HEXBINARY.getId(), null },
 		        /* singleton byte */
-		        { null, Arrays.asList(new byte[] { 0x01 }), StandardDatatypes.HEXBINARY.getId(), null },
+		        { null, Collections.singletonList(new byte[]{0x01}), StandardDatatypes.HEXBINARY.getId(), null },
 		        /* from bytes */
-		        { null, Arrays.asList(new byte[] { 0x01, 0x23 }), StandardDatatypes.HEXBINARY.getId(), null },
+		        { null, Collections.singletonList(new byte[]{0x01, 0x23}), StandardDatatypes.HEXBINARY.getId(), null },
 
 		        /*
 		         * x500Name
 		         */
 		        /* invalid */
-		        { null, Arrays.asList((X500Principal) null), StandardDatatypes.X500NAME.getId(), IllegalArgumentException.class },
+		        { null, Collections.singletonList((X500Principal) null), StandardDatatypes.X500NAME.getId(), IllegalArgumentException.class },
 		        /* from bytes */
-		        { null, Arrays.asList(new X500Principal("CN=someCN")), StandardDatatypes.X500NAME.getId(), null },
+		        { null, Collections.singletonList(new X500Principal("CN=someCN")), StandardDatatypes.X500NAME.getId(), null },
 
 		        /* invalid mix of different datatypes */
-		        { null, Arrays.asList(new Integer(0), LocalDate.now()), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
+		        { null, Arrays.asList(0, LocalDate.now()), StandardDatatypes.INTEGER.getId(), IllegalArgumentException.class },
 
 		        /*
 		         * Unsupported java type
@@ -246,7 +246,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 		        /*
 		         * GregorianCalendar and Date classes not supported here because considered legacy code since Java 8. More info: https://docs.oracle.com/javase/tutorial/datetime/iso/legacy.html
 		         */
-		        { null, Arrays.asList(new Date()), StandardDatatypes.DATETIME.getId(), UnsupportedOperationException.class }
+		        { null, Collections.singletonList(new Date()), StandardDatatypes.DATETIME.getId(), UnsupportedOperationException.class }
 				/*
 				 * 
 				 */
@@ -296,8 +296,8 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 				 */
 				try
 				{
-					attValFactories.newExpression(expectedAttributeDatatypeId, Collections.singletonList(rawVal), null, null);
-					Assert.assertTrue("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass == null);
+					attValFactories.newExpression(expectedAttributeDatatypeId, Collections.singletonList(null), null, null);
+					Assert.assertNull("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass);
 				} catch (final Exception e)
 				{
 					Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));
@@ -310,7 +310,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 					final String actualDatatypeId = attValFactory.getDatatype().getId();
 					Assert.assertEquals("Invalid datatype for created attribute value", actualDatatypeId, expectedAttributeDatatypeId);
 					attValFactories.newAttributeValue(rawVal);
-					Assert.assertTrue("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass == null);
+					Assert.assertNull("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass);
 				} catch (final Exception e)
 				{
 					Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));
@@ -349,7 +349,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 			        .map(inputXacmlAttValue -> attValFactory.getInstance(inputXacmlAttValue.getContent(), inputXacmlAttValue.getOtherAttributes(), null)).collect(Collectors.toList());
 
 			Assert.assertEquals("AttributeValues after unmarshalling do not match original AttributeValues before marshalling: " + outStr, attBag.elements(), ImmutableMultiset.copyOf(inAttVals));
-			Assert.assertTrue("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass == null);
+			Assert.assertNull("Parsing raw value into AttributeValue did not throw exception as expected", expectedExceptionClass);
 		} catch (final Exception e)
 		{
 			Assert.assertTrue("Unexpected error: " + e, expectedExceptionClass != null && expectedExceptionClass.isInstance(e));

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -97,7 +97,7 @@ public class DefaultEnvironmentPropertiesTest
 		this.sysProps = systemProperties;
 		if (sysProps != null)
 		{
-			sysProps.forEach((k, v) -> System.setProperty(k, v));
+			sysProps.forEach(System::setProperty);
 		}
 
 	}
@@ -116,10 +116,6 @@ public class DefaultEnvironmentPropertiesTest
 		{
 			sysProps.forEach((k, v) -> System.clearProperty(k));
 		}
-	}
-
-	public static void main(final String[] args)
-	{
 	}
 
 }

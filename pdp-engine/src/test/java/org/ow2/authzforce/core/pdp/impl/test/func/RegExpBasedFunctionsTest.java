@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -53,8 +53,8 @@ public class RegExpBasedFunctionsTest extends StandardFunctionTest
 	private static final String NAME_X500NAME_REGEXP_MATCH = "urn:oasis:names:tc:xacml:2.0:function:x500Name-regexp-match";
 
 	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> params() throws Exception
-	{
+	public static Collection<Object[]> params()
+    {
 		return Arrays
 				.asList(
 				// urn:oasis:names:tc:xacml:1.0:function:string-regexp-match
@@ -66,19 +66,19 @@ public class RegExpBasedFunctionsTest extends StandardFunctionTest
 						new Object[] { NAME_ANYURI_REGEXP_MATCH, Arrays.asList(new StringValue("^http://.+"), new AnyUriValue("https://www.example.com")), BooleanValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:2.0:function:ipAddress-regexp-match
-						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), new IpAddressValue("10.10.10.190")),
+						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), IpAddressValue.valueOf("10.10.10.190")),
 								BooleanValue.TRUE },
-						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), new IpAddressValue("10.144.10.190")),
+						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])"), IpAddressValue.valueOf("10.144.10.190")),
 								BooleanValue.FALSE },
 						new Object[] { NAME_IPADDRESS_REGEXP_MATCH,
-								Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), new IpAddressValue("10.10.10.10/255.255.255.0:80")),
+								Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), IpAddressValue.valueOf("10.10.10.10/255.255.255.0:80")),
 								BooleanValue.TRUE },
 						new Object[] { NAME_IPADDRESS_REGEXP_MATCH,
-								Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), new IpAddressValue("192.168.1.10/255.255.255.0:8080")),
+								Arrays.asList(new StringValue("^10\\.10\\.10\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])/255\\.255\\.255\\.0:80$"), IpAddressValue.valueOf("192.168.1.10/255.255.255.0:8080")),
 								BooleanValue.FALSE },
-						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), new IpAddressValue("[1fff:0:a88:85a5::ac1f]:8001")),
+						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), IpAddressValue.valueOf("[1fff:0:a88:85a5::ac1f]:8001")),
 								BooleanValue.TRUE },
-						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), new IpAddressValue("[1eee:0:a88:85a5::ac1f]:8001")),
+						new Object[] { NAME_IPADDRESS_REGEXP_MATCH, Arrays.asList(new StringValue("^\\[1fff(:[0-9a-f]*)+\\](:[0-9]{1,5})?$"), IpAddressValue.valueOf("[1eee:0:a88:85a5::ac1f]:8001")),
 								BooleanValue.FALSE },
 
 						// urn:oasis:names:tc:xacml:2.0:function:dnsName-regexp-match

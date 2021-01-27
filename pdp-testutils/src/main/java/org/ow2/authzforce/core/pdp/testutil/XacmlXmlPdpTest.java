@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -173,7 +173,7 @@ public abstract class XacmlXmlPdpTest
 		}
 		catch (final DirectoryIteratorException ex)
 		{
-			// I/O error encounted during the iteration, the cause is an IOException
+			// I/O error encountered during the iteration, the cause is an IOException
 			throw ex.getCause();
 		}
 

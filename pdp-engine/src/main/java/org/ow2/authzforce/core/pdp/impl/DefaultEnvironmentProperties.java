@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -86,7 +86,6 @@ public final class DefaultEnvironmentProperties implements EnvironmentProperties
 		}
 
 		return PROPERTY_PLACEHOLDER_HELPER.replacePlaceholders(input, placeholderName -> {
-			assert placeholderName != null;
 
 			final String userDefinedPropVal = props.getProperty(placeholderName);
 			if (userDefinedPropVal != null)

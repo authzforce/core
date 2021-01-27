@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -25,11 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 
@@ -127,7 +123,7 @@ public final class PdpModelHandler
 		 * PdpExtensionLoader.
 		 */
 		final Set<Class<? extends AbstractPdpExtension>> extJaxbClasses = PdpExtensions.getExtensionJaxbClasses();
-		final Set<Class<?>> jaxbBoundClassSet = HashCollections.<Class<?>> newUpdatableSet(extJaxbClasses.size() + 1);
+		final Set<Class<?>> jaxbBoundClassSet = HashCollections.newUpdatableSet(extJaxbClasses.size() + 1);
 		jaxbBoundClassSet.addAll(extJaxbClasses);
 		LOGGER.debug("Final list of loaded extension models (JAXB classes): {}", jaxbBoundClassSet);
 
@@ -135,7 +131,7 @@ public final class PdpModelHandler
 		jaxbBoundClassSet.add(SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE);
 		try
 		{
-			confJaxbCtx = JAXBContext.newInstance(jaxbBoundClassSet.toArray(new Class<?>[jaxbBoundClassSet.size()]));
+			confJaxbCtx = JAXBContext.newInstance(jaxbBoundClassSet.toArray(new Class<?>[0]));
 			LOGGER.debug("JAXB context for PDP configuration (un)marshalling: {}", confJaxbCtx);
 		}
 		catch (final JAXBException e)
@@ -167,7 +163,7 @@ public final class PdpModelHandler
 	 * @param clazz
 	 *            Class of object to be unmarshalled, must be a subclass (or the class itself) of the one defined by {@link #SUPPORTED_ROOT_CONF_ELEMENT_JAXB_TYPE}, i.e. {@link Pdp}
 	 * @return object of class clazz
-	 * @throws javax.xml.bind.JAXBException
+	 * @throws JAXBException
 	 *             if an error was encountered while unmarshalling the XML document in {@code src} into an instance of {@code clazz}
 	 * @param <T>
 	 *            a T object.
@@ -193,7 +189,7 @@ public final class PdpModelHandler
 	 *            configuration
 	 * @param os
 	 *            output stream where to save
-	 * @throws javax.xml.bind.JAXBException
+	 * @throws JAXBException
 	 *             error when marshalling the XML configuration to the output stream
 	 */
 	public void marshal(final Pdp conf, final OutputStream os) throws JAXBException
@@ -211,7 +207,7 @@ public final class PdpModelHandler
 	 *            configuration
 	 * @param f
 	 *            output file where to save
-	 * @throws javax.xml.bind.JAXBException
+	 * @throws JAXBException
 	 *             error when marshalling the XML configuration to file
 	 */
 	public void marshal(final Pdp conf, final File f) throws JAXBException
