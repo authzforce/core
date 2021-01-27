@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -100,7 +100,7 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		}
 
 		final List<Serializable> contentParts = aaVal.getContent();
-		if (contentParts.isEmpty() || contentParts.size() > 1)
+		if (contentParts.size() != 1)
 		{
 			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
 		}
@@ -108,18 +108,12 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		aaJsonPropMap.put("Value", contentParts.get(0).toString());
 
 		final Optional<String> category = aa.getCategory();
-		if (category.isPresent())
-		{
-			aaJsonPropMap.put("Category", category.get());
-		}
+		category.ifPresent(s -> aaJsonPropMap.put("Category", s));
 
 		aaJsonPropMap.put("DataType", aa.getDatatype().getId());
 
 		final Optional<String> issuer = aa.getIssuer();
-		if (issuer.isPresent())
-		{
-			aaJsonPropMap.put("Issuer", issuer.get());
-		}
+		issuer.ifPresent(s -> aaJsonPropMap.put("Issuer", s));
 
 		return new JSONObject(aaJsonPropMap);
 	}
@@ -131,7 +125,7 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		obligationOrAdviceJsonPropMap.put("Id", obligationOrAdviceId);
 		if (!aaList.isEmpty())
 		{
-			final List<JSONObject> jsonAttAssignments = aaList.stream().map(e -> toJson(e)).collect(Collectors.toList());
+			final List<JSONObject> jsonAttAssignments = aaList.stream().map(BaseXacmlJsonResultPostprocessor::toJson).collect(Collectors.toList());
 			obligationOrAdviceJsonPropMap.put("AttributeAssignment", new JSONArray(jsonAttAssignments));
 		}
 

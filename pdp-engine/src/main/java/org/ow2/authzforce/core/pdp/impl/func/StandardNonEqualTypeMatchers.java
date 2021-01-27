@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -34,15 +34,7 @@ final class StandardNonEqualTypeMatchers
 	 * rfc822Name-match function
 	 * 
 	 */
-	static final Matcher<StringValue, Rfc822NameValue> RFC822NAME_MATCHER = new Matcher<StringValue, Rfc822NameValue>()
-	{
-
-		@Override
-		public final boolean match(final StringValue arg0, final Rfc822NameValue arg1)
-		{
-			return arg1.match(arg0.getUnderlyingValue());
-		}
-	};
+	static final Matcher<StringValue, Rfc822NameValue> RFC822NAME_MATCHER = (arg0, arg1) -> arg1.match(arg0.getUnderlyingValue());
 
 	// public static void main(String... args) throws XPathException
 	// {
@@ -61,7 +53,7 @@ final class StandardNonEqualTypeMatchers
 	 * anyURI-starts-with matcher. For string-starts-with, see {@link EqualTypeMatchFunction} class.
 	 * 
 	 */
-	static final Matcher<StringValue, AnyUriValue> ANYURI_STARTS_WITH_MATCHER = new Matcher<StringValue, AnyUriValue>()
+	static final Matcher<StringValue, AnyUriValue> ANYURI_STARTS_WITH_MATCHER = new Matcher<>()
 	{
 
 		/**
@@ -77,7 +69,7 @@ final class StandardNonEqualTypeMatchers
 	/**
 	 * anyURI-ends-with matcher
 	 */
-	static final Matcher<StringValue, AnyUriValue> ANYURI_ENDS_WITH_MATCHER = new Matcher<StringValue, AnyUriValue>()
+	static final Matcher<StringValue, AnyUriValue> ANYURI_ENDS_WITH_MATCHER = new Matcher<>()
 	{
 		/**
 		 * WARNING: the XACML spec defines the first argument as the suffix
@@ -93,7 +85,7 @@ final class StandardNonEqualTypeMatchers
 	 * anyURI-contains matcher
 	 * 
 	 */
-	static final Matcher<StringValue, AnyUriValue> ANYURI_CONTAINS_MATCHER = new Matcher<StringValue, AnyUriValue>()
+	static final Matcher<StringValue, AnyUriValue> ANYURI_CONTAINS_MATCHER = new Matcher<>()
 	{
 
 		/**

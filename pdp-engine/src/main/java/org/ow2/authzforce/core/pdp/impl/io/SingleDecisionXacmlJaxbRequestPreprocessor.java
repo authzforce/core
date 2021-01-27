@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -53,15 +53,7 @@ import com.google.common.collect.ImmutableList;
  */
 public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJaxbRequestPreprocessor
 {
-	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = new DecisionRequestFactory<ImmutableDecisionRequest>()
-	{
-
-		@Override
-		public ImmutableDecisionRequest getInstance(final Map<AttributeFqn, AttributeBag<?>> namedAttributes, final Map<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicies)
-		{
-			return ImmutableDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
-		}
-	};
+	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = (namedAttributes, extraContentsByCategory, returnApplicablePolicies) -> ImmutableDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
 
 	/**
 	 *

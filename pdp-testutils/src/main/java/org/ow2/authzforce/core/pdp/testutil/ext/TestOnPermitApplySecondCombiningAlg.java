@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -87,7 +87,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 						 * Obligation/advice from decision2 are added whether it is Permit/Deny (switch fall-through)
 						 */
 						outPepActions.addAll(decisionResult2.getPepActions());
-					case INDETERMINATE: // all "applicable" cases (swith blocks fall trough from DENY case)
+					case INDETERMINATE: // all "applicable" cases (switch blocks fall trough from DENY case)
 						if (outApplicablePolicyIdList != null)
 						{
 							if (decision0 != DecisionType.NOT_APPLICABLE)
@@ -159,7 +159,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 						case DENY:
 							// obligation/advice from decision1 are added
 							outPepActions.addAll(decisionResult1.getPepActions());
-						case INDETERMINATE: // all "applicable" cases (swith blocks fall trough from PERMIT case)
+						case INDETERMINATE: // all "applicable" cases (switch blocks fall trough from PERMIT case)
 							if (outApplicablePolicyIdList != null)
 							{
 								outApplicablePolicyIdList.addAll(decisionResult0.getApplicablePolicies());

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,9 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -33,6 +30,9 @@ import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A class that implements the logical functions "or"
@@ -74,7 +74,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 				try
 				{
 					attrVal = Expressions.eval(arg, context, StandardDatatypes.BOOLEAN);
-					if (attrVal.getUnderlyingValue().booleanValue())
+					if (attrVal.getUnderlyingValue())
 					{
 						return BooleanValue.TRUE;
 					}
@@ -99,14 +99,14 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 					final BooleanValue attrVal;
 					try
 					{
-						attrVal = BooleanValue.class.cast(arg);
+						attrVal = (BooleanValue) arg;
 					}
 					catch (final ClassCastException e)
 					{
 						throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
 					}
 
-					if (attrVal.getUnderlyingValue().booleanValue())
+					if (attrVal.getUnderlyingValue())
 					{
 						return BooleanValue.TRUE;
 					}
@@ -128,7 +128,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 
 	LogicalOrFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.BOOLEAN, true, Arrays.asList(StandardDatatypes.BOOLEAN));
+		super(functionId, StandardDatatypes.BOOLEAN, true, Collections.singletonList(StandardDatatypes.BOOLEAN));
 	}
 
 	/** {@inheritDoc} */

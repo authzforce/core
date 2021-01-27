@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -54,27 +54,22 @@ public final class ConditionEvaluators
 	/**
 	 * Condition that always evaluates to True
 	 */
-	public static final BooleanEvaluator TRUE_CONDITION = new BooleanEvaluator()
+	public static final BooleanEvaluator TRUE_CONDITION = context ->
 	{
-
-		@Override
-		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
-		{
-			LOGGER.debug("Condition is null or Expression equals constant True -> True");
-			return true;
-		}
+		LOGGER.debug("Condition is null or Expression equals constant True -> True");
+		return true;
 	};
 
 	private static final class BooleanExpressionEvaluator implements BooleanEvaluator
 	{
 
-		private transient final Expression<BooleanValue> evaluatableBoolExpression;
+		private transient final Expression<BooleanValue> evaluableBoolExpression;
 
 		private BooleanExpressionEvaluator(final Expression<BooleanValue> boolExpression) throws IllegalArgumentException
 		{
 
 			assert boolExpression != null;
-			this.evaluatableBoolExpression = boolExpression;
+			this.evaluableBoolExpression = boolExpression;
 		}
 
 		/**
@@ -91,8 +86,8 @@ public final class ConditionEvaluators
 		@Override
 		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			final BooleanValue boolVal = evaluatableBoolExpression.evaluate(context);
-			return boolVal.getUnderlyingValue().booleanValue();
+			final BooleanValue boolVal = evaluableBoolExpression.evaluate(context);
+			return boolVal.getUnderlyingValue();
 		}
 
 	}
@@ -135,12 +130,12 @@ public final class ConditionEvaluators
 		}
 
 		// WARNING: unchecked cast
-		final Expression<BooleanValue> evaluatableExpression = (Expression<BooleanValue>) expr;
+		final Expression<BooleanValue> evaluableExpression = (Expression<BooleanValue>) expr;
 
 		/*
 		 * Check whether the expression is constant
 		 */
-		final Optional<BooleanValue> constant = evaluatableExpression.getValue();
+		final Optional<BooleanValue> constant = evaluableExpression.getValue();
 		if (constant.isPresent())
 		{
 			if (constant.get().getUnderlyingValue())
@@ -156,7 +151,7 @@ public final class ConditionEvaluators
 
 		// constant == null
 		LOGGER.debug("Condition's Expression is not constant (evaluation without context failed)");
-		return new BooleanExpressionEvaluator(evaluatableExpression);
+		return new BooleanExpressionEvaluator(evaluableExpression);
 	}
 
 	private ConditionEvaluators()

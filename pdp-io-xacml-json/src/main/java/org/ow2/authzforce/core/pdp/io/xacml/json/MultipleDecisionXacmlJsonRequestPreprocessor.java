@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -44,8 +44,8 @@ public final class MultipleDecisionXacmlJsonRequestPreprocessor extends BaseXacm
 	private static final IndeterminateEvaluationException INVALID_REQUEST_CATEGORY_ARRAY_ELEMENT_TYPE_EXCEPTION = new IndeterminateEvaluationException(
 	        "Invalid Request/Category array: the type of one of the items is invalid (not JSON object as expected)", XacmlStatusCode.SYNTAX_ERROR.value());
 
-	private static final MultipleXacmlRequestPreprocHelper<IndividualXacmlJsonRequest, Object, JSONObject> MDP_PREPROC_HELPER = new MultipleXacmlRequestPreprocHelper<IndividualXacmlJsonRequest, Object, JSONObject>(
-	        (pdpEngineIndividualRequest, inputAttributeCategory) -> new IndividualXacmlJsonRequest(pdpEngineIndividualRequest, inputAttributeCategory))
+	private static final MultipleXacmlRequestPreprocHelper<IndividualXacmlJsonRequest, Object, JSONObject> MDP_PREPROC_HELPER = new MultipleXacmlRequestPreprocHelper<>(
+			IndividualXacmlJsonRequest::new)
 	{
 
 		@Override

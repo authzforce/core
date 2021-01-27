@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -90,8 +90,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 public class MongoDbPolicyProviderTest
 {
 	private static MongoServer DB_SERVER;
-	private static MongoCollection POLICY_COLLECTION;
-	private static String[] SAMPLE_POLICY_FILENAMES = { "permit-all-policy-0.1.0.xml", "permit-all-policy-0.1.xml", "permit-all-policyset-0.1.0.xml", "root-rbac-policyset-0.1.xml",
+	private static final String[] SAMPLE_POLICY_FILENAMES = { "permit-all-policy-0.1.0.xml", "permit-all-policy-0.1.xml", "permit-all-policyset-0.1.0.xml", "root-rbac-policyset-0.1.xml",
 	        "root-rbac-policyset-1.2.xml", "rbac-pps-employee-1.0.xml" };
 
 	private static CloseablePolicyProvider<?> POLICY_PROVIDER_MODULE;
@@ -141,8 +140,12 @@ public class MongoDbPolicyProviderTest
 		DB_SERVER.bind(socketAddress);
 
 		final MongoClient dbClient = new MongoClient(new ServerAddress(socketAddress));
+		/*
+		 * FIXME: Issue with getDB() deprecated not fixed yet: https://github.com/bguerout/jongo/issues/320
+		 * AND https://github.com/bguerout/jongo/issues/254
+		 */
 		final Jongo testDbWrapper = new Jongo(dbClient.getDB(mongodbBasedPolicyProviderConf.getDbName()));
-		POLICY_COLLECTION = testDbWrapper.getCollection(mongodbBasedPolicyProviderConf.getCollectionName());
+		final MongoCollection POLICY_COLLECTION = testDbWrapper.getCollection(mongodbBasedPolicyProviderConf.getCollectionName());
 		// populate database with sample policies
 		final Unmarshaller unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
 		for (final String policyFilename : SAMPLE_POLICY_FILENAMES)
@@ -194,13 +197,13 @@ public class MongoDbPolicyProviderTest
 	}
 
 	@Before
-	public void setUp() throws Exception
+	public void setUp()
 	{
 
 	}
 
 	@After
-	public void tearDown() throws Exception
+	public void tearDown()
 	{
 	}
 
@@ -334,7 +337,7 @@ public class MongoDbPolicyProviderTest
 	}
 
 	@Test
-	public void testPdpInstantiationWithMongoDBBasedPolicyProvider() throws IllegalArgumentException, IndeterminateEvaluationException, IOException, JAXBException
+	public void testPdpInstantiationWithMongoDBBasedPolicyProvider() throws IllegalArgumentException, IOException, JAXBException
 	{
 		final XmlnsFilteringParser xacmlParser = XacmlJaxbParsingUtils.getXacmlParserFactory(false).getInstance();
 		final Request req = TestUtils.createRequest(Paths.get("target/test-classes/org/ow2/authzforce/core/pdp/testutil/test/request.xml"), xacmlParser);

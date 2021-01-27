@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.JAXBElement;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActionAttributeAssignment;
@@ -46,6 +44,8 @@ import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 
+import javax.xml.bind.JAXBElement;
+
 /**
  * XACML AttributeAssignmentExpression evaluator
  *
@@ -57,14 +57,8 @@ public final class AttributeAssignmentExpressionEvaluator
 	{
 		private final Datatype<AV> datatype;
 
-		private AttributeValueExpression(Datatype<AV> attributeDatatype)
-		{
+		private AttributeValueExpression(Datatype<AV> attributeDatatype) {
 			this.datatype = attributeDatatype;
-		}
-
-		private final Datatype<AV> getDatatype()
-		{
-			return datatype;
 		}
 
 		protected abstract Collection<AV> evaluate(final EvaluationContext ctx) throws IndeterminateEvaluationException;
@@ -122,7 +116,7 @@ public final class AttributeAssignmentExpressionEvaluator
 	private transient final String toString;
 
 	/**
-	 * Instantiates evaluatable AttributeAssignment expression evaluator from XACML-Schema-derived JAXB {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
+	 * Instantiates evaluable AttributeAssignment expression evaluator from XACML-Schema-derived JAXB {@link oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression}
 	 *
 	 * @param jaxbAttrAssignExp
 	 *            XACML-schema-derived JAXB AttributeAssignmentExpression
@@ -147,17 +141,17 @@ public final class AttributeAssignmentExpressionEvaluator
 
 		final JAXBElement<? extends ExpressionType> xacmlExpr = jaxbAttrAssignExp.getExpression();
 		Preconditions.checkArgument(xacmlExpr != null, "Undefined AttributeAssignment/Expression");
-		final Expression<?> evaluatableExpression = expFactory.getInstance(xacmlExpr.getValue(), xPathCompiler, null);
+		final Expression<?> evaluableExpression = expFactory.getInstance(xacmlExpr.getValue(), xPathCompiler, null);
 
 		/*
 		 * As stated in section 5.41 of XACML spec, the expression must evaluate to a constant attribute value or a bag of zero or more attribute values.
 		 */
-		final Datatype<?> expReturnType = evaluatableExpression.getReturnType();
+		final Datatype<?> expReturnType = evaluableExpression.getReturnType();
 		final Optional<? extends Datatype<?>> expReturnTypeParam = expReturnType.getTypeParameter();
 		if (expReturnTypeParam.isPresent())
 		{
 			/*
-			 * RexpReturnTypeParam is generic. Make sure it is a bag of AttributeValues
+			 * ExpReturnTypeParam is generic. Make sure it is a bag of AttributeValues
 			 */
 			final Datatype<?> nonNullTypeParam = expReturnTypeParam.get();
 			/*
@@ -173,7 +167,7 @@ public final class AttributeAssignmentExpressionEvaluator
 			 * So we assume that if type parameter is not Function or generic (bag), it is AttributeValue subtype and expReturnType is Bag<?> datatype. (This is not formally guaranteed :-( but can we
 			 * do better?)
 			 */
-			this.attValExpr = new AttributeBagExpression<>((Expression<Bag>) evaluatableExpression);
+			this.attValExpr = new AttributeBagExpression<>((Expression<Bag>) evaluableExpression);
 		} else
 		{
 			/*
@@ -188,7 +182,7 @@ public final class AttributeAssignmentExpressionEvaluator
 			/*
 			 * So we assume that if expReturnType is not Function, it is AttributeValue subtype. (This is not formally guaranteed :-( but can we do better?)
 			 */
-			this.attValExpr = new SingleAttributeValueExpression<>((Expression<? extends AttributeValue>) evaluatableExpression);
+			this.attValExpr = new SingleAttributeValueExpression<>((Expression<? extends AttributeValue>) evaluableExpression);
 		}
 
 	}
@@ -208,7 +202,7 @@ public final class AttributeAssignmentExpressionEvaluator
 		 * vals may be empty bag, in particular if AttributeDesignator/AttributeSelector with MustBePresent=False evaluates to empty bag. Sections 5.30/5.40 of XACML core spec says:
 		 * "If the bag is empty, there shall be no <AttributeAssignment> from this <AttributeAssignmentExpression>."
 		 */
-		return vals.stream().map(av -> newAttributeAssignment(expression.getDatatype(), av)).collect(Collectors.toList());
+		return vals.stream().map(av -> newAttributeAssignment(expression.datatype, av)).collect(Collectors.toList());
 	}
 
 	/**

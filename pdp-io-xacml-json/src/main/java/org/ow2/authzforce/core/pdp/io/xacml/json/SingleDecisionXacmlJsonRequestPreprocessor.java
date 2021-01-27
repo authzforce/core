@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -53,8 +53,7 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 {
 	private static final IndeterminateEvaluationException INVALID_REQUEST_CATEGORY_ARRAY_ELEMENT_TYPE_EXCEPTION = new IndeterminateEvaluationException(
 	        "Invalid Request/Category array: the type of one of the items is invalid (not JSON object as expected)", XacmlStatusCode.SYNTAX_ERROR.value());
-	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = (namedAttributes, extraContentsByCategory, returnApplicablePolicies) -> ImmutableDecisionRequest
-	        .getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
+	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = ImmutableDecisionRequest::getInstance;
 
 	/**
 	 *

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -83,7 +83,7 @@ public class ConformanceV3FromV2
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3FromV2.class);
 
-	protected static void setUp(final String testRootDirectoryLocation) throws Exception
+	protected static void setUp(final String testRootDirectoryLocation)
 	{
 		LOGGER.debug("Launching conformance tests for features in directory: {}", testRootDirectoryLocation);
 	}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -50,9 +50,7 @@ public class EmbeddedPdpBasedSoapInterceptor extends AbstractSoapInterceptor
 
 	/**
 	 * Create Authorization interceptor (XACML PEP) using input {@code pdp} as XACML PDP
-	 * 
-	 * @param pdp
-	 *            XACML PDP
+	 *
 	 */
 	public EmbeddedPdpBasedSoapInterceptor()
 	{

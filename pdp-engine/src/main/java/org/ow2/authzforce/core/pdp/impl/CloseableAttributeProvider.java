@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -48,57 +48,19 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
  */
 public final class CloseableAttributeProvider extends ModularAttributeProvider implements Closeable
 {
-
-	private static final class ModuleAdapter
+	private static void close(final Set<CloseableNamedAttributeProvider> subProviders) throws IOException
 	{
-		private final CloseableNamedAttributeProvider module;
-
-		private ModuleAdapter(final CloseableNamedAttributeProvider module) throws IOException
-		{
-			final Set<AttributeDesignatorType> providedAttributes = module.getProvidedAttributes();
-			if (providedAttributes == null || providedAttributes.isEmpty())
-			{
-				module.close();
-				throw new IllegalArgumentException("Invalid " + module + " : list of supported AttributeDesignators is null or empty");
-			}
-
-			this.module = module;
-		}
-
-		private void close() throws IOException
-		{
-			this.module.close();
-		}
-
-		private Set<AttributeDesignatorType> getProvidedAttributes()
-		{
-			return this.module.getProvidedAttributes();
-		}
-
-		@Override
-		public String toString()
-		{
-			return module.toString();
-		}
-
-		private NamedAttributeProvider getAdaptedModule()
-		{
-			return this.module;
-		}
-	}
-
-	private static void close(final Set<ModuleAdapter> moduleClosers) throws IOException
-	{
-		// An error occuring on closing one module should not stop from closing
-		// the others
-		// But we keep the exception in memory if any, to throw it at the end as
-		// we do not want to hide that an error occurred
+		/* An error occurring on closing one module should not stop from closing
+		 the others
+		 But we keep the exception in memory if any, to throw it at the end as
+		 we do not want to hide that an error occurred
+		*/
 		IOException latestEx = null;
-		for (final ModuleAdapter mod : moduleClosers)
+		for (final CloseableNamedAttributeProvider subProvider : subProviders)
 		{
 			try
 			{
-				mod.close();
+				subProvider.close();
 			} catch (final IOException e)
 			{
 				latestEx = e;
@@ -112,18 +74,18 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 	}
 
 	// not-null
-	private final Set<ModuleAdapter> moduleClosers;
+	private final Set<CloseableNamedAttributeProvider> subProviders;
 
-	private CloseableAttributeProvider(final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> modulesByAttributeId, final Set<ModuleAdapter> moduleClosers,
+	private CloseableAttributeProvider(final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> modulesByAttributeId, final Set<CloseableNamedAttributeProvider> subProviders,
 	        final boolean strictAttributeIssuerMatch)
 	{
 		super(modulesByAttributeId, null, strictAttributeIssuerMatch);
-		assert moduleClosers != null;
-		this.moduleClosers = moduleClosers;
+		assert subProviders != null;
+		this.subProviders = subProviders;
 	}
 
 	private static final CloseableAttributeProvider EVALUATION_CONTEXT_ONLY_SCOPED_CLOSEABLE_ATTRIBUTE_PROVIDER = new CloseableAttributeProvider(ImmutableListMultimap.of(),
-	        Collections.<ModuleAdapter>emptySet(), true);
+	        Collections.emptySet(), true);
 
 	/**
 	 * Instantiates attribute Provider that tries to find attribute values in evaluation context, then, if not there, query the {@code module} providing the requested attribute ID, if any.
@@ -153,7 +115,7 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 
 		final ListMultimap<AttributeFqn, NamedAttributeProvider> modulesByAttributeId = ArrayListMultimap.create();
 		final int moduleCount = attributeProviderFactories.size();
-		final Set<ModuleAdapter> mutableModuleCloserSet = HashCollections.newUpdatableSet(moduleCount);
+		final Set<CloseableNamedAttributeProvider> mutableSubProviderSet = HashCollections.newUpdatableSet(moduleCount);
 		for (final CloseableNamedAttributeProvider.DependencyAwareFactory attProviderFactory : attributeProviderFactories)
 		{
 			try
@@ -177,20 +139,29 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 				/*
 				 * attrProviderMod closing isn't done in this method but handled in close() method when closing all modules
 				 */
-				final ModuleAdapter moduleAdapter = new ModuleAdapter(attProviderFactory.getInstance(attributeFactory, depAttrProvider));
-				mutableModuleCloserSet.add(moduleAdapter);
+				final CloseableNamedAttributeProvider subProvider = attProviderFactory.getInstance(attributeFactory, depAttrProvider);
+				/*
+				Validate the sub-provider's list of provided attributes
+				 */
+                final Set<AttributeDesignatorType> providedAttributes = subProvider.getProvidedAttributes();
+                if (providedAttributes == null || providedAttributes.isEmpty()) {
+                    subProvider.close();
+                    throw new IllegalArgumentException("Invalid named Attribute Provider '" + subProvider + "' : list of supported AttributeDesignators is null or empty");
+                }
 
-				for (final AttributeDesignatorType attrDesignator : moduleAdapter.getProvidedAttributes())
+				mutableSubProviderSet.add(subProvider);
+
+				for (final AttributeDesignatorType attrDesignator : subProvider.getProvidedAttributes())
 				{
 					final AttributeFqn attrGUID = AttributeFqns.newInstance(attrDesignator);
 					/*
 					 * We allow multiple modules supporting the same attribute designator (as fall-back: if one does not find any value, the next one comes in)
 					 */
-					modulesByAttributeId.put(attrGUID, moduleAdapter.getAdaptedModule());
+					modulesByAttributeId.put(attrGUID, subProvider);
 				}
 			} catch (final IllegalArgumentException e)
 			{
-				close(mutableModuleCloserSet);
+				close(mutableSubProviderSet);
 				throw e;
 			}
 		}
@@ -200,13 +171,13 @@ public final class CloseableAttributeProvider extends ModularAttributeProvider i
 			return EVALUATION_CONTEXT_ONLY_SCOPED_CLOSEABLE_ATTRIBUTE_PROVIDER;
 		}
 
-		return new CloseableAttributeProvider(ImmutableListMultimap.copyOf(modulesByAttributeId), HashCollections.newImmutableSet(mutableModuleCloserSet), strictAttributeIssuerMatch);
+		return new CloseableAttributeProvider(ImmutableListMultimap.copyOf(modulesByAttributeId), HashCollections.newImmutableSet(mutableSubProviderSet), strictAttributeIssuerMatch);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException
 	{
-		close(this.moduleClosers);
+		close(this.subProviders);
 	}
 }

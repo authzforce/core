@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -23,8 +23,6 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
-import javax.xml.bind.JAXBElement;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
@@ -44,6 +42,8 @@ import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
+
+import javax.xml.bind.JAXBElement;
 
 /**
  * Static utility methods pertaining to {@link ApplyType} evaluators.

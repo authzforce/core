@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -571,9 +571,9 @@ public final class PdpEngineConfiguration
 		{
 			final Boolean mustBePolicySet = rootPolicyRef.isPolicySet();
 			this.rootPolicyElementType = mustBePolicySet == null ? Optional.empty()
-			        : mustBePolicySet.booleanValue() ? Optional.of(TopLevelPolicyElementType.POLICY_SET) : Optional.of(TopLevelPolicyElementType.POLICY);
+			        : mustBePolicySet ? Optional.of(TopLevelPolicyElementType.POLICY_SET) : Optional.of(TopLevelPolicyElementType.POLICY);
 			this.rootPolicyId = rootPolicyRef.getValue();
-			this.rootPolicyVersionPatterns = Optional.ofNullable(new PolicyVersionPatterns(rootPolicyRef.getVersion(), null, null));
+			this.rootPolicyVersionPatterns = Optional.of(new PolicyVersionPatterns(rootPolicyRef.getVersion(), null, null));
 		}
 
 		// Decision cache
@@ -591,7 +591,7 @@ public final class PdpEngineConfiguration
 		final BigInteger clientReqErrVerbosityBigInt = pdpJaxbConf.getClientRequestErrorVerbosityLevel();
 		try
 		{
-			this.clientReqErrVerbosityLevel = clientReqErrVerbosityBigInt == null ? 0 : clientReqErrVerbosityBigInt.intValueExact();
+			this.clientReqErrVerbosityLevel = clientReqErrVerbosityBigInt.intValueExact();
 		}
 		catch (final ArithmeticException e)
 		{

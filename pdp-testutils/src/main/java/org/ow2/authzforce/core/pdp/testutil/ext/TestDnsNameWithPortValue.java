@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -79,13 +79,17 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 	 * toplabel = alpha | alpha *( alphanum | "-" ) alphanum
 	 * </p>
 	 * Difference with XACML Core dnsName datatype is that there is no wildcard accepted in left-most part
+	 *
+	 * To prevent Regexp DoS, we replace wildcards with a max number of repetitions
 	 */
+	private static final int MAX_NUM_OF_SUB_PATTERN_REPETITIONS = 100;
+
 	private static final Pattern HOSTNAME_PATTERN;
 	static
 	{
-		final String domainlabel = "\\w[[\\w|\\-]*\\w]?";
-		final String toplabel = "[a-zA-Z][[\\w|\\-]*\\w]?";
-		final String pattern = "[" + domainlabel + "\\.]*" + toplabel + "\\.?";
+		final String domainlabel = "\\w[[\\w|\\-]{0,"+MAX_NUM_OF_SUB_PATTERN_REPETITIONS+"}\\w]?";
+		final String toplabel = "[a-zA-Z][[\\w|\\-]{0,"+MAX_NUM_OF_SUB_PATTERN_REPETITIONS+"}\\w]?";
+		final String pattern = "[" + domainlabel + "\\.]{0,"+MAX_NUM_OF_SUB_PATTERN_REPETITIONS+"}" + toplabel + "\\.?";
 		HOSTNAME_PATTERN = Pattern.compile(pattern);
 	}
 
@@ -127,7 +131,7 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 			// split the name and the port
 			host = dnsName.substring(0, portSep);
 			// validate port portRange
-			port = Integer.valueOf(dnsName.substring(portSep + 1, dnsName.length()));
+			port = Integer.valueOf(dnsName.substring(portSep + 1));
 		}
 
 		// verify that the hostname is valid before we store it
@@ -217,7 +221,6 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 		/*
 		 * if (hostname == null) { if (other.hostname != null) return false; } else
 		 */
-
 		return hostname.equalsIgnoreCase(other.hostname) && port == other.port;
 	}
 

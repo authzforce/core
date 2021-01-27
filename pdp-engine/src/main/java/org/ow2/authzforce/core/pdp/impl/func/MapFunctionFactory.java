@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -129,9 +129,9 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 		 * @param subFunctionReturnType
 		 *            sub-function return type
 		 */
-		private MapFunction(final String functionId, final AttributeDatatype<SUB_RETURN_T> returnType)
+		private MapFunction(final String functionId, final AttributeDatatype<SUB_RETURN_T> subFunctionReturnType)
 		{
-			super(functionId, returnType.getBagDatatype(), returnType);
+			super(functionId, subFunctionReturnType.getBagDatatype(), subFunctionReturnType);
 		}
 
 		@Override

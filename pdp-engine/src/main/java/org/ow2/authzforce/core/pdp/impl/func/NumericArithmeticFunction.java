@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -151,7 +151,7 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 			{
 				final Expression<?> argExp = argExpIterator.next();
 				final Optional<? extends Value> v = argExp.getValue();
-				if (!v.isPresent())
+				if (v.isEmpty())
 				{
 					// variable
 					finalArgExpressions.add(argExp);

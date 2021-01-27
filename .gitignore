@@ -1,10 +1,13 @@
 /target/
 /.CHANGELOG.md.html
 /.README.md.html
-/.settings/
+**/.settings
 /.classpath
 /.pmd
 /.pmdruleset.xml
 /.project
 /.checkstyle
 /bin/
+**/.idea
+*.iml
+**/.vscode

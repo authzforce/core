@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,36 +17,21 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
-import org.ow2.authzforce.core.pdp.api.PepAction;
-import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import com.google.common.collect.ImmutableList;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.impl.combining.CombiningAlgEvaluators.RulesWithSameEffectEvaluator;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
+import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import java.util.*;
 
 /**
  * 
@@ -96,8 +81,8 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 				 * Since we may combine multiple elements before returning a final decision, we have to collect them in a list; and since we don't know yet whether the final decision is NotApplicable,
 				 * we cannot add collected applicable policies straight to outApplicablePolicyIdList. So we create a temporary list until we know the final decision applies.
 				 */
-				combinedApplicablePolicyIdList = returnApplicablePolicyIdList ? UpdatableCollections.<PrimaryPolicyMetadata>newUpdatableList()
-				        : UpdatableCollections.<PrimaryPolicyMetadata>emptyList();
+				combinedApplicablePolicyIdList = returnApplicablePolicyIdList ? UpdatableCollections.newUpdatableList()
+				        : UpdatableCollections.emptyList();
 			}
 
 			/**
@@ -356,7 +341,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 
 				return ExtendedDecisions.newIndeterminate(
 				        firstIndeterminateWithOverriddenEffect != null || combinedPepActionsOfNotOverridingDP != null ? DecisionType.INDETERMINATE : decisionForOverridingEffect.getDecision(),
-				        firstIndeterminateWithOverridingEffect.getCauseForIndeterminate().get());
+				        firstIndeterminateWithOverridingEffect.getCauseForIndeterminate().orElse(new IndeterminateEvaluationException("Unknown cause for " +  firstIndeterminateWithOverridingEffect + " in deny/permit-overrides combining algorithm", XacmlStatusCode.PROCESSING_ERROR.value())));
 			}
 
 			/*
@@ -433,7 +418,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		 * Evaluate rules with overridden Effect in the case when the evaluation of the rules with overriding Effect returned Indeterminate
 		 * 
 		 * @param indeterminateFromRulesWithOverridingEffect
-		 *            Indeterminate result from previous evaluation of rules with overridING effect
+		 *            Indeterminate result from previous evaluation of rules with overriding effect
 		 * @return final decision
 		 */
 		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final ExtendedDecision indeterminateFromRulesWithOverridingEffect)
@@ -448,7 +433,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 				final DecisionResult evalResult = rule.evaluate(context);
 				if (evalResult.getDecision() != DecisionType.NOT_APPLICABLE)
 				{
-					/**
+					/*
 					 * decision is the overridden Effect or Indeterminate{overridden_effect}, which we have to combine with previous result (from rules with overriding Effect)
 					 * Indeterminate{overriding_effect}. For example,
 					 * <p>
@@ -464,7 +449,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 					 * => IndeterminateDP in both cases
 					 * </p>
 					 */
-					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, indeterminateFromRulesWithOverridingEffect.getCauseForIndeterminate().get());
+					return ExtendedDecisions.newIndeterminate(DecisionType.INDETERMINATE, indeterminateFromRulesWithOverridingEffect.getCauseForIndeterminate().orElse(new IndeterminateEvaluationException("Unknown cause for " +  indeterminateFromRulesWithOverridingEffect + " in deny/permit-overrides combining algorithm", XacmlStatusCode.PROCESSING_ERROR.value())));
 				}
 
 				// Else decision is NotApplicable, do nothing, continue
@@ -529,15 +514,10 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 
 			/*
 			 * All decisions were NotApplicable or Indeterminate{overridden_effect}
+			 *
+			 * There's at Least One Indeterminate; else all decisions were NotApplicable -> NotApplicable
 			 */
-			// at Least One Indeterminate
-			if (firstIndeterminateInOverriddenEffect != null)
-			{
-				return firstIndeterminateInOverriddenEffect;
-			}
-
-			// All decisions were NotApplicable -> NotApplicable
-			return ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
+			return Objects.requireNonNullElse(firstIndeterminateInOverriddenEffect, ExtendedDecisions.SIMPLE_NOT_APPLICABLE);
 		}
 
 		@Override
@@ -695,7 +675,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 
 	/**
 	 * 
-	 * Rule collector that groups rules by Effect, with overridding Effect first (e.g. Deny rules before Permit rules if algorithm is deny-overrides)
+	 * Rule collector that groups rules by Effect, with overriding Effect first (e.g. Deny rules before Permit rules if algorithm is deny-overrides)
 	 *
 	 */
 	private static class OverridingEffectFirstRuleCollector implements RuleCollector
@@ -809,7 +789,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		return new OverridingEffectFirstRuleCollector();
 	};
 
-	private static final RuleCollectorFactory ORDER_PRESERVING_RULE_COLLECTOR_FACTORY = () -> new OrderPreservingRuleCollector();
+	private static final RuleCollectorFactory ORDER_PRESERVING_RULE_COLLECTOR_FACTORY = OrderPreservingRuleCollector::new;
 
 	private final EffectType overridingEffect;
 	private final EffectType overriddenEffect;
@@ -917,7 +897,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 			/*
 			 * Rule Effect = {overridden_Effect} (e.g. Permit if algorithm is deny-overrides)
 			 * 
-			 * In the end, if there is no applicable rule with overridING Effect, and if there is an empty rule with such overridden Effect, we already know that the result is always the overridden
+			 * In the end, if there is no applicable rule with overriding Effect, and if there is an empty rule with such overridden Effect, we already know that the result is always the overridden
 			 * Effect with PEP actions from all other rules with same Effect and PEP action(s).
 			 */
 			if (firstEmptyRuleWithOverriddenEffect != null)

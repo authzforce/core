@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>16.0.0</version>
+      <version>17.0.0</version>
       <relativePath>..</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
@@ -30,12 +30,12 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>16.0.0</version>
+         <version>17.0.0</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-         <version>16.0.0</version>
+         <version>17.0.0</version>
       </dependency>
       <dependency>
          <groupId>org.testng</groupId>
@@ -46,7 +46,7 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-         <version>16.0.0</version>
+         <version>17.0.0</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
@@ -127,12 +127,8 @@
             </executions>
          </plugin>
          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>findbugs-maven-plugin</artifactId>
-            <configuration>
-               <onlyAnalyze>org.ow2.authzforce.*</onlyAnalyze>
-               <excludeFilterFile>findbugs-exclude-filter.xml</excludeFilterFile>
-            </configuration>
+            <groupId>com.github.spotbugs</groupId>
+               <artifactId>spotbugs-maven-plugin</artifactId>
             <executions>
                <execution>
                   <phase>verify</phase>

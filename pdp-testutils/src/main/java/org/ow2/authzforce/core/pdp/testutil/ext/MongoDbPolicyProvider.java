@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -20,14 +20,10 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.xml.bind.JAXBException;
-
+import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
@@ -36,13 +32,7 @@ import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.policy.BaseStaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPattern;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
-import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
+import org.ow2.authzforce.core.pdp.api.policy.*;
 import org.ow2.authzforce.core.pdp.impl.policy.PolicyEvaluators;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.MongoDBBasedPolicyProviderDescriptor;
 import org.ow2.authzforce.xacml.identifiers.XacmlNodeName;
@@ -50,11 +40,11 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.ow2.authzforce.xacml.identifiers.XacmlVersion;
 import org.xml.sax.InputSource;
 
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+import javax.xml.bind.JAXBException;
+import java.io.StringReader;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 
@@ -98,7 +88,8 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 		this.id = id;
 		this.dbClient = new MongoClient(serverAddress);
 		/*
-		 * Issue with getDB() deprecated not fixed yet: https://github.com/bguerout/jongo/issues/320
+		 * FIXME: Issue with getDB() deprecated not fixed yet: https://github.com/bguerout/jongo/issues/320
+		 * AND https://github.com/bguerout/jongo/issues/254
 		 */
 		final Jongo dbApiWrapper = new Jongo(dbClient.getDB(dbName));
 		this.policyCollection = dbApiWrapper.getCollection(collectionName);
@@ -156,7 +147,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 	}
 
 	@Override
-	public void close() throws IOException
+	public void close()
 	{
 		this.dbClient.close();
 	}

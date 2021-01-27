@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -336,7 +336,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 			/*
 			 * Rule Effect = {overridden_Effect} (e.g. Permit if algorithm is deny-unless-permit)
 			 * 
-			 * In the end, if there is no applicable rule with overridING Effect, we already know that the result is always the overridden Effect with PEP actions from all other rules with same
+			 * In the end, if there is no applicable rule with overriding Effect, we already know that the result is always the overridden Effect with PEP actions from all other rules with same
 			 * (overridden) Effect and PEP action(s).
 			 */
 			if (!rule.hasAnyPepAction())

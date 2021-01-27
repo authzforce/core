@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,23 +17,19 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
-import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
-import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
-import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
+import org.ow2.authzforce.core.pdp.api.func.*;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A class that implements the logical function "and".
@@ -77,7 +73,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 					try
 					{
 						attrVal = Expressions.eval(arg, context, StandardDatatypes.BOOLEAN);
-						if (!attrVal.getUnderlyingValue().booleanValue())
+						if (!attrVal.getUnderlyingValue())
 						{
 							return BooleanValue.FALSE;
 						}
@@ -102,14 +98,14 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 						final BooleanValue attrVal;
 						try
 						{
-							attrVal = BooleanValue.class.cast(arg);
+							attrVal = (BooleanValue) arg;
 						}
 						catch (final ClassCastException e)
 						{
 							throw new IndeterminateEvaluationException(invalidArgTypeMsgPrefix + argIndex + ": " + arg.getClass().getName(), XacmlStatusCode.PROCESSING_ERROR.value(), e);
 						}
 
-						if (!attrVal.getUnderlyingValue().booleanValue())
+						if (!attrVal.getUnderlyingValue())
 						{
 							return BooleanValue.FALSE;
 						}
@@ -156,7 +152,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 
 	LogicalAndFunction(final String functionId)
 	{
-		super(functionId, StandardDatatypes.BOOLEAN, true, Arrays.asList(StandardDatatypes.BOOLEAN));
+		super(functionId, StandardDatatypes.BOOLEAN, true, Collections.singletonList(StandardDatatypes.BOOLEAN));
 		this.funcCallFactory = new CallFactory(this.functionSignature);
 	}
 

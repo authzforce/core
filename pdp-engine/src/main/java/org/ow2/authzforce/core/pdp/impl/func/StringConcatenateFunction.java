@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,11 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
@@ -29,6 +24,10 @@ import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFuncti
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
+
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
 
 /**
  * Implements string-concatenate function
@@ -48,11 +47,11 @@ final class StringConcatenateFunction extends SingleParameterTypedFirstOrderFunc
 	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{
 
-		return new EagerSinglePrimitiveTypeEval<StringValue, StringValue>(functionSignature, argExpressions, remainingArgTypes)
+		return new EagerSinglePrimitiveTypeEval<>(functionSignature, argExpressions, remainingArgTypes)
 		{
 
 			@Override
-			protected StringValue evaluate(final Deque<StringValue> args) throws IndeterminateEvaluationException
+			protected StringValue evaluate(final Deque<StringValue> args)
 			{
 				// string-concatenate(str1, str2, str3, ...)
 				final StringBuilder strBuilder = new StringBuilder();

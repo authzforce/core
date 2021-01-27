@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -79,7 +79,7 @@ public class EmbeddedPdpBasedAuthzInterceptorTest extends AbstractBusClientServe
 	private static final String STS_PORT = allocatePort(STSServer.class);
 
 	@BeforeClass
-	public static void startServers() throws Exception
+	public static void startServers()
 	{
 		assertTrue("Server failed to launch",
 		        // run the server for the target service (DoubleIt) in the same process

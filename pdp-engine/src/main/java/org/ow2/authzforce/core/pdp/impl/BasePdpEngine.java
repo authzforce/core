@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -18,15 +18,9 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import java.io.IOException;
+import java.util.*;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -72,7 +66,7 @@ import net.sf.saxon.s9api.XdmNode;
  */
 public final class BasePdpEngine implements CloseablePdpEngine
 {
-	private static final String NULL_STD_ENV_ATTRIBUTE_SOURCE_ARG = "Undefined stdEnvAttributeSource arg (source of standard curent-* environment attributes)";
+	private static final String NULL_STD_ENV_ATTRIBUTE_SOURCE_ARG = "Undefined stdEnvAttributeSource arg (source of standard current-* environment attributes)";
 
 	private static final IllegalArgumentException NULL_REQUEST_ARGUMENT_EXCEPTION = new IllegalArgumentException("No input Decision Request");
 
@@ -91,7 +85,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 */
 		// current datetime in default timezone
 		final DateTimeValue currentDateTimeValue = new DateTimeValue(new GregorianCalendar());
-		return HashCollections.<AttributeFqn, AttributeBag<?>>newImmutableMap(
+		return HashCollections.newImmutableMap(
 		        // current date-time
 		        StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(), Bags.singletonAttributeBag(StandardDatatypes.DATETIME, currentDateTimeValue, AttributeSources.PDP),
 		        // current date
@@ -176,14 +170,14 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			/**
 			 * Return an updatable map after merging {@code pdpIssuedAttributes} and {@code requestAttributes} or one of each into it, depending on the implementation
 			 * 
-			 * @param pdpIssuedAttributes
-			 * @param requestAttributes
+			 * @param pdpIssuedAttributes PDP-issued attributes
+			 * @param requestAttributes request attributes
 			 * @return updatable map resulting from merger, or null if nothing merged
 			 */
 			Map<AttributeFqn, AttributeBag<?>> merge(final Map<AttributeFqn, AttributeBag<?>> pdpIssuedAttributes, final Map<AttributeFqn, AttributeBag<?>> requestAttributes);
 		}
 
-		private static final IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeFqn attrGUID)
+		private static IndeterminateEvaluationException newReqMissingStdEnvAttrException(final AttributeFqn attrGUID)
 		{
 			return new IndeterminateEvaluationException(
 			        "The standard environment attribute ( " + attrGUID
@@ -191,7 +185,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			        XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		}
 
-		private static final Map<AttributeFqn, AttributeBag<?>> STD_ENV_RESET_MAP = HashCollections.<AttributeFqn, AttributeBag<?>>newImmutableMap(
+		private static final Map<AttributeFqn, AttributeBag<?>> STD_ENV_RESET_MAP = HashCollections.newImmutableMap(
 		        StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN(),
 		        Bags.emptyAttributeBag(StandardDatatypes.DATETIME, newReqMissingStdEnvAttrException(StandardEnvironmentAttribute.CURRENT_DATETIME.getFQN())),
 		        StandardEnvironmentAttribute.CURRENT_DATE.getFQN(),
@@ -355,8 +349,6 @@ public final class BasePdpEngine implements CloseablePdpEngine
 		 *
 		 * @param individualDecisionRequest
 		 *            a non-null {@link DecisionRequest} object, i.e. representation of Individual Decision Request (as defined by Multiple Decision Profile of XACML).
-		 * @param pdpIssuedAttributes
-		 *            a {@link java.util.Map} of PDP-issued attributes including at least the standard environment attributes: current-time, current-date, current-dateTime.
 		 * @return the evaluation result.
 		 */
 		protected abstract DecisionResult evaluate(final DecisionRequest individualDecisionRequest, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer);
@@ -401,7 +393,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-		        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
+		        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
 			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
 
@@ -560,7 +552,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 
 		@Override
 		protected <INDIVIDUAL_DECISION_REQ_T extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQ_T, ? extends DecisionResult>> evaluate(
-		        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer) throws IndeterminateEvaluationException
+		        final List<INDIVIDUAL_DECISION_REQ_T> individualDecisionRequests, final StandardEnvironmentAttributeIssuer pdpStdEnvAttributeIssuer)
 		{
 			assert individualDecisionRequests != null && pdpStdEnvAttributeIssuer != null;
 
@@ -630,14 +622,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			throw new IllegalArgumentException("No valid " + (rootPolicyElementType.isPresent() ? rootPolicyElementType.get() : "Policy(Set)") + " '" + rootPolicyId + "' matching version (pattern): "
 			        + (rootPolicyVersionPatterns.isPresent() ? rootPolicyVersionPatterns.get() : "latest"), e);
 		}
-		if (staticRootPolicyEvaluator == null)
-		{
-			this.rootPolicyEvaluator = candidateRootPolicyEvaluator;
-		}
-		else
-		{
-			this.rootPolicyEvaluator = staticRootPolicyEvaluator;
-		}
+		this.rootPolicyEvaluator = Objects.requireNonNullElse(staticRootPolicyEvaluator, candidateRootPolicyEvaluator);
 
 		this.strictAttributeIssuerMatch = strictAttributeIssuerMatch;
 

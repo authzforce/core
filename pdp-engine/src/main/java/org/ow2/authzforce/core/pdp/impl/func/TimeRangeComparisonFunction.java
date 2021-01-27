@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,13 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Deque;
-import java.util.List;
-import java.util.TimeZone;
-
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
@@ -33,6 +26,8 @@ import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.TimeValue;
+
+import java.util.*;
 
 /**
  * Time range comparison function (XACML 2.0: time-in-range), which takes three time values and returns true if the first value falls between the second and the third value
@@ -83,6 +78,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 		 */
 		public static boolean eval(final TimeValue arg, final TimeValue lowerBound, final TimeValue upperBound)
 		{
+			assert arg != null && lowerBound != null && upperBound != null;
 			// get the three time values
 			final Calendar calCheckedWhetherInRange = arg.getUnderlyingValue().toGregorianCalendar();
 			if (calCheckedWhetherInRange.getTimeZone() == null)
@@ -153,12 +149,15 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 		}
 
 		@Override
-		protected BooleanValue evaluate(final Deque<TimeValue> argStack) throws IndeterminateEvaluationException
+		protected BooleanValue evaluate(final Deque<TimeValue> argStack)
 		{
 			/*
 			 * args.poll() returns the first element and remove it from the stack, so that next poll() returns the next element (and removes it from the stack), etc.
 			 */
-			return BooleanValue.valueOf(eval(argStack.poll(), argStack.poll(), argStack.poll()));
+			final TimeValue arg = argStack.poll();
+			final TimeValue lowerBound = argStack.poll();
+			final TimeValue upperBound = argStack.poll();
+			return BooleanValue.valueOf(eval(arg, lowerBound, upperBound));
 		}
 	}
 

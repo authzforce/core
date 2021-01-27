@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -53,7 +53,7 @@ public enum StandardEnvironmentAttribute
 
 	private final AttributeFqn attributeFqn;
 
-	private StandardEnvironmentAttribute(final AttributeFqn attributeFqn)
+	StandardEnvironmentAttribute(final AttributeFqn attributeFqn)
 	{
 		this.attributeFqn = attributeFqn;
 	}
@@ -69,16 +69,10 @@ public enum StandardEnvironmentAttribute
 	}
 
 	private static final Map<AttributeFqn, StandardEnvironmentAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(StandardEnvironmentAttribute.values()),
-			new com.google.common.base.Function<StandardEnvironmentAttribute, AttributeFqn>()
+			input ->
 			{
-
-				@Override
-				public AttributeFqn apply(final StandardEnvironmentAttribute input)
-				{
-					assert input != null;
-					return input.getFQN();
-				}
-
+				assert input != null;
+				return input.getFQN();
 			});
 
 	/**

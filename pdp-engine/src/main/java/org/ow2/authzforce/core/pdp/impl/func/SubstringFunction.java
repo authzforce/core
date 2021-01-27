@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -187,7 +187,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + arg1Value + " (type: " + arg1Exp.getReturnType() + ")");
 			}
 
-			beginIndex = IntegerValue.class.cast(arg1Value).getUnderlyingValue().intValueExact();
+			beginIndex = ((IntegerValue) arg1Value).getUnderlyingValue().intValueExact();
 			if (beginIndex < 0)
 			{
 				throw new IllegalArgumentException(getInvalidArg1MessagePrefix(functionSignature) + beginIndex);
@@ -213,7 +213,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				throw new IllegalArgumentException(getInvalidArg2MessagePrefix(functionSignature) + arg2Value + " (type: " + arg2Exp.getReturnType() + ")");
 			}
 
-			final int endIndex = IntegerValue.class.cast(arg2Value).getUnderlyingValue().intValueExact();
+			final int endIndex = ((IntegerValue) arg2Value).getUnderlyingValue().intValueExact();
 			if (endIndex != -1)
 			{
 				if (endIndex < 0)

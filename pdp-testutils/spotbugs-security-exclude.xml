@@ -11,4 +11,19 @@
    -->
     <Bug pattern="CRLF_INJECTION_LOGS" />
   </Match>
+  <Match>
+    <Bug pattern="JAXWS_ENDPOINT" />
+  </Match>
+  <Match>
+    <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE" />
+  </Match>
+  <Match>
+    <Bug pattern="PATH_TRAVERSAL_IN" />
+  </Match>
+  <Match>
+    <Bug pattern="SF_SWITCH_FALLTHROUGH" />
+  </Match>
+  <Match>
+    <Bug pattern="IMPROPER_UNICODE" />
+  </Match>
 </FindBugsFilter>

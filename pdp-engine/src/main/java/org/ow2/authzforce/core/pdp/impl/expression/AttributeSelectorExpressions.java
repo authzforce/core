@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -14,9 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/**
- * 
  */
 package org.ow2.authzforce.core.pdp.impl.expression;
 
@@ -116,7 +113,7 @@ public final class AttributeSelectorExpressions
 
 		protected abstract String getXPathEvalExceptionMsgSuffix();
 
-		private static final AttributeValueType xdmToJaxbAttributeValue(final String attrDatatype, final XdmNode node) throws IllegalArgumentException
+		private static AttributeValueType xdmToJaxbAttributeValue(final String attrDatatype, final XdmNode node) throws IllegalArgumentException
 		{
 			final Map<QName, String> otherAttributes;
 			final List<Serializable> content;
@@ -129,7 +126,7 @@ public final class AttributeSelectorExpressions
 					 */
 				case TEXT:
 					otherAttributes = Collections.emptyMap();
-					content = Collections.<Serializable>singletonList(nodeStrVal);
+					content = Collections.singletonList(nodeStrVal);
 					break;
 
 				/*
@@ -237,7 +234,7 @@ public final class AttributeSelectorExpressions
 			final String missingAttributeMessage = this + " not found in context";
 
 			this.xPathEvalExceptionMessage = this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + attributeCategory + "'" + getXPathEvalExceptionMsgSuffix();
-			this.xPathCompiler = null;
+			this.xPathCompiler = xPathCompiler;
 
 			try
 			{
@@ -281,7 +278,7 @@ public final class AttributeSelectorExpressions
 			return this.returnType;
 		}
 
-		private final Bag<AV> checkContextForCachedEvalResult(final EvaluationContext context) throws IndeterminateEvaluationException
+		private Bag<AV> checkContextForCachedEvalResult(final EvaluationContext context) throws IndeterminateEvaluationException
 		{
 			/*
 			 * Check the context whether the evaluation result is not already there
@@ -302,9 +299,9 @@ public final class AttributeSelectorExpressions
 			return null;
 		}
 
-		private final Bag<AV> handleRecoverableIndeterminate(final IndeterminateEvaluationException e, final EvaluationContext context) throws IndeterminateEvaluationException
+		private Bag<AV> handleRecoverableIndeterminate(final IndeterminateEvaluationException e, final EvaluationContext context) throws IndeterminateEvaluationException
 		{
-			/**
+			/*
 			 * If a non-fatal/recoverable error occurred during AttributeSelector evaluation, we put the empty value to prevent retry in the same context, which may succeed at another time in the same
 			 * context, resulting in different value of the same attribute at different times during evaluation within the same context, therefore inconsistencies. The value(s) must remain constant
 			 * during the evaluation context, as explained in section 7.3.5 Attribute Retrieval of XACML core spec:
@@ -336,7 +333,7 @@ public final class AttributeSelectorExpressions
 			return result;
 		}
 
-		private final Bag<AV> evaluateFinal(final XdmItem xPathEvaluationContextItem, final EvaluationContext context) throws IndeterminateEvaluationException
+		private Bag<AV> evaluateFinal(final XdmItem xPathEvaluationContextItem, final EvaluationContext context) throws IndeterminateEvaluationException
 		{
 			/*
 			 * An XPathExecutable is immutable, and therefore thread-safe. It is simpler to load a new XPathSelector each time the expression is to be evaluated. However, the XPathSelector is serially
@@ -366,7 +363,7 @@ public final class AttributeSelectorExpressions
 				if (xpathEvalResultItem instanceof XdmAtomicValue)
 				{
 					final String strVal = xpathEvalResultItem.getStringValue();
-					jaxbAttrVal = new AttributeValueType(Collections.<Serializable>singletonList(strVal), attributeDatatype.getId(), null);
+					jaxbAttrVal = new AttributeValueType(Collections.singletonList(strVal), attributeDatatype.getId(), null);
 				}
 				else if (xpathEvalResultItem instanceof XdmNode)
 				{
@@ -380,7 +377,7 @@ public final class AttributeSelectorExpressions
 						throw new IndeterminateEvaluationException(
 								this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
 										+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
-										+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem,
+										+ (contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("")) + ": " + xpathEvalResultItem,
 								XacmlStatusCode.SYNTAX_ERROR.value(), e);
 					}
 				}
@@ -389,7 +386,7 @@ public final class AttributeSelectorExpressions
 					final Optional<String> contextSelectorId = attributeSelectorId.getContextSelectorId();
 					throw new IndeterminateEvaluationException(this + ": Invalid type of result #" + xpathEvalResultItemIndex
 							+ " from evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory()
-							+ (contextSelectorId == null ? "" : "' selected by ContextSelectorId='" + contextSelectorId + "'") + xpathEvalResultItem.getClass().getName(),
+							+ (contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse("")) + ": " + xpathEvalResultItem.getClass().getName(),
 							XacmlStatusCode.SYNTAX_ERROR.value());
 				}
 
@@ -404,7 +401,7 @@ public final class AttributeSelectorExpressions
 					throw new IndeterminateEvaluationException(
 							this + ": Error creating attribute value of type '" + attributeDatatype + "' from result #" + xpathEvalResultItemIndex
 									+ " of evaluating XPath against XML node from Content of Attributes Category='" + attributeSelectorId.getCategory() + "'"
-									+ (contextSelectorId == null ? "" : " selected by ContextSelectorId='" + contextSelectorId + "'") + ": " + xpathEvalResultItem,
+									+ (contextSelectorId.map(id -> "' selected by ContextSelectorId='" + id + "'").orElse(""))+ ": " + xpathEvalResultItem,
 							XacmlStatusCode.SYNTAX_ERROR.value(), e);
 				}
 
@@ -629,7 +626,7 @@ public final class AttributeSelectorExpressions
 				final AttributeProvider attrProvider) throws IllegalArgumentException
 		{
 			super(attrSelectorElement, xPathCompiler, attrFactory);
-			assert attrSelectorElement.getContextSelectorId() != null && attrProvider != null;
+			assert attributeSelectorId.getContextSelectorId().isPresent() && attrProvider != null;
 
 			final String attributeCategory = attributeSelectorId.getCategory();
 			final String contextSelectorId = attributeSelectorId.getContextSelectorId().get();

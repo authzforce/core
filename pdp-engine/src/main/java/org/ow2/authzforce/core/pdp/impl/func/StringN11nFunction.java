@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,20 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.Locale;
-
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerSinglePrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.api.value.StringValue;
+
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * String normalization (n11n) function (XACML 1.0: string-normalize-*)
@@ -45,58 +43,15 @@ final class StringN11nFunction extends SingleParameterTypedFirstOrderFunction<St
 		StringValue normalize(StringValue value);
 	}
 
-	private static final class CallFactory
-	{
+	static final StringNormalizer STRING_NORMALIZE_SPACE_FUNCTION_CALL_FACTORY = StringValue::trim;
 
-		private final StringNormalizer strNormalizer;
-		private final SingleParameterTypedFirstOrderFunctionSignature<StringValue, StringValue> funcSig;
+	/*
+	 * Specified by fn:lower-case function in [XF]. Looking at Saxon HE as our reference for Java open source implementation of XPath functions, we can check in Saxon implementation of
+	 * fn:lower-case (LowerCase class), that this is equivalent to String#toLowerCase(); English locale to be used for Locale-insensitive strings, see String.toLowerCase()
+	 */
+	static final StringNormalizer STRING_NORMALIZE_TO_LOWER_CASE_FUNCTION_CALL_FACTORY = value -> value.toLowerCase(Locale.ENGLISH);
 
-		public CallFactory(final SingleParameterTypedFirstOrderFunctionSignature<StringValue, StringValue> functionSignature, final StringNormalizer stringNormalizer)
-		{
-			this.funcSig = functionSignature;
-			this.strNormalizer = stringNormalizer;
-		}
-
-		private FirstOrderFunctionCall<StringValue> getInstance(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
-		{
-			return new EagerSinglePrimitiveTypeEval<StringValue, StringValue>(funcSig, argExpressions, remainingArgTypes)
-			{
-
-				@Override
-				protected StringValue evaluate(final Deque<StringValue> argStack) throws IndeterminateEvaluationException
-				{
-					return strNormalizer.normalize(argStack.getFirst());
-				}
-
-			};
-		}
-	}
-
-	static final StringNormalizer STRING_NORMALIZE_SPACE_FUNCTION_CALL_FACTORY = new StringNormalizer()
-	{
-		@Override
-		public StringValue normalize(final StringValue value)
-		{
-			return value.trim();
-		}
-
-	};
-
-	static final StringNormalizer STRING_NORMALIZE_TO_LOWER_CASE_FUNCTION_CALL_FACTORY = new StringNormalizer()
-	{
-		@Override
-		public StringValue normalize(final StringValue value)
-		{
-			/*
-			 * Specified by fn:lower-case function in [XF]. Looking at Saxon HE as our reference for Java open source implementation of XPath functions, we can check in Saxon implementation of
-			 * fn:lower-case (LowerCase class), that this is equivalent to String#toLowerCase(); English locale to be used for Locale-insensitive strings, see String.toLowerCase()
-			 */
-			return value.toLowerCase(Locale.ENGLISH);
-		}
-
-	};
-
-	private final CallFactory funcCallFactory;
+	private final StringNormalizer strNormalizer;
 
 	/**
 	 * Creates a new <code>StringNormalizeFunction</code> object.
@@ -108,14 +63,23 @@ final class StringN11nFunction extends SingleParameterTypedFirstOrderFunction<St
 	StringN11nFunction(final String functionId, final StringNormalizer stringNormalizer)
 	{
 		super(functionId, StandardDatatypes.STRING, false, Collections.singletonList(StandardDatatypes.STRING));
-		this.funcCallFactory = new CallFactory(functionSignature, stringNormalizer);
+		this.strNormalizer = stringNormalizer;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<StringValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException
 	{
-		return funcCallFactory.getInstance(argExpressions, remainingArgTypes);
+			return new EagerSinglePrimitiveTypeEval<>(functionSignature, argExpressions, remainingArgTypes)
+			{
+
+				@Override
+				protected StringValue evaluate(final Deque<StringValue> argStack)
+				{
+					return strNormalizer.normalize(argStack.getFirst());
+				}
+
+			};
 	}
 
 }

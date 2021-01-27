@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -126,7 +126,7 @@ public final class XacmlJsonParsingUtils
 			{
 				if (jsonDatatypeId == null)
 				{
-					throw new IllegalArgumentException("Invalid Attribute '" + attrName + "': value is JSONArray but DataType undefined (cannot be infered).");
+					throw new IllegalArgumentException("Invalid Attribute '" + attrName + "': value is JSONArray but DataType undefined (cannot be inferred).");
 				}
 
 				actualDatatypeId = jsonDatatypeId;
@@ -338,7 +338,7 @@ public final class XacmlJsonParsingUtils
 		}
 
 		@Override
-		protected XdmNode parseContent(final String categoryName, final String categoryContent) throws IndeterminateEvaluationException
+		protected XdmNode parseContent(final String categoryName, final String categoryContent)
 		{
 			/*
 			 * Content parsing not supported
@@ -369,7 +369,7 @@ public final class XacmlJsonParsingUtils
 		 *            parser used to parse each XACML/JSON Attribute
 		 * @param namedAttributeIteratorConverter
 		 *            converts iterator over attributes with values produced by {@code xacmlJsonAttributeParser}, into constant-valued/immutable attribute iterator
-		 * @throws IllegalArgumentException
+		 * @throws IllegalArgumentException error
 		 *             {@code if(xacmlJsonAttributeParser == null || namedAttributeIteratorConverter == null)}
 		 */
 		public ContentSkippingXacmlJsonAttributesParserFactory(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser,
@@ -398,7 +398,7 @@ public final class XacmlJsonParsingUtils
 
 	private static final class FullXacmlJsonAttributesParser<BAG extends Iterable<? extends AttributeValue>> extends BaseXacmlJsonAttributesParser<BAG>
 	{
-		// XML document builder for parsing Content to XPath data model for XPath evaluation
+		// XML document builder for parsing XML Content to XPath data model for XPath evaluation
 		// private final DocumentBuilder xmlDocBuilder;
 
 		private FullXacmlJsonAttributesParser(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser,
@@ -477,7 +477,7 @@ public final class XacmlJsonParsingUtils
 		 * @param namedAttributeIteratorConverter
 		 *            converts iterator over attributes with values produced by {@code xacmlJsonAttributeParser}, into constant-valued/immutable attribute iterator
 		 * 
-		 * @throws IllegalArgumentException
+		 * @throws IllegalArgumentException error
 		 *             {@code if(xacmlJsonAttributeParser == null || namedAttributeIteratorConverter == null || xmlProcessor == null)}
 		 */
 		public FullXacmlJsonAttributesParserFactory(final XacmlRequestAttributeParser<JSONObject, BAG> xacmlJsonAttributeParser,

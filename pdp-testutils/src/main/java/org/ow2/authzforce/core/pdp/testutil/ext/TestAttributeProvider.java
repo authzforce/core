@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -20,37 +20,21 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.ow2.authzforce.core.pdp.api.AttributeFqn;
-import org.ow2.authzforce.core.pdp.api.AttributeProvider;
-import org.ow2.authzforce.core.pdp.api.BaseNamedAttributeProvider;
-import org.ow2.authzforce.core.pdp.api.CloseableNamedAttributeProvider;
-import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.io.NamedXacmlAttributeParser;
 import org.ow2.authzforce.core.pdp.api.io.NonIssuedLikeIssuedStrictXacmlAttributeParser;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils.NamedXacmlJaxbAttributeParser;
 import org.ow2.authzforce.core.pdp.api.io.XacmlRequestAttributeParser;
-import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProviderDescriptor;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * 
@@ -74,12 +58,11 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 	{
 		super(id);
 		attrMap = Collections.unmodifiableMap(attributeMap);
-		final Set<AttributeDesignatorType> mutableSupportedAttDesignatorSet = attrMap.entrySet().stream().map(attEntry -> newAttributeDesignator(attEntry)).collect(Collectors.toSet());
-		this.supportedDesignatorTypes = Collections.unmodifiableSet(mutableSupportedAttDesignatorSet);
+		this.supportedDesignatorTypes = attrMap.entrySet().stream().map(TestAttributeProvider::newAttributeDesignator).collect(Collectors.toUnmodifiableSet());
 	}
 
 	@Override
-	public void close() throws IOException
+	public void close()
 	{
 		// nothing to close
 	}
@@ -109,6 +92,49 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 		        XacmlStatusCode.MISSING_ATTRIBUTE.value());
 	}
 
+	private static class DepAwareAttProviderFactory implements DependencyAwareFactory
+	{
+		private final String providerId;
+		private final List<Attributes> jaxbAttCats;
+
+		private DepAwareAttProviderFactory(final String providerId, final List<Attributes> jaxbAttributeCategories) {
+			assert providerId != null && jaxbAttributeCategories != null;
+			this.providerId = providerId;
+			this.jaxbAttCats = jaxbAttributeCategories;
+		}
+
+		@Override
+		public Set<AttributeDesignatorType> getDependencies()
+		{
+			// no dependency
+			return null;
+		}
+
+		@Override
+		public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attributeValueFactories, final AttributeProvider depAttrProvider)
+		{
+			final NamedXacmlAttributeParser<Attribute> namedXacmlAttParser = new NamedXacmlJaxbAttributeParser(attributeValueFactories);
+			final XacmlRequestAttributeParser<Attribute, AttributeBag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictXacmlAttributeParser<>(namedXacmlAttParser);
+			final Set<String> attrCategoryNames = new HashSet<>();
+			final Map<AttributeFqn, AttributeBag<?>> mutableAttMap = new HashMap<>();
+			for (final Attributes jaxbAttributes : this.jaxbAttCats)
+			{
+				final String categoryName = jaxbAttributes.getCategory();
+				if (!attrCategoryNames.add(categoryName))
+				{
+					throw new IllegalArgumentException("Unsupported repetition of Attributes[@Category='" + categoryName + "']");
+				}
+
+				for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
+				{
+					xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, null, mutableAttMap);
+				}
+			}
+
+			return new TestAttributeProvider(this.providerId, mutableAttMap);
+		}
+	}
+
 	/**
 	 * {@link TestAttributeProvider} factory
 	 * 
@@ -125,40 +151,7 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 		@Override
 		public DependencyAwareFactory getInstance(final TestAttributeProviderDescriptor conf, final EnvironmentProperties environmentProperties)
 		{
-			return new DependencyAwareFactory()
-			{
-
-				@Override
-				public Set<AttributeDesignatorType> getDependencies()
-				{
-					// no dependency
-					return null;
-				}
-
-				@Override
-				public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attributeValueFactories, final AttributeProvider depAttrProvider)
-				{
-					final NamedXacmlAttributeParser<Attribute> namedXacmlAttParser = new NamedXacmlJaxbAttributeParser(attributeValueFactories);
-					final XacmlRequestAttributeParser<Attribute, AttributeBag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictXacmlAttributeParser<>(namedXacmlAttParser);
-					final Set<String> attrCategoryNames = new HashSet<>();
-					final Map<AttributeFqn, AttributeBag<?>> mutableAttMap = new HashMap<>();
-					for (final Attributes jaxbAttributes : conf.getAttributes())
-					{
-						final String categoryName = jaxbAttributes.getCategory();
-						if (!attrCategoryNames.add(categoryName))
-						{
-							throw new IllegalArgumentException("Unsupported repetition of Attributes[@Category='" + categoryName + "']");
-						}
-
-						for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
-						{
-							xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, null, mutableAttMap);
-						}
-					}
-
-					return new TestAttributeProvider(conf.getId(), mutableAttMap);
-				}
-			};
+			return new DepAwareAttProviderFactory(conf.getId(), conf.getAttributes());
 		}
 
 	}

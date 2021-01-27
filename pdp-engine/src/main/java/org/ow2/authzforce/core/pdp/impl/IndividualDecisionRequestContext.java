@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -24,15 +24,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
-import org.ow2.authzforce.core.pdp.api.AttributeFqn;
-import org.ow2.authzforce.core.pdp.api.AttributeProvider;
-import org.ow2.authzforce.core.pdp.api.AttributeSelectorId;
-import org.ow2.authzforce.core.pdp.api.DecisionCache;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
-import org.ow2.authzforce.core.pdp.api.UpdatableMap;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -100,8 +92,8 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	public IndividualDecisionRequestContext(final Map<AttributeFqn, AttributeBag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicyIdList)
 	{
-		this.namedAttributes = namedAttributeMap == null ? HashCollections.<AttributeFqn, AttributeBag<?>>newUpdatableMap()
-				: HashCollections.<AttributeFqn, AttributeBag<?>>newUpdatableMap(namedAttributeMap);
+		this.namedAttributes = namedAttributeMap == null ? HashCollections.newUpdatableMap()
+				: HashCollections.newUpdatableMap(namedAttributeMap);
 		this.returnApplicablePolicyIdList = returnApplicablePolicyIdList;
 		if (extraContentsByCategory == null)
 		{
@@ -211,10 +203,19 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 		for (final Listener listener : this.listeners.values())
 		{
 			final Optional<AttributeFqn> optionalContextSelectorFQN = attributeSelector.getContextSelectorFQN();
-			final Optional<AttributeBag<XPathValue>> contextSelectorValue = optionalContextSelectorFQN.isPresent()
-					? Optional.of(getNamedAttributeValue(optionalContextSelectorFQN.get(), StandardDatatypes.XPATH))
-					: Optional.empty();
-			listener.attributeSelectorResultProduced(attributeSelector, contextSelectorValue, result);
+			final Optional<AttributeBag<XPathValue>> optContextSelectorValue;
+			if(optionalContextSelectorFQN.isPresent()) {
+				final AttributeBag<XPathValue> contextSelectorValue = getNamedAttributeValue(optionalContextSelectorFQN.get(), StandardDatatypes.XPATH);
+				if(contextSelectorValue == null) {
+					throw new IndeterminateEvaluationException("Error processing ContextSelectorId of " + attributeSelector +": can't resolve its AttributeValue", XacmlStatusCode.PROCESSING_ERROR.value());
+				}
+
+				optContextSelectorValue = Optional.of(contextSelectorValue);
+			} else {
+				optContextSelectorValue = Optional.empty();
+			}
+
+			listener.attributeSelectorResultProduced(attributeSelector, optContextSelectorValue, result);
 		}
 
 		return true;

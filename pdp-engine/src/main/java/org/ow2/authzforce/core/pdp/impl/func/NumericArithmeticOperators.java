@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -55,6 +55,7 @@ final class NumericArithmeticOperators
 		public NAV eval(final Deque<NAV> args) throws ArithmeticException
 		{
 			final NAV arg0 = args.poll();
+			assert arg0 != null;
 			return arg0.add(args);
 		}
 
@@ -73,6 +74,7 @@ final class NumericArithmeticOperators
 		public NAV eval(final Deque<NAV> args) throws ArithmeticException
 		{
 			final NAV arg0 = args.poll();
+			assert arg0 != null;
 			return arg0.multiply(args);
 		}
 
@@ -85,6 +87,7 @@ final class NumericArithmeticOperators
 		{
 			final NAV arg0 = args.poll();
 			final NAV arg1 = args.poll();
+			assert arg0 != null;
 			return arg0.subtract(arg1);
 		}
 
@@ -97,39 +100,21 @@ final class NumericArithmeticOperators
 		{
 			final NAV arg0 = args.poll();
 			final NAV arg1 = args.poll();
+			assert arg0 != null;
 			return arg0.divide(arg1);
 		}
 
 	}
 
-	static final StaticOperation<IntegerValue> INTEGER_MOD_OPERATOR = new StaticOperation<IntegerValue>()
+	static final StaticOperation<IntegerValue> INTEGER_MOD_OPERATOR = args ->
 	{
-		@Override
-		public IntegerValue eval(final Deque<IntegerValue> args) throws ArithmeticException
-		{
-			final IntegerValue arg0 = args.poll();
-			final IntegerValue arg1 = args.poll();
-			return arg0.remainder(arg1);
-		}
+		final IntegerValue arg0 = args.poll();
+		assert arg0 != null;
+		final IntegerValue arg1 = args.poll();
+		return arg0.remainder(arg1);
 	};
 
-	static final StaticOperation<DoubleValue> FLOOR_OPERATOR = new StaticOperation<DoubleValue>()
-	{
+	static final StaticOperation<DoubleValue> FLOOR_OPERATOR = args -> args.getFirst().floor();
 
-		@Override
-		public DoubleValue eval(final Deque<DoubleValue> args)
-		{
-			return args.getFirst().floor();
-		}
-
-	};
-
-	static final StaticOperation<DoubleValue> ROUND_OPERATOR = new StaticOperation<DoubleValue>()
-	{
-		@Override
-		public DoubleValue eval(final Deque<DoubleValue> args)
-		{
-			return args.getFirst().roundIEEE754Default();
-		}
-	};
+	static final StaticOperation<DoubleValue> ROUND_OPERATOR = args -> args.getFirst().roundIEEE754Default();
 }

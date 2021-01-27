@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -105,17 +105,6 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			return this.variableId;
 		}
 
-		/**
-		 * <p>
-		 * Getter for the field <code>longestVariableReferenceChain</code>.
-		 * </p>
-		 *
-		 * @return the longestVariableReferenceChain
-		 */
-		private final Deque<String> getLongestVariableReferenceChain()
-		{
-			return longestVariableReferenceChain;
-		}
 	}
 
 	private static final class ConstantVariableReference<V extends Value> extends BaseVariableReference<V>
@@ -155,12 +144,6 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			return this.varDatatype;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
-		 */
-		/** {@inheritDoc} */
 		@Override
 		public Optional<V> getValue()
 		{
@@ -170,14 +153,14 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		/**
 		 * {@inheritDoc}
 		 *
-		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable expression (eg, a single Function)
+		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluable expression (eg, a single Function)
 		 * then this will throw an exception.
 		 * <p>
 		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
 		 * {@link EvaluationContext#putVariableIfAbsent(String, Value)}.
 		 */
 		@Override
-		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		public V evaluate(final EvaluationContext context)
 		{
 			return this.alwaysPresentVarValue.get();
 		}
@@ -220,12 +203,6 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			return expression.getReturnType();
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see com.thalesgroup.authzforce.core.eval.Expression#isStatic()
-		 */
-		/** {@inheritDoc} */
 		@Override
 		public Optional<V> getValue()
 		{
@@ -235,7 +212,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		/**
 		 * {@inheritDoc}
 		 *
-		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluatable expression (eg, a single Function)
+		 * Evaluates the referenced expression using the given context, and either returns an error or a resulting value. If this doesn't reference an evaluable expression (eg, a single Function)
 		 * then this will throw an exception.
 		 * <p>
 		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
@@ -389,8 +366,9 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		/*
 		 * if not null, longestVarRefChainInCurrentVarExpression has now been updated to longest VariableReference chain in varExpr
 		 */
-		if (inoutLongestVarRefChain != null && longestVarRefChainInCurrentVarExpression != null)
+		if (inoutLongestVarRefChain != null)
 		{
+			// => longestVarRefChainInCurrentVarExpression != null (see previous line where longestVarRefChainInCurrentVarExpression is assigned
 			/*
 			 * Check size only if there is a limit
 			 */
@@ -445,10 +423,10 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	 * @param inoutLongestVarRefChain
 	 *            If we are resolving a VariableReference in a VariableDefinition's expression (may be null if not), this is the longest chain of VariableReferences starting from a one in this
 	 *            VariableDefinition. If we are not resolving a VariableReference in a VariableDefinition's expression, this may be null.This is used to detect exceeding reference depth (see
-	 *            {@link #ExpressionFactoryImpl(int)} for the limit. In a Expression such as an Apply, we can have multiple VariableReferences referencing different VariableDefinitions. So we can have
+	 *            in argument to {@link #DepthLimitingExpressionFactory(AttributeValueFactoryRegistry, FunctionRegistry, List, int, boolean, boolean)} for the limit. In a Expression such as an Apply, we can have multiple VariableReferences referencing different VariableDefinitions. So we can have
 	 *            different depths of VariableReference references. We compare the length of the current longest chain with the one we would get by adding the longest one in the referenced
 	 *            VariableDefinition and <code>jaxbVarRef</code>'s VariableId. If the latter is longer, its content becomes the content <code>longestVarRefChain</code>.
-	 * @throws UnknownIdentifierException
+	 * @throws IllegalArgumentException
 	 *             if VariableReference's VariableId is unknown by this factory
 	 */
 	private BaseVariableReference<?> getVariable(final VariableReferenceType jaxbVarRef, final Deque<String> inoutLongestVarRefChain) throws IllegalArgumentException
@@ -470,7 +448,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			/*
 			 * Check whether the chain formed by [the Variable's Expression's longest VariableReference chain, and the VariableReference that we currently resolving in this method] is not too big
 			 */
-			final Deque<String> referencedVarLongestRefChain = var.getLongestVariableReferenceChain();
+			final Deque<String> referencedVarLongestRefChain = var.longestVariableReferenceChain;
 			/*
 			 * Make sure longestVarRefChain is set to the biggest one
 			 */

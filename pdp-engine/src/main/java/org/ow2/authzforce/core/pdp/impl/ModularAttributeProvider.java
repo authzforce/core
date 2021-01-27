@@ -1,5 +1,5 @@
 /**
- * Copyright 2012-2020 THALES.
+ * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -60,7 +60,7 @@ public class ModularAttributeProvider implements AttributeProvider
 	private static final Logger LOGGER = LoggerFactory.getLogger(ModularAttributeProvider.class);
 
 	private static final IssuedToNonIssuedAttributeCopyMode ISSUED_TO_NON_ISSUED_ATTRIBUTE_COPY_ENABLED_MODE = (attributeFqn, result, context) -> {
-		if (!attributeFqn.getIssuer().isPresent())
+		if (attributeFqn.getIssuer().isEmpty())
 		{
 			// Attribute already without Issuer -> nothing to copy
 			return;
@@ -154,7 +154,7 @@ public class ModularAttributeProvider implements AttributeProvider
 
 	/** {@inheritDoc} */
 	@Override
-	public final <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeFqn, final Datatype<AV> datatype, final EvaluationContext context) throws IndeterminateEvaluationException
+	public final <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeFqn, final Datatype<AV> datatype, final EvaluationContext context)
 	{
 		try
 		{
