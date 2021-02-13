@@ -82,7 +82,6 @@
    </localizations>
    <xslt
       recoveryPolicy="recoverWithWarnings"
-      version="2.0"
       versionWarning="false"
       schemaAware="false"
       messageReceiver=""
