@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tns:attributeProvider id="test" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/7" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:test="http://authzforce.github.io/core/xmlns/test/3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="test:TestAttributeProviderDescriptor">
+	<Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
+		<Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:example:attribute:role" IncludeInResult="false">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Physician</AttributeValue>
+		</Attribute>
+	</Attributes>
+</tns:attributeProvider>

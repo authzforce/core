@@ -1,0 +1,19 @@
+Test IIA002 requires the Context Handler to be able to obtain an
+Attribute from an external repository, where the required
+Attribute is not supplied in the physical request received
+from the PEP.
+
+The test as written uses an Attribute with
+AttributeId="urn:oasis:names:tc:xacml:1.0:example:attribute:role",
+value "Physician", and Subject named "Julius Hibbert".
+
+This test may be modified to use a different AttributeId and
+AttributeValue in the SubjectAttributeDesignator of the
+Policy.xml file, and a different Subject in the Request.xml file,
+so long as the SubjectAttributeDesignator refers to an attribute
+that is not present in the original input Request.xml file.  Any
+modified version of the test must still demonstrate that the
+Context Handler is able to obtain values for particular
+attributes that are referenced in its policies, even if those
+attributes are not present in the Request as received from the
+PEP.
