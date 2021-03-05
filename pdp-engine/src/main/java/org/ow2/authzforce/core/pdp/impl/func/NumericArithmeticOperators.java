@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -80,7 +80,7 @@ final class NumericArithmeticOperators
 
 	}
 
-	static final class SubtractOperator<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
+	static final class SubtractOperator<NAV extends NumericValue<?, NAV>> implements MultaryOperation<NAV>
 	{
 		@Override
 		public NAV eval(final Deque<NAV> args) throws ArithmeticException
@@ -91,9 +91,14 @@ final class NumericArithmeticOperators
 			return arg0.subtract(arg1);
 		}
 
+		@Override
+		public boolean isCommutative()
+		{
+			return false;
+		}
 	}
 
-	static final class DivideOperator<NAV extends NumericValue<?, NAV>> implements StaticOperation<NAV>
+	static final class DivideOperator<NAV extends NumericValue<?, NAV>> implements MultaryOperation<NAV>
 	{
 		@Override
 		public NAV eval(final Deque<NAV> args) throws ArithmeticException
@@ -104,6 +109,11 @@ final class NumericArithmeticOperators
 			return arg0.divide(arg1);
 		}
 
+		@Override
+		public boolean isCommutative()
+		{
+			return false;
+		}
 	}
 
 	static final StaticOperation<IntegerValue> INTEGER_MOD_OPERATOR = args ->
@@ -111,6 +121,7 @@ final class NumericArithmeticOperators
 		final IntegerValue arg0 = args.poll();
 		assert arg0 != null;
 		final IntegerValue arg1 = args.poll();
+		assert arg1 != null;
 		return arg0.remainder(arg1);
 	};
 

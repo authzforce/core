@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -126,7 +126,7 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 	/** {@inheritDoc} */
 	@Override
 	public FirstOrderFunctionCall<AV> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes) throws IllegalArgumentException {
-		/**
+		/*
 		 * If this.op is a commutative function (e.g. add or multiply function), we can simplify arguments if there are multiple constants. Indeed, if C1,...Cm are constants, then:
 		 * <p>
 		 * op(x1,..., x_{n1-1}, C1, x_n1, ..., x_{n2-1}, C2, x_n2, ..., Cm, x_nm...) = op( C, x1.., x_{n1-1}, x_n1, x_{n2-2}, x_n2...), where C (constant) = op(C1, C2..., Cm)

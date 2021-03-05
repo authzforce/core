@@ -1,0 +1,2 @@
+{"Response":[{"Decision":"Deny","Obligations":[{"AttributeAssignment":[{"Value":{"coordinates":[102.0,0.5],"type":"Point"},"DataType":"urn:ow2:authzforce:feature:pdp:data-type:test-custom-from-json-object","AttributeId":"urn:ogc:geoxacml:3.0:subjet-location"}],"Id":"urn:ow2:authzforce:core:pdp:io:xacml:json:test:custom-datatype:policy:obligation1"}]}]}
+

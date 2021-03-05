@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -2102,7 +2102,7 @@ public final class PolicyEvaluators
 		 */
 		final List<COMBINED_EVALUATOR> combinedEvaluators = new ArrayList<>(jaxbPolicySetChoiceElements.size());
 
-		/**
+		/*
 		 * Why isn't there any VariableDefinition in XACML PolicySet like in Policy? If there were, we would keep a copy of variable IDs defined in this policy, to remove them from the global manager
 		 * at the end of parsing this PolicySet. They should not be visible outside the scope of this.
 		 * <p>

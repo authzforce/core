@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -48,7 +48,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 	 */
 	TimeRangeComparisonFunction(final String functionId)
 	{
-		/**
+		/*
 		 * boolean timeInRange(time,time,time)
 		 */
 		super(functionId, StandardDatatypes.BOOLEAN, false, Arrays.asList(StandardDatatypes.TIME, StandardDatatypes.TIME, StandardDatatypes.TIME));
@@ -157,6 +157,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 			final TimeValue arg = argStack.poll();
 			final TimeValue lowerBound = argStack.poll();
 			final TimeValue upperBound = argStack.poll();
+			assert arg != null && lowerBound != null && upperBound != null;
 			return BooleanValue.valueOf(eval(arg, lowerBound, upperBound));
 		}
 	}

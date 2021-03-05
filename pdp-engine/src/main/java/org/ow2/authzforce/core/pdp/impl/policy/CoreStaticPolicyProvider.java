@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -290,7 +290,6 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
 					/*
 					If no exception occurred, ResourceUtils#getURL() returns non-null value
 					 */
-                    assert policyURL != null;
                     providerParams.add(new PolicyLocationParam(policyURL));
                 } else
                 {

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -216,7 +216,7 @@ public class ModularAttributeProvider implements AttributeProvider
 			 */
 			LOGGER.debug("Error finding attribute {}, type={}", attributeFqn, datatype, e);
 
-			/**
+			/*
 			 * If error occurred, we put the empty value to prevent retry in the same context, which may succeed at another time in the same context, resulting in different value of the same attribute
 			 * at different times during evaluation within the same context, therefore inconsistencies. The value(s) must remain constant during the evaluation context, as explained in section 7.3.5
 			 * Attribute Retrieval of XACML core spec:

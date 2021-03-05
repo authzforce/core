@@ -5,3 +5,4 @@ org.ow2.authzforce.core.pdp.testutil.ext.TestDnsNameWithPortValue$Factory
 org.ow2.authzforce.core.pdp.testutil.ext.TestDnsNameValueEqualFunction
 org.ow2.authzforce.core.pdp.testutil.ext.TestOnPermitApplySecondCombiningAlg
 org.ow2.authzforce.core.pdp.testutil.ext.TestCombinedDecisionXacmlJaxbResultPostprocessor$Factory
+org.ow2.authzforce.core.pdp.testutil.ext.CustomJsonObjectBasedAttributeValue$Factory

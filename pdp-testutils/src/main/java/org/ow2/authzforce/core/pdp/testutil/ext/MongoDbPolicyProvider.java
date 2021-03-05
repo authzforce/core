@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -14,9 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/**
- * 
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
@@ -309,7 +306,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 	public StaticTopLevelPolicyElementEvaluator getPolicySet(final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns, final Deque<String> policySetRefChain)
 	        throws IndeterminateEvaluationException
 	{
-		/**
+		/*
 		 * TODO: use a policy cache and check it before requesting the database. If we found a matching policy in cache, and it is a policyset, we would check the depth of policy references as well:
 		 * <p>
 		 * Utils.appendAndCheckPolicyRefChain(newPolicySetRefChain, cachedPolicy.getExtraPolicyMetadata().getLongestPolicyRefChain(), maxPolicySetRefDepth);

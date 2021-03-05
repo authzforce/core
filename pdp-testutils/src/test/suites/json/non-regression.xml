@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="AuthzForce.Core.PDP.JSON.NonRegression" verbose="3">
+   <parameter name="org.ow2.authzforce.domains.param1" value="val1" />
+
+   <test name="XacmlJsonNonRegressionTests" preserve-order="true" enabled="true">
+      <classes>
+         <class name="org.ow2.authzforce.core.pdp.testutil.test.json.XacmlJsonNonRegressionTest" />
+      </classes>
+   </test>
+</suite> 
+

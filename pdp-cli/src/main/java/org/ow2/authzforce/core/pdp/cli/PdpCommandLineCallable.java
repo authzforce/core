@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -14,9 +14,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/**
- * 
  */
 package org.ow2.authzforce.core.pdp.cli;
 
@@ -93,7 +90,6 @@ public final class PdpCommandLineCallable implements Callable<Void>
 		final PdpEngineConfiguration configuration = PdpEngineConfiguration.getInstance(confFile, catalogLocation, extensionXsdLocation);
 		switch (requestType)
 		{
-
 			case XACML_JSON:
 				final JSONObject jsonRequest;
 				try (InputStream inputStream = new FileInputStream(reqFile))

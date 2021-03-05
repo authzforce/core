@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PolicyId="root"
+   RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" Version="1.0">
+   <Description>
+      Policy with custom datatype (extension)
+   </Description>
+   <Target />
+   <ObligationExpressions>
+      <ObligationExpression FulfillOn="Deny" ObligationId="urn:ow2:authzforce:core:pdp:io:xacml:json:test:custom-datatype:policy:obligation1">
+         <AttributeAssignmentExpression AttributeId="urn:ogc:geoxacml:3.0:subjet-location">
+            <AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" AttributeId="urn:ogc:geoxacml:3.0:subjet-location" DataType="urn:ow2:authzforce:feature:pdp:data-type:test-custom-from-json-object" MustBePresent="true" />
+         </AttributeAssignmentExpression>
+      </ObligationExpression>
+   </ObligationExpressions>
+</Policy>

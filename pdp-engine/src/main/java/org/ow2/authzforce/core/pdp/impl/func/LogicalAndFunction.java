@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -135,7 +135,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 
 		protected FirstOrderFunctionCall<BooleanValue> getInstance(final List<Expression<?>> argExpressions, final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
-			/**
+			/*
 			 * TODO: optimize this function call by checking the following:
 			 * <ol>
 			 * <li>If any argument expression is constant BooleanAttributeValue True, remove it from the arguments, as it has no effect on the final result. Indeed, and function is commutative and

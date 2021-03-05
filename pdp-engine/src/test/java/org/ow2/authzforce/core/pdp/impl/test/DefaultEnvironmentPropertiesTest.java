@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -47,7 +47,7 @@ public class DefaultEnvironmentPropertiesTest
 	public static Collection<Object[]> data()
 	{
 		final Object[][] data = new Object[][] {
-		        /**
+		        /*
 		         * each test input is: input string, user-defined properties Map<EnvironmentPropertyName,String>, system properties as Map<String, String>, and expected output string
 		         */
 		        /* empty collection */

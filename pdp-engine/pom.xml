@@ -133,6 +133,9 @@
 				<artifactId>license-maven-plugin</artifactId>
 				<configuration>
 					<header>license/alv2-header.txt</header>
+					<headerDefinitions>
+						<headerDefinition>license/header-defs.xml</headerDefinition>
+					</headerDefinitions>
 					<includes>
 						<include>src/main/java/**</include>
 						<!-- Include test files also -->

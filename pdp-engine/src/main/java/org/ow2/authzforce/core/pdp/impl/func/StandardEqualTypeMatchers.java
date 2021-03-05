@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -47,7 +47,7 @@ final class StandardEqualTypeMatchers
 	 * x500Name-match function matcher
 	 * 
 	 */
-	static final Matcher<X500NameValue> X500NAME_MATCHER = (arg0, arg1) -> arg0.match(arg1);
+	static final Matcher<X500NameValue> X500NAME_MATCHER = X500NameValue::match;
 
 	/**
 	 * string-starts-with function matcher. For other *-starts-with functions, see {@link org.ow2.authzforce.core.pdp.api.func.NonEqualTypeMatchFunction} class.
@@ -99,7 +99,7 @@ final class StandardEqualTypeMatchers
 
 	private static final class StringRegexpMatchCallFactory extends CallFactory<StringValue>
 	{
-		private static final Matcher<StringValue> STRING_REGEXP_MATCHER = (regex, arg1) -> RegexpMatchFunctionHelper.match(regex, arg1);
+		private static final Matcher<StringValue> STRING_REGEXP_MATCHER = RegexpMatchFunctionHelper::match;
 
 		private final RegexpMatchFunctionHelper regexFuncHelper;
 
@@ -122,7 +122,7 @@ final class StandardEqualTypeMatchers
 
 	}
 
-	static final CallFactoryBuilder<StringValue> STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER = functionSignature -> new StringRegexpMatchCallFactory(functionSignature);
+	static final CallFactoryBuilder<StringValue> STRING_REGEXP_MATCH_CALL_FACTORY_BUILDER = StringRegexpMatchCallFactory::new;
 
 	private StandardEqualTypeMatchers()
 	{
