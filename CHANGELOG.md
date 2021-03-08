@@ -11,7 +11,8 @@ All notable changes to this project are documented in this file following the [K
 - XACML JSON Profile feature: support for JSON Objects in XACML/JSON Attribute Values (linked to issue authzforce/server#61 ), allowing for complex structures (JSON objects) as data types
 
 ### Fixed
-- Upgraded authzforce-ce-xacml-json-model to 3.0.1 to fix issue with method `XacmlJsonUtils#canonicalizeResponse()` when comparing similar XACML/JSON responses (linked to https://github.com/stleary/JSON-java/issues/589)
+- Upgraded dependency `authzforce-ce-xacml-json-model` to 3.0.1 to fix issue with method `XacmlJsonUtils#canonicalizeResponse()` when comparing similar XACML/JSON responses (linked to https://github.com/stleary/JSON-java/issues/589)
+- Upgraded dependency `authzforce-ce-core-pdp-api` to 18.0.1 to fix issue authzforce/server#62 : same XML namespace prefix cannot be reused in more than one namespace declaration when parsing XACML documents with `XmlUtils$SAXBasedXmlnsFilteringParser`
 - GH-54: test PKI certificates expired
 - Warning on XSLT version in SAXON configuration
 
