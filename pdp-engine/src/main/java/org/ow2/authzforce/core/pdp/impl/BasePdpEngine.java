@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -210,7 +210,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 			}
 		    // requestAttributes != null
 
-		    /**
+		    /*
 		     * 
 		     * XACML standard (§10.2.5) says: "If values for these [the standard environment attributes, i.e. current-time, current-date, current-dateTime] attributes are not present in the decision
 		     * request, then their values MUST be supplied by the context handler ". In our case, "context handler" means the PDP. In other words, the attribute values come from request by default, or

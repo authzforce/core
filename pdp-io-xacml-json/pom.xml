@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-		<version>17.0.0</version>
+		<version>17.1.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
@@ -21,28 +21,11 @@
 		<dependency>
 			<groupId>org.ow2.authzforce</groupId>
 			<artifactId>authzforce-ce-xacml-json-model</artifactId>
-			<version>3.0.0</version>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.authzforce</groupId>
 			<artifactId>authzforce-ce-core-pdp-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>6.11</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ow2.authzforce</groupId>
-			<artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-			<version>17.0.0</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -102,6 +85,9 @@
 				<artifactId>license-maven-plugin</artifactId>
 				<configuration>
 					<header>license/alv2-header.txt</header>
+					<headerDefinitions>
+						<headerDefinition>license/header-defs.xml</headerDefinition>
+					</headerDefinitions>
 					<includes>
 						<include>src/main/java/org/ow2/authzforce/**</include>
 						<!-- Include test files also -->
@@ -124,118 +110,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
-				<dependencies>
-					<dependency>
-						<groupId>net.sf.saxon</groupId>
-						<artifactId>Saxon-HE</artifactId>
-						<version>9.8.0-15</version>
-					</dependency>
-					<dependency>
-						<groupId>org.apache.ivy</groupId>
-						<artifactId>ivy</artifactId>
-						<version>2.4.0</version>
-					</dependency>
-					<dependency>
-						<groupId>ant-contrib</groupId>
-						<artifactId>ant-contrib</artifactId>
-						<version>1.0b3</version>
-						<!-- depends on ant 1.5 -->
-						<exclusions>
-							<exclusion>
-								<groupId>ant</groupId>
-								<artifactId>ant</artifactId>
-							</exclusion>
-						</exclusions>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>convert-xacml-mandatory-req-resp-to-json</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<taskdef resource="net/sf/antcontrib/antlib.xml" />
-								<ant antfile="${project.basedir}/src/test/resources.xacml/build.xml" inheritAll="false" inheritRefs="false">
-									<property name="src.dir" value="${project.basedir}/src/test/resources.xacml/conformance/xacml-3.0-core/mandatory" />
-									<property name="target.dir" value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-core/mandatory" />
-								</ant>
-							</target>
-						</configuration>
-					</execution>
-					<execution>
-						<id>convert-xacml-multiple-req-resp-to-json</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<taskdef resource="net/sf/antcontrib/antlib.xml" />
-								<ant antfile="${project.basedir}/src/test/resources.xacml/build.xml" inheritAll="false" inheritRefs="false">
-									<property name="src.dir" value="${project.basedir}/src/test/resources.xacml/conformance/xacml-3.0-multiple" />
-									<property name="target.dir" value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-multiple" />
-								</ant>
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-						<id>add-test-resource</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>add-test-resource</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>target/generated-test-resources</directory>
-									<!-- <excludes> -->
-									<!-- <exclude>**/folder-to-exclude/**</exclude> -->
-									<!-- </excludes> -->
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<!-- This execution of surefire is overwritten by a default one unless we specify a different version in pluginManagement. -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<suiteXmlFiles>
-						<!-- Parameters in the XML files seem to be ignored (more info: http://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html) -->
-						<!-- Using multiple test suites simplifies debugging and prevent some TestNG issues happening when reusing same class/methods over multiple tests in same test suite -->
-						<suiteXmlFile>src/test/suites/conformance.xml</suiteXmlFile>
-						<suiteXmlFile>src/test/suites/non-regression.xml</suiteXmlFile>
-					</suiteXmlFiles>
-					<skipAfterFailureCount>1</skipAfterFailureCount>
-					<!-- redirectTestOutputToFile: set this to 'true' to redirect the unit test standard output to a file (found in reportsDirectory/testName-output.txt) -->
-					<redirectTestOutputToFile>false</redirectTestOutputToFile>
-					<systemPropertyVariables>
-						<javax.xml.accessExternalSchema>all</javax.xml.accessExternalSchema>
-					</systemPropertyVariables>
-					<properties>
-						<property>
-							<name>surefire.testng.verbose</name>
-							<!-- verbosity level from 0 to 10 (10 is the most detailed), or -1 for debug More info: http://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html -->
-							<value>2</value>
-						</property>
-					</properties>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

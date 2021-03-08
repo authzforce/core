@@ -6,15 +6,27 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 17.1.0
+### Added
+- XACML JSON Profile feature: support for JSON Objects in XACML/JSON Attribute Values (linked to issue authzforce/server#61 ), allowing for complex structures (JSON objects) as data types
+
+### Fixed
+- Upgraded dependency `authzforce-ce-xacml-json-model` to 3.0.1 to fix issue with method `XacmlJsonUtils#canonicalizeResponse()` when comparing similar XACML/JSON responses (linked to https://github.com/stleary/JSON-java/issues/589)
+- Upgraded dependency `authzforce-ce-core-pdp-api` to 18.0.1 to fix issue authzforce/server#62 : same XML namespace prefix cannot be reused in more than one namespace declaration when parsing XACML documents with `XmlUtils$SAXBasedXmlnsFilteringParser`
+- GH-54: test PKI certificates expired
+- Warning on XSLT version in SAXON configuration
+
+
 ## 17.0.0
 ### Changed
 - GH-40: Upgraded **supported JRE: JAVA 11** (LTS). Java 8 no longer supported.
 - As part of Java 11 migration, upgraded JAXB (Jakarta XML Bining) to v2.3.3
 - Upgraded authzforce-ce-core-pdp-api to v18.0.0
-- Fixed CVE on jackson-databind -> v2.9.10.8
 - Upgraded authzforce-ce-xacml-json-model: 3.0.0
 - Upgraded Maven parent project to 8.0.0.
 
+### Fixed
+- Fixed CVE on jackson-databind -> v2.9.10.8
 
 ## 16.0.0
 ### Changed

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -54,7 +54,7 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 {
 
 	private static final RuntimeException ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION = new RuntimeException(
-	        "Unsupported AttributeAssignment value for JSON output: no content or mixed content with more than one node or XML attribute(s)");
+	        "Unsupported AttributeAssignment value for JSON output: no content");
 
 	private static JSONObject toJson(final Status status)
 	{
@@ -89,6 +89,14 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		return new JSONObject(resultJsonObject);
 	}
 
+	private static Object toJson(Serializable contentItem) {
+		if(contentItem instanceof SerializableJSONObject) {
+			return ((SerializableJSONObject) contentItem).get();
+		}
+
+		return contentItem.toString();
+	}
+
 	private static JSONObject toJson(final PepActionAttributeAssignment<?> aa)
 	{
 		final Map<String, Object> aaJsonPropMap = HashCollections.newUpdatableMap(5);
@@ -99,13 +107,13 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
 		}
 
-		final List<Serializable> contentParts = aaVal.getContent();
-		if (contentParts.size() != 1)
+		final List<Serializable> contentItems = aaVal.getContent();
+		if (contentItems.isEmpty())
 		{
 			throw ILLEGAL_ATTRIBUTE_ASSIGNMENT_RUNTIME_EXCEPTION;
 		}
 
-		aaJsonPropMap.put("Value", contentParts.get(0).toString());
+		aaJsonPropMap.put("Value", contentItems.size() == 1? toJson(contentItems.get(0)): new JSONArray(contentItems.stream().map(BaseXacmlJsonResultPostprocessor::toJson)));
 
 		final Optional<String> category = aa.getCategory();
 		category.ifPresent(s -> aaJsonPropMap.put("Category", s));

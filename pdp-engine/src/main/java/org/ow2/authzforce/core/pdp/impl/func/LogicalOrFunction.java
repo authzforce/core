@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -135,7 +135,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 	@Override
 	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{
-		/**
+		/*
 		 * TODO: optimize this function call by checking the following:
 		 * <ol>
 		 * <li>If any argument expression is constant BooleanAttributeValue False, remove it from the arguments, as it has no effect on the final result. Indeed, or function is commutative and

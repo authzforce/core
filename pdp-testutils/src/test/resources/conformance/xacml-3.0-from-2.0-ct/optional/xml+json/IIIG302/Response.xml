@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response
+      xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      >
+    <Result>
+        <Decision>Deny</Decision>
+        <Status>
+            <StatusCode
+                  Value="urn:oasis:names:tc:xacml:1.0:status:ok"/>
+        </Status>
+        <Obligations>
+         <Obligation
+             ObligationId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:obligation-1" >
+             <AttributeAssignment
+                 AttributeId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:assignment1"
+                 DataType="http://www.w3.org/2001/XMLSchema#string">assignment1</AttributeAssignment>
+         </Obligation>
+        </Obligations>
+        <PolicyIdentifierList>
+        	<PolicyIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InteralPolicy3</PolicyIdReference>
+			<PolicyIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicy4</PolicyIdReference>
+			<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:InternalPolicyset</PolicySetIdReference>
+			<PolicySetIdReference Version="1.0">urn:oasis:names:tc:xacml:2.0:conformance-test:IIIG302:policyset</PolicySetIdReference>
+        </PolicyIdentifierList>
+    </Result>
+</Response>
+

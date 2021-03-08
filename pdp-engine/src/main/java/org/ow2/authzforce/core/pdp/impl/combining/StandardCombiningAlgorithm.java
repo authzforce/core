@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -119,7 +119,7 @@ public enum StandardCombiningAlgorithm
 	 */
 	XACML_1_0_POLICY_COMBINING_ONLY_ONE_APPLICABLE("urn:oasis:names:tc:xacml:1.0:policy-combining-algorithm:only-one-applicable"),
 
-	/**
+	/*
 	 * overridingEffect Legacy/deprecated algorithms
 	 */
 

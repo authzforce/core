@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -17,15 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.conformance;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-
-import javax.xml.bind.JAXBException;
-
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,9 +32,19 @@ import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import javax.xml.bind.JAXBException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * XACML 3.0 conformance tests (published on OASIS xacml-comments mailing list). For tests testing validation of XACML policy syntax, the PDP is expected to reject the policy before receiving any
@@ -79,6 +82,21 @@ public class ConformanceV3FromV2
 	public static final String ATTRIBUTE_PROVIDER_FILENAME_SUFFIX = "AttributeProvider.xml";
 
 	/**
+	 * PDP Configuration file name
+	 */
+	public final static String PDP_CONF_FILENAME = "pdp.xml";
+
+	/**
+	 * PDP extensions schema
+	 */
+	public final static String PDP_EXTENSION_XSD_LOCATION = "classpath:pdp-ext.xsd";
+
+	/**
+	 * Spring-supported location to XML catalog (may be prefixed with classpath:, etc.)
+	 */
+	public final static String XML_CATALOG_LOCATION = "classpath:catalog.xml";
+
+	/**
 	 * the logger we'll use for all messages
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3FromV2.class);
@@ -89,73 +107,60 @@ public class ConformanceV3FromV2
 	}
 
 	/**
-	 * For each test folder {@code rootDirectoryPath}/{@code testSubDirectoryName}/{@code tesFilenamePrefixBeforeNum}NUM, where NUM is in range [ {@code startTestNum}, {@code endTestNum}] padded with
-	 * leading zeros if needed to form a 3-digit number, it creates the following data: path prefix to the test files (Request.xml, Response.xml, etc.), and the input request filter ID
+	 * For each test folder {@code testRootDir}/{@code testSubDirectoryName}, it creates the test parameters: path to the test directory containing Request.xml, Response.xml, etc., and the ID of request filter to be applied (null means the default lax variant of the single-decision request preprocessor
 	 * 
-	 * @param rootDirectoryPath
+	 * @param testRootDir
 	 *            path to root directory of all test data
-	 * @param testSubDirectoryName
-	 *            name of a specific test subfolder
-	 * @param testFilenamePrefixBeforeNum
-	 *            prefix in test filename, before the test number part
-	 * @param startTestNum
-	 *            starting number of tests in the test subdirectory
-	 * @param endTestNum
-	 *            ending number of tests in the test subdirectory
 	 * @param requestFilterId
 	 *            PDP request filter ID to be used for the tests
 	 * @return test data
 	 */
-	protected static Collection<? extends Object[]> getTestData(final String rootDirectoryPath, final String testSubDirectoryName, final String testFilenamePrefixBeforeNum, final int startTestNum,
-	        final int endTestNum, final String requestFilterId)
+	public static Collection<Object[]> getTestData(final String testRootDir, DirectoryStream.Filter<? super Path> fileFilter, final String requestFilterId) throws IOException
 	{
 		final Collection<Object[]> testData = new ArrayList<>();
-		for (int testNum = startTestNum; testNum <= endTestNum; testNum++)
+		/*
+		 * Each sub-directory of the root directory is data for a specific test. So we configure a test for each directory
+		 */
+		final Path testRootDirPath = Paths.get(testRootDir);
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(testRootDirPath, fileFilter))
 		{
-			final String paddedTestNumber;
-			if (testNum < 10)
+			for (final Path testDirPath: stream)
 			{
-				paddedTestNumber = "00" + testNum;
+				// specific test's resources directory location and request filter ID, used as parameters to test(...)
+				testData.add(new Object[]{testDirPath, requestFilterId });
 			}
-			else if (testNum < 100)
-			{
-				paddedTestNumber = "0" + testNum;
-			}
-			else
-			{
-				paddedTestNumber = Integer.toString(testNum);
-			}
-
-			testData.add(new Object[] { rootDirectoryPath + "/" + testSubDirectoryName + "/" + testFilenamePrefixBeforeNum + paddedTestNumber, requestFilterId });
 		}
 
 		return testData;
 	}
 
-	private final String testFilePathPrefix;
+	private final Path testDirectoryPath;
 
 	private final boolean enableXPath;
 
 	private final XmlnsFilteringParserFactory xacmlParserFactory;
 
-	private final String reqFilter;
+	private final String reqFilterId;
 
-	public ConformanceV3FromV2(final String filePathPrefix, final boolean enableXPath, final String requestFilter)
+	public ConformanceV3FromV2(final Path testDir, final boolean enableXPath, final String requestFilter)
 	{
-		this.testFilePathPrefix = filePathPrefix;
+		this.testDirectoryPath = testDir;
 		this.enableXPath = enableXPath;
-		this.reqFilter = requestFilter;
+		this.reqFilterId = requestFilter;
 		this.xacmlParserFactory = XacmlJaxbParsingUtils.getXacmlParserFactory(enableXPath);
 	}
 
 	@Test
-	public void testConformance() throws Exception
+	public void test() throws Exception
 	{
-		LOGGER.debug("Starting conformance test with files '{}*.xml'", testFilePathPrefix);
+		LOGGER.debug("******************************");
+		LOGGER.debug("Starting PDP test in directory: '{}'", testDirectoryPath);
 
+		// Response file
 		final XmlnsFilteringParser respUnmarshaller = xacmlParserFactory.getInstance();
+		final Path expectedRespFilepath = testDirectoryPath.resolve(EXPECTED_RESPONSE_FILENAME_SUFFIX);
+		// If no Response file, it is just a static policy or request syntax error check
 		final Response expectedResponse;
-		final Path expectedRespFilepath = Paths.get(testFilePathPrefix + EXPECTED_RESPONSE_FILENAME_SUFFIX);
 		if (Files.exists(expectedRespFilepath))
 		{
 			expectedResponse = TestUtils.createResponse(expectedRespFilepath, respUnmarshaller);
@@ -163,14 +168,15 @@ public class ConformanceV3FromV2
 		else
 		{
 			expectedResponse = null;
-			// do nothing except logging -> request = null
+			// Do nothing except logging -> request = null
 			LOGGER.debug("Response file '{}' does not exist -> Static Policy/Request syntax error check", expectedRespFilepath);
 		}
 
+		// Request file
 		final XmlnsFilteringParser reqUnmarshaller = xacmlParserFactory.getInstance();
+		final Path reqFilepath =  testDirectoryPath.resolve(REQUEST_FILENAME_SUFFIX);
+		// If no Request file, it is just a static policy syntax error check
 		final Request request;
-		// if no Request file, it is just a static policy syntax error check
-		final Path reqFilepath = Paths.get(testFilePathPrefix + REQUEST_FILENAME_SUFFIX);
 		if (Files.exists(reqFilepath))
 		{
 			try
@@ -179,7 +185,7 @@ public class ConformanceV3FromV2
 			}
 			catch (final JAXBException e)
 			{
-				// we found syntax error in request
+				// we found a syntax error in request
 				if (expectedResponse == null)
 				{
 					// this is a Request syntax error check and we found the syntax error as
@@ -200,40 +206,74 @@ public class ConformanceV3FromV2
 		}
 
 		/*
-		 * Policies directory. If it exists, root Policy file is expected to be in there. This is the case for IIE*** conformance tests
+		 * Create PDP
 		 */
-		final Path policiesDir = Paths.get(testFilePathPrefix + POLICIES_DIRNAME_SUFFIX);
-
-		final Path attributeProviderConfFile = Paths.get(testFilePathPrefix + ATTRIBUTE_PROVIDER_FILENAME_SUFFIX);
-		final Optional<Path> optAttributeProviderConfFile = Files.isRegularFile(attributeProviderConfFile) ? Optional.of(attributeProviderConfFile) : Optional.empty();
-
 		final PdpEngineConfiguration pdpEngineConf;
-		try
+		final Path pdpConfFile = testDirectoryPath.resolve(PDP_CONF_FILENAME);
+		if (Files.notExists(pdpConfFile))
 		{
-			if (Files.isDirectory(policiesDir))
+			/*
+			 * Policies directory. If it exists, root Policy file is expected to be in there. This is the case for IIE*** conformance tests
+			 */
+			final Path policiesDir = testDirectoryPath.resolve(POLICIES_DIRNAME_SUFFIX);
+			/*
+			Attribute Provider config
+			 */
+			final Path attributeProviderConfFile = testDirectoryPath.resolve(ATTRIBUTE_PROVIDER_FILENAME_SUFFIX);
+			final Optional<Path> optAttributeProviderConfFile = Files.isRegularFile(attributeProviderConfFile) ? Optional.of(attributeProviderConfFile) : Optional.empty();
+
+			try
 			{
-				final Path rootPolicyFile = policiesDir.resolve(ROOT_POLICY_FILENAME_SUFFIX);
-				pdpEngineConf = TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), policiesDir, enableXPath, optAttributeProviderConfFile, this.reqFilter, null);
-			}
-			else
+				if (Files.isDirectory(policiesDir))
+				{
+					final Path rootPolicyFile = policiesDir.resolve(ROOT_POLICY_FILENAME_SUFFIX);
+					pdpEngineConf = TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), policiesDir, enableXPath, optAttributeProviderConfFile, this.reqFilterId, null);
+				} else
+				{
+					final Path rootPolicyFile = testDirectoryPath.resolve(ROOT_POLICY_FILENAME_SUFFIX);
+					pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile, enableXPath, optAttributeProviderConfFile, this.reqFilterId, null);
+				}
+			} catch (final IllegalArgumentException e)
 			{
-				final Path rootPolicyFile = Paths.get(testFilePathPrefix + ROOT_POLICY_FILENAME_SUFFIX);
-				pdpEngineConf = TestUtils.newPdpEngineConfiguration(rootPolicyFile, enableXPath, optAttributeProviderConfFile, this.reqFilter, null);
+				// we found syntax error in policy
+				if (request == null)
+				{
+					// this is a policy syntax error check and we found the syntax error as
+					// expected -> success
+					LOGGER.debug("Successfully found syntax error as expected in policy(ies) with path: {}*", testDirectoryPath);
+					return;
+				}
+
+				// Unexpected error
+				throw e;
 			}
-		}
-		catch (final IllegalArgumentException e)
+		} else
 		{
-			// we found syntax error in policy
-			if (request == null)
+			/*
+			 * PDP configuration filename found in test directory -> create PDP from it
+			 */
+			// final String pdpExtXsdLocation = testResourceLocationPrefix + PDP_EXTENSION_XSD_FILENAME;
+			File pdpExtXsdFile = null;
+			try
 			{
-				// this is a policy syntax error check and we found the syntax error as
-				// expected -> success
-				LOGGER.debug("Successfully found syntax error as expected in policy(ies) with path: {}*", testFilePathPrefix);
-				return;
+				pdpExtXsdFile = ResourceUtils.getFile(PDP_EXTENSION_XSD_LOCATION);
+			} catch (final FileNotFoundException e)
+			{
+				LOGGER.debug("No PDP extension configuration file '{}' found -> JAXB-bound PDP extensions not allowed.", PDP_EXTENSION_XSD_LOCATION);
 			}
 
-			// Unexpected error
-			throw e;
+			try
+			{
+				/*
+				 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this file exists, and the XML catalog required to resolve these extension XSDs
+				 */
+				pdpEngineConf = pdpExtXsdFile == null ? PdpEngineConfiguration.getInstance(pdpConfFile.toString())
+						: PdpEngineConfiguration.getInstance(pdpConfFile.toString(), XML_CATALOG_LOCATION, PDP_EXTENSION_XSD_LOCATION);
+			} catch (final IOException e)
+			{
+				throw new RuntimeException("Error parsing PDP configuration from file '" + pdpConfFile + "' with extension XSD '" + PDP_EXTENSION_XSD_LOCATION + "' and XML catalog file '"
+						+ XML_CATALOG_LOCATION + "'", e);
+			}
 		}
 
 		try (PdpEngineInoutAdapter<Request, Response> pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConf))
@@ -242,7 +282,7 @@ public class ConformanceV3FromV2
 			{
 				// this is a policy syntax error check and we didn't found the syntax error as
 				// expected
-				Assert.fail("Failed to find syntax error as expected in policy(ies)  with path: " + testFilePathPrefix + "*");
+				Assert.fail("Failed to find syntax error as expected in policy(ies)  with path: " + testDirectoryPath + "*");
 			}
 			else if (expectedResponse == null)
 			{
@@ -250,7 +290,7 @@ public class ConformanceV3FromV2
 				 * No expected response, so it is not a PDP evaluation test, but request or policy syntax error check. We got here, so request and policy OK. This is unexpected.
 				 */
 				Assert.fail("Missing response file '" + expectedRespFilepath + "' or failed to find syntax error as expected in either request located at '" + reqFilepath
-				        + "' or policy(ies) with path '" + testFilePathPrefix + "*'");
+				        + "' or policy(ies) with path '" + testDirectoryPath + "*'");
 
 			}
 			else
@@ -263,7 +303,7 @@ public class ConformanceV3FromV2
 					LOGGER.debug("Response that is received from the PDP :  {}", TestUtils.printResponse(actualResponse));
 				}
 
-				TestUtils.assertNormalizedEquals(testFilePathPrefix, expectedResponse, actualResponse);
+				TestUtils.assertNormalizedEquals("Test failed for directory "+ testDirectoryPath, expectedResponse, actualResponse);
 			}
 		}
 		catch (final IllegalArgumentException e)
@@ -273,7 +313,7 @@ public class ConformanceV3FromV2
 			{
 				// this is a policy syntax error check and we found the syntax error as
 				// expected -> success
-				LOGGER.debug("Successfully found syntax error as expected in policy(ies) with path: {}*", testFilePathPrefix);
+				LOGGER.debug("Successfully found syntax error as expected in policy(ies) with path: {}*", testDirectoryPath);
 				return;
 			}
 
@@ -281,4 +321,28 @@ public class ConformanceV3FromV2
 			throw e;
 		}
 	}
+
+
+/*	public static void main(String[] args) throws IOException
+	{
+		final String testsDir = "pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/optional/xml";
+		final Path testsDirPath = Paths.get(testsDir);
+		for(final Path testdir: Files.newDirectoryStream(testsDirPath)) {
+			if(Files.isDirectory(testdir)) {
+				for(final Path testFile: Files.newDirectoryStream(testdir)) {
+					final String testFilename = testFile.getFileName().toString();
+					String prefix = testFilename.substring(0, 6);
+					Path newTestDirPath = testsDirPath.resolve(prefix);
+					if(Files.notExists(newTestDirPath)) {
+						System.out.println("Creating directory: " + newTestDirPath);
+						Files.createDirectory(newTestDirPath);
+					}
+					String suffix = testFilename.substring(6);
+					Path newFilepath = newTestDirPath.resolve(suffix);
+					System.out.println("Moving file: " + testFile + " -> "+ newFilepath);
+					Files.move(testFile, newFilepath);
+				}
+			}
+		}
+	}*/
 }

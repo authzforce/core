@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -51,7 +51,7 @@ public class CliTest
 	private static final String TEST_DATA_DIR = "src/test/resources/conformance/xacml-3.0-core/mandatory";
 
 	@Test
-	public void testXml() throws UnsupportedEncodingException, JAXBException
+	public void testXml() throws JAXBException
 	{
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
@@ -108,9 +108,9 @@ public class CliTest
 		final JSONObject normalizedExpectedResponse;
 		try (final BufferedReader reader = Files.newBufferedReader(Paths.get(TEST_DATA_DIR + "/IIA001/Response.json"), StandardCharsets.UTF_8))
 		{
-			normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(new JSONTokener(reader)));
+			normalizedExpectedResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(new JSONTokener(reader)), true);
 		}
-		final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(output));
+		final JSONObject normalizedActualResponse = XacmlJsonUtils.canonicalizeResponse(new JSONObject(output), true);
 		Assert.assertTrue(normalizedActualResponse.similar(normalizedExpectedResponse), "Actual XACML/JSON Response does not match expected");
 	}
 

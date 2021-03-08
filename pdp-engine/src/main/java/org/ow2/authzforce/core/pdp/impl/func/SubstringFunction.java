@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -89,7 +89,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
 			}
 
-			/**
+			/*
 			 * string-susbtring(str1, beginIndex, endIndex)
 			 * <p>
 			 * The result SHALL be the substring of <code>arg0</code> at the position given by <code>beginIndex</code> and ending at <code>endIndex</code>. The first character of <code>arg0</code> has

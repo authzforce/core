@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -374,7 +374,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 			return new CallWithFixedArg0(functionSignature, nOfRequiredTrues, argExpressions, remainingArgTypes);
 		}
 
-		/**
+		/*
 		 * TODO: optimize by checking the following: If any argument expression is constant BooleanAttributeValue False, remove it from the arguments, as it has no effect on the final result. Indeed,
 		 * n-of function is commutative except for the first argument, and n-of(N, false, x, y...) = n-of(N, x, y...).
 		 */

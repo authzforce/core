@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -53,7 +53,7 @@ import com.google.common.collect.ImmutableList;
  */
 public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJaxbRequestPreprocessor
 {
-	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = (namedAttributes, extraContentsByCategory, returnApplicablePolicies) -> ImmutableDecisionRequest.getInstance(namedAttributes, extraContentsByCategory, returnApplicablePolicies);
+	private static final DecisionRequestFactory<ImmutableDecisionRequest> DEFAULT_REQUEST_FACTORY = ImmutableDecisionRequest::getInstance;
 
 	/**
 	 *
@@ -99,7 +99,10 @@ public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJ
 	 */
 	public static final class StrictVariantFactory extends BaseXacmlJaxbRequestPreprocessor.Factory
 	{
-		private static final String ID = "urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:default-strict";
+		/**
+		 * Request preprocessor ID, as returned by {@link #getId()}
+		 */
+		public static final String ID = "urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:default-strict";
 
 		/**
 		 * Constructor

@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-		<version>17.0.0</version>
+		<version>17.1.0</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>authzforce-ce-core-pdp-engine</artifactId>
@@ -133,6 +133,9 @@
 				<artifactId>license-maven-plugin</artifactId>
 				<configuration>
 					<header>license/alv2-header.txt</header>
+					<headerDefinitions>
+						<headerDefinition>license/header-defs.xml</headerDefinition>
+					</headerDefinitions>
 					<includes>
 						<include>src/main/java/**</include>
 						<!-- Include test files also -->

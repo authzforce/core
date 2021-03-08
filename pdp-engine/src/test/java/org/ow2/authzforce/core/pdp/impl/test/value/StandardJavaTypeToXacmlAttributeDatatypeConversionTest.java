@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -93,7 +93,7 @@ public class StandardJavaTypeToXacmlAttributeDatatypeConversionTest
 	public static Collection<Object[]> data()
 	{
 		final Object[][] data = new Object[][] {
-		        /**
+		        /*
 		         * each test input is: attributeValueFactories (standard if null), raw values, expected (XACML) datatype of attribute values created from them, exception iff error expected (null if
 		         * none)
 		         */

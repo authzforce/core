@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -22,8 +22,6 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
 import org.ow2.authzforce.core.pdp.testutil.test.conformance.ConformanceV3FromV2MandatoryTest;
 import org.ow2.authzforce.core.pdp.testutil.test.conformance.ConformanceV3FromV2OptionalTest;
 import org.ow2.authzforce.core.pdp.testutil.test.conformance.ConformanceV3OthersTest;

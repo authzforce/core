@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2021 THALES.
  *
  * This file is part of AuthzForce CE.
@@ -230,13 +230,13 @@ public abstract class XacmlXmlPdpTest
 		final Path pdpConfFile = Paths.get(testResourceLocationPrefix + PDP_CONF_FILENAME);
 		try
 		{
+			final PdpEngineConfiguration pdpEngineConf;
 			if (Files.notExists(pdpConfFile))
 			{
 				LOGGER.debug("No PDP configuration file found at location: '{}'. Using minimal PDP instead (returned by TestUtils.getPDPNewInstance(policy) ).", pdpConfFile);
-				final PdpEngineConfiguration pdpEngineConf = optPoliciesDir.isPresent()
+				pdpEngineConf = optPoliciesDir.isPresent()
 				        ? TestUtils.newPdpEngineConfiguration(TestUtils.getPolicyRef(rootPolicyFile), optPoliciesDir.get(), false, Optional.empty(), null, null)
 				        : TestUtils.newPdpEngineConfiguration(rootPolicyFile, false, Optional.empty(), null, null);
-				pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConf);
 			}
 			else
 			{
@@ -259,9 +259,8 @@ public abstract class XacmlXmlPdpTest
 					/*
 					 * Load the PDP configuration from the configuration, and optionally, the PDP extension XSD if this file exists, and the XML catalog required to resolve these extension XSDs
 					 */
-					final PdpEngineConfiguration pdpEngineConfiguration = pdpExtXsdFile == null ? PdpEngineConfiguration.getInstance(pdpConfFile.toString())
+					pdpEngineConf = pdpExtXsdFile == null ? PdpEngineConfiguration.getInstance(pdpConfFile.toString())
 					        : PdpEngineConfiguration.getInstance(pdpConfFile.toString(), XML_CATALOG_LOCATION, PDP_EXTENSION_XSD_LOCATION);
-					pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConfiguration);
 				}
 				catch (final IOException e)
 				{
@@ -269,6 +268,8 @@ public abstract class XacmlXmlPdpTest
 					        + XML_CATALOG_LOCATION + "'", e);
 				}
 			}
+
+			pdp = PdpEngineAdapters.newXacmlJaxbInoutAdapter(pdpEngineConf);
 
 			if (request == null)
 			{
