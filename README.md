@@ -80,7 +80,7 @@ Java (JRE) version: 11 or later. Java 8 is no longer supported.
 ## Usage
 ### Getting started
 #### CLI
-Get the [latest executable jar from Maven Central](http://central.maven.org/maven2/org/ow2/authzforce/authzforce-ce-core-pdp-cli/) with groupId/artifactId = `org.ow2.authzforce`/`authzforce-ce-core-pdp-cli` and make sure you are allowed to run it (it is a fully executable JAR), e.g. with command:
+Get the latest executable jar from Maven Central by following the `authzforce-ce-core-pdp-cli` link on [the latest release page](https://github.com/authzforce/core/releases/latest), and make sure you are allowed to run it (it is a fully executable JAR), e.g. with command:
 
 ```
 $ chmod a+x authzforce-ce-core-pdp-cli-14.0.0.jar
