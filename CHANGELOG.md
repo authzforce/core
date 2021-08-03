@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
-## Unreleased
+## 17.1.1
 ### Fixed
 - Fix for https://github.com/authzforce/server/issues/64 - loading JSON schemas in offline mode
   - Upgraded dependency authzforce-ce-xacml-json-model to 3.0.3
