@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-		<version>17.1.0</version>
+		<version>17.1.1</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>authzforce-ce-core-pdp-engine</artifactId>
@@ -30,7 +30,7 @@
 			<!-- JavaMail API implementation for XACML RFC822Name datatype -->
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
-			<version>1.6.0</version>
+			<version>1.6.2</version>
 		</dependency>
 		<dependency>
 			<!-- Needed for org.springframework.util.ResourceUtils,SystemPropertyUtils,FileCopyUtils, etc. -->

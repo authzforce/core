@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## Unreleased
+### Fixed
+- Fix for https://github.com/authzforce/server/issues/64 - loading JSON schemas in offline mode
+  - Upgraded dependency authzforce-ce-xacml-json-model to 3.0.3
+- GH-56: CVE-2021-22118 
+  - Upgraded parent version to 8.0.2 
+  - Updated Spring version to 5.2.15.RELEASE
+- Upgraded dependency authzforce-ce-core-pdp-api to 18.0.2
+- Upgraded dependency javax.mail to 1.6.2
+
+
 ## 17.1.0
 ### Added
 - XACML JSON Profile feature: support for JSON Objects in XACML/JSON Attribute Values (linked to issue authzforce/server#61 ), allowing for complex structures (JSON objects) as data types
