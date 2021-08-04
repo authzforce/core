@@ -6,10 +6,15 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 17.1.2
+### Fixed
+- CVE-2021-22696 and CVE-2021-3046 fixed by upgrading **authzforce-ce-parent to v8.0.3**
+- Fix for authzforce/server#64 - loading JSON schemas in offline mode failed
+    - Upgraded dependency authzforce-ce-xacml-json-model to 3.0.4
+  
+
 ## 17.1.1
 ### Fixed
-- Fix for https://github.com/authzforce/server/issues/64 - loading JSON schemas in offline mode
-  - Upgraded dependency authzforce-ce-xacml-json-model to 3.0.3
 - GH-56: CVE-2021-22118 
   - Upgraded parent version to 8.0.2 
   - Updated Spring version to 5.2.15.RELEASE
