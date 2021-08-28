@@ -206,7 +206,7 @@ See [EmbeddedPdpBasedAuthzInterceptor#createRequest(...) method](pdp-testutils/s
 You can pass the `PdpEngineConfiguration` to `PdpEngineAdapters#newXacmlJaxbInoutAdapter(PdpEngineConfiguration)` utility method to instantiate a PDP supporting XACML 3.0/XML (core specification) format. You can evaluate such XACML Request by calling the `evaluate(...)` methods.
 
 ##### Evaluating Requests in XACML/JSON format
-To instantiate a PDP supporting XACML 3.0/JSON (JSON Profile) format, you may reuse the test code from [PdpEngineXacmlJsonAdapters](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/json/PdpEngineXacmlJsonAdapters.java).
+To instantiate a PDP supporting XACML 3.0/JSON (JSON Profile) format, you may reuse the test code from [PdpEngineXacmlJsonAdapters](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/json/PdpEngineXacmlJsonAdapters.java), esp. the method `PdpEngineXacmlJsonAdapters#newXacmlJsonInoutAdapter(PdpEngineConfiguration)`.
 
 You will need an extra dependency as well, available from Maven Central:
 * groupId: `org.ow2.authzforce`;
