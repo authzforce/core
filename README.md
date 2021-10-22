@@ -257,4 +257,4 @@ If you want to report a vulnerability, you must do so on the [OW2 Issue Tracker]
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Adoption
-If you are (or have been) using AuthzForce and would be so kind as to mentioned it [here](ADOPTERS.md), please submit a pull request with your change to [ADOPTERS.md](ADOPTERS.md).
+If you are (or have been) using AuthzForce and would be so kind as to mention it [here](ADOPTERS.md), please submit a pull request with your change to [ADOPTERS.md](ADOPTERS.md).
