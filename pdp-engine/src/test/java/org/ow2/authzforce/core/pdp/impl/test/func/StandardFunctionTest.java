@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,15 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.func;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -40,6 +31,9 @@ import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * An abstract class to easily test a function evaluation, according to a given function name, a list of arguments, and expected result. In order to perform a function test, simply extend this class
@@ -59,8 +53,8 @@ public abstract class StandardFunctionTest
 		try
 		{
 			STD_EXPRESSION_FACTORY = new DepthLimitingExpressionFactory(StandardAttributeValueFactories.getRegistry(true, Optional.empty()),
-			        StandardFunction.getRegistry(true, StandardAttributeValueFactories.BIG_INTEGER), null, 0, false, false);
-		} catch (IllegalArgumentException | IOException e)
+			        StandardFunction.getRegistry(true, StandardAttributeValueFactories.BIG_INTEGER), 0, false, false, Optional.empty());
+		} catch (IllegalArgumentException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -183,7 +177,7 @@ public abstract class StandardFunctionTest
 		}
 
 		@Override
-		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		public V evaluate(final EvaluationContext context, Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
 			throw new IndeterminateEvaluationException("Missing attribute", XacmlStatusCode.MISSING_ATTRIBUTE.value());
 		}
@@ -191,7 +185,7 @@ public abstract class StandardFunctionTest
 		@Override
 		public Optional<V> getValue()
 		{
-			throw new UnsupportedOperationException("No constant defined for Indeterminate expression");
+			return Optional.empty();
 		}
 
 	}
@@ -320,7 +314,7 @@ public abstract class StandardFunctionTest
 			/*
 			 * funcCall != null (see constructor)
 			 */
-			final Value actualResult = funcCall.evaluate(null);
+			final Value actualResult = funcCall.evaluate(null, Optional.empty());
 			if (expectedResult instanceof Bag && actualResult instanceof Bag && areBagsComparedAsSets)
 			{
 				final Set<?> expectedSet = bagToSet((Bag<?>) expectedResult);

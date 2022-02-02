@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,24 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.Collection;
-
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
-import org.ow2.authzforce.core.pdp.api.PepAction;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import com.google.common.collect.ImmutableList;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Common Combining Algorithm evaluators
@@ -53,8 +47,8 @@ final class CombiningAlgEvaluators
 		protected abstract ExtendedDecision getReturnedDecision();
 
 		@Override
-		public final ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> updatablePepActions,
-		        final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
+		public final ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions,
+											   final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
 			LOGGER.debug(
 			        "This evaluator constantly returns the same decision, which results from an optimization of the combining algorithm and combined elements (if any) initially defined in the policy. Check the policy initialization logs for more information on this optimization.");
@@ -125,13 +119,13 @@ final class CombiningAlgEvaluators
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> updatablePepActions,
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions,
 		        final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
 			ExtendedDecision firstIndeterminate = null;
 			for (final RuleEvaluator rule : rulesWithSameEffect)
 			{
-				final DecisionResult evalResult = rule.evaluate(context);
+				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
 				final DecisionType decision = evalResult.getDecision();
 				if (decision == commonDecision)
 				{

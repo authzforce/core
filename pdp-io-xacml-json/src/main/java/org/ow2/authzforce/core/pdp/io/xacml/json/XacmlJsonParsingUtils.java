@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,38 +17,25 @@
  */
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
-import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableList;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XdmNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.AttributeFqns;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.io.ImmutableNamedXacmlAttributeParsingResult;
-import org.ow2.authzforce.core.pdp.api.io.NamedXacmlAttributeParser;
-import org.ow2.authzforce.core.pdp.api.io.NamedXacmlAttributeParsingResult;
-import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes;
+import org.ow2.authzforce.core.pdp.api.io.*;
 import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes.NamedAttributeIteratorConverter;
-import org.ow2.authzforce.core.pdp.api.io.SingleCategoryXacmlAttributesParser;
-import org.ow2.authzforce.core.pdp.api.io.XacmlRequestAttributeParser;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
-import com.google.common.collect.ImmutableList;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import net.sf.saxon.s9api.XdmNode;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * XACML/JSON (Profile) processing utilities
@@ -297,7 +284,7 @@ public final class XacmlJsonParsingUtils
 					if (attrJsonObj.optBoolean("IncludeInResult", false))
 					{
 						/*
-						 * Remove IncludeInResult as it is optional in JSON and we don't need in the Result
+						 * Remove IncludeInResult as it is optional in JSON, and we don't need in the Result
 						 */
 						attrJsonObj.remove("IncludeInResult");
 						returnedAttributes.add(attrJsonObj);

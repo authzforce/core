@@ -1,30 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Testing parameter 'maxPolicySetRefDepth' -->
-<pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7" version="7.1" maxPolicyRefDepth="1">
-	<policyProvider id="refPolicyprovider" xsi:type="StaticPolicyProvider">
-		<policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
-		<xacml:PolicySet xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicySetId="root" Version="1.0"
-			PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
-			<xacml:Description>Root PolicySet. Test for a valid PolicySetIdReference.</xacml:Description>
-			<xacml:Target />
-			<xacml:PolicySet PolicySetId="RPS:Employee" Version="1.0" PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
-				<xacml:Description>
+<pdp xmlns="http://authzforce.github.io/core/xmlns/pdp/8"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     maxPolicyRefDepth="1"
+     version="8.0">
+   <policyProvider id="refPolicyprovider" xsi:type="StaticPolicyProvider">
+      <policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
+      <xacml:PolicySet xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+                       PolicySetId="root"
+                       Version="1.0"
+                       PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
+         <xacml:Description>Root PolicySet. Test for a valid PolicySetIdReference.</xacml:Description>
+         <xacml:Target/>
+         <xacml:PolicySet PolicySetId="RPS:Employee"
+                          Version="1.0"
+                          PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
+            <xacml:Description>
 					Employee Role PolicySet
 				</xacml:Description>
-				<xacml:Target>
-					<xacml:AnyOf>
-						<xacml:AllOf>
-							<xacml:Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-								<xacml:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Employee</xacml:AttributeValue>
-								<xacml:AttributeDesignator Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role"
-									DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
-							</xacml:Match>
-						</xacml:AllOf>
-					</xacml:AnyOf>
-				</xacml:Target>
-				<xacml:PolicySetIdReference>PPS:Employee</xacml:PolicySetIdReference>
-			</xacml:PolicySet>
-		</xacml:PolicySet>
-	</policyProvider>
-	<rootPolicyRef>root</rootPolicyRef>
+            <xacml:Target>
+               <xacml:AnyOf>
+                  <xacml:AllOf>
+                     <xacml:Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+                        <xacml:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">Employee</xacml:AttributeValue>
+                        <xacml:AttributeDesignator Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+                                                   AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role"
+                                                   DataType="http://www.w3.org/2001/XMLSchema#string"
+                                                   MustBePresent="true"/>
+                     </xacml:Match>
+                  </xacml:AllOf>
+               </xacml:AnyOf>
+            </xacml:Target>
+            <xacml:PolicySetIdReference>PPS:Employee</xacml:PolicySetIdReference>
+         </xacml:PolicySet>
+      </xacml:PolicySet>
+   </policyProvider>
+   <rootPolicyRef>root</rootPolicyRef>
 </pdp>

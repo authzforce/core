@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,17 +17,17 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * XACML AllOf evaluator
@@ -97,11 +97,13 @@ public final class AllOfEvaluator
      * At least one False					"No Match"
      * </code>
      *
-     * @param context the representation of the request
+     * @param context the representation of the Individual Decision request
+     * @param mdpContext
+     * 	 * 	 the context of the Multiple Decision request that the {@code context} belongs to if the Multiple Decision Profile is used.
      * @return true iff Match, else No match
      * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException Indeterminate
      */
-    public boolean match(final EvaluationContext context) throws IndeterminateEvaluationException
+    public boolean match(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
     {
         // atLeastOneIndeterminate = true iff lastIndeterminate != null
         IndeterminateEvaluationException lastIndeterminate = null;
@@ -120,7 +122,7 @@ public final class AllOfEvaluator
             final boolean isMatched;
             try
             {
-                isMatched = matchEvaluator.match(context);
+                isMatched = matchEvaluator.match(context, mdpContext);
                 if (LOGGER.isDebugEnabled())
                 {
                     // Beware of autoboxing which causes call to

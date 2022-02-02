@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,19 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
 import net.sf.saxon.s9api.XdmNode;
-
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
 import org.ow2.authzforce.core.pdp.api.DecisionRequest;
 import org.ow2.authzforce.core.pdp.api.ImmutableDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 
-import com.google.common.collect.ImmutableList;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * (Immutable) Individual decision request using XACML-schema-derived JAXB-annotated objects (XACML Attributes elements), as defined by Multiple Decision Profile of XACML. This differs from
@@ -56,6 +55,12 @@ public final class IndividualXacmlJsonRequest implements DecisionRequest
 
 		this.baseRequest = baseRequest;
 		this.attributesByCategoryToBeReturned = attributesToBeReturned == null ? Collections.emptyList() : attributesToBeReturned;
+	}
+
+	@Override
+	public Instant getCreationTimestamp()
+	{
+		return baseRequest.getCreationTimestamp();
 	}
 
 	@Override

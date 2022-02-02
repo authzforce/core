@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,19 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Iterator;
-
-import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
-import org.ow2.authzforce.core.pdp.api.PepAction;
-import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import com.google.common.collect.ImmutableList;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
@@ -38,10 +29,7 @@ import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
+import java.util.*;
 
 /**
  * *-unless-* combining algorithm (deny-unless-permit or permit-unless-deny)
@@ -79,17 +67,17 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 			/*
-			 * The final decision cannot be NotApplicable so we can add all applicable policies straight to outApplicablePolicyIdList
+			 * The final decision cannot be NotApplicable, so we can add all applicable policies straight to outApplicablePolicyIdList
 			 */
 
 			UpdatableList<PepAction> pepActionsInOverriddenEffect = null;
 			for (final Decidable combinedElement : getCombinedElements())
 			{
-				final DecisionResult result = combinedElement.evaluate(context);
+				final DecisionResult result = combinedElement.evaluate(context, mdpContext);
 				final DecisionType decision = result.getDecision();
 				if (decision != DecisionType.NOT_APPLICABLE && outApplicablePolicyIdList != null)
 				{
@@ -199,12 +187,12 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> updatablePepActions,
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions,
 		        final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
 			for (final RuleEvaluator rule : rulesWithOverridingEffect)
 			{
-				final DecisionResult evalResult = rule.evaluate(context);
+				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
 				final DecisionType decision = evalResult.getDecision();
 				if (decision == this.overridingEffectAsDecision)
 				{
@@ -220,7 +208,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 			 */
 			for (final RuleEvaluator rule : otherRulesWithPepActions)
 			{
-				final DecisionResult evalResult = rule.evaluate(context);
+				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
 				final DecisionType decision = evalResult.getDecision();
 				if (decision == overriddenEffectAsDecision)
 				{
@@ -314,7 +302,7 @@ final class DPUnlessPDCombiningAlg<T extends Decidable> extends BaseCombiningAlg
 			if (rule.getEffect() == overridingEffect)
 			{
 				/*
-				 * If rule's effect is the overriding Effect and it has no target/condition/pep_actions, then rule will always return this Effect -> {overriding_effect}-overrides alg always evaluates
+				 * If rule's effect is the overriding Effect, and it has no target/condition/pep_actions, then rule will always return this Effect -> {overriding_effect}-overrides alg always evaluates
 				 * to ${overriding_effect} (ignore/remove all other rules). ({overriding_effect} = Permit if algorithm is deny-unless-permit, or Deny if algorithm is permit-unless-deny in this
 				 * statement.)
 				 */

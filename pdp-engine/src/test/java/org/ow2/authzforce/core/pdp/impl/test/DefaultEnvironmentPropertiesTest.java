@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,7 +28,9 @@ import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
 import org.ow2.authzforce.core.pdp.impl.DefaultEnvironmentProperties;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * 

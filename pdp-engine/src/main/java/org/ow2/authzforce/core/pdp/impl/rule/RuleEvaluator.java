@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,16 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.DecisionResults;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PepAction;
+import com.google.common.collect.ImmutableList;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
@@ -34,17 +28,10 @@ import org.ow2.authzforce.core.pdp.impl.TargetEvaluators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Evaluates a XACML Rule to a Decision.
@@ -68,7 +55,7 @@ public final class RuleEvaluator implements Decidable
 	{
 		EffectType getDecisionType();
 
-		DecisionResult getInstance(EvaluationContext context);
+		DecisionResult getInstance(EvaluationContext context, final Optional<EvaluationContext> mdpContext);
 
 		DecisionResult newIndeterminate(IndeterminateEvaluationException e);
 
@@ -80,7 +67,7 @@ public final class RuleEvaluator implements Decidable
 	{
 
 		@Override
-		public DecisionResult getInstance(final EvaluationContext context)
+		public DecisionResult getInstance(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 		{
 			return DecisionResults.SIMPLE_PERMIT;
 		}
@@ -111,7 +98,7 @@ public final class RuleEvaluator implements Decidable
 	{
 
 		@Override
-		public DecisionResult getInstance(final EvaluationContext context)
+		public DecisionResult getInstance(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 		{
 			return DecisionResults.SIMPLE_DENY;
 		}
@@ -164,7 +151,7 @@ public final class RuleEvaluator implements Decidable
 		protected abstract DecisionResult getInstance(ImmutableList<PepAction> pepActions);
 
 		@Override
-		public DecisionResult getInstance(final EvaluationContext context)
+		public DecisionResult getInstance(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 		{
 			/*
 			 * Evaluate obligations/advice elements. We have already filtered out obligations/advice that do not apply to Rule's effect in the constructor. So no need to do it again, that's why the
@@ -181,7 +168,7 @@ public final class RuleEvaluator implements Decidable
 				final PepAction pepAction;
 				try
 				{
-					pepAction = pepActionExpr.evaluate(context);
+					pepAction = pepActionExpr.evaluate(context, mdpContext);
 				} catch (final IndeterminateEvaluationException e)
 				{
 					/*
@@ -247,7 +234,7 @@ public final class RuleEvaluator implements Decidable
 		}
 	}
 
-	private static final BooleanEvaluator TRUE_CONDITION = context -> {
+	private static final BooleanEvaluator TRUE_CONDITION = (context, mdpContext) -> {
 		LOGGER.debug("Condition null -> True");
 		return true;
 	};
@@ -434,19 +421,18 @@ public final class RuleEvaluator implements Decidable
 	/**
 	 * {@inheritDoc}
 	 *
-	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to evaluate the condition. If the target and condition apply, then the rule's effect is
-	 * returned in the result.
+	 * Evaluates the rule against the supplied context. This will check that the target matches, and then try to evaluate the condition. If the target and condition apply, then the rule's effect is returned.
 	 * <p>
 	 * Note that rules are not required to have targets. If no target is specified, then the rule inherits its parent's target. In the event that this <code>RuleEvaluator</code> has no
 	 * <code>Target</code> then the match is assumed to be true, since evaluating a policy tree to this level required the parent's target to match. In debug level, this method logs the evaluation
 	 * result before return. Indeterminate results are logged in warn level only (which "includes" debug level).
 	 */
 	@Override
-	public DecisionResult evaluate(final EvaluationContext context)
+	public DecisionResult evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 	{
 		try
 		{
-			if (!targetEvaluator.evaluate(context))
+			if (!targetEvaluator.evaluate(context, mdpContext))
 			{
 				LOGGER.debug("{}/Target -> No-match", this);
 				final DecisionResult result = DecisionResults.SIMPLE_NOT_APPLICABLE;
@@ -477,7 +463,7 @@ public final class RuleEvaluator implements Decidable
 		final boolean isConditionTrue;
 		try
 		{
-			isConditionTrue = conditionEvaluator.evaluate(context);
+			isConditionTrue = conditionEvaluator.evaluate(context, mdpContext);
 		} catch (final IndeterminateEvaluationException e)
 		{
 			/*
@@ -505,7 +491,7 @@ public final class RuleEvaluator implements Decidable
 		/*
 		 * Target match and condition true
 		 */
-		final DecisionResult result = this.decisionResultFactory.getInstance(context);
+		final DecisionResult result = this.decisionResultFactory.getInstance(context, mdpContext);
 		LOGGER.debug("{} -> {}", this, result);
 		return result;
 	}

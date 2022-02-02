@@ -4,7 +4,7 @@
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
       <version>17.1.3-SNAPSHOT</version>
-      <relativePath>..</relativePath>
+      <relativePath>../pom.xml</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
    <name>${project.groupId}:${project.artifactId}</name>
@@ -21,7 +21,7 @@
       <dependency>
          <groupId>info.picocli</groupId>
          <artifactId>picocli</artifactId>
-         <version>2.0.3</version>
+         <version>4.6.2</version>
       </dependency>
       <dependency>
          <groupId>ch.qos.logback</groupId>
@@ -40,7 +40,7 @@
       <dependency>
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
-         <version>6.11</version>
+         <version>7.5</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -93,7 +93,7 @@
             <artifactId>dependency-check-maven</artifactId>
             <configuration>
                <cveValidForHours>24</cveValidForHours>
-               <!-- The plugin has numerous issues with version matching, which triggers false positives so we need a "suppresion" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
+               <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
                <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
             </configuration>

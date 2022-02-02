@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,17 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Iterator;
-
-import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
-import org.ow2.authzforce.core.pdp.api.PepAction;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
@@ -36,7 +27,10 @@ import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * This is the standard First-Applicable policy/rule combining algorithm. It looks through the set of policies/rules, finds the first one that applies, and returns that evaluation result.
@@ -55,16 +49,16 @@ final class FirstApplicableCombiningAlg<T extends Decidable> extends BaseCombini
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			for (final Decidable combinedElement : getCombinedElements())
 			{
 				// evaluate the policy
-				final DecisionResult result = combinedElement.evaluate(context);
+				final DecisionResult result = combinedElement.evaluate(context, mdpContext);
 				final DecisionType decision = result.getDecision();
 
 				/*
-				 * In case of PERMIT, DENY, or INDETERMINATE, we always just return that decision, so only on a rule that doesn't apply do we keep going...
+				 * In case of PERMIT, DENY, or INDETERMINATE, we always just return that decision, else we keep going...
 				 */
 				switch (decision)
 				{

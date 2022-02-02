@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,28 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.func.MultiParameterTypedFirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.SimpleValue;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.StringValue;
-import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * Implements *-substring functions
@@ -73,8 +63,11 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		protected StringValue evaluate(final Deque<AttributeValue> args) throws IndeterminateEvaluationException
 		{
 			final AttributeValue rawArg0 = args.poll();
+			assert rawArg0 != null;
 			final AttributeValue rawArg1 = args.poll();
+			assert rawArg1 != null;
 			final AttributeValue rawArg2 = args.poll();
+			assert rawArg2 != null;
 
 			final SimpleValue<String> arg0;
 			final IntegerValue beginIndex;
@@ -158,7 +151,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 		}
 
 		/*
-		 * Datatypes will be checked by Call class but they are specific constraints: arg0 >= 0 && (arg1 == -1 || arg0 <= arg1). Note that if arg0 == arg1, result may be '' or raise out-of-bounds
+		 * Datatypes will be checked by Call class, but they are specific constraints: arg0 >= 0 && (arg1 == -1 || arg0 <= arg1). Note that if arg0 == arg1, result may be '' or raise out-of-bounds
 		 * error
 		 */
 		final Iterator<? extends Expression<?>> argExpsIterator = argExpressions.iterator();

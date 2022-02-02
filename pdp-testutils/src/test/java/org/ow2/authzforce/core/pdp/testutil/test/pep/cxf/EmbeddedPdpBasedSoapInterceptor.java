@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.interceptor.Fault;
@@ -30,6 +26,9 @@ import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.Optional;
 
 /**
  * This class represents a so-called XACML PEP that, for every CXF service request, creates an XACML 3.0 authorization decision Request to a PDP using AuthzForce's native API, given a Principal, list
@@ -57,7 +56,7 @@ public class EmbeddedPdpBasedSoapInterceptor extends AbstractSoapInterceptor
 		super(Phase.PRE_STREAM);
 	}
 
-	private void setHttpResponseStatus(final SoapMessage message, final int status)
+	private static void setHttpResponseStatus(final Message message, final int status)
 	{
 		// skip if inbound
 		if (!MessageUtils.isOutbound(message))

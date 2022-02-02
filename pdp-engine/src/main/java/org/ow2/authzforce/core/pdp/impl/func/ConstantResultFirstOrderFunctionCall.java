@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -22,6 +22,8 @@ import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.Value;
+
+import java.util.Optional;
 
 /**
  * First-order function call with constant result
@@ -49,7 +51,7 @@ public final class ConstantResultFirstOrderFunctionCall<RETURN_T extends Value> 
 	}
 
 	@Override
-	public RETURN_T evaluate(final EvaluationContext context)
+	public RETURN_T evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 	{
 		return constant;
 	}
@@ -61,13 +63,13 @@ public final class ConstantResultFirstOrderFunctionCall<RETURN_T extends Value> 
 	}
 
 	@Override
-	public RETURN_T evaluate(final EvaluationContext context, final AttributeValue... remainingArgs)
+	public RETURN_T evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final AttributeValue... remainingArgs)
 	{
 		return constant;
 	}
 
 	@Override
-	public RETURN_T evaluate(final EvaluationContext context, final boolean checkRemainingArgTypes, final AttributeValue... remainingArgs)
+	public RETURN_T evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final boolean checkRemainingArgTypes, final AttributeValue... remainingArgs)
 	{
 		return constant;
 	}

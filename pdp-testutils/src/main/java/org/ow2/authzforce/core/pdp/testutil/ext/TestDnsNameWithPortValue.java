@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,16 +17,16 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
+import org.ow2.authzforce.core.pdp.api.func.Function;
+import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
+import org.ow2.authzforce.core.pdp.api.value.StringContentOnlyValueFactory;
+import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
+
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import org.ow2.authzforce.core.pdp.api.func.Function;
-import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
-import org.ow2.authzforce.core.pdp.api.value.StringContentOnlyValueFactory;
-import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
 
 /**
  * Represents the dnsName-value datatype <i>XACML Data Loss Prevention / Network Access Control (DLP/NAC) Profile Version 1.0<i>. Edited by John Tolbert, Richard Hill, Crystal Hayes, David Brossard,
@@ -66,7 +66,7 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 
 	public static final Factory FACTORY = new Factory();
 
-	private static final int UNDEFINED_PORT = -1;
+	private static final Integer UNDEFINED_PORT = -1;
 
 	/**
 	 * <p>
@@ -89,7 +89,7 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 	{
 		final String domainlabel = "\\w[[\\w|\\-]{0,"+MAX_NUM_OF_SUB_PATTERN_REPETITIONS+"}\\w]?";
 		final String toplabel = "[a-zA-Z][[\\w|\\-]{0,"+MAX_NUM_OF_SUB_PATTERN_REPETITIONS+"}\\w]?";
-		final String pattern = "[" + domainlabel + "\\.]{0,"+MAX_NUM_OF_SUB_PATTERN_REPETITIONS+"}" + toplabel + "\\.?";
+		final String pattern = "[" + domainlabel + ".]{0,"+MAX_NUM_OF_SUB_PATTERN_REPETITIONS+"}" + toplabel + "\\.?";
 		HOSTNAME_PATTERN = Pattern.compile(pattern);
 	}
 

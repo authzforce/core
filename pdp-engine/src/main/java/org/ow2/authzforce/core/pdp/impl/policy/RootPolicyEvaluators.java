@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,25 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.CloseableStaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
-import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
+import org.ow2.authzforce.core.pdp.api.policy.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * {@link RootPolicyEvaluator} implementations
@@ -53,7 +46,9 @@ public final class RootPolicyEvaluators
 	 *            type of policy element (XACML Policy or XACML PolicySet); if undefined, try with XACML Policy first, and if fails, try XACML PolicySet
 	 * @param rootPolicyId root policy ID
 	 * @param optRootPolicyVersionPatterns optional root policy version pattern to be matched
-	 * @param context policy evaluation context
+	 * @param context individual decision request evaluation context
+	 * @param mdpContext
+	 * 	 the context of the Multiple Decision request that the {@code context} belongs to if the Multiple Decision Profile is used.
 	 * @param logger logger
 	 * @return instance of the policy evaluator for the root policy
 	 * @throws IllegalArgumentException the resolved policy is invalid
@@ -61,14 +56,14 @@ public final class RootPolicyEvaluators
 	 */
 	private static <PE extends TopLevelPolicyElementEvaluator> PE getRootPolicyEvaluator(final CloseablePolicyProvider<PE> rootPolicyProvider,
 	        final Optional<TopLevelPolicyElementType> rootPolicyElementType, final String rootPolicyId, final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns,
-	        final EvaluationContext context, final Logger logger) throws IllegalArgumentException, IndeterminateEvaluationException
+	        final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final Logger logger) throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		if (rootPolicyElementType.isPresent())
 		{
-			return rootPolicyProvider.get(rootPolicyElementType.get(), rootPolicyId, optRootPolicyVersionPatterns, null, context);
+			return rootPolicyProvider.get(rootPolicyElementType.get(), rootPolicyId, optRootPolicyVersionPatterns, null, context, mdpContext);
 		}
 
-		final PE xacmlPolicyEvaluator = rootPolicyProvider.get(TopLevelPolicyElementType.POLICY, rootPolicyId, optRootPolicyVersionPatterns, null, context);
+		final PE xacmlPolicyEvaluator = rootPolicyProvider.get(TopLevelPolicyElementType.POLICY, rootPolicyId, optRootPolicyVersionPatterns, null, context, mdpContext);
 		if (xacmlPolicyEvaluator != null)
 		{
 			logger.debug("Root policy element type undefined. Searched for XACML Policy first and found.");
@@ -76,7 +71,7 @@ public final class RootPolicyEvaluators
 		}
 
 		logger.debug("Root policy element type undefined. Searched for XACML Policy, not found. Searching for XACML PolicySet...");
-		return rootPolicyProvider.get(TopLevelPolicyElementType.POLICY_SET, rootPolicyId, optRootPolicyVersionPatterns, null, context);
+		return rootPolicyProvider.get(TopLevelPolicyElementType.POLICY_SET, rootPolicyId, optRootPolicyVersionPatterns, null, context, mdpContext);
 	}
 
 	/**
@@ -94,8 +89,6 @@ public final class RootPolicyEvaluators
 		private final Optional<TopLevelPolicyElementType> rootPolicyElementType;
 		private final String rootPolicyId;
 		private final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns;
-
-		private transient final ExpressionFactory expressionFactory;
 
 		private transient final boolean isRootPolicyProviderStatic;
 
@@ -138,25 +131,21 @@ public final class RootPolicyEvaluators
 			this.rootPolicyElementType = rootPolicyElementType;
 			this.rootPolicyId = rootPolicyId;
 			this.optRootPolicyVersionPatterns = optRootPolicyVersionPatterns;
-
-			// Initialize ExpressionFactory
-			this.expressionFactory = xacmlExpressionFactory;
 		}
 
 		@Override
 		public void close() throws IOException
 		{
-			this.expressionFactory.close();
 			this.rootPolicyProvider.close();
 		}
 
 		@Override
-		public DecisionResult findAndEvaluate(final EvaluationContext context)
+		public DecisionResult findAndEvaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 		{
 			final PolicyEvaluator policyEvaluator;
 			try
 			{
-				policyEvaluator = getRootPolicyEvaluator(this.rootPolicyProvider, this.rootPolicyElementType, this.rootPolicyId, this.optRootPolicyVersionPatterns, context, LOGGER);
+				policyEvaluator = getRootPolicyEvaluator(this.rootPolicyProvider, this.rootPolicyElementType, this.rootPolicyId, this.optRootPolicyVersionPatterns, context, mdpContext, LOGGER);
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
@@ -174,7 +163,7 @@ public final class RootPolicyEvaluators
 				return DecisionResults.SIMPLE_NOT_APPLICABLE;
 			}
 
-			return policyEvaluator.evaluate(context, true);
+			return policyEvaluator.evaluate(context, mdpContext, true);
 		}
 
 		@Override
@@ -185,14 +174,14 @@ public final class RootPolicyEvaluators
 
 		/**
 		 * Gets the static version of this policy evaluator, i.e. a policy evaluator using the same constant root policy resolved by the internal root policy provider (once and for all) when calling
-		 * this method. This root policy will be used for all evaluations. This is possible only if the root policy provider is static, i.e. independent from the evaluation context (static
+		 * this method. This root policy will be used for all evaluations. This is possible only if the root policy provider is static, i.e. independent of the evaluation context (static
 		 * resolution).
 		 * 
 		 * @return static view of this policy evaluator; or null if none could be created because the internal root policy provider depends on the evaluation context to find the root policy (no static
-		 *         resolution is possible). If not null, this evaluator's policy provider responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext)} is closed (calling
-		 *         {@link CloseableStaticPolicyProvider#close()} and therefore not usable anymore. The resulting static view must be used instead.
+		 *         resolution is possible). If not null, this evaluator's policy provider responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext, Optional)} is closed (calling
+		 *         {@link CloseableStaticPolicyProvider#close()} ) and therefore not usable anymore. The resulting static view must be used instead.
 		 * @throws IOException
-		 *             error closing the evaluator's policy provider responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext)}
+		 *             error closing the evaluator's policy provider responsible for finding the policy in {@link #findAndEvaluate(EvaluationContext, Optional)}
 		 * @throws IndeterminateEvaluationException
 		 *             if error resolving the policy
 		 */
@@ -203,8 +192,7 @@ public final class RootPolicyEvaluators
 			 */
 			if (staticView == null && isRootPolicyProviderStatic)
 			{
-				staticView = new StaticView((CloseableStaticPolicyProvider) rootPolicyProvider, this.rootPolicyElementType, this.rootPolicyId, this.optRootPolicyVersionPatterns,
-				        this.expressionFactory);
+				staticView = new StaticView((CloseableStaticPolicyProvider) rootPolicyProvider, this.rootPolicyElementType, this.rootPolicyId, this.optRootPolicyVersionPatterns);
 			}
 
 			return staticView;
@@ -217,19 +205,17 @@ public final class RootPolicyEvaluators
 	 * Static view of policy evaluator. The root policy is resolved once and for all at initialization time, and is then used for all evaluation requests.
 	 *
 	 */
-	static class StaticView implements RootPolicyEvaluator
+	private static final class StaticView implements RootPolicyEvaluator
 	{
 		private static final Logger LOGGER = LoggerFactory.getLogger(StaticView.class);
 		private final StaticTopLevelPolicyElementEvaluator staticRootPolicyEvaluator;
-		private final ExpressionFactory expressionFactory;
 		private transient final FlattenedPolicyTree staticApplicablePolicies;
 
 		private StaticView(final CloseableStaticPolicyProvider staticPolicyProvider, final Optional<TopLevelPolicyElementType> rootPolicyElementType, final String rootPolicyId,
-		        final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns, final ExpressionFactory expressionFactoryForClosing) throws IOException, IndeterminateEvaluationException
+		        final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns) throws IOException, IndeterminateEvaluationException
 		{
-			assert staticPolicyProvider != null && expressionFactoryForClosing != null;
-			this.expressionFactory = expressionFactoryForClosing;
-			this.staticRootPolicyEvaluator = getRootPolicyEvaluator(staticPolicyProvider, rootPolicyElementType, rootPolicyId, optRootPolicyVersionPatterns, null, LOGGER);
+			assert staticPolicyProvider != null;
+			this.staticRootPolicyEvaluator = getRootPolicyEvaluator(staticPolicyProvider, rootPolicyElementType, rootPolicyId, optRootPolicyVersionPatterns, null, null, LOGGER);
 			if (this.staticRootPolicyEvaluator == null)
 			{
 				throw new IllegalArgumentException("No such " + (rootPolicyElementType.isPresent() ? rootPolicyElementType.get() : "Policy(Set)") + " found: ID = '" + rootPolicyId + "'"
@@ -242,15 +228,16 @@ public final class RootPolicyEvaluators
 		}
 
 		@Override
-		public void close() throws IOException
+		public void close()
 		{
-			this.expressionFactory.close();
+			// nothing to close
 		}
 
+
 		@Override
-		public DecisionResult findAndEvaluate(final EvaluationContext context)
+		public DecisionResult findAndEvaluate(final EvaluationContext context, Optional<EvaluationContext> mdpContext)
 		{
-			return staticRootPolicyEvaluator.evaluate(context);
+			return staticRootPolicyEvaluator.evaluate(context, mdpContext);
 		}
 
 		@Override

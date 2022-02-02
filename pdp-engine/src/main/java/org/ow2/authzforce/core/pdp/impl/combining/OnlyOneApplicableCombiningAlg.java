@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -28,6 +28,8 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 /**
  * This is the standard only-one-applicable policy combining algorithm.
  *
@@ -50,7 +52,7 @@ final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluat
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 
@@ -63,7 +65,7 @@ final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluat
 				final boolean isApplicableByTarget;
 				try
 				{
-					isApplicableByTarget = policy.isApplicableByTarget(context);
+					isApplicableByTarget = policy.isApplicableByTarget(context, mdpContext);
 				} catch (final IndeterminateEvaluationException e)
 				{
 					LOGGER.info("Error checking whether {} is applicable", policy, e);
@@ -89,7 +91,7 @@ final class OnlyOneApplicableCombiningAlg extends BaseCombiningAlg<PolicyEvaluat
 			 */
 			if (selectedPolicy != null)
 			{
-				final DecisionResult result = selectedPolicy.evaluate(context, true);
+				final DecisionResult result = selectedPolicy.evaluate(context, mdpContext, true);
 				switch (result.getDecision())
 				{
 					case PERMIT:

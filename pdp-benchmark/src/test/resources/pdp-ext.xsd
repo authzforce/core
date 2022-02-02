@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation xml:lang="en">
+			Import here the schema(s) of any XSD-defined PDP extension that you want to use in a PDP configuration: attribute finders, policy finders, etc.
+			Indicate only the namespace here and use the XML catalog to resolve the schema location.
+		</xs:documentation>
+	</xs:annotation>
+	<!-- Do not specify schema locations here. Define the schema locations in the XML catalog instead (see file 'catalog.xml'). -->
+	<!--  Adding TestAttributeProvider extension -->
+	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
+</xs:schema>

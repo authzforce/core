@@ -74,30 +74,6 @@
 		<xsl:choose>
 			<xsl:when test="$json_profile_compat">
 				<xsl:value-of select="if (map:contains($azf-to-json-profile-keys, $name)) then map:get($azf-to-json-profile-keys, $name) else $name" />
-				<!-- FIXME: remove below comments if above expression OK -->
-				<!-- <xsl:choose> -->
-				<!-- <xsl:when test="$name = 'Attrs'"> -->
-				<!-- <xsl:value-of select="'Attribute'" /> -->
-				<!-- </xsl:when> -->
-				<!-- <xsl:when test="$name = 'AttrId'"> -->
-				<!-- <xsl:value-of select="'AttributeId'" /> -->
-				<!-- </xsl:when> -->
-				<!-- <xsl:when test="$name = 'Values'"> -->
-				<!-- <xsl:value-of select="'Value'" /> -->
-				<!-- </xsl:when> -->
-				<!-- <xsl:when test="$name = 'AttrDesignator'"> -->
-				<!-- <xsl:value-of select="'AttributeDesignator'" /> -->
-				<!-- </xsl:when> -->
-				<!-- <xsl:when test="$name = 'AttrSelector'"> -->
-				<!-- <xsl:value-of select="'AttributeSelector'" /> -->
-				<!-- </xsl:when> -->
-				<!-- <xsl:when test="$name = 'AttrAssignmentExprs'"> -->
-				<!-- <xsl:value-of select="'AttributeAssignmentExprs'" /> -->
-				<!-- </xsl:when> -->
-				<!-- <xsl:otherwise> -->
-				<!-- <xsl:value-of select="$name" /> -->
-				<!-- </xsl:otherwise> -->
-				<!-- </xsl:choose> -->
 			</xsl:when>
 			<xsl:otherwise>
 				<!-- lower-case first character (camel case) -->
@@ -166,6 +142,7 @@
 	<!-- Simple elements (no multi-occurring child element and no mixed content, i.e. minOccurs and maxOccurs = 0 or 1) -->
 	<xsl:template name="elementToJson">
 		<xsl:param name="skipBraces" select="false()" />
+		<!-- Optional parameter, may be null -->
 		<xsl:param name="textNodeKey" />
 		<xsl:if test="not($skipBraces)">
 			<xsl:text disable-output-escaping="yes">{</xsl:text>
@@ -193,7 +170,7 @@
 	<xsl:template name="elementToJsonWithKey">
 		<xsl:param name="outputName" select="local-name()" />
 		<xsl:param name="skipBraces" select="false()" />
-		<!-- output JSON property name for the element's text node value if any -->
+		<!-- output JSON property name for the element's text node value if any (may be null) -->
 		<xsl:param name="textNodeKey" />
 		<xsl:text disable-output-escaping="yes">"</xsl:text>
 		<xsl:value-of select="azf:sanitize-prop-name($outputName, $jsonProfileCompat)" />

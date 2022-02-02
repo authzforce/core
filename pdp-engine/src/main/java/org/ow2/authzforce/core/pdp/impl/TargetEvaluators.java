@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,18 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * XACML Target evaluators.
@@ -46,7 +46,7 @@ public final class TargetEvaluators
 	/**
 	 * Empty Target evaluator that always evaluates to True (match all requests)
 	 */
-	public static final BooleanEvaluator MATCH_ALL_TARGET_EVALUATOR = context ->
+	public static final BooleanEvaluator MATCH_ALL_TARGET_EVALUATOR = (individualDecisionContext, mdpContext) ->
 	{
 		LOGGER.debug("Target null/empty -> True");
 		return true;
@@ -86,7 +86,7 @@ public final class TargetEvaluators
 		/**
 		 * Determines whether this <code>Target</code> matches the input request
 		 * (whether it is applicable). If any of the AnyOf doesn't match the
-		 * request context so it's a NO_MATCH result. Here is the table shown in
+		 * request context, so it's a NO_MATCH result. Here is the table shown in
 		 * the specification: <code>
 		 * 		<AnyOf> values 				<Target> value
 		 * 		All Match?					Match?
@@ -95,13 +95,13 @@ public final class TargetEvaluators
 		 * </code> Also if Target empty (no AnyOf), return "Match"
 		 *
 		 * @param context
-		 *            the representation of the request
+		 *            the representation of the Individual Decision request
 		 * @return true if and only if Match (else No-match)
 		 * @throws IndeterminateEvaluationException if Indeterminate (error
 		 *             evaluating target)
 		 */
 		@Override
-		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		public boolean evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
 			// logic is quite similar to AllOf evaluation
 			// at the end, lastIndeterminate == null iff no Indeterminate
@@ -122,7 +122,7 @@ public final class TargetEvaluators
 				final boolean isMatched;
 				try
 				{
-					isMatched = anyOfEvaluator.match(context);
+					isMatched = anyOfEvaluator.match(context, mdpContext);
 					if (LOGGER.isDebugEnabled())
 					{
 						// Beware of autoboxing which causes call to

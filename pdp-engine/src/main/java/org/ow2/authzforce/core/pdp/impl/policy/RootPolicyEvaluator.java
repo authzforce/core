@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,11 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
-import java.io.Closeable;
-
 import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+
+import java.io.Closeable;
+import java.util.Optional;
 
 /**
  * Root policy evaluator, used by the PDP to find and evaluate the root (a.k.a. top-level) policy matching a given request context.
@@ -39,11 +40,13 @@ public interface RootPolicyEvaluator extends Closeable
 	 * applies.
 	 *
 	 * @param context
-	 *            the representation of the request data
+	 *            the representation of the Individual Decision request data
+	 * @param mdpContext
+	 * 	 the context of the Multiple Decision request that the {@code context} belongs to if the Multiple Decision Profile is used.
 	 * @return the result of evaluating the request against the applicable policy; or NotApplicable if none is applicable; or Indeterminate if error determining an applicable policy or more than one
 	 *         applies or evaluation of the applicable policy returned Indeterminate Decision
 	 */
-	DecisionResult findAndEvaluate(EvaluationContext context);
+	DecisionResult findAndEvaluate(EvaluationContext context, Optional<EvaluationContext> mdpContext);
 
 	/**
 	 * Get the statically applicable policies for this evaluator, i.e. the root policy and (directly/indirectly) referenced policies, only if statically resolved

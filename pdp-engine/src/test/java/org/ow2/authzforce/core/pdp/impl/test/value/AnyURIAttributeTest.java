@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,16 +17,15 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.value;
 
-import java.util.Arrays;
-import java.util.Collection;
-
+import net.sf.saxon.lib.StandardURIChecker;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import net.sf.saxon.lib.StandardURIChecker;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * 

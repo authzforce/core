@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -62,7 +62,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 		private static final TimeZone DEFAULT_TZ = TimeZone.getDefault();
 
 		/**
-		 * Evaluates the time-in-range function, which takes three <code>TimeAttributeValue</code> values. This function return true if the first value falls between the second and third values (ie.,
+		 * Evaluates the time-in-range function, which takes three <code>TimeAttributeValue</code> values. This function return true if the first value falls between the second and third values (i.e.,
 		 * on or after the second time and on or before the third time). If no time zone is specified for the second and/or third time value, then the timezone from the first time value is used. This
 		 * lets you say time-in-range(current-time, 9am, 5pm) and always have the evaluation happen in your current-time timezone.
 		 * 
@@ -109,7 +109,7 @@ final class TimeRangeComparisonFunction extends SingleParameterTypedFirstOrderFu
 			if (startCal.after(endCal))
 			{
 				/*
-				 * start time of the day > end time of the day, for instance 02:00:00 > 01:00:00 so we consider the end time (01:00:00) on the next day (later than the second argument - end time - by
+				 * start time of the day > end time of the day, for instance 02:00:00 > 01:00:00, so we consider the end time (01:00:00) on the next day (later than the second argument - end time - by
 				 * less than 24h, the spec says). So we interpret the time interval as the date interval [startTime on day N, endTime on day N+1]. If checked time of day < start time of day (compared
 				 * on the same day), then checked time can only be on day after to be in range
 				 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,9 +17,9 @@
  */
 package org.ow2.authzforce.core.pdp.impl.io;
 
-import java.util.Set;
-
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
+
+import java.util.Set;
 
 /**
  * Supplier of {@link DecisionRequestPreprocessor}s *
@@ -30,7 +30,7 @@ public interface DecisionRequestPreprocessorSupplier
 	 * Gets a DecisionRequestPreprocessor applying specific request processing according to the features of the PDP it processes requests for
 	 * 
 	 * @param extraPdpFeatures
-	 *            extra - not mandatory per XACML 3.0 core specification - features supported by the PDP. If a decision request requests any such non-mandatory feature (e.g. CombinedDecision=true in
+	 *            extra - not mandatory per XACML 3.0 core specification - features supported by the PDP. If a decision request uses any such non-mandatory feature (e.g. CombinedDecision=true in
 	 *            XACML), the request preprocessor should use this argument to check whether it is supported by the PDP before processing the request further. See
 	 *            {@link org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor.Features} for example.
 	 * @return request preprocessor

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,22 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.cli.test;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
-import javax.xml.bind.JAXBException;
-
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.Test;
@@ -41,9 +26,15 @@ import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 import org.testng.Assert;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import picocli.CommandLine;
+
+import javax.xml.bind.JAXBException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.junit.Assert.assertSame;
 
 public class CliTest
 {

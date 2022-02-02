@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -28,6 +28,7 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A class that implements the optional XACML 3.0 xpath-node-count function.
@@ -61,7 +62,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 			}
 
 			@Override
-			public IntegerValue evaluate(final EvaluationContext context, final AttributeValue... remainingArgs) throws IndeterminateEvaluationException
+			public IntegerValue evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final AttributeValue... remainingArgs) throws IndeterminateEvaluationException
 			{
 				// Evaluate the argument
 				final XPathValue xpathVal;
@@ -80,7 +81,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 					final Expression<?> arg = checkedArgExpressions.get(0);
 					try
 					{
-						xpathVal = Expressions.eval(arg, context, StandardDatatypes.XPATH);
+						xpathVal = Expressions.eval(arg, context, mdpContext, StandardDatatypes.XPATH);
 
 					} catch (final IndeterminateEvaluationException e)
 					{

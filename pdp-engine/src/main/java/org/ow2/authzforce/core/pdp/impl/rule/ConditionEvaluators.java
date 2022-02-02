@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,12 +17,9 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
-import java.util.Optional;
-
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -32,6 +29,8 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 /**
  * XACML Condition evaluators.
@@ -54,7 +53,7 @@ public final class ConditionEvaluators
 	/**
 	 * Condition that always evaluates to True
 	 */
-	public static final BooleanEvaluator TRUE_CONDITION = context ->
+	public static final BooleanEvaluator TRUE_CONDITION = (context, mdpContext) ->
 	{
 		LOGGER.debug("Condition is null or Expression equals constant True -> True");
 		return true;
@@ -76,7 +75,7 @@ public final class ConditionEvaluators
 		 * Evaluates the <code>Condition</code> to boolean by evaluating its child boolean <code>Expression</code>.
 		 *
 		 * @param context
-		 *            the representation of the request
+		 *            the representation of the Individual Decision request
 		 * @return true if and only if condition is true, i.e. its expression evaluates to True
 		 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 		 *             if error evaluating the condition
@@ -84,9 +83,9 @@ public final class ConditionEvaluators
 		 * 
 		 */
 		@Override
-		public boolean evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		public boolean evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
-			final BooleanValue boolVal = evaluableBoolExpression.evaluate(context);
+			final BooleanValue boolVal = evaluableBoolExpression.evaluate(context, mdpContext);
 			return boolVal.getUnderlyingValue();
 		}
 

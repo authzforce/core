@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -272,7 +272,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 			final DecisionResultCollector resultCollector = new DecisionResultCollector(outApplicablePolicyIdList != null);
@@ -280,7 +280,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 			for (final Decidable combinedElement : getCombinedElements())
 			{
 				// evaluate the policy
-				final DecisionResult result = combinedElement.evaluate(context);
+				final DecisionResult result = combinedElement.evaluate(context, mdpContext);
 				final boolean isResultOverriding = resultHandlersByDecisionType.get(result.getDecision()).handle(result, resultCollector);
 
 				/*
@@ -421,7 +421,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		 *            Indeterminate result from previous evaluation of rules with overriding effect
 		 * @return final decision
 		 */
-		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final ExtendedDecision indeterminateFromRulesWithOverridingEffect)
+		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final ExtendedDecision indeterminateFromRulesWithOverridingEffect)
 		{
 			/*
 			 * indeterminateFromRulesWithOverridingEffect's decision assumed Indeterminate{overriding_effect}, overriding_effect = D (resp. P) if overriding Effect is Deny (resp. Permit)
@@ -430,7 +430,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 
 			for (final RuleEvaluator rule : otherRules)
 			{
-				final DecisionResult evalResult = rule.evaluate(context);
+				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
 				if (evalResult.getDecision() != DecisionType.NOT_APPLICABLE)
 				{
 					/*
@@ -466,9 +466,9 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		 * 
 		 * @return final decision
 		 */
-		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final UpdatableList<PepAction> updatablePepActions)
+		private ExtendedDecision evaluateRulesWithOverriddenEffect(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions)
 		{
-			/**
+			/*
 			 * Replaces atLeastOnePermit (resp. atLeastOneDeny) from description of deny-overrides (resp. permit-overrides) in the XACML spec.
 			 * <p>
 			 * atLeastOnePermit/atLeastOneDeny == false <=> combinedPepActions == null.
@@ -481,7 +481,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 			ExtendedDecision firstIndeterminateInOverriddenEffect = null;
 			for (final RuleEvaluator rule : otherRules)
 			{
-				final DecisionResult evalResult = rule.evaluate(context);
+				final DecisionResult evalResult = rule.evaluate(context, mdpContext);
 				final DecisionType decision = evalResult.getDecision();
 				if (decision == overriddenEffectAsDecision)
 				{
@@ -521,10 +521,10 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> updatablePepActions,
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> updatablePepActions,
 		        final UpdatableList<PrimaryPolicyMetadata> updatableApplicablePolicyIdList)
 		{
-			final ExtendedDecision extDecisionFromRulesWithOverridingEffect = super.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
+			final ExtendedDecision extDecisionFromRulesWithOverridingEffect = super.evaluate(context, mdpContext, updatablePepActions, updatableApplicablePolicyIdList);
 			switch (extDecisionFromRulesWithOverridingEffect.getDecision())
 			{
 				case DENY:
@@ -533,11 +533,11 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 
 				case INDETERMINATE:
 					// Optimize
-					return evaluateRulesWithOverriddenEffect(context, extDecisionFromRulesWithOverridingEffect);
+					return evaluateRulesWithOverriddenEffect(context, mdpContext, extDecisionFromRulesWithOverridingEffect);
 				default:
 					// NotApplicable
 					// Optimize
-					return evaluateRulesWithOverriddenEffect(context, updatablePepActions);
+					return evaluateRulesWithOverriddenEffect(context, mdpContext, updatablePepActions);
 			}
 		}
 
@@ -876,7 +876,7 @@ final class DPOverridesCombiningAlg<T extends Decidable> extends BaseCombiningAl
 			if (rule.getEffect() == overridingEffect)
 			{
 				/*
-				 * If rule's effect is the overriding Effect and it has no target/condition/pep_actions, then rule will always return this Effect -> {overriding_effect}-overrides alg always evaluates
+				 * If rule's effect is the overriding Effect, and it has no target/condition/pep_actions, then rule will always return this Effect -> {overriding_effect}-overrides alg always evaluates
 				 * to ${overriding_effect} (ignore/remove all other rules). ({overriding_effect} = Permit if algorithm is Permit-overrides, or Deny if algorithm is Deny-overrides in this statement.)
 				 */
 				if (rule.isEmptyEquivalent())

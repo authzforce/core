@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -60,7 +60,7 @@ final class StandardNonEqualTypeMatchers
 		 * WARNING: the XACML spec defines the first argument as the prefix
 		 */
 		@Override
-		public final boolean match(final StringValue prefix, final AnyUriValue arg1)
+		public boolean match(final StringValue prefix, final AnyUriValue arg1)
 		{
 			return arg1.getUnderlyingValue().startsWith(prefix.getUnderlyingValue());
 		}
@@ -75,7 +75,7 @@ final class StandardNonEqualTypeMatchers
 		 * WARNING: the XACML spec defines the first argument as the suffix
 		 */
 		@Override
-		public final boolean match(final StringValue suffix, final AnyUriValue arg1)
+		public boolean match(final StringValue suffix, final AnyUriValue arg1)
 		{
 			return arg1.getUnderlyingValue().endsWith(suffix.getUnderlyingValue());
 		}
@@ -92,7 +92,7 @@ final class StandardNonEqualTypeMatchers
 		 * WARNING: the XACML spec defines the second argument as the string that must contain the other
 		 */
 		@Override
-		public final boolean match(final StringValue contained, final AnyUriValue arg1)
+		public boolean match(final StringValue contained, final AnyUriValue arg1)
 		{
 			return arg1.getUnderlyingValue().contains(contained.getUnderlyingValue());
 		}

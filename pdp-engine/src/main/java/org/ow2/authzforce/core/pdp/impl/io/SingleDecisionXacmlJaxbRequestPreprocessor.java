@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,25 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.impl.io;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-
-import org.ow2.authzforce.core.pdp.api.AttributeFqn;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestFactory;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.ImmutableDecisionRequest;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.io.BaseXacmlJaxbRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.io.IndividualXacmlJaxbRequest;
 import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes;
@@ -44,7 +32,8 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
-import com.google.common.collect.ImmutableList;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Default XACML/XML Request preprocessor Individual Decision Requests only (no support of Multiple Decision Profile in particular)

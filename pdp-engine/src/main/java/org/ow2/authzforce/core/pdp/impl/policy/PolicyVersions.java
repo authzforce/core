@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,21 +17,16 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.NavigableSet;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.UnmodifiableIterator;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.UnmodifiableIterator;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
- * Policy versions sorted from latest version to oldest.
+ * Policy versions sorted from the latest version to the oldest.
  * <p>
  * The choice to have the latest version in first position is motivated by §5.10 of XACML core spec: "In the case that more than one matching version can be obtained, then the most recent one SHOULD
  * be used."
@@ -68,7 +63,7 @@ public final class PolicyVersions<P> implements Iterable<Entry<PolicyVersion, P>
 	}
 
 	/**
-	 * Get latest policy version matching specific version patterns
+	 * Get the latest policy version matching specific version patterns
 	 *
 	 * @param PolicyVersionPatterns
 	 *            version patterns
