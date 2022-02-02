@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.io;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.io.BaseXacmlJaxbRequestPreprocessor;
@@ -29,10 +29,9 @@ import org.ow2.authzforce.core.pdp.api.io.MultipleXacmlRequestPreprocHelper;
 import org.ow2.authzforce.core.pdp.api.io.SingleCategoryXacmlAttributesParser;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * XACML/XML Request preprocessor implementing Multiple Decision Profile, section 2.3 (repeated attribute categories). Other schemes are not supported.

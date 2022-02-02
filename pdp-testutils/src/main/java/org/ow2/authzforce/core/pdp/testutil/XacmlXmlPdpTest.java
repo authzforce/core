@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,22 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.testutil;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-
-import javax.xml.bind.JAXBException;
-
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.junit.Assert;
 import org.junit.Test;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
@@ -45,8 +31,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import javax.xml.bind.JAXBException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * PDP test class. There should be a folder for test data of each issue. Each test folder is expected to be in one of these two configurations:
@@ -149,7 +143,7 @@ public abstract class XacmlXmlPdpTest
 	{
 		final Collection<Object[]> testParams = new ArrayList<>();
 		/*
-		 * Each sub-directory of the root directory is data for a specific test. So we configure a test for each directory
+		 * Each subdirectory of the root directory is data for a specific test. So we configure a test for each directory
 		 */
 		final URL testRootDir = ResourceUtils.getURL(testResourcesRootDirectory);
 		final Path testRootPath = Paths.get(testRootDir.toURI());
@@ -167,7 +161,7 @@ public abstract class XacmlXmlPdpTest
 					}
 
 					// specific test's resources directory location, used as parameter to PdpTest(String)
-					testParams.add(new Object[] { testResourcesRootDirectory + "/" + lastPathElement.toString() });
+					testParams.add(new Object[] { testResourcesRootDirectory + "/" + lastPathElement});
 				}
 			}
 		}
@@ -181,7 +175,7 @@ public abstract class XacmlXmlPdpTest
 	}
 
 	@Test
-	public void test() throws IllegalArgumentException, IOException, URISyntaxException, JAXBException
+	public void test() throws IllegalArgumentException, IOException, JAXBException
 	{
 		LOGGER.debug("******************************");
 		LOGGER.debug("Starting PDP test of directory '{}'", testDirPath);
@@ -274,7 +268,7 @@ public abstract class XacmlXmlPdpTest
 			if (request == null)
 			{
 				/*
-				 * This is a policy syntax error check and we didn't found the syntax error as expected
+				 * This is a policy syntax error check, and we didn't find the syntax error as expected
 				 */
 				Assert.fail("Failed to find syntax error as expected in policy(ies) located in directory: " + testDirPath);
 			}
@@ -297,7 +291,7 @@ public abstract class XacmlXmlPdpTest
 			// we found syntax error in policy
 			if (request == null)
 			{
-				// this is a policy syntax error check and we found the syntax error as
+				// this is a policy syntax error check, and we found the syntax error as
 				// expected -> success
 				LOGGER.debug("Successfully found syntax error as expected in policy(ies) located in directory: {}", testDirPath, e);
 			}

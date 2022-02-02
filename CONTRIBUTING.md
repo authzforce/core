@@ -6,7 +6,7 @@ Follow these Java coding guidelines:
 * [Oracle Secure Coding Guidelines for Java SE](http://www.oracle.com/technetwork/java/seccodeguide-139067.html).
 
 ### Testing
-For every new major functionality, there must be unit tests added to some unit test class that is part of the automated test suite of [pdp-engine's MainTest.java](pdp-engine/src/test/java/org/ow2/authzforce/core/pdp/impl/test/MainTest.java). If the functionality has any impact on XACML - any Request/Response/Policy(Set) element - processing and/or change XACML standard conformance in anyway, make sure you add relevant integration and/or conformance tests to the test suite run by [pdp-testutils's MainTest.java](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MainTest.java).
+For every new major functionality, there must be unit tests added to some unit test class that is part of the automated test suite of [pdp-engine's MainTest.java](pdp-engine/src/test/java/org/ow2/authzforce/core/pdp/impl/test/MainTest.java). If the functionality has any impact on XACML - any Request/Response/Policy(Set) element - processing and/or change XACML standard conformance in any way, make sure you add relevant integration and/or conformance tests to the test suite run by [pdp-testutils's MainTest.java](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MainTest.java).
 
 You may run the tests as follows from your local copy of the repository:
 <pre><code>
@@ -26,12 +26,12 @@ Note that you must use Java 8 to run Maven when building the project.
 1. No SNAPSHOT dependencies on "develop" and obviously "master" branches
 
 ### Releasing
-1. From the develop branch, prepare a release (example using a HTTP proxy):
+1. From the develop branch, prepare a release (example using an HTTP proxy):
 <pre><code>
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 jgitflow:release-start
 </code></pre>
 1. Update the CHANGELOG according to keepachangelog.com.
-1. To perform the release (example using a HTTP proxy):
+1. To perform the release (example using an HTTP proxy):
 <pre><code>
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 jgitflow:release-finish
 </code></pre>

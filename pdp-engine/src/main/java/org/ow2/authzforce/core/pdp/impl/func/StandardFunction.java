@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -860,11 +860,11 @@ public enum StandardFunction
         if (LOGGER.isDebugEnabled())
         {
             // TreeSet for sorting functions, easier to read
-            final TreeSet<Function<?>> sortedFunctions = new TreeSet<>(FUNCTION_COMPARATOR);
+            final Set<Function<?>> sortedFunctions = new TreeSet<>(FUNCTION_COMPARATOR);
             sortedFunctions.addAll(nonGenericFunctions);
             LOGGER.debug("Loaded XACML standard non-generic functions: {}", sortedFunctions);
 
-            final TreeSet<GenericHigherOrderFunctionFactory> sortedFunctionFactories = new TreeSet<>(FUNCTION_FACTORY_COMPARATOR);
+            final Set<GenericHigherOrderFunctionFactory> sortedFunctionFactories = new TreeSet<>(FUNCTION_FACTORY_COMPARATOR);
             sortedFunctionFactories.addAll(genericFuncFactories);
             LOGGER.debug("Loaded XACML standard generic functions: {}", sortedFunctionFactories);
         }

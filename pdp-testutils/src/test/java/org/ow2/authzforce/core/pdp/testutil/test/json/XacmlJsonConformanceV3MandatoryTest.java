@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,12 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.json;
 
+import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
+import org.testng.annotations.DataProvider;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Iterator;
-
-import org.ow2.authzforce.core.pdp.io.xacml.json.SingleDecisionXacmlJsonRequestPreprocessor;
-import org.testng.annotations.DataProvider;
 
 /**
  * XACML JSON Profile conformance tests for mandatory features.

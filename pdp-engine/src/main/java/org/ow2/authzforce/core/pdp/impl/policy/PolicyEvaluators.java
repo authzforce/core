@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,51 +17,19 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
-import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import org.ow2.authzforce.core.pdp.api.Decidable;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.DecisionResults;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PepAction;
-import org.ow2.authzforce.core.pdp.api.UpdatableCollections;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
-import org.ow2.authzforce.core.pdp.api.XmlUtils;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.combining.ParameterAssignment;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.expression.VariableReference;
-import org.ow2.authzforce.core.pdp.api.policy.BasePrimaryPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyRefsMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
-import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
+import org.ow2.authzforce.core.pdp.api.policy.*;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
@@ -72,33 +40,11 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AdviceExpressions;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParameter;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.CombinerParametersType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.IdReferenceType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ObligationExpressions;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicyCombinerParameters;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySetCombinerParameters;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Rule;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.RuleCombinerParameters;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Status;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.VariableDefinition;
-
 import javax.xml.bind.JAXBElement;
+import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * This class consists exclusively of static methods that operate on or return {@link PolicyEvaluator}s
@@ -123,12 +69,12 @@ public final class PolicyEvaluators
 	private interface DPResultFactory
 	{
 
-		DecisionResult getInstance(ExtendedDecision combiningAlgResult, EvaluationContext evaluationContext, UpdatableList<PepAction> basePepActions,
+		DecisionResult getInstance(ExtendedDecision combiningAlgResult, EvaluationContext individualDecisionEvaluationContext, Optional<EvaluationContext> mdpContext, UpdatableList<PepAction> basePepActions,
 		        ImmutableList<PrimaryPolicyMetadata> applicablePolicies);
 
 	}
 
-	private static final DPResultFactory DP_WITHOUT_EXTRA_PEP_ACTION_RESULT_FACTORY = (combiningAlgResult, evaluationContext, basePepActions, applicablePolicies) -> DecisionResults
+	private static final DPResultFactory DP_WITHOUT_EXTRA_PEP_ACTION_RESULT_FACTORY = (combiningAlgResult, individualDecisionEvaluationContext, mdpContext, basePepActions, applicablePolicies) -> DecisionResults
 	        .getInstance(combiningAlgResult, basePepActions.copy(), applicablePolicies);
 
 	private static final class PepActionAppendingDPResultFactory implements DPResultFactory
@@ -150,7 +96,7 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public DecisionResult getInstance(final ExtendedDecision combiningAlgResult, final EvaluationContext context, final UpdatableList<PepAction> basePepActions,
+		public DecisionResult getInstance(final ExtendedDecision combiningAlgResult, final EvaluationContext individualDecisionEvaluationContext, Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> basePepActions,
 		        final ImmutableList<PrimaryPolicyMetadata> applicablePolicies)
 		{
 			final List<PepActionExpression> matchingActionExpressions;
@@ -176,7 +122,7 @@ public final class PolicyEvaluators
 				final PepAction pepAction;
 				try
 				{
-					pepAction = pepActionExpr.evaluate(context);
+					pepAction = pepActionExpr.evaluate(individualDecisionEvaluationContext, mdpContext);
 				}
 				catch (final IndeterminateEvaluationException e)
 				{
@@ -223,7 +169,7 @@ public final class PolicyEvaluators
 		 * @param expFactory
 		 *            attribute value factory
 		 * @throws IllegalArgumentException
-		 *             if if one of the CombinerParameters is invalid
+		 *             if one of the CombinerParameters is invalid
 		 */
 		private BaseCombiningAlgParameter(final T element, final List<CombinerParameter> jaxbCombinerParameters, final ExpressionFactory expFactory, final XPathCompiler xPathCompiler)
 		        throws IllegalArgumentException
@@ -518,32 +464,32 @@ public final class PolicyEvaluators
 			return this.enclosedPolicies;
 		}
 
-		private void assignVariables(final EvaluationContext context) throws IndeterminateEvaluationException
+		private void assignVariables(final EvaluationContext individualDecisionContext, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
 			for (final VariableReference<?> varRef : this.localVariableAssignmentExpressions)
 			{
-				final Value varVal = varRef.evaluate(context);
-				context.putVariableIfAbsent(varRef.getVariableId(), varVal);
+				final Value varVal = varRef.evaluate(individualDecisionContext, mdpContext);
+				individualDecisionContext.putVariableIfAbsent(varRef.getVariableId(), varVal);
 			}
 		}
 
 		/**
 		 * Policy(Set) evaluation with option to skip Target evaluation. The option is to be used by Only-one-applicable algorithm with value 'true', after calling
-		 * {@link TopLevelPolicyElementEvaluator#isApplicableByTarget(EvaluationContext)} in particular.
+		 * {@link TopLevelPolicyElementEvaluator#isApplicableByTarget(EvaluationContext, Optional)} in particular.
 		 * 
-		 * @param context
-		 *            evaluation context
+		 * @param individualDecisionContext
+		 *            evaluation individualDecisionContext
 		 * @param skipTarget
 		 *            whether to evaluate the Target.
 		 * @return decision result
 		 */
 		@Override
-		public final DecisionResult evaluate(final EvaluationContext context, final boolean skipTarget)
+		public final DecisionResult evaluate(final EvaluationContext individualDecisionContext, final Optional<EvaluationContext> mdpContext, final boolean skipTarget)
 		{
 			/*
-			 * check whether the result is already cached in the evaluation context
+			 * check whether the result is already cached in the evaluation individualDecisionContext
 			 */
-			final Object cachedValue = context.getOther(this.requestScopedEvalResultsCacheKey);
+			final Object cachedValue = individualDecisionContext.getOther(this.requestScopedEvalResultsCacheKey);
 			final EvalResults cachedResults;
 			if (cachedValue instanceof EvalResults)
 			{
@@ -570,7 +516,7 @@ public final class PolicyEvaluators
 					// check cached result
 					if (cachedResults != null && cachedResults.resultWithoutTarget != null)
 					{
-						LOGGER.debug("{} -> {} (result from context cache with skipTarget=true)", this, cachedResults.resultWithoutTarget);
+						LOGGER.debug("{} -> {} (result from individualDecisionContext cache with skipTarget=true)", this, cachedResults.resultWithoutTarget);
 						return cachedResults.resultWithoutTarget;
 					}
 
@@ -584,7 +530,7 @@ public final class PolicyEvaluators
 					 */
 					try
 					{
-						assignVariables(context);
+						assignVariables(individualDecisionContext, mdpContext);
 					}
 					catch (final IndeterminateEvaluationException e)
 					{
@@ -593,17 +539,17 @@ public final class PolicyEvaluators
 					}
 
 					updatablePepActions = UpdatableCollections.newUpdatableList();
-					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.newUpdatableList()
+					updatableApplicablePolicyIdList = individualDecisionContext.isApplicablePolicyIdListRequested() ? UpdatableCollections.newUpdatableList()
 					        : UpdatableCollections.emptyList();
 
-					algResult = combiningAlgEvaluator.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
+					algResult = combiningAlgEvaluator.evaluate(individualDecisionContext, mdpContext, updatablePepActions, updatableApplicablePolicyIdList);
 					LOGGER.debug("{}/Algorithm -> {}", this, algResult);
 				}
 				else
 				{
 					if (cachedResults != null && cachedResults.resultWithTarget != null)
 					{
-						LOGGER.debug("{} -> {} (result from context cache with skipTarget=false)", this, cachedResults.resultWithTarget);
+						LOGGER.debug("{} -> {} (result from individualDecisionContext cache with skipTarget=false)", this, cachedResults.resultWithTarget);
 						return cachedResults.resultWithTarget;
 					}
 
@@ -611,7 +557,7 @@ public final class PolicyEvaluators
 					IndeterminateEvaluationException targetMatchIndeterminateException = null;
 					try
 					{
-						if (!isApplicableByTarget(context))
+						if (!isApplicableByTarget(individualDecisionContext, mdpContext))
 						{
 							LOGGER.debug("{}/Target -> No-match", this);
 							LOGGER.debug("{} -> NotApplicable", this);
@@ -638,7 +584,7 @@ public final class PolicyEvaluators
 					 */
 					try
 					{
-						assignVariables(context);
+						assignVariables(individualDecisionContext, mdpContext);
 					}
 					catch (final IndeterminateEvaluationException e)
 					{
@@ -647,9 +593,9 @@ public final class PolicyEvaluators
 					}
 
 					updatablePepActions = UpdatableCollections.newUpdatableList();
-					updatableApplicablePolicyIdList = context.isApplicablePolicyIdListRequested() ? UpdatableCollections.newUpdatableList()
+					updatableApplicablePolicyIdList = individualDecisionContext.isApplicablePolicyIdListRequested() ? UpdatableCollections.newUpdatableList()
 					        : UpdatableCollections.emptyList();
-					algResult = combiningAlgEvaluator.evaluate(context, updatablePepActions, updatableApplicablePolicyIdList);
+					algResult = combiningAlgEvaluator.evaluate(individualDecisionContext, mdpContext, updatablePepActions, updatableApplicablePolicyIdList);
 					LOGGER.debug("{}/Algorithm -> {}", this, algResult);
 
 					if (targetMatchIndeterminateException != null)
@@ -728,16 +674,16 @@ public final class PolicyEvaluators
 						 * Result != NotApplicable -> consider current policy as applicable
 						 */
 						updatableApplicablePolicyIdList.add(this.policyMetadata);
-						newResult = this.decisionResultFactory.getInstance(algResult, context, updatablePepActions, updatableApplicablePolicyIdList.copy());
+						newResult = this.decisionResultFactory.getInstance(algResult, individualDecisionContext, mdpContext, updatablePepActions, updatableApplicablePolicyIdList.copy());
 						return newResult;
 				}
 			}
 			finally
 			{
-				// remove local variables from context
+				// remove local variables from individualDecisionContext
 				for (final VariableReference<?> varRef : this.localVariableAssignmentExpressions)
 				{
-					context.removeVariable(varRef.getVariableId());
+					individualDecisionContext.removeVariable(varRef.getVariableId());
 				}
 
 				// update cache with new result
@@ -747,7 +693,7 @@ public final class PolicyEvaluators
 					{
 						final EvalResults newCachedResults = new EvalResults(this.policyMetadata.getId());
 						newCachedResults.setResult(skipTarget, newResult);
-						context.putOther(this.requestScopedEvalResultsCacheKey, newCachedResults);
+						individualDecisionContext.putOther(this.requestScopedEvalResultsCacheKey, newCachedResults);
 					}
 					else
 					{
@@ -758,15 +704,15 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public final boolean isApplicableByTarget(final EvaluationContext context) throws IndeterminateEvaluationException
+		public final boolean isApplicableByTarget(final EvaluationContext context, Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
-			return targetEvaluator.evaluate(context);
+			return targetEvaluator.evaluate(context, mdpContext);
 		}
 
 		@Override
-		public final DecisionResult evaluate(final EvaluationContext context)
+		public final DecisionResult evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 		{
-			return evaluate(context, false);
+			return evaluate(context, mdpContext, false);
 		}
 
 		@Override
@@ -897,9 +843,9 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public final DecisionResult evaluate(final EvaluationContext context)
+		public final DecisionResult evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 		{
-			return evaluate(context, false);
+			return evaluate(context, mdpContext, false);
 		}
 
 		/*
@@ -971,14 +917,14 @@ public final class PolicyEvaluators
 	 * @return extra policy metadata
 	 * @throws IndeterminateEvaluationException
 	 *             if the extra policy metadata of {@code referredPolicy} could not be determined in {@code evalCtx} (with
-	 *             {@link TopLevelPolicyElementEvaluator#getPolicyRefsMetadata(EvaluationContext)} )
+	 *             {@link TopLevelPolicyElementEvaluator#getPolicyRefsMetadata(EvaluationContext, Optional)} )
 	 */
-	private static PolicyRefsMetadata newPolicyRefExtraMetadata(final TopLevelPolicyElementEvaluator referredPolicy, final EvaluationContext evalCtx) throws IndeterminateEvaluationException
+	private static PolicyRefsMetadata newPolicyRefExtraMetadata(final TopLevelPolicyElementEvaluator referredPolicy, final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 	{
 		assert referredPolicy != null;
 
 		final PrimaryPolicyMetadata referredPolicyMetadata = referredPolicy.getPrimaryPolicyMetadata();
-		final Optional<PolicyRefsMetadata> referredPolicyRefsMetadata = referredPolicy.getPolicyRefsMetadata(evalCtx);
+		final Optional<PolicyRefsMetadata> referredPolicyRefsMetadata = referredPolicy.getPolicyRefsMetadata(evalCtx, mdpContext);
 		final Set<PrimaryPolicyMetadata> newRefPolicies;
 		final List<String> newLongestPolicyRefChain;
 		if (referredPolicyRefsMetadata.isPresent())
@@ -1027,7 +973,7 @@ public final class PolicyEvaluators
 			refPolicies.addAll(childPolicyRefsMetadata.getRefPolicies());
 
 			/*
-			 * update longest policy ref chain depending on the length of the longest in this child policy element
+			 * update the longest policy ref chain depending on the length of the longest in this child policy element
 			 */
 			final List<String> childLongestPolicyRefChain = childPolicyRefsMetadata.getLongestPolicyRefChain();
 			if (childLongestPolicyRefChain.size() > longestPolicyRefChain.size())
@@ -1069,7 +1015,7 @@ public final class PolicyEvaluators
 			childPolicySetElementsOrRefs.add(childElement);
 		}
 
-		private Optional<PolicyRefsMetadata> getMetadata(final EvaluationContext evalCtx) throws IndeterminateEvaluationException
+		private Optional<PolicyRefsMetadata> getMetadata(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IndeterminateEvaluationException
 		{
 			/*
 			 * check whether the result is already cached in the evaluation context
@@ -1088,7 +1034,7 @@ public final class PolicyEvaluators
 			final List<String> longestPolicyRefChain = new ArrayList<>();
 			for (final PolicyEvaluator policyRef : childPolicySetElementsOrRefs)
 			{
-				final Optional<PolicyRefsMetadata> extraMetadata = policyRef.getPolicyRefsMetadata(evalCtx);
+				final Optional<PolicyRefsMetadata> extraMetadata = policyRef.getPolicyRefsMetadata(evalCtx, mdpCtx);
 				if (extraMetadata.isPresent())
 				{
 					refPolicies.addAll(extraMetadata.get().getRefPolicies());
@@ -1123,9 +1069,9 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public Optional<PolicyRefsMetadata> getPolicyRefsMetadata(final EvaluationContext evaluationCtx) throws IndeterminateEvaluationException
+		public Optional<PolicyRefsMetadata> getPolicyRefsMetadata(final EvaluationContext evaluationCtx, final Optional<EvaluationContext> mdpCtx) throws IndeterminateEvaluationException
 		{
-			return this.extraPolicyMetadataProvider.getMetadata(evaluationCtx);
+			return this.extraPolicyMetadataProvider.getMetadata(evaluationCtx, mdpCtx);
 		}
 
 	}
@@ -1138,7 +1084,7 @@ public final class PolicyEvaluators
 		private final StaticTopLevelPolicyElementEvaluator referredPolicy;
 		private transient final Optional<PolicyRefsMetadata> extraMetadata;
 
-		private static TopLevelPolicyElementType validate(final TopLevelPolicyElementEvaluator referredPolicy)
+		private static TopLevelPolicyElementType validate(final PolicyEvaluator referredPolicy)
 		{
 			return referredPolicy.getPolicyElementType();
 		}
@@ -1149,7 +1095,7 @@ public final class PolicyEvaluators
 			this.referredPolicy = referredPolicy;
 			try
 			{
-				this.extraMetadata = Optional.of(newPolicyRefExtraMetadata(referredPolicy, null));
+				this.extraMetadata = Optional.of(newPolicyRefExtraMetadata(referredPolicy, null, Optional.empty()));
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
@@ -1158,17 +1104,17 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public DecisionResult evaluate(final EvaluationContext context, final boolean skipTarget)
+		public DecisionResult evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final boolean skipTarget)
 		{
-			return referredPolicy.evaluate(context, skipTarget);
+			return referredPolicy.evaluate(context, mdpContext, skipTarget);
 		}
 
 		@Override
-		public boolean isApplicableByTarget(final EvaluationContext context) throws IndeterminateEvaluationException
+		public boolean isApplicableByTarget(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
 			try
 			{
-				return referredPolicy.isApplicableByTarget(context);
+				return referredPolicy.isApplicableByTarget(context, mdpContext);
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
@@ -1204,12 +1150,12 @@ public final class PolicyEvaluators
 			private final Optional<PolicyRefsMetadata> extraMetadata;
 			private final IndeterminateEvaluationException exception;
 
-			private RefResolvedResult(final TopLevelPolicyElementEvaluator policy, final EvaluationContext evalCtx) throws IndeterminateEvaluationException
+			private RefResolvedResult(final TopLevelPolicyElementEvaluator policy, final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IndeterminateEvaluationException
 			{
 				assert policy != null && evalCtx != null;
 				this.exception = null;
 				this.resolvedPolicy = policy;
-				this.extraMetadata = Optional.of(newPolicyRefExtraMetadata(policy, evalCtx));
+				this.extraMetadata = Optional.of(newPolicyRefExtraMetadata(policy, evalCtx, mdpCtx));
 			}
 
 			private RefResolvedResult(final IndeterminateEvaluationException exception)
@@ -1245,16 +1191,16 @@ public final class PolicyEvaluators
 			refPolicyProvider.joinPolicyRefChains(chain1, chain2);
 		}
 
-		protected final TopLevelPolicyElementEvaluator resolvePolicy(final Deque<String> policySetRefChainWithResolvedPolicyIfPolicySet, final EvaluationContext evalCtx)
+		protected final TopLevelPolicyElementEvaluator resolvePolicy(final Deque<String> policySetRefChainWithResolvedPolicyIfPolicySet, final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx)
 		        throws IllegalArgumentException, IndeterminateEvaluationException
 		{
-			return refPolicyProvider.get(this.referredPolicyType, this.refPolicyId, this.versionConstraints, policySetRefChainWithResolvedPolicyIfPolicySet, evalCtx);
+			return refPolicyProvider.get(this.referredPolicyType, this.refPolicyId, this.versionConstraints, policySetRefChainWithResolvedPolicyIfPolicySet, evalCtx, mdpCtx);
 		}
 
-		protected abstract void checkPolicyRefChain(TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx)
+		protected abstract void checkPolicyRefChain(TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx)
 		        throws IllegalArgumentException, IndeterminateEvaluationException;
 
-		protected abstract TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx) throws IllegalArgumentException, IndeterminateEvaluationException;
+		protected abstract TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IllegalArgumentException, IndeterminateEvaluationException;
 
 		/**
 		 * Resolves this to the actual Policy
@@ -1264,7 +1210,7 @@ public final class PolicyEvaluators
 		 * @throws IndeterminateEvaluationException
 		 *             if error determining the policy referenced by this, e.g. if more than one policy is found
 		 */
-		private RefResolvedResult resolve(final EvaluationContext evalCtx) throws IndeterminateEvaluationException, IllegalArgumentException
+		private RefResolvedResult resolve(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IndeterminateEvaluationException, IllegalArgumentException
 		{
 			// check whether the policy was already resolved in the same context
 			final Object cachedValue = evalCtx.getOther(requestScopedCacheKey);
@@ -1273,7 +1219,7 @@ public final class PolicyEvaluators
 				final RefResolvedResult result = (RefResolvedResult) cachedValue;
 				if (result.exception == null)
 				{
-					checkPolicyRefChain(result.resolvedPolicy, evalCtx);
+					checkPolicyRefChain(result.resolvedPolicy, evalCtx, mdpCtx);
 					return result;
 				}
 
@@ -1285,8 +1231,8 @@ public final class PolicyEvaluators
 			 */
 			try
 			{
-				final TopLevelPolicyElementEvaluator policy = resolvePolicyWithRefDepthCheck(evalCtx);
-				final RefResolvedResult newCacheValue = new RefResolvedResult(policy, evalCtx);
+				final TopLevelPolicyElementEvaluator policy = resolvePolicyWithRefDepthCheck(evalCtx, mdpCtx);
+				final RefResolvedResult newCacheValue = new RefResolvedResult(policy, evalCtx, mdpCtx);
 				evalCtx.putOther(requestScopedCacheKey, newCacheValue);
 				return newCacheValue;
 			}
@@ -1307,13 +1253,13 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		public final DecisionResult evaluate(final EvaluationContext context, final boolean skipTarget)
+		public final DecisionResult evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final boolean skipTarget)
 		{
 			// we must have found a policy
 			final RefResolvedResult refResolvedResult;
 			try
 			{
-				refResolvedResult = resolve(context);
+				refResolvedResult = resolve(context, mdpContext);
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
@@ -1324,14 +1270,14 @@ public final class PolicyEvaluators
 				return DecisionResults.newIndeterminate(DecisionType.INDETERMINATE, e, null);
 			}
 
-			return refResolvedResult.resolvedPolicy.evaluate(context, skipTarget);
+			return refResolvedResult.resolvedPolicy.evaluate(context, mdpContext, skipTarget);
 		}
 
 		@Override
-		public final boolean isApplicableByTarget(final EvaluationContext evalCtx) throws IndeterminateEvaluationException
+		public final boolean isApplicableByTarget(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IndeterminateEvaluationException
 		{
-			final RefResolvedResult refResolvedResult = resolve(evalCtx);
-			return refResolvedResult.resolvedPolicy.isApplicableByTarget(evalCtx);
+			final RefResolvedResult refResolvedResult = resolve(evalCtx, mdpCtx);
+			return refResolvedResult.resolvedPolicy.isApplicableByTarget(evalCtx, mdpCtx);
 		}
 
 		/*
@@ -1340,16 +1286,16 @@ public final class PolicyEvaluators
 		 * @see org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator#getPolicyVersion(org.ow2.authzforce.core.pdp.api.EvaluationContext)
 		 */
 		@Override
-		public final PolicyVersion getPolicyVersion(final EvaluationContext evalCtx) throws IndeterminateEvaluationException
+		public final PolicyVersion getPolicyVersion(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IndeterminateEvaluationException
 		{
-			final RefResolvedResult refResolvedResult = resolve(evalCtx);
+			final RefResolvedResult refResolvedResult = resolve(evalCtx, mdpCtx);
 			return refResolvedResult.resolvedPolicy.getPolicyVersion();
 		}
 
 		@Override
-		public final Optional<PolicyRefsMetadata> getPolicyRefsMetadata(final EvaluationContext evalCtx) throws IndeterminateEvaluationException
+		public final Optional<PolicyRefsMetadata> getPolicyRefsMetadata(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IndeterminateEvaluationException
 		{
-			final RefResolvedResult refResolvedResult = resolve(evalCtx);
+			final RefResolvedResult refResolvedResult = resolve(evalCtx, mdpCtx);
 			return refResolvedResult.extraMetadata;
 		}
 
@@ -1366,16 +1312,16 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		protected void checkPolicyRefChain(final TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx)
+		protected void checkPolicyRefChain(final TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx)
 		{
 			// nothing to do for XACML Policy (no nested policy ref)
 		}
 
 		@Override
-		protected TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+		protected TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IllegalArgumentException, IndeterminateEvaluationException
 		{
 			// no policy ref depth check to do for XACML Policy (no nested policy ref)
-			return resolvePolicy(null, evalCtx);
+			return resolvePolicy(null, evalCtx, mdpCtx);
 		}
 	}
 
@@ -1396,21 +1342,21 @@ public final class PolicyEvaluators
 		}
 
 		@Override
-		protected void checkPolicyRefChain(final TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx)
+		protected void checkPolicyRefChain(final TopLevelPolicyElementEvaluator nonNullRefResultPolicy, final EvaluationContext evalCtx, Optional<EvaluationContext> mdpCtx)
 		        throws IllegalArgumentException, IndeterminateEvaluationException
 		{
 			assert nonNullRefResultPolicy != null;
 			/*
 			 * Check PolicySet reference depth resulting from resolving this new PolicySet ref
 			 */
-			final Optional<PolicyRefsMetadata> optionalRefsMetadata = nonNullRefResultPolicy.getPolicyRefsMetadata(evalCtx);
+			final Optional<PolicyRefsMetadata> optionalRefsMetadata = nonNullRefResultPolicy.getPolicyRefsMetadata(evalCtx, mdpCtx);
 			optionalRefsMetadata.ifPresent(policyRefsMetadata -> checkJoinedPolicySetRefChain(policySetRefChainToThisRefTarget, policyRefsMetadata.getLongestPolicyRefChain()));
 		}
 
 		@Override
-		protected TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+		protected TopLevelPolicyElementEvaluator resolvePolicyWithRefDepthCheck(final EvaluationContext evalCtx, final Optional<EvaluationContext> mdpCtx) throws IllegalArgumentException, IndeterminateEvaluationException
 		{
-			return resolvePolicy(policySetRefChainToThisRefTarget, evalCtx);
+			return resolvePolicy(policySetRefChainToThisRefTarget, evalCtx, mdpCtx);
 		}
 
 	}
@@ -1710,7 +1656,7 @@ public final class PolicyEvaluators
 	 *            (Do not use a Queue for {@code ancestorPolicySetRefChain} as it is FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as
 	 *            well.)
 	 *            </p>
-	 * @return instance instance of PolicyReference
+	 * @return instance of PolicyReference
 	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
 	 *             loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
@@ -1745,7 +1691,7 @@ public final class PolicyEvaluators
 	 *            (Do not use a Queue for {@code ancestorPolicySetRefChain} as it is FIFO, and we need LIFO and iteration in order of insertion, so different from Collections.asLifoQueue(Deque) as
 	 *            well.)
 	 *            </p>
-	 * @return instance instance of PolicyReference
+	 * @return instance of PolicyReference
 	 * @throws java.lang.IllegalArgumentException
 	 *             if {@code refPolicyProvider} undefined, or there is no policy of type {@code refPolicyType} matching {@code idRef} to be found by {@code refPolicyProvider}, or PolicySetIdReference
 	 *             loop detected or PolicySetIdReference depth exceeds the max enforced by {@code policyProvider}
@@ -1753,7 +1699,7 @@ public final class PolicyEvaluators
 	public static StaticPolicyRefEvaluator getInstanceStatic(final TopLevelPolicyElementType refPolicyType, final IdReferenceType idRef, final StaticPolicyProvider refPolicyProvider,
 	        final Deque<String> ancestorPolicySetRefChain) throws IllegalArgumentException
 	{
-		final StaticPolicyRefEvaluatorFactory factory = new StaticPolicyRefEvaluatorFactory(refPolicyProvider);
+		final PolicyRefEvaluatorFactory<StaticPolicyRefEvaluator> factory = new StaticPolicyRefEvaluatorFactory(refPolicyProvider);
 		return getInstanceGeneric(factory, refPolicyType, idRef, ancestorPolicySetRefChain);
 	}
 
@@ -1774,7 +1720,7 @@ public final class PolicyEvaluators
 	 *            static policy-by-reference (Policy(Set)IdReference) Provider - all references statically resolved - to find references used in this policyset
 	 * @param policySetRefChainWithPolicyElementIfRefTarget
 	 *            null/empty if {@code policyElement} is a root PolicySet; else it is the chain of top-level (as opposed to nested inline) PolicySets linked via PolicySetIdReferences, from the root
-	 *            PolicySet up to - and including - the top-level PolicySet that encloses or is {@code policyElement} (i.e. it a reference's target). Each item is a PolicySetId of a PolicySet that is
+	 *            PolicySet up to - and including - the top-level PolicySet that encloses or is a {@code policyElement} (i.e. a reference's target). Each item is a PolicySetId of a PolicySet that is
 	 *            referenced by the previous item (except the first item which is the root policy) and references the next one. This chain is used to control PolicySetIdReferences found within the
 	 *            result policy, in order to detect loops (circular references) and prevent exceeding reference depth.
 	 *            <p>

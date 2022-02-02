@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,19 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
-import static org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory.XACML_1_0_ACCESS_SUBJECT;
-import static org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory.XACML_3_0_ACTION;
-import static org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory.XACML_3_0_RESOURCE;
-
-import java.security.Principal;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.xml.namespace.QName;
-
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
-
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.interceptor.security.AccessDeniedException;
 import org.apache.cxf.message.Message;
@@ -40,20 +28,19 @@ import org.apache.cxf.rt.security.saml.xacml.XACMLConstants;
 import org.apache.cxf.security.LoginSecurityContext;
 import org.apache.cxf.security.SecurityContext;
 import org.apache.wss4j.common.ext.WSSecurityException;
-import org.ow2.authzforce.core.pdp.api.AttributeFqn;
-import org.ow2.authzforce.core.pdp.api.AttributeFqns;
-import org.ow2.authzforce.core.pdp.api.DecisionRequest;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestBuilder;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
-import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
-import org.ow2.authzforce.core.pdp.api.value.Bags;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.StringValue;
+import org.ow2.authzforce.core.pdp.api.*;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
 import org.ow2.authzforce.xacml.identifiers.XacmlAttributeId;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.namespace.QName;
+import java.security.Principal;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory.*;
 
 /**
  * This class represents a so-called XACML PEP that, for every CXF service request, creates an XACML 3.0 authorization decision Request to a PDP using AuthzForce's native API, given a Principal, list
@@ -239,7 +226,7 @@ public class EmbeddedPdpBasedAuthzInterceptor extends AbstractPhaseInterceptor<M
 
 			if (serviceName != null)
 			{
-				final String resourceIdPrefix = serviceName.toString() + "#";
+				final String resourceIdPrefix = serviceName + "#";
 				if (serviceName.getNamespaceURI() != null && serviceName.getNamespaceURI().equals(operationName.getNamespaceURI()))
 				{
 					resourceId = resourceIdPrefix + operationName.getLocalPart();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,38 +17,9 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URL;
-import java.util.AbstractMap;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import org.ow2.authzforce.core.pdp.api.CloseableNamedAttributeProvider;
-import org.ow2.authzforce.core.pdp.api.DecisionCache;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
-import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
-import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.XmlUtils;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
@@ -56,23 +27,8 @@ import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
-import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.CloseableStaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
-import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.ImmutableAttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
+import org.ow2.authzforce.core.pdp.api.policy.*;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.core.pdp.impl.combining.ImmutableCombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgorithm;
 import org.ow2.authzforce.core.pdp.impl.expression.DepthLimitingExpressionFactory;
@@ -81,7 +37,7 @@ import org.ow2.authzforce.core.pdp.impl.func.ImmutableFunctionRegistry;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
 import org.ow2.authzforce.core.xmlns.pdp.InOutProcChain;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
-import org.ow2.authzforce.core.xmlns.pdp.StandardEnvironmentAttributeSource;
+import org.ow2.authzforce.core.xmlns.pdp.StdEnvAttributeProviderDescriptor;
 import org.ow2.authzforce.core.xmlns.pdp.TopLevelPolicyElementRef;
 import org.ow2.authzforce.xacml.identifiers.XacmlDatatypeId;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
@@ -91,7 +47,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
-import com.google.common.collect.ImmutableMap;
+import javax.xml.bind.JAXBException;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * PDP engine configuration
@@ -127,11 +93,11 @@ public final class PdpEngineConfiguration
 
 		@Override
 		public PE get(final TopLevelPolicyElementType policyType, final String policyId, final Optional<PolicyVersionPatterns> policyVersionConstraints, final Deque<String> policySetRefChain,
-		        final EvaluationContext evaluationCtx) throws IllegalArgumentException, IndeterminateEvaluationException
+		        final EvaluationContext evaluationCtx, final Optional<EvaluationContext> mdpCtx) throws IllegalArgumentException, IndeterminateEvaluationException
 		{
 			for (final COMPONENT provider : composedProviders)
 			{
-				final PE policyEvaluator = provider.get(policyType, policyId, policyVersionConstraints, policySetRefChain, evaluationCtx);
+				final PE policyEvaluator = provider.get(policyType, policyId, policyVersionConstraints, policySetRefChain, evaluationCtx, mdpCtx);
 				if (policyEvaluator != null)
 				{
 					return policyEvaluator;
@@ -179,7 +145,7 @@ public final class PdpEngineConfiguration
 		}
 	}
 
-	/**
+	/*
 	 * Static version of CompositePolicyProvider. This one is no use so far because all PolicyProviders in PDP configuration are assumed Closeable, therefore CompositeCloseableStaticPolicyProvider
 	 * class is used instead. But this may change in the future. Let's keep this commented for now.
 	 */
@@ -312,6 +278,8 @@ public final class PdpEngineConfiguration
 	private final boolean enableXPath;
 	private final AttributeValueFactoryRegistry attValFactoryRegistry;
 
+	private final Optional<CloseableNamedAttributeProviderRegistry> attProviders;
+
 	private final ExpressionFactory xacmlExpressionFactory;
 
 	/*
@@ -326,8 +294,6 @@ public final class PdpEngineConfiguration
 	private final Optional<PolicyVersionPatterns> rootPolicyVersionPatterns;
 
 	private final boolean strictAttributeIssuerMatch;
-
-	private final StandardEnvironmentAttributeSource stdEnvAttributeSource;
 
 	private final Optional<DecisionCache> decisionCache;
 
@@ -352,7 +318,7 @@ public final class PdpEngineConfiguration
 		/*
 		 * Enable support for XPath expressions, XPath functions, etc.
 		 */
-		enableXPath = pdpJaxbConf.isEnableXPath();
+		enableXPath = pdpJaxbConf.isXPathEnabled();
 
 		// Attribute datatypes (primitive)
 		final List<String> datatypeExtensionIdentifiers = pdpJaxbConf.getAttributeDatatypes();
@@ -366,7 +332,7 @@ public final class PdpEngineConfiguration
 		/*
 		 * Merge with standards if required, or use the standards as is if no extension
 		 */
-		final boolean enableStdDatatypes = pdpJaxbConf.isUseStandardDatatypes();
+		final boolean enableStdDatatypes = pdpJaxbConf.isStandardDatatypesEnabled();
 		if (enableStdDatatypes)
 		{
 			final AttributeValueFactoryRegistry stdRegistry = StandardAttributeValueFactories.getRegistry(enableXPath, Optional.ofNullable(pdpJaxbConf.getMaxIntegerValue()));
@@ -384,22 +350,32 @@ public final class PdpEngineConfiguration
 			attValFactoryRegistry = new ImmutableAttributeValueFactoryRegistry(datatypeExtensions);
 		}
 
-		// Standard Environment Attribute source
-		final StandardEnvironmentAttributeSource stdEnvAttSourceFromJaxbConf = pdpJaxbConf.getStandardEnvAttributeSource();
-		/*
-		 * The default behavior for getting the standard environment attributes (current date/time) is the one complying strictly with the XACML spec: if request does not have values for these
-		 * attributes, the "context handler" (PDP in this case) must provide them. So we use PDP values if it does not override any existing value in the request.
-		 */
-		stdEnvAttributeSource = stdEnvAttSourceFromJaxbConf == null ? StandardEnvironmentAttributeSource.REQUEST_ELSE_PDP : stdEnvAttSourceFromJaxbConf;
-
 		// Extra Attribute Providers
 		final List<AbstractAttributeProvider> attProviderJaxbConfs = pdpJaxbConf.getAttributeProviders();
 		final List<CloseableNamedAttributeProvider.DependencyAwareFactory> attProviderFactories = new ArrayList<>(attProviderJaxbConfs.size());
+		final Set<String> attProviderIds = new HashSet<>();
+		final boolean enableStdAttProviders = pdpJaxbConf.isStandardAttributeProvidersEnabled();
+		if(enableStdAttProviders) {
+			attProviderFactories.add(StandardEnvironmentAttributeProvider.DEFAULT_FACTORY);
+			attProviderIds.add(StandardEnvironmentAttributeProvider.DEFAULT_ID);
+		}
+
 		for (final AbstractAttributeProvider attProviderJaxbConf : attProviderJaxbConfs)
 		{
+			Preconditions.checkArgument(!(attProviderJaxbConf instanceof StdEnvAttributeProviderDescriptor) || !enableStdAttProviders, "Custom StdEnvAttributeProviderDescriptor(s) is/are not compatible with standardAttributeProvidersEnabled='true' in PDP configuration");
+			/*
+			PDP XML schema is supposed to be used for AttributeProvider ID uniqueness check, but we double-check in case XML schema is disabled.
+			 */
+			final boolean isUnique = attProviderIds.add(attProviderJaxbConf.getId());
+			if (!isUnique)
+			{
+				throw new IllegalArgumentException("AttributeProvider ID '" + attProviderJaxbConf.getId() + "' already used! Each AttributeProvider ID must be unique in the PDP configuration.");
+			}
+
 			final CloseableNamedAttributeProvider.DependencyAwareFactory depAwareAttrProviderModFactory = newAttributeProviderProviderFactory(attProviderJaxbConf, envProps);
 			attProviderFactories.add(depAwareAttrProviderModFactory);
 		}
+
 
 		/*
 		 * Variable processing - max Variable reference depth
@@ -433,7 +409,7 @@ public final class PdpEngineConfiguration
 		 * Merge with standards if required, or use the standards as is if no extension
 		 */
 		final FunctionRegistry functionRegistry;
-		if (pdpJaxbConf.isUseStandardFunctions())
+		if (pdpJaxbConf.isStandardFunctionsEnabled())
 		{
 			if (!enableStdDatatypes)
 			{
@@ -483,7 +459,7 @@ public final class PdpEngineConfiguration
 		 * Merge with standards if required, or use the standards as is if no extension
 		 */
 		final CombiningAlgRegistry combiningAlgRegistry;
-		if (pdpJaxbConf.isUseStandardCombiningAlgorithms())
+		if (pdpJaxbConf.isStandardCombiningAlgorithmsEnabled())
 		{
 			if (algExtensions.isEmpty())
 			{
@@ -516,7 +492,8 @@ public final class PdpEngineConfiguration
 		/*
 		 * XACML Expression factory/parser
 		 */
-		xacmlExpressionFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry, attProviderFactories, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch);
+		attProviders = attProviderFactories.isEmpty()? Optional.empty(): Optional.of(new CloseableNamedAttributeProviderRegistry(attProviderFactories, attValFactoryRegistry, strictAttributeIssuerMatch));
+		xacmlExpressionFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch, attProviders);
 
 		/*
 		 * Policy providers
@@ -909,7 +886,7 @@ public final class PdpEngineConfiguration
 	 * 
 	 * @return true iff XPath is supported.
 	 */
-	public boolean isXpathEnabled()
+	public boolean isXPathEnabled()
 	{
 		return this.enableXPath;
 	}
@@ -922,6 +899,16 @@ public final class PdpEngineConfiguration
 	public AttributeValueFactoryRegistry getAttributeValueFactoryRegistry()
 	{
 		return this.attValFactoryRegistry;
+	}
+
+	/**
+	 * Returns the registry of Attribute Providers in charge of providing the attributes not initially present in the request context
+	 *
+	 * @return the Attribute Providers
+	 */
+	public Optional<CloseableNamedAttributeProviderRegistry> getAttributeProviders()
+	{
+		return attProviders;
 	}
 
 	/**
@@ -990,17 +977,6 @@ public final class PdpEngineConfiguration
 	public boolean isStrictAttributeIssuerMatchEnabled()
 	{
 		return strictAttributeIssuerMatch;
-	}
-
-	/**
-	 * Returns the type of source for standard Environment attributes specified in §10.2.5: current-time, current-date and current-dateTime. If not defined in original PDP configuration,
-	 * {@link StandardEnvironmentAttributeSource#REQUEST_ELSE_PDP} is returned by default.
-	 * 
-	 * @return the source type
-	 */
-	public StandardEnvironmentAttributeSource getStdEnvAttributeSource()
-	{
-		return stdEnvAttributeSource;
 	}
 
 	/**

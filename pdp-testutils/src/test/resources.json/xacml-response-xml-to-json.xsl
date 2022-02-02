@@ -94,7 +94,7 @@
 	<!-- PolicyIdentifierList -->
 	<xsl:template match="xacml3:PolicyIdReference|xacml3:PolicySetIdReference">
 		<xsl:call-template name="elementToJson">
-			<xsl:with-param name="textNodeKey" select="'Id'"></xsl:with-param>
+			<xsl:with-param name="textNodeKey" select="'Id'"/>
 		</xsl:call-template>
 	</xsl:template>
 

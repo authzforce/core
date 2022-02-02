@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,6 +17,22 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
+import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
+import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
+import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.policy.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
+
+import javax.xml.bind.JAXBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -30,42 +46,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
-import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
-import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.policy.BasePrimaryPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.BaseStaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyRefsMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
-import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
-import org.ow2.authzforce.core.pdp.api.policy.StaticPolicyProvider;
-import org.ow2.authzforce.core.pdp.api.policy.StaticTopLevelPolicyElementEvaluator;
-import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
-
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-
-import javax.xml.bind.JAXBException;
-
 /**
  * This is the core implementation of {@link BaseStaticPolicyProvider} that supports static retrieval of the policies referenced by Policy(Set)IdReference. It is configured by a list of locations that
  * represent Spring-compatible resource URLs, corresponding to XACML Policy(Set) files - each file content is expected to be a XACML Policy(Set) document - when the module is initialized. Beyond this,
  * there is no modifying or re-loading of the policies.
  * <p>
  * A policy location may also be a file pattern in the following form: "file://DIRECTORY_PATH/*SUFFIX" using wilcard character '*'; in which case the location is expanded to all regular files (not
- * subdirectories) in directory located at DIRECTORY_PATH with suffix SUFFIX (SUFFIX may be empty, i.e. no suffix). The files are NOT searched recursively on sub-directories.
+ * subdirectories) in directory located at DIRECTORY_PATH with suffix <i>SUFFIX</i> (SUFFIX may be empty, i.e. no suffix). The files are NOT searched recursively on subdirectories.
  * <p>
  *
  * @version $Id: $
@@ -161,7 +148,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
         /*
          * Pattern: **...**.somefileextension -> '**...*'.length = number of directory levels to search and '*.somefileextension' = filename pattern
          */
-        private static final Pattern WILDCARD_SEQ_PREFIX_PATTERN = Pattern.compile("^(\\*+)([^\\*]*)$");
+        private static final Pattern WILDCARD_SEQ_PREFIX_PATTERN = Pattern.compile("^(\\*+)([^*]*)$");
 
         @Override
         public Class<org.ow2.authzforce.core.xmlns.pdp.StaticPolicyProvider> getJaxbClass()
@@ -817,7 +804,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
         }
 
         /*
-         * There is only one policy, use latest version as candidate root policy
+         * There is only one policy, use the latest version as candidate root policy
          */
         final Entry<PolicyVersion, P> latestPolicyVersion = firstPolicyEvaluatorEntry.getValue().getLatest(Optional.empty());
         assert latestPolicyVersion != null;

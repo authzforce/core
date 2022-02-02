@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,14 +17,14 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
+import org.ow2.authzforce.core.pdp.api.HashCollections;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
+import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersion;
-import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 
 /**
  * Map that provides convenient access to a policy based on the policy ID and version pattern to help resolve policy references
@@ -59,13 +59,13 @@ public final class PolicyMap<P>
 	}
 
 	/**
-	 * Get latest policy version matching a policy reference
+	 * Get the latest policy version matching a policy reference
 	 * 
 	 * @param id
 	 *            policy ID
 	 * @param PolicyVersionPatterns
 	 *            patterns that the returned policy version must match
-	 * @return policy version latest version of policy with ID {@code id} and version matching {@code PolicyVersionPatterns}
+	 * @return policy version of the policy with ID {@code id} and version matching {@code PolicyVersionPatterns}
 	 */
 	public Entry<PolicyVersion, P> get(final String id, final Optional<PolicyVersionPatterns> PolicyVersionPatterns) {
 		final PolicyVersions<P> policyVersions = policiesById.get(id);

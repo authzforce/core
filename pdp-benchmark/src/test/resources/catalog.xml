@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+	<!-- For AuthZForce SchemaHandler -->
+	<system systemId="http://www.w3.org/2001/xml.xsd" uri="classpath:xml.xsd" />
+	<uri name="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" uri="classpath:xacml-core-v3-schema-wd-17.xsd" />
+	<uri name="http://authzforce.github.io/xmlns/pdp/ext/3" uri="classpath:pdp-ext-base.xsd" />
+
+	<!-- PDP Extensions (<uri>'s 'name' attribute value must match the namespace indicated for the schema import 
+		in the PDP extensions schema (pdp-ext.xsd), do not specify any schemaLocation in this schema, only the namespace. 
+		-->
+	<uri name="http://authzforce.github.io/core/xmlns/test/3" uri="classpath:org.ow2.authzforce.core.pdp.testutil.ext.xsd" />
+</catalog>

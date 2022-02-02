@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,21 +17,14 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.func;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.value.AnyUriValue;
-import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.api.value.DnsNameWithPortRangeValue;
-import org.ow2.authzforce.core.pdp.api.value.IpAddressValue;
-import org.ow2.authzforce.core.pdp.api.value.Rfc822NameValue;
-import org.ow2.authzforce.core.pdp.api.value.StringValue;
-import org.ow2.authzforce.core.pdp.api.value.Value;
-import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
+import org.ow2.authzforce.core.pdp.api.value.*;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 @RunWith(Parameterized.class)
 public class RegExpBasedFunctionsTest extends StandardFunctionTest

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,12 +17,11 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.Set;
-
+import com.google.common.base.Preconditions;
 import org.ow2.authzforce.core.pdp.api.BasePdpExtensionRegistry;
 import org.ow2.authzforce.core.pdp.api.PdpExtension;
 
-import com.google.common.base.Preconditions;
+import java.util.Set;
 
 /**
  * Generic immutable registry of PDP extensions of a given type

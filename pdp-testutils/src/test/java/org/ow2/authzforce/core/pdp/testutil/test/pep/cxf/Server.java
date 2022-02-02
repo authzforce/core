@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,12 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
-import java.net.URL;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.bus.spring.SpringBusFactory;
 import org.apache.cxf.testutil.common.AbstractBusTestServerBase;
+
+import java.net.URL;
 
 public class Server extends AbstractBusTestServerBase
 {

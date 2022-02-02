@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
@@ -32,6 +28,10 @@ import org.ow2.authzforce.core.pdp.api.value.BaseTimeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.api.value.DurationValue;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
+
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.

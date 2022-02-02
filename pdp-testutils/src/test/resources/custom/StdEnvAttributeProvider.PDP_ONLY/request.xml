@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Request ReturnPolicyIdList="true" CombinedDecision="false" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+<!-- In this case (standardEnvAttributeSource="PDP_ONLY), for all requests below, PDP value is provided and more recent -> No match -> Deny-->
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		<!-- Only current-date must match -->
+		<Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">1970-01-01T01:00:00Z</AttributeValue>
+		</Attribute>
+		<Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">1970-01-01Z</AttributeValue>
+		</Attribute>
+		<Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">01:00:00Z</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		<!-- Only current-time must match -->
+		<Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">1980-01-01T00:00:00Z</AttributeValue>
+		</Attribute>
+		<Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">1980-01-01Z</AttributeValue>
+		</Attribute>
+		<Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">00:00:00Z</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		<!-- Only current-dateTime must match -->
+		<Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-dateTime">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#dateTime">1980-01-01T01:00:00Z</AttributeValue>
+		</Attribute>
+		<Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-date">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#date">1980-01-01Z</AttributeValue>
+		</Attribute>
+		<Attribute IncludeInResult="false" AttributeId="urn:oasis:names:tc:xacml:1.0:environment:current-time">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#time">01:00:00Z</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<!-- In this case (standardEnvAttributeSource="PDP_ONLY), for all requests below, PDP value is provided -> match -> Permit -->
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		<Attribute IncludeInResult="true" AttributeId="test-id">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-date</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		<Attribute IncludeInResult="true" AttributeId="test-id">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-time</AttributeValue>
+		</Attribute>
+	</Attributes>
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment">
+		<Attribute IncludeInResult="true" AttributeId="test-id">
+			<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">no-request-env-test-match-pdp-dateTime</AttributeValue>
+		</Attribute>
+	</Attributes>
+</Request>

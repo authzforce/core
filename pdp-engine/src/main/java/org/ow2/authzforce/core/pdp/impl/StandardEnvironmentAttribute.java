@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,45 +17,45 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import com.google.common.collect.Maps;
+import org.ow2.authzforce.core.pdp.api.AttributeFqn;
+import org.ow2.authzforce.core.pdp.api.AttributeFqns;
+import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
+import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory;
+import org.ow2.authzforce.xacml.identifiers.XacmlAttributeId;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
-import org.ow2.authzforce.core.pdp.api.AttributeFqn;
-import org.ow2.authzforce.core.pdp.api.AttributeFqns;
-import org.ow2.authzforce.xacml.identifiers.XacmlAttributeCategory;
-import org.ow2.authzforce.xacml.identifiers.XacmlAttributeId;
-
-import com.google.common.collect.Maps;
-
 /**
- * 10.2.5 Attributes
- * 
- * The implementation MUST support the attributes associated with the following identifiers as specified by XACML. If values for these attributes are not present in the decision request, then their
- * values MUST be supplied by the context handler. So, unlike most other attributes, their semantics are not transparent to the PDP.
+ * Attributes defined in Appendix B.7 (Environment attributes)
  */
 public enum StandardEnvironmentAttribute
 {
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-time
 	 */
-	CURRENT_TIME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value())),
+	CURRENT_TIME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_TIME.value()), StandardDatatypes.TIME),
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-date
 	 */
-	CURRENT_DATE(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value())),
+	CURRENT_DATE(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATE.value()), StandardDatatypes.DATE),
 
 	/**
 	 * urn:oasis:names:tc:xacml:1.0:environment:current-dateTime
 	 */
-	CURRENT_DATETIME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value()));
+	CURRENT_DATETIME(AttributeFqns.newInstance(XacmlAttributeCategory.XACML_3_0_ENVIRONMENT.value(), Optional.empty(), XacmlAttributeId.XACML_1_0_ENVIRONMENT_CURRENT_DATETIME.value()), StandardDatatypes.DATETIME);
 
 	private final AttributeFqn attributeFqn;
+	private final AttributeDatatype<?> attributeDatatype;
 
-	StandardEnvironmentAttribute(final AttributeFqn attributeFqn)
+	StandardEnvironmentAttribute(final AttributeFqn attributeFqn, final AttributeDatatype<?> datatype)
 	{
 		this.attributeFqn = attributeFqn;
+		this.attributeDatatype = datatype;
 	}
 
 	/**
@@ -66,6 +66,15 @@ public enum StandardEnvironmentAttribute
 	public AttributeFqn getFQN()
 	{
 		return this.attributeFqn;
+	}
+
+	/**
+	 * Get attribute data-type
+	 *
+	 * @return attribute data-type
+	 */
+	public AttributeDatatype<?> getDatatype() {
+		return this.attributeDatatype;
 	}
 
 	private static final Map<AttributeFqn, StandardEnvironmentAttribute> ID_TO_STD_ATTR_MAP = Maps.uniqueIndex(Arrays.asList(StandardEnvironmentAttribute.values()),

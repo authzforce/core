@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -25,14 +25,13 @@ import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionSignature;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunction;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * A class that implements the logical functions "or"
@@ -63,7 +62,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 		}
 
 		@Override
-		public BooleanValue evaluate(final EvaluationContext context, final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
+		public BooleanValue evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final AttributeValue... checkedRemainingArgs) throws IndeterminateEvaluationException
 		{
 			IndeterminateEvaluationException indeterminateException = null;
 			int argIndex = 0;
@@ -73,7 +72,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 				final BooleanValue attrVal;
 				try
 				{
-					attrVal = Expressions.eval(arg, context, StandardDatatypes.BOOLEAN);
+					attrVal = Expressions.eval(arg, context, mdpContext, StandardDatatypes.BOOLEAN);
 					if (attrVal.getUnderlyingValue())
 					{
 						return BooleanValue.TRUE;
@@ -136,14 +135,17 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 	public FirstOrderFunctionCall<BooleanValue> newCall(final List<Expression<?>> argExpressions, final Datatype<?>... remainingArgTypes)
 	{
 		/*
-		 * TODO: optimize this function call by checking the following:
+		 * Let's optimize this function call by checking the following:
 		 * <ol>
-		 * <li>If any argument expression is constant BooleanAttributeValue False, remove it from the arguments, as it has no effect on the final result. Indeed, or function is commutative and
+		 * <li>If any argument expression is/returns constant BooleanValue False, remove it from the arguments, as it has no effect on the final result. Indeed, 'or' function is commutative and
 		 * or(false, x, y...) = or(x, y...).</li>
 		 * </ol>
 		 * Other optimizations are already achieved by ApplyExpression pre-evaluating the function call with context = null and check the result if no IndeterminateEvaluationException is thrown.
 		 */
-		return new Call(functionSignature, argExpressions, remainingArgTypes);
+		final List<Expression<?>> optimizedArgExprs = argExpressions.stream().filter(argExpr ->
+			argExpr.getValue().map(v -> !(v instanceof BooleanValue) || ((BooleanValue) v).getUnderlyingValue()).orElse(true)
+		).collect(Collectors.toUnmodifiableList());
+		return new Call(functionSignature, optimizedArgExprs, remainingArgTypes);
 	}
 
 }

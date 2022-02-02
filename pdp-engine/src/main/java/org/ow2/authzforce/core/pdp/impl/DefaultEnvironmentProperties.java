@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,13 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
 import org.ow2.authzforce.core.pdp.api.EnvironmentPropertyName;
 import org.springframework.util.PropertyPlaceholderHelper;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  * Default implementation of PDP configuration parser's environment properties, that supports user-defined properties, Java system properties and system-dependent environment variables.

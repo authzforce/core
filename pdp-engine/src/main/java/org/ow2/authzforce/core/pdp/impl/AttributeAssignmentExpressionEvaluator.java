@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,12 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Preconditions;
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActionAttributeAssignment;
@@ -35,13 +33,12 @@ import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 import javax.xml.bind.JAXBElement;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * XACML AttributeAssignmentExpression evaluator
@@ -58,7 +55,7 @@ public final class AttributeAssignmentExpressionEvaluator
 			this.datatype = attributeDatatype;
 		}
 
-		protected abstract Collection<AV> evaluate(final EvaluationContext ctx) throws IndeterminateEvaluationException;
+		protected abstract Collection<AV> evaluate(final EvaluationContext individualDecisionCtx, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException;
 	}
 
 	private static final class SingleAttributeValueExpression<AV extends AttributeValue> extends AttributeValueExpression<AV>
@@ -73,10 +70,10 @@ public final class AttributeAssignmentExpressionEvaluator
 		}
 
 		@Override
-		protected Collection<AV> evaluate(EvaluationContext ctx) throws IndeterminateEvaluationException
+		protected Collection<AV> evaluate(EvaluationContext individualDecisionCtx, Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
 			// atomic (see spec §5.30, 5.40) / primitive attribute value
-			return Collections.singleton(valueExpr.evaluate(ctx));
+			return Collections.singleton(valueExpr.evaluate(individualDecisionCtx, mdpContext));
 		}
 
 	}
@@ -93,9 +90,9 @@ public final class AttributeAssignmentExpressionEvaluator
 		}
 
 		@Override
-		protected Collection<AV> evaluate(EvaluationContext ctx) throws IndeterminateEvaluationException
+		protected Collection<AV> evaluate(EvaluationContext ctx, Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
-			return valueExpr.evaluate(ctx).elements();
+			return valueExpr.evaluate(ctx, mdpContext).elements();
 		}
 
 	}
@@ -128,7 +125,7 @@ public final class AttributeAssignmentExpressionEvaluator
 	        throws IllegalArgumentException
 	{
 		/*
-		 * Cannot used AttributeFQN class to handle metadata because AttributeAssignment Category is not required like in AttributeDesignator which is what the AttributeFQN is used for
+		 * Cannot use AttributeFQN class to handle metadata because AttributeAssignment Category is not required like in AttributeDesignator which is what the AttributeFQN is used for
 		 */
 		this.attributeId = jaxbAttrAssignExp.getAttributeId();
 		Preconditions.checkArgument(attributeId != null, "Undefined AttributeAssignment/AttributeId");
@@ -189,10 +186,10 @@ public final class AttributeAssignmentExpressionEvaluator
 		return new PepActionAttributeAssignment<>(this.attributeId, this.category, this.issuer, datatype, attrVal);
 	}
 
-	private <AV extends AttributeValue> List<PepActionAttributeAssignment<?>> newAttributeAssignments(final AttributeValueExpression<AV> expression, final EvaluationContext context)
+	private <AV extends AttributeValue> List<PepActionAttributeAssignment<?>> newAttributeAssignments(final AttributeValueExpression<AV> expression, final EvaluationContext individualDecisionContext, final Optional<EvaluationContext> mdpContext)
 	        throws IndeterminateEvaluationException
 	{
-		final Collection<AV> vals = expression.evaluate(context);
+		final Collection<AV> vals = expression.evaluate(individualDecisionContext, mdpContext);
 		LOGGER.debug("{}/Expression -> {}", this, vals);
 
 		/*
@@ -208,14 +205,16 @@ public final class AttributeAssignmentExpressionEvaluator
 	 * values in the bag. If the bag is empty, there shall be no AttributeAssignment from this AttributeAssignmentExpression
 	 *
 	 * @param context
-	 *            evaluation context
+	 *            Individual Decision evaluation context
+	 * @param mdpContext
+	 * 	 the context of the Multiple Decision request that the {@code context} belongs to if the Multiple Decision Profile is used.
 	 * @return non-null AttributeAssignments; empty if no AttributeValue resulting from evaluation of the Expression
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             if evaluation of the Expression in this context fails (Indeterminate)
 	 */
-	public Collection<PepActionAttributeAssignment<?>> evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+	public Collection<PepActionAttributeAssignment<?>> evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 	{
-		return newAttributeAssignments(this.attValExpr, context);
+		return newAttributeAssignments(this.attValExpr, context, mdpContext);
 	}
 
 	@Override

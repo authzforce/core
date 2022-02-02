@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,12 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.impl.expression;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.Optional;
-
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
@@ -38,12 +36,8 @@ import org.ow2.authzforce.core.pdp.api.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
-
 import javax.xml.bind.JAXBElement;
+import java.util.*;
 
 /**
  * Static utility methods pertaining to {@link ApplyType} evaluators.
@@ -83,9 +77,9 @@ public final class ApplyExpressions
 		}
 
 		@Override
-		public V evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+		public V evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 		{
-			return functionCall.evaluate(context);
+			return functionCall.evaluate(context, mdpContext);
 		}
 
 		@Override
@@ -104,12 +98,12 @@ public final class ApplyExpressions
 	private static <V extends Value> Expression<V> newInstance(final FunctionCall<V> functionCall, final String description)
 	{
 		/*
-		 * Check whether the Apply Expression is constant -> try to pre-evaluate the result statically (out of context, i.e. in null context), to prevent useless re-evaluation of the same thing
+		 * Check whether the 'Apply' Expression is constant -> try to pre-evaluate the result statically (out of context, i.e. in null context), to prevent useless re-evaluation of the same thing
 		 */
 		V staticEvalResult = null;
 		try
 		{
-			staticEvalResult = functionCall.evaluate(null);
+			staticEvalResult = functionCall.evaluate(null, Optional.empty());
 			LOGGER.debug("Apply[Description = " + description + "]: static evaluation OK -> expression is constant -> optimizing: using constant result as evaluation result");
 		} catch (final IndeterminateEvaluationException e)
 		{
@@ -181,7 +175,9 @@ public final class ApplyExpressions
 			final Expression<?> xpr0 = funcInputs.get(0);
 			if (xpr0 instanceof FunctionExpression)
 			{
-				final Datatype<?> subFuncReturnType = ((FunctionExpression) xpr0).getValue().get().getReturnType();
+				final Optional<Function> subFunc = ((FunctionExpression) xpr0).getValue();
+				assert subFunc.isPresent();
+				final Datatype<?> subFuncReturnType = subFunc.get().getReturnType();
 				if (subFuncReturnType.getTypeParameter().isPresent() || subFuncReturnType == StandardDatatypes.FUNCTION)
 				{
 					throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
@@ -213,7 +209,9 @@ public final class ApplyExpressions
 			throw new IllegalArgumentException("Invalid Apply[description=" + applyDesc + "]: Invalid Function: function ID '" + functionId + "' not supported");
 		}
 
-		final Function<?> function = functionExp.getValue().get();
+		final Optional<Function> func = functionExp.getValue();
+		assert func.isPresent();
+		final Function<?> function = func.get();
 
 		// check that the given inputs work for the function and get the optimized functionCall
 		final FunctionCall<?> funcCall;

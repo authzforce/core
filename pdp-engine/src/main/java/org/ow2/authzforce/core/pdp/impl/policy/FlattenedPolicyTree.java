@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,18 +17,17 @@
  */
 package org.ow2.authzforce.core.pdp.impl.policy;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyRefsMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterators;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Flattened view of a policy tree made of a root policy and, if any (e.g. the root policy is a XACML PolicySet enclosing Policy(Set)IdReferences), policies referenced from it. (This assumes that all
@@ -52,7 +51,7 @@ public final class FlattenedPolicyTree implements Iterable<PrimaryPolicyMetadata
 	 * @param rootPolicyMetadata
 	 *            root policy metadata
 	 * @param rootPolicyRefsMetadata
-	 *            (optional) root policy's extra metadata, if they is any
+	 *            (optional) root policy's extra metadata, if there is any
 	 */
 	public FlattenedPolicyTree(final PrimaryPolicyMetadata rootPolicyMetadata, final Optional<PolicyRefsMetadata> rootPolicyRefsMetadata)
 	{

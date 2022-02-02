@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,21 +17,16 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
-import java.util.Iterator;
-
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.EvaluationContext;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecision;
-import org.ow2.authzforce.core.pdp.api.ExtendedDecisions;
-import org.ow2.authzforce.core.pdp.api.PepAction;
-import org.ow2.authzforce.core.pdp.api.UpdatableList;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.BaseCombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgParameter;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
+import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Implements "on-permit-apply-second" policy combining algorithm from <a href="http://docs.oasis-open.org/xacml/xacml-3.0-combalgs/v1.0/xacml-3.0-combalgs-v1.0.html">XACML 3.0 Additional Combining
@@ -52,7 +47,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 	{
 		private interface ThirdPolicyEvaluator
 		{
-			ExtendedDecision evaluate(EvaluationContext ctx, final DecisionResult decisionResult0, final UpdatableList<PepAction> outPepActions,
+			ExtendedDecision evaluate(EvaluationContext ctx, final Optional<EvaluationContext> mdpContext, final DecisionResult decisionResult0, final UpdatableList<PepAction> outPepActions,
 			        final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList);
 		}
 
@@ -66,10 +61,10 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 			}
 
 			@Override
-			public ExtendedDecision evaluate(final EvaluationContext ctx, final DecisionResult decisionResult0, final UpdatableList<PepAction> outPepActions,
+			public ExtendedDecision evaluate(final EvaluationContext ctx, final Optional<EvaluationContext> mdpContext, final DecisionResult decisionResult0, final UpdatableList<PepAction> outPepActions,
 			        final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 			{
-				final DecisionResult decisionResult2 = policyEvaluator.evaluate(ctx);
+				final DecisionResult decisionResult2 = policyEvaluator.evaluate(ctx, mdpContext);
 				final DecisionType decision0 = decisionResult0.getDecision();
 				switch (decisionResult2.getDecision())
 				{
@@ -87,7 +82,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 						 * Obligation/advice from decision2 are added whether it is Permit/Deny (switch fall-through)
 						 */
 						outPepActions.addAll(decisionResult2.getPepActions());
-					case INDETERMINATE: // all "applicable" cases (switch blocks fall trough from DENY case)
+					case INDETERMINATE: // all "applicable" cases (switch blocks fall through from DENY case)
 						if (outApplicablePolicyIdList != null)
 						{
 							if (decision0 != DecisionType.NOT_APPLICABLE)
@@ -106,7 +101,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 			}
 		}
 
-		private static final ThirdPolicyEvaluator NO_THIRD_POLICY_EVALUATOR = (ctx, decisionResult0, outPepActions, outApplicablePolicyIdList) -> ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
+		private static final ThirdPolicyEvaluator NO_THIRD_POLICY_EVALUATOR = (ctx, mdpCtx, decisionResult0, outPepActions, outApplicablePolicyIdList) -> ExtendedDecisions.SIMPLE_NOT_APPLICABLE;
 
 		private final PolicyEvaluator policyEvaluator0;
 		private final PolicyEvaluator policyEvaluator1;
@@ -137,17 +132,17 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 		}
 
 		@Override
-		public ExtendedDecision evaluate(final EvaluationContext context, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
+		public ExtendedDecision evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext, final UpdatableList<PepAction> outPepActions, final UpdatableList<PrimaryPolicyMetadata> outApplicablePolicyIdList)
 		{
 			assert outPepActions != null;
 			// Use same variable names as in profile spec for decisions (decision0, decision1, decision2)
-			final DecisionResult decisionResult0 = policyEvaluator0.evaluate(context);
+			final DecisionResult decisionResult0 = policyEvaluator0.evaluate(context, mdpContext);
 			final DecisionType decision0 = decisionResult0.getDecision();
 			switch (decision0)
 			{
 				case PERMIT:
 					// result from the next child
-					final DecisionResult decisionResult1 = policyEvaluator1.evaluate(context);
+					final DecisionResult decisionResult1 = policyEvaluator1.evaluate(context, mdpContext);
 					switch (decisionResult1.getDecision())
 					{
 						case PERMIT:
@@ -159,7 +154,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 						case DENY:
 							// obligation/advice from decision1 are added
 							outPepActions.addAll(decisionResult1.getPepActions());
-						case INDETERMINATE: // all "applicable" cases (switch blocks fall trough from PERMIT case)
+						case INDETERMINATE: // all "applicable" cases (switch blocks fall through from PERMIT case)
 							if (outApplicablePolicyIdList != null)
 							{
 								outApplicablePolicyIdList.addAll(decisionResult0.getApplicablePolicies());
@@ -189,7 +184,7 @@ public class TestOnPermitApplySecondCombiningAlg extends BaseCombiningAlg<Policy
 					}
 
 				default:
-					return thirdPolicyEvaluator.evaluate(context, decisionResult0, outPepActions, outApplicablePolicyIdList);
+					return thirdPolicyEvaluator.evaluate(context, mdpContext, decisionResult0, outPepActions, outApplicablePolicyIdList);
 			}
 		}
 	}

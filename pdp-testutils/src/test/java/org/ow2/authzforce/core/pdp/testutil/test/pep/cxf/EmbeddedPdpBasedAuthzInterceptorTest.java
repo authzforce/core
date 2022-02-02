@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,16 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.pep.cxf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.net.URL;
-
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
-
 import org.apache.coheigea.cxf.sts.xacml.common.STSServer;
 import org.apache.coheigea.cxf.sts.xacml.common.TokenTestUtils;
 import org.apache.cxf.Bus;
@@ -36,6 +26,13 @@ import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.testutil.common.AbstractBusClientServerTestBase;
 import org.example.contract.doubleit.DoubleItPortType;
 import org.junit.BeforeClass;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Service;
+import java.net.URL;
+
+import static org.junit.Assert.*;
 
 /**
  * This test is an adaptation of <a href="https://github.com/coheigea/testcases/tree/master/apache/cxf/cxf-sts-xacml">cxf-sts-xacml test</a> for AuthzForce PDP. The client authenticates to the STS

@@ -2,7 +2,7 @@
 <!-- Copyright (C) 2013-2015 Thales Services. All rights reserved. No warranty, explicit or implicit, provided. -->
 <!-- Schema version is same as earliest compatible version of authzforce-ce-core -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://authzforce.github.io/core/xmlns/test/3" xmlns="http://authzforce.github.io/core/xmlns/test/3" xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"
-   xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" elementFormDefault="qualified" attributeFormDefault="unqualified" version="3.5.9">
+           xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" elementFormDefault="qualified" version="3.5.9">
    <xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" />
    <xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext/3" />
    <xs:annotation>
@@ -20,7 +20,7 @@
       <xs:complexContent>
          <xs:extension base="authz-ext:AbstractAttributeProvider">
             <xs:sequence>
-               <xs:element ref="xacml:Attributes" minOccurs="1" maxOccurs="10" />
+               <xs:element ref="xacml:Attributes" maxOccurs="10" />
             </xs:sequence>
          </xs:extension>
       </xs:complexContent>
@@ -56,14 +56,14 @@
             <xs:attribute name="dbName" use="required">
                <xs:simpleType>
                   <xs:restriction base="xs:string">
-                     <xs:minLength value="1"></xs:minLength>
+                     <xs:minLength value="1"/>
                   </xs:restriction>
                </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="collectionName" use="required">
                <xs:simpleType>
                   <xs:restriction base="xs:string">
-                     <xs:minLength value="1"></xs:minLength>
+                     <xs:minLength value="1"/>
                   </xs:restriction>
                </xs:simpleType>
             </xs:attribute>

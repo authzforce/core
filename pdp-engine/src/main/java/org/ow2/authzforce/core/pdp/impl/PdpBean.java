@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,20 +17,16 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map.Entry;
-
-import org.ow2.authzforce.core.pdp.api.DecisionRequest;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestBuilder;
-import org.ow2.authzforce.core.pdp.api.DecisionResult;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.PdpEngine;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.SystemPropertyUtils;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * JavaBean for the PDP to be used/called as JNDI resource.
@@ -162,11 +158,11 @@ public final class PdpBean implements PdpEngine
 	}
 
 	@Override
-	public <INDIVIDUAL_DECISION_REQUEST extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQUEST, ? extends DecisionResult>> evaluate(final List<INDIVIDUAL_DECISION_REQUEST> requests)
+	public <INDIVIDUAL_DECISION_REQUEST extends DecisionRequest> Collection<Entry<INDIVIDUAL_DECISION_REQUEST, ? extends DecisionResult>> evaluate(final List<INDIVIDUAL_DECISION_REQUEST> requests, EvaluationContext mdpContext)
 			throws IndeterminateEvaluationException
 	{
 		checkInit();
-		return pdp.evaluate(requests);
+		return pdp.evaluate(requests, mdpContext);
 	}
 
 	@Override

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Testing parameter 'maxPolicySetRefDepth' -->
-<pdp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://authzforce.github.io/core/xmlns/pdp/7" version="7.1">
+<pdp xmlns="http://authzforce.github.io/core/xmlns/pdp/8"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     version="8.0">
    <attributeDatatype>urn:oasis:names:tc:xacml:3.0:data-type:dnsName-value</attributeDatatype>
-   <function>urn:oasis:names:tc:xacml:3.0:function:dnsName-value-equal</function>	
+   <function>urn:oasis:names:tc:xacml:3.0:function:dnsName-value-equal</function>
    <policyProvider id="refPolicyprovider" xsi:type="StaticPolicyProvider">
-		<policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
-	</policyProvider>
+      <policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
+   </policyProvider>
 </pdp>
-

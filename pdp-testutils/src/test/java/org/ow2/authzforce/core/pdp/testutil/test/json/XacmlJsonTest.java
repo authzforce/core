@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,14 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.json;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import org.everit.json.schema.ValidationException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.io.xacml.json.BaseXacmlJsonResultPostprocessor;
-
 import org.ow2.authzforce.core.pdp.testutil.TestUtils;
 import org.ow2.authzforce.xacml.json.model.LimitsCheckingJSONObject;
 import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
@@ -38,7 +36,10 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -339,7 +340,7 @@ public abstract class XacmlJsonTest
                     LOGGER.debug("Response that is received from the PDP :  {}", actualResponse);
                 }
 
-                assertNormalizedEquals("Test failed for directory "+ testDirectoryPath.toString(), expectedResponse, actualResponse);
+                assertNormalizedEquals("Test failed for directory "+ testDirectoryPath, expectedResponse, actualResponse);
             }
         }
         catch (final IllegalArgumentException e)
