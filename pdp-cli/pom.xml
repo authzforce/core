@@ -40,7 +40,10 @@
       <dependency>
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
-         <version>7.5</version>
+         <!-- v7.5 not yet compatible with maven Surefire plugin!
+         https://groups.google.com/g/testng-users/c/ESLiK8xSomc?pli=1
+         -->
+         <version>6.14.3</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -184,7 +187,7 @@
                   <property>
                      <name>surefire.testng.verbose</name>
                      <!-- verbosity level from 0 to 10 (10 is the most detailed), or -1 for debug More info: http://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html -->
-                     <value>2</value>
+                     <value>3</value>
                   </property>
                </properties>
             </configuration>
