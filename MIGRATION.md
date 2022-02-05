@@ -1,7 +1,7 @@
 ## Migration from version 17.x to 18.x
 - You have to upgrade your PDP configuration(s), e.g. `pdp.xml` files, using XSLT stylesheet [pdp-xsd-v7.xsl](migration/pdp-xsd-v7.xsl) and any XSLT engine supporting XSLT 2.0, e.g. [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml), e.g. with this command:
 ```shell
-$ PDP_XML_FILE="pdp-testutils/src/test/resources.json/other/CustomJsonObjectDatatype/pdp.xml"
+$ PDP_XML_FILE="pdp.xml"
 $ mv $PDP_XML_FILE{,.old}
 $  java -jar ~/.m2/repository/net/sf/saxon/Saxon-HE/10.3/Saxon-HE-10.3.jar -xsl:migration/pdp-xsd-v7.xsl -s:$PDP_XML_FILE.old -o:$PDP_XML_FILE
 ```
