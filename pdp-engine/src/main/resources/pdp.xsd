@@ -1102,4 +1102,31 @@
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+    <xs:complexType name="XacmlVarBasedAttributeProviderDescriptor">
+        <xs:annotation>
+            <xs:documentation>
+                <p>
+                    AttributeProvider that provides attributes based on XACML VariableDefinitions, allowing to use XACML Variables like AttributeDesignators, typically in Match elements.
+                    This Attribute Provider provides any attribute in the category designated by 'categoryId' by interpreting it as a XACML VariableReference, and the AttributeId as VariableId (Issuer ignored).
+                    The value is returned as a singleton bag containing the Variable value as singleton value (or empty Bag if no such Variable defined).
+                </p>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="authz-ext:AbstractAttributeProvider">
+                <xs:sequence>
+                    <xs:element name="category" type="xs:string" default="urn:ow2:authzforce:attribute-category:vars">
+                        <xs:annotation>
+                            <xs:documentation>
+                                <p>
+                                    Defines the attribute Category that is supported by this Attribute Provider, i.e.
+                                    any AttributeDesignator or AttributeSelector/ContextSelectorId with this Category is handled exactly like a VariableReference and the AttributeId used as VariableId (Issuer ignored).
+                                </p>
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
 </xs:schema>

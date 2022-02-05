@@ -171,10 +171,18 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 	}
 
 	/*
-	 * AttributeDesignator Provider modules by supported/provided attribute name (category, issuer, AttributeId)
+	 * Attribute Providers by supported/provided attribute name (category, issuer, AttributeId), supporting only specific attribute names
 	 */
 	// not-null
 	private final ListMultimap<AttributeFqn, NamedAttributeProvider> namedAttProvidersByAttFqn;
+
+	/*
+	 * Attribute Providers by supported/provided attribute category, supporting any attribute in the given category
+	 * E.g. the XacmlVariableBasedAttributeProvider provide any attribute in a given defined category if a XACML VariableId matching the AttributeId exists
+	 */
+	// not null
+	private final ListMultimap<String, NamedAttributeProvider> categoryWideNamedAttProvidersByCategory;
+
 	// not-null
 	private final Set<CloseableNamedAttributeProvider> closeableProviders;
 
@@ -207,7 +215,8 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 		Preconditions.checkArgument(attributeFactory != null, "No input AttributeValue factory");
 
 		// attributeProviderFactories != null && attributeProviderFactories.size() >= 1
-		final ListMultimap<AttributeFqn, NamedAttributeProvider> modulesByAttributeId = ArrayListMultimap.create();
+		final ListMultimap<AttributeFqn, NamedAttributeProvider> mutableListOfAttNameSpecificProvidersByAttName = ArrayListMultimap.create();
+		final ListMultimap<String, NamedAttributeProvider> mutableListOfCategoryWideProvidersByAttCategory = ArrayListMultimap.create();
 		final int moduleCount = attributeProviderFactories.size();
 		final Set<CloseableNamedAttributeProvider> mutableSubProviderSet = HashCollections.newUpdatableSet(moduleCount);
 		final List<NamedAttributeProvider> mutableMdpReqBeginners = new ArrayList<>();
@@ -239,7 +248,7 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 				} else
 				{
 					// requiredAttrs != null && requiredAttrs.size() >= 1
-					final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> immutableCopyOfAttrProviderModsByAttrId = ImmutableListMultimap.copyOf(modulesByAttributeId);
+					final ImmutableListMultimap<AttributeFqn, NamedAttributeProvider> immutableCopyOfAttrProviderModsByAttrId = ImmutableListMultimap.copyOf(mutableListOfAttNameSpecificProvidersByAttName);
 					depAttrProvider = new CompositeMultiNamedAttributeProvider(ImmutableSet.copyOf(requiredAttrs), strictAttributeIssuerMatch, immutableCopyOfAttrProviderModsByAttrId);
 				}
 				/*
@@ -267,13 +276,23 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 
 				for (final AttributeDesignatorType attrDesignator : providedAttributes)
 				{
-					final AttributeFqn attrGUID = AttributeFqns.newInstance(attrDesignator);
-					/*
-					 * We allow multiple modules supporting the same attribute designator (as fall-back: if one does not find any value, the next one comes in)
-					 */
-					modulesByAttributeId.put(attrGUID, subProvider);
+					final String providedAttCat = attrDesignator.getCategory();
+					Preconditions.checkArgument(providedAttCat != null && !providedAttCat.isEmpty(), "Invalid AttributeDesignator returned by the attribute provider <"+attProviderFactory+">'s getProvidedAttribute() method: null/empty Category ");
+					final String providedAttId = attrDesignator.getAttributeId();
+					if(providedAttId == null) {
+						// Category-wide attribute provider (any AttributeId in the given category providedAttCat)
+						mutableListOfCategoryWideProvidersByAttCategory.put(providedAttCat, subProvider);
+					}else
+					{
+
+						final AttributeFqn providedAttName = AttributeFqns.newInstance(providedAttCat, Optional.ofNullable(attrDesignator.getIssuer()), providedAttId);
+						/*
+						 * We allow multiple modules supporting the same attribute designator (as fall-back: if one does not find any value, the next one comes in)
+						 */
+						mutableListOfAttNameSpecificProvidersByAttName.put(providedAttName, subProvider);
+					}
 				}
-				// modulesByAttributeId.size() >= 1
+				// mutableListOfAttNameSpecificProvidersByAttName.size() >= 1
 			} catch (final IllegalArgumentException e)
 			{
 				close(mutableSubProviderSet);
@@ -281,9 +300,10 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 			}
 		}
 
-		// modulesByAttributeId.size() >= 1 && mutableSubProviderSet.size() >= 1
-		assert !modulesByAttributeId.isEmpty() && !mutableSubProviderSet.isEmpty();
-		this.namedAttProvidersByAttFqn = ImmutableListMultimap.copyOf(modulesByAttributeId);
+		// mutableListOfAttNameSpecificProvidersByAttName.size() >= 1 && mutableSubProviderSet.size() >= 1
+		assert !mutableListOfAttNameSpecificProvidersByAttName.isEmpty() && !mutableSubProviderSet.isEmpty();
+		this.namedAttProvidersByAttFqn = ImmutableListMultimap.copyOf(mutableListOfAttNameSpecificProvidersByAttName);
+		this.categoryWideNamedAttProvidersByCategory = ImmutableListMultimap.copyOf(mutableListOfCategoryWideProvidersByAttCategory);
 		this.closeableProviders = HashCollections.newImmutableSet(mutableSubProviderSet);
 		this.mdpReqBeginners = ImmutableList.copyOf(mutableMdpReqBeginners);
 		this.individualReqBeginners = ImmutableList.copyOf(mutableIndividualReqBeginners);
@@ -292,10 +312,14 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 	/**
 	 * Get AttributeProviders for a given attribute
 	 * @param attributeName attribute name
-	 * @return providers
+	 * @return providers, empty list if there is none
 	 */
 	public List<NamedAttributeProvider> getProviders(final AttributeFqn attributeName) {
-		return this.namedAttProvidersByAttFqn.get(attributeName);
+		/*
+		If there is no provider for the full attribute name (Category/Issuer/Id), try to get providers for the same attribute category (category-wide, i.e. any attribute in the category)
+		 */
+		final List<NamedAttributeProvider> attNameMatchingProviders = this.namedAttProvidersByAttFqn.get(attributeName);
+		return attNameMatchingProviders.isEmpty()? this.categoryWideNamedAttProvidersByCategory.get(attributeName.getCategory()): attNameMatchingProviders;
 	}
 
 	/**

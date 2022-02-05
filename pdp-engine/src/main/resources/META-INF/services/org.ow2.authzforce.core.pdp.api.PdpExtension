@@ -1,5 +1,6 @@
 org.ow2.authzforce.core.pdp.impl.policy.CoreStaticPolicyProvider$Factory
 org.ow2.authzforce.core.pdp.impl.StandardEnvironmentAttributeProvider$Factory
+org.ow2.authzforce.core.pdp.impl.XacmlVariableBasedAttributeProvider$Factory
 org.ow2.authzforce.core.pdp.impl.io.SingleDecisionXacmlJaxbRequestPreprocessor$LaxVariantFactory
 org.ow2.authzforce.core.pdp.impl.io.SingleDecisionXacmlJaxbRequestPreprocessor$StrictVariantFactory
 org.ow2.authzforce.core.pdp.impl.io.MultiDecisionXacmlJaxbRequestPreprocessor$LaxVariantFactory
