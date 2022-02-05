@@ -6,6 +6,37 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 18.0.0
+### Changed  
+- **Changed the PDP configuration XML schema (XSD): refer to [MIGRATION.md](MIGRATION.md) for migrating your PDP configurations (e.g. `pdp.xml`) to the new schema**:
+    - XML namespace changed to `http://authzforce.github.io/core/xmlns/pdp/8`
+    - `useStandardDatatypes` replaced with `standardDatatypesEnabled`;
+    - `useStandardFunctions` replaced with `standardFunctionsEnabled` 
+    - `useStandardCombiningAlgorithms` replaced with `standardCombiningAlgorithmsEnabled`
+    - `enableXPath` replaced with `xPathEnabled`
+    - `standardEnvAttributeSource` replaced with `standardAttributeProvidersEnabled` and new `attributeProvider` type `StdEnvAttributeProviderDescriptor`
+  
+- `authzforce-ce-core-pdp-api` upgraded to 19.0.0: **APIs changed**:
+
+    - For better support of Multiple Decision profile, request evaluation methods of the following interfaces  - including PDP extensions - now take an extra optional parameter (`Optional<EvaluationContext>`) for the Multiple Decision Request context: `PdpEngine`, `CombiningAlg`, `Function`, `NamedAttributeProvider`, `PolicyProvider`.
+    - For better support of standard `current-dateTime/date/time` attributes and better request logging, `DecisionRequest` and `EvaluationContext` interfaces have a new method `getCreationTimestamp()` that must provide the date/time of the request/context creation.
+    - `EvaluationContext`: replaced `putNamedAttributeValueIfAbsent(AttributeFqn, AttributeBag)` with more generic `putNamedAttributeValue(AttributeFqn, AttributeBag, boolean override)`
+  
+- [GH-61]: fixed a limitation of XACML 3.0 standard `Match` not allowing VariableReferences: AuthzForce Core now supports XACML `VariableReference` equivalents in `Match` elements through special `AttributeDesignators`, i.e. by enabling the new built-in Attribute Provider (`XacmlVariableBasedAttributeProvider` class) with an `attributeProvider` element of the new type `XacmlVarBasedAttributeProviderDescriptor` in PDP configuration, any `AttributeDesignator`s with `Category` matching the `attributeProvider/@category` in PDP configuration is handled as a `VariableReference` and the `AttributeId` is handled as the `VariableId`.
+- [GH-62]: Refactored the provisioning of standard environment attributes `current-dateTime`, `current-date` and `current-time`:
+  - Now implemented by a new built-in AttributeProvider (`StandardEnvironmentAttributeProvider` class) which can be customized (to override or not the request values) in the PDP configuration with an `attributeProvider` of type `StdEnvAttributeProviderDescriptor`.
+- `authzforce-ce-core-pdp-testutils` module: upgraded jongo dependency to 1.5.0, mongo-java-driver to 3.12.10
+- `authzforce-ce-core-pdp-cli` module: upgraded picocli to 4.6.2, testng to 7.5
+- `authzforce-ce-parent` upgraded to 8.1.0
+    
+### Added
+- Attribute Provider (`NamedAttributeProvider`) interface: added 2 new methods for better support of the Multiple Decision Profile (all implemented by default to do nothing):
+  - `beginMultipleDecisionRequest(EvaluationContext mdpContext)`: for special processing in the context of the MDP request (before corresponding Individual Decision requests are evaluated)
+  - `supportsBeginMultipleDecisionRequest()`: indicates whether the Attribute Provider implements `beginMultipleDecisionRequest()` method and therefore needs the PDP engine to call it when a new MDP request is evaluated
+  - `beginIndividualDecisionRequest(EvaluationContext individualDecisionContext, Optional<EvaluationContext> mdpContext)`: for special processing in the context of an Individual Decision request, before it is evaluated against policies (before the `get(attribute)` method is ever called for the individual decision request).
+  - `supportsBeginIndividualDecisionRequest()`: indicates whether the Attribute Provider implements `beginIndividualDecisionRequest()` method and therefore needs the PDP engine to call it when a new individual decision request is evaluated.
+
+
 ## 17.1.2
 ### Fixed
 - CVE-2021-22696 and CVE-2021-3046 fixed by upgrading **authzforce-ce-parent to v8.0.3**
