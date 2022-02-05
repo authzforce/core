@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pdp xmlns="http://authzforce.github.io/core/xmlns/pdp/8"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     clientRequestErrorVerbosityLevel="10"
+     version="8.0">
+   <policyProvider id="refPolicyprovider" xsi:type="StaticPolicyProvider">
+      <policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
+   </policyProvider>
+   <ioProcChain>
+      <requestPreproc>urn:ow2:authzforce:feature:pdp:request-preproc:xacml-xml:multiple:repeated-attribute-categories-lax</requestPreproc>
+   </ioProcChain>
+</pdp>

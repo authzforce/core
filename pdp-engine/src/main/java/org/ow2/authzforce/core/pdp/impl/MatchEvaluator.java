@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,15 +17,11 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.Arrays;
-import java.util.List;
-
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -36,6 +32,10 @@ import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.impl.func.StandardFunction;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * XACML Match evaluator. This is the part of the Target that actually evaluates whether the specified attribute values in the Target match the corresponding attribute values in the request context.
@@ -114,7 +114,9 @@ public final class MatchEvaluator
 			throw new IllegalArgumentException("Unsupported function '" + StandardFunction.ANY_OF.getId() + "' required for Match evaluation");
 		}
 
-		final Function<BooleanValue> anyOfFunc = funcExp.getValue().get();
+		final Optional<Function> optFunc = funcExp.getValue();
+		assert optFunc.isPresent();
+		final Function<BooleanValue> anyOfFunc = optFunc.get();
 		final List<Expression<?>> anyOfFuncInputs = Arrays.asList(matchFunction, attrValueExpr, bagExpression);
 		try
 		{
@@ -130,17 +132,19 @@ public final class MatchEvaluator
 	 * Determines whether this <code>Match</code> matches the input request (whether it is applicable)
 	 *
 	 * @param context
-	 *            the evaluation context
+	 *            the Individual Decision evaluation context
+	 * @param mdpContext
+	 * 	 the context of the Multiple Decision request that the {@code context} belongs to if the Multiple Decision Profile is used.
 	 * @return true iff the context matches
 	 * @throws org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException
 	 *             error occurred evaluating the Match element in this evaluation {@code context}
 	 */
-	public boolean match(final EvaluationContext context) throws IndeterminateEvaluationException
+	public boolean match(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
 	{
 		final BooleanValue anyOfFuncCallResult;
 		try
 		{
-			anyOfFuncCallResult = anyOfFuncCall.evaluate(context);
+			anyOfFuncCallResult = anyOfFuncCall.evaluate(context, mdpContext);
 		}
 		catch (final IndeterminateEvaluationException e)
 		{

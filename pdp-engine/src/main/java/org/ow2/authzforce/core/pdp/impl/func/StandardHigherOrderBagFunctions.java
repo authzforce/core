@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,16 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Optional;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -35,13 +25,9 @@ import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.HigherOrderBagFunction;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.BagDatatype;
-import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.Value;
+import org.ow2.authzforce.core.pdp.api.value.*;
+
+import java.util.*;
 
 /**
  * Set of higher-order bag functions
@@ -106,15 +92,15 @@ final class StandardHigherOrderBagFunctions
                 this.errorEvalArg2Message = "Function '" + functionId + "': Error evaluating arg #2";
             }
 
-            protected abstract BooleanValue evaluate(Bag<?> bag0, Bag<?> bag1, EvaluationContext context) throws IndeterminateEvaluationException;
+            protected abstract BooleanValue evaluate(final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException;
 
             @Override
-            public final BooleanValue evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+            public final BooleanValue evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
             {
                 final Bag<?> bag0;
                 try
                 {
-                    bag0 = bagArgExpr0.evaluate(context);
+                    bag0 = bagArgExpr0.evaluate(context, mdpContext);
                 } catch (final IndeterminateEvaluationException e)
                 {
                     throw new IndeterminateEvaluationException(errorEvalArg1Message, e.getStatusCode());
@@ -132,7 +118,7 @@ final class StandardHigherOrderBagFunctions
                 final Bag<?> bag1;
                 try
                 {
-                    bag1 = bagArgExpr1.evaluate(context);
+                    bag1 = bagArgExpr1.evaluate(context, mdpContext);
                 } catch (final IndeterminateEvaluationException e)
                 {
                     throw new IndeterminateEvaluationException(errorEvalArg2Message, e.getStatusCode());
@@ -143,7 +129,7 @@ final class StandardHigherOrderBagFunctions
                     return BooleanValue.FALSE;
                 }
 
-                return evaluate(bag0, bag1, context);
+                return evaluate(bag0, bag1, context, mdpContext);
             }
 
             @Override
@@ -154,7 +140,7 @@ final class StandardHigherOrderBagFunctions
 
         }
 
-        protected abstract BooleanValue evaluate(FirstOrderFunctionCall<BooleanValue> subFunctionCall, Bag<?> bag0, Bag<?> bag1, EvaluationContext context) throws IndeterminateEvaluationException;
+        protected abstract BooleanValue evaluate(final FirstOrderFunctionCall<BooleanValue> subFunctionCall, final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException;
 
         @Override
         protected final FunctionCall<BooleanValue> createFunctionCallFromSubFunction(final FirstOrderFunction<BooleanValue> subFunc, final List<Expression<?>> inputsAfterSubFunc)
@@ -162,7 +148,7 @@ final class StandardHigherOrderBagFunctions
 
             for (Expression<?> expression : inputsAfterSubFunc)
             {
-                // all must be bag
+                // all must be bags
                 if (expression.getReturnType().getTypeParameter().isEmpty())
                 {
                     throw invalidLastArgTypeException;
@@ -175,9 +161,9 @@ final class StandardHigherOrderBagFunctions
             {
 
                 @Override
-                protected BooleanValue evaluate(final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context) throws IndeterminateEvaluationException
+                protected BooleanValue evaluate(final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
                 {
-                    return BooleanHigherOrderTwoBagFunction.this.evaluate(subFuncCall, bag0, bag1, context);
+                    return BooleanHigherOrderTwoBagFunction.this.evaluate(subFuncCall, bag0, bag1, context, mdpContext);
                 }
             };
         }
@@ -240,7 +226,7 @@ final class StandardHigherOrderBagFunctions
             }
 
             /**
-             * Evaluates the function call. The evaluation combines the results of all <i>eval<sub>i</sub></i> for <i>i</i> in [0..p-1], where <i>eval<sub>i</sub></i> is the evaluation of the
+             * Evaluates the function call. The evaluation combines the results of all <i>eval<sub>i</sub></i> for <i>i</i> in <pre>[0..p-1]</pre>, where <i>eval<sub>i</sub></i> is the evaluation of the
              * sub-function (in this higher-order function call, i.e. first arg) with the following arguments, except for the one that is a bag, we take the i-th value in the bag as actual
              * sub-function arg, with p the size of the bag.
              *
@@ -249,21 +235,21 @@ final class StandardHigherOrderBagFunctions
              * @return result combined result (depending on the implementation)
              * @throws IndeterminateEvaluationException if any error occurred during evaluation
              */
-            protected abstract RETURN evaluate(Bag<?> bagArg, EvaluationContext context) throws IndeterminateEvaluationException;
+            protected abstract RETURN evaluate(final Bag<?> bagArg, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException;
 
             @Override
-            public final RETURN evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+            public final RETURN evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
             {
                 final Bag<?> bagArg;
                 try
                 {
-                    bagArg = Expressions.eval(bagArgExpr, context, bagArgDatatype);
+                    bagArg = Expressions.eval(bagArgExpr, context, mdpContext, bagArgDatatype);
                 } catch (final IndeterminateEvaluationException e)
                 {
                     throw new IndeterminateEvaluationException(errorEvalBagArgMsg, e.getStatusCode(), e);
                 }
 
-                return evaluate(bagArg, context);
+                return evaluate(bagArg, context, mdpContext);
             }
 
             @Override
@@ -409,14 +395,14 @@ final class StandardHigherOrderBagFunctions
             {
 
                 @Override
-                protected BooleanValue evaluate(final Bag<?> lastArgBag, final EvaluationContext context) throws IndeterminateEvaluationException
+                protected BooleanValue evaluate(final Bag<?> lastArgBag, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
                 {
                     for (final AttributeValue attrVal : lastArgBag)
                     {
                         final BooleanValue subResult;
                         try
                         {
-                            subResult = subFuncCall.evaluate(context, attrVal);
+                            subResult = subFuncCall.evaluate(context, mdpContext, attrVal);
                         } catch (final IndeterminateEvaluationException e)
                         {
                             throw new IndeterminateEvaluationException(subFuncCallWithLastArgErrMsgPrefix + attrVal, e.getStatusCode(), e);
@@ -551,7 +537,7 @@ final class StandardHigherOrderBagFunctions
             }
 
             private BooleanValue eval(final Iterator<Expression<?>> argExpressionsAfterSubFuncIterator, final ListIterator<Value> argValuesAfterSubFuncIterator,
-                                      final Deque<AttributeValue> subFuncArgsStack, final EvaluationContext context) throws IndeterminateEvaluationException
+                                      final Deque<AttributeValue> subFuncArgsStack, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
             {
                 final Value argVal;
                 if (argExpressionsAfterSubFuncIterator.hasNext())
@@ -559,7 +545,7 @@ final class StandardHigherOrderBagFunctions
                     // we are still evaluating argument expressions for the first time
                     try
                     {
-                        argVal = argExpressionsAfterSubFuncIterator.next().evaluate(context);
+                        argVal = argExpressionsAfterSubFuncIterator.next().evaluate(context, mdpContext);
 
                     } catch (final IndeterminateEvaluationException e)
                     {
@@ -591,7 +577,7 @@ final class StandardHigherOrderBagFunctions
                     final AttributeValue[] subFuncArgValues = subFuncArgsStack.toArray(new AttributeValue[subFuncArity]);
                     try
                     {
-                        return subFuncCall.evaluate(context, subFuncArgValues);
+                        return subFuncCall.evaluate(context, mdpContext, subFuncArgValues);
                     } catch (final IndeterminateEvaluationException e)
                     {
                         throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + subFuncArgsStack, e.getStatusCode(), e);
@@ -618,7 +604,7 @@ final class StandardHigherOrderBagFunctions
                     for (final AttributeValue argBagVal : argBag)
                     {
                         subFuncArgsStack.add(argBagVal);
-                        final BooleanValue subResult = eval(argExpressionsAfterSubFuncIterator, argValuesAfterSubFuncIterator, subFuncArgsStack, context);
+                        final BooleanValue subResult = eval(argExpressionsAfterSubFuncIterator, argValuesAfterSubFuncIterator, subFuncArgsStack, context, mdpContext);
                         if (subResult.getUnderlyingValue())
                         {
                             return BooleanValue.TRUE;
@@ -636,7 +622,7 @@ final class StandardHigherOrderBagFunctions
                     // add it to the sub-function call's argument stack
                     subFuncArgsStack.add((AttributeValue) argVal);
                     // evaluate with the new arg stack
-                    final BooleanValue subResult = eval(argExpressionsAfterSubFuncIterator, argValuesAfterSubFuncIterator, subFuncArgsStack, context);
+                    final BooleanValue subResult = eval(argExpressionsAfterSubFuncIterator, argValuesAfterSubFuncIterator, subFuncArgsStack, context, mdpContext);
                     if (subResult.getUnderlyingValue())
                     {
                         return BooleanValue.TRUE;
@@ -657,7 +643,7 @@ final class StandardHigherOrderBagFunctions
             }
 
             @Override
-            public BooleanValue evaluate(final EvaluationContext context) throws IndeterminateEvaluationException
+            public BooleanValue evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
             {
                 /*
                  * For each input expression coming from inputsAfterSubFunc, the evaluation result will be added to the following list, to avoid evaluating the same expression again as each one will
@@ -674,7 +660,7 @@ final class StandardHigherOrderBagFunctions
 
                 // the subsequent logic is put in separated method because we need to call it
                 // recursively over nonFirstArgExpsIterator
-                return eval(inputsAfterSubFunc.iterator(), inputsAfterSubFuncEvalResults.listIterator(), subFuncArgsStack, context);
+                return eval(inputsAfterSubFunc.iterator(), inputsAfterSubFuncEvalResults.listIterator(), subFuncArgsStack, context, mdpContext);
             }
 
             @Override
@@ -772,7 +758,7 @@ final class StandardHigherOrderBagFunctions
         }
 
         @Override
-        protected BooleanValue evaluate(final FirstOrderFunctionCall<BooleanValue> subFunctionCall, final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context)
+        protected BooleanValue evaluate(final FirstOrderFunctionCall<BooleanValue> subFunctionCall, final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
                 throws IndeterminateEvaluationException
         {
             final AttributeValue[] subFuncArgs = new AttributeValue[2];
@@ -786,7 +772,7 @@ final class StandardHigherOrderBagFunctions
                     final BooleanValue subResult;
                     try
                     {
-                        subResult = subFunctionCall.evaluate(context, subFuncArgs);
+                        subResult = subFunctionCall.evaluate(context, mdpContext, subFuncArgs);
                     } catch (final IndeterminateEvaluationException e)
                     {
                         throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e.getStatusCode());
@@ -854,7 +840,7 @@ final class StandardHigherOrderBagFunctions
         }
 
         @Override
-        protected BooleanValue evaluate(final FirstOrderFunctionCall<BooleanValue> subFunctionCall, final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context)
+        protected BooleanValue evaluate(final FirstOrderFunctionCall<BooleanValue> subFunctionCall, final Bag<?> bag0, final Bag<?> bag1, final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
                 throws IndeterminateEvaluationException
         {
             final AttributeValue[] subFuncArgs = new AttributeValue[2];
@@ -868,7 +854,7 @@ final class StandardHigherOrderBagFunctions
                     final BooleanValue subResult;
                     try
                     {
-                        subResult = subFunctionCall.evaluate(context, subFuncArgs);
+                        subResult = subFunctionCall.evaluate(context, mdpContext, subFuncArgs);
                     } catch (final IndeterminateEvaluationException e)
                     {
                         throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e.getStatusCode());

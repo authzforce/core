@@ -3,8 +3,8 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-		<version>17.1.2</version>
-		<relativePath>..</relativePath>
+		<version>18.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>authzforce-ce-core-pdp-engine</artifactId>
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -83,7 +83,7 @@
 				<artifactId>dependency-check-maven</artifactId>
 				<configuration>
 					<cveValidForHours>24</cveValidForHours>
-					<!-- The plugin has numerous issues with version matching, which triggers false positives so we need a "suppresion" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
+					<!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
 					<suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
 					<failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
 				</configuration>

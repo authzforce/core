@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,8 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.Set;
-
+import com.google.common.base.Preconditions;
 import org.ow2.authzforce.core.pdp.api.BasePdpExtensionRegistry;
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
@@ -26,7 +25,7 @@ import org.ow2.authzforce.core.pdp.api.combining.CombiningAlgRegistry;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyEvaluator;
 import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 
-import com.google.common.base.Preconditions;
+import java.util.Set;
 
 /**
  * This is an immutable <code>CombiningAlgRegistry</code>.

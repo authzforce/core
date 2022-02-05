@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,20 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
+import net.sf.saxon.s9api.XPathCompiler;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
+import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
+import org.ow2.authzforce.core.pdp.api.value.BaseAttributeValueFactory;
+
+import javax.xml.namespace.QName;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.namespace.QName;
-
-import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.BaseAttributeValueFactory;
-
-import net.sf.saxon.s9api.XPathCompiler;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 
 /**
  * Represents a XACML Policy datatype (from XACML schema), to be used as AttributeValue.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,8 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.List;
-
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.EqualTypeMatchFunction.CallFactory;
 import org.ow2.authzforce.core.pdp.api.func.EqualTypeMatchFunction.CallFactoryBuilder;
@@ -26,11 +24,9 @@ import org.ow2.authzforce.core.pdp.api.func.EqualTypeMatchFunction.Matcher;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunctionCall;
 import org.ow2.authzforce.core.pdp.api.func.RegexpMatchFunctionHelper;
 import org.ow2.authzforce.core.pdp.api.func.SingleParameterTypedFirstOrderFunctionSignature;
-import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.StringValue;
-import org.ow2.authzforce.core.pdp.api.value.X500NameValue;
+import org.ow2.authzforce.core.pdp.api.value.*;
+
+import java.util.List;
 
 /**
  * Standard match functions taking parameters of same/equal type, i.e. standard (A.3.1) Equality predicates, special match function x500Name-match, string-starts-with/contains/ends-with.
@@ -74,7 +70,7 @@ final class StandardEqualTypeMatchers
 		 * WARNING: the XACML spec defines the first argument as the suffix
 		 */
 		@Override
-		public final boolean match(final StringValue suffix, final StringValue arg1)
+		public boolean match(final StringValue suffix, final StringValue arg1)
 		{
 			return arg1.getUnderlyingValue().endsWith(suffix.getUnderlyingValue());
 		}

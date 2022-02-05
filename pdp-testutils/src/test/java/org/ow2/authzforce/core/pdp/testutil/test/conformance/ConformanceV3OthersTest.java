@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test.conformance;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Collection;
-
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -28,6 +24,10 @@ import org.junit.runners.Parameterized.Parameters;
 import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Collection;
 
 /**
  * "Various" XACML 3.0 conformance tests that are not in the official set of conformance tests already addressed by {@link ConformanceV3FromV2MandatoryTest}.

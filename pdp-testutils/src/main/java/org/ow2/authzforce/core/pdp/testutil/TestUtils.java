@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -203,7 +203,7 @@ public class TestUtils
 	{
 		final List<Result> results = new ArrayList<>();
 		/*
-		 * We iterate over all results, because for each results, we don't compare everything. In particular, we choose to ignore the Status. Indeed, a PDP implementation might return a perfectly
+		 * We iterate over all results, because for each result, we don't compare everything. In particular, we choose to ignore the Status. Indeed, a PDP implementation might return a perfectly
 		 * XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
 		 */
 		for (final Result result : response.getResults())
@@ -255,7 +255,7 @@ public class TestUtils
 
 	private static List<Attributes> normalizeAttributeCategories(final List<Attributes> attributesList)
 	{
-		// Attributes categories may be in different order than expected although it is still compliant (order does not matter to the spec)
+		// Attribute categories may be in different order than expected, although it is still compliant (order does not matter to the spec)
 		// always use the same order (lexicographical here)
 		final SortedSet<Attributes> sortedSet = new TreeSet<>(ATTRIBUTES_COMPARATOR);
 		sortedSet.addAll(attributesList);
@@ -300,7 +300,7 @@ public class TestUtils
 		Preconditions.checkNotNull(policyLocations, "Policy location(s) undefined");
 
 		final Pdp jaxbPDP = new Pdp();
-		jaxbPDP.setEnableXPath(enableXPath);
+		jaxbPDP.setXPathEnabled(enableXPath);
 
 		final StaticPolicyProvider jaxbPolicyProvider = new StaticPolicyProvider();
 		jaxbPolicyProvider.setId("policyProvider");
@@ -361,7 +361,7 @@ public class TestUtils
 		final List<String> policyLocations = new ArrayList<>();
 
 		/*
-		 * Root policy expected to be in the policies directory as well
+		 * Root policy expected to be in the policies' directory as well
 		 */
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(policiesDirectory))
 		{

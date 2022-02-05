@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,14 +17,14 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Collection;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Collection;
 
 /**
  * AuthZForce-specific PDP tests

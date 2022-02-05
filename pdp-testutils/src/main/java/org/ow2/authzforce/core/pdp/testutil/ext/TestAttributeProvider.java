@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -71,7 +71,7 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 	}
 
 	@Override
-	public <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeGUID, final Datatype<AV> attributeDatatype, final EvaluationContext context)
+	public <AV extends AttributeValue> AttributeBag<AV> get(final AttributeFqn attributeGUID, final Datatype<AV> attributeDatatype, final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
 	        throws IndeterminateEvaluationException
 	{
 		final AttributeBag<?> attrVals = attrMap.get(attributeGUID);
@@ -108,7 +108,7 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 		}
 
 		@Override
-		public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attributeValueFactories, final AttributeProvider depAttrProvider)
+		public CloseableNamedAttributeProvider getInstance(final AttributeValueFactoryRegistry attributeValueFactories, final NamedAttributeProvider depAttrProvider)
 		{
 			final NamedXacmlAttributeParser<Attribute> namedXacmlAttParser = new NamedXacmlJaxbAttributeParser(attributeValueFactories);
 			final XacmlRequestAttributeParser<Attribute, AttributeBag<?>> xacmlAttributeParser = new NonIssuedLikeIssuedStrictXacmlAttributeParser<>(namedXacmlAttParser);

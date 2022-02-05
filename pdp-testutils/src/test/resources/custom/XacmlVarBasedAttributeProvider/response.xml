@@ -1,0 +1,10 @@
+﻿<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+    <Result>
+        <Decision>Permit</Decision>
+        <Obligations>
+            <Obligation ObligationId="urn:ow2:authzforce:core:pdp:test:obligation1">
+                <AttributeAssignment AttributeId="var2" DataType="http://www.w3.org/2001/XMLSchema#string">val2</AttributeAssignment>
+            </Obligation>
+        </Obligations>
+    </Result>
+</Response>

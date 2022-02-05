@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,6 +17,15 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import org.ow2.authzforce.core.pdp.api.HashCollections;
+import org.ow2.authzforce.core.xmlns.pdp.Pdp;
+import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.*;
+import javax.xml.transform.Source;
+import javax.xml.validation.Schema;
 import java.beans.ConstructorProperties;
 import java.io.File;
 import java.io.OutputStream;
@@ -24,16 +33,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.bind.*;
-import javax.xml.transform.Source;
-import javax.xml.validation.Schema;
-
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.xmlns.pdp.Pdp;
-import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * PDP Engine XML configuration handler
@@ -117,7 +116,7 @@ public final class PdpModelHandler
 		}
 
 		/*
-		 * JAXB classes of extensions are generated separately from the extension base type XSD. Therefore no @XmlSeeAlso to link to the base type. Therefore any JAXB provider cannot (un)marshall
+		 * JAXB classes of extensions are generated separately from the extension base type XSD. Therefore, no @XmlSeeAlso to link to the base type. Therefore, any JAXB provider cannot (un)marshall
 		 * documents using the extension base type XSD, unless it is provided with the list of the extra JAXB classes based on the new extension XSD. For instance, this is the case for JAXB providers
 		 * used by REST/SOAP frameworks: Apache CXF, Metro, etc. So we need to add to the JAXBContext all the extensions' model (JAXB-generated) classes. These have been collected by the
 		 * PdpExtensionLoader.

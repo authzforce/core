@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
   This file contains some false positive bugs detected by Findbugs. Their
-  false positive nature has been analyzed individually and they have been
+  false positive nature has been analyzed individually, and they have been
   put here to instruct Findbugs to ignore them.
 -->
 <FindBugsFilter>

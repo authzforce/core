@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XPathCompiler;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
@@ -30,8 +28,9 @@ import org.ow2.authzforce.core.pdp.api.io.SingleCategoryXacmlAttributesParser;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
-import net.sf.saxon.s9api.Processor;
-import net.sf.saxon.s9api.XPathCompiler;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * XACML/JSON - according to XACML JSON Profile - Request preprocessor implementing Multiple Decision Profile, section 2.3 (repeated attribute categories). Other schemes are not supported.

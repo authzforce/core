@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,12 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Set;
-
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
+
+import java.util.Set;
 
 /**
  * Function registry
@@ -35,14 +35,13 @@ public interface FunctionRegistry
 	 *
 	 * @param functionId
 	 *            ID of function to loop up
-	 * @return function instance, null if none with such ID in the registry of non-generic functions, in which case it may be a generic function and you should try
+	 * @return function instance, null if none with such ID in the registry of non-generic functions, in which case it may be a generic function, and you should try
 	 *         {@link #getFunction(String, Datatype)} instead.
 	 */
 	Function<?> getFunction(String functionId);
 
 	/**
-	 * Get any function including generic ones. 'Generic' here means the function is a higher-order function that is instantiated for a specific sub-function. For instance, the XACML 'map' function
-	 * function class takes the sub-function's return type as type parameter and therefore it needs this sub-function's return type to be instantiated.
+	 * Get any function including generic ones. 'Generic' here means the function is a higher-order function that is instantiated for a specific sub-function. For instance, the XACML 'map' function class takes the sub-function's return type as type parameter, and therefore it needs this sub-function's return type to be instantiated.
 	 *
 	 * @param functionId
 	 *            function ID

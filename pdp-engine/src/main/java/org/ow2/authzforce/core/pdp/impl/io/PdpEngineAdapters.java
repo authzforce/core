@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,16 +17,9 @@
  */
 package org.ow2.authzforce.core.pdp.impl.io;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Supplier;
-
-import org.ow2.authzforce.core.pdp.api.CloseablePdpEngine;
-import org.ow2.authzforce.core.pdp.api.DecisionRequest;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
-import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.XmlUtils;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.io.BasePdpEngineAdapter;
 import org.ow2.authzforce.core.pdp.api.io.BaseXacmlJaxbResultPostprocessor;
 import org.ow2.authzforce.core.pdp.api.io.IndividualXacmlJaxbRequest;
@@ -34,8 +27,10 @@ import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.BasePdpEngine;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Supplier;
 
 /**
  * PDP engine adapter utilities
@@ -209,7 +204,7 @@ public final class PdpEngineAdapters
 	        final DecisionResultPostprocessor<ADAPTEE_INPUT_DECISION_REQUEST, ADAPTER_OUTPUT> defaultResultPostproc) throws IllegalArgumentException, IOException
 	{
 		// use intermediate Java-friendly PdpEngineConfiguration (higher-level than JAXB) that has #getAttributeValueFactory()
-		try (final BasePdpEngine adaptedPdpEngine = new BasePdpEngine(configuration))
+		try (final CloseablePdpEngine adaptedPdpEngine = new BasePdpEngine(configuration))
 		{
 
 			final Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>> ioProcChain = configuration.getInOutProcChains().get(adapterInputClass);
@@ -248,7 +243,7 @@ public final class PdpEngineAdapters
 	{
 		final DecisionResultPostprocessor<IndividualXacmlJaxbRequest, Response> defaultResultPostproc = new BaseXacmlJaxbResultPostprocessor(configuration.getClientRequestErrorVerbosityLevel());
 		final DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> defaultReqPreproc = SingleDecisionXacmlJaxbRequestPreprocessor.LaxVariantFactory.INSTANCE.getInstance(
-		        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXpathEnabled(), XmlUtils.SAXON_PROCESSOR,
+		        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(), XmlUtils.SAXON_PROCESSOR,
 		        defaultResultPostproc.getFeatures());
 
 		return newInoutAdapter(Request.class, Response.class, configuration, defaultReqPreproc, defaultResultPostproc);

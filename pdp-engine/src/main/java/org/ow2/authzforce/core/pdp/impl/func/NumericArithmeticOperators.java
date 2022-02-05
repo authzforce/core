@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,13 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Deque;
-
 import org.ow2.authzforce.core.pdp.api.value.DoubleValue;
 import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
 import org.ow2.authzforce.core.pdp.api.value.NumericValue;
 import org.ow2.authzforce.core.pdp.impl.func.NumericArithmeticFunction.MultaryOperation;
 import org.ow2.authzforce.core.pdp.impl.func.NumericArithmeticFunction.StaticOperation;
+
+import java.util.Deque;
 
 final class NumericArithmeticOperators
 {

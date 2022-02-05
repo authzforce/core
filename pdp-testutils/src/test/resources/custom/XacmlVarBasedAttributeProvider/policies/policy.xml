@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicyId="root"
+	RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" Version="1.0" >
+	<Description>
+        Purpose: Test XacmlVariableBasedAttributeProvider
+    </Description>
+	<Target />
+	<VariableDefinition VariableId="var1">
+		<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">val1</AttributeValue>
+	</VariableDefinition>
+	<Rule Effect="Permit" RuleId="rule1">
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">val1</AttributeValue>
+						<AttributeDesignator Category="urn:ow2:authzforce:attribute-category:vars" AttributeId="var1" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+	</Rule>
+	<VariableDefinition VariableId="var2">
+		<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">val2</AttributeValue>
+	</VariableDefinition>
+	<ObligationExpressions>
+		<ObligationExpression FulfillOn="Permit" ObligationId="urn:ow2:authzforce:core:pdp:test:obligation1">
+			<AttributeAssignmentExpression AttributeId="var2">
+				<AttributeDesignator Category="urn:ow2:authzforce:attribute-category:vars" AttributeId="var2" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="true" />
+			</AttributeAssignmentExpression>
+		</ObligationExpression>
+	</ObligationExpressions>
+</Policy>

@@ -3,8 +3,8 @@
    <parent>
       <groupId>org.ow2.authzforce</groupId>
       <artifactId>authzforce-ce-core</artifactId>
-      <version>17.1.2</version>
-      <relativePath>..</relativePath>
+      <version>18.0.0</version>
+      <relativePath>../pom.xml</relativePath>
    </parent>
    <artifactId>authzforce-ce-core-pdp-cli</artifactId>
    <name>${project.groupId}:${project.artifactId}</name>
@@ -21,7 +21,7 @@
       <dependency>
          <groupId>info.picocli</groupId>
          <artifactId>picocli</artifactId>
-         <version>2.0.3</version>
+         <version>4.6.2</version>
       </dependency>
       <dependency>
          <groupId>ch.qos.logback</groupId>
@@ -30,23 +30,26 @@
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-engine</artifactId>
-         <version>17.1.2</version>
+         <version>18.0.0</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-         <version>17.1.2</version>
+         <version>18.0.0</version>
       </dependency>
       <dependency>
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
-         <version>6.11</version>
+         <!-- v7.5 not yet compatible with maven Surefire plugin!
+         https://groups.google.com/g/testng-users/c/ESLiK8xSomc?pli=1
+         -->
+         <version>6.14.3</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.ow2.authzforce</groupId>
          <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
-         <version>17.1.2</version>
+         <version>18.0.0</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
@@ -93,7 +96,7 @@
             <artifactId>dependency-check-maven</artifactId>
             <configuration>
                <cveValidForHours>24</cveValidForHours>
-               <!-- The plugin has numerous issues with version matching, which triggers false positives so we need a "suppresion" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
+               <!-- The plugin has numerous issues with version matching, which triggers false positives, so we need a "suppression" file for those. More info: https://github.com/jeremylong/DependencyCheck/issues -->
                <suppressionFile>owasp-dependency-check-suppression.xml</suppressionFile>
                <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
             </configuration>
@@ -184,7 +187,7 @@
                   <property>
                      <name>surefire.testng.verbose</name>
                      <!-- verbosity level from 0 to 10 (10 is the most detailed), or -1 for debug More info: http://maven.apache.org/surefire/maven-surefire-plugin/examples/testng.html -->
-                     <value>2</value>
+                     <value>3</value>
                   </property>
                </properties>
             </configuration>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -93,16 +93,6 @@ public final class PolicyPojo
 	public String toString()
 	{
 		return "[id='" + id + "', version='" + version + "', type='" + type + "', content='" + content + "']";
-	}
-
-	/**
-	 * Same as {@link #toString()} but the resulting string does not contain the content, only the metadata (type, id, version)
-	 * 
-	 * @return string similar to {@link #toString()} without content
-	 */
-	public String toStringWithoutContent()
-	{
-		return "[id='" + id + "', version='" + version + "', type='" + type + "']";
 	}
 
 }

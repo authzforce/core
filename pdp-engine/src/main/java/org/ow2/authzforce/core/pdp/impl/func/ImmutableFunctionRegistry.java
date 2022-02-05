@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,13 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.Set;
-
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 import org.ow2.authzforce.core.pdp.impl.ImmutablePdpExtensionRegistry;
+
+import java.util.Set;
 
 /**
  * <p>

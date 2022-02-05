@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,47 +17,33 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-
+import net.sf.saxon.s9api.XdmNode;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
-import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.Value;
-import org.ow2.authzforce.core.pdp.api.value.XPathValue;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
-
-import net.sf.saxon.s9api.XdmNode;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * An {@link EvaluationContext} associated to an XACML Individual Decision Request, i.e. for evaluation to a single authorization decision Result (see Multiple Decision Profile spec for more
  * information on Individual Decision Request as opposed to Multiple Decision Request). This is the default {@link EvaluationContext} implementation used by the PDP engine. It is also meant to be used
- * particularly in unit tests of PDP extensions depending on evaluation context, e.g. {@link AttributeProvider}, {@link DecisionCache}, etc.
+ * particularly in unit tests of PDP extensions depending on evaluation context, e.g. {@link NamedAttributeProvider}, {@link DecisionCache}, etc.
  *
  *
  * @version $Id: $
  */
-public final class IndividualDecisionRequestContext implements EvaluationContext
+public final class IndividualDecisionRequestContext extends BaseEvaluationContext
 {
 	/**
 	 * Logger used for all classes
 	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(IndividualDecisionRequestContext.class);
-
-	private final Map<AttributeFqn, AttributeBag<?>> namedAttributes;
 
 	/*
 	 * Corresponds to Attributes/Content (by attribute category) marshalled to XPath data model for XPath evaluation: AttributeSelector evaluation, XPath-based functions, etc. This may be empty if no
@@ -71,14 +57,6 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	 */
 	private final UpdatableMap<AttributeSelectorId, Bag<?>> attributeSelectorResults;
 
-	private final Map<String, Value> varValsById = HashCollections.newMutableMap();
-
-	private final Map<String, Object> mutableProperties = HashCollections.newMutableMap();
-
-	private final boolean returnApplicablePolicyIdList;
-
-	private final ClassToInstanceMap<Listener> listeners = MutableClassToInstanceMap.create();
-
 	/**
 	 * Constructs a new <code>IndividualDecisionRequestContext</code> based on the given request attributes and extra contents with support for XPath evaluation against Content element in Attributes
 	 *
@@ -90,11 +68,9 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
 	 */
-	public IndividualDecisionRequestContext(final Map<AttributeFqn, AttributeBag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicyIdList)
+	public IndividualDecisionRequestContext(final Map<AttributeFqn, AttributeBag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicyIdList, Optional<Instant> requestTimestamp)
 	{
-		this.namedAttributes = namedAttributeMap == null ? HashCollections.newUpdatableMap()
-				: HashCollections.newUpdatableMap(namedAttributeMap);
-		this.returnApplicablePolicyIdList = returnApplicablePolicyIdList;
+		super(namedAttributeMap, returnApplicablePolicyIdList, requestTimestamp);
 		if (extraContentsByCategory == null)
 		{
 			this.extraContentsByAttributeCategory = Collections.emptyMap();
@@ -104,54 +80,6 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 			this.extraContentsByAttributeCategory = extraContentsByCategory;
 			this.attributeSelectorResults = UpdatableCollections.newUpdatableMap();
 		}
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public <AV extends AttributeValue> AttributeBag<AV> getNamedAttributeValue(final AttributeFqn attributeFqn, final Datatype<AV> datatype) throws IndeterminateEvaluationException
-	{
-		final AttributeBag<?> bagResult = namedAttributes.get(attributeFqn);
-		if (bagResult == null)
-		{
-			return null;
-		}
-
-		if (!bagResult.getElementDatatype().equals(datatype))
-		{
-			throw new IndeterminateEvaluationException("Datatype (" + bagResult.getElementDatatype() + ") of AttributeDesignator " + attributeFqn + " in context is different from expected/requested ("
-					+ datatype
-					+ "). May be caused by refering to the same Attribute Category/Id/Issuer with different Datatypes in different policy elements and/or attribute providers, which is not allowed.",
-					XacmlStatusCode.SYNTAX_ERROR.value());
-		}
-
-		/*
-		 * If datatype classes match, bagResult should have same type as datatypeClass.
-		 */
-		final AttributeBag<AV> result = (AttributeBag<AV>) bagResult;
-		this.listeners.forEach((lt, l) -> l.namedAttributeValueConsumed(attributeFqn, result));
-		return result;
-	}
-
-	@Override
-	public boolean putNamedAttributeValueIfAbsent(final AttributeFqn attributeFqn, final AttributeBag<?> result)
-	{
-		final Bag<?> duplicate = namedAttributes.putIfAbsent(attributeFqn, result);
-		if (duplicate != null)
-		{
-			/*
-			 * This should never happen, as getAttributeDesignatorResult() should have been called first (for same id) and returned this oldResult, and no further call to
-			 * putAttributeDesignatorResultIfAbsent() in this case. In any case, we do not support setting a different result for same id (but different datatype URI/datatype class) in the same
-			 * context
-			 */
-			LOGGER.warn("Attempt to override value of AttributeDesignator {} already set in evaluation context. Overriding value: {}", attributeFqn, result);
-			return false;
-		}
-
-		this.listeners.forEach((lt, l) -> l.namedAttributeValueProduced(attributeFqn, result));
-		/*
-		 * Attribute value cannot change during evaluation context, so if old value already there, put it back
-		 */
-		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -172,7 +100,9 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 		}
 
 		final Datatype<Bag<AV>> expectedBagDatatype = attributeSelector.getReturnType();
-		final Datatype<?> expectedElementDatatype = expectedBagDatatype.getTypeParameter().get();
+		final Optional<? extends Datatype<?>> expectedElementType = expectedBagDatatype.getTypeParameter();
+		assert expectedElementType.isPresent();
+		final Datatype<?> expectedElementDatatype = expectedElementType.get();
 		if (!bagResult.getElementDatatype().equals(expectedElementDatatype))
 		{
 			throw new IndeterminateEvaluationException("Datatype (" + bagResult.getElementDatatype() + ")of AttributeSelector " + attributeSelector.getAttributeSelectorId()
@@ -182,7 +112,7 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 		}
 
 		/*
-		 * If datatype classes match, bagResult should has same type as datatypeClass.
+		 * If datatype classes match, bagResult should have the same type as datatypeClass.
 		 */
 		final Bag<AV> result = expectedBagDatatype.cast(bagResult);
 		this.listeners.forEach((lt, l) -> l.attributeSelectorResultConsumed(attributeSelector, result));
@@ -219,99 +149,5 @@ public final class IndividualDecisionRequestContext implements EvaluationContext
 		}
 
 		return true;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public <V extends Value> V getVariableValue(final String variableId, final Datatype<V> expectedDatatype) throws IndeterminateEvaluationException
-	{
-		final Value val = varValsById.get(variableId);
-		if (val == null)
-		{
-			return null;
-		}
-
-		try
-		{
-			return expectedDatatype.cast(val);
-		} catch (final ClassCastException e)
-		{
-			throw new IndeterminateEvaluationException("Datatype of variable '" + variableId + "' in context does not match expected datatype: " + expectedDatatype,
-					XacmlStatusCode.PROCESSING_ERROR.value(), e);
-		}
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean putVariableIfAbsent(final String variableId, final Value value)
-	{
-		if (varValsById.putIfAbsent(variableId, value) != null)
-		{
-			LOGGER.error("Attempt to override value of Variable '{}' already set in evaluation context. Overriding value: {}", variableId, value);
-			return false;
-		}
-
-		return true;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Value removeVariable(final String variableId)
-	{
-		return varValsById.remove(variableId);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Object getOther(final String key)
-	{
-		return mutableProperties.get(key);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean containsKey(final String key)
-	{
-		return mutableProperties.containsKey(key);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public void putOther(final String key, final Object val)
-	{
-		mutableProperties.put(key, val);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Object remove(final String key)
-	{
-		return mutableProperties.remove(key);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Iterator<Entry<AttributeFqn, AttributeBag<?>>> getNamedAttributes()
-	{
-		final Set<Entry<AttributeFqn, AttributeBag<?>>> immutableAttributeSet = Collections.unmodifiableSet(namedAttributes.entrySet());
-		return immutableAttributeSet.iterator();
-	}
-
-	@Override
-	public boolean isApplicablePolicyIdListRequested()
-	{
-		return returnApplicablePolicyIdList;
-	}
-
-	@Override
-	public <L extends Listener> L putListener(final Class<L> listenerType, final L listener)
-	{
-		return this.listeners.putInstance(listenerType, listener);
-	}
-
-	@Override
-	public <L extends Listener> L getListener(final Class<L> listenerType)
-	{
-		return this.listeners.getInstance(listenerType);
 	}
 }

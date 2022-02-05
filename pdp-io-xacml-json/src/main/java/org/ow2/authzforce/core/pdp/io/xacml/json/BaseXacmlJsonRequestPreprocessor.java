@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,27 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import net.sf.saxon.s9api.XPathCompiler;
-
 import org.everit.json.schema.ValidationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
-import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.MutableAttributeBag;
-import org.ow2.authzforce.core.pdp.api.XmlUtils;
-import org.ow2.authzforce.core.pdp.api.io.IssuedToNonIssuedCopyingLaxXacmlAttributeParser;
-import org.ow2.authzforce.core.pdp.api.io.NamedXacmlAttributeParser;
-import org.ow2.authzforce.core.pdp.api.io.NonIssuedLikeIssuedLaxXacmlAttributeParser;
-import org.ow2.authzforce.core.pdp.api.io.NonIssuedLikeIssuedStrictXacmlAttributeParser;
-import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes;
-import org.ow2.authzforce.core.pdp.api.io.SingleCategoryXacmlAttributesParser;
-import org.ow2.authzforce.core.pdp.api.io.XacmlRequestAttributeParser;
+import org.ow2.authzforce.core.pdp.api.*;
+import org.ow2.authzforce.core.pdp.api.io.*;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.io.xacml.json.XacmlJsonParsingUtils.ContentSkippingXacmlJsonAttributesParserFactory;
@@ -47,6 +32,10 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Convenient base class for {@link DecisionRequestPreprocessor} implementations supporting XACML/JSON (XACML-JSON-Profile-standard-compliant) input
@@ -69,12 +58,6 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 			XacmlStatusCode.SYNTAX_ERROR.value());
 
 	/**
-	 * Indeterminate exception to be thrown iff RequestDefaults element not supported by the request preprocessor
-	 */
-	protected static final IndeterminateEvaluationException UNSUPPORTED_REQUEST_DEFAULTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported element in Request: <RequestDefaults>",
-			XacmlStatusCode.SYNTAX_ERROR.value());
-
-	/**
 	 * Indeterminate exception to be thrown iff MultiRequests element not supported by the request preprocessor
 	 */
 	protected static final IndeterminateEvaluationException UNSUPPORTED_MULTI_REQUESTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported element in Request: <MultiRequests>",
@@ -94,11 +77,11 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 	 *            the XACML 3.0 Attribute Evaluation: "If the Issuer is not present in the attribute designator, then the matching of the attribute to the named attribute SHALL be governed by
 	 *            AttributeId and DataType attributes alone."
 	 * @param allowAttributeDuplicates
-	 *            true iff the pre-processor should allow defining multi-valued attributes by repeating the same XACML Attribute (same AttributeId) within a XACML Attributes element (same Category).
+	 *            true iff the pre-processor should allow defining multivalued attributes by repeating the same XACML Attribute (same AttributeId) within a XACML Attributes element (same Category).
 	 *            Indeed, not allowing this is not fully compliant with the XACML spec according to a discussion on the xacml-dev mailing list (see
 	 *            {@linkplain "https://lists.oasis-open.org/archives/xacml-dev/201507/msg00001.html"}), referring to the XACML 3.0 core spec, §7.3.3, that indicates that multiple occurrences of the
 	 *            same &lt;Attribute&gt; with same meta-data but different values should be considered equivalent to a single &lt;Attribute&gt; element with same meta-data and merged values
-	 *            (multi-valued Attribute). Moreover, the XACML 3.0 conformance test 'IIIA024' expects this behavior: the multiple subject-id Attributes are expected to result in a multi-value bag
+	 *            (multivalued Attribute). Moreover, the XACML 3.0 conformance test 'IIIA024' expects this behavior: the multiple subject-id Attributes are expected to result in a multi-value bag
 	 *            during evaluation of the &lt;AttributeDesignator&gt;.
 	 *            <p>
 	 *            Setting this parameter to {@code false} is not fully compliant, but provides better performance, especially if you know the Requests to be well-formed, i.e. all AttributeValues of a
@@ -140,7 +123,7 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 			/*
 			 * allowAttributeDuplicates == false && strictAttributeIssuerMatch == false is not supported, because it would require using mutable bags for "Issuer-less" attributes (updated for each
 			 * possible Attribute with same meta-data except a defined Issuer), whereas the goal of 'allowAttributeDuplicates == false' is to use immutable Bags in the first place, i.e. to avoid going
-			 * through mutable bags. A solution would consist to create two collections of attributes, one with immutable bags, and the other with mutable ones for Issuer-less attributes. However, we
+			 * through mutable bags. A solution would consist in creating two collections of attributes, one with immutable bags, and the other with mutable ones for Issuer-less attributes. However, we
 			 * consider it is not worth providing an implementation for this natively, so far. Can always been a custom RequestPreprocessor provided as an extension.
 			 */
 			throw UNSUPPORTED_MODE_EXCEPTION;
@@ -242,8 +225,8 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 			if (!this.isCombinedDecisionSupported)
 			{
 				/*
-				 * According to XACML core spec, 5.42, "If the PDP does not implement the relevant functionality in [Multiple Decision Profile], then the PDP must return an Indeterminate with a status
-				 * code of urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute set to "true".
+				 * According to XACML core spec, 5.42, <i>If the PDP does not implement the relevant functionality in [Multiple Decision Profile], then the PDP must return an Indeterminate with a status
+				 * code of urn:oasis:names:tc:xacml:1.0:status:processing-error if it receives a request with this attribute set to "true".</i>
 				 */
 				throw UNSUPPORTED_COMBINED_DECISION_EXCEPTION;
 			}

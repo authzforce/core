@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Request ReturnPolicyIdList="false" CombinedDecision="false" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+	<Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:environment" />
+</Request>

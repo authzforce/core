@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,49 +17,30 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.value;
 
-import java.io.Serializable;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.math.BigInteger;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import javax.security.auth.x500.X500Principal;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
+import com.google.common.collect.ImmutableMultiset;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 
-import com.google.common.collect.ImmutableMultiset;
-
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import javax.security.auth.x500.X500Principal;
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.net.URI;
+import java.time.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 

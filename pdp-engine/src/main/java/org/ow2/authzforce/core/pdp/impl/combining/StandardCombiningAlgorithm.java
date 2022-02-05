@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,14 +17,8 @@
  */
 package org.ow2.authzforce.core.pdp.impl.combining;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
+import com.google.common.collect.Maps;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.EffectType;
-
 import org.ow2.authzforce.core.pdp.api.Decidable;
 import org.ow2.authzforce.core.pdp.api.HashCollections;
 import org.ow2.authzforce.core.pdp.api.PdpExtensionRegistry.PdpExtensionComparator;
@@ -35,7 +29,7 @@ import org.ow2.authzforce.core.pdp.impl.rule.RuleEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
+import java.util.*;
 
 /**
  * Utilities to handle the XACML core standard combining algorithms
@@ -239,7 +233,7 @@ public enum StandardCombiningAlgorithm
 		REGISTRY = new ImmutableCombiningAlgRegistry(standardAlgorithms);
 		if (LOGGER.isDebugEnabled())
 		{
-			final TreeSet<CombiningAlg<?>> sortedAlgorithms = new TreeSet<>(COMPARATOR);
+			final Set<CombiningAlg<?>> sortedAlgorithms = new TreeSet<>(COMPARATOR);
 			sortedAlgorithms.addAll(standardAlgorithms);
 			LOGGER.debug("Loaded XACML standard combining algorithms: {}", sortedAlgorithms);
 		}

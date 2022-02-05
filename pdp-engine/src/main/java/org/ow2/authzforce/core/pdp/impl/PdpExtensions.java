@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,19 +17,9 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
-
-import org.ow2.authzforce.core.pdp.api.CloseableNamedAttributeProvider;
-import org.ow2.authzforce.core.pdp.api.DecisionCache;
-import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
-import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.JaxbBoundPdpExtension;
-import org.ow2.authzforce.core.pdp.api.PdpExtension;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.combining.CombiningAlg;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
@@ -39,8 +29,7 @@ import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPdpExtension;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+import java.util.*;
 
 /**
  * Loads PDP extensions (implementing {@link PdpExtension}) from classpath using {@link ServiceLoader}.

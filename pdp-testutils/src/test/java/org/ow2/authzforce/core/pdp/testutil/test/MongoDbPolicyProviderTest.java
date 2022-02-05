@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,31 +17,18 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.stream.StreamSource;
-
+import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
+import de.bwaldvogel.mongo.MongoServer;
+import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import org.apache.cxf.helpers.IOUtils;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
@@ -51,12 +38,7 @@ import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementEvaluator;
 import org.ow2.authzforce.core.pdp.api.policy.TopLevelPolicyElementType;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactory;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
-import org.ow2.authzforce.core.pdp.api.value.IntegerValue;
-import org.ow2.authzforce.core.pdp.api.value.StandardAttributeValueFactories;
-import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
-import org.ow2.authzforce.core.pdp.api.value.StringParseableValue;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.impl.PdpModelHandler;
 import org.ow2.authzforce.core.pdp.impl.combining.StandardCombiningAlgorithm;
@@ -73,15 +55,19 @@ import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractPolicyProvider;
 
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
 
-import de.bwaldvogel.mongo.MongoServer;
-import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
-import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
+import static org.junit.Assert.*;
 
 /**
  * Test class for {@link MongoDbPolicyProvider}
@@ -118,11 +104,9 @@ public class MongoDbPolicyProviderTest
 		final AttributeValueFactoryRegistry valFactoryReg = StandardAttributeValueFactories.getRegistry(false, Optional.of(maxAllowedIntVal));
 		final AttributeValueFactory<?> intValFactory = valFactoryReg.getExtension(StandardDatatypes.INTEGER.getId());
 		final FunctionRegistry funcReg = StandardFunction.getRegistry(false, (StringParseableValue.Factory<IntegerValue>) intValFactory);
-		try (final ExpressionFactory expressionFactory = new DepthLimitingExpressionFactory(valFactoryReg, funcReg, null, 0, false, false))
-		{
+		final ExpressionFactory expressionFactory = new DepthLimitingExpressionFactory(valFactoryReg, funcReg, 0, false, false, Optional.empty());
 			POLICY_PROVIDER_MODULE = new MongoDbPolicyProvider.Factory().getInstance(mongodbBasedPolicyProviderConf, XacmlJaxbParsingUtils.getXacmlParserFactory(false), 10, expressionFactory,
 			        StandardCombiningAlgorithm.REGISTRY, null, Optional.empty());
-		}
 
 		/*
 		 * Use in-memory MongoDB server from https://github.com/bwaldvogel/mongo-java-server
@@ -153,6 +137,7 @@ public class MongoDbPolicyProviderTest
 			final String policyContent;
 			try (final InputStream is = MongoDbPolicyProviderTest.class.getResourceAsStream(policyFilename))
 			{
+				assert is != null;
 				policyContent = IOUtils.toString(is, IOUtils.UTF8_CHARSET.name());
 			}
 			final Object jaxbObj = unmarshaller.unmarshal(new StringReader(policyContent));
@@ -220,7 +205,7 @@ public class MongoDbPolicyProviderTest
 	public void testGetPolicyWithWrongId() throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		// Wrong ID, no version pattern
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "unexpected-policy-id", Optional.empty(), null, null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "unexpected-policy-id", Optional.empty(), null, null, Optional.empty());
 		assertNull(policyEvaluator);
 	}
 
@@ -228,7 +213,7 @@ public class MongoDbPolicyProviderTest
 	public void testGetPolicyWithValidIdWithoutVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		// Valid ID, no version pattern
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.empty(), null, null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.empty(), null, null, Optional.empty());
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY, policyEvaluator.getPolicyElementType());
 		assertEquals("permit-all", policyEvaluator.getPolicyId());
@@ -239,7 +224,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, invalid literal version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("1.0", null, null)),
-		        null, null);
+		        null, null, Optional.empty());
 		assertNull(policyEvaluator);
 	}
 
@@ -248,7 +233,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, valid literal version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("0.1.0", null, null)),
-		        null, null);
+		        null, null, Optional.empty());
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY, policyEvaluator.getPolicyElementType());
 		assertEquals("permit-all", policyEvaluator.getPolicyId());
@@ -260,7 +245,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, invalid version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("1.+", null, null)),
-		        null, null);
+		        null, null, Optional.empty());
 		assertNull(policyEvaluator);
 	}
 
@@ -269,7 +254,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, valid version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY, "permit-all", Optional.of(new PolicyVersionPatterns("0.*", null, null)),
-		        null, null);
+		        null, null, Optional.empty());
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY, policyEvaluator.getPolicyElementType());
 		assertEquals("permit-all", policyEvaluator.getPolicyId());
@@ -280,7 +265,7 @@ public class MongoDbPolicyProviderTest
 	public void testGetPolicySetWithWrongId() throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		// Wrong ID, no version pattern
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "unexpected-policyset-id", Optional.empty(), null, null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "unexpected-policyset-id", Optional.empty(), null, null, Optional.empty());
 		assertNull(policyEvaluator);
 	}
 
@@ -288,7 +273,7 @@ public class MongoDbPolicyProviderTest
 	public void testGetPolicySetWithValidIdWithoutVersionPattern() throws IllegalArgumentException, IndeterminateEvaluationException
 	{
 		// Valid ID, no version pattern
-		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset", Optional.empty(), null, null);
+		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset", Optional.empty(), null, null, Optional.empty());
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY_SET, policyEvaluator.getPolicyElementType());
 		assertEquals("root-rbac-policyset", policyEvaluator.getPolicyId());
@@ -299,7 +284,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, invalid literal version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset",
-		        Optional.of(new PolicyVersionPatterns("1.0", null, null)), null, null);
+		        Optional.of(new PolicyVersionPatterns("1.0", null, null)), null, null, Optional.empty());
 		assertNull(policyEvaluator);
 	}
 
@@ -308,7 +293,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, valid literal version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "permit-all",
-		        Optional.of(new PolicyVersionPatterns("0.1.0", null, null)), null, null);
+		        Optional.of(new PolicyVersionPatterns("0.1.0", null, null)), null, null, Optional.empty());
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY_SET, policyEvaluator.getPolicyElementType());
 		assertEquals("permit-all", policyEvaluator.getPolicyId());
@@ -320,7 +305,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, invalid version pattern
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset",
-		        Optional.of(new PolicyVersionPatterns("2.+", null, null)), null, null);
+		        Optional.of(new PolicyVersionPatterns("2.+", null, null)), null, null, Optional.empty());
 		assertNull(policyEvaluator);
 	}
 
@@ -329,7 +314,7 @@ public class MongoDbPolicyProviderTest
 	{
 		// Valid ID, valid version pattern (a PolicySet with same version and id also exists, make sure the right policy type is returned)
 		final TopLevelPolicyElementEvaluator policyEvaluator = POLICY_PROVIDER_MODULE.get(TopLevelPolicyElementType.POLICY_SET, "root-rbac-policyset",
-		        Optional.of(new PolicyVersionPatterns("1.*", null, null)), null, null);
+		        Optional.of(new PolicyVersionPatterns("1.*", null, null)), null, null, Optional.empty());
 		assertNotNull(policyEvaluator);
 		assertEquals(TopLevelPolicyElementType.POLICY_SET, policyEvaluator.getPolicyElementType());
 		assertEquals("root-rbac-policyset", policyEvaluator.getPolicyId());

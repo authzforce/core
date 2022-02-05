@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -80,7 +80,7 @@ final class StandardDatatypeConverters
 	static final ToStringConverter<BooleanValue> BOOLEAN_TO_STRING = new ToStringConverter<>()
 	{
 		@Override
-		public final StringValue convert(final BooleanValue arg)
+		public StringValue convert(final BooleanValue arg)
 		{
 			return StringValue.getInstance(arg);
 		}

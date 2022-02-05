@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 THALES.
+ * Copyright 2012-2022 THALES.
  *
  * This file is part of AuthzForce CE.
  *
@@ -17,10 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.List;
-
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -28,12 +24,13 @@ import org.ow2.authzforce.core.pdp.api.expression.Expressions;
 import org.ow2.authzforce.core.pdp.api.func.FirstOrderFunction;
 import org.ow2.authzforce.core.pdp.api.func.GenericHigherOrderFunctionFactory;
 import org.ow2.authzforce.core.pdp.api.func.HigherOrderBagFunction;
-import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
-import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
-import org.ow2.authzforce.core.pdp.api.value.Bag;
-import org.ow2.authzforce.core.pdp.api.value.Bags;
-import org.ow2.authzforce.core.pdp.api.value.Datatype;
+import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.core.pdp.impl.func.StandardHigherOrderBagFunctions.OneBagOnlyHigherOrderFunction;
+
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -72,7 +69,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 			}
 
 			@Override
-			protected Bag<SUB_RETURN> evaluate(final Bag<?> bagArg, final EvaluationContext context) throws IndeterminateEvaluationException {
+			protected Bag<SUB_RETURN> evaluate(final Bag<?> bagArg, final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException {
 				/*
 				 * Prepare sub-function call's remaining args (bag arg and subsequent ones if any)
 				 */
@@ -93,7 +90,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 					final AttributeValue argVal;
 					try
 					{
-						argVal = Expressions.evalPrimitive(primitiveArgExprAfterBag, context);
+						argVal = Expressions.evalPrimitive(primitiveArgExprAfterBag, context, mdpContext);
 					} catch (final IndeterminateEvaluationException e)
 					{
 						throw new IndeterminateEvaluationException("Indeterminate arg #" + (this.bagArgIndex + i), e.getStatusCode(), e);
@@ -110,7 +107,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 					final SUB_RETURN subResult;
 					try
 					{
-						subResult = subFuncCall.evaluate(context, argsAfterBagInclusive);
+						subResult = subFuncCall.evaluate(context, mdpContext, argsAfterBagInclusive);
 					} catch (final IndeterminateEvaluationException e)
 					{
 						throw new IndeterminateEvaluationException(indeterminateSubFuncEvalMessagePrefix + bagElement, e.getStatusCode(), e);
@@ -124,7 +121,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 		}
 
 		/**
-		 * Creates Map function for specific sub-function's return type
+		 * Creates 'Map' function for specific sub-function's return type
 		 * 
 		 * @param subFunctionReturnType
 		 *            sub-function return type

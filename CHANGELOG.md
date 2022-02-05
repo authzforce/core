@@ -6,6 +6,37 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 18.0.0
+### Changed  
+- **Changed the PDP configuration XML schema (XSD): refer to [MIGRATION.md](MIGRATION.md) for migrating your PDP configurations (e.g. `pdp.xml`) to the new schema**:
+    - XML namespace changed to `http://authzforce.github.io/core/xmlns/pdp/8`
+    - `useStandardDatatypes` replaced with `standardDatatypesEnabled`;
+    - `useStandardFunctions` replaced with `standardFunctionsEnabled` 
+    - `useStandardCombiningAlgorithms` replaced with `standardCombiningAlgorithmsEnabled`
+    - `enableXPath` replaced with `xPathEnabled`
+    - `standardEnvAttributeSource` replaced with `standardAttributeProvidersEnabled` and new `attributeProvider` type `StdEnvAttributeProviderDescriptor`
+  
+- `authzforce-ce-core-pdp-api` upgraded to 19.0.0: **APIs changed**:
+
+    - For better support of Multiple Decision profile, request evaluation methods of the following interfaces  - including PDP extensions - now take an extra optional parameter (`Optional<EvaluationContext>`) for the Multiple Decision Request context: `PdpEngine`, `CombiningAlg`, `Function`, `NamedAttributeProvider`, `PolicyProvider`.
+    - For better support of standard `current-dateTime/date/time` attributes and better request logging, `DecisionRequest` and `EvaluationContext` interfaces have a new method `getCreationTimestamp()` that must provide the date/time of the request/context creation.
+    - `EvaluationContext`: replaced `putNamedAttributeValueIfAbsent(AttributeFqn, AttributeBag)` with more generic `putNamedAttributeValue(AttributeFqn, AttributeBag, boolean override)`
+  
+- [GH-61]: fixed a limitation of XACML 3.0 standard `Match` not allowing VariableReferences: AuthzForce Core now supports XACML `VariableReference` equivalents in `Match` elements through special `AttributeDesignators`, i.e. by enabling the new built-in Attribute Provider (`XacmlVariableBasedAttributeProvider` class) with an `attributeProvider` element of the new type `XacmlVarBasedAttributeProviderDescriptor` in PDP configuration, any `AttributeDesignator`s with `Category` matching the `attributeProvider/@category` in PDP configuration is handled as a `VariableReference` and the `AttributeId` is handled as the `VariableId`.
+- [GH-62]: Refactored the provisioning of standard environment attributes `current-dateTime`, `current-date` and `current-time`:
+  - Now implemented by a new built-in AttributeProvider (`StandardEnvironmentAttributeProvider` class) which can be customized (to override or not the request values) in the PDP configuration with an `attributeProvider` of type `StdEnvAttributeProviderDescriptor`.
+- `authzforce-ce-core-pdp-testutils` module: upgraded jongo dependency to 1.5.0, mongo-java-driver to 3.12.10
+- `authzforce-ce-core-pdp-cli` module: upgraded picocli to 4.6.2, testng to 7.5
+- `authzforce-ce-parent` upgraded to 8.1.0
+    
+### Added
+- Attribute Provider (`NamedAttributeProvider`) interface: added 2 new methods for better support of the Multiple Decision Profile (all implemented by default to do nothing):
+  - `beginMultipleDecisionRequest(EvaluationContext mdpContext)`: for special processing in the context of the MDP request (before corresponding Individual Decision requests are evaluated)
+  - `supportsBeginMultipleDecisionRequest()`: indicates whether the Attribute Provider implements `beginMultipleDecisionRequest()` method and therefore needs the PDP engine to call it when a new MDP request is evaluated
+  - `beginIndividualDecisionRequest(EvaluationContext individualDecisionContext, Optional<EvaluationContext> mdpContext)`: for special processing in the context of an Individual Decision request, before it is evaluated against policies (before the `get(attribute)` method is ever called for the individual decision request).
+  - `supportsBeginIndividualDecisionRequest()`: indicates whether the Attribute Provider implements `beginIndividualDecisionRequest()` method and therefore needs the PDP engine to call it when a new individual decision request is evaluated.
+
+
 ## 17.1.2
 ### Fixed
 - CVE-2021-22696 and CVE-2021-3046 fixed by upgrading **authzforce-ce-parent to v8.0.3**
@@ -147,7 +178,7 @@ properties and environment variables (enclosed between '${...}') with default va
 ### Changed
 - Maven dependency versions:
   - `authzforce-ce-core-pdp-api`: 15.2.0 (change in `ExpressionFactory` interface: new method `getVariableExpression(variableId)`)
-- Policy / `VariableDefinition` evaluation: a XACML Variable expressions is now evaluated and the Variable assigned in the EvaluationContext where the `VariableDefinition` is defined (as opposed to previous behavior which consisted in lazy evaluation, ie only when used in a corresponding `VariableReference`), making the Variable's value available not only to `VariableReference` but also PDP extensions such as Attribute Providers, even if no corresponding `VariableReference` occurs in the policy)
+- Policy / `VariableDefinition` evaluation: a XACML Variable expressions is now evaluated and the Variable assigned in the EvaluationContext where the `VariableDefinition` is defined (as opposed to previous behavior which consisted in lazy evaluation, ie only when used in a corresponding `VariableReference`), making the Variable's value available not only to `VariableReference` but also PDP extensions such as Attribute Providers, even if no corresponding `VariableReference` occurs in the policy
 - `Time-in-range` function optimized (removed useless code)
 - `GenericAttributeProviderBasedAttributeDesignatorExpression` class moved to dependency authzforce-ce-core-pdp-api
 
@@ -189,7 +220,7 @@ properties and environment variables (enclosed between '${...}') with default va
 	- Interface method AttributeProvider#get(...): replaced parameter type BagDatatype with Datatype to simplify AttributeProviders' code
 
 ### Added
-- Base implementations of a few interfaces to help implementing unit tests for PDP extensions:
+- Base implementations of a few interfaces to help implement unit tests for PDP extensions:
 	- BasePrimaryPolicyMetadata, implements PrimaryPolicyMetadata
 	- IndividualDecisionRequestContext, implements EvaluationContext
 
@@ -307,7 +338,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 - License: GPL v3.0 replaced with Apache License v2.0
 - Project URL: 'https://tuleap.ow2.org/projects/authzforce' replaced with 'https://authzforce.ow2.org'
 - GIT repository URL base: 'https://tuleap.ow2.org/plugins/git/authzforce' replaced with 'https://gitlab.ow2.org/authzforce'
-- Project converted to multi-module project with two new modules in order to have properly separated artifact with the test utility classes to be reused in other AuthzForce projects (e.g. `server/webapp` and PDP extensions), therefore two new Maven artifacts:
+- Project converted to multimodule project with two new modules in order to have properly separated artifact with the test utility classes to be reused in other AuthzForce projects (e.g. `server/webapp` and PDP extensions), therefore two new Maven artifacts:
 	- `authzforce-ce-core-pdp-engine` replacing artifact `authzforce-ce-core` (no classifier);
 	- `authzforce-ce-core-pdp-testutils` replacing artifact `authzforce-ce-core` with `tests` classifier.
 
@@ -367,7 +398,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 - Behavior of *unordered* rule combining algorithms (deny-overrides, permit-overrides, deny-unless-permit and permit-unless deny), i.e. for which the order of evaluation may be different from the order of declaration: child elements are re-ordered for more efficiency (e.g. Deny rules evaluated first in case of deny-overrides algorithm), therefore the algorithm implementation, the order of evaluation in particular, now differs from ordered-* variants.
 
 ### Removed
-- Dependency on Koloboke, replaced by extension mechanism mentioned in *Added* section that would allow to switch from the default HashMap/HashSet implementation to Koloboke-based.
+- Dependency on Koloboke, replaced by extension mechanism mentioned in *Added* section that would allow switching from the default HashMap/HashSet implementation to Koloboke-based.
 
 ### Fixed
 - [JIRA-23] Enforcement of RuleId/PolicyId/PolicySetId uniqueness:
@@ -384,7 +415,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 ## 5.0.1
 ### Fixed
 - [JIRA-22] When handling the same XACML Request twice in the same JVM with the root PolicySet using deny-unless-permit algorithm over a Policy returning simple Deny (no status/obligation/advice) and a Policy returning Permit/Deny with obligations/advice, the obligation is duplicated in the final result at the second time this situation occurs. 
-- XACML StatusCode XML serialization/marshalling error when Missing Attribute info that is no valid anyURI is returned by PDP in a Indeterminate Result
+- XACML StatusCode XML serialization/marshalling error when Missing Attribute info that is no valid anyURI is returned by PDP in an Indeterminate Result
 - Memory management issue: native RootPolicyProvider modules keeping a reference to static refPolicyProvider, even after policies have been resolved statically at initialization time, preventing garbage collection and memory saving.
 - Calls to Logger impacted negatively by autoboxing
 
@@ -394,7 +425,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 ### Changed
 - PDP XML configuration schema namespace: http://authzforce.github.io/core/xmlns/pdp/5.0 (previous namespace: http://authzforce.github.io/core/xmlns/pdp/3.6). See *Removed* section for non-backward-compatible changes to the schema.
 - Parent project version: authzforce-ce-parent: 3.4.0
-- Dependency version: authzforce-ce-core-pdp-api: 7.1.0: requires to pass new EnvironmentProperties parameter to AttributeProvider module factories for using global PDP environment properties (such as PDP configuration file's parent directory)
+- Dependency version: authzforce-ce-core-pdp-api: 7.1.0: requires passing a new EnvironmentProperties parameter to AttributeProvider module factories for using global PDP environment properties (such as PDP configuration file's parent directory)
 - Interpretation of XACML Request flag ReturnPolicyId=true, considering a policy "applicable" if and only if the decision is not NotApplicable and if it is not a root policy, the same goes for the enclosing policy. See also the discussion on the xacml-comment mailing list: https://lists.oasis-open.org/archives/xacml-comment/201605/msg00004.html
 
 ### Added
@@ -405,7 +436,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 - enum StandardCombiningAlgoritm that enumerates all standard XACML combining algorithms
 
 ### Deprecated
-- Ability to marshall internal classes derived from XACML/JAXB Expressions back to the original JAXB Expression: it may consume a significant amount of extra memory, esp. when a nested PolicySet has deep nested Policy(Set)s, and it forces our internal evaluation classes to duplicate information and override many methods. Also it ties the internal model to the JAXB model which is far from optimal for evaluation purposes. Now we consider no longer the responsibility of the PDP to be able to marshall such XACML instances, but the caller's; in particular the classes ApplyExpression, AttributeDesignatorExpression, AttributeSelectorExpression, AttributeAssigmnentExpressionEvaluator no longer extend JAXB classes.
+- Ability to marshall internal classes derived from XACML/JAXB Expressions back to the original JAXB Expression: it may consume a significant amount of extra memory, esp. when a nested PolicySet has deep nested Policy(Set)s, and it forces our internal evaluation classes to duplicate information and override many methods. Also, it ties the internal model to the JAXB model which is far from optimal for evaluation purposes. Now we consider no longer the responsibility of the PDP to be able to marshall such XACML instances, but the caller's; in particular the classes ApplyExpression, AttributeDesignatorExpression, AttributeSelectorExpression, AttributeAssigmnentExpressionEvaluator no longer extend JAXB classes.
 
 
 ## 4.0.2
@@ -455,7 +486,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 
 ## 3.8.1
 ### Fixed
-- Removed use of SAXON StandardURIChecker for validating anyURI XACML AttributeValues causing "possible memory leak" errors in Tomcat, as confirmed by: https://sourceforge.net/p/saxon/mailman/message/27043134 and https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/. Although XACML 3.0 still refers to XSD 1.0 which has a stricter definition of anyURI than XSD 1.1, the fix consisted to use XSD 1.1 anyURI definition for XACML anyURI AttributeValues. In this definition, anyURI and string datatypes have same value space (refer to XSD 1.1 Datatypes document or SAXON note http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html or mailing list: https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/) , therefore anyURI-specific validation is removed and anyURI values are accepted like string values by the program. However, this does not affect XML schema validation of Policy/PolicySet/Request documents against OASIS XACML 3.0 schema, where the XSD 1.0 definition of anyURI still applies.
+- Removed use of SAXON StandardURIChecker for validating anyURI XACML AttributeValues causing "possible memory leak" errors in Tomcat, as confirmed by: https://sourceforge.net/p/saxon/mailman/message/27043134 and https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/. Although XACML 3.0 still refers to XSD 1.0 which has a stricter definition of anyURI than XSD 1.1, the fix consisted in using XSD 1.1 anyURI definition for XACML anyURI AttributeValues. In this definition, anyURI and string datatypes have same value space (refer to XSD 1.1 Datatypes document or SAXON note http://www.saxonica.com/html/documentation9.4/changes/intro93/xsd11-93.html or mailing list: https://sourceforge.net/p/saxon/mailman/saxon-help/thread/4F9E683E.8060001@saxonica.com/) , therefore anyURI-specific validation is removed and anyURI values are accepted like string values by the program. However, this does not affect XML schema validation of Policy/PolicySet/Request documents against OASIS XACML 3.0 schema, where the XSD 1.0 definition of anyURI still applies.
 
 
 ## 3.8.0
@@ -505,7 +536,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 - Added support of xpath-node-count function (optional XACML feature)
 - New modes of request parsing/filtering and attribute matching to enforce best practices and optimize Request processing:
   1. *Strict Attribute Issuer match*: in this mode, an AttributeDesignator without Issuer only matches XACML Request Attributes without Issuer (faster if all Attributes have an Issuer which is recommended, but not fully XACML (§5.29) compliant)
-  2. *Allow Attribute duplicates*: allows defining multi-valued attributes by repeating the same XACML Attribute (same AttributeId) within a XACML Attributes element (same Category). Indeed, not allowing this enables the PDP to parse and evaluate Requests more efficiently, especially if you know the Requests to be well-formed, i.e. all AttributeValues of a given Attribute are grouped together in the same `<Attribute>` element. However, it may not be fully compliant with the XACML spec according to a [discussion](https://lists.oasis-open.org/archives/xacml-dev/201507/msg00001.html) on the xacml-dev mailing list, referring to the XACML 3.0 core spec, §7.3.3, that indicates that multiple occurrences of the same `<Attribute>` with same meta-data but different values should be considered equivalent to a single `<Attribute>` element with same meta-data and merged values (multi-valued Attribute). Moreover, the XACML 3.0 conformance test 'IIIA024' expects this behavior: the multiple subject-id Attributes are expected to result in a multi-value bag during evaluation of the `<AttributeDesignator>`.
+  2. *Allow Attribute duplicates*: allows defining multivalued attributes by repeating the same XACML Attribute (same AttributeId) within a XACML Attributes element (same Category). Indeed, not allowing this enables the PDP to parse and evaluate Requests more efficiently, especially if you know the Requests to be well-formed, i.e. all AttributeValues of a given Attribute are grouped together in the same `<Attribute>` element. However, it may not be fully compliant with the XACML spec according to a [discussion](https://lists.oasis-open.org/archives/xacml-dev/201507/msg00001.html) on the xacml-dev mailing list, referring to the XACML 3.0 core spec, §7.3.3, that indicates that multiple occurrences of the same `<Attribute>` with same meta-data but different values should be considered equivalent to a single `<Attribute>` element with same meta-data and merged values (multivalued Attribute). Moreover, the XACML 3.0 conformance test 'IIIA024' expects this behavior: the multiple subject-id Attributes are expected to result in a multi-value bag during evaluation of the `<AttributeDesignator>`.
 - Features to prevent circular references in Policy(Set)IdReferences or VariableReference
 - Features to limit depth of PolicySetIdReference or VariableReference chain (otherwise no theoretical limit)
 
@@ -519,10 +550,10 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 ### Fixed 
 - Issues reported by PMD and findbugs
 - Fixed issues in [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, see [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct\README.md).
-- In logical OR, AND and N-OF functions, an Indeterminate argument results in Indeterminate result. 
+- In logical `OR`, `AND` and `N-OF` functions, an Indeterminate argument results in Indeterminate result. 
   1. FIX for OR function: If at least one True argument, return True regardless of Indeterminate arguments; else (no True) if there is at least one Indeterminate, return Indeterminate, return Indeterminate; else (no True/Indeterminate -> all false) return false
   1. FIX for AND function: If at least one False argument, return False regardless of Indeterminate arguments; else (no False) if there is at least one Indeterminate, return Indeterminate, return Indeterminate; else (no False/Indeterminate -> all true) return true
-  1. FIX for N-OF function: similar to OR but checking if there are at least N Trues instead of 1, in the remaining arguments; else there is/are n True(s) with `n < N`; if there are at least `(N-n)` Indeterminate, return Indeterminate; else return false.
+  1. FIX for N-OF function: similar to `OR` but checking if there are at least `N` Trues instead of 1, in the remaining arguments; else there is/are n True(s) with `n < N`; if there are at least `(N-n)` Indeterminate, return Indeterminate; else return false.
 - Misleading IllegalArgumentException error for XML-schema-valid anyURI but not valid for `java.net.URI` class. Fixed by using `java.lang.String` instead and validating strings according to anyURI definition with Saxon library
 - RuntimeException when no subject and no resource and no action attributes in the XACML request
 
