@@ -140,7 +140,7 @@ public final class PepActionExpression
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(this + ": Error evaluating " + attrAssignmentExpr, e.getStatusCode(), e);
+				throw new IndeterminateEvaluationException(this + ": Error evaluating " + attrAssignmentExpr, e);
 			}
 
 			assignments.addAll(attrAssignsFromExpr);

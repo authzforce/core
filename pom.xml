@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-parent</artifactId>
-		<version>8.1.0</version>
+		<version>8.2.0</version>
 	</parent>
 	<artifactId>authzforce-ce-core</artifactId>
 	<version>18.0.1-SNAPSHOT</version>
@@ -33,15 +33,10 @@
 			<dependency>
 				<groupId>org.ow2.authzforce</groupId>
 				<artifactId>authzforce-ce-core-pdp-api</artifactId>
-				<version>19.0.0</version>
+				<version>19.1.0</version>
 			</dependency>
 			<!-- /AuthzForce dependencies -->
 			<!-- Test dependencies -->
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.13.1</version>
-			</dependency>
 			<!-- /Test dependencies -->
 		</dependencies>
 	</dependencyManagement>

@@ -148,7 +148,7 @@ public final class MatchEvaluator
 		}
 		catch (final IndeterminateEvaluationException e)
 		{
-			throw new IndeterminateEvaluationException("Error evaluating Match (with equivalent 'any-of' function)", e.getStatusCode(), e);
+			throw new IndeterminateEvaluationException("Error evaluating Match (with equivalent 'any-of' function)", e);
 		}
 
 		return anyOfFuncCallResult.getUnderlyingValue();

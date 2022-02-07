@@ -80,7 +80,7 @@ public final class MultiDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJa
 		public DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
 		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
 		{
-			return new MultiDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, strictAttributeIssuerMatch, true, requireContentForXPath, xmlProcessor, extraPdpFeatures);
+			return new MultiDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, strictAttributeIssuerMatch, true, requireContentForXPath, extraPdpFeatures);
 		}
 	}
 
@@ -109,14 +109,14 @@ public final class MultiDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJa
 		public DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
 		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
 		{
-			return new MultiDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, strictAttributeIssuerMatch, false, requireContentForXPath, xmlProcessor, extraPdpFeatures);
+			return new MultiDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, strictAttributeIssuerMatch, false, requireContentForXPath, extraPdpFeatures);
 		}
 	}
 
 	private MultiDecisionXacmlJaxbRequestPreprocessor(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates,
-	        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+	        final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 	{
-		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor, extraPdpFeatures);
+		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, extraPdpFeatures);
 	}
 
 	/** {@inheritDoc} */

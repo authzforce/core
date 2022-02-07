@@ -204,7 +204,7 @@ public final class PdpEngineAdapters
 	        final DecisionResultPostprocessor<ADAPTEE_INPUT_DECISION_REQUEST, ADAPTER_OUTPUT> defaultResultPostproc) throws IllegalArgumentException, IOException
 	{
 		// use intermediate Java-friendly PdpEngineConfiguration (higher-level than JAXB) that has #getAttributeValueFactory()
-		try (final CloseablePdpEngine adaptedPdpEngine = new BasePdpEngine(configuration))
+		try (CloseablePdpEngine adaptedPdpEngine = new BasePdpEngine(configuration))
 		{
 
 			final Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>> ioProcChain = configuration.getInOutProcChains().get(adapterInputClass);

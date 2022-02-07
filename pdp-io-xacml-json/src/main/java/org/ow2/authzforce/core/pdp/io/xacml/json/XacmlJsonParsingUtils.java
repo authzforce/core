@@ -22,10 +22,7 @@ import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.ow2.authzforce.core.pdp.api.AttributeFqn;
-import org.ow2.authzforce.core.pdp.api.AttributeFqns;
-import org.ow2.authzforce.core.pdp.api.HashCollections;
-import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.io.*;
 import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes.NamedAttributeIteratorConverter;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -187,6 +184,7 @@ public final class XacmlJsonParsingUtils
 	 */
 	private static abstract class BaseXacmlJsonAttributesParser<BAG extends Iterable<? extends AttributeValue>> implements SingleCategoryXacmlAttributesParser<JSONObject>
 	{
+		private static final ImmutableXacmlStatus INVALID_ATT_ERR_STATUS = new ImmutableXacmlStatus(XacmlStatusCode.SYNTAX_ERROR.value(), Optional.of("Invalid Attributes/Attribute element"));
 		private final XacmlRequestAttributeParser<JSONObject, BAG> xacmlReqAttributeParser;
 		private final NamedAttributeIteratorConverter<BAG> namedAttrIterConverter;
 
@@ -277,7 +275,7 @@ public final class XacmlJsonParsingUtils
 					}
 					catch (final IllegalArgumentException e)
 					{
-						throw new IndeterminateEvaluationException("Invalid Attributes/Attribute element", XacmlStatusCode.SYNTAX_ERROR.value(), e);
+						throw new IndeterminateEvaluationException(INVALID_ATT_ERR_STATUS, e);
 					}
 
 					// Check IncludeInResult

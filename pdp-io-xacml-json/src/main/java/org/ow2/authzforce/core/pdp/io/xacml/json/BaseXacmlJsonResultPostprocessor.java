@@ -137,11 +137,8 @@ public class BaseXacmlJsonResultPostprocessor implements DecisionResultPostproce
 		jsonPropertyMap.put("Decision", result.getDecision().value());
 
 		// Status
-		final Status status = result.getStatus();
-		if (status != null)
-		{
-			jsonPropertyMap.put("Status", toJson(status));
-		}
+		final Optional<ImmutableXacmlStatus> optStatus = result.getStatus();
+		optStatus.ifPresent(immutableXacmlStatus -> jsonPropertyMap.put("Status", toJson(immutableXacmlStatus)));
 
 		// Obligations/Advice
 		final ImmutableList<PepAction> pepActions = result.getPepActions();

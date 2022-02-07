@@ -24,6 +24,7 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.ow2.authzforce.core.pdp.api.EnvironmentProperties;
+import org.ow2.authzforce.core.pdp.api.ImmutableXacmlStatus;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParserFactory;
@@ -68,36 +69,9 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 	 */
 	public static final String XACML3_POLICYSET_TYPE_ID = "{" + XacmlVersion.V3_0.getNamespace() + "}" + XacmlNodeName.POLICYSET.value();
 
-	private final String id;
-	private final MongoClient dbClient;
-	private final MongoCollection policyCollection;
-	private final XmlnsFilteringParserFactory xacmlParserFactory;
-	private final ExpressionFactory expressionFactory;
-	private final CombiningAlgRegistry combiningAlgRegistry;
-
-	private MongoDbPolicyProvider(final String id, final ServerAddress serverAddress, final String dbName, final String collectionName, final XmlnsFilteringParserFactory xacmlParserFactory,
-	        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final int maxPolicySetRefDepth)
-	{
-		super(maxPolicySetRefDepth);
-		assert id != null && !id.isEmpty() && dbName != null && !dbName.isEmpty() && collectionName != null && !collectionName.isEmpty() && xacmlParserFactory != null && expressionFactory != null
-		        && combiningAlgRegistry != null;
-
-		this.id = id;
-		this.dbClient = new MongoClient(serverAddress);
-		/*
-		 * FIXME: Issue with getDB() deprecated not fixed yet: https://github.com/bguerout/jongo/issues/320
-		 * AND https://github.com/bguerout/jongo/issues/254
-		 */
-		final Jongo dbApiWrapper = new Jongo(dbClient.getDB(dbName));
-		this.policyCollection = dbApiWrapper.getCollection(collectionName);
-		this.xacmlParserFactory = xacmlParserFactory;
-		this.expressionFactory = expressionFactory;
-		this.combiningAlgRegistry = combiningAlgRegistry;
-	}
-
 	/**
 	 * Factory
-	 * 
+	 *
 	 */
 	public static class Factory extends CloseablePolicyProvider.Factory<MongoDBBasedPolicyProviderDescriptor>
 	{
@@ -114,8 +88,8 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 
 		@Override
 		public CloseablePolicyProvider<?> getInstance(final MongoDBBasedPolicyProviderDescriptor conf, final XmlnsFilteringParserFactory xmlParserFactory, final int maxPolicySetRefDepth,
-		        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties,
-		        final Optional<PolicyProvider<?>> otherHelpingPolicyProvider) throws IllegalArgumentException
+													  final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final EnvironmentProperties environmentProperties,
+													  final Optional<PolicyProvider<?>> otherHelpingPolicyProvider) throws IllegalArgumentException
 		{
 			if (conf == null)
 			{
@@ -143,17 +117,12 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 
 	}
 
-	@Override
-	public void close()
-	{
-		this.dbClient.close();
-	}
-
 	private static final class PolicyQueryResult
 	{
 		private final PolicyPojo policyPojo;
 		private final Object resultJaxbObj;
 		private final Map<String, String> xmlnsToPrefixMap;
+
 
 		private PolicyQueryResult(final PolicyPojo policyPojo, final Object resultJaxbObj, final Map<String, String> xmlnsToPrefixMap)
 		{
@@ -161,6 +130,43 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 			this.xmlnsToPrefixMap = xmlnsToPrefixMap;
 			this.policyPojo = policyPojo;
 		}
+	}
+
+	private final String id;
+	private final MongoClient dbClient;
+	private final MongoCollection policyCollection;
+	private final XmlnsFilteringParserFactory xacmlParserFactory;
+	private final ExpressionFactory expressionFactory;
+	private final CombiningAlgRegistry combiningAlgRegistry;
+	private transient final ImmutableXacmlStatus jaxbUnmarshallerCreationErrStatus;
+
+	private MongoDbPolicyProvider(final String id, final ServerAddress serverAddress, final String dbName, final String collectionName, final XmlnsFilteringParserFactory xacmlParserFactory,
+	        final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final int maxPolicySetRefDepth)
+	{
+		super(maxPolicySetRefDepth);
+		assert id != null && !id.isEmpty() && dbName != null && !dbName.isEmpty() && collectionName != null && !collectionName.isEmpty() && xacmlParserFactory != null && expressionFactory != null
+		        && combiningAlgRegistry != null;
+
+		this.id = id;
+		this.dbClient = new MongoClient(serverAddress);
+		/*
+		 * FIXME: Issue with getDB() deprecated not fixed yet: https://github.com/bguerout/jongo/issues/320
+		 * AND https://github.com/bguerout/jongo/issues/254
+		 */
+		final Jongo dbApiWrapper = new Jongo(dbClient.getDB(dbName));
+		this.policyCollection = dbApiWrapper.getCollection(collectionName);
+		this.xacmlParserFactory = xacmlParserFactory;
+		this.expressionFactory = expressionFactory;
+		this.combiningAlgRegistry = combiningAlgRegistry;
+		this.jaxbUnmarshallerCreationErrStatus = new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.of("PolicyProvider " + id + ": Failed to create JAXB unmarshaller for XACML Policy(Set)"));
+	}
+
+
+
+	@Override
+	public void close()
+	{
+		this.dbClient.close();
 	}
 
 	private PolicyQueryResult getJaxbPolicyElement(final String policyTypeId, final String policyId, final Optional<PolicyVersionPatterns> policyPolicyVersionPatterns)
@@ -233,7 +239,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 		}
 		catch (final JAXBException e)
 		{
-			throw new IndeterminateEvaluationException("PolicyProvider " + id + ": Failed to create JAXB unmarshaller for XACML Policy(Set)", XacmlStatusCode.PROCESSING_ERROR.value(), e);
+			throw new IndeterminateEvaluationException(jaxbUnmarshallerCreationErrStatus, e);
 		}
 
 		final InputSource xmlInputSrc = new InputSource(new StringReader(policyPOJO.getContent()));

@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.value.*;
@@ -33,7 +34,7 @@ import java.util.Set;
  */
 public final class XacmlVariableBasedAttributeProvider extends BaseNamedAttributeProvider
 {
-    private final Set<AttributeDesignatorType> supportedAttDesignators;
+    private final ImmutableSet<AttributeDesignatorType> supportedAttDesignators;
     private final String supportedAttCategory;
     private final UnsupportedOperationException invalidAttCatEx;
     private final AttributeSource attSrc;
@@ -49,7 +50,7 @@ public final class XacmlVariableBasedAttributeProvider extends BaseNamedAttribut
         assert attributeCategory != null && !attributeCategory.isEmpty();
         supportedAttCategory = attributeCategory;
         invalidAttCatEx = new UnsupportedOperationException("Unsupported attribute category: " + supportedAttCategory);
-        supportedAttDesignators = Set.of(new AttributeDesignatorType(attributeCategory, null, null, null, false));
+        supportedAttDesignators = ImmutableSet.of(new AttributeDesignatorType(attributeCategory, null, null, null, false));
         attSrc = AttributeSources.newCustomSource(this.getInstanceID());
     }
 

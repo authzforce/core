@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import net.sf.saxon.s9api.XdmNode;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.AttributeFqn;
@@ -28,7 +29,6 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * (Immutable) Individual decision request using XACML-schema-derived JAXB-annotated objects (XACML Attributes elements), as defined by Multiple Decision Profile of XACML. This differs from
@@ -64,13 +64,13 @@ public final class IndividualXacmlJsonRequest implements DecisionRequest
 	}
 
 	@Override
-	public Map<AttributeFqn, AttributeBag<?>> getNamedAttributes()
+	public ImmutableMap<AttributeFqn, AttributeBag<?>> getNamedAttributes()
 	{
 		return baseRequest.getNamedAttributes();
 	}
 
 	@Override
-	public Map<String, XdmNode> getExtraContentsByCategory()
+	public ImmutableMap<String, XdmNode> getExtraContentsByCategory()
 	{
 		return baseRequest.getExtraContentsByCategory();
 	}

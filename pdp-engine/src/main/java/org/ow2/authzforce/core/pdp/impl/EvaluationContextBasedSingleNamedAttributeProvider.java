@@ -40,7 +40,7 @@ public class EvaluationContextBasedSingleNamedAttributeProvider<AV extends Attri
 	private final AttributeFqn attName;
 	private final Datatype<AV> attType;
 	private final DelegateAttributeProvider<AV> delegate;
-	private final AttributeDesignatorType jaxbAttDes;
+	private final ImmutableAttributeDesignator jaxbAttDes;
 
 	/**
 	 * Creates new instance for given provided attribute and delegate attribute provider to be called if not found in evaluation context
@@ -55,7 +55,7 @@ public class EvaluationContextBasedSingleNamedAttributeProvider<AV extends Attri
 		Preconditions.checkArgument(attributeName != null && attributeDatatype != null && delegate != null, "Invalid arguments");
 		this.attName = attributeName;
 		this.attType = attributeDatatype;
-		this.jaxbAttDes = new AttributeDesignatorType(attName.getCategory(),  attName.getId(), attributeDatatype.getId(), attName.getIssuer().orElse(null), false);
+		this.jaxbAttDes = new ImmutableAttributeDesignator(attName, attributeDatatype, false);
 		this.delegate = delegate;
 	}
 

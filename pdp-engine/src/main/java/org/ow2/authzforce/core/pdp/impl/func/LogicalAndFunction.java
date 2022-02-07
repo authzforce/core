@@ -81,7 +81,7 @@ final class LogicalAndFunction extends SingleParameterTypedFirstOrderFunction<Bo
 					{
 						// keep the indeterminate error to throw later if there was not any FALSE in
 						// remaining args
-						indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e.getStatusCode(), e);
+						indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e);
 					}
 
 					argIndex++;

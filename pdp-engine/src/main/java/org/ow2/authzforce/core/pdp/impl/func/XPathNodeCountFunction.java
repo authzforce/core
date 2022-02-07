@@ -19,6 +19,7 @@ package org.ow2.authzforce.core.pdp.impl.func;
 
 import net.sf.saxon.s9api.XdmValue;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
+import org.ow2.authzforce.core.pdp.api.ImmutableXacmlStatus;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.Expressions;
@@ -47,7 +48,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 	{
 		private static final class Call extends BaseFirstOrderFunctionCall<IntegerValue>
 		{
-			private final String invalidArgTypeMsg;
+			private final ImmutableXacmlStatus invalidArgTypeErrorStatus;
 			private final String indeterminateArgMsg;
 			private final String indeterminateArgEvalMsg;
 			private final List<Expression<?>> checkedArgExpressions;
@@ -56,7 +57,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 			{
 				super(functionSig, argExpressions, remainingArgTypes);
 				this.checkedArgExpressions = argExpressions;
-				invalidArgTypeMsg = "Function " + functionSig.getName() + ": Invalid type of arg #0. Expected: " + StandardDatatypes.XPATH;
+				invalidArgTypeErrorStatus = new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.of("Function " + functionSig.getName() + ": Invalid type of arg #0. Expected: " + StandardDatatypes.XPATH));
 				indeterminateArgMsg = "Function " + functionSig.getName() + ": Indeterminate arg #0";
 				indeterminateArgEvalMsg = "Function " + functionSig.getName() + ": Error evaluating xpathExpression arg #0";
 			}
@@ -74,7 +75,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 						xpathVal = (XPathValue) remainingArgs[0];
 					} catch (final ClassCastException e)
 					{
-						throw new IndeterminateEvaluationException(invalidArgTypeMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
+						throw new IndeterminateEvaluationException(invalidArgTypeErrorStatus, e);
 					}
 				} else
 				{
@@ -85,7 +86,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 
 					} catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(indeterminateArgMsg, e.getStatusCode(), e);
+						throw new IndeterminateEvaluationException(indeterminateArgMsg, e);
 					}
 				}
 
@@ -95,7 +96,7 @@ final class XPathNodeCountFunction extends SingleParameterTypedFirstOrderFunctio
 					xdmResult = xpathVal.evaluate(context);
 				} catch (final IndeterminateEvaluationException e)
 				{
-					throw new IndeterminateEvaluationException(indeterminateArgEvalMsg, e.getStatusCode(), e);
+					throw new IndeterminateEvaluationException(indeterminateArgEvalMsg, e);
 				}
 
 				return IntegerValue.valueOf(xdmResult.size());

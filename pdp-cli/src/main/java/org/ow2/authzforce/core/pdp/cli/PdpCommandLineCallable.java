@@ -141,7 +141,9 @@ public final class PdpCommandLineCallable implements Callable<Void>
 	 */
 	public static void main(final String[] args)
 	{
-		CommandLine.call(new PdpCommandLineCallable(), System.out, args);
+		final CommandLine cli = new CommandLine(new PdpCommandLineCallable());
+		final int exitCode = cli.execute(args);
+		System.exit(exitCode);
 	}
 
 }

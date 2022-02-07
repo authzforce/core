@@ -28,6 +28,7 @@ import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,12 +40,16 @@ import java.util.Set;
  */
 public class EvaluationContextBasedMultiNamedAttributeProvider extends EvaluationContextBasedNamedAttributeProvider implements NamedAttributeProvider
 {
+	/**
+	 * All implementations of this interface must be immutable
+	 */
 	@FunctionalInterface
-	protected interface DelegateSupplier {
+	@Immutable
+	interface DelegateSupplier {
 		<AV extends AttributeValue> DelegateAttributeProvider<AV> get(final AttributeFqn attributeFqn, final Datatype<AV> datatype) throws IndeterminateEvaluationException;
 	}
 
-	private final Set<AttributeDesignatorType> providedAttributes;
+	private final ImmutableSet<AttributeDesignatorType> providedAttributes;
 	private final DelegateSupplier delegateSupplier;
 
 	/**

@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.value.*;
@@ -51,7 +52,7 @@ public final class StandardEnvironmentAttributeProvider extends BaseNamedAttribu
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardEnvironmentAttributeProvider.class);
     private static final ZoneId UTC_ZONE_ID = ZoneId.of("UTC");
     private static final IndeterminateEvaluationException UNEXPECTED_CALL_TO_GET_ATTRIBUTE_EXCEPTION = new IndeterminateEvaluationException("Method StandardEnvironmentAttributeProvider#get(AttributeFqn, Datatype, EvaluationContext, Optional) should not be called in override=true mode because attributes already provided in EvaluationContext when calling method beginIndividualDecisionRequest(EvaluationContext, Optional). (Possibly this method was not called as expected.)", XacmlStatusCode.PROCESSING_ERROR.value());
-    private static final Set<AttributeDesignatorType> SUPPORTED_ATT_DESIGNATORS;
+    private static final ImmutableSet<AttributeDesignatorType> SUPPORTED_ATT_DESIGNATORS;
 
     static
     {
@@ -61,7 +62,7 @@ public final class StandardEnvironmentAttributeProvider extends BaseNamedAttribu
             mutableSet.add(new AttributeDesignatorType(att.getFQN().getCategory(), att.getFQN().getId(), att.getDatatype().getId(), att.getFQN().getIssuer().orElse(null), false));
         }
 
-        SUPPORTED_ATT_DESIGNATORS = Set.copyOf(mutableSet);
+        SUPPORTED_ATT_DESIGNATORS = ImmutableSet.copyOf(mutableSet);
     }
 
     private static void overrideEvalCtxFromTimestamp(final EvaluationContext evalCtx)

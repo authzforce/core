@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
+import org.ow2.authzforce.core.pdp.api.ImmutableXacmlStatus;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
@@ -46,16 +47,16 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 	private static final class Call extends EagerMultiPrimitiveTypeEval<StringValue>
 	{
 
-		private final String invalidArgTypesErrorMsg;
-		private final String argsOutOfBoundsErrorMessage;
+		private final ImmutableXacmlStatus invalidArgTypesErrorStatus;
+		private final ImmutableXacmlStatus argsOutOfBoundsErrorStatus;
 		private final Datatype<? extends SimpleValue<String>> param0Type;
 
 		private Call(final FirstOrderFunctionSignature<StringValue> functionSig, final Datatype<? extends SimpleValue<String>> param0Type, final List<Expression<?>> args,
 		        final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			this.invalidArgTypesErrorMsg = "Function " + functionId + ": Invalid arg types. Expected: " + param0Type + ", " + StandardDatatypes.INTEGER + ", " + StandardDatatypes.INTEGER;
-			this.argsOutOfBoundsErrorMessage = "Function " + functionId + ": either beginIndex is out of bounds, or endIndex =/= -1 and out of bounds";
+			this.invalidArgTypesErrorStatus = new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.of("Function " + functionSig.getName() + ": Invalid arg types. Expected: " + param0Type + ", " + StandardDatatypes.INTEGER + ", " + StandardDatatypes.INTEGER));
+			this.argsOutOfBoundsErrorStatus = new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.of("Function " + functionSig.getName() + ": either beginIndex is out of bounds, or endIndex =/= -1 and out of bounds"));
 			this.param0Type = param0Type;
 		}
 
@@ -79,7 +80,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				endIndex = (IntegerValue) rawArg2;
 			} catch (final ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
+				throw new IndeterminateEvaluationException(invalidArgTypesErrorStatus, e);
 			}
 
 			/*
@@ -107,7 +108,7 @@ final class SubstringFunction<AV extends SimpleValue<String>> extends MultiParam
 				substring = endIndexInt == -1 ? arg0.getUnderlyingValue().substring(beginIndexInt) : arg0.getUnderlyingValue().substring(beginIndexInt, endIndexInt);
 			} catch (ArithmeticException | IndexOutOfBoundsException e)
 			{
-				throw new IndeterminateEvaluationException(argsOutOfBoundsErrorMessage, XacmlStatusCode.PROCESSING_ERROR.value(), e);
+				throw new IndeterminateEvaluationException(argsOutOfBoundsErrorStatus, e);
 			}
 
 			return new StringValue(substring);

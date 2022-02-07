@@ -18,6 +18,7 @@
 package org.ow2.authzforce.core.pdp.impl.policy;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.PolicySet;
@@ -69,12 +70,11 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
     /**
      * Policy wrapper to keep the association between the namespace prefix-URIs from a XACML policy document and the Java instance of the policy resulting from parsing the same document
      *
-     * @param <P>
-     *            policy type
+     * @param <P> policy type
      */
     public static final class PolicyWithNamespaces<P>
     {
-        private final Map<String, String> nsPrefixUriMap;
+        private final ImmutableMap<String, String> nsPrefixUriMap;
 
         /**
          * Get namespace prefix-URI mappings
@@ -98,7 +98,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
 
         private final P policy;
 
-        private PolicyWithNamespaces(final P policy, final Map<String, String> nsPrefixUriMap)
+        private PolicyWithNamespaces(final P policy, final ImmutableMap<String, String> nsPrefixUriMap)
         {
             this.policy = policy;
             this.nsPrefixUriMap = nsPrefixUriMap;
@@ -138,7 +138,6 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
 
     /**
      * Module factory
-     *
      */
     public static class Factory extends CloseablePolicyProvider.Factory<org.ow2.authzforce.core.xmlns.pdp.StaticPolicyProvider>
     {
@@ -224,7 +223,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                             /*
                              * Filename suffix is filenamePattern without starting wildcard
                              */
-                            try (final Stream<Path> fileStream = Files.find(Paths.get(directoryLocation), maxDepth,
+                            try (Stream<Path> fileStream = Files.find(Paths.get(directoryLocation), maxDepth,
                                     (path, attrs) ->
                                     {
                                         if (!attrs.isRegularFile())
@@ -426,7 +425,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
         /*
          * Policy Provider module used only for initialization, more particularly for parsing the PolicySets when they are referred to by others (in PolicySetIdReferences)
          */
-        try (final InitOnlyPolicyProvider bootstrapPolicyProvider = new InitOnlyPolicyProvider(this.policyEvaluatorMap, jaxbPolicySetMap, updatablePolicySetEvaluatorTable, maxPolicySetRefDepth,
+        try (InitOnlyPolicyProvider bootstrapPolicyProvider = new InitOnlyPolicyProvider(this.policyEvaluatorMap, jaxbPolicySetMap, updatablePolicySetEvaluatorTable, maxPolicySetRefDepth,
                 expressionFactory, combiningAlgRegistry, otherPolicyProvider))
         {
             for (final Entry<String, PolicyVersions<PolicyWithNamespaces<PolicySet>>> jaxbPolicySetWithNsEntry : jaxbPolicySetMap.entrySet())
@@ -470,22 +469,15 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
     /**
      * Creates an instance from XACML/JAXB Policy(Set) elements
      *
-     * @param jaxbPolicies
-     *            XACML Policy elements
-     * @param jaxbPolicySets
-     *            XACML PolicySets
-     * @param maxPolicySetRefDepth
-     *            maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...
-     * @param combiningAlgRegistry
-     *            registry of policy/rule combining algorithms
-     * @param expressionFactory
-     *            Expression factory for parsing Expressions used in the policy(set)
-     * @param otherPolicyProvider
-     *            other (supporting) policy provider, used to resolve policy references that match neither {@code jaxbPolicies} nor {@code jaxbPolicySets}
+     * @param jaxbPolicies         XACML Policy elements
+     * @param jaxbPolicySets       XACML PolicySets
+     * @param maxPolicySetRefDepth maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...
+     * @param combiningAlgRegistry registry of policy/rule combining algorithms
+     * @param expressionFactory    Expression factory for parsing Expressions used in the policy(set)
+     * @param otherPolicyProvider  other (supporting) policy provider, used to resolve policy references that match neither {@code jaxbPolicies} nor {@code jaxbPolicySets}
      * @return instance of this module
-     * @throws java.lang.IllegalArgumentException
-     *             if both {@code jaxbPolicies} and {@code jaxbPolicySets} are null/empty, or expressionFactory/combiningAlgRegistry undefined; or one of the Policy(Set)s is not valid or conflicts
-     *             with another because it has same Policy(Set)Id and Version.
+     * @throws java.lang.IllegalArgumentException if both {@code jaxbPolicies} and {@code jaxbPolicySets} are null/empty, or expressionFactory/combiningAlgRegistry undefined; or one of the Policy(Set)s is not valid or conflicts
+     *                                            with another because it has same Policy(Set)Id and Version.
      */
     public static CoreStaticPolicyProvider getInstance(final List<PolicyWithNamespaces<Policy>> jaxbPolicies, final List<PolicyWithNamespaces<PolicySet>> jaxbPolicySets,
                                                        final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry, final Optional<StaticPolicyProvider> otherPolicyProvider)
@@ -570,24 +562,16 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
     /**
      * Creates an instance from policy locations
      *
-     * @param providerParams
-     *            location of Policy(Set) elements (JAXB) to be parsed for future reference by Policy(Set)IdReferences
-     * @param ignoreOldPolicyVersions
-     *            for any given policy ID, ignore all versions except the last one if there are multiple versions of the policy
-     * @param xacmlParserFactory
-     *            XACML parser factory for parsing any XACML Policy(Set)
-     * @param maxPolicySetRefDepth
-     *            maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...; a strictly negative value means no limit
-     * @param combiningAlgRegistry
-     *            registry of policy/rule combining algorithms
-     * @param expressionFactory
-     *            Expression factory for parsing Expressions used in the policy(set)
-     * @param otherPolicyProvider
-     *            other (supporting) policy provider, used to resolve policy references that do not match any of {@code providerParams}
+     * @param providerParams          location of Policy(Set) elements (JAXB) to be parsed for future reference by Policy(Set)IdReferences
+     * @param ignoreOldPolicyVersions for any given policy ID, ignore all versions except the last one if there are multiple versions of the policy
+     * @param xacmlParserFactory      XACML parser factory for parsing any XACML Policy(Set)
+     * @param maxPolicySetRefDepth    maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...; a strictly negative value means no limit
+     * @param combiningAlgRegistry    registry of policy/rule combining algorithms
+     * @param expressionFactory       Expression factory for parsing Expressions used in the policy(set)
+     * @param otherPolicyProvider     other (supporting) policy provider, used to resolve policy references that do not match any of {@code providerParams}
      * @return instance of this class
-     * @throws java.lang.IllegalArgumentException
-     *             if {@code policyURLs == null || policyURLs.length == 0 || xacmlParserFactory == null || expressionFactory == null || combiningAlgRegistry == null}; or one of {@code policyURLs} is
-     *             null or is not a valid XACML Policy(Set) or conflicts with another because it has same Policy(Set)Id and Version. Beware that the Policy(Set)Issuer is ignored from this check!
+     * @throws java.lang.IllegalArgumentException if {@code policyURLs == null || policyURLs.length == 0 || xacmlParserFactory == null || expressionFactory == null || combiningAlgRegistry == null}; or one of {@code policyURLs} is
+     *                                            null or is not a valid XACML Policy(Set) or conflicts with another because it has same Policy(Set)Id and Version. Beware that the Policy(Set)Issuer is ignored from this check!
      */
     public static CoreStaticPolicyProvider getInstance(final List<StaticPolicyProviderInParam> providerParams, final boolean ignoreOldPolicyVersions,
                                                        final XmlnsFilteringParserFactory xacmlParserFactory, final int maxPolicySetRefDepth, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgRegistry,
@@ -648,7 +632,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                 }
             }
 
-            final Map<String, String> nsPrefixUriMap = xacmlParser.getNamespacePrefixUriMap();
+            final ImmutableMap<String, String> nsPrefixUriMap = xacmlParser.getNamespacePrefixUriMap();
             if (jaxbPolicyOrPolicySetObj instanceof Policy)
             {
                 final Policy jaxbPolicy = (Policy) jaxbPolicyOrPolicySetObj;
@@ -658,21 +642,19 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
 
                 if (ignoreOldPolicyVersions)
                 {
-                    final Map<PolicyVersion, StaticTopLevelPolicyElementEvaluator> policyVersions = updatablePolicyTable.row(policyId);
-                    if (policyVersions != null)
+                    final Map<PolicyVersion, StaticTopLevelPolicyElementEvaluator> updatablePolicyVersions = updatablePolicyTable.row(policyId);
+                    // Empty map returned if no mappings
+                    final boolean isOld = updatablePolicyVersions.keySet().parallelStream().anyMatch(v -> policyVersion.compareTo(v) <= 0);
+                    if (isOld)
                     {
-                        final boolean isOld = policyVersions.keySet().parallelStream().anyMatch(v -> policyVersion.compareTo(v) <= 0);
-                        if (isOld)
-                        {
-                            // skip
-                            continue;
-                        }
-
-                        /*
-                         * Else replace/overwrite with this new version (make sure it is the only one), so empty the row first
-                         */
-                        policyVersions.clear();
+                        // skip
+                        continue;
                     }
+
+                    /*
+                     * Else replace/overwrite with this new version (make sure it is the only one), so empty the row first
+                     */
+                    updatablePolicyVersions.clear();
                 }
 
                 final StaticTopLevelPolicyElementEvaluator policyEvaluator;
@@ -699,21 +681,19 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
 
                 if (ignoreOldPolicyVersions)
                 {
-                    final Map<PolicyVersion, PolicyWithNamespaces<PolicySet>> policyVersions = updatablePolicySetTable.row(policyId);
-                    if (policyVersions != null)
+                    final Map<PolicyVersion, PolicyWithNamespaces<PolicySet>> updatablePolicyVersions = updatablePolicySetTable.row(policyId);
+                    // Empty map returned if no mapping
+                    final boolean isOld = updatablePolicyVersions.keySet().parallelStream().anyMatch(v -> policyVersion.compareTo(v) <= 0);
+                    if (isOld)
                     {
-                        final boolean isOld = policyVersions.keySet().parallelStream().anyMatch(v -> policyVersion.compareTo(v) <= 0);
-                        if (isOld)
-                        {
-                            // skip
-                            continue;
-                        }
-
-                        /*
-                         * Else replace/overwrite with this new version (make sure it is the only one), so empty the row first
-                         */
-                        policyVersions.clear();
+                        // skip
+                        continue;
                     }
+
+                    /*
+                     * Else replace/overwrite with this new version (make sure it is the only one), so empty the row first
+                     */
+                    updatablePolicyVersions.clear();
                 }
 
                 final PolicyWithNamespaces<PolicySet> previousValue = updatablePolicySetTable.put(policyId, policyVersion, new PolicyWithNamespaces<>(jaxbPolicySet, nsPrefixUriMap));

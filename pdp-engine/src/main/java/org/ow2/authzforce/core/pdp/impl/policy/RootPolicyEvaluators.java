@@ -21,7 +21,6 @@ import org.ow2.authzforce.core.pdp.api.DecisionResult;
 import org.ow2.authzforce.core.pdp.api.DecisionResults;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.policy.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.slf4j.Logger;
@@ -79,7 +78,6 @@ public final class RootPolicyEvaluators
 	 */
 	public static class Base implements RootPolicyEvaluator
 	{
-		private static final IllegalArgumentException NULL_EXPRESSIONFACTORY_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined XACML Expression parser/factory (expressionFactory)");
 		private static final IllegalArgumentException NULL_ROOTPOLICYPROVIDER_ARGUMENT_EXCEPTION = new IllegalArgumentException("Undefined Root Policy Provider (rootPolicyProvider)");
 
 		private static final Logger LOGGER = LoggerFactory.getLogger(Base.class);
@@ -98,9 +96,6 @@ public final class RootPolicyEvaluators
 		 * Creates a root policy evaluator. If you want static resolution, i.e. use the same constant root policy (resolved at initialization time) for all evaluations, use the static root policy
 		 * Provider provided by {@link #toStatic()} after calling this constructor; then {@link #close()} this instance.
 		 * 
-		 * @param xacmlExpressionFactory
-		 *            XACML expression factory
-		 * 
 		 * @param policyProvider
 		 *            Root Policy Provider - mandatory
 		 * @param rootPolicyElementType
@@ -114,13 +109,8 @@ public final class RootPolicyEvaluators
 		 *             If {@code expressionFactory == null || rootPolicyProvider == null}
 		 */
 		public Base(final CloseablePolicyProvider<?> policyProvider, final Optional<TopLevelPolicyElementType> rootPolicyElementType, final String rootPolicyId,
-		        final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns, final ExpressionFactory xacmlExpressionFactory) throws IllegalArgumentException
+		        final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns) throws IllegalArgumentException
 		{
-			if (xacmlExpressionFactory == null)
-			{
-				throw NULL_EXPRESSIONFACTORY_ARGUMENT_EXCEPTION;
-			}
-
 			if (policyProvider == null)
 			{
 				throw NULL_ROOTPOLICYPROVIDER_ARGUMENT_EXCEPTION;
@@ -215,7 +205,7 @@ public final class RootPolicyEvaluators
 		        final Optional<PolicyVersionPatterns> optRootPolicyVersionPatterns) throws IOException, IndeterminateEvaluationException
 		{
 			assert staticPolicyProvider != null;
-			this.staticRootPolicyEvaluator = getRootPolicyEvaluator(staticPolicyProvider, rootPolicyElementType, rootPolicyId, optRootPolicyVersionPatterns, null, null, LOGGER);
+			this.staticRootPolicyEvaluator = getRootPolicyEvaluator(staticPolicyProvider, rootPolicyElementType, rootPolicyId, optRootPolicyVersionPatterns, null, Optional.empty(), LOGGER);
 			if (this.staticRootPolicyEvaluator == null)
 			{
 				throw new IllegalArgumentException("No such " + (rootPolicyElementType.isPresent() ? rootPolicyElementType.get() : "Policy(Set)") + " found: ID = '" + rootPolicyId + "'"
