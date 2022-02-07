@@ -23,7 +23,7 @@ You may build the project and generate the JAR as follows from your local copy o
 Note that you must use Java 8 to run Maven when building the project.
 
 ### Dependency management
-1. No SNAPSHOT dependencies on "develop" and obviously "master" branches
+No SNAPSHOT dependencies allowed on "develop" and "master" branches.
 
 ### Releasing
 1. From the develop branch, prepare a release (example using an HTTP proxy):
@@ -31,16 +31,17 @@ Note that you must use Java 8 to run Maven when building the project.
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 jgitflow:release-start
 </code></pre>
 1. Update the CHANGELOG according to keepachangelog.com.
-1. To perform the release (example using an HTTP proxy):
-<pre><code>
+2. To perform the release (example using an HTTP proxy):
+   <pre><code>
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 jgitflow:release-finish
-</code></pre>
+   </code></pre>
     If, after deployment, the command does not succeed because of some issue with the branches. Fix the issue, then re-run the same command but with 'noDeploy' option set to true to avoid re-deployment:
-<pre><code>
+   <pre><code>
     $ mvn -Dhttps.proxyHost=proxyhostname -Dhttps.proxyPort=80 -DnoDeploy=true jgitflow:release-finish
-</code></pre>
-1. Connect and log in to the OSS Nexus Repository Manager: https://oss.sonatype.org/
-1. Go to Staging Profiles and select the pending repository authzforce-*... you just uploaded with `jgitflow:release-finish`
-1. Click the Release button to release to Maven Central.
-
-More info on jgitflow: http://jgitflow.bitbucket.org/
+   </code></pre>
+   More info on jgitflow: http://jgitflow.bitbucket.org/
+3. Connect and log in to the OSS Nexus Repository Manager: https://oss.sonatype.org/
+4. Go to Staging Profiles and select the pending repository authzforce-*... you just uploaded with `jgitflow:release-finish`
+5. Click the Release button to release to Maven Central.
+6. Create a new Release on GitHub (copy-paste the description from previous releases and update the versions)
+7. If the [PDP configuration XSD](pdp-engine/src/main/resources/pdp.xsd) has changed with the new release, publish the new schema document in HTML form on https://authzforce.github.io (example for XSD version 8.1) by following the instructions here: https://github.com/authzforce/authzforce.github.io#generating-documentation-for-pdp-configuration-xsd .
