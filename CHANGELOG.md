@@ -43,7 +43,7 @@ All notable changes to this project are documented in this file following the [K
 - [GH-62]: Refactored the provisioning of standard environment attributes `current-dateTime`, `current-date` and `current-time`:
   - Now implemented by a new built-in AttributeProvider (`StandardEnvironmentAttributeProvider` class) which can be customized (to override or not the request values) in the PDP configuration with an `attributeProvider` of type `StdEnvAttributeProviderDescriptor`.
 - `authzforce-ce-core-pdp-testutils` module: upgraded jongo dependency to 1.5.0, mongo-java-driver to 3.12.10
-- `authzforce-ce-core-pdp-cli` module: upgraded picocli to 4.6.2, testng to 7.5
+- `authzforce-ce-core-pdp-cli` module: upgraded picocli to 4.6.2, testng to 6.14.3
 - `authzforce-ce-parent` upgraded to 8.1.0
     
 ### Added
