@@ -6,6 +6,23 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 19.0.0
+### Changed
+- Parent project `authzforce-ce-parent` upgraded to 8.2.0: upgraded following dependencies:
+  - SLF4j to 1.7.32
+  - Spring core to 5.3.14
+  - Saxon-HE to 10.6
+  - Guava to 31.0
+  - org.json:json to 20211205
+- Upgraded dependency `authzforce-ce-core-pdp-api` to 20.0.0
+  - Request Preprocessor extension interface changed: `DecisionRequestPreprocessor.Factory#getInstance(...)` method arg `xmlProcessor` removed.
+- PDP configuration XSD (`pdp.xsd`): `pdp/@version` attribute changed from required to optional with default value equal to xsd version
+- PDP-schema-derived (JAXB-annotated) classes changed: using XJC plugin `immutable-xjc-plugin` instead of `jaxb2-value-constructor`
+- Removed `BasePdpdEngine` class constructor arg: `xacmlExpressionFactory`
+- Removed `RootPolicyEvaluators.Base` class constructor arg: `xacmlExpressionFactory`
+- Removed `PdpEngineConfiguration#getXacmlExpressionFactory()` method.
+
+
 ## 18.0.0
 ### Changed  
 - **Changed the PDP configuration XML schema (XSD): refer to [MIGRATION.md](MIGRATION.md) for migrating your PDP configurations (e.g. `pdp.xml`) to the new schema**:
