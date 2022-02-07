@@ -18,7 +18,6 @@
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
 import com.google.common.collect.ImmutableList;
-import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import org.json.JSONArray;
@@ -67,7 +66,7 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 
 		@Override
 		public DecisionRequestPreprocessor<JSONObject, IndividualXacmlJsonRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+		        final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 		{
 			return new SingleDecisionXacmlJsonRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, true, requireContentForXPath/* , xmlProcessor */,
 			        extraPdpFeatures);
@@ -103,7 +102,7 @@ public final class SingleDecisionXacmlJsonRequestPreprocessor extends BaseXacmlJ
 
 		@Override
 		public DecisionRequestPreprocessor<JSONObject, IndividualXacmlJsonRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+		        final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 		{
 			return new SingleDecisionXacmlJsonRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, false, requireContentForXPath/* , xmlProcessor */,
 			        extraPdpFeatures);

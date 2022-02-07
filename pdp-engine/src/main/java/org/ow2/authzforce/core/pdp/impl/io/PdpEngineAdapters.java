@@ -243,7 +243,7 @@ public final class PdpEngineAdapters
 	{
 		final DecisionResultPostprocessor<IndividualXacmlJaxbRequest, Response> defaultResultPostproc = new BaseXacmlJaxbResultPostprocessor(configuration.getClientRequestErrorVerbosityLevel());
 		final DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> defaultReqPreproc = SingleDecisionXacmlJaxbRequestPreprocessor.LaxVariantFactory.INSTANCE.getInstance(
-		        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(), XmlUtils.SAXON_PROCESSOR,
+		        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(),
 		        defaultResultPostproc.getFeatures());
 
 		return newInoutAdapter(Request.class, Response.class, configuration, defaultReqPreproc, defaultResultPostproc);

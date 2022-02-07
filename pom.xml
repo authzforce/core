@@ -33,7 +33,7 @@
 			<dependency>
 				<groupId>org.ow2.authzforce</groupId>
 				<artifactId>authzforce-ce-core-pdp-api</artifactId>
-				<version>19.1.0</version>
+				<version>20.0.0</version>
 			</dependency>
 			<!-- /AuthzForce dependencies -->
 			<!-- Test dependencies -->

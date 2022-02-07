@@ -607,7 +607,7 @@ public final class PdpEngineConfiguration
 
 				final DecisionRequestPreprocessor.Factory<?, ?> requestPreprocFactory = PdpExtensions.getExtension(DecisionRequestPreprocessor.Factory.class, reqPreprocId);
 				final DecisionRequestPreprocessor<?, ?> decisionRequestPreproc = requestPreprocFactory.getInstance(attValFactoryRegistry, strictAttributeIssuerMatch, enableXPath,
-				        XmlUtils.SAXON_PROCESSOR, decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
+				        decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
 				if (decisionResultPostproc != null && decisionRequestPreproc.getOutputRequestType() != decisionResultPostproc.getRequestType())
 				{
 					throw new IllegalArgumentException(

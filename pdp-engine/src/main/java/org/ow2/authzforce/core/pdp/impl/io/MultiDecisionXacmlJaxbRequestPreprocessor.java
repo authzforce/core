@@ -17,7 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl.io;
 
-import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
@@ -78,7 +77,7 @@ public final class MultiDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJa
 
 		@Override
 		public DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+		        final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 		{
 			return new MultiDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, strictAttributeIssuerMatch, true, requireContentForXPath, extraPdpFeatures);
 		}
@@ -107,7 +106,7 @@ public final class MultiDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJa
 
 		@Override
 		public DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-		        final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+		        final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 		{
 			return new MultiDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, strictAttributeIssuerMatch, false, requireContentForXPath, extraPdpFeatures);
 		}
