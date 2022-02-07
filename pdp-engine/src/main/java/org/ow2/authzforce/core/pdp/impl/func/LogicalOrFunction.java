@@ -82,7 +82,7 @@ final class LogicalOrFunction extends SingleParameterTypedFirstOrderFunction<Boo
 				{
 					// save the indeterminate to throw later only if there was not any TRUE in remaining
 					// args
-					indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e.getStatusCode(), e);
+					indeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e);
 				}
 
 				argIndex++;

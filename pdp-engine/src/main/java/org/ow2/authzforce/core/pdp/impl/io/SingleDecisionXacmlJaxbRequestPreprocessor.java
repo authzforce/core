@@ -18,7 +18,6 @@
 package org.ow2.authzforce.core.pdp.impl.io;
 
 import com.google.common.collect.ImmutableList;
-import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
@@ -67,9 +66,9 @@ public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJ
 
 		@Override
 		public DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-				final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+				final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 		{
-			return new SingleDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, true, requireContentForXPath, xmlProcessor,
+			return new SingleDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, true, requireContentForXPath,
 					extraPdpFeatures);
 		}
 
@@ -103,9 +102,9 @@ public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJ
 
 		@Override
 		public DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> getInstance(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final boolean strictAttributeIssuerMatch,
-				final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+				final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 		{
-			return new SingleDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, false, requireContentForXPath, xmlProcessor,
+			return new SingleDecisionXacmlJaxbRequestPreprocessor(datatypeFactoryRegistry, DEFAULT_REQUEST_FACTORY, strictAttributeIssuerMatch, false, requireContentForXPath,
 					extraPdpFeatures);
 		}
 	}
@@ -125,16 +124,14 @@ public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJ
 	 *            true iff duplicate Attribute (with same metadata) elements in Request (for multi-valued attributes) must be allowed
 	 * @param requireContentForXPath
 	 *            true iff Content elements must be parsed, else ignored
-	 * @param xmlProcessor
-	 *            XML processor for parsing Content elements iff {@code requireContentForXPath}
 	 * @param extraPdpFeatures
 	 *            extra - not mandatory per XACML 3.0 core specification - features supported by the PDP engine. This preprocessor checks whether it is supported by the PDP before processing the
 	 *            request further.
 	 */
 	public SingleDecisionXacmlJaxbRequestPreprocessor(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final DecisionRequestFactory<ImmutableDecisionRequest> requestFactory,
-			final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates, final boolean requireContentForXPath, final Processor xmlProcessor, final Set<String> extraPdpFeatures)
+			final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates, final boolean requireContentForXPath, final Set<String> extraPdpFeatures)
 	{
-		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, xmlProcessor, extraPdpFeatures);
+		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, extraPdpFeatures);
 		assert requestFactory != null;
 		reqFactory = requestFactory;
 	}

@@ -277,15 +277,13 @@ public final class PdpEngineConfiguration
 
 	private final boolean enableXPath;
 	private final AttributeValueFactoryRegistry attValFactoryRegistry;
-
+	private final boolean strictAttributeIssuerMatch;
 	private final Optional<CloseableNamedAttributeProviderRegistry> attProviders;
-
-	private final ExpressionFactory xacmlExpressionFactory;
 
 	/*
 	 * Policy Provider combining all policyProviders declared in PDP configuration
 	 */
-	private CloseablePolicyProvider<?> combinedPolicyProvider = null;
+	private final CloseablePolicyProvider<?> combinedPolicyProvider;
 
 	private final String rootPolicyId;
 
@@ -293,11 +291,9 @@ public final class PdpEngineConfiguration
 
 	private final Optional<PolicyVersionPatterns> rootPolicyVersionPatterns;
 
-	private final boolean strictAttributeIssuerMatch;
-
 	private final Optional<DecisionCache> decisionCache;
 
-	private final Map<Class<?>, Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>>> ioProcChainsByInputType;
+	private final ImmutableMap<Class<?>, Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>>> ioProcChainsByInputType;
 
 	private final int clientReqErrVerbosityLevel;
 
@@ -493,7 +489,7 @@ public final class PdpEngineConfiguration
 		 * XACML Expression factory/parser
 		 */
 		attProviders = attProviderFactories.isEmpty()? Optional.empty(): Optional.of(new CloseableNamedAttributeProviderRegistry(attProviderFactories, attValFactoryRegistry, strictAttributeIssuerMatch));
-		xacmlExpressionFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch, attProviders);
+		final ExpressionFactory xacmlExprFactory = new DepthLimitingExpressionFactory(attValFactoryRegistry, functionRegistry, maxVarRefDepth, enableXPath, strictAttributeIssuerMatch, attProviders);
 
 		/*
 		 * Policy providers
@@ -504,28 +500,31 @@ public final class PdpEngineConfiguration
 			throw NO_POLICYPROVIDER_ARGUMENT_EXCEPTION;
 		}
 
+		CloseablePolicyProvider<?> mutableCombinedPolicyProvider = null;
 		for (final AbstractPolicyProvider policyProviderJaxbConf : policyProviderJaxbConfs)
 		{
-			final CloseablePolicyProvider<?> newPolicyProvider = newPolicyProvider(policyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExpressionFactory, combiningAlgRegistry,
-			        envProps, Optional.ofNullable(combinedPolicyProvider));
+			final CloseablePolicyProvider<?> newPolicyProvider = newPolicyProvider(policyProviderJaxbConf, xacmlParserFactory, maxPolicySetRefDepth, xacmlExprFactory, combiningAlgRegistry,
+			        envProps, Optional.ofNullable(mutableCombinedPolicyProvider));
 
 			/*
 			 * Update combinedPolicyProvider with new policy provider
 			 */
-			if (combinedPolicyProvider == null)
+			if (mutableCombinedPolicyProvider == null)
 			{
-				combinedPolicyProvider = newPolicyProvider;
+				mutableCombinedPolicyProvider = newPolicyProvider;
 			}
-			else if (combinedPolicyProvider instanceof CloseableStaticPolicyProvider && newPolicyProvider instanceof CloseableStaticPolicyProvider)
+			else if (mutableCombinedPolicyProvider instanceof CloseableStaticPolicyProvider && newPolicyProvider instanceof CloseableStaticPolicyProvider)
 			{
-				combinedPolicyProvider = new CompositeCloseableStaticPolicyProvider(
-				        Arrays.asList((CloseableStaticPolicyProvider) combinedPolicyProvider, (CloseableStaticPolicyProvider) newPolicyProvider), maxPolicySetRefDepth);
+				mutableCombinedPolicyProvider = new CompositeCloseableStaticPolicyProvider(
+				        Arrays.asList((CloseableStaticPolicyProvider) mutableCombinedPolicyProvider, (CloseableStaticPolicyProvider) newPolicyProvider), maxPolicySetRefDepth);
 			}
 			else
 			{
-				combinedPolicyProvider = new CompositeCloseablePolicyProvider<>(Arrays.asList(combinedPolicyProvider, newPolicyProvider), maxPolicySetRefDepth);
+				mutableCombinedPolicyProvider = new CompositeCloseablePolicyProvider<>(Arrays.asList(mutableCombinedPolicyProvider, newPolicyProvider), maxPolicySetRefDepth);
 			}
 		}
+
+		combinedPolicyProvider = mutableCombinedPolicyProvider;
 
 		final TopLevelPolicyElementRef rootPolicyRef = pdpJaxbConf.getRootPolicyRef();
 		/*
@@ -576,7 +575,7 @@ public final class PdpEngineConfiguration
 
 		if (inoutProcChains.isEmpty())
 		{
-			this.ioProcChainsByInputType = Collections.emptyMap();
+			this.ioProcChainsByInputType = ImmutableMap.of();
 		}
 		else
 		{
@@ -608,7 +607,7 @@ public final class PdpEngineConfiguration
 
 				final DecisionRequestPreprocessor.Factory<?, ?> requestPreprocFactory = PdpExtensions.getExtension(DecisionRequestPreprocessor.Factory.class, reqPreprocId);
 				final DecisionRequestPreprocessor<?, ?> decisionRequestPreproc = requestPreprocFactory.getInstance(attValFactoryRegistry, strictAttributeIssuerMatch, enableXPath,
-				        XmlUtils.SAXON_PROCESSOR, decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
+				        decisionResultPostproc == null ? Collections.emptySet() : decisionResultPostproc.getFeatures());
 				if (decisionResultPostproc != null && decisionRequestPreproc.getOutputRequestType() != decisionResultPostproc.getRequestType())
 				{
 					throw new IllegalArgumentException(
@@ -909,16 +908,6 @@ public final class PdpEngineConfiguration
 	public Optional<CloseableNamedAttributeProviderRegistry> getAttributeProviders()
 	{
 		return attProviders;
-	}
-
-	/**
-	 * Returns the XACML Expression parser/factory
-	 * 
-	 * @return the XACML expression factory
-	 */
-	public ExpressionFactory getXacmlExpressionFactory()
-	{
-		return xacmlExpressionFactory;
 	}
 
 	/**

@@ -154,7 +154,7 @@ public final class PolicyEvaluators
 		private final T element;
 
 		// the parameters used with this element
-		private final List<ParameterAssignment> parameters;
+		private final ImmutableList<ParameterAssignment> parameters;
 
 		/**
 		 * Constructor that takes both the element to combine and its associated combiner parameters.
@@ -177,7 +177,7 @@ public final class PolicyEvaluators
 			this.element = element;
 			if (jaxbCombinerParameters == null)
 			{
-				this.parameters = Collections.emptyList();
+				this.parameters = ImmutableList.of();
 			}
 			else
 			{
@@ -198,7 +198,7 @@ public final class PolicyEvaluators
 					paramIndex++;
 				}
 
-				this.parameters = Collections.unmodifiableList(modifiableParamList);
+				this.parameters = ImmutableList.copyOf(modifiableParamList);
 			}
 		}
 
@@ -646,7 +646,7 @@ public final class PolicyEvaluators
 				 * evaluation does not return NotApplicable.
 				 */
 				final DecisionType algResultDecision = algResult.getDecision();
-				final Status algResultStatus = algResult.getStatus();
+				final Optional<ImmutableXacmlStatus> algResultStatus = algResult.getStatus();
 				switch (algResultDecision)
 				{
 					case NOT_APPLICABLE:
@@ -965,6 +965,8 @@ public final class PolicyEvaluators
 			return refPolicies.isEmpty() ? Optional.empty() : Optional.of(new BasePolicyRefsMetadata(refPolicies, longestPolicyRefChain));
 		}
 
+		// PMD does not see that this method is used in lambda expressions
+		@SuppressWarnings("PMD.UnusedPrivateMethod")
 		private void updateMetadata(final PolicyRefsMetadata childPolicyRefsMetadata)
 		{
 			assert childPolicyRefsMetadata != null;
@@ -1083,6 +1085,7 @@ public final class PolicyEvaluators
 		 */
 		private final StaticTopLevelPolicyElementEvaluator referredPolicy;
 		private transient final Optional<PolicyRefsMetadata> extraMetadata;
+		private transient final String isApplicableByTargetCallErrMsg = "Error checking whether Policy(Set) referenced by " + this + " is applicable to the request context";
 
 		private static TopLevelPolicyElementType validate(final PolicyEvaluator referredPolicy)
 		{
@@ -1118,7 +1121,7 @@ public final class PolicyEvaluators
 			}
 			catch (final IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException("Error checking whether Policy(Set) referenced by " + this + " is applicable to the request context", e.getStatusCode(), e);
+				throw new IndeterminateEvaluationException(isApplicableByTargetCallErrMsg, e);
 			}
 		}
 
@@ -1173,6 +1176,7 @@ public final class PolicyEvaluators
 		private final PolicyProvider<?> refPolicyProvider;
 
 		private final String requestScopedCacheKey;
+		private final ImmutableXacmlStatus policyResolutionErrStatus;
 
 		private DynamicTopLevelPolicyElementRefEvaluator(final TopLevelPolicyElementType policyType, final String policyId, final Optional<PolicyVersionPatterns> versionConstraints,
 		        final PolicyProvider<?> refPolicyProvider)
@@ -1184,6 +1188,7 @@ public final class PolicyEvaluators
 			 * define a key for caching the resolved policy in the request context (see Object#toString())
 			 */
 			this.requestScopedCacheKey = this.getClass().getName() + '@' + Integer.toHexString(hashCode());
+			this.policyResolutionErrStatus = new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.of("Error resolving " + this + " to the policy to evaluate in the request context"));
 		}
 
 		protected final void checkJoinedPolicySetRefChain(final Deque<String> chain1, final List<String> chain2) throws IllegalArgumentException
@@ -1238,8 +1243,7 @@ public final class PolicyEvaluators
 			}
 			catch (final IllegalArgumentException e)
 			{
-				final IndeterminateEvaluationException resolutionException = new IndeterminateEvaluationException("Error resolving " + this + " to the policy to evaluate in the request context",
-				        XacmlStatusCode.PROCESSING_ERROR.value(), e);
+				final IndeterminateEvaluationException resolutionException = new IndeterminateEvaluationException(policyResolutionErrStatus, e);
 				final RefResolvedResult newCacheValue = new RefResolvedResult(resolutionException);
 				evalCtx.putOther(requestScopedCacheKey, newCacheValue);
 				throw resolutionException;

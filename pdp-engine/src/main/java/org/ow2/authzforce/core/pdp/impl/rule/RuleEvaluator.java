@@ -204,7 +204,7 @@ public final class RuleEvaluator implements Decidable
 		@Override
 		protected DecisionResult getInstance(final ImmutableList<PepAction> pepActions)
 		{
-			return DecisionResults.getPermit(null, pepActions, null);
+			return DecisionResults.getPermit(Optional.empty(), pepActions, null);
 		}
 
 		@Override
@@ -224,7 +224,7 @@ public final class RuleEvaluator implements Decidable
 		@Override
 		protected DecisionResult getInstance(final ImmutableList<PepAction> pepActions)
 		{
-			return DecisionResults.getDeny(null, pepActions, null);
+			return DecisionResults.getDeny(Optional.empty(), pepActions, null);
 		}
 
 		@Override

@@ -20,6 +20,7 @@ package org.ow2.authzforce.core.pdp.impl;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
@@ -67,7 +68,7 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 	 */
 	private static final class EvaluationContextOnlyScopedMultiNamedAttributeProvider extends EvaluationContextBasedMultiNamedAttributeProvider
 	{
-		private static final DelegateSupplier DELEGATE_SUPPLIER = new DelegateSupplier()
+		private static final DelegateSupplier NO_OP_DELEGATE_SUPPLIER = new DelegateSupplier()
 		{
 			@Override
 			public <AV extends AttributeValue> DelegateAttributeProvider<AV> get(final AttributeFqn attributeFqn, final Datatype<AV> datatype)
@@ -84,7 +85,7 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 		 */
 		private EvaluationContextOnlyScopedMultiNamedAttributeProvider(final ImmutableSet<AttributeDesignatorType> providedAttributes, final boolean strictAttributeIssuerMatch)
 		{
-			super(providedAttributes, strictAttributeIssuerMatch, DELEGATE_SUPPLIER);
+			super(providedAttributes, strictAttributeIssuerMatch, NO_OP_DELEGATE_SUPPLIER);
 		}
 	}
 
@@ -98,15 +99,19 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 			 - a subset of entries from providersByAttributeName "matching" requiredProvidedAttributes (all providers not providing any of requiredProvidedAttributes should be filtered out as a result)
 			 - EvaluationContext-only-based (extracting from the request context only) attribute provider as default provider if there is no match for a given providedAttribute, as all requiredProvidedAttributes are... required (must be provided somehow).
 			 */
-			final ListMultimap<AttributeFqn, NamedAttributeProvider> mutableMatchingProvidersByAttrName = MultimapBuilder.hashKeys(requiredProvidedAttributes.size()).arrayListValues(1).build();
+			final MultimapBuilder.MultimapBuilderWithKeys<@Nullable Object> multimapBuilder = MultimapBuilder.hashKeys(requiredProvidedAttributes.size());
+			//assert multimapBuilder != null;
+			final MultimapBuilder.ListMultimapBuilder<@Nullable Object, @Nullable Object> listMultimapBuilder = multimapBuilder.arrayListValues(1);
+			//assert listMultimapBuilder != null;
+			final ListMultimap<AttributeFqn, NamedAttributeProvider> mutableMatchingProvidersByAttrName = listMultimapBuilder.build();
 			for (final AttributeDesignatorType providedAttDes : requiredProvidedAttributes)
 			{
 				final AttributeFqn providedAttName = AttributeFqns.newInstance(providedAttDes);
 				final List<NamedAttributeProvider> matchingProviders = providersByAttributeName.get(providedAttName);
 				/*
-				 * Empty matchingProviders means it should be provided by the request context (in the initial request from PEP)
+				 * Empty matchingProviders list returned if no provider of providedAttName, in which case it means it should be provided by the request context (in the initial request from PEP)
 				 */
-				if (matchingProviders == null || matchingProviders.isEmpty())
+				if (matchingProviders.isEmpty())
 				{
 					mutableMatchingProvidersByAttrName.put(providedAttName, new EvaluationContextOnlyScopedMultiNamedAttributeProvider(ImmutableSet.of(providedAttDes), strictAttributeIssuerMatch));
 				} else {
@@ -125,7 +130,7 @@ public final class CloseableNamedAttributeProviderRegistry implements Closeable
 					/*
 					 * A non-null empty list is expected if no mappings
 					 */
-					assert subProviders != null;
+					//assert subProviders != null;
 					if (subProviders.isEmpty())
 					{
 						LOGGER.debug("No value found for required attribute {}, type={} in evaluation context and not supported by any Attribute Provider module", attributeFqn, datatype);

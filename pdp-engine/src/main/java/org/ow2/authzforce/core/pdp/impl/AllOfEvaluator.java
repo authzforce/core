@@ -164,6 +164,6 @@ public final class AllOfEvaluator
 
         // No False but at least one Indeterminate (lastIndeterminate != null)
         throw new IndeterminateEvaluationException("Error evaluating <AllOf>'s <Match>#" + lastIndeterminateChildIndex,
-                lastIndeterminate.getStatusCode(), lastIndeterminate);
+                lastIndeterminate);
     }
 }

@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
+import com.google.common.collect.ImmutableMap;
 import net.sf.saxon.s9api.XdmNode;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
@@ -26,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -50,7 +50,7 @@ public final class IndividualDecisionRequestContext extends BaseEvaluationContex
 	 * Content in Request or no feature requiring XPath evaluation against Content is supported/enabled.
 	 */
 	// Not null
-	private final Map<String, XdmNode> extraContentsByAttributeCategory;
+	private final ImmutableMap<String, XdmNode> extraContentsByAttributeCategory;
 
 	/*
 	 * AttributeSelector evaluation results. Not null
@@ -68,12 +68,12 @@ public final class IndividualDecisionRequestContext extends BaseEvaluationContex
 	 * @param returnApplicablePolicyIdList
 	 *            true iff list of IDs of policies matched during evaluation must be returned
 	 */
-	public IndividualDecisionRequestContext(final Map<AttributeFqn, AttributeBag<?>> namedAttributeMap, final Map<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicyIdList, Optional<Instant> requestTimestamp)
+	public IndividualDecisionRequestContext(final Map<AttributeFqn, AttributeBag<?>> namedAttributeMap, final ImmutableMap<String, XdmNode> extraContentsByCategory, final boolean returnApplicablePolicyIdList, Optional<Instant> requestTimestamp)
 	{
 		super(namedAttributeMap, returnApplicablePolicyIdList, requestTimestamp);
 		if (extraContentsByCategory == null)
 		{
-			this.extraContentsByAttributeCategory = Collections.emptyMap();
+			this.extraContentsByAttributeCategory = ImmutableMap.of();
 			this.attributeSelectorResults = UpdatableCollections.emptyMap();
 		} else
 		{

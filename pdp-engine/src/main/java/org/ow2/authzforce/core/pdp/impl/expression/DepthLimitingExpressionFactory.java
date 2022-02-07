@@ -534,7 +534,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		} else
 		{
 			final List<NamedAttributeProvider> registeredAttProviders = this.attributeProviderRegistry.get().getProviders(attName);
-			combiningProvider = registeredAttProviders == null || registeredAttProviders.isEmpty() ?  new EvaluationContextOnlyScopedSingleNamedAttributeProvider<>(attName, attType, this.issuerRequiredOnAttributeDesignators):
+			// Empty list returned if no provider of attName
+			combiningProvider = registeredAttProviders.isEmpty() ?  new EvaluationContextOnlyScopedSingleNamedAttributeProvider<>(attName, attType, this.issuerRequiredOnAttributeDesignators):
 			new CompositeSingleNamedAttributeProvider<>(attName, attType, this.issuerRequiredOnAttributeDesignators, registeredAttProviders);
 		}
 		return new GenericAttributeProviderBasedAttributeDesignatorExpression<>(attName, mustBePresent, attType.getBagDatatype(), combiningProvider);
@@ -604,7 +605,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 				} else
 				{
 					final List<NamedAttributeProvider> registeredAttProviders = this.attributeProviderRegistry.get().getProviders(contextSelectorAttName);
-					ctxSelectorAttProvider = registeredAttProviders == null || registeredAttProviders.isEmpty() ? new EvaluationContextOnlyScopedSingleNamedAttributeProvider<>(contextSelectorAttName, StandardDatatypes.XPATH, issuerRequiredOnAttributeDesignators) : new CompositeSingleNamedAttributeProvider<>(contextSelectorAttName, StandardDatatypes.XPATH, issuerRequiredOnAttributeDesignators, registeredAttProviders);
+					// Empty list returned if no provider of contextSelectorAttName
+					ctxSelectorAttProvider = registeredAttProviders.isEmpty() ? new EvaluationContextOnlyScopedSingleNamedAttributeProvider<>(contextSelectorAttName, StandardDatatypes.XPATH, issuerRequiredOnAttributeDesignators) : new CompositeSingleNamedAttributeProvider<>(contextSelectorAttName, StandardDatatypes.XPATH, issuerRequiredOnAttributeDesignators, registeredAttProviders);
 				}
 				expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector, xPathCompiler, attrFactory, ctxSelectorAttProvider);
 			}

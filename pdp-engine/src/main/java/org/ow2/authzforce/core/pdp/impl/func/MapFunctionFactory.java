@@ -93,7 +93,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 						argVal = Expressions.evalPrimitive(primitiveArgExprAfterBag, context, mdpContext);
 					} catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException("Indeterminate arg #" + (this.bagArgIndex + i), e.getStatusCode(), e);
+						throw new IndeterminateEvaluationException("Indeterminate arg #" + (this.bagArgIndex + i), e);
 					}
 
 					argsAfterBagInclusive[i] = argVal;
@@ -110,7 +110,7 @@ final class MapFunctionFactory extends GenericHigherOrderFunctionFactory
 						subResult = subFuncCall.evaluate(context, mdpContext, argsAfterBagInclusive);
 					} catch (final IndeterminateEvaluationException e)
 					{
-						throw new IndeterminateEvaluationException(indeterminateSubFuncEvalMessagePrefix + bagElement, e.getStatusCode(), e);
+						throw new IndeterminateEvaluationException(indeterminateSubFuncEvalMessagePrefix + bagElement, e);
 					}
 
 					results.add(subResult);

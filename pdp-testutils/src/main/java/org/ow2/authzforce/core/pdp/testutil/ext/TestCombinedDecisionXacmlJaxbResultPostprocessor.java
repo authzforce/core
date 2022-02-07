@@ -49,11 +49,11 @@ public class TestCombinedDecisionXacmlJaxbResultPostprocessor extends BaseXacmlJ
 	private static final Set<String> FEATURES = ImmutableSet.of(DecisionResultPostprocessor.Features.XACML_MULTIPLE_DECISION_PROFILE_COMBINED_DECISION);
 
 	private static final Response SIMPLE_INDETERMINATE_RESPONSE = new Response(
-	        Collections.singletonList(new Result(DecisionType.INDETERMINATE, new StatusHelper(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.empty()), null, null, null, null)));
+	        Collections.singletonList(new Result(DecisionType.INDETERMINATE, new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.empty()), null, null, null, null)));
 
-	private static final Response SIMPLE_PERMIT_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.PERMIT, StatusHelper.OK, null, null, null, null)));
-	private static final Response SIMPLE_DENY_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.DENY, StatusHelper.OK, null, null, null, null)));
-	private static final Response SIMPLE_NOT_APPLICABLE_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.NOT_APPLICABLE, StatusHelper.OK, null, null, null, null)));
+	private static final Response SIMPLE_PERMIT_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.PERMIT, ImmutableXacmlStatus.OK, null, null, null, null)));
+	private static final Response SIMPLE_DENY_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.DENY, ImmutableXacmlStatus.OK, null, null, null, null)));
+	private static final Response SIMPLE_NOT_APPLICABLE_RESPONSE = new Response(Collections.singletonList(new Result(DecisionType.NOT_APPLICABLE, ImmutableXacmlStatus.OK, null, null, null, null)));
 
 	private TestCombinedDecisionXacmlJaxbResultPostprocessor(final int clientRequestErrorVerbosityLevel) throws IllegalArgumentException
 	{

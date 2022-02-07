@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -56,12 +57,14 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 	 */
 	private static final IndeterminateEvaluationException UNSUPPORTED_COMBINED_DECISION_EXCEPTION = new IndeterminateEvaluationException("Unsupported CombinedDecision value in Request: 'true'",
 			XacmlStatusCode.SYNTAX_ERROR.value());
+	private static final ImmutableXacmlStatus INVALID_REQ_ERR_STATUS = new ImmutableXacmlStatus(XacmlStatusCode.SYNTAX_ERROR.value(), Optional.of("Invalid Request"));
 
 	/**
 	 * Indeterminate exception to be thrown iff MultiRequests element not supported by the request preprocessor
 	 */
 	protected static final IndeterminateEvaluationException UNSUPPORTED_MULTI_REQUESTS_EXCEPTION = new IndeterminateEvaluationException("Unsupported element in Request: <MultiRequests>",
 			XacmlStatusCode.SYNTAX_ERROR.value());
+
 
 	private final SingleCategoryXacmlAttributesParser.Factory<JSONObject> xacmlAttrsParserFactory;
 	private final boolean isCombinedDecisionSupported;
@@ -196,7 +199,7 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 		catch (final ValidationException e)
 		{
 			LOGGER.debug(e.toJSON().toString(4));
-			throw new IndeterminateEvaluationException("Invalid Request", XacmlStatusCode.SYNTAX_ERROR.value(), e);
+			throw new IndeterminateEvaluationException(INVALID_REQ_ERR_STATUS, e);
 		}
 
 		final JSONObject requestJsonObj = request.optJSONObject("Request");

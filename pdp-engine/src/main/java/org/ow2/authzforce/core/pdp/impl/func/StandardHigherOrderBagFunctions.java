@@ -103,7 +103,7 @@ final class StandardHigherOrderBagFunctions
                     bag0 = bagArgExpr0.evaluate(context, mdpContext);
                 } catch (final IndeterminateEvaluationException e)
                 {
-                    throw new IndeterminateEvaluationException(errorEvalArg1Message, e.getStatusCode());
+                    throw new IndeterminateEvaluationException(errorEvalArg1Message, e.getTopLevelStatus().getStatusCode().getValue());
                 }
 
                 /*
@@ -121,7 +121,7 @@ final class StandardHigherOrderBagFunctions
                     bag1 = bagArgExpr1.evaluate(context, mdpContext);
                 } catch (final IndeterminateEvaluationException e)
                 {
-                    throw new IndeterminateEvaluationException(errorEvalArg2Message, e.getStatusCode());
+                    throw new IndeterminateEvaluationException(errorEvalArg2Message, e.getTopLevelStatus().getStatusCode().getValue());
                 }
 
                 if (bag1.isEmpty())
@@ -246,7 +246,7 @@ final class StandardHigherOrderBagFunctions
                     bagArg = Expressions.eval(bagArgExpr, context, mdpContext, bagArgDatatype);
                 } catch (final IndeterminateEvaluationException e)
                 {
-                    throw new IndeterminateEvaluationException(errorEvalBagArgMsg, e.getStatusCode(), e);
+                    throw new IndeterminateEvaluationException(errorEvalBagArgMsg, e);
                 }
 
                 return evaluate(bagArg, context, mdpContext);
@@ -405,7 +405,7 @@ final class StandardHigherOrderBagFunctions
                             subResult = subFuncCall.evaluate(context, mdpContext, attrVal);
                         } catch (final IndeterminateEvaluationException e)
                         {
-                            throw new IndeterminateEvaluationException(subFuncCallWithLastArgErrMsgPrefix + attrVal, e.getStatusCode(), e);
+                            throw new IndeterminateEvaluationException(subFuncCallWithLastArgErrMsgPrefix + attrVal, e);
                         }
 
                         final BooleanValue finalResult = funcCallFactory.getFinalResult(subResult);
@@ -549,7 +549,7 @@ final class StandardHigherOrderBagFunctions
 
                     } catch (final IndeterminateEvaluationException e)
                     {
-                        throw new IndeterminateEvaluationException(subFuncArgEvalErrMsg, e.getStatusCode(), e);
+                        throw new IndeterminateEvaluationException(subFuncArgEvalErrMsg, e);
                     }
                     // save the result for reuse when building the next list of sub-function
                     // arguments to avoid re-evaluation
@@ -580,7 +580,7 @@ final class StandardHigherOrderBagFunctions
                         return subFuncCall.evaluate(context, mdpContext, subFuncArgValues);
                     } catch (final IndeterminateEvaluationException e)
                     {
-                        throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + subFuncArgsStack, e.getStatusCode(), e);
+                        throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + subFuncArgsStack, e);
                     }
                 }
 
@@ -775,7 +775,7 @@ final class StandardHigherOrderBagFunctions
                         subResult = subFunctionCall.evaluate(context, mdpContext, subFuncArgs);
                     } catch (final IndeterminateEvaluationException e)
                     {
-                        throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e.getStatusCode());
+                        throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e);
                     }
 
                     if (subResult.getUnderlyingValue())
@@ -857,7 +857,7 @@ final class StandardHigherOrderBagFunctions
                         subResult = subFunctionCall.evaluate(context, mdpContext, subFuncArgs);
                     } catch (final IndeterminateEvaluationException e)
                     {
-                        throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e.getStatusCode());
+                        throw new IndeterminateEvaluationException(subFunctionCallErrorMessagePrefix + Arrays.toString(subFuncArgs), e);
                     }
 
                     if (!subResult.getUnderlyingValue())

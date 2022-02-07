@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
+import org.ow2.authzforce.core.pdp.api.ImmutableXacmlStatus;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.func.BaseFirstOrderFunctionCall.EagerMultiPrimitiveTypeEval;
@@ -32,6 +33,7 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implements generic match functions taking parameters of possibly different types.
@@ -53,7 +55,7 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 
 	private static final class Call<TV extends BaseTimeValue<TV>, DV extends DurationValue<DV>> extends EagerMultiPrimitiveTypeEval<TV>
 	{
-		private final String invalidArgTypesErrorMsg;
+		private final ImmutableXacmlStatus invalidArgTypesErrorStatus;
 		private final Datatype<DV> durationParamType;
 		private final Datatype<TV> timeParamType;
 		private final StaticOperation<TV, DV> op;
@@ -62,7 +64,7 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 		        final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes) throws IllegalArgumentException
 		{
 			super(functionSig, args, remainingArgTypes);
-			invalidArgTypesErrorMsg = "Function " + this.functionId + ": Invalid arg types. Expected: " + timeParamType + "," + durationParamType;
+			invalidArgTypesErrorStatus = new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.of("Function " + functionSig.getName() + ": Invalid arg types. Expected: " + timeParamType + "," + durationParamType));
 			this.timeParamType = timeParamType;
 			this.durationParamType = durationParamType;
 			this.op = op;
@@ -82,7 +84,7 @@ final class TemporalArithmeticFunction<T extends BaseTimeValue<T>, D extends Dur
 				arg1 = durationParamType.cast(rawArg1);
 			} catch (final ClassCastException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgTypesErrorMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
+				throw new IndeterminateEvaluationException(invalidArgTypesErrorStatus, e);
 			}
 
 			return op.eval(arg0, arg1);

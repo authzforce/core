@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.func;
 
+import org.ow2.authzforce.core.pdp.api.ImmutableXacmlStatus;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ConstantPrimitiveAttributeValueExpression;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
@@ -75,7 +76,7 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 
 	private static final class Call<V extends NumericValue<?, V>> extends EagerSinglePrimitiveTypeEval<V, V>
 	{
-		private final String invalidArgsErrMsg;
+		private final ImmutableXacmlStatus invalidArgsErrStatus;
 		private final StaticOperation<V> op;
 
 		private Call(final SingleParameterTypedFirstOrderFunctionSignature<V, V> functionSig, final StaticOperation<V> op, final List<Expression<?>> args, final Datatype<?>[] remainingArgTypes)
@@ -83,7 +84,7 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 		{
 			super(functionSig, args, remainingArgTypes);
 			this.op = op;
-			this.invalidArgsErrMsg = "Function " + this.functionId + ": invalid argument(s)";
+			this.invalidArgsErrStatus = new ImmutableXacmlStatus(XacmlStatusCode.PROCESSING_ERROR.value(), Optional.of("Function " + functionSig.getName() + ": invalid argument(s)"));
 		}
 
 		@Override
@@ -93,7 +94,7 @@ final class NumericArithmeticFunction<AV extends NumericValue<?, AV>> extends Si
 				return op.eval(args);
 			} catch (IllegalArgumentException | ArithmeticException e)
 			{
-				throw new IndeterminateEvaluationException(invalidArgsErrMsg, XacmlStatusCode.PROCESSING_ERROR.value(), e);
+				throw new IndeterminateEvaluationException(invalidArgsErrStatus, e);
 			}
 		}
 	}

@@ -177,7 +177,7 @@ public final class AnyOfEvaluator
 		// No Match and at least one Indeterminate (lastIndeterminate != null)
 		// -> Indeterminate
 		throw new IndeterminateEvaluationException("Error evaluating <AnyOf>'s <AllOf>#" + lastIndeterminateChildIndex,
-				lastIndeterminate.getStatusCode(), lastIndeterminate);
+				lastIndeterminate);
 	}
 
 }

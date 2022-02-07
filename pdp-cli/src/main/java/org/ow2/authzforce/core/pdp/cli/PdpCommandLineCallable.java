@@ -23,7 +23,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.XmlUtils;
 import org.ow2.authzforce.core.pdp.api.XmlUtils.XmlnsFilteringParser;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.api.io.XacmlJaxbParsingUtils;
@@ -104,7 +103,7 @@ public final class PdpCommandLineCallable implements Callable<Void>
 				final DecisionResultPostprocessor<IndividualXacmlJsonRequest, JSONObject> defaultResultPostproc = new BaseXacmlJsonResultPostprocessor(
 				        configuration.getClientRequestErrorVerbosityLevel());
 				final DecisionRequestPreprocessor<JSONObject, IndividualXacmlJsonRequest> defaultReqPreproc = SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.INSTANCE.getInstance(
-				        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(), XmlUtils.SAXON_PROCESSOR,
+				        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(),
 				        defaultResultPostproc.getFeatures());
 
 				final PdpEngineInoutAdapter<JSONObject, JSONObject> jsonPdpEngineAdapter = PdpEngineAdapters.newInoutAdapter(JSONObject.class, JSONObject.class, configuration, defaultReqPreproc,
@@ -141,7 +140,9 @@ public final class PdpCommandLineCallable implements Callable<Void>
 	 */
 	public static void main(final String[] args)
 	{
-		CommandLine.call(new PdpCommandLineCallable(), System.out, args);
+		final CommandLine cli = new CommandLine(new PdpCommandLineCallable());
+		final int exitCode = cli.execute(args);
+		System.exit(exitCode);
 	}
 
 }

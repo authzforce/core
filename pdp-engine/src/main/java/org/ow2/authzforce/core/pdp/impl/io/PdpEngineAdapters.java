@@ -204,7 +204,7 @@ public final class PdpEngineAdapters
 	        final DecisionResultPostprocessor<ADAPTEE_INPUT_DECISION_REQUEST, ADAPTER_OUTPUT> defaultResultPostproc) throws IllegalArgumentException, IOException
 	{
 		// use intermediate Java-friendly PdpEngineConfiguration (higher-level than JAXB) that has #getAttributeValueFactory()
-		try (final CloseablePdpEngine adaptedPdpEngine = new BasePdpEngine(configuration))
+		try (CloseablePdpEngine adaptedPdpEngine = new BasePdpEngine(configuration))
 		{
 
 			final Entry<DecisionRequestPreprocessor<?, ?>, DecisionResultPostprocessor<?, ?>> ioProcChain = configuration.getInOutProcChains().get(adapterInputClass);
@@ -243,7 +243,7 @@ public final class PdpEngineAdapters
 	{
 		final DecisionResultPostprocessor<IndividualXacmlJaxbRequest, Response> defaultResultPostproc = new BaseXacmlJaxbResultPostprocessor(configuration.getClientRequestErrorVerbosityLevel());
 		final DecisionRequestPreprocessor<Request, IndividualXacmlJaxbRequest> defaultReqPreproc = SingleDecisionXacmlJaxbRequestPreprocessor.LaxVariantFactory.INSTANCE.getInstance(
-		        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(), XmlUtils.SAXON_PROCESSOR,
+		        configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(),
 		        defaultResultPostproc.getFeatures());
 
 		return newInoutAdapter(Request.class, Response.class, configuration, defaultReqPreproc, defaultResultPostproc);

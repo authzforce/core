@@ -123,7 +123,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 					 * numOfArgsAfterFirst - nOfRemainingArgs
 					 */
 					final int argIndex = numOfArgsAfterFirst - nOfRemainingArgs;
-					lastIndeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e.getStatusCode(), e);
+					lastIndeterminateException = new IndeterminateEvaluationException(indeterminateArgMsgPrefix + argIndex, e);
 					nOfIndeterminateArgs++;
 				}
 
@@ -260,6 +260,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 	private static final class CallWithVarArg0 extends Call
 	{
 		private final String invalidArg0MsgPrefix;
+		private final String indeterminateArg0MsgPrefix;
 		private final Expression<? extends IntegerValue> nOfRequiredTruesExpr;
 
 		private CallWithVarArg0(final FirstOrderFunctionSignature<BooleanValue> functionSig, final Expression<? extends IntegerValue> arg0, final List<Expression<?>> allArgExpressions, final Datatype<?>... remainingArgTypes)
@@ -267,6 +268,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 		{
 			super(functionSig, allArgExpressions, remainingArgTypes);
 			invalidArg0MsgPrefix = getInvalidArg0MessagePrefix(functionSig);
+			indeterminateArg0MsgPrefix = indeterminateArgMsgPrefix + 0;
 			nOfRequiredTruesExpr = arg0;
 		}
 
@@ -285,7 +287,7 @@ final class LogicalNOfFunction extends MultiParameterTypedFirstOrderFunction<Boo
 				intAttrVal = nOfRequiredTruesExpr.evaluate(context, mdpContext);
 			} catch (final IndeterminateEvaluationException e)
 			{
-				throw new IndeterminateEvaluationException(indeterminateArgMsgPrefix + 0, e.getStatusCode(), e);
+				throw new IndeterminateEvaluationException(indeterminateArg0MsgPrefix, e);
 			}
 
 			/*

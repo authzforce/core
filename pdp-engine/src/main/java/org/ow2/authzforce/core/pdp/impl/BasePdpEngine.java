@@ -20,7 +20,6 @@ package org.ow2.authzforce.core.pdp.impl;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import org.ow2.authzforce.core.pdp.api.*;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.policy.CloseablePolicyProvider;
 import org.ow2.authzforce.core.pdp.api.policy.PolicyVersionPatterns;
 import org.ow2.authzforce.core.pdp.api.policy.PrimaryPolicyMetadata;
@@ -431,8 +430,6 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	/**
 	 * Constructs a new PDP engine with the given configuration information.
 	 *
-	 * @param xacmlExpressionFactory
-	 *            XACML Expression parser/factory - mandatory
 	 * @param attributeProviders
 	 *            Attribute Providers - mandatory
 	 * @param policyProvider
@@ -455,13 +452,12 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 * @throws java.io.IOException
 	 *             error closing the root policy Provider when static resolution is to be used
 	 */
-	public BasePdpEngine(final ExpressionFactory xacmlExpressionFactory, final CloseablePolicyProvider<?> policyProvider, final Optional<TopLevelPolicyElementType> rootPolicyElementType,
+	public BasePdpEngine(final CloseablePolicyProvider<?> policyProvider, final Optional<TopLevelPolicyElementType> rootPolicyElementType,
 	        final String rootPolicyId, final Optional<PolicyVersionPatterns> rootPolicyVersionPatterns, final boolean strictAttributeIssuerMatch,
 						 final Optional<CloseableNamedAttributeProviderRegistry> attributeProviders,
 						 final Optional<DecisionCache> decisionCache) throws IllegalArgumentException, IOException
 	{
-		final RootPolicyEvaluators.Base candidateRootPolicyEvaluator = new RootPolicyEvaluators.Base(policyProvider, rootPolicyElementType, rootPolicyId, rootPolicyVersionPatterns,
-		        xacmlExpressionFactory);
+		final RootPolicyEvaluators.Base candidateRootPolicyEvaluator = new RootPolicyEvaluators.Base(policyProvider, rootPolicyElementType, rootPolicyId, rootPolicyVersionPatterns);
 		// Use static resolution if possible
 		final RootPolicyEvaluator staticRootPolicyEvaluator;
 		try
@@ -497,7 +493,7 @@ public final class BasePdpEngine implements CloseablePdpEngine
 	 */
 	public BasePdpEngine(final PdpEngineConfiguration configuration) throws IllegalArgumentException, IOException
 	{
-		this(configuration.getXacmlExpressionFactory(), configuration.getPolicyProvider(), configuration.getRootPolicyElementType(), configuration.getRootPolicyId(),
+		this(configuration.getPolicyProvider(), configuration.getRootPolicyElementType(), configuration.getRootPolicyId(),
 		        configuration.getRootPolicyVersionPatterns(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.getAttributeProviders(), configuration.getDecisionCache());
 	}
 

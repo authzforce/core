@@ -20,7 +20,6 @@ package org.ow2.authzforce.core.pdp.testutil.test.json;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.DecisionResultPostprocessor;
-import org.ow2.authzforce.core.pdp.api.XmlUtils;
 import org.ow2.authzforce.core.pdp.api.io.PdpEngineInoutAdapter;
 import org.ow2.authzforce.core.pdp.impl.PdpEngineConfiguration;
 import org.ow2.authzforce.core.pdp.impl.io.PdpEngineAdapters;
@@ -53,7 +52,7 @@ public final class PdpEngineXacmlJsonAdapters
 	{
 		final DecisionResultPostprocessor<IndividualXacmlJsonRequest, JSONObject> defaultResultPostproc = new BaseXacmlJsonResultPostprocessor(configuration.getClientRequestErrorVerbosityLevel());
 		final DecisionRequestPreprocessor<JSONObject, IndividualXacmlJsonRequest> defaultReqPreproc = SingleDecisionXacmlJsonRequestPreprocessor.LaxVariantFactory.INSTANCE.getInstance(
-				configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(), XmlUtils.SAXON_PROCESSOR,
+				configuration.getAttributeValueFactoryRegistry(), configuration.isStrictAttributeIssuerMatchEnabled(), configuration.isXPathEnabled(),
 				defaultResultPostproc.getFeatures());
 
 		return PdpEngineAdapters.newInoutAdapter(JSONObject.class, JSONObject.class, configuration, defaultReqPreproc, defaultResultPostproc);

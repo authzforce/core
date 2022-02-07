@@ -2,7 +2,7 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://authzforce.github.io/core/xmlns/pdp/8"
            xmlns:xacml="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
            xmlns:authz-ext="http://authzforce.github.io/xmlns/pdp/ext/3"
-           targetNamespace="http://authzforce.github.io/core/xmlns/pdp/8" elementFormDefault="qualified" version="8.0"
+           targetNamespace="http://authzforce.github.io/core/xmlns/pdp/8" elementFormDefault="qualified" version="8.1"
            xmlns="http://www.w3.org/1999/xhtml">
     <xs:import namespace="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"/>
     <xs:import namespace="http://authzforce.github.io/xmlns/pdp/ext/3"/>
@@ -490,7 +490,7 @@
                     </xs:annotation>
                 </xs:element>
             </xs:sequence>
-            <xs:attribute name="version" type="xs:token" use="required">
+            <xs:attribute name="version" type="xs:token" default="8.1">
                 <xs:annotation>
                     <xs:documentation>
                         Version of the current schema for which the instance

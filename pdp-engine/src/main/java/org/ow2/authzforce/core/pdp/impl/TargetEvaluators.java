@@ -167,7 +167,7 @@ public final class TargetEvaluators
 			// null)
 			throw new IndeterminateEvaluationException(
 					"Error evaluating <Target>/<AnyOf>#" + lastIndeterminateChildIndex,
-					lastIndeterminate.getStatusCode(), lastIndeterminate);
+					lastIndeterminate);
 		}
 	}
 
