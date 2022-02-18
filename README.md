@@ -60,6 +60,17 @@ AuthzForce Core may be used in the following ways:
 
 
 ## Limitations
+
+### XACML 2.0 support and migrating to XACML 3.0
+As mentioned in the Features section, we do not support XACML 2.0 but only XACML 3.0, and we strongly recommend you migrate to XACML 3.0 as XACML 2.0 has become obsolete. In order to help you in the migration from XACML 2.0 to 3.0, we provide a way to migrate all your XACML 2.0 policies to XACML 3.0 automatically by applying the XSLT stylesheets in the [migration](migration folder). First download the stylesheets `xacml2To3Policy.xsl` and `xacml3-policy-c14n.xsl` from that folder, then apply them to your XACML 2.0 policy files using any XSLT engine supporting XSLT 2.0. For example, using [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml), you may do it as follows:
+
+```shell
+$ XACML_20_POLICY_FILE="policy.xml"
+$  java -jar /path/to/Saxon-HE-10.3.jar -xsl:xacml2To3Policy.xsl -s:$XACML_20_POLICY_FILE -o:/tmp/${XACML_20_POLICY_FILE}.new
+$  java -jar /path/to/Saxon-HE-10.3.jar -xsl:xacml3-policy-c14n.xsl -s:/tmp/${XACML_20_POLICY_FILE}.new -o:$XACML_20_POLICY_FILE.new
+```
+
+### Optional XACML 3.0 features
 The following optional features from [XACML v3.0 Core standard](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html) are not supported:
 * Elements `AttributesReferences`, `MultiRequests` and `RequestReference`;
 * Functions `urn:oasis:names:tc:xacml:3.0:function:xpath-node-equal`, `urn:oasis:names:tc:xacml:3.0:function:xpath-node-match` and `urn:oasis:names:tc:xacml:3.0:function:access-permitted`;
