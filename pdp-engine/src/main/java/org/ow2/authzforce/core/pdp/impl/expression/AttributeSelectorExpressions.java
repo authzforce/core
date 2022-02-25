@@ -208,7 +208,7 @@ public final class AttributeSelectorExpressions
             // error messages/exceptions
             this.missingAttributeBecauseNullContextException = new IndeterminateEvaluationException("Missing request context for evaluating AttributeSelector '" + this.attributeSelectorId + "'",
                     XacmlStatusCode.PROCESSING_ERROR.value());
-            this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category=" + attributeCategory,
+            this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category='" + attributeCategory + "'",
                     XacmlStatusCode.SYNTAX_ERROR.value());
 
             this.mustBePresent = mustBePresent;

@@ -142,7 +142,7 @@
                         </p>
                         <p>
                             If the configuration parameter
-                            <i>enableXPath</i>
+                            <i>xPathEnabled</i>
                             is true, it is the
                             responsibility of the Request preprocessor to parse XACML
                             Request/Attributes/Content
