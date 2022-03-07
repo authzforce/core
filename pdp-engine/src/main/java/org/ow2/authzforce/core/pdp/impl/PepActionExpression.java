@@ -19,13 +19,13 @@ package org.ow2.authzforce.core.pdp.impl;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepAction;
 import org.ow2.authzforce.core.pdp.api.PepActionAttributeAssignment;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +64,8 @@ public final class PepActionExpression
 	 * @throws java.lang.IllegalArgumentException
 	 *             one of the AttributeAssignmentExpressions' Expression is invalid
 	 */
-	public PepActionExpression(final String pepActionId, final boolean isMandatory, final List<AttributeAssignmentExpression> jaxbAssignmentExps, final XPathCompiler xPathCompiler,
-	        final ExpressionFactory expFactory) throws IllegalArgumentException
+	public PepActionExpression(final String pepActionId, final boolean isMandatory, final List<AttributeAssignmentExpression> jaxbAssignmentExps,
+	        final ExpressionFactory expFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		Preconditions.checkArgument(pepActionId != null, "Undefined PEP action (obligation/advice) ID");
 		this.actionId = pepActionId;
@@ -84,7 +84,7 @@ public final class PepActionExpression
 				final AttributeAssignmentExpressionEvaluator attrAssignExp;
 				try
 				{
-					attrAssignExp = new AttributeAssignmentExpressionEvaluator(jaxbAttrAssignExp, xPathCompiler, expFactory);
+					attrAssignExp = new AttributeAssignmentExpressionEvaluator(jaxbAttrAssignExp, expFactory, xPathCompiler);
 				}
 				catch (final IllegalArgumentException e)
 				{

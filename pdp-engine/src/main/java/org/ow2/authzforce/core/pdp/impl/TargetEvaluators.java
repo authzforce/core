@@ -17,12 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AnyOf;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Target;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +59,8 @@ public final class TargetEvaluators
 		// non-null
 		private final List<AnyOfEvaluator> anyOfEvaluatorList;
 
-		private NonEmptyTargetEvaluator(final List<AnyOf> jaxbAnyOfList, final XPathCompiler xPathCompiler,
-				final ExpressionFactory expFactory) throws IllegalArgumentException
+		private NonEmptyTargetEvaluator(final List<AnyOf> jaxbAnyOfList,
+				final ExpressionFactory expFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 		{
 			assert jaxbAnyOfList != null && !jaxbAnyOfList.isEmpty();
 
@@ -71,7 +71,7 @@ public final class TargetEvaluators
 				final AnyOfEvaluator anyOfEvaluator;
 				try
 				{
-					anyOfEvaluator = new AnyOfEvaluator(jaxbAnyOf.getAllOves(), xPathCompiler, expFactory);
+					anyOfEvaluator = new AnyOfEvaluator(jaxbAnyOf.getAllOves(), expFactory, xPathCompiler);
 				}
 				catch (final IllegalArgumentException e)
 				{
@@ -179,7 +179,7 @@ public final class TargetEvaluators
 	 *            XACML-schema-derived JAXB Target element
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default
-	 *            XPath version
+	 *            XPath version if it is defined and XPath support enabled.
 	 * @param expressionFactory
 	 *            Expression factory for parsing XACML Expressions
 	 * @return instance of Target evaluator
@@ -188,8 +188,8 @@ public final class TargetEvaluators
 	 *             is null OR one of the Match elements in one of the
 	 *             AnyOf/AllOf elements in {@code target} is invalid
 	 */
-	public static BooleanEvaluator getInstance(final Target target, final XPathCompiler xPathCompiler,
-			final ExpressionFactory expressionFactory) throws IllegalArgumentException
+	public static BooleanEvaluator getInstance(final Target target,
+			final ExpressionFactory expressionFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (target == null)
 		{
@@ -202,7 +202,7 @@ public final class TargetEvaluators
 			return MATCH_ALL_TARGET_EVALUATOR;
 		}
 
-		return new NonEmptyTargetEvaluator(anyOfs, xPathCompiler, expressionFactory);
+		return new NonEmptyTargetEvaluator(anyOfs, expressionFactory, xPathCompiler);
 	}
 
 	private TargetEvaluators()

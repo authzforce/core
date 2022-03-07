@@ -17,8 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
-import net.sf.saxon.s9api.XPathCompiler;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import net.sf.saxon.s9api.ItemType;
+import net.sf.saxon.s9api.XdmAtomicValue;
+import net.sf.saxon.s9api.XdmItem;
 import org.json.JSONObject;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BaseAttributeValueFactory;
@@ -29,6 +33,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class CustomJsonObjectBasedAttributeValue implements AttributeValue
 {
@@ -37,16 +42,18 @@ public final class CustomJsonObjectBasedAttributeValue implements AttributeValue
      * Datatype
      */
     public static final AttributeDatatype<CustomJsonObjectBasedAttributeValue> DATATYPE = new AttributeDatatype<>(CustomJsonObjectBasedAttributeValue.class,
-            "urn:ow2:authzforce:feature:pdp:data-type:test-custom-from-json-object", "urn:ow2:authzforce:feature:pdp:function:test-custom-from-json-object");
+            "urn:ow2:authzforce:feature:pdp:data-type:test-custom-from-json-object", "urn:ow2:authzforce:feature:pdp:function:test-custom-from-json-object", ItemType.STRING);
 
     private final JSONObject json;
     private transient volatile List<Serializable> content = null;
+    private transient volatile XdmItem xdmItem = null;
 
     public CustomJsonObjectBasedAttributeValue(JSONObject json)
     {
-        this.json = json;
+        this.json = new JSONObject(json, json.keySet().toArray(new String[0]));
     }
 
+    @SuppressFBWarnings(value="EI_EXPOSE_REP", justification="ImmutableList")
     @Override
     public List<Serializable> getContent()
     {
@@ -61,6 +68,17 @@ public final class CustomJsonObjectBasedAttributeValue implements AttributeValue
     public Map<QName, String> getXmlAttributes()
     {
         return Collections.emptyMap();
+    }
+
+    @SuppressFBWarnings(value="EI_EXPOSE_REP", justification="According to Saxon documentation, an XdmValue is immutable.")
+    @Override
+    public XdmItem getXdmItem()
+    {
+        if(xdmItem == null) {
+            xdmItem = new XdmAtomicValue(json.toString());
+        }
+
+        return xdmItem;
     }
 
     public static final class Factory extends BaseAttributeValueFactory<CustomJsonObjectBasedAttributeValue> {
@@ -80,7 +98,7 @@ public final class CustomJsonObjectBasedAttributeValue implements AttributeValue
         }
 
         @Override
-        public CustomJsonObjectBasedAttributeValue getInstance(List<Serializable> content, Map<QName, String> otherXmlAttributes, XPathCompiler xPathCompiler) throws IllegalArgumentException
+        public CustomJsonObjectBasedAttributeValue getInstance(List<Serializable> content, Map<QName, String> otherXmlAttributes, Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
         {
             if (content == null || content.isEmpty())
             {

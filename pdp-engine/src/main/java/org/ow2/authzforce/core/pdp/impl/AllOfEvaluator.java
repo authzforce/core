@@ -17,11 +17,11 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Match;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,14 +54,14 @@ public final class AllOfEvaluator
      *
      * @param jaxbMatches   XACML-schema-derived JAXB Match elements
      * @param xPathCompiler XPath compiler corresponding to enclosing policy(set) default
-     *                      XPath version
+     *                      XPath version if it is defined and XPath support enabled
      * @param expFactory    Expression factory
      * @throws java.lang.IllegalArgumentException null {@code expFactory} or null/empty {@code jaxbMatches} or
      *                                            one of the child Match elements in {@code jaxbMatches} is
      *                                            invalid
      */
-    public AllOfEvaluator(final List<Match> jaxbMatches, final XPathCompiler xPathCompiler,
-                          final ExpressionFactory expFactory) throws IllegalArgumentException
+    public AllOfEvaluator(final List<Match> jaxbMatches,
+                          final ExpressionFactory expFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
     {
         if (jaxbMatches == null || jaxbMatches.isEmpty())
         {
@@ -75,7 +75,7 @@ public final class AllOfEvaluator
             final MatchEvaluator matchEvaluator;
             try
             {
-                matchEvaluator = new MatchEvaluator(jaxbMatch, xPathCompiler, expFactory);
+                matchEvaluator = new MatchEvaluator(jaxbMatch, expFactory, xPathCompiler);
             } catch (final IllegalArgumentException e)
             {
                 throw new IllegalArgumentException("Invalid <AllOf>'s <Match>#" + matchIndex, e);

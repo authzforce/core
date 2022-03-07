@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
@@ -64,6 +65,7 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 		// nothing to close
 	}
 
+	@SuppressFBWarnings(value="EI_EXPOSE_REP", justification="unmodifiable set")
 	@Override
 	public Set<AttributeDesignatorType> getProvidedAttributes()
 	{
@@ -124,7 +126,7 @@ public class TestAttributeProvider extends BaseNamedAttributeProvider
 
 				for (final Attribute jaxbAttr : jaxbAttributes.getAttributes())
 				{
-					xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, null, mutableAttMap);
+					xacmlAttributeParser.parseNamedAttribute(categoryName, jaxbAttr, Optional.empty(), mutableAttMap);
 				}
 			}
 

@@ -19,6 +19,7 @@ package org.ow2.authzforce.core.pdp.testutil.ext;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DecisionType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Response;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Result;
@@ -60,6 +61,7 @@ public class TestCombinedDecisionXacmlJaxbResultPostprocessor extends BaseXacmlJ
 		super(clientRequestErrorVerbosityLevel);
 	}
 
+	@SuppressFBWarnings(value="EI_EXPOSE_REP", justification="ImmutableSet")
 	@Override
 	public Set<String> getFeatures()
 	{
@@ -71,6 +73,8 @@ public class TestCombinedDecisionXacmlJaxbResultPostprocessor extends BaseXacmlJ
 	 * 
 	 * @see org.ow2.authzforce.core.pdp.api.BaseXacmlJaxbResultPostprocessor#process(java.util.Map)
 	 */
+	// FIXME: make Response class final
+	@SuppressFBWarnings(value="EI_EXPOSE_REP")
 	@Override
 	public Response process(final Collection<Entry<IndividualXacmlJaxbRequest, ? extends DecisionResult>> resultsByRequest)
 	{

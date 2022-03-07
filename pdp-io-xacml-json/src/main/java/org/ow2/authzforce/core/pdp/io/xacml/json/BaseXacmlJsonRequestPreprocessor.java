@@ -17,17 +17,19 @@
  */
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import org.everit.json.schema.ValidationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.*;
+import org.ow2.authzforce.core.pdp.api.expression.BasicImmutableXPathCompilerProxy;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.io.*;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.core.pdp.io.xacml.json.XacmlJsonParsingUtils.ContentSkippingXacmlJsonAttributesParserFactory;
 import org.ow2.authzforce.core.pdp.io.xacml.json.XacmlJsonParsingUtils.FullXacmlJsonAttributesParserFactory;
 import org.ow2.authzforce.core.pdp.io.xacml.json.XacmlJsonParsingUtils.NamedXacmlJsonAttributeParser;
+import org.ow2.authzforce.xacml.identifiers.XPathVersion;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 import org.ow2.authzforce.xacml.json.model.XacmlJsonUtils;
 import org.slf4j.Logger;
@@ -182,7 +184,7 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 	 *             if some feature requested in the Request is not supported by this pre-processor
 	 */
 	public abstract List<IndividualXacmlJsonRequest> process(JSONArray jsonArrayOfRequestAttributeCategoryObjects, SingleCategoryXacmlAttributesParser<JSONObject> xacmlAttrsParser,
-			boolean isApplicablePolicyIdListReturned, boolean combinedDecision, XPathCompiler xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException;
+															 boolean isApplicablePolicyIdListReturned, boolean combinedDecision, Optional<XPathCompilerProxy> xPathCompiler, Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException;
 
 	@Override
 	public final List<IndividualXacmlJsonRequest> process(final JSONObject request, final Map<String, String> namespaceURIsByPrefix) throws IndeterminateEvaluationException
@@ -242,9 +244,28 @@ public abstract class BaseXacmlJsonRequestPreprocessor implements DecisionReques
 		}
 
 		final boolean returnPolicyIdList = requestJsonObj.optBoolean("ReturnPolicyIdList", false);
-		final XPathCompiler xPathCompiler = requestJsonObj.has("XPathVersion") ? XmlUtils.newXPathCompiler(requestJsonObj.getString("XPathVersion"), namespaceURIsByPrefix) : null;
+		final Map<String, String> newNsPrefixToUriMap;
+		final Optional<XPathCompilerProxy> xPathCompiler;
+		if(requestJsonObj.has("XPathVersion")) {
+			try
+			{
+				final XPathVersion xPathVersion = XPathVersion.fromURI(requestJsonObj.getString("XPathVersion"));
+				xPathCompiler = Optional.of(new BasicImmutableXPathCompilerProxy(xPathVersion, namespaceURIsByPrefix));
+				/*
+				namespaceURIsByPrefix already held by xPathCompiler and retrievable from it with getDeclaredNamespacePrefixToUriMap().
+				 */
+				newNsPrefixToUriMap = Map.of();
+			} catch(IllegalArgumentException e) {
+				throw new IllegalArgumentException("Invalid/unsupported XPathVersion in JSON Request/XPathVersion", e);
+			}
+
+		} else {
+			xPathCompiler = Optional.empty();
+			newNsPrefixToUriMap = namespaceURIsByPrefix;
+		}
+
 		final SingleCategoryXacmlAttributesParser<JSONObject> xacmlAttrsParser = xacmlAttrsParserFactory.getInstance();
-		return process(requestJsonObj.optJSONArray("Category"), xacmlAttrsParser, returnPolicyIdList, combinedDecisionRequested, xPathCompiler, namespaceURIsByPrefix);
+		return process(requestJsonObj.optJSONArray("Category"), xacmlAttrsParser, returnPolicyIdList, combinedDecisionRequested, xPathCompiler, newNsPrefixToUriMap);
 	}
 
 	/**

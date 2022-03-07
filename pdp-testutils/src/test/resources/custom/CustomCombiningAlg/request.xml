@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Request  ReturnPolicyIdList="false" CombinedDecision="false" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Request  ReturnPolicyIdList="true" CombinedDecision="false" xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
   <Attributes Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
     <Attribute IncludeInResult="true" AttributeId="urn:oasis:names:tc:xacml:1.0:subject:subject-id">
       <AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">bsimpson</AttributeValue>

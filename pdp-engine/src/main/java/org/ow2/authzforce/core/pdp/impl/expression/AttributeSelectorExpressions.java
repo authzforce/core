@@ -23,6 +23,8 @@ import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
+import org.ow2.authzforce.core.pdp.api.expression.VariableReference;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.value.*;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
@@ -142,9 +144,12 @@ public final class AttributeSelectorExpressions
         protected final AttributeSelectorId attributeSelectorId;
         private final boolean mustBePresent;
         private final AttributeValueFactory<?> attrFactory;
+
         private final transient Bag.Validator mustBePresentEnforcer;
-        protected final transient XPathCompiler xPathCompiler;
+        protected final transient XPathCompilerProxy xPathCompiler;
+        private final transient Optional<XPathCompilerProxy> optXPathCompiler;
         private final transient XPathExecutable xPathEvaluator;
+        private final transient List<VariableReference<?>> xpathVariables;
         private final transient BagDatatype<AV> returnType;
         private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
         private final transient IndeterminateEvaluationException missingAttributesContentException;
@@ -174,7 +179,7 @@ public final class AttributeSelectorExpressions
          * @throws java.lang.IllegalArgumentException if {@code attrSelectorElement == null || xPathCompiler == null || attrFactory == null}; or {@code attrSelectorElement.getContextSelectorId() != null} but
          *                                            {@code attrProvider == null}; or {@code attrSelectorElement.getPath()} is not a valid XPath expression
          */
-        private ExtensibleAttributeSelectorExpression(final String attrSelectorCategory, final String attrSelectorPath, final Optional<String> contextSelectorId, final boolean mustBePresent, final XPathCompiler xPathCompiler, final AttributeValueFactory<AV> attrFactory)
+        private ExtensibleAttributeSelectorExpression(final String attrSelectorCategory, final String attrSelectorPath, final Optional<String> contextSelectorId, final boolean mustBePresent, final XPathCompilerProxy xPathCompiler, final AttributeValueFactory<AV> attrFactory)
                 throws IllegalArgumentException
         {
             if (attrFactory == null)
@@ -196,13 +201,26 @@ public final class AttributeSelectorExpressions
             final String missingAttributeMessage = this + " not found in context";
 
             this.xPathCompiler = xPathCompiler;
+            this.optXPathCompiler = Optional.of(this.xPathCompiler);
 
             try
             {
                 this.xPathEvaluator = xPathCompiler.compile(attributeSelectorId.getPath());
             } catch (final SaxonApiException e)
             {
-                throw new IllegalArgumentException("AttributeSelector's Path is not a valid XPath " + xPathCompiler.getLanguageVersion() + " expression: '" + attributeSelectorId.getPath() + "'", e);
+                throw new IllegalArgumentException("AttributeSelector's Path is not a valid XPath " + xPathCompiler.getXPathVersion().getVersionNumber() + " expression: '" + attributeSelectorId.getPath() + "'", e);
+            }
+
+            final List<VariableReference<?>> allowedVars = xPathCompiler.getAllowedVariables();
+            this.xpathVariables = new ArrayList<>(allowedVars.size());
+            for(final Iterator<net.sf.saxon.s9api.QName> varNames = xPathEvaluator.iterateExternalVariables(); varNames.hasNext();) {
+                final net.sf.saxon.s9api.QName xpathVarName = varNames.next();
+                final Optional<VariableReference<?>> varRef = allowedVars.stream().filter(allowedVar -> allowedVar.getXPathVariableName().equals(xpathVarName)).findAny();
+                if(varRef.isEmpty()) {
+                    throw new IllegalArgumentException("Unexpected variable '"+xpathVarName+"' in XPath expression. Not matching any (XACML) Policy VariableDefinition in: " + allowedVars);
+                }
+
+                xpathVariables.add(varRef.get());
             }
 
             // error messages/exceptions
@@ -226,7 +244,7 @@ public final class AttributeSelectorExpressions
          * @throws java.lang.IllegalArgumentException if {@code attrSelectorElement == null || xPathCompiler == null || attrFactory == null}; or {@code attrSelectorElement.getContextSelectorId() != null} but
          *                                            {@code attrProvider == null}; or {@code attrSelectorElement.getPath()} is not a valid XPath expression
          */
-        private ExtensibleAttributeSelectorExpression(final AttributeSelectorType attrSelectorElement, final XPathCompiler xPathCompiler, final AttributeValueFactory<AV> attrFactory)
+        private ExtensibleAttributeSelectorExpression(final AttributeSelectorType attrSelectorElement, final XPathCompilerProxy xPathCompiler, final AttributeValueFactory<AV> attrFactory)
                 throws IllegalArgumentException
         {
             this(attrSelectorElement.getCategory(), attrSelectorElement.getPath(), Optional.ofNullable(attrSelectorElement.getContextSelectorId()), attrSelectorElement.isMustBePresent(), xPathCompiler, attrFactory);
@@ -320,6 +338,10 @@ public final class AttributeSelectorExpressions
             final XdmValue xpathEvalResult;
             try
             {
+                for(final VariableReference<?> xpathVar: xpathVariables) {
+                    final Value val = context.getVariableValue(xpathVar.getVariableId(), xpathVar.getReturnType());
+                    xpathSelector.setVariable(xpathVar.getXPathVariableName(), val.getXdmValue());
+                }
                 xpathSelector.setContextItem(xPathEvaluationContextItem);
                 xpathEvalResult = xpathSelector.evaluate();
             } catch (final SaxonApiException e)
@@ -366,7 +388,7 @@ public final class AttributeSelectorExpressions
                 final AttributeValue attrVal;
                 try
                 {
-                    attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), this.xPathCompiler);
+                    attrVal = attrFactory.getInstance(jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), optXPathCompiler);
                 } catch (final IllegalArgumentException e)
                 {
                     final Optional<String> contextSelectorId = attributeSelectorId.getContextSelectorId();
@@ -414,6 +436,9 @@ public final class AttributeSelectorExpressions
                     final XPathSelector contextPathSelector = contextPathEvaluator.get().load();
                     try
                     {
+                        for(final Map.Entry<VariableReference<?>, Value> var: context.getVariables()) {
+                            contextPathSelector.setVariable(var.getKey().getXPathVariableName(), var.getValue().getXdmValue());
+                        }
                         contextPathSelector.setContextItem(contentElement);
                         finalXPathEvaluationContextItem = contextPathSelector.evaluateSingle();
                     } catch (final SaxonApiException e)
@@ -487,7 +512,7 @@ public final class AttributeSelectorExpressions
                 return xPathCompiler.compile(xpathExpression);
             } catch (final SaxonApiException e)
             {
-                throw new IllegalArgumentException("Input value given as context selector value is not a valid XPath " + xPathCompiler.getLanguageVersion() + " expression: '" + xpathExpression + "'",
+                throw new IllegalArgumentException("Input value given as context selector value is not a valid XPath " + xPathCompiler.getXPathVersion().getVersionNumber() + " expression: '" + xpathExpression + "'",
                         e);
             }
 
@@ -557,7 +582,7 @@ public final class AttributeSelectorExpressions
     {
         private final ImmutableXacmlStatus xpathEvalErrStatus;
 
-        private AttributeSelectorExpressionWithoutContextSelector(final String attributeSelectorCategory, final String attributeSelectorPath, boolean mustBePresent, final XPathCompiler xPathCompiler,
+        private AttributeSelectorExpressionWithoutContextSelector(final String attributeSelectorCategory, final String attributeSelectorPath, boolean mustBePresent, final XPathCompilerProxy xPathCompiler,
                                                                   final AttributeValueFactory<AV> attributeFactory) throws IllegalArgumentException
         {
             super(attributeSelectorCategory, attributeSelectorPath, Optional.empty(), mustBePresent, xPathCompiler, attributeFactory);
@@ -592,7 +617,7 @@ public final class AttributeSelectorExpressions
         private final String xpathEvalErrMsgSuffix;
         private final ImmutableXacmlStatus xpathEvalErrStatus;
 
-        private AttributeSelectorExpressionWithContextSelector(final AttributeSelectorType attrSelectorElement, final XPathCompiler xPathCompiler, final AttributeValueFactory<AV> attrFactory,
+        private AttributeSelectorExpressionWithContextSelector(final AttributeSelectorType attrSelectorElement, final XPathCompilerProxy xPathCompiler, final AttributeValueFactory<AV> attrFactory,
                                                                final SingleNamedAttributeProvider<XPathValue> attrProvider) throws IllegalArgumentException
         {
             super(attrSelectorElement, xPathCompiler, attrFactory);
@@ -659,13 +684,13 @@ public final class AttributeSelectorExpressions
      *
      * @param attributeSelectorCategory XACML AttributeSelector's Category
      * @param attributeSelectorPath     XACML AttributeSelector's Path
-     * @param xPathCompiler             XPATH compiler used for compiling {@code attributeSelectorElement.getPath()} and XPath given by {@code attributeSelectorElement.getContextSelectorId()} if not null
+     * @param xPathCompiler             XPath compiler used for compiling {@code attributeSelectorElement.getPath()} and XPath given by {@code attributeSelectorElement.getContextSelectorId()}.
      * @param attributeFactory          attribute factory to create the AttributeValue(s) from the XML node(s) resolved by XPath
      * @return instance of AttributeSelector expression
      * @throws java.lang.IllegalArgumentException if {@code attributeSelectorElement == null || xPathCompiler == null || attributeFactory == null}; or {@code attributeSelectorElement.getContextSelectorId() != null} but
      *                                            {@code attributeProvider == null}; or {@code attributeSelectorElement.getPath()} is not a valid XPath expression
      */
-    public static <AV extends AttributeValue> AttributeSelectorExpression<AV> newInstance(final String attributeSelectorCategory, final String attributeSelectorPath, final boolean mustBePresent, final XPathCompiler xPathCompiler, final AttributeValueFactory<AV> attributeFactory) throws IllegalArgumentException
+    public static <AV extends AttributeValue> AttributeSelectorExpression<AV> newInstance(final String attributeSelectorCategory, final String attributeSelectorPath, final boolean mustBePresent, final XPathCompilerProxy xPathCompiler, final AttributeValueFactory<AV> attributeFactory) throws IllegalArgumentException
     {
         Preconditions.checkArgument(attributeSelectorCategory != null && attributeSelectorPath != null && xPathCompiler != null && attributeFactory != null, "Invalid arguments");
         return new AttributeSelectorExpressionWithoutContextSelector<>(attributeSelectorCategory, attributeSelectorPath, mustBePresent, xPathCompiler, attributeFactory);
@@ -683,7 +708,7 @@ public final class AttributeSelectorExpressions
      * @throws java.lang.IllegalArgumentException if {@code attributeSelectorElement == null || xPathCompiler == null || attributeFactory == null}; or {@code attributeSelectorElement.getContextSelectorId() != null} but
      *                                            {@code attributeProvider == null}; or {@code attributeSelectorElement.getPath()} is not a valid XPath expression
      */
-    public static <AV extends AttributeValue> AttributeSelectorExpression<AV> newInstance(final AttributeSelectorType attributeSelectorElement, final XPathCompiler xPathCompiler, final AttributeValueFactory<AV> attributeFactory,
+    public static <AV extends AttributeValue> AttributeSelectorExpression<AV> newInstance(final AttributeSelectorType attributeSelectorElement, final XPathCompilerProxy xPathCompiler, final AttributeValueFactory<AV> attributeFactory,
                                                                                           final SingleNamedAttributeProvider<XPathValue> contextSelectorAttributeProvider) throws IllegalArgumentException
     {
         Preconditions.checkArgument(attributeSelectorElement != null && xPathCompiler != null && attributeFactory != null && contextSelectorAttributeProvider != null, "Invalid arguments");

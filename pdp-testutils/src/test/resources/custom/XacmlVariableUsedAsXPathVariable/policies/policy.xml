@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Example based on EXAMPLE ACME SPIF from NATO STANAG 4774, ADatP-4774.1, Annex B,
+retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN,
+but dealing with classifications only for this test (other categories ignored).
+ -->
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicyId="root"
+	RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-unless-permit" Version="1.0" >
+	<Description>
+        Purpose: Test XPath expressions using XACML VariableReferences as XPath variables (non-standard feature).
+    </Description>
+	<PolicyDefaults>
+		<XPathVersion>http://www.w3.org/TR/2007/REC-xpath20-20070123</XPathVersion>
+	</PolicyDefaults>
+	<Target />
+	<VariableDefinition VariableId="resource_classif">
+		<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+						   Path="//*:Classification/text()"
+						   DataType="http://www.w3.org/2001/XMLSchema#string"
+						   MustBePresent="true"/>
+	</VariableDefinition>
+	<VariableDefinition VariableId="resource_classif_level">
+		<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+		    <AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+						   Path="if ($resource_classif = 'INTERNAL') then 3 else if ($resource_classif = 'CONFIDENTIAL') then 2 else 1"
+						   DataType="http://www.w3.org/2001/XMLSchema#integer"
+						   MustBePresent="true"/>
+        </Apply>
+	</VariableDefinition>
+	<VariableDefinition VariableId="subject_classif">
+		<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+						   Path="//*:Classification/text()"
+						   DataType="http://www.w3.org/2001/XMLSchema#string"
+						   MustBePresent="true"/>
+	</VariableDefinition>
+	<VariableDefinition VariableId="subject_classif_level">
+        <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+		    <AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+						   Path="if ($subject_classif = 'INTERNAL') then 3 else if ($subject_classif = 'CONFIDENTIAL') then 2 else 1"
+						   DataType="http://www.w3.org/2001/XMLSchema#integer"
+						   MustBePresent="true"/>
+        </Apply>
+	</VariableDefinition>
+	<Rule Effect="Permit" RuleId="rule1">
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ACME</AttributeValue>
+						<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+										   Path="//*:PolicyIdentifier/text()"
+										   DataType="http://www.w3.org/2001/XMLSchema#string"
+										   MustBePresent="true"/>
+					</Match>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ACME</AttributeValue>
+						<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+										   Path="//*:PolicyIdentifier/text()"
+										   DataType="http://www.w3.org/2001/XMLSchema#string"
+										   MustBePresent="true"/>
+					</Match>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">READ</AttributeValue>
+						<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
+											 AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+											 DataType="http://www.w3.org/2001/XMLSchema#string"
+											 MustBePresent="true"/>
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<Condition>
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal">
+				<VariableReference VariableId="subject_classif_level"/>
+				<VariableReference VariableId="resource_classif_level"/>
+			</Apply>
+		</Condition>
+	</Rule>
+	<ObligationExpressions>
+		<ObligationExpression FulfillOn="Permit" ObligationId="urn:ow2:authzforce:core:pdp:test:obligation1">
+			<AttributeAssignmentExpression AttributeId="subject_classif_level">
+				<VariableReference VariableId="subject_classif_level"/>
+			</AttributeAssignmentExpression>
+			<AttributeAssignmentExpression AttributeId="resource_classif_level">
+				<VariableReference VariableId="resource_classif_level"/>
+			</AttributeAssignmentExpression>
+		</ObligationExpression>
+	</ObligationExpressions>
+</Policy>

@@ -373,8 +373,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                 final PolicyWithNamespaces<PolicySet> jaxbPolicySetWithNs = jaxbPolicySetEntry.getValue();
                 try
                 {
-                    resultPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry, this,
-                            policySetRefChain);
+                    resultPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, expressionFactory, combiningAlgRegistry, this,
+                            policySetRefChain, Optional.empty(), jaxbPolicySetWithNs.nsPrefixUriMap);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException("Invalid PolicySet with PolicySetId=" + policyId + ", Version=" + jaxbPolicySetVersion, e);
@@ -450,8 +450,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                         final StaticTopLevelPolicyElementEvaluator newPolicySetEvaluator;
                         try
                         {
-                            newPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, null, jaxbPolicySetWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry,
-                                    bootstrapPolicyProvider, null);
+                            newPolicySetEvaluator = PolicyEvaluators.getInstanceStatic(jaxbPolicySetWithNs.policy, expressionFactory, combiningAlgRegistry,
+                                    bootstrapPolicyProvider, null, Optional.empty(), jaxbPolicySetWithNs.nsPrefixUriMap);
                         } catch (final IllegalArgumentException e)
                         {
                             throw new IllegalArgumentException("Invalid PolicySet with PolicySetId='" + policySetId + "', Version=" + policySetVersion, e);
@@ -469,7 +469,7 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
     /**
      * Creates an instance from XACML/JAXB Policy(Set) elements
      *
-     * @param jaxbPolicies         XACML Policy elements
+     * @param jaxbPolicies         XACML Policies
      * @param jaxbPolicySets       XACML PolicySets
      * @param maxPolicySetRefDepth maximum allowed depth of PolicySet reference chain (via PolicySetIdReference): PolicySet1 -> PolicySet2 -> ...
      * @param combiningAlgRegistry registry of policy/rule combining algorithms
@@ -513,7 +513,10 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                 final StaticTopLevelPolicyElementEvaluator policyEvaluator;
                 try
                 {
-                    policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, null, jaxbPolicyWithNs.nsPrefixUriMap, expressionFactory, combiningAlgRegistry);
+                    /*
+                    XPath compiler shall be initialized in PolicyEvaluators#getInstance(...) based on PolicyDefaults/XPathVersion if present
+                     */
+                    policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, expressionFactory, combiningAlgRegistry, Optional.empty(), jaxbPolicyWithNs.nsPrefixUriMap);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException("Invalid Policy with PolicyId=" + policyId + ", Version=" + policyVersion, e);
@@ -660,7 +663,10 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                 final StaticTopLevelPolicyElementEvaluator policyEvaluator;
                 try
                 {
-                    policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry);
+                    /*
+                    XPath compiler shall be initialized in PolicyEvaluators#getInstance(...) based on PolicyDefaults/XPathVersion if present
+                     */
+                    policyEvaluator = PolicyEvaluators.getInstance(jaxbPolicy, expressionFactory, combiningAlgRegistry, Optional.empty(), nsPrefixUriMap);
                 } catch (final IllegalArgumentException e)
                 {
                     throw new IllegalArgumentException("Invalid Policy with PolicyId=" + policyId + ", Version=" + policyVersionStr, e);
