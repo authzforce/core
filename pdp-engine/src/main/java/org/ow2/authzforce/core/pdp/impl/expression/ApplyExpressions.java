@@ -173,7 +173,7 @@ public final class ApplyExpressions
 			{
 				final Optional<Function> subFunc = ((FunctionExpression) xpr0).getValue();
 				assert subFunc.isPresent();
-				final Datatype<? extends AttributeValue> subFuncReturnType = subFunc.get().getReturnType();
+				final Datatype<?> subFuncReturnType = subFunc.get().getReturnType();
 				if (subFuncReturnType.getTypeParameter().isPresent() || subFuncReturnType == StandardDatatypes.FUNCTION)
 				{
 					throw new IllegalArgumentException("Error parsing Apply[description=" + applyDesc + "]: Invalid return type (" + subFuncReturnType
@@ -183,7 +183,7 @@ public final class ApplyExpressions
 				/*
 				 * FIXME: is there a cleaner way to cast?
 				 */
-				subFuncPrimReturnType = subFuncReturnType;
+				subFuncPrimReturnType = (Datatype<? extends AttributeValue>) subFuncReturnType;
 			} else
 			{
 				subFuncPrimReturnType = null;

@@ -270,6 +270,26 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 1. *extensionXsdLocation*: location of the PDP extensions schema file: contains imports of namespaces corresponding to XML schemas of all XML-schema-defined PDP extensions to be used in the configuration file. Used for validation of PDP extensions configuration. The actual schema locations are resolved by the XML catalog parameter. You may use the [pdp-ext.xsd](pdp-testutils/src/test/resources/pdp-ext.xsd) in the sources as an example.
 
 
+## Integration with other Security Policy models, languages, formats, etc.
+### SPIF (Security Policy Information File)
+A SPIF (Security Policy Information File) defines a security labeling policy in a XML document (based on the [SPIF XML schema](spif-utils/spif.xsd)). More info on the [Open XML SPIF website](http://www.xmlspif.org/).
+
+[NATO ADatP-4774.1](https://nso.nato.int/nso/nsdd/main/standards/srd-details/222/EN) - related to [STANAG 4774](https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN) - gives implementation guidance on how to generate a XACML policy from a SPIF, including an example of XSLT stylesheet. Considering the latest XACML 3.0 enhancements, AuthzForce optimizations and our aim to differentiate a READ from a WRITE action in accordance to the Bell-Lapadula model, we made a few improvements to the stylesheet and made it available in the [spif-utils](spif-utils) folder in two versions:
+
+- `spif2xacml-for-xpath-1.0.xsl`: SPIF-to-XACML policy transformation XSLT using XPath 1.0, more verbose and less efficient than the XPath 2.0 version below, available mostly for historical reasons (no longer maintained except bug fixing).
+- `spif2xacml-for-xpath-2.0.xsl`: SPIF-to-XACML policy transformation XSLT using XPath 2.0 features (not available in 1.0), with the option to enable AuthzForce optimizations (XSLT parameter `authzforce_optimized`) for further enhancements. Disable this option if you want strict XACML 3.0 compliance (less optimized).
+
+For example, you may generate the XACML policy from the sample [ACME SPIF](spif-utils/ACME-SPIF-example.xml) (from ADatP-4774.1) using XSLT engine of [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml) on the command line as follows
+
+```shell
+$ java -jar Saxon-HE-10.3.jar -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
+```
+
+Same example but without AuthzForce optimizations:
+```shell
+$ java -jar Saxon-HE-10.3.jar authzforce_optimized=false -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
+```
+
 ## Support
 
 You should use [AuthzForce users' mailing list](https://mail.ow2.org/wws/info/authzforce-users) as first contact for any communication about AuthzForce: question, feature request, notification, potential issue (unconfirmed), etc.

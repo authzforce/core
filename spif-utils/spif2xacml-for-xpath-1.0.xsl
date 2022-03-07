@@ -125,7 +125,9 @@ limitations under the License.
 					<Condition>
 						<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:and">
 							<!-- For each restrictive category -->
-							<xsl:for-each select="//spif:securityCategoryTag[@tagType='permissive' or @tagType='restrictive']">
+							<xsl:for-each select="//spif:securityCategoryTag">
+								<!-- Ignore informative categories -->
+								<xsl:if test="@tagType !='tagType7'">
 								<!-- Either resource does not have this category (empty bag) or at least one value of this category must match the subject clearance -->
 								<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:or">
 									<!-- Test if resource has this category -->
@@ -137,7 +139,7 @@ limitations under the License.
 									</Apply>
 									<!-- Test if at least one value the resource category matches the subject clearance -->
 									<xsl:variable name="comparFuncId"><xsl:choose>
-										<xsl:when test="@tagType='permissive'">urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of</xsl:when>
+										<xsl:when test="@tagType='permissive' or @enumType='permissive'">urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of</xsl:when>
 										<!-- otherwise @tagType='restrictive' -->
 										<xsl:otherwise>urn:oasis:names:tc:xacml:1.0:function:string-subset</xsl:otherwise>
 									</xsl:choose></xsl:variable>
@@ -146,6 +148,7 @@ limitations under the License.
 										<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" Path="//*:Category[@TagName='{@name}']/*:GenericValue/text()" DataType="http://www.w3.org/2001/XMLSchema#string" MustBePresent="false" />
 									</Apply>
 								</Apply>
+								</xsl:if>
 							</xsl:for-each>
 						</Apply>
 					</Condition>
