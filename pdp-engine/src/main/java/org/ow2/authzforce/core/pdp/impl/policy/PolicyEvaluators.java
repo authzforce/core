@@ -64,9 +64,6 @@ public final class PolicyEvaluators
 
     private static final class ImmutableXPathCompiler extends BaseXPathCompilerProxy
     {
-        private static final UnsupportedOperationException UNSUPPORTED_EVALUATE_OPERATION_EXCEPTION = new UnsupportedOperationException("XPathCompiler#evaluate(String, XdmItem) not supported");
-        private static final UnsupportedOperationException UNSUPPORTED_EVALUATE_SINGLE_OPERATION_EXCEPTION = new UnsupportedOperationException("XPathCompiler#evaluateSingle(String, XdmItem) not supported");
-        private static final UnsupportedOperationException UNSUPPORTED_COMPILE_PATTERN_OPERATION_EXCEPTION = new UnsupportedOperationException("XPathCompiler#compilePattern(String) not supported");
 
         private final ImmutableList<VariableReference<?>> allowedXPathVariables;
 
@@ -75,11 +72,6 @@ public final class PolicyEvaluators
             super(xpathVersion, namespacePrefixToUriMap);
             assert allowedXPathVariables != null;
             this.allowedXPathVariables = ImmutableList.copyOf(allowedXPathVariables);
-            /*
-             The default internal XPathCompiler is set to allow undeclared variables because this is required - and we need it - to discover variables used in a XPath expressions with SAXON API. Then, if there are such variables, we make sure they are in allowedXPathVariables and we use a new XPathCompiler with the same variables but declared with proper ItemType from allowedXPathVariables for proper XPath validation.
-             See {@link #compile(String)} method for more info.
-             */
-            this.delegate.setAllowUndeclaredVariables(true);
         }
 
         @Override
@@ -94,7 +86,12 @@ public final class PolicyEvaluators
             /*
             First compile with setAllowUndeclaredVariables (see above constructor) to discover XPath variables in the input XPath expression.
              */
-            final XPathExecutable xpathExec = this.delegate.compile(source);
+            /*
+             * Why not reuse the same XPathCompiler over and over (make it a class member)? Because it is not immutable, calling XPathCompiler#compile(String) may change the internal state each time, e.g. if there are XPath variables in multiple sources, it is like calling XPathCompiler#declareVariables(...) without reinitializing, i.e. variables add up.
+             */
+            final XPathCompiler compiler = XmlUtils.newXPathCompiler(xPathVersion, nsPrefixToUriMap);
+            compiler.setAllowUndeclaredVariables(true);
+            final XPathExecutable xpathExec = compiler.compile(source);
             final Iterator<QName> xpathVarsIterator = xpathExec.iterateExternalVariables();
             if(xpathVarsIterator.hasNext()) {
                 if(this.allowedXPathVariables.isEmpty()) {
@@ -121,23 +118,6 @@ public final class PolicyEvaluators
             return xpathExec;
         }
 
-        @Override
-        public XdmValue evaluate(String expression, XdmItem contextItem)
-        {
-            throw UNSUPPORTED_EVALUATE_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public XdmItem evaluateSingle(String expression, XdmItem contextItem)
-        {
-            throw UNSUPPORTED_EVALUATE_SINGLE_OPERATION_EXCEPTION;
-        }
-
-        @Override
-        public XPathExecutable compilePattern(String source)
-        {
-            throw UNSUPPORTED_COMPILE_PATTERN_OPERATION_EXCEPTION;
-        }
     }
 
     /**

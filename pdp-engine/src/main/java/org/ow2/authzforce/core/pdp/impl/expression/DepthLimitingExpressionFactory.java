@@ -213,6 +213,15 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			        XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
+		@Override
+		public String toString()
+		{
+			return "VariableReference{" +
+					"variableId='" + variableId + '\'' +
+					", expression=" + expression +
+					'}';
+		}
+
 		/**
 		 * {@inheritDoc}
 		 *
