@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-		<version>20.0.0-SNAPSHOT</version>
+		<version>20.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
