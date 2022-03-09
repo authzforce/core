@@ -17,18 +17,20 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
-import net.sf.saxon.s9api.XPathCompiler;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import net.sf.saxon.s9api.DocumentBuilder;
+import net.sf.saxon.s9api.ItemType;
+import net.sf.saxon.s9api.XdmItem;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Policy;
+import org.ow2.authzforce.core.pdp.api.XmlUtils;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.BaseAttributeValueFactory;
 
 import javax.xml.namespace.QName;
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a XACML Policy datatype (from XACML schema), to be used as AttributeValue.
@@ -43,7 +45,7 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 	 * Datatype
 	 */
 	public static final AttributeDatatype<TestXacmlPolicyAttributeValue> DATATYPE = new AttributeDatatype<>(TestXacmlPolicyAttributeValue.class,
-	        "urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy", "urn:ow2:authzforce:feature:pdp:function:test-xacml-policy");
+	        "urn:ow2:authzforce:feature:pdp:data-type:test-xacml-policy", "urn:ow2:authzforce:feature:pdp:function:test-xacml-policy", ItemType.ELEMENT_NODE);
 
 	private static final IllegalArgumentException NO_CONTENT_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': empty");
 	private static final IllegalArgumentException NO_ELEMENT_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': no XML element");
@@ -53,6 +55,8 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 	private transient volatile List<Serializable> content = null;
 
 	private transient volatile int hashCode = 0;
+
+	private transient volatile XdmItem xdmitem = null;
 
 	private TestXacmlPolicyAttributeValue(final List<Serializable> content) throws IllegalArgumentException
 	{
@@ -109,12 +113,16 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 	 * Returns the internal <Policy>.
 	 *
 	 * @return the value
+	 *
+	 * FIXME: make Policy class final/immutable
 	 */
+	@SuppressFBWarnings(value="EI_EXPOSE_REP")
 	public Policy getUnderlyingValue()
 	{
 		return policy;
 	}
 
+	@SuppressFBWarnings(value="EI_EXPOSE_REP", justification="ImmutableList")
 	@Override
 	public List<Serializable> getContent()
 	{
@@ -160,6 +168,17 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 		return this.policy.equals(other.policy);
 	}
 
+	@SuppressFBWarnings(value="EI_EXPOSE_REP", justification="According to Saxon documentation, an XdmValue is immutable.")
+	@Override
+	public XdmItem getXdmItem()
+	{
+		if(xdmitem == null) {
+			final DocumentBuilder docBuilder = XmlUtils.SAXON_PROCESSOR.newDocumentBuilder();
+			xdmitem = docBuilder.wrap(this.policy);
+		}
+		return xdmitem;
+	}
+
 	/**
 	 * {@link TestXacmlPolicyAttributeValue} factory
 	 *
@@ -179,7 +198,7 @@ public final class TestXacmlPolicyAttributeValue implements AttributeValue
 		private static final IllegalArgumentException UNDEFINED_CONTENT_ARG_EXCEPTION = new IllegalArgumentException("Invalid content for datatype '" + DATATYPE + "': null.");
 
 		@Override
-		public TestXacmlPolicyAttributeValue getInstance(final List<Serializable> content, final Map<QName, String> otherXmlAttributes, final XPathCompiler xPathCompiler)
+		public TestXacmlPolicyAttributeValue getInstance(final List<Serializable> content, final Map<QName, String> otherXmlAttributes, final Optional<XPathCompilerProxy> xPathCompiler)
 		        throws IllegalArgumentException
 		{
 			if (content == null || content.isEmpty())

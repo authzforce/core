@@ -17,7 +17,6 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeDesignatorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
@@ -27,6 +26,7 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
 import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -63,11 +63,11 @@ public final class MatchEvaluator
 	 * @param expFactory
 	 *            bagExpression factory
 	 * @param xPathCompiler
-	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version if it is defined and XPath support enabled
 	 * @throws java.lang.IllegalArgumentException
 	 *             null {@code expFactory} or null/empty {@code jaxbMatch}
 	 */
-	public MatchEvaluator(final Match jaxbMatch, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory) throws IllegalArgumentException
+	public MatchEvaluator(final Match jaxbMatch, final ExpressionFactory expFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (jaxbMatch == null)
 		{
@@ -92,7 +92,7 @@ public final class MatchEvaluator
 		// value paired with it
 		final AttributeDesignatorType attributeDesignator = jaxbMatch.getAttributeDesignator();
 		final AttributeSelectorType attributeSelector = jaxbMatch.getAttributeSelector();
-		final Expression<?> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, xPathCompiler, null);
+		final Expression<?> bagExpression = expFactory.getInstance(attributeDesignator == null ? attributeSelector : attributeDesignator, null, xPathCompiler);
 
 		final AttributeValueType attributeValue = jaxbMatch.getAttributeValue();
 		final Expression<? extends AttributeValue> attrValueExpr;

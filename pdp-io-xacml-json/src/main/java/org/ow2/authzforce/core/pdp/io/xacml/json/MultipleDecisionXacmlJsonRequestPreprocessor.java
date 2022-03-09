@@ -17,11 +17,11 @@
  */
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.DecisionRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.io.MultipleXacmlRequestPreprocHelper;
 import org.ow2.authzforce.core.pdp.api.io.SingleCategoryXacmlAttributesParser;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
@@ -29,6 +29,7 @@ import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -141,9 +142,9 @@ public final class MultipleDecisionXacmlJsonRequestPreprocessor extends BaseXacm
 
 	@Override
 	public List<IndividualXacmlJsonRequest> process(final JSONArray jsonArrayOfRequestAttributeCategoryObjects, final SingleCategoryXacmlAttributesParser<JSONObject> xacmlAttrsParser,
-	        final boolean isApplicablePolicyIdListReturned, final boolean combinedDecision, final XPathCompiler xPathCompiler, final Map<String, String> namespaceURIsByPrefix)
+													final boolean isApplicablePolicyIdListReturned, final boolean combinedDecision, final Optional<XPathCompilerProxy> xPathCompiler, final Map<String, String> namespaceURIsByPrefix)
 	        throws IndeterminateEvaluationException
 	{
-		return MDP_PREPROC_HELPER.process(jsonArrayOfRequestAttributeCategoryObjects, xacmlAttrsParser, isApplicablePolicyIdListReturned, combinedDecision, xPathCompiler, namespaceURIsByPrefix);
+		return MDP_PREPROC_HELPER.process(jsonArrayOfRequestAttributeCategoryObjects, xacmlAttrsParser, isApplicablePolicyIdListReturned, xPathCompiler);
 	}
 }

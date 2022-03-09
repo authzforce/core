@@ -17,13 +17,13 @@
  */
 package org.ow2.authzforce.core.pdp.impl.rule;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Condition;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.value.BooleanValue;
 import org.ow2.authzforce.core.pdp.api.value.StandardDatatypes;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
@@ -99,12 +99,12 @@ public final class ConditionEvaluators
 	 * @param expressionFactory
 	 *            expression factory
 	 * @param xPathCompiler
-	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+	 *            XPath compiler, defined if XPath support enabled (by PDP configuration and some enclosing Policy(Set) defines a XPathVersion according to XACML standard)
 	 * @return instance of Condition evaluator
 	 * @throws java.lang.IllegalArgumentException
 	 *             if the expression is not a valid boolean Expression
 	 */
-	public static BooleanEvaluator getInstance(final Condition condition, final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory) throws IllegalArgumentException
+	public static BooleanEvaluator getInstance(final Condition condition, final ExpressionFactory expressionFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (condition == null)
 		{
@@ -120,7 +120,7 @@ public final class ConditionEvaluators
 			throw NULL_EXPR_FACTORY_ARGUMENT_EXCEPTION;
 		}
 
-		final Expression<?> expr = expressionFactory.getInstance(exprElt, xPathCompiler, null);
+		final Expression<?> expr = expressionFactory.getInstance(exprElt,null, xPathCompiler);
 
 		// make sure it's a boolean expression...
 		if (!(expr.getReturnType().equals(StandardDatatypes.BOOLEAN)))

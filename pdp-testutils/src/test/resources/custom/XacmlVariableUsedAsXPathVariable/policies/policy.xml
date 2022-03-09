@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Example based on EXAMPLE ACME SPIF from NATO STANAG 4774, ADatP-4774.1, Annex B,
+retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN,
+but dealing with classifications only for this test (other categories ignored).
+ -->
+<PolicySet xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17"
+		   PolicySetId="1.3.6.1.4.1.31778.110.1"
+		   Version="1"
+		   PolicyCombiningAlgId="urn:oasis:names:tc:xacml:3.0:policy-combining-algorithm:deny-unless-permit">
+	<Description>Generated from SPIF: ACME v1. See also NATO ADatP-4774.1 Implementation Guidance.</Description>
+	<PolicySetDefaults>
+		<XPathVersion>http://www.w3.org/TR/2007/REC-xpath20-20070123</XPathVersion>
+	</PolicySetDefaults>
+	<Target/>
+	<Policy PolicyId="Permissions_P"
+			Version="1.0"
+			RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:ordered-deny-overrides">
+		<Description>
+			Both PolicyIdentifiers from confidentiality clearance (subject) and label (resource) must match the SPIF's.
+			Then match the categories against each other (hierarchical ones aka classifications, and non-hierarchical ones).
+		</Description>
+		<Target>
+			<AnyOf>
+				<AllOf>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ACME</AttributeValue>
+						<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+										   Path="//*:PolicyIdentifier/text()"
+										   DataType="http://www.w3.org/2001/XMLSchema#string"
+										   MustBePresent="true"/>
+					</Match>
+					<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">ACME</AttributeValue>
+						<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+										   Path="//*:PolicyIdentifier/text()"
+										   DataType="http://www.w3.org/2001/XMLSchema#string"
+										   MustBePresent="true"/>
+					</Match>
+				</AllOf>
+			</AnyOf>
+		</Target>
+		<VariableDefinition VariableId="resource_classif_name">
+			<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+							   Path="//*:Classification/text()"
+							   DataType="http://www.w3.org/2001/XMLSchema#string"
+							   MustBePresent="true"/>
+		</VariableDefinition>
+		<VariableDefinition VariableId="subject_classif_name">
+			<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+							   Path="//*:Classification/text()"
+							   DataType="http://www.w3.org/2001/XMLSchema#string"
+							   MustBePresent="true"/>
+		</VariableDefinition>
+		<VariableDefinition VariableId="resource_classif_level">
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+				<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+								   DataType="http://www.w3.org/2001/XMLSchema#integer"
+								   MustBePresent="true"
+								   Path="if ($resource_classif_name = 'INTERNAL') then 3 else if ($resource_classif_name = 'CONFIDENTIAL') then 2 else if ($resource_classif_name = 'PUBLIC') then 1 else 0"/>
+			</Apply>
+		</VariableDefinition>
+		<VariableDefinition VariableId="subject_classif_level">
+			<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-one-and-only">
+				<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+								   DataType="http://www.w3.org/2001/XMLSchema#integer"
+								   MustBePresent="true"
+								   Path="if ($subject_classif_name = 'INTERNAL') then 3 else if ($subject_classif_name = 'CONFIDENTIAL') then 2 else if ($subject_classif_name = 'PUBLIC') then 1 else 0"/>
+			</Apply>
+		</VariableDefinition>
+		<Rule Effect="Permit"
+			  RuleId="READ_if_subject_classif_greater_than_or_equal_to_resource_classif_R">
+			<Description>Bell-Lapadula: allow READ if and only if subject level ≥ object (resource) level </Description>
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">READ</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
+												 AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+												 DataType="http://www.w3.org/2001/XMLSchema#string"
+												 MustBePresent="true"/>
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+			<Condition>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-greater-than-or-equal">
+					<VariableReference VariableId="subject_classif_level"/>
+					<VariableReference VariableId="resource_classif_level"/>
+				</Apply>
+			</Condition>
+		</Rule>
+		<Rule Effect="Permit"
+			  RuleId="WRITE_if_subject_classif_less_than_or_equal_to_resource_classif_R">
+			<Description>Bell-Lapadula: allow WRITE if and only if subject level ≤ object (resource) level </Description>
+			<Target>
+				<AnyOf>
+					<AllOf>
+						<Match MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">WRITE</AttributeValue>
+							<AttributeDesignator Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action"
+												 AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
+												 DataType="http://www.w3.org/2001/XMLSchema#string"
+												 MustBePresent="true"/>
+						</Match>
+					</AllOf>
+				</AnyOf>
+			</Target>
+			<Condition>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-less-than-or-equal">
+					<VariableReference VariableId="subject_classif_level"/>
+					<VariableReference VariableId="resource_classif_level"/>
+				</Apply>
+			</Condition>
+		</Rule>
+		<Rule RuleId="other_categories_match_R" Effect="Permit">
+			<Description>Match other (non-hierarchical) categories:
+				for each category Cn,
+				(resource has no C1 value OR subject/resource C1 values match) AND (resource has no C2 value OR subject/resource C2 values match) AND ...
+
+				The 'has no value' is translated to: the AttributeSelector returns an empty bag (size 0).
+				The 'match' function depends on whether the category is permissive (at least one value must match, i.e. 'at-least-one-member-of' function) or restrictive (all must match, i.e. 'subset' function).
+			</Description>
+			<Condition>
+				<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:and">
+					<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:or">
+						<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-equal">
+							<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag-size">
+								<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+												   Path="//*:Category[@TagName='Releasable To']/*:GenericValue/text()"
+												   DataType="http://www.w3.org/2001/XMLSchema#string"
+												   MustBePresent="false"/>
+							</Apply>
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">0</AttributeValue>
+						</Apply>
+						<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-at-least-one-member-of">
+							<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+											   Path="//*:Category[@TagName='Releasable To']/*:GenericValue/text()"
+											   DataType="http://www.w3.org/2001/XMLSchema#string"
+											   MustBePresent="false"/>
+							<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+											   Path="//*:Category[@TagName='Releasable To']/*:GenericValue/text()"
+											   DataType="http://www.w3.org/2001/XMLSchema#string"
+											   MustBePresent="false"/>
+						</Apply>
+					</Apply>
+					<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:or">
+						<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:integer-equal">
+							<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-bag-size">
+								<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+												   Path="//*:Category[@TagName='Sensitive']/*:GenericValue/text()"
+												   DataType="http://www.w3.org/2001/XMLSchema#string"
+												   MustBePresent="false"/>
+							</Apply>
+							<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#integer">0</AttributeValue>
+						</Apply>
+						<Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-subset">
+							<AttributeSelector Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource"
+											   Path="//*:Category[@TagName='Sensitive']/*:GenericValue/text()"
+											   DataType="http://www.w3.org/2001/XMLSchema#string"
+											   MustBePresent="false"/>
+							<AttributeSelector Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject"
+											   Path="//*:Category[@TagName='Sensitive']/*:GenericValue/text()"
+											   DataType="http://www.w3.org/2001/XMLSchema#string"
+											   MustBePresent="false"/>
+						</Apply>
+					</Apply>
+				</Apply>
+			</Condition>
+		</Rule>
+		<ObligationExpressions>
+			<ObligationExpression FulfillOn="Permit" ObligationId="urn:ow2:authzforce:core:pdp:test:obligation1">
+				<AttributeAssignmentExpression AttributeId="subject_classif_level">
+					<VariableReference VariableId="subject_classif_level"/>
+				</AttributeAssignmentExpression>
+				<AttributeAssignmentExpression AttributeId="resource_classif_level">
+					<VariableReference VariableId="resource_classif_level"/>
+				</AttributeAssignmentExpression>
+			</ObligationExpression>
+		</ObligationExpressions>
+	</Policy>
+</PolicySet>

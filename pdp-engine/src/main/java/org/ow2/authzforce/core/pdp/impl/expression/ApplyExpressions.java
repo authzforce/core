@@ -17,16 +17,12 @@
  */
 package org.ow2.authzforce.core.pdp.impl.expression;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ApplyType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.DefaultsType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
-import org.ow2.authzforce.core.pdp.api.expression.ConstantExpression;
-import org.ow2.authzforce.core.pdp.api.expression.Expression;
-import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
-import org.ow2.authzforce.core.pdp.api.expression.FunctionExpression;
+import org.ow2.authzforce.core.pdp.api.expression.*;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.func.FunctionCall;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -131,7 +127,7 @@ public final class ApplyExpressions
 	 *             if {@code xacmlApply} is invalid or {@code expFactory} is null; or function ID not supported/unknown; if {@code xprs} are invalid expressions, or invalid arguments for this
 	 *             function; or if all {@code xprs} are static but calling the function statically (with these static arguments) failed
 	 */
-	public static Expression<?> newInstance(final ApplyType xacmlApply, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory, final Deque<String> longestVarRefChain)
+	public static Expression<?> newInstance(final ApplyType xacmlApply, final ExpressionFactory expFactory, final Deque<String> longestVarRefChain, final Optional<XPathCompilerProxy> xPathCompiler)
 	        throws IllegalArgumentException
 	{
 		if (xacmlApply == null)
@@ -153,7 +149,7 @@ public final class ApplyExpressions
 			final Expression<?> exprHandler;
 			try
 			{
-				exprHandler = expFactory.getInstance(exprElt.getValue(), xPathCompiler, longestVarRefChain);
+				exprHandler = expFactory.getInstance(exprElt.getValue(), longestVarRefChain, xPathCompiler);
 			} catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException("Error parsing one of Apply [description=" + applyDesc + "]'s function arguments (Expressions)", e);

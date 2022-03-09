@@ -300,7 +300,10 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 
 		try
 		{
-			return PolicyEvaluators.getInstance(jaxbPolicy, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry);
+			/*
+                    XPath compiler shall be initialized in PolicyEvaluators#getInstance(...) based on PolicyDefaults/XPathVersion if present
+                     */
+			return PolicyEvaluators.getInstance(jaxbPolicy, expressionFactory, combiningAlgRegistry, Optional.empty(), nsPrefixUriMap);
 		}
 		catch (final IllegalArgumentException e)
 		{
@@ -350,7 +353,7 @@ public final class MongoDbPolicyProvider extends BaseStaticPolicyProvider
 
 		try
 		{
-			return PolicyEvaluators.getInstanceStatic(jaxbPolicySet, null, nsPrefixUriMap, expressionFactory, combiningAlgRegistry, this, policySetRefChain);
+			return PolicyEvaluators.getInstanceStatic(jaxbPolicySet, expressionFactory, combiningAlgRegistry, this, policySetRefChain, Optional.empty(), nsPrefixUriMap);
 		}
 		catch (final IllegalArgumentException e)
 		{

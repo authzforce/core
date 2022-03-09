@@ -18,7 +18,8 @@
 package org.ow2.authzforce.core.pdp.impl.expression;
 
 import com.google.common.base.Preconditions;
-import net.sf.saxon.s9api.XPathCompiler;
+import com.google.common.collect.ImmutableList;
+import net.sf.saxon.s9api.QName;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.*;
@@ -45,6 +46,8 @@ import java.util.stream.Stream;
 public final class DepthLimitingExpressionFactory implements ExpressionFactory
 {
 
+	public static final IllegalArgumentException MISSING_POLICY_DEFAULTS_XPATH_VERSION_ILLEGAL_ARGUMENT_EXCEPTION = new IllegalArgumentException("AttributeSelector found but no Policy(Set)Defaults/XPathVersion defined in the enclosing - or any ancestor - Policy(Set) as required for XPath evaluation");
+
 	/**
 	 * Base class for evaluating XACML VariableReferences that holds the variable ID and longest VariableReference chain found in the referenced variable's expression, in order to detect abuse of such
 	 * chains, which is unsafe.
@@ -58,7 +61,9 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	{
 
 		protected final String variableId;
+
 		private final transient Deque<String> longestVariableReferenceChain;
+		private transient volatile QName xPathVarName = null;
 
 		/**
 		 * Constructor that takes a variable identifier
@@ -83,6 +88,43 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			return this.variableId;
 		}
 
+		@Override
+		public QName getXPathVariableName()
+		{
+			if(xPathVarName == null) {
+				try
+				{
+					xPathVarName = new QName(variableId);
+				} catch(IllegalArgumentException e) {
+					throw new IllegalArgumentException("VariableId = '" + variableId + "' is not a valid variable name when XPath support is enabled. Must be usable as XPath variable localName, i.e. colon (':') character is forbidden.", e);
+				}
+			}
+
+			return xPathVarName;
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o)
+			{
+				return true;
+			}
+			if (o == null || getClass() != o.getClass())
+			{
+				return false;
+			}
+
+			final BaseVariableReference<?> that = (BaseVariableReference<?>) o;
+
+			return variableId.equals(that.variableId);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return variableId.hashCode();
+		}
 	}
 
 	private static final class ConstantVariableReference<V extends Value> extends BaseVariableReference<V>
@@ -135,7 +177,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 * then this will throw an exception.
 		 * <p>
 		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
-		 * {@link EvaluationContext#putVariableIfAbsent(String, Value)}.
+		 * {@link EvaluationContext#putVariableIfAbsent(VariableReference, Value)}.
 		 */
 		@Override
 		public V evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext)
@@ -171,6 +213,15 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			        XacmlStatusCode.PROCESSING_ERROR.value());
 		}
 
+		@Override
+		public String toString()
+		{
+			return "VariableReference{" +
+					"variableId='" + variableId + '\'' +
+					", expression=" + expression +
+					'}';
+		}
+
 		/**
 		 * {@inheritDoc}
 		 *
@@ -195,7 +246,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 * then this will throw an exception.
 		 * <p>
 		 * The policy evaluator should call this when starting the evaluation of the policy where the VariableDefinition occurs, then cache the value in the evaluation context with
-		 * {@link EvaluationContext#putVariableIfAbsent(String, Value)}.
+		 * {@link EvaluationContext#putVariableIfAbsent(VariableReference, Value)}.
 		 */
 		@Override
 		public V evaluate(final EvaluationContext context, final Optional<EvaluationContext> mdpContext) throws IndeterminateEvaluationException
@@ -212,9 +263,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 			}
 
 			// ctxVal == null: not evaluated yet in this context -> evaluate now
-			final V result = expression.evaluate(context, mdpContext);
-			context.putVariableIfAbsent(this.variableId, result);
-			return result;
+			return expression.evaluate(context, mdpContext);
 		}
 	}
 
@@ -250,7 +299,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	private static final IllegalArgumentException MISSING_ATTRIBUTE_DESIGNATOR_ISSUER_EXCEPTION = new IllegalArgumentException(
 	        "Missing Issuer that is required on AttributeDesignators by PDP configuration");
 
-	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("Unsupported Expression type (optional XACML feature): AttributeSelector");
+	private static final IllegalArgumentException UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION = new IllegalArgumentException("Unsupported Expression type (optional XACML feature): AttributeSelector. (Set xPathEnabled='true' in PDP configuration if you wish to enable this feature).");
 
 	private static final IllegalArgumentException NULL_FUNCTION_REGISTRY_EXCEPTION = new IllegalArgumentException("Undefined function registry");
 
@@ -274,7 +323,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	private final int maxVariableReferenceDepth;
 	// the map from identifiers to internal data
 	private final Map<String, BaseVariableReference<?>> idToVariableMap = HashCollections.newMutableMap();
-	private final boolean allowAttributeSelectors;
+	private final boolean isXPathEnabled;
 
 	private final boolean issuerRequiredOnAttributeDesignators;
 
@@ -294,8 +343,8 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	 *            Registry of Attribute Provider (Attribute Providers resolve values of attributes absent from the request context). Empty if none. <b>Calling {@link CloseableNamedAttributeProviderRegistry#close()}} on this is the responsibility of the caller.</b>
 	 * @param maxVariableRefDepth
 	 *            max depth of VariableReference chaining: VariableDefinition -> VariableDefinition ->... ('->' represents a VariableReference); strictly negative value means unlimited
-	 * @param allowAttributeSelectors
-	 *            allow use of AttributeSelectors (experimental, not for production, use with caution)
+	 * @param enableXPath
+	 *            allow XPath expressions (e.g. AttributeSelectors).
 	 * @param strictAttributeIssuerMatch
 	 *            true iff we want strict Attribute Issuer matching, and we require that all AttributeDesignators set the Issuer field.
 	 *            <p>
@@ -310,7 +359,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	 *             If {@code attributeFactory == null || functionRegistry == null} OR any Attribute Provider created from {@code attributeProviderFactories} does not provide any attribute.
 	 */
 	public DepthLimitingExpressionFactory(final AttributeValueFactoryRegistry attributeFactory, final FunctionRegistry functionRegistry,
-	        final int maxVariableRefDepth, final boolean allowAttributeSelectors,
+	        final int maxVariableRefDepth, final boolean enableXPath,
 	        final boolean strictAttributeIssuerMatch, final Optional<CloseableNamedAttributeProviderRegistry> attributeProviderRegistry) throws IllegalArgumentException
 	{
 		if (attributeFactory == null)
@@ -330,7 +379,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 * finally, create the global attribute Provider used to resolve AttributeDesignators
 		 */
 		this.attributeProviderRegistry = attributeProviderRegistry;
-		this.allowAttributeSelectors = allowAttributeSelectors;
+		this.isXPathEnabled = enableXPath;
 		this.issuerRequiredOnAttributeDesignators = strictAttributeIssuerMatch;
 	}
 
@@ -355,9 +404,16 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		return new DynamicVariableReference<>(variableId, variableExpression, longestVarRefChainInExpression);
 	}
 
+
+	@Override
+	public boolean isXPathEnabled()
+	{
+		return this.isXPathEnabled;
+	}
+
 	/** {@inheritDoc} */
 	@Override
-	public VariableReference<?> addVariable(final VariableDefinition varDef, final XPathCompiler xPathCompiler, final Deque<String> inoutLongestVarRefChain) throws IllegalArgumentException
+	public VariableReference<?> addVariable(final VariableDefinition varDef, final Deque<String> inoutLongestVarRefChain, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		assert varDef != null;
 
@@ -373,7 +429,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 * inoutLongestVarRefChain == null means that the longest VarRef chain will not be computed nor checked
 		 */
 		final Deque<String> longestVarRefChainInCurrentVarExpression = inoutLongestVarRefChain == null ? null : new ArrayDeque<>();
-		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), xPathCompiler, longestVarRefChainInCurrentVarExpression);
+		final Expression<?> varExpr = getInstance(varDef.getExpression().getValue(), longestVarRefChainInCurrentVarExpression, xPathCompiler);
 		/*
 		 * if not null, longestVarRefChainInCurrentVarExpression has now been updated to longest VariableReference chain in varExpr
 		 */
@@ -415,6 +471,12 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 	public VariableReference<?> getVariableExpression(final String varId)
 	{
 		return idToVariableMap.get(varId);
+	}
+
+	@Override
+	public ImmutableList<VariableReference<?>> getVariableExpressions()
+	{
+		return ImmutableList.copyOf(idToVariableMap.values());
 	}
 
 	/** {@inheritDoc} */
@@ -543,7 +605,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 
 	/** {@inheritDoc} */
 	@Override
-	public Expression<?> getInstance(final ExpressionType expr, final XPathCompiler xPathCompiler, final Deque<String> longestVarRefChain) throws IllegalArgumentException
+	public Expression<?> getInstance(final ExpressionType expr, final Deque<String> longestVarRefChain, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		final Expression<?> expression;
 		/*
@@ -551,7 +613,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		 */
 		if (expr instanceof ApplyType)
 		{
-			expression = ApplyExpressions.newInstance((ApplyType) expr, xPathCompiler, this, longestVarRefChain);
+			expression = ApplyExpressions.newInstance((ApplyType) expr, this, longestVarRefChain, xPathCompiler);
 		}
 		else if (expr instanceof AttributeDesignatorType)
 		{
@@ -575,7 +637,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 		}
 		else if (expr instanceof AttributeSelectorType)
 		{
-			if (!allowAttributeSelectors)
+			if (!isXPathEnabled)
 			{
 				throw UNSUPPORTED_ATTRIBUTE_SELECTOR_EXCEPTION;
 			}
@@ -587,16 +649,16 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 				throw new IllegalArgumentException("Unsupported Datatype used in AttributeSelector: " + jaxbAttrSelector.getDataType());
 			}
 
-			// Check whether default XPath compiler/version specified for the
-			// XPath evaluator
-			if (xPathCompiler == null)
+			/* Check whether default XPath compiler/version specified for the XPath evaluator
+			 */
+			if (xPathCompiler.isEmpty())
 			{
-				throw new IllegalArgumentException("AttributeSelector found but missing Policy(Set)Defaults/XPathVersion required for XPath evaluation in AttributeSelector");
+				throw MISSING_POLICY_DEFAULTS_XPATH_VERSION_ILLEGAL_ARGUMENT_EXCEPTION;
 			}
 
 			final String contextSelectorId = jaxbAttrSelector.getContextSelectorId();
 			if(contextSelectorId == null) {
-				expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector.getCategory(), jaxbAttrSelector.getPath(), jaxbAttrSelector.isMustBePresent(), xPathCompiler, attrFactory);
+				expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector.getCategory(), jaxbAttrSelector.getPath(), jaxbAttrSelector.isMustBePresent(), xPathCompiler.get(), attrFactory);
 			} else {
 				final AttributeFqn contextSelectorAttName = AttributeFqns.newInstance(jaxbAttrSelector.getCategory(), Optional.empty(), contextSelectorId);
 				final SingleNamedAttributeProvider<XPathValue> ctxSelectorAttProvider;
@@ -608,7 +670,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 					// Empty list returned if no provider of contextSelectorAttName
 					ctxSelectorAttProvider = registeredAttProviders.isEmpty() ? new EvaluationContextOnlyScopedSingleNamedAttributeProvider<>(contextSelectorAttName, StandardDatatypes.XPATH, issuerRequiredOnAttributeDesignators) : new CompositeSingleNamedAttributeProvider<>(contextSelectorAttName, StandardDatatypes.XPATH, issuerRequiredOnAttributeDesignators, registeredAttProviders);
 				}
-				expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector, xPathCompiler, attrFactory, ctxSelectorAttProvider);
+				expression = AttributeSelectorExpressions.newInstance(jaxbAttrSelector, xPathCompiler.get(), attrFactory, ctxSelectorAttProvider);
 			}
 		}
 		else if (expr instanceof AttributeValueType)
@@ -645,7 +707,7 @@ public final class DepthLimitingExpressionFactory implements ExpressionFactory
 
 	/** {@inheritDoc} */
 	@Override
-	public ConstantExpression<? extends AttributeValue> getInstance(final AttributeValueType jaxbAttrVal, final XPathCompiler xPathCompiler) throws IllegalArgumentException
+	public ConstantExpression<? extends AttributeValue> getInstance(final AttributeValueType jaxbAttrVal, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		return this.datatypeFactoryRegistry.newExpression(jaxbAttrVal.getDataType(), jaxbAttrVal.getContent(), jaxbAttrVal.getOtherAttributes(), xPathCompiler);
 	}

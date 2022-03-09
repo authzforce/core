@@ -18,11 +18,11 @@
 package org.ow2.authzforce.core.pdp.impl.io;
 
 import com.google.common.collect.ImmutableList;
-import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import org.ow2.authzforce.core.pdp.api.*;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.io.BaseXacmlJaxbRequestPreprocessor;
 import org.ow2.authzforce.core.pdp.api.io.IndividualXacmlJaxbRequest;
 import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes;
@@ -138,7 +138,7 @@ public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJ
 
 	@Override
 	public List<IndividualXacmlJaxbRequest> process(final List<Attributes> attributesList, final SingleCategoryXacmlAttributesParser<Attributes> xacmlAttrsParser,
-			final boolean isApplicablePolicyIdListReturned, final boolean combinedDecision, final XPathCompiler xPathCompiler, final Map<String, String> namespaceURIsByPrefix)
+													final boolean isApplicablePolicyIdListReturned, final boolean combinedDecision, final Optional<XPathCompilerProxy> xPathCompiler, final Map<String, String> namespaceURIsByPrefix)
 			throws IndeterminateEvaluationException
 	{
 		final Map<AttributeFqn, AttributeBag<?>> namedAttributes = HashCollections.newUpdatableMap(attributesList.size());

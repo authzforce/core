@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.ow2.authzforce</groupId>
 		<artifactId>authzforce-ce-core</artifactId>
-		<version>19.0.0</version>
+		<version>20.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>authzforce-ce-core-pdp-testutils</artifactId>
@@ -23,12 +23,12 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>${artifactId.prefix}-core-pdp-engine</artifactId>
-			<version>19.0.0</version>
+			<version>20.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.authzforce</groupId>
 			<artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-			<version>19.0.0</version>
+			<version>20.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -42,6 +42,11 @@
 			<groupId>org.jongo</groupId>
 			<artifactId>jongo</artifactId>
 			<version>1.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

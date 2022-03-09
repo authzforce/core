@@ -18,7 +18,6 @@
 package org.ow2.authzforce.core.pdp.impl;
 
 import com.google.common.base.Preconditions;
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeAssignmentExpression;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.ExpressionType;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
@@ -26,6 +25,7 @@ import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.PepActionAttributeAssignment;
 import org.ow2.authzforce.core.pdp.api.expression.Expression;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
 import org.ow2.authzforce.core.pdp.api.value.Bag;
 import org.ow2.authzforce.core.pdp.api.value.Datatype;
@@ -115,13 +115,13 @@ public final class AttributeAssignmentExpressionEvaluator
 	 * @param jaxbAttrAssignExp
 	 *            XACML-schema-derived JAXB AttributeAssignmentExpression
 	 * @param xPathCompiler
-	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+	 *            XPath compiler corresponding to enclosing policy(set) default XPath version if it is defined and if XPath support is enabled.
 	 * @param expFactory
 	 *            expression factory for parsing the AttributeAssignmentExpression's expression
 	 * @throws java.lang.IllegalArgumentException
 	 *             invalid AttributeAssignmentExpression's Expression
 	 */
-	public AttributeAssignmentExpressionEvaluator(final AttributeAssignmentExpression jaxbAttrAssignExp, final XPathCompiler xPathCompiler, final ExpressionFactory expFactory)
+	public AttributeAssignmentExpressionEvaluator(final AttributeAssignmentExpression jaxbAttrAssignExp, final ExpressionFactory expFactory, final Optional<XPathCompilerProxy> xPathCompiler)
 	        throws IllegalArgumentException
 	{
 		/*
@@ -135,7 +135,7 @@ public final class AttributeAssignmentExpressionEvaluator
 
 		final JAXBElement<? extends ExpressionType> xacmlExpr = jaxbAttrAssignExp.getExpression();
 		Preconditions.checkArgument(xacmlExpr != null, "Undefined AttributeAssignment/Expression");
-		final Expression<?> evaluableExpression = expFactory.getInstance(xacmlExpr.getValue(), xPathCompiler, null);
+		final Expression<?> evaluableExpression = expFactory.getInstance(xacmlExpr.getValue(), null, xPathCompiler);
 
 		/*
 		 * As stated in section 5.41 of XACML spec, the expression must evaluate to a constant attribute value or a bag of zero or more attribute values.

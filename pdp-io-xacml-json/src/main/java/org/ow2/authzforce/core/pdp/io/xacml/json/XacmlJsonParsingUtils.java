@@ -18,11 +18,11 @@
 package org.ow2.authzforce.core.pdp.io.xacml.json;
 
 import com.google.common.collect.ImmutableList;
-import net.sf.saxon.s9api.XPathCompiler;
 import net.sf.saxon.s9api.XdmNode;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ow2.authzforce.core.pdp.api.*;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.api.io.*;
 import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes.NamedAttributeIteratorConverter;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValue;
@@ -49,7 +49,7 @@ public final class XacmlJsonParsingUtils
 		private static final IllegalArgumentException NULL_ATTRIBUTE_ID_ARGUMENT_EXCEPTION = new IllegalArgumentException("Invalid XACML Attribute: AttributeId property undefined (but required).");
 
 		private static <AV extends AttributeValue> NamedXacmlAttributeParsingResult<AV> parseNamedAttribute(final AttributeFqn attName, final Iterable<Object> nonEmptyInputXacmlJsonAttValues,
-		        final int numOfValues, final AttributeValueFactory<AV> attValFactory, final XPathCompiler xPathCompiler) throws UnsupportedOperationException, IllegalArgumentException
+		        final int numOfValues, final AttributeValueFactory<AV> attValFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws UnsupportedOperationException, IllegalArgumentException
 		{
 			assert attName != null && nonEmptyInputXacmlJsonAttValues != null && numOfValues > 0 && attValFactory != null;
 
@@ -87,7 +87,7 @@ public final class XacmlJsonParsingUtils
 		}
 
 		@Override
-		protected NamedXacmlAttributeParsingResult<?> parseNamedAttribute(final String attributeCategoryId, final JSONObject inputXacmlAttribute, final XPathCompiler xPathCompiler)
+		protected NamedXacmlAttributeParsingResult<?> parseNamedAttribute(final String attributeCategoryId, final JSONObject inputXacmlAttribute, final Optional<XPathCompilerProxy> xPathCompiler)
 		        throws IllegalArgumentException
 		{
 			final String attrId = inputXacmlAttribute.optString("AttributeId", null);
@@ -212,7 +212,7 @@ public final class XacmlJsonParsingUtils
 		protected abstract XdmNode parseContent(String categoryId, String categoryContent) throws IndeterminateEvaluationException;
 
 		@Override
-		public SingleCategoryAttributes<?, JSONObject> parseAttributes(final JSONObject requestAttributeCategory, final XPathCompiler xPathCompiler) throws IndeterminateEvaluationException
+		public SingleCategoryAttributes<?, JSONObject> parseAttributes(final JSONObject requestAttributeCategory, final Optional<XPathCompilerProxy> xPathCompiler) throws IndeterminateEvaluationException
 		{
 			assert requestAttributeCategory != null;
 

@@ -31,6 +31,12 @@ public class SerializableJSONObject implements Serializable
 {
     private static final long serialVersionUID = 1L; // use a real serial ID here
 
+    private static JSONObject copyOf(JSONObject jsonObject)
+    {
+        assert jsonObject != null;
+        return new JSONObject(jsonObject, jsonObject.keySet().toArray(new String[0]));
+    }
+
     private transient JSONObject jsonObject;
 
 // some other non-transient fields
@@ -57,7 +63,7 @@ public class SerializableJSONObject implements Serializable
      */
     public SerializableJSONObject(JSONObject jsonObject)
     {
-        this.jsonObject = jsonObject;
+        this.jsonObject = copyOf(jsonObject);
     }
 
     /**
@@ -67,6 +73,7 @@ public class SerializableJSONObject implements Serializable
      */
     public JSONObject get()
     {
-        return jsonObject;
+        // defensive copy
+        return copyOf(this.jsonObject);
     }
 }

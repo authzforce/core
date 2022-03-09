@@ -6,6 +6,14 @@
 -->
 <FindBugsFilter>
   <Match>
+    <Bug pattern="EI_EXPOSE_REP"/>
+    <Class name="org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProviderDescriptor"/>
+  </Match>
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+    <Class name="org.ow2.authzforce.core.pdp.testutil.ext.xmlns.TestAttributeProviderDescriptor"/>
+  </Match>
+  <Match>
   <!-- CRLF injection in logs is considered fixed in the logger configuration, e.g. logback.xml.
   More info: https://github.com/find-sec-bugs/find-sec-bugs/issues/240
    -->

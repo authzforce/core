@@ -142,7 +142,7 @@
                         </p>
                         <p>
                             If the configuration parameter
-                            <i>enableXPath</i>
+                            <i>xPathEnabled</i>
                             is true, it is the
                             responsibility of the Request preprocessor to parse XACML
                             Request/Attributes/Content
@@ -1033,7 +1033,7 @@
                 <p>
                     Provides the standard environment attributes specified
                     in XACML 3.0 Core specification, §10.2.5: current-time, current-date and current-dateTime.
-                    By default, the PDP engine does not set these attributes on its own and only takes the ones from the request. Therefore, you need to enable this AttributeProvider for strict compliance with XACML 3.0 standard (§10.2.5): <i>If
+                    By default, the PDP engine does not set these attributes on its own and only takes the ones from the request. This AttributeProvider is enabled with <i>override='false'</i> whenever <i>standardAttributeProvidersEnabled='true'</i>, ensuring strict compliance with XACML 3.0 standard (§10.2.5): <i>If
                     values for these
                     attributes are not present in
                     the decision request,

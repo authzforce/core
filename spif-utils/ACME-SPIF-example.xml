@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spif:SPIF
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:spif="http://www.xmlspif.org/spif"
+        xsi:schemaLocation="http://www.xmlspif.org/spif spif.xsd"
+        schemaVersion="2.1" version="1" creationDate="20170314090000Z"
+        originatorDN="CN=Alan Ross,O=SMHS Ltd,C=GB"
+        keyIdentifier="6AA4BA9F66BFCD44" privilegeId="1.3.26.0.4474.5.24.1"
+        rbacId="1.3.26.0.4474.5.24.1">
+    <spif:securityPolicyId name="ACME" id="1.3.6.1.4.1.31778.110.1"/>
+    <spif:securityClassifications>
+        <spif:securityClassification name="PUBLIC" lacv="1" hierarchy="1">
+            <spif:markingData xml:lang="fr" phrase="PUBLIC">
+                <spif:code>documentStart</spif:code>
+            </spif:markingData>
+        </spif:securityClassification>
+        <spif:securityClassification name="CONFIDENTIAL" lacv="2" hierarchy="2">
+            <spif:equivalentClassification applied="both" policyRef="MOCK" lacv="3"/>
+            <spif:markingData xml:lang="fr" phrase="CONFIDENTIEL">
+                <spif:code>documentStart</spif:code>
+            </spif:markingData>
+            <spif:requiredCategory operation="oneOrMore">
+                <!-- MOCK -->
+                <spif:categoryGroup
+                        tagSetRef="Releasable To" tagType="enumerated"
+                        enumType="permissive" lacv="100"/>
+                <!-- PHONY -->
+                <spif:categoryGroup
+                        tagSetRef="Releasable To" tagType="enumerated"
+                        enumType="permissive" lacv="200"/>
+            </spif:requiredCategory>
+        </spif:securityClassification>
+        <spif:securityClassification name="INTERNAL" lacv="3" hierarchy="3">
+            <spif:markingData xml:lang="fr" phrase="INTERNE">
+                <spif:code>documentStart</spif:code>
+            </spif:markingData>
+        </spif:securityClassification>
+    </spif:securityClassifications>
+    <spif:securityCategoryTagSets>
+        <spif:securityCategoryTagSet name="Releasable To"
+                                     id="1.3.6.1.4.1.31778.111.1">
+            <spif:securityCategoryTag
+                    name="Releasable To" tagType="enumerated"
+                    enumType="permissive" singleSelection="false">
+                <spif:tagCategory name="MOCK" lacv="100">
+                    <equivalentSecCategoryTag policyRef="MOCK"
+                                              tagSetId="1.3.6.1.4.1.31778.121.1" tagType="enumerated"
+                                              enumType="permissive" lacv="1000" applied="both"/>
+                    <spif:markingData phrase="MOCK">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:markingData xml:lang="fr" phrase="MOQUER">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>INTERNAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:tagCategory name="PHONY" lacv="200">
+                    <equivalentSecCategoryTag policyRef="MOCK"
+                                              tagSetId="1.3.6.1.4.1.31778.121.1" tagType="enumerated"
+                                              enumType="permissive" lacv="2000" applied="both"/>
+                    <spif:markingData phrase="PHONY">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:markingData xml:lang="fr" phrase="FAUX">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>INTERNAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:markingQualifier markingCode="pageTop">
+                    <spif:qualifier markingQualifier="REL TO " qualifierCode="prefix"/>
+                    <spif:qualifier xml:lang="fr" markingQualifier="REL TO "
+                                    qualifierCode="prefix"/>
+                    <spif:qualifier markingQualifier="," qualifierCode="separator"/>
+                </spif:markingQualifier>
+            </spif:securityCategoryTag>
+        </spif:securityCategoryTagSet>
+        <spif:securityCategoryTagSet name="Administrative"
+                                     id="1.3.6.1.4.1.31778.111.2">
+            <spif:securityCategoryTag name="Administrative" tagType="tagType7"
+                                      tag7Encoding="bitSetAttributes" singleSelection="false">
+                <spif:tagCategory name="STAFF" lacv="1">
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>CONFIDENTIAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:tagCategory name="FINANCE" lacv="2">
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>CONFIDENTIAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:tagCategory name="SALES" lacv="3">
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>CONFIDENTIAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:tagCategory name="ENGINEERING" lacv="4">
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>CONFIDENTIAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:markingQualifier markingCode="pageTop">
+                    <spif:qualifier markingQualifier=" " qualifierCode="separator"/>
+                </spif:markingQualifier>
+            </spif:securityCategoryTag>
+        </spif:securityCategoryTagSet>
+        <spif:securityCategoryTagSet name="Sensitive" id="1.3.6.1.4.1.31778.111.3">
+            <spif:securityCategoryTag name="Sensitive" tagType="restrictive"
+                                      singleSelection="false">
+                <spif:tagCategory name="RED" lacv="1">
+                    <spif:markingData phrase="RED">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:markingData xml:lang="fr" phrase="ROUGE">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>CONFIDENTIAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:tagCategory name="BLUE" lacv="2">
+                    <spif:markingData phrase="BLUE">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:markingData xml:lang="fr" phrase="BLEU">
+                        <spif:code>documentStart</spif:code>
+                    </spif:markingData>
+                    <spif:excludedClass>PUBLIC</spif:excludedClass>
+                    <spif:excludedClass>CONFIDENTIAL</spif:excludedClass>
+                </spif:tagCategory>
+                <spif:markingQualifier markingCode="pageTop">
+                    <spif:qualifier markingQualifier=" " qualifierCode="separator"/>
+                </spif:markingQualifier>
+            </spif:securityCategoryTag>
+        </spif:securityCategoryTagSet>
+    </spif:securityCategoryTagSets>
+    <spif:equivalentPolicies>
+        <spif:equivalentPolicy name="MOCK" id="1.3.6.1.4.1.31778.120.1"
+                               docRefURI="MOCK Security Policy.spif"/>
+    </spif:equivalentPolicies>
+</spif:SPIF>

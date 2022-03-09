@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<spif:SPIF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:spif="http://www.xmlspif.org/spif" xsi:schemaLocation="http://www.xmlspif.org/spif http://www.xmlspif.org/schema/xmlspif.xsd" schemaVersion="1.0" version="3" creationDate="20060120120000Z" originatorDN="CN=Graeme Lunt,O=SMHS Ltd,C=GB" keyIdentifier="6AA4BA9F66BFCD44" privilegeId="2.16.840.1.101.2.1.8.3" rbacId="2.16.840.1.101.2.1.8.3">
+	<spif:securityPolicyId name="NATO " id="1.3.26.1.3.1"/>
+	<spif:securityClassifications>
+	<spif:securityClassification name="NATO UNCLASSIFIED" lacv="1" hierarchy="1"/>
+	<spif:securityClassification name="NATO RESTRICTED" lacv="2" hierarchy="2"/>
+	<spif:securityClassification name="NATO CONFIDENTIAL" lacv="3" hierarchy="3"/>
+	<spif:securityClassification name="NATO SECRET" lacv="4" hierarchy="4"/>
+	</spif:securityClassifications>
+	<spif:securityCategoryTagSets>
+	<spif:securityCategoryTagSet name="Additional Sensitivity Categories" id="1.3.26.1.4.1">
+		<spif:securityCategoryTag name="Special Category Designators" tagType="restrictive" singleSelection="false">
+			<spif:tagCategory name="ATOMAL" lacv="1">
+				<spif:excludedClass>NATO UNCLASSIFIED</spif:excludedClass>
+				<spif:excludedClass>NATO RESTRICTED</spif:excludedClass>
+			</spif:tagCategory>
+			<spif:tagCategory name="CRYPTO" lacv="2">
+				<spif:excludedClass>NATO UNCLASSIFIED</spif:excludedClass>
+				<spif:excludedClass>NATO RESTRICTED</spif:excludedClass>
+			</spif:tagCategory>
+			<spif:tagCategory name="SIOP" lacv="3"/>
+			<spif:tagCategory name="SIOP ESI" lacv="4"/>
+			<spif:markingQualifier markingCode="pageTop">
+				<spif:qualifier markingQualifier=" " qualifierCode="separator"/>
+			</spif:markingQualifier>
+		</spif:securityCategoryTag>
+		<spif:securityCategoryTag name="Dissemination Limitation Markings" tagType="restrictive" singleSelection="false">
+			<spif:tagCategory name="EXCLUSIVE" lacv="5">
+				<spif:excludedClass>NATO UNCLASSIFIED</spif:excludedClass>
+			</spif:tagCategory>
+			<spif:tagCategory name="INTELLIGENCE" lacv="6">
+				<spif:excludedClass>NATO UNCLASSIFIED</spif:excludedClass>
+			</spif:tagCategory>
+			<spif:tagCategory name="LOGISTICS" lacv="7">
+				<spif:excludedClass>NATO UNCLASSIFIED</spif:excludedClass>
+			</spif:tagCategory>
+			<spif:tagCategory name="OPERATIONS" lacv="8">
+				<spif:excludedClass>NATO UNCLASSIFIED</spif:excludedClass>
+			</spif:tagCategory>
+			<spif:markingQualifier markingCode="pageTop">
+				<spif:qualifier markingQualifier=" " qualifierCode="separator"/>
+			</spif:markingQualifier>
+		</spif:securityCategoryTag>
+	</spif:securityCategoryTagSet>
+    <spif:securityCategoryTagSet name="Release Categories" id="1.3.26.1.4.2">	
+		<spif:securityCategoryTag name="Releasable To" tagType="enumerated" enumType="permissive" singleSelection="false">
+			<spif:tagCategory name="ALB" lacv="8">
+				<spif:markingData phrase="Albania (ALB)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="ARM" lacv="51">
+				<spif:markingData phrase="Armenia (ARM)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="AUT" lacv="40">
+				<spif:markingData phrase="Austria (AUT)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="AZE" lacv="31">
+				<spif:markingData phrase="Azerbaijan (AZE)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="BLR" lacv="112">
+				<spif:markingData phrase="Belarus (BLR)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="BGR" lacv="100" obsolete="true">
+				<spif:markingData phrase="Bulgaria (BGR)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="EST" lacv="233" obsolete="true">
+				<spif:markingData phrase="Estonia (EST)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="FIN" lacv="246">
+				<spif:markingData phrase="Finland(FIN)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>	
+			<spif:tagCategory name="GEO" lacv="268">
+				<spif:markingData phrase="Georgia (GEO)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="KAZ" lacv="398">
+				<spif:markingData phrase="Kazakhstan (KAZ)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="KGZ" lacv="417">
+				<spif:markingData phrase="Kyrghyz Republic (KGZ)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="LVA" lacv="428" obsolete="true">
+				<spif:markingData phrase="Latvia (LVA)">
+					<spif:code>noNameDisplay</spif:code>
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="LTU" lacv="440" obsolete="true">
+				<spif:markingData phrase="Lithuania (LTU)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="MLT" lacv="470">
+				<spif:markingData phrase="Malta (MLT)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="MDA" lacv="498">
+				<spif:markingData phrase="Moldova (MDA)">
+					<spif:code>noNameDisplay</spif:code>			
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="ROM" lacv="642" obsolete="true">
+				<spif:markingData phrase="Romania (ROM)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="RUS" lacv="643">
+				<spif:markingData phrase="Russia (RUS)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="SVK" lacv="703" obsolete="true">
+				<spif:markingData phrase="Slovak Republic (SVK)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="SVN" lacv="705" obsolete="true">
+				<spif:markingData phrase="Slovenia (SVN)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="SWE" lacv="752">
+				<spif:markingData phrase="Sweden (SWE)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="CHE" lacv="756">
+				<spif:markingData phrase="Switzerland (CHE)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="TJK" lacv="762">
+				<spif:markingData phrase="Tajikistan (TJK)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="FYR" lacv="807">
+				<spif:markingData phrase="The former Yugoslav Republic of Macedonia (FYR)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="TKM" lacv="795">
+				<spif:markingData phrase="Turkmenistan (TKM)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="UKR" lacv="804">
+				<spif:markingData phrase="Ukraine (UKR)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="UZB" lacv="860">
+				<spif:markingData phrase="Uzbekistan (UZB)">
+					<spif:code>noNameDisplay</spif:code>				
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="UN" lacv="9999">
+				<spif:markingData phrase="United Nations (UN)">
+				  <spif:code>noNameDisplay</spif:code>					
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="CEI" lacv="9998">
+				<spif:markingData phrase="Central Europe Initiative (CEI)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="CIS" lacv="9997">
+				<spif:markingData phrase="Commonwealth of Independent States (CIS)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>	
+			<spif:tagCategory name="CSCE" lacv="9996">
+				<spif:markingData phrase="Council for Security and Cooperation in Europe (CSCE)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>	
+			<spif:tagCategory name="EU" lacv="9995">
+				<spif:markingData phrase="European Union (EU)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>	
+			<spif:tagCategory name="WEU" lacv="9994">
+				<spif:markingData phrase="Western European Union (WEU)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>	
+			<spif:tagCategory name="PFP" lacv="9992">
+				<spif:markingData phrase="Partnership for Peace (PFP)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="SFOR" lacv="9991">
+				<spif:markingData phrase="Stabilisation Force (SFOR)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="KFOR" lacv="9990">
+				<spif:markingData phrase="Kosovo Force (KFOR)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>			
+			</spif:tagCategory>
+			<spif:tagCategory name="ISAF" lacv="9989">
+				<spif:markingData phrase="International Security Assistance Force (ISAF)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="PFOR" lacv="9988">
+				<spif:markingData phrase="Peacekeeping Force (PFOR)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>			
+			</spif:tagCategory>
+			<spif:tagCategory name="GFOR" lacv="9987">
+				<spif:markingData phrase="Gem Force (GFOR)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="THE PUBLIC" lacv="9985"/>
+			<spif:tagCategory name="EAPC" lacv="9984">
+				<spif:markingData phrase="Euro-Atlantic Partnership Council (EAPC)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>
+			<spif:tagCategory name="EUFOR" lacv="9983">
+				<spif:markingData phrase="European Union Force (EUFOR)">
+				  <spif:code>noNameDisplay</spif:code>						
+				</spif:markingData>
+			</spif:tagCategory>				
+			<spif:markingQualifier markingCode="pageTop">
+				<spif:qualifier markingQualifier="RELEASABLE TO " qualifierCode="prefix"/>
+				<spif:qualifier markingQualifier="/" qualifierCode="separator"/>
+			</spif:markingQualifier>
+		</spif:securityCategoryTag>
+		<spif:securityCategoryTag name="Releasable For" tagType="enumerated" enumType="permissive" singleSelection="false">
+			<spif:tagCategory name="INTERNET TRANSMISSION" lacv="9986"/>
+			<spif:markingQualifier markingCode="pageTop">
+				<spif:qualifier markingQualifier="RELEASABLE FOR " qualifierCode="prefix"/>
+				<spif:qualifier markingQualifier="/" qualifierCode="separator"/>
+			</spif:markingQualifier>
+		</spif:securityCategoryTag>
+	</spif:securityCategoryTagSet>
+	<spif:securityCategoryTagSet name="Discretionary Handling Categories" id="1.3.26.1.4.3">				
+		<spif:securityCategoryTag name="Administrative Markings" tagType="tagType7" tag7Encoding="bitSetAttributes" singleSelection="false">
+			<spif:tagCategory name="MANAGEMENT" lacv="1"/>
+			<spif:tagCategory name="STAFF" lacv="2"/>
+			<spif:tagCategory name="PERSONAL" lacv="3"/>
+			<spif:tagCategory name="MEDICAL" lacv="4"/>
+			<spif:tagCategory name="COMMERCIAL" lacv="5"/>													
+			<spif:markingQualifier markingCode="pageTop">
+				<spif:qualifier markingQualifier=" " qualifierCode="separator"/>
+			</spif:markingQualifier>
+		</spif:securityCategoryTag>		
+	</spif:securityCategoryTagSet>
+	</spif:securityCategoryTagSets>	
+</spif:SPIF>

@@ -17,6 +17,10 @@
  */
 package org.ow2.authzforce.core.pdp.testutil.ext;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import net.sf.saxon.s9api.ItemType;
+import net.sf.saxon.s9api.XdmAtomicValue;
+import net.sf.saxon.s9api.XdmItem;
 import org.ow2.authzforce.core.pdp.api.func.Function;
 import org.ow2.authzforce.core.pdp.api.value.AttributeDatatype;
 import org.ow2.authzforce.core.pdp.api.value.StringContentOnlyValueFactory;
@@ -46,7 +50,19 @@ public final class TestDnsNameWithPortValue extends StringParseableValue<String>
 	 * Data type
 	 */
 	public static final AttributeDatatype<TestDnsNameWithPortValue> DATATYPE = new AttributeDatatype<>(TestDnsNameWithPortValue.class, "urn:oasis:names:tc:xacml:3.0:data-type:dnsName-value",
-	        Function.XACML_NS_3_0 + "dnsName-value");
+	        Function.XACML_NS_3_0 + "dnsName-value", ItemType.STRING);
+
+	private transient volatile XdmItem xdmItem = null;
+
+	@SuppressFBWarnings(value="EI_EXPOSE_REP", justification="According to Saxon documentation, an XdmValue is immutable.")
+	@Override
+	public XdmItem getXdmItem()
+	{
+		if(xdmItem == null) {
+			xdmItem = new XdmAtomicValue(value);
+		}
+		return xdmItem;
+	}
 
 	public static final class Factory extends StringContentOnlyValueFactory<TestDnsNameWithPortValue>
 	{

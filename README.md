@@ -28,7 +28,9 @@ AuthzForce Core may be used in the following ways:
     * [XACML v3.0 - Multiple Decision Profile Version 1.0 - Requests for a combined decision](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-multiple-v1-spec-cd-03-en.html#_Toc260837890)  (`urn:oasis:names:tc:xacml:3.0:profile:multiple:combined-decision`). 
 
   *For further details on what is actually supported regarding the XACML specifications, please refer to the conformance tests [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).*
-* [GeoXACML](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic).
+* Enhancements to the XACML standard:
+  * [GeoXACML](http://portal.opengeospatial.org/files/?artifact_id=42734) (Open Geospatial Consortium) support: see [this AuthzForce extension from SecureDimensions](https://github.com/securedimensions/authzforce-geoxacml-basic).
+  * Support `<VariableReference>` (indirectly) in `<Target>`/`<Match>` elements: this feature is a workaround for a limitation in XACML schema which does not allow Variables (`<VariableReference>`) in `Match` elements; i.e. the feature allows policy writers to use an equivalent of `<VariableReference>`s in `<Match>` elements (without changing the XACML schema) through a special kind of `<AttributeDesignator>` (specific `Category`, and `AttributeId` is used as `VariableId`). More details in the Usage section below. 
 * Interfaces: 
   * Java API: basically a library for instantiating and using a PDP engine from your Java (or any Java-compatible) code;
   * CLI (Command-Line Interface): basically an executable that you can run from the command-line to test the engine;
@@ -58,6 +60,17 @@ AuthzForce Core may be used in the following ways:
 
 
 ## Limitations
+
+### XACML 2.0 support and migrating to XACML 3.0
+As mentioned in the Features section, we do not support XACML 2.0 but only XACML 3.0, and we strongly recommend you migrate to XACML 3.0 as XACML 2.0 has become obsolete. In order to help you in the migration from XACML 2.0 to 3.0, we provide a way to migrate all your XACML 2.0 policies to XACML 3.0 automatically by applying the XSLT stylesheets in the [migration](migration folder). First download the stylesheets `xacml2To3Policy.xsl` and `xacml3-policy-c14n.xsl` from that folder, then apply them to your XACML 2.0 policy files using any XSLT engine supporting XSLT 2.0. For example, using [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml), you may do it as follows:
+
+```shell
+$ XACML_20_POLICY_FILE="policy.xml"
+$  java -jar /path/to/Saxon-HE-10.3.jar -xsl:xacml2To3Policy.xsl -s:$XACML_20_POLICY_FILE -o:/tmp/${XACML_20_POLICY_FILE}.new
+$  java -jar /path/to/Saxon-HE-10.3.jar -xsl:xacml3-policy-c14n.xsl -s:/tmp/${XACML_20_POLICY_FILE}.new -o:$XACML_20_POLICY_FILE.new
+```
+
+### Optional XACML 3.0 features
 The following optional features from [XACML v3.0 Core standard](http://docs.oasis-open.org/xacml/3.0/xacml-3.0-core-spec-os-en.html) are not supported:
 * Elements `AttributesReferences`, `MultiRequests` and `RequestReference`;
 * Functions `urn:oasis:names:tc:xacml:3.0:function:xpath-node-equal`, `urn:oasis:names:tc:xacml:3.0:function:xpath-node-match` and `urn:oasis:names:tc:xacml:3.0:function:access-permitted`;
@@ -224,6 +237,26 @@ Our PDP implementation uses SLF4J for logging, so you can use any SLF4J implemen
 For an example of using an AuthzForce PDP engine in a real-life use case, please refer to the JUnit test class [EmbeddedPdpBasedAuthzInterceptorTest](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptorTest.java) and the Apache CXF authorization interceptor [EmbeddedPdpBasedAuthzInterceptor](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptor.java). The test class runs a test similar to @coheigea's [XACML 3.0 Authorization Interceptor test](https://github.com/coheigea/testcases/blob/master/apache/cxf/cxf-sts-xacml/src/test/java/org/apache/coheigea/cxf/sts/xacml/authorization/xacml3/XACML3AuthorizationTest.java) but using AuthzForce as PDP engine instead of OpenAZ. In this test, a web service client requests an Apache-CXF-based web service with a SAML token as credentials (previously issued by a Security Token Service upon successful client authentication) that contains the user ID and roles. Each request is intercepted on the web service side by a [EmbeddedPdpBasedAuthzInterceptor](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptor.java) that plays the role of PEP (Policy Enforcement Point in XACML jargon), i.e. it extracts the various authorization attributes (user ID and roles, web service name, operation...) and requests a decision from a local PDP with these attributes, then enforces the PDP's decision, i.e. forwards the request to the web service implementation if the decision is Permit, else rejects it.
 For more information, see the Javadoc of  [EmbeddedPdpBasedAuthzInterceptorTest](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/pep/cxf/EmbeddedPdpBasedAuthzInterceptorTest.java).
 
+### Providing current-dateTime, current-date and current-time attributes
+By default, the PDP provides the standard environment attributes specified in XACML 3.0 Core specification §10.2.5 (current-time, current-date and current-dateTime) only if they are not provided in the request (from the PEP). This behavior is compliant with XACML 3.0 standard which says (§10.2.5): 
+>If
+  values for these
+  attributes are not present in
+  the decision request,
+  then their
+  values MUST be supplied
+  by the
+  context
+  handler.
+
+Note that it does **not** say *if and only if*, therefore it is also possible and XACML-compliant to make the PDP use its own current-* values (current-time, etc.) all the time, regardless of the request values. This option is referred to as the *override mode*, and it is particularly useful when you do not trust the PEPs (requesters) to provide their own current date/time. You can enable this override mode by configuring an `attributeProvider` of type `StdEnvAttributeProviderDescriptor` with `<override>true</override>` in the PDP configuration, as you can see in [this example (link)](pdp-testutils/src/test/resources/custom/StdEnvAttributeProvider.PDP_ONLY/pdp.xml). More information in the [PDP configuration schema](pdp-engine/src/main/resources/pdp.xsd) ( [HTML form - select the *tns:pdp* element](https://authzforce.github.io/pdp.xsd/8.1) ).
+
+### Using Variables (VariableReference) in Target/Match
+In XACML policies (Policy or PolicySet), as defined by the XACML schema, a `<Match>` may only include an `AttributeValue` and an `AttributeDesignator` or `AttributeSelector`; `VariableReference`s are not allowed, which makes it a limitation when you want to match a Variable (from a `VariableDefinition`) in a `Target`. AuthzForce provides a XACML-compliant workaround for this, which consists in enabling a `XacmlVariableBasedAttributeProvider` with a defined Category (see the [PDP configuration XSD](pdp-engine/src/main/resources/pdp.xsd) ( [HTML form - select the *tns:pdp* element](https://authzforce.github.io/pdp.xsd/8.1) for the default Category). As a result, any  `<AttributeDesignator>` in that Category is handled like a `VariableReference`, with the `AttributeId` used as `VariableId`.
+
+The configuration of the `XacmlVariableBasedAttributeProvider` in the PDP is shown in [this example (link)](pdp-testutils/src/test/resources/custom/XacmlVarBasedAttributeProvider/pdp.xml) (`attributeProvider` of type `XacmlVarBasedAttributeProviderDescriptor`), applied to some Category `urn:ow2:authzforce:attribute-category:vars`. Then in the [this policy sample (link)](pdp-testutils/src/test/resources/custom/XacmlVarBasedAttributeProvider/policies/policy.xml), you can see an `<AttributeDesignator Category="urn:ow2:authzforce:attribute-category:vars" AttributeId="var1" .../>` which will be handled like `<VariableReference VariableId="var1"/>`.
+
+
 ## Extensions
 Experimental features (see [Features](#Features) section) are provided as extensions. If you want to use them, you need to use this Maven dependency (which depends on the `authzforce-ce-core-pdp-engine` already) instead:
 * groupId: `org.ow2.authzforce`;
@@ -236,6 +269,26 @@ If you are using the Java API with extensions configured by XML (Policy Provider
 1. *catalogLocation*: location of the XML catalog: used to resolve the PDP configuration schema and other imported schemas/DTDs, and schemas of any PDP extension namespace used in the configuration file. You may use the [catalog](pdp-engine/src/main/resources/catalog.xml) in the sources as an example. This is the one used by default if none specified.
 1. *extensionXsdLocation*: location of the PDP extensions schema file: contains imports of namespaces corresponding to XML schemas of all XML-schema-defined PDP extensions to be used in the configuration file. Used for validation of PDP extensions configuration. The actual schema locations are resolved by the XML catalog parameter. You may use the [pdp-ext.xsd](pdp-testutils/src/test/resources/pdp-ext.xsd) in the sources as an example.
 
+
+## Integration with other Security Policy models, languages, formats, etc.
+### SPIF (Security Policy Information File)
+A SPIF (Security Policy Information File) defines a security labeling policy in a XML document (based on the [SPIF XML schema](spif-utils/spif.xsd)). More info on the [Open XML SPIF website](http://www.xmlspif.org/).
+
+[NATO ADatP-4774.1](https://nso.nato.int/nso/nsdd/main/standards/srd-details/222/EN) - related to [STANAG 4774](https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN) - gives implementation guidance on how to generate a XACML policy from a SPIF, including an example of XSLT stylesheet. Considering the latest XACML 3.0 enhancements, AuthzForce optimizations and our aim to differentiate a READ from a WRITE action in accordance to the Bell-Lapadula model, we made a few improvements to the stylesheet and made it available in the [spif-utils](spif-utils) folder in two versions:
+
+- `spif2xacml-for-xpath-1.0.xsl`: SPIF-to-XACML policy transformation XSLT using XPath 1.0, more verbose and less efficient than the XPath 2.0 version below, available mostly for historical reasons (no longer maintained except bug fixing).
+- `spif2xacml-for-xpath-2.0.xsl`: SPIF-to-XACML policy transformation XSLT using XPath 2.0 features (not available in 1.0), with the option to enable AuthzForce optimizations (XSLT parameter `authzforce_optimized`) for further enhancements. Disable this option if you want strict XACML 3.0 compliance (less optimized).
+
+For example, you may generate the XACML policy from the sample [ACME SPIF](spif-utils/ACME-SPIF-example.xml) (from ADatP-4774.1) using XSLT engine of [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml) on the command line as follows
+
+```shell
+$ java -jar Saxon-HE-10.3.jar -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
+```
+
+Same example but without AuthzForce optimizations:
+```shell
+$ java -jar Saxon-HE-10.3.jar authzforce_optimized=false -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
+```
 
 ## Support
 

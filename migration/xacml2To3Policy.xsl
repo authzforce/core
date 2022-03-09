@@ -1,29 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2012-2016 Thales Services SAS.
+    Copyright (C) 2012-2022 THALES.
 
-    This file is part of AuthzForce CE.
+    This file is part of AuthZForce CE. Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-    AuthzForce CE is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-    AuthzForce CE is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with AuthzForce CE.  If not, see <http://www.gnu.org/licenses/>.
-
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 -->
 <!-- XACML 2.0-to-3.0 Policy Conversion XSL Sheet. Author: Cyril DANGERVILLE -->
-<!-- For replacing deprecated identifiers (XACML 3.0 Core Specification, §A.4) with new ones, see file 'xacml3-policy-upgrade.xsl'. -->
+<!-- For replacing deprecated identifiers (XACML 3.0 Core Specification, §A.4) with new ones, see file 'xacml3-policy-c14n.xsl'. -->
 <!-- WARNING: This XSLT does not convert XACML 2.0 AttributeSelectors to their strict equivalent in XACML 3.0: 1) it converts XACML 2.0 RequestContextPath to XACML 3.0 Path, although they have different
 	meaning as they do not apply to the same XML node, so please be aware. 2) It cannot determine the required Category in XACML 3.0 from XACML 2.0 input in some cases, so it has to use some default value 
 	that you can set with XSLT parameter 'AttributeSelector.SubjectCategory.default' for AttrbuteSelectors coming from SubjectMatches, and 'AttributeSelector.Category.default' for the ones coming from Conditions. -->
+<!-- Tested with Saxon XSLT processor. -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xacml2="urn:oasis:names:tc:xacml:2.0:policy:schema:os" xmlns:xacml3="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
 	<xsl:output encoding="UTF-8" indent="yes" method="xml"/>
 

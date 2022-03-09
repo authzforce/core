@@ -6,6 +6,20 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 20.0.0
+### Added
+- New feature: XPath variables in AttributeSelectors' and `xPathExpression` `AttributeValues`s' XPath expressions can now be defined by XACML VariableDefinitions (variable name used as XACML VariableId), which means XACML Variables can be used as XPath variables there.
+
+### Changed
+- Upgraded dependency `authzforce-ce-core-pdp-api` to 21.1.1
+
+  - Changed Datatype extension interface (`AttributeValueFactory`) in support of the new feature above:
+
+      - `getInstance(...)` `XPathCompiler` parameter replaced with `Optional<XPathCompilerProxy>`, where XPathCompilerProxy is a immutable version of `XPathCompiler` class with extra methods; the parameter is optional because XPath support may be disabled by PDP configuration or missing Policy(Set)Defaults/XPathVersion in XACML Policy(Set)
+      - `Datatype` interface: added `ItemType getXPathItemType()` method used to declare Variable types on Saxon XPath evaluator when compiling XPath expressions with variables
+      - `AttributeValue` must now implement `getXdmItem()` to return a XPath-compatible (XDM) value to be used as variables in XPath expressions, in order to support the new Feature mentioned above.
+
+
 ## 19.0.0
 ### Changed
 - Parent project `authzforce-ce-parent` upgraded to 8.2.0: upgraded following dependencies:
@@ -43,7 +57,7 @@ All notable changes to this project are documented in this file following the [K
 - [GH-62]: Refactored the provisioning of standard environment attributes `current-dateTime`, `current-date` and `current-time`:
   - Now implemented by a new built-in AttributeProvider (`StandardEnvironmentAttributeProvider` class) which can be customized (to override or not the request values) in the PDP configuration with an `attributeProvider` of type `StdEnvAttributeProviderDescriptor`.
 - `authzforce-ce-core-pdp-testutils` module: upgraded jongo dependency to 1.5.0, mongo-java-driver to 3.12.10
-- `authzforce-ce-core-pdp-cli` module: upgraded picocli to 4.6.2, testng to 7.5
+- `authzforce-ce-core-pdp-cli` module: upgraded picocli to 4.6.2, testng to 6.14.3
 - `authzforce-ce-parent` upgraded to 8.1.0
     
 ### Added

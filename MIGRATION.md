@@ -3,7 +3,7 @@
 ```shell
 $ PDP_XML_FILE="pdp.xml"
 $ mv $PDP_XML_FILE{,.old}
-$  java -jar ~/.m2/repository/net/sf/saxon/Saxon-HE/10.3/Saxon-HE-10.3.jar -xsl:migration/pdp-xsd-v7.xsl -s:$PDP_XML_FILE.old -o:$PDP_XML_FILE
+$  java -jar Saxon-HE-10.3.jar -xsl:migration/pdp-xsd-v7.xsl -s:$PDP_XML_FILE.old -o:$PDP_XML_FILE
 ```
 
 ## Migration from version 16.x to 17.x

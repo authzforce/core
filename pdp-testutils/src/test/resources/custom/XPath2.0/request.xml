@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Example from NATO STANAG 4774, ADatP-4774.1, section 6.3,
+retrievable from https://nso.nato.int/nso/nsdd/main/standards/stanag-details/8612/EN
+ -->
+<acdf:Request CombinedDecision="false" ReturnPolicyIdList="false"
+			  xmlns:acdf="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+	<acdf:Attributes
+			Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject">
+		<acdf:Content>
+			<sclr:ConfidentialityClearance
+					xmlns:sclr="urn:nato:stanag:4774:confidentialityclearance:1:0"
+					xmlns:s4774="urn:nato:stanag:4774:confidentialitymetadatalabel:1:0">
+				<s4774:PolicyIdentifier>ACME</s4774:PolicyIdentifier>
+				<sclr:ClassificationList>
+					<s4774:Classification>PUBLIC</s4774:Classification>
+					<s4774:Classification>CONFIDENTIAL</s4774:Classification>
+					<s4774:Classification>INTERNAL</s4774:Classification>
+				</sclr:ClassificationList>
+				<!--
+				<s4774:Category TagName="Sensitive" Type="RESTRICTIVE">
+					<s4774:GenericValue>RED</s4774:GenericValue>
+				</s4774:Category>
+				<s4774:Category TagName="Releasable To" Type="PERMISSIVE">
+					<s4774:GenericValue>MOCK</s4774:GenericValue>
+				</s4774:Category>
+				-->
+			</sclr:ConfidentialityClearance>
+		</acdf:Content>
+	</acdf:Attributes>
+	<acdf:Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:resource">
+		<acdf:Content>
+			<s4774:originatorConfidentialityLabel
+					xmlns:s4774="urn:nato:stanag:4774:confidentialitymetadatalabel:1:0"
+					ReviewDateTime="2022-03-14T09:00:00">
+				<s4774:ConfidentialityInformation>
+					<s4774:PolicyIdentifier>ACME</s4774:PolicyIdentifier>
+					<s4774:Classification>INTERNAL</s4774:Classification>
+					<!--
+					<s4774:Category TagName="Sensitive" Type="RESTRICTIVE">
+						<s4774:GenericValue>RED</s4774:GenericValue>
+					</s4774:Category>
+					-->
+				</s4774:ConfidentialityInformation>
+				<s4774:OriginatorID IDType="rfc822Name">
+					alan.ross@reach.nato.int</s4774:OriginatorID>
+				<s4774:CreationDataTime>2017-03-14T09:00:00</s4774:CreationDataTime>
+			</s4774:originatorConfidentialityLabel>
+		</acdf:Content>
+	</acdf:Attributes>
+	<acdf:Attributes Category="urn:oasis:names:tc:xacml:3.0:attribute-category:action">
+		<acdf:Attribute AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id" IncludeInResult="false">
+			<acdf:AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">READ</acdf:AttributeValue>
+		</acdf:Attribute>
+	</acdf:Attributes>
+</acdf:Request>
+

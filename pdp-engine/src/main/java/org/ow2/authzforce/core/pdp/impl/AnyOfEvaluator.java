@@ -17,11 +17,11 @@
  */
 package org.ow2.authzforce.core.pdp.impl;
 
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AllOf;
 import org.ow2.authzforce.core.pdp.api.EvaluationContext;
 import org.ow2.authzforce.core.pdp.api.IndeterminateEvaluationException;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public final class AnyOfEvaluator
 	 *            JAXB AllOf elements
 	 * @param xPathCompiler
 	 *            XPath compiler corresponding to enclosing policy(set) default
-	 *            XPath version
+	 *            XPath version if it is defined and XPath support enabled
 	 * @param expFactory
 	 *            Expression factory
 	 * @throws java.lang.IllegalArgumentException
@@ -65,8 +65,8 @@ public final class AnyOfEvaluator
 	 *             or one of the child Match elements in one of the AllOf
 	 *             elements of {@code jaxbAllOfList} is invalid
 	 */
-	public AnyOfEvaluator(final List<AllOf> jaxbAllOfList, final XPathCompiler xPathCompiler,
-			final ExpressionFactory expFactory) throws IllegalArgumentException
+	public AnyOfEvaluator(final List<AllOf> jaxbAllOfList,
+			final ExpressionFactory expFactory, final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (jaxbAllOfList == null || jaxbAllOfList.isEmpty())
 		{
@@ -80,7 +80,7 @@ public final class AnyOfEvaluator
 			final AllOfEvaluator allOfEvaluator;
 			try
 			{
-				allOfEvaluator = new AllOfEvaluator(jaxbAllOf.getMatches(), xPathCompiler, expFactory);
+				allOfEvaluator = new AllOfEvaluator(jaxbAllOf.getMatches(), expFactory, xPathCompiler);
 			}
 			catch (final IllegalArgumentException e)
 			{

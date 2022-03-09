@@ -17,6 +17,7 @@
  */
 package org.ow2.authzforce.core.pdp.impl.test.func;
 
+import net.sf.saxon.s9api.XdmValue;
 import org.ow2.authzforce.core.pdp.api.value.Value;
 
 /**
@@ -47,5 +48,11 @@ public class NullValue implements Value
 	public boolean isBag()
 	{
 		return this.isBag;
+	}
+
+	@Override
+	public XdmValue getXdmValue()
+	{
+		return null;
 	}
 }

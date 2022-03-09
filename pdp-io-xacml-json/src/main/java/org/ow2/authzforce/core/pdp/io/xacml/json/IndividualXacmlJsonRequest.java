@@ -27,7 +27,6 @@ import org.ow2.authzforce.core.pdp.api.ImmutableDecisionRequest;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,7 +38,7 @@ import java.util.List;
 public final class IndividualXacmlJsonRequest implements DecisionRequest
 {
 	private final ImmutableDecisionRequest baseRequest;
-	private final List<JSONObject> attributesByCategoryToBeReturned;
+	private final ImmutableList<JSONObject> attributesByCategoryToBeReturned;
 
 	/**
 	 * Creates instance from an XACML-agnostic request
@@ -54,7 +53,7 @@ public final class IndividualXacmlJsonRequest implements DecisionRequest
 		assert baseRequest != null;
 
 		this.baseRequest = baseRequest;
-		this.attributesByCategoryToBeReturned = attributesToBeReturned == null ? Collections.emptyList() : attributesToBeReturned;
+		this.attributesByCategoryToBeReturned = attributesToBeReturned == null ? ImmutableList.of() : attributesToBeReturned;
 	}
 
 	@Override

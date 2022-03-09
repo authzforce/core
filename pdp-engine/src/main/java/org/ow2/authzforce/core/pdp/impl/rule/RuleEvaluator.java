@@ -18,10 +18,10 @@
 package org.ow2.authzforce.core.pdp.impl.rule;
 
 import com.google.common.collect.ImmutableList;
-import net.sf.saxon.s9api.XPathCompiler;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.*;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.ExpressionFactory;
+import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
 import org.ow2.authzforce.core.pdp.impl.BooleanEvaluator;
 import org.ow2.authzforce.core.pdp.impl.PepActionExpression;
 import org.ow2.authzforce.core.pdp.impl.TargetEvaluators;
@@ -261,13 +261,13 @@ public final class RuleEvaluator implements Decidable
 	 * @param ruleElt
 	 *            Rule element definition
 	 * @param xPathCompiler
-	 *            XPath compiler corresponding to enclosing policy(set) default XPath version
+	 *            XPath compiler, defined if XPath support enabled (by PDP configuration and some enclosing Policy(Set) defines a XPathVersion according to XACML standard)
 	 * @param expressionFactory
 	 *            Expression parser/factory
 	 * @throws java.lang.IllegalArgumentException
 	 *             Invalid Target, Condition or Obligation/Advice expressions
 	 */
-	public RuleEvaluator(final Rule ruleElt, final XPathCompiler xPathCompiler, final ExpressionFactory expressionFactory) throws IllegalArgumentException
+	public RuleEvaluator(final Rule ruleElt, final ExpressionFactory expressionFactory,  final Optional<XPathCompilerProxy> xPathCompiler) throws IllegalArgumentException
 	{
 		if (ruleElt == null)
 		{
@@ -279,7 +279,7 @@ public final class RuleEvaluator implements Decidable
 
 		this.toString = "Rule['" + ruleId + "']";
 
-		this.targetEvaluator = TargetEvaluators.getInstance(ruleElt.getTarget(), xPathCompiler, expressionFactory);
+		this.targetEvaluator = TargetEvaluators.getInstance(ruleElt.getTarget(), expressionFactory, xPathCompiler);
 
 		final Condition condElt = ruleElt.getCondition();
 
@@ -293,7 +293,7 @@ public final class RuleEvaluator implements Decidable
 		{
 			try
 			{
-				this.conditionEvaluator = ConditionEvaluators.getInstance(condElt, xPathCompiler, expressionFactory);
+				this.conditionEvaluator = ConditionEvaluators.getInstance(condElt, expressionFactory, xPathCompiler);
 			} catch (final IllegalArgumentException e)
 			{
 				throw new IllegalArgumentException(this + ": invalid Condition", e);
@@ -326,7 +326,7 @@ public final class RuleEvaluator implements Decidable
 					return;
 				}
 
-				pepActionExpressions.add(new PepActionExpression(pepActionId, true, obligationExp.getAttributeAssignmentExpressions(), xPathCompiler, expressionFactory));
+				pepActionExpressions.add(new PepActionExpression(pepActionId, true, obligationExp.getAttributeAssignmentExpressions(), expressionFactory, xPathCompiler));
 			});
 
 			adviceExpList.forEach(adviceExp -> {
@@ -337,7 +337,7 @@ public final class RuleEvaluator implements Decidable
 					return;
 				}
 
-				pepActionExpressions.add(new PepActionExpression(pepActionId, false, adviceExp.getAttributeAssignmentExpressions(), xPathCompiler, expressionFactory));
+				pepActionExpressions.add(new PepActionExpression(pepActionId, false, adviceExp.getAttributeAssignmentExpressions(), expressionFactory, xPathCompiler));
 			});
 
 			/*
