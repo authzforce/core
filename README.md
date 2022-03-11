@@ -290,6 +290,8 @@ Same example but without AuthzForce optimizations:
 $ java -jar Saxon-HE-10.3.jar authzforce_optimized=false -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
 ```
 
+In both cases, **the generated XACML policy makes use of `AttributeSelectors`**, so make sure your XACML engine supports those. In the case of AuthzForce, you need to set `xPathEnabled="true"` in the PDP configuration (`pdp.xml`) to enable support for `AttributeSelectors`, like in the [XacmlVariableUsedAsXPathVariable test](pdp-testutils/src/test/resources/custom/XacmlVariableUsedAsXPathVariable).
+
 ## Support
 
 You should use [AuthzForce users' mailing list](https://mail.ow2.org/wws/info/authzforce-users) as first contact for any communication about AuthzForce: question, feature request, notification, potential issue (unconfirmed), etc.
