@@ -62,7 +62,7 @@ AuthzForce Core may be used in the following ways:
 ## Limitations
 
 ### XACML 2.0 support and migrating to XACML 3.0
-As mentioned in the Features section, we do not support XACML 2.0 but only XACML 3.0, and we strongly recommend you migrate to XACML 3.0 as XACML 2.0 has become obsolete. In order to help you in the migration from XACML 2.0 to 3.0, we provide a way to migrate all your XACML 2.0 policies to XACML 3.0 automatically by applying the XSLT stylesheets in the [migration](migration folder). First download the stylesheets `xacml2To3Policy.xsl` and `xacml3-policy-c14n.xsl` from that folder, then apply them to your XACML 2.0 policy files using any XSLT engine supporting XSLT 2.0. For example, using [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml), you may do it as follows:
+As mentioned in the Features section, we do not support XACML 2.0 but only XACML 3.0, and we strongly recommend you migrate to XACML 3.0 as XACML 2.0 has become obsolete. In order to help you in the migration from XACML 2.0 to 3.0, we provide a way to migrate all your XACML 2.0 policies to XACML 3.0 automatically by applying the XSLT stylesheets in the [migration folder](migration). First download the stylesheets `xacml2To3Policy.xsl` and `xacml3-policy-c14n.xsl` from that folder, then apply them to your XACML 2.0 policy files using any XSLT engine supporting XSLT 2.0. For example, using [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml), you may do it as follows:
 
 ```shell
 $ XACML_20_POLICY_FILE="policy.xml"
