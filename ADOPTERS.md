@@ -6,6 +6,8 @@
 * [Thales](https://www.thalesgroup.com)
 * [Secure Dimensions GmbH](https://github.com/securedimensions/authzforce-geoxacml-basic)
 * [FABRIC](https://whatisfabric.net/)
-* [DRIVER+](http://driver-project.eu/)
-* [Sealed GRID](https://www.sgrid.eu)
+* EU-funded research and innovation projects
+  * [DRIVER+](http://driver-project.eu/)
+  * [Sealed GRID](https://www.sgrid.eu)
+  * [COG-LO](http://www.cog-lo.eu/)
 
