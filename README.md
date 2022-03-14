@@ -116,6 +116,12 @@ $ ./authzforce-ce-core-pdp-cli-14.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.j
 
 For more info, run it without parameters, and you'll get detailed information on usage.
 
+For **troubleshooting**, you can increase the log level of the logger(s) in the Logback configuration file `logback.xml` to `INFO` or `DEBUG`, esp. the logger named `org.ow2.authzforce`. Then run the CLI as follows:
+
+```shell
+$ java -jar -Dlogback.configurationFile=./logback.xml authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
+```
+
 #### Java API
 You can either build AuthzForce PDP library from the source code after cloning this git repository, or use the latest release from Maven Central with this information:
 * groupId: `org.ow2.authzforce`;
