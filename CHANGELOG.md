@@ -6,7 +6,7 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
-## 21.1.0
+## 20.1.0
 ### Fixed
 - Fix CVE-2020-36518 affecting jackson dependency
 
