@@ -62,7 +62,7 @@ AuthzForce Core may be used in the following ways:
 ## Limitations
 
 ### XACML 2.0 support and migrating to XACML 3.0
-As mentioned in the Features section, we do not support XACML 2.0 but only XACML 3.0, and we strongly recommend you migrate to XACML 3.0 as XACML 2.0 has become obsolete. In order to help you in the migration from XACML 2.0 to 3.0, we provide a way to migrate all your XACML 2.0 policies to XACML 3.0 automatically by applying the XSLT stylesheets in the [migration](migration folder). First download the stylesheets `xacml2To3Policy.xsl` and `xacml3-policy-c14n.xsl` from that folder, then apply them to your XACML 2.0 policy files using any XSLT engine supporting XSLT 2.0. For example, using [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml), you may do it as follows:
+As mentioned in the Features section, we do not support XACML 2.0 but only XACML 3.0, and we strongly recommend you migrate to XACML 3.0 as XACML 2.0 has become obsolete. In order to help you in the migration from XACML 2.0 to 3.0, we provide a way to migrate all your XACML 2.0 policies to XACML 3.0 automatically by applying the XSLT stylesheets in the [migration folder](migration). First download the stylesheets `xacml2To3Policy.xsl` and `xacml3-policy-c14n.xsl` from that folder, then apply them to your XACML 2.0 policy files using any XSLT engine supporting XSLT 2.0. For example, using [SAXON-HE 9.x or later](https://www.saxonica.com/download/java.xml), you may do it as follows:
 
 ```shell
 $ XACML_20_POLICY_FILE="policy.xml"
@@ -115,6 +115,12 @@ $ ./authzforce-ce-core-pdp-cli-14.0.0.jar -t XACML_JSON pdp.xml IIA001/Request.j
 * `Request.json`: XACML request in XACML 3.0/JSON (Profile) format. **Feel free to replace with your own for testing.**
 
 For more info, run it without parameters, and you'll get detailed information on usage.
+
+For **troubleshooting**, you can increase the log level of the logger(s) in the Logback configuration file `logback.xml` to `INFO` or `DEBUG`, esp. the logger named `org.ow2.authzforce`. Then run the CLI as follows:
+
+```shell
+$ java -jar -Dlogback.configurationFile=./logback.xml authzforce-ce-core-pdp-cli-14.0.0.jar pdp.xml IIA001/Request.xml
+```
 
 #### Java API
 You can either build AuthzForce PDP library from the source code after cloning this git repository, or use the latest release from Maven Central with this information:
@@ -289,6 +295,8 @@ Same example but without AuthzForce optimizations:
 ```shell
 $ java -jar Saxon-HE-10.3.jar authzforce_optimized=false -xsl:spif-utils/spif2xacml-for-xpath-2.0.xsl -s:spif-utils/ACME-SPIF-example.xml -o:/tmp/ACME-XACML-policy.xml
 ```
+
+In both cases, **the generated XACML policy makes use of `AttributeSelectors`**, so make sure your XACML engine supports those. In the case of AuthzForce, you need to set `xPathEnabled="true"` in the PDP configuration (`pdp.xml`) to enable support for `AttributeSelectors`, like in the [XacmlVariableUsedAsXPathVariable test](pdp-testutils/src/test/resources/custom/XacmlVariableUsedAsXPathVariable).
 
 ## Support
 

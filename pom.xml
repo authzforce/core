@@ -6,7 +6,7 @@
 		<version>8.2.0</version>
 	</parent>
 	<artifactId>authzforce-ce-core</artifactId>
-	<version>20.0.0</version>
+	<version>20.1.0</version>
 	<packaging>pom</packaging>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>AuthzForce - XACML-compliant Core PDP Engine and associated test modules</description>
@@ -33,7 +33,7 @@
 			<dependency>
 				<groupId>org.ow2.authzforce</groupId>
 				<artifactId>authzforce-ce-core-pdp-api</artifactId>
-				<version>21.1.1</version>
+				<version>21.2.0</version>
 			</dependency>
 			<!-- /AuthzForce dependencies -->
 			<!-- Test dependencies -->

@@ -6,6 +6,19 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 21.1.0
+### Fixed
+- Fix CVE-2020-36518 affecting jackson dependency
+
+### Changed
+- Upgrade authzforce-ce-core-pdp-api to 21.2.0
+  
+  - New `XMLUtils.SAXBasedXmlnsFilteringParser` class constructor parameter - XML namespace prefix-to-URI mappings - to help fix the issue authzforce/server#66 .
+
+### Added
+- New `PdpEngineConfiguration` class constructor parameter - XML namespace prefix-to-URI mappings - to help fix the issue authzforce/server#66 .
+
+
 ## 20.0.0
 ### Added
 - New feature: XPath variables in AttributeSelectors' and `xPathExpression` `AttributeValues`s' XPath expressions can now be defined by XACML VariableDefinitions (variable name used as XACML VariableId), which means XACML Variables can be used as XPath variables there.
@@ -359,7 +372,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
   - Aded BaseStaticRefPolicyProviderModule class as convenient base class for implementing static Policy Provider (StaticRefPolicyProviderModule) implementations
 
 ### Added
-- [PolicyProvider implementation](pdp-testutils/src/main/java/org/ow2/authzforce/core/pdp/testutil/ext/MongoDBRefPolicyProviderModule.java) for testing and documentation purposes, using MongoDB as policy database system and Jongo as client library, with [JUnit test class](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MongoDBRefPolicyProviderModuleTest.java) showing how to use it.
+- [PolicyProvider implementation](pdp-testutils/src/main/java/org/ow2/authzforce/core/pdp/testutil/ext/MongoDbPolicyProvider.java) for testing and documentation purposes, using MongoDB as policy database system and Jongo as client library, with [JUnit test class](pdp-testutils/src/test/java/org/ow2/authzforce/core/pdp/testutil/test/MongoDbPolicyProviderTest.java) showing how to use it.
 
 
 ## 8.0.0
@@ -580,7 +593,7 @@ XACML 3.0, and adapting to the PDP engine API; also provides automatic conversio
 
 ### Fixed 
 - Issues reported by PMD and findbugs
-- Fixed issues in [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, see [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct\README.md).
+- Fixed issues in [XACML 3.0 conformance tests](https://lists.oasis-open.org/archives/xacml-comment/201404/msg00001.html) published by AT&T on XACML mailing list in March 2014, see [README](pdp-testutils/src/test/resources/conformance/xacml-3.0-from-2.0-ct/README.md).
 - In logical `OR`, `AND` and `N-OF` functions, an Indeterminate argument results in Indeterminate result. 
   1. FIX for OR function: If at least one True argument, return True regardless of Indeterminate arguments; else (no True) if there is at least one Indeterminate, return Indeterminate, return Indeterminate; else (no True/Indeterminate -> all false) return false
   1. FIX for AND function: If at least one False argument, return False regardless of Indeterminate arguments; else (no False) if there is at least one Indeterminate, return Indeterminate, return Indeterminate; else (no False/Indeterminate -> all true) return true

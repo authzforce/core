@@ -1829,7 +1829,7 @@ public final class PolicyEvaluators
         private PolicySetElementEvaluatorFactory(final PrimaryPolicyMetadata policyMetadata, final ExpressionFactory expressionFactory, final CombiningAlgRegistry combiningAlgorithmRegistry, final Optional<DefaultsType> policyDefaults, final Optional<XPathCompilerProxy> parentDefaultXPathCompiler,
                                                  final Map<String, String> namespacePrefixToUriMap)
         {
-            assert policyMetadata != null && combiningAlgorithmRegistry != null;
+            assert policyMetadata != null && combiningAlgorithmRegistry != null && expressionFactory != null;
             this.policyMetadata = policyMetadata;
             this.expressionFactory = expressionFactory;
             this.combiningAlgorithmRegistry = combiningAlgorithmRegistry;
