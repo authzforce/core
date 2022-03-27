@@ -39,6 +39,7 @@ import org.ow2.authzforce.core.xmlns.pdp.InOutProcChain;
 import org.ow2.authzforce.core.xmlns.pdp.Pdp;
 import org.ow2.authzforce.core.xmlns.pdp.StdEnvAttributeProviderDescriptor;
 import org.ow2.authzforce.core.xmlns.pdp.TopLevelPolicyElementRef;
+import org.ow2.authzforce.xacml.Xacml3JaxbHelper;
 import org.ow2.authzforce.xacml.identifiers.XacmlDatatypeId;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractAttributeProvider;
 import org.ow2.authzforce.xmlns.pdp.ext.AbstractDecisionCache;
@@ -48,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.io.Closeable;
@@ -214,6 +216,21 @@ public final class PdpEngineConfiguration
 
 	}
 
+	private static final class XmlnsFilteringParserFactoryWithDefaultXmlnsContext implements XmlnsFilteringParserFactory {
+
+		private final ImmutableMap<String, String> defaultXmlnsPrefixToUriMap;
+		private XmlnsFilteringParserFactoryWithDefaultXmlnsContext(final Map<String, String> defaultXmlnsPrefixToUriMap) {
+			this.defaultXmlnsPrefixToUriMap = ImmutableMap.copyOf(defaultXmlnsPrefixToUriMap);
+		}
+
+		@Override
+		public XmlUtils.XmlnsFilteringParser getInstance() throws JAXBException
+		{
+			final Unmarshaller unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
+			return new XmlUtils.SAXBasedXmlnsFilteringParser(unmarshaller, defaultXmlnsPrefixToUriMap);
+		}
+	}
+
 	private static final IllegalArgumentException ILLEGAL_ROOT_POLICY_REF_CONFIG_EXCEPTION = new IllegalArgumentException(
 	        "Configuration parameter 'rootPolicyRef' is undefined and 'policyProvider' does not provide any candidate root policy. Please define 'rootPolicyRef' parameter or modify the Policy Provider to return a candidate root policy.");
 
@@ -304,12 +321,13 @@ public final class PdpEngineConfiguration
 	 *            (JAXB-bound) PDP configuration
 	 * @param envProps
 	 *            PDP configuration environment properties (e.g. PARENT_DIR)
+	 * @param xpathNamespaceContexts XPath namespace prefix-to-URI mappings to be used for namespace-aware evaluation of XPath expressions, e.g. AttributeSelectors' Paths. Empty if none or if XPath support is disabled by configuration.
 	 * @throws java.lang.IllegalArgumentException
 	 *             invalid PDP configuration
 	 * @throws java.io.IOException
 	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
 	 */
-	public PdpEngineConfiguration(final Pdp pdpJaxbConf, final EnvironmentProperties envProps) throws IllegalArgumentException, IOException
+	public PdpEngineConfiguration(final Pdp pdpJaxbConf, final EnvironmentProperties envProps, final Map<String, String> xpathNamespaceContexts) throws IllegalArgumentException, IOException
 	{
 		/*
 		 * Enable support for XPath expressions, XPath functions, etc.
@@ -434,7 +452,7 @@ public final class PdpEngineConfiguration
 		/*
 		 * XACML element (Policies, etc.) parser factory
 		 */
-		final XmlnsFilteringParserFactory xacmlParserFactory = XacmlJaxbParsingUtils.getXacmlParserFactory(enableXPath);
+		final XmlnsFilteringParserFactory xacmlParserFactory = enableXPath && (xpathNamespaceContexts != null && !xpathNamespaceContexts.isEmpty())? new XmlnsFilteringParserFactoryWithDefaultXmlnsContext(xpathNamespaceContexts): XacmlJaxbParsingUtils.getXacmlParserFactory(enableXPath);
 
 		/*
 		 * Strict Attribute Issuer match
@@ -630,6 +648,23 @@ public final class PdpEngineConfiguration
 			this.ioProcChainsByInputType = ImmutableMap.copyOf(mutableInoutProcChainsByInputType);
 		}
 
+	}
+
+	/**
+	 * Constructs configuration from PDP XML-schema-derived JAXB model (usually 'unmarshaled' from XML configuration file)
+	 *
+	 * @param pdpJaxbConf
+	 *            (JAXB-bound) PDP configuration
+	 * @param envProps
+	 *            PDP configuration environment properties (e.g. PARENT_DIR)
+	 * @throws java.lang.IllegalArgumentException
+	 *             invalid PDP configuration
+	 * @throws java.io.IOException
+	 *             if any error occurred closing already created {@link Closeable} modules (policy Providers, attribute Providers, decision cache)
+	 */
+	public PdpEngineConfiguration(final Pdp pdpJaxbConf, final EnvironmentProperties envProps) throws IllegalArgumentException, IOException
+	{
+		this(pdpJaxbConf, envProps, Map.of());
 	}
 
 	private static PdpEngineConfiguration getInstance(final Source confXmlSrc, final PdpModelHandler modelHandler, final EnvironmentProperties envProps) throws IOException, IllegalArgumentException
