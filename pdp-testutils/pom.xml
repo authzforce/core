@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.ow2.authzforce</groupId>
         <artifactId>authzforce-ce-core</artifactId>
-        <version>20.0.1-SNAPSHOT</version>
+        <version>20.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>authzforce-ce-core-pdp-testutils</artifactId>
@@ -44,12 +43,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>${artifactId.prefix}-core-pdp-engine</artifactId>
-            <version>20.0.1-SNAPSHOT</version>
+            <version>20.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.authzforce</groupId>
             <artifactId>authzforce-ce-core-pdp-io-xacml-json</artifactId>
-            <version>20.0.1-SNAPSHOT</version>
+            <version>20.1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -341,13 +340,10 @@
                         </goals>
                         <configuration>
                             <target>
-                                <taskdef resource="net/sf/antcontrib/antlib.xml"/>
-                                <ant antfile="${project.basedir}/src/test/resources.json/build.xml" inheritAll="false"
-                                     inheritRefs="false">
-                                    <property name="src.dir"
-                                              value="${project.basedir}/src/test/resources/conformance/xacml-3.0-from-2.0-ct/mandatory"/>
-                                    <property name="target.dir"
-                                              value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-from-2.0-ct/mandatory/json"/>
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" />
+                                <ant antfile="${project.basedir}/src/test/resources.json/build.xml" inheritAll="false" inheritRefs="false">
+                                    <property name="src.dir" value="${project.basedir}/src/test/resources/conformance/xacml-3.0-from-2.0-ct/mandatory" />
+                                    <property name="target.dir" value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-from-2.0-ct/mandatory/json" />
                                 </ant>
                             </target>
                         </configuration>
@@ -360,13 +356,10 @@
                         </goals>
                         <configuration>
                             <target>
-                                <taskdef resource="net/sf/antcontrib/antlib.xml"/>
-                                <ant antfile="${project.basedir}/src/test/resources.json/build.xml" inheritAll="false"
-                                     inheritRefs="false">
-                                    <property name="src.dir"
-                                              value="${project.basedir}/src/test/resources/conformance/xacml-3.0-from-2.0-ct/optional/xml+json"/>
-                                    <property name="target.dir"
-                                              value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-from-2.0-ct/optional/json"/>
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" />
+                                <ant antfile="${project.basedir}/src/test/resources.json/build.xml" inheritAll="false" inheritRefs="false">
+                                    <property name="src.dir" value="${project.basedir}/src/test/resources/conformance/xacml-3.0-from-2.0-ct/optional/xml+json" />
+                                    <property name="target.dir" value="${project.basedir}/target/generated-test-resources/conformance/xacml-3.0-from-2.0-ct/optional/json" />
                                 </ant>
                             </target>
                         </configuration>
