@@ -58,6 +58,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -721,16 +722,21 @@ public final class PdpEngineConfiguration
 		 */
 		final File confAbsFile = confFile.getAbsoluteFile();
 		LOGGER.debug("Config file's location - absolute path: {}", confAbsFile);
-		final File confAbsFileParent = confAbsFile.getParentFile();
-		LOGGER.debug("Config file's parent directory: {}", confAbsFileParent);
-		final String propVal = confAbsFileParent.toURI().toString();
-		LOGGER.debug("Property {} = {}", EnvironmentPropertyName.PARENT_DIR, propVal);
-		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propVal));
+		final Path confAbsFileParentPath = confAbsFile.getParentFile().toPath();
+		LOGGER.debug("Config file's parent directory: {}", confAbsFileParentPath);
+		final String propVal = confAbsFileParentPath.toUri().toString();
+		/*
+		 Path.toURI() may add ending "/" for directories, remove it if confAbsFileParentPath is not the root path, to prevent double "//" in property replacements
+		 */
+		final String propValWithoutEndingSlash = confAbsFileParentPath.getNameCount() != 0 && propVal.endsWith("/") ? propVal.substring(0, propVal.length() -1): propVal;
+
+		LOGGER.debug("Property {} = {}", EnvironmentPropertyName.PARENT_DIR, propValWithoutEndingSlash);
+		final EnvironmentProperties envProps = new DefaultEnvironmentProperties(Collections.singletonMap(EnvironmentPropertyName.PARENT_DIR, propValWithoutEndingSlash));
 		return getInstance(new StreamSource(confFile), modelHandler, envProps);
 	}
 
 	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
 	 * /resources.html.
 	 * <p>
 	 * To allow using file paths relative to the parent folder of the configuration file (located at confLocation) anywhere in this configuration file (including in PDP extensions'), we define a
@@ -742,9 +748,9 @@ public final class PdpEngineConfiguration
 	 * @param modelHandler
 	 *            PDP configuration model handler
 	 * @return PDP instance
-	 * @throws java.io.IOException
+	 * @throws IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
+	 * @throws IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
 	public static PdpEngineConfiguration getInstance(final String confLocation, final PdpModelHandler modelHandler) throws IOException, IllegalArgumentException
@@ -792,10 +798,10 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * Create PDP instance. Locations here can be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
 	 * /resources.html
 	 *
-	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
+	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
 	 *
 	 * @param confFile
 	 *            PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
@@ -803,8 +809,7 @@ public final class PdpEngineConfiguration
 	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
 	 *            configuration, for example:
 	 *
-	 *            <pre>
-	 * {@literal
+	 * <code>
 	 * 		  <?xml version="1.0" encoding="UTF-8"?>
 	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	 * 	<xs:annotation>
@@ -817,26 +822,25 @@ public final class PdpEngineConfiguration
 	 * 	<!--  Adding TestAttributeProvider extension for example -->
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
-	 * 			}
-	 * </pre>
+	 * </code>
 	 *
 	 * In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
-	 * 
+	 *
 	 * <pre>
 	 *            {@literal
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
 	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
 	 *            }
 	 * </pre>
-	 * 
+	 *
 	 * We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this
 	 * case.
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
-	 * @throws java.io.IOException
+	 * @throws IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
+	 * @throws IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
 	public static PdpEngineConfiguration getInstance(final File confFile, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
@@ -845,10 +849,10 @@ public final class PdpEngineConfiguration
 	}
 
 	/**
-	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info: http://docs.spring.io/spring/docs/current/spring-framework-reference/html
+	 * Create PDP instance. Locations here may be any resource string supported by Spring ResourceLoader. More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html">Spring documentation</a>
 	 * /resources.html
 	 *
-	 * For example: classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd...
+	 * For example: <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>...
 	 *
 	 * @param confLocation
 	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd)
@@ -856,8 +860,7 @@ public final class PdpEngineConfiguration
 	 *            location of user-defined extension XSD (may be null if no extension to load), if exists; in such XSD, there must be a XSD namespace import for each extension used in the PDP
 	 *            configuration, for example:
 	 *
-	 *            <pre>
-	 * {@literal
+	 * <code>
 	 * 		  <?xml version="1.0" encoding="UTF-8"?>
 	 * <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	 * 	<xs:annotation>
@@ -870,26 +873,23 @@ public final class PdpEngineConfiguration
 	 * 	<!--  Adding TestAttributeProvider extension for example -->
 	 * 	<xs:import namespace="http://authzforce.github.io/core/xmlns/test/3" />
 	 * </xs:schema>
-	 * 			}
-	 * </pre>
+	 * </code>
 	 *
 	 * In this example, the file at {@code catalogLocation} must define the schemaLocation for the imported namespace above using a line like this (for an XML-formatted catalog):
-	 * 
-	 * <pre>
-	 *            {@literal
+	 *
+	 * <code>
 	 *            <uri name="http://authzforce.github.io/core/xmlns/test/3" uri=
 	 * 	"classpath:org.ow2.authzforce.core.test.xsd" />
-	 *            }
-	 * </pre>
-	 * 
+	 * </code>
+	 *
 	 * We assume that this XML type is an extension of one the PDP extension base types, 'AbstractAttributeProvider' (that extends 'AbstractPdpExtension' like all other extension base types) in this
 	 * case.
 	 * @param catalogLocation
 	 *            location of XML catalog for resolving XSDs imported by the extension XSD specified as 'extensionXsdLocation' argument (may be null if 'extensionXsdLocation' is null)
 	 * @return PDP instance
-	 * @throws java.io.IOException
+	 * @throws IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
+	 * @throws IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
 	public static PdpEngineConfiguration getInstance(final String confLocation, final String catalogLocation, final String extensionXsdLocation) throws IOException, IllegalArgumentException
@@ -902,11 +902,11 @@ public final class PdpEngineConfiguration
 	 *
 	 * @param confLocation
 	 *            location of PDP configuration XML file, compliant with the PDP XML schema (pdp.xsd). This location may be any resource string supported by Spring ResourceLoader. For example:
-	 *            classpath:com/myapp/aaa.xsd, file:///data/bbb.xsd, http://myserver/ccc.xsd... More info: http://docs.spring.io/spring/docs/current/spring-framework- reference/html/resources.html
+	 *            <code>classpath:com/myapp/aaa.xsd</code>, <code>file:///data/bbb.xsd</code>, <code>http://myserver/ccc.xsd</code>... More info: <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html">Spring documentation</a>
 	 * @return PDP instance
-	 * @throws java.io.IOException
+	 * @throws IOException
 	 *             I/O error reading from {@code confLocation}
-	 * @throws java.lang.IllegalArgumentException
+	 * @throws IllegalArgumentException
 	 *             Invalid PDP configuration at {@code confLocation}
 	 */
 	public static PdpEngineConfiguration getInstance(final String confLocation) throws IOException, IllegalArgumentException

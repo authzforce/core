@@ -35,9 +35,10 @@ import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.*;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -115,45 +116,41 @@ public abstract class XacmlXmlPdpTest
 
 	private static final XmlnsFilteringParserFactory XACML_PARSER_FACTORY = XacmlJaxbParsingUtils.getXacmlParserFactory(false);
 
-	private final String testDirPath;
+	private final Path testDirPath;
 
 	/**
 	 * 
-	 * @param testDir
+	 * @param testDirectoryPath
 	 *            directory where test data are located
 	 */
-	public XacmlXmlPdpTest(final String testDir)
+	public XacmlXmlPdpTest(final Path testDirectoryPath)
 	{
-		this.testDirPath = testDir;
+		this.testDirPath = testDirectoryPath;
 	}
 
 	/**
 	 * Initialize test parameters for each test. To be called by method with Parameters annotation in subclasses.
 	 * 
-	 * @param testResourcesRootDirectory
-	 *            Spring-resolvable location (e.g. classpath:...) of root directory that contains test resources for each test
+	 * @param testResourcesRootDirectoryPath
+	 *            File path (e.g. classpath:...) of root directory that contains test resources for each test
 	 * 
 	 * @return collection of test dataset
-	 * @throws URISyntaxException
-	 *             if <code>testResourcesRootDirectory</code> is no valid URI
 	 * @throws IOException
-	 *             if <code>testResourcesRootDirectory</code> is no valid file path
+	 *             if <code>testResourcesRootDirectoryPath</code> is no valid file path
 	 */
-	public static Collection<Object[]> params(final String testResourcesRootDirectory) throws URISyntaxException, IOException
+	public static Collection<Object[]> params(final Path testResourcesRootDirectoryPath) throws IOException
 	{
 		final Collection<Object[]> testParams = new ArrayList<>();
 		/*
 		 * Each subdirectory of the root directory is data for a specific test. So we configure a test for each directory
 		 */
-		final URL testRootDir = ResourceUtils.getURL(testResourcesRootDirectory);
-		final Path testRootPath = Paths.get(testRootDir.toURI());
-		try (DirectoryStream<Path> stream = Files.newDirectoryStream(testRootPath))
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(testResourcesRootDirectoryPath))
 		{
-			for (final Path path : stream)
+			for (final Path testDirPath : stream)
 			{
-				if (Files.isDirectory(path))
+				if (Files.isDirectory(testDirPath))
 				{
-					final Path lastPathElement = path.getFileName();
+					final Path lastPathElement = testDirPath.getFileName();
 					if (lastPathElement == null)
 					{
 						// skip
@@ -161,7 +158,7 @@ public abstract class XacmlXmlPdpTest
 					}
 
 					// specific test's resources directory location, used as parameter to PdpTest(String)
-					testParams.add(new Object[] { testResourcesRootDirectory + "/" + lastPathElement});
+					testParams.add(new Object[] { testDirPath });
 				}
 			}
 		}
@@ -179,11 +176,11 @@ public abstract class XacmlXmlPdpTest
 	{
 		LOGGER.debug("******************************");
 		LOGGER.debug("Starting PDP test of directory '{}'", testDirPath);
-		final String testResourceLocationPrefix = testDirPath + "/";
+
 		// Parse request
 		final Request request;
 		// if no Request file, it is just a static policy syntax error check
-		final Path reqFilepath = Paths.get(testResourceLocationPrefix + REQUEST_FILENAME);
+		final Path reqFilepath = testDirPath.resolve(REQUEST_FILENAME);
 		final XmlnsFilteringParser unmarshaller = XACML_PARSER_FACTORY.getInstance();
 		if (Files.exists(reqFilepath))
 		{
@@ -203,7 +200,7 @@ public abstract class XacmlXmlPdpTest
 		 * If there is a "$TEST_DIR/$POLICIES_DIR_NAME" directory, then load all policies from there, including root policy from "$TEST_DIR/$POLICIES_DIR_NAME/$ROOT_POLICY_FILENAME" Else load only the
 		 * root policy from "$TEST_DIR/$ROOT_POLICY_FILENAME"
 		 */
-		final Path policiesDir = Paths.get(testResourceLocationPrefix + POLICIES_DIR_NAME);
+		final Path policiesDir = testDirPath.resolve(POLICIES_DIR_NAME);
 		final Optional<Path> optPoliciesDir;
 		final Path rootPolicyFile;
 		if (Files.isDirectory(policiesDir))
@@ -214,14 +211,14 @@ public abstract class XacmlXmlPdpTest
 		else
 		{
 			optPoliciesDir = Optional.empty();
-			rootPolicyFile = Paths.get(testResourceLocationPrefix + ROOT_POLICY_FILENAME);
+			rootPolicyFile = testDirPath.resolve(ROOT_POLICY_FILENAME);
 		}
 
 		/*
 		 * Create PDP
 		 */
 		PdpEngineInoutAdapter<Request, Response> pdp = null;
-		final Path pdpConfFile = Paths.get(testResourceLocationPrefix + PDP_CONF_FILENAME);
+		final Path pdpConfFile = testDirPath.resolve(PDP_CONF_FILENAME);
 		try
 		{
 			final PdpEngineConfiguration pdpEngineConf;
@@ -275,14 +272,14 @@ public abstract class XacmlXmlPdpTest
 			else
 			{
 				// Parse expected response
-				final Response expectedResponse = TestUtils.createResponse(Paths.get(testResourceLocationPrefix + EXPECTED_RESPONSE_FILENAME), unmarshaller);
+				final Response expectedResponse = TestUtils.createResponse(testDirPath.resolve(EXPECTED_RESPONSE_FILENAME), unmarshaller);
 
 				final Response response = pdp.evaluate(request, null);
 				if (LOGGER.isDebugEnabled())
 				{
 					LOGGER.debug("XACML Response received from the PDP: {}", TestUtils.printResponse(response));
 				}
-				TestUtils.assertNormalizedEquals(testResourceLocationPrefix, expectedResponse, response);
+				TestUtils.assertNormalizedEquals(testDirPath.toString(), expectedResponse, response);
 				LOGGER.debug("Finished PDP test of directory '{}'", testDirPath);
 			}
 		}

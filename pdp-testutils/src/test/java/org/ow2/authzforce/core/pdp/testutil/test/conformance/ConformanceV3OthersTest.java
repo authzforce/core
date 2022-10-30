@@ -26,7 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 /**
@@ -39,29 +40,29 @@ public class ConformanceV3OthersTest extends XacmlXmlPdpTest
 	/**
 	 * Name of root directory that contains test resources for each test
 	 */
-	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "target/test-classes/conformance/others";
+	public final static Path TEST_RESOURCES_ROOT_DIRECTORY_PATH = Paths.get("target", "test-classes", "others").toAbsolutePath();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3OthersTest.class);
 
 	/**
 	 * 
-	 * @param testDir
-	 *            subdirectory of {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} where test data are located
+	 * @param testDirPath
+	 *            subdirectory of TEST_RESOURCES_ROOT_DIRECTORY_PATH where test data are located
 	 */
-	public ConformanceV3OthersTest(final String testDir)
+	public ConformanceV3OthersTest(final Path testDirPath)
 	{
-		super(testDir);
+		super(testDirPath);
 	}
 
 	@BeforeClass
 	public static void setUp()
 	{
-		LOGGER.debug("Launching tests in '{}'", TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		LOGGER.debug("Launching tests in '{}'", TEST_RESOURCES_ROOT_DIRECTORY_PATH);
 	}
 
 	@Parameters(name = "{0}")
-	public static Collection<Object[]> params() throws URISyntaxException, IOException
+	public static Collection<Object[]> params() throws IOException
 	{
-		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_PATH);
 	}
 }

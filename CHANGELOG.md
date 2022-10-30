@@ -6,6 +6,20 @@ All notable changes to this project are documented in this file following the [K
 - Issues reported on [OW2's GitLab](https://gitlab.ow2.org/authzforce/core/issues) are referenced in the form of `[GL-N]`, where N is the issue number.
 
 
+## 20.1.1
+### Fixed
+- Upgraded parent project version to 8.4.0 in order to upgrade dependencies to versions fixing CVEs:
+  - Spring Core: 5.3.23
+  - SLF4j: 1.7.36
+  - Logback: 1.2.11
+  - javax.servlet-api, renamed jakarta.servlet-api: 4.0.4
+  - Saxon-HE: 10.8
+  - Guava: 31.1
+  - org.json:json: 20220320
+  
+- Fixed [GH-66]: issue building the project on Windows
+
+
 ## 20.1.0
 ### Fixed
 - Fix CVE-2020-36518 affecting jackson dependency

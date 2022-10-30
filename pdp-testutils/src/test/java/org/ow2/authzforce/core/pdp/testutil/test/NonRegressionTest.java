@@ -26,7 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 /**
@@ -39,7 +40,7 @@ public class NonRegressionTest extends XacmlXmlPdpTest
 	/**
 	 * Name of root directory that contains test resources for each non-regression test
 	 */
-	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "target/test-classes/NonRegression";
+	public final static Path TEST_RESOURCES_ROOT_DIRECTORY_PATH = Paths.get("target", "test-classes", "NonRegression").toAbsolutePath();
 
 	/**
 	 * the logger we'll use for all messages
@@ -50,30 +51,28 @@ public class NonRegressionTest extends XacmlXmlPdpTest
 	 * Initialize test parameters for each test
 	 * 
 	 * @return collection of test dataset
-	 * @throws URISyntaxException
-	 *             if {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} is not a valid location
 	 * @throws IOException
-	 *             if {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} location could not be accessed
+	 *             if TEST_RESOURCES_ROOT_DIRECTORY_PATH location could not be accessed
 	 */
 	@Parameters(name = "{0}")
-	public static Collection<Object[]> params() throws URISyntaxException, IOException
+	public static Collection<Object[]> params() throws IOException
 	{
-		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_PATH);
 	}
 
 	/**
 	 * 
-	 * @param testDir
-	 *            subdirectory of {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} where test data are located
+	 * @param testDirPath
+	 *            subdirectory of TEST_RESOURCES_ROOT_DIRECTORY_PATH where test data are located
 	 */
-	public NonRegressionTest(final String testDir)
+	public NonRegressionTest(final Path testDirPath)
 	{
-		super(testDir);
+		super(testDirPath);
 	}
 
 	@BeforeClass
 	public static void setUp()
     {
-		LOGGER.debug("Launching tests in '{}'", TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		LOGGER.debug("Launching tests in '{}'", TEST_RESOURCES_ROOT_DIRECTORY_PATH);
 	}
 }
