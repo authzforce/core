@@ -37,6 +37,7 @@ import javax.xml.bind.JAXBException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -175,7 +176,10 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                 {
                     final String policyLocationPatternBeforePlaceholderReplacement = (String) policySetOrLocationPatternBeforePlaceholderReplacement;
                     final String policyLocationPattern = environmentProperties.replacePlaceholders(policyLocationPatternBeforePlaceholderReplacement);
-                    // Check whether the location is a file path pattern
+                    /*
+                    policyLocationPattern is handled like a URL pattern, e.g. file://path/to/policy(ies)
+                     Check whether the location is a file path pattern
+                     */
                     if (policyLocationPattern.startsWith(ResourceUtils.FILE_URL_PREFIX))
                     {
                         if (policyLocationPattern.endsWith("/"))
@@ -188,9 +192,10 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                         if (index > 0)
                         {
                             /*
-                             * This is a file path pattern. Separate directory location from glob pattern, and remove file: prefix from directory location to be used with Path API
+                             * This is a file URL pattern. Separate directory location from glob pattern,
+                             * directoryLocation is handled like a URL pattern, e.g. file://path/to/policy_directory
                              */
-                            final String directoryLocation = policyLocationPattern.substring(ResourceUtils.FILE_URL_PREFIX.length(), index);
+                            final String directoryLocation = policyLocationPattern.substring(0, index);
                             final String filePathPattern = policyLocationPattern.substring(index + 1);
                             if (LOGGER.isDebugEnabled())
                             {
@@ -223,7 +228,8 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                             /*
                              * Filename suffix is filenamePattern without starting wildcard
                              */
-                            try (Stream<Path> fileStream = Files.find(Paths.get(directoryLocation), maxDepth,
+                            final Path directoryPath = Paths.get(URI.create(directoryLocation));
+                            try (Stream<Path> fileStream = Files.find(directoryPath, maxDepth,
                                     (path, attrs) ->
                                     {
                                         if (!attrs.isRegularFile())
@@ -248,12 +254,12 @@ public class CoreStaticPolicyProvider extends BaseStaticPolicyProvider
                                         providerParams.add(new PolicyLocationParam(fp.toUri().toURL()));
                                     } catch (final MalformedURLException e)
                                     {
-                                        throw new RuntimeException("Error getting policy files in '" + directoryLocation + "' according to policy location pattern '" + policyLocationPattern + "'", e);
+                                        throw new RuntimeException("Error getting policy files in '" + directoryPath + "' according to policy location pattern '" + policyLocationPattern + "'", e);
                                     }
                                 });
                             } catch (final IOException e)
                             {
-                                throw new RuntimeException("Error getting policy files in '" + directoryLocation + "' according to policy location pattern '" + policyLocationPattern + "'", e);
+                                throw new RuntimeException("Error getting policy files in '" + directoryPath + "' according to policy location pattern '" + policyLocationPattern + "'", e);
                             }
 
                             continue;

@@ -23,7 +23,8 @@ import org.junit.runners.Parameterized.Parameters;
 import org.ow2.authzforce.core.pdp.testutil.XacmlXmlPdpTest;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 /**
@@ -36,24 +37,24 @@ public class CustomPdpTest extends XacmlXmlPdpTest
 	/**
 	 * Name of root directory that contains test resources for each test
 	 */
-	public final static String TEST_RESOURCES_ROOT_DIRECTORY_LOCATION = "target/test-classes/custom";
+	public final static Path TEST_RESOURCES_ROOT_DIRECTORY_PATH = Paths.get("target", "test-classes", "custom").toAbsolutePath();
 
 	// private static final Logger LOGGER = LoggerFactory.getLogger(CustomPdpTest.class);
 
 	/**
 	 * 
-	 * @param testDir
-	 *            subdirectory of {@value #TEST_RESOURCES_ROOT_DIRECTORY_LOCATION} where test data are located
+	 * @param testDirPath
+	 *            subdirectory of TEST_RESOURCES_ROOT_DIRECTORY_PATH where test data are located
 	 */
-	public CustomPdpTest(final String testDir)
+	public CustomPdpTest(final Path testDirPath)
 	{
-		super(testDir);
+		super(testDirPath);
 	}
 
 	@Parameters(name = "{0}")
-	public static Collection<Object[]> params() throws URISyntaxException, IOException
+	public static Collection<Object[]> params() throws IOException
 	{
-		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_LOCATION);
+		return XacmlXmlPdpTest.params(TEST_RESOURCES_ROOT_DIRECTORY_PATH);
 	}
 
 }
