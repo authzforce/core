@@ -44,18 +44,15 @@ public class CliTest
 	@Test
 	public void testXml() throws JAXBException
 	{
+		final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
 		{
 			/*
-			 * Redirect system.out to the byte stream
-			 */
-			System.setOut(ps);
-			/*
 			 * Should throw IllegalArgumentException for invalid pdp config, not NPE (because of relative path with no parent path which used to cause NPE when trying to get the parent directory path)
 			 */
-			CommandLine.call(new PdpCommandLineCallable(), System.out, "-p", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.xml");
-			System.setOut(System.out);
+			cmd.setOut(new PrintWriter(ps));
+			cmd.execute("-p", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.xml");
 		}
 
 		final String output = baos.toString(StandardCharsets.UTF_8);
@@ -66,7 +63,7 @@ public class CliTest
 		try
 		{
 			actualXacmlJaxbObj = (Response) Xacml3JaxbHelper.createXacml3Unmarshaller().unmarshal(new StringReader(output));
-			TestUtils.assertNormalizedEquals(TEST_DATA_DIR + "/IIA001", expectedXacmlJaxbObj, actualXacmlJaxbObj);
+			TestUtils.assertNormalizedEquals(TEST_DATA_DIR + "/IIA001", expectedXacmlJaxbObj, actualXacmlJaxbObj, true);
 		}
 		catch (final JAXBException e)
 		{
@@ -78,19 +75,15 @@ public class CliTest
 	@Test
 	public void testJson() throws IOException
 	{
+		final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
 		try (PrintStream ps = new PrintStream(baos, true, StandardCharsets.UTF_8))
 		{
 			/*
-			 * Redirect system.out to the byte stream
-			 */
-			System.setOut(ps);
-			/*
 			 * Should throw IllegalArgumentException for invalid pdp config, not NPE (because of relative path with no parent path which used to cause NPE when trying to get the parent directory path)
 			 */
-			CommandLine.call(new PdpCommandLineCallable(), System.out, "-p", "-tXACML_JSON", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.json");
-			System.setOut(System.out);
+			cmd.setOut(new PrintWriter(ps));
+			cmd.execute("-p", "-tXACML_JSON", TEST_DATA_DIR + "/pdp.xml", TEST_DATA_DIR + "/IIA001/Request.json");
 		}
 
 		final String output = baos.toString(StandardCharsets.UTF_8);
@@ -106,17 +99,19 @@ public class CliTest
 	}
 
 	/**
-	 * Non-regression test for https://github.com/authzforce/core/issues/9
+	 * Non-regression test for <a href="https://github.com/authzforce/core/issues/9">Issue GH-9: Getting Started Problem</a>
 	 */
 	@Test
 	public void IssueGH9()
 	{
+		final CommandLine cmd = new CommandLine(new PdpCommandLineCallable());
+		cmd.setOut(new PrintWriter(System.out));
 		/*
 		 * Should throw IllegalArgumentException for invalid pdp config, not NPE (because of relative path with no parent path which used to cause NPE when trying to get the parent directory path)
 		 */
 		try
 		{
-			CommandLine.call(new PdpCommandLineCallable(), System.out, "pom.xml", TEST_DATA_DIR + "/IIA001/Request.json");
+			cmd.execute("pom.xml", TEST_DATA_DIR + "/IIA001/Request.json");
 		}
 		catch (final CommandLine.ExecutionException e)
 		{

@@ -67,7 +67,7 @@ public class NonRegressionTest extends XacmlXmlPdpTest
 	 */
 	public NonRegressionTest(final Path testDirPath)
 	{
-		super(testDirPath);
+		super(testDirPath, true);
 	}
 
 	@BeforeClass

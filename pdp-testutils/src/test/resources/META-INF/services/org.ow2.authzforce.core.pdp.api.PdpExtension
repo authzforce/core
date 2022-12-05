@@ -1,0 +1,3 @@
+org.ow2.authzforce.core.pdp.testutil.test.CustomTestRequestPreprocessorFactory
+org.ow2.authzforce.core.pdp.testutil.test.TestExtensibleSimpleValue$Factory
+org.ow2.authzforce.core.pdp.testutil.test.TestExtensibleSimpleValueEqualFunction

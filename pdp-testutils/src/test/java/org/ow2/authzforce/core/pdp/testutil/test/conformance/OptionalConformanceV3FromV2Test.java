@@ -30,9 +30,9 @@ import java.util.Collection;
 /**
  * XACML 3.0 conformance tests for optional features.
  *
- * @see ConformanceV3FromV2
+ * @see ConformanceV3FromV2Test
  */
-public class ConformanceV3FromV2OptionalTest extends ConformanceV3FromV2
+public class OptionalConformanceV3FromV2Test extends ConformanceV3FromV2Test
 {
     /**
      * directory name that states the test type
@@ -45,7 +45,7 @@ public class ConformanceV3FromV2OptionalTest extends ConformanceV3FromV2
         setUp(ROOT_DIRECTORIES[0]);
     }
 
-    public ConformanceV3FromV2OptionalTest(final Path testDir, final String requestFilterId)
+    public OptionalConformanceV3FromV2Test(final Path testDir, final String requestFilterId)
     {
         super(testDir, true, requestFilterId);
     }

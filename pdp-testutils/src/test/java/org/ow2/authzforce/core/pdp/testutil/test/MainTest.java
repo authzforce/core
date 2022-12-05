@@ -22,8 +22,8 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import org.ow2.authzforce.core.pdp.testutil.test.conformance.ConformanceV3FromV2MandatoryTest;
-import org.ow2.authzforce.core.pdp.testutil.test.conformance.ConformanceV3FromV2OptionalTest;
+import org.ow2.authzforce.core.pdp.testutil.test.conformance.MandatoryConformanceV3FromV2Test;
+import org.ow2.authzforce.core.pdp.testutil.test.conformance.OptionalConformanceV3FromV2Test;
 import org.ow2.authzforce.core.pdp.testutil.test.conformance.ConformanceV3OthersTest;
 import org.ow2.authzforce.core.pdp.testutil.test.pep.cxf.EmbeddedPdpBasedAuthzInterceptorTest;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 @RunWith(Suite.class)
-@SuiteClasses(value = { ConformanceV3FromV2MandatoryTest.class, ConformanceV3FromV2OptionalTest.class, ConformanceV3OthersTest.class, PdpGetStaticApplicablePoliciesTest.class, CustomPdpTest.class,
+@SuiteClasses(value = { MandatoryConformanceV3FromV2Test.class, OptionalConformanceV3FromV2Test.class, ConformanceV3OthersTest.class, PdpGetStaticApplicablePoliciesTest.class, CustomPdpTest.class,
 		MongoDbPolicyProviderTest.class, EmbeddedPdpBasedAuthzInterceptorTest.class, NonRegressionTest.class })
 public class MainTest
 {

@@ -48,7 +48,7 @@ public class CustomPdpTest extends XacmlXmlPdpTest
 	 */
 	public CustomPdpTest(final Path testDirPath)
 	{
-		super(testDirPath);
+		super(testDirPath, true);
 	}
 
 	@Parameters(name = "{0}")

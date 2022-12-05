@@ -204,7 +204,7 @@ public class TestUtils
      * @param response input XACML Response
      * @return normalized response
      */
-    public static Response normalizeForComparison(final Response response)
+    public static Response normalizeForComparison(final Response response, boolean ignoreStatusMessageAndDetail)
     {
         final List<Result> results = new ArrayList<>();
         /*
@@ -237,9 +237,7 @@ public class TestUtils
                 } else
                 {
 
-                    // StatusMessage and StatusDetail ignored/not supported
-                    // keep only the statusCode
-                    newStatus = new Status(toJaxb(oldStatusCode), null, null);
+                    newStatus = new Status(toJaxb(oldStatusCode), ignoreStatusMessageAndDetail?null: oldStatus.getStatusMessage(), ignoreStatusMessageAndDetail?null: oldStatus.getStatusDetail());
                 }
             }
 
@@ -407,7 +405,7 @@ public class TestUtils
      * @param actualResponseFromPDP actual response
      * @throws JAXBException error creating JAXB Marshaller for XACML output
      */
-    public static void assertNormalizedEquals(final String testId, final Response expectedResponse, final Response actualResponseFromPDP) throws JAXBException
+    public static void assertNormalizedEquals(final String testId, final Response expectedResponse, final Response actualResponseFromPDP, boolean ignoreStatusMessageAndDetail) throws JAXBException
     {
         if (testId == null)
         {
@@ -425,11 +423,11 @@ public class TestUtils
         }
 
         // normalize responses for comparison
-        final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse);
-        final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP);
+        final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse, ignoreStatusMessageAndDetail);
+        final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP, ignoreStatusMessageAndDetail);
         final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", new MarshallableWithToString(normalizedExpectedResponse, marshaller),
+        assertEquals("Test '" + testId + "' "+(ignoreStatusMessageAndDetail? "(Status elements removed/ignored for comparison)": "")+": ", new MarshallableWithToString(normalizedExpectedResponse, marshaller),
                 new MarshallableWithToString(normalizedActualResponse, marshaller));
     }
 }

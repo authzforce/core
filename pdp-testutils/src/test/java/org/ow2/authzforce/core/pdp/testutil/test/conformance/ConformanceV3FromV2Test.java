@@ -54,7 +54,7 @@ import java.util.Optional;
  * an invalid Request syntax is expected.
  */
 @RunWith(value = Parameterized.class)
-public class ConformanceV3FromV2
+public class ConformanceV3FromV2Test
 {
 	/**
 	 * Suffix of filename of root XACML Policy(Set). The actual filename is the concatenation of the test ID and this suffix.
@@ -99,7 +99,7 @@ public class ConformanceV3FromV2
 	/**
 	 * the logger we'll use for all messages
 	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3FromV2.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3FromV2Test.class);
 
 	protected static void setUp(final String testRootDirectoryLocation)
 	{
@@ -142,7 +142,7 @@ public class ConformanceV3FromV2
 
 	private final String reqFilterId;
 
-	public ConformanceV3FromV2(final Path testDir, final boolean enableXPath, final String requestFilter)
+	public ConformanceV3FromV2Test(final Path testDir, final boolean enableXPath, final String requestFilter)
 	{
 		this.testDirectoryPath = testDir;
 		this.enableXPath = enableXPath;
@@ -303,7 +303,7 @@ public class ConformanceV3FromV2
 					LOGGER.debug("Response that is received from the PDP :  {}", TestUtils.printResponse(actualResponse));
 				}
 
-				TestUtils.assertNormalizedEquals("Test failed for directory "+ testDirectoryPath, expectedResponse, actualResponse);
+				TestUtils.assertNormalizedEquals("Test failed for directory "+ testDirectoryPath, expectedResponse, actualResponse, true);
 			}
 		}
 		catch (final IllegalArgumentException e)

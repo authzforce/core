@@ -19,14 +19,12 @@ package org.ow2.authzforce.core.pdp.impl.io;
 
 import com.google.common.collect.ImmutableList;
 import net.sf.saxon.s9api.XdmNode;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attribute;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Attributes;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.Request;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.XPathCompilerProxy;
-import org.ow2.authzforce.core.pdp.api.io.BaseXacmlJaxbRequestPreprocessor;
-import org.ow2.authzforce.core.pdp.api.io.IndividualXacmlJaxbRequest;
-import org.ow2.authzforce.core.pdp.api.io.SingleCategoryAttributes;
-import org.ow2.authzforce.core.pdp.api.io.SingleCategoryXacmlAttributesParser;
+import org.ow2.authzforce.core.pdp.api.io.*;
 import org.ow2.authzforce.core.pdp.api.value.AttributeBag;
 import org.ow2.authzforce.core.pdp.api.value.AttributeValueFactoryRegistry;
 import org.ow2.authzforce.xacml.identifiers.XacmlStatusCode;
@@ -110,6 +108,31 @@ public final class SingleDecisionXacmlJaxbRequestPreprocessor extends BaseXacmlJ
 	}
 
 	private final DecisionRequestFactory<ImmutableDecisionRequest> reqFactory;
+
+	/**
+	 * Creates instance of default request preprocessor
+	 *
+	 * @param datatypeFactoryRegistry
+	 *            attribute datatype registry
+	 * @param requestFactory
+	 *            decision request factory
+	 * @param strictAttributeIssuerMatch
+	 *            true iff strict attribute Issuer match must be enforced (in particular request attributes with empty Issuer only match corresponding AttributeDesignators with empty Issuer)
+	 * @param allowAttributeDuplicates
+	 *            true iff duplicate Attribute (with same metadata) elements in Request (for multi-valued attributes) must be allowed
+	 * @param requireContentForXPath
+	 *            true iff Content elements must be parsed, else ignored
+	 * @param extraPdpFeatures
+	 *            extra - not mandatory per XACML 3.0 core specification - features supported by the PDP engine. This preprocessor checks whether it is supported by the PDP before processing the request further.
+	 * @param namedAttributeParser custom parser of named Attributes, to customize how XACML Attributes are converted into instance of AuthzForce internal Attribute class
+	 */
+	public SingleDecisionXacmlJaxbRequestPreprocessor(final AttributeValueFactoryRegistry datatypeFactoryRegistry, final DecisionRequestFactory<ImmutableDecisionRequest> requestFactory,
+													  final boolean strictAttributeIssuerMatch, final boolean allowAttributeDuplicates, final boolean requireContentForXPath, final Set<String> extraPdpFeatures, Optional<NamedXacmlAttributeParser<Attribute>> namedAttributeParser)
+	{
+		super(datatypeFactoryRegistry, strictAttributeIssuerMatch, allowAttributeDuplicates, requireContentForXPath, extraPdpFeatures, namedAttributeParser);
+		assert requestFactory != null;
+		reqFactory = requestFactory;
+	}
 
 	/**
 	 * Creates instance of default request preprocessor

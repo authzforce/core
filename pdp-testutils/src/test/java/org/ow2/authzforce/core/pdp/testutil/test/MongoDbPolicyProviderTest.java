@@ -333,7 +333,7 @@ public class MongoDbPolicyProviderTest
 		{
 			actualResp = pdpEngine.evaluate(req);
 		}
-		TestUtils.assertNormalizedEquals("", expectedResp, actualResp);
+		TestUtils.assertNormalizedEquals("", expectedResp, actualResp, true);
 	}
 
 }

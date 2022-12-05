@@ -28,9 +28,9 @@ import java.util.Collection;
 /**
  * XACML 3.0 conformance tests for mandatory features.
  * 
- * @see ConformanceV3FromV2
+ * @see ConformanceV3FromV2Test
  */
-public class ConformanceV3FromV2MandatoryTest extends ConformanceV3FromV2
+public class MandatoryConformanceV3FromV2Test extends ConformanceV3FromV2Test
 {
 	/**
 	 * test root directory location, where each subdirectories contains a category of tests
@@ -43,7 +43,7 @@ public class ConformanceV3FromV2MandatoryTest extends ConformanceV3FromV2
 		setUp(ROOT_DIRECTORY);
 	}
 
-	public ConformanceV3FromV2MandatoryTest(final Path testDir, final String requestFilterId)
+	public MandatoryConformanceV3FromV2Test(final Path testDir, final String requestFilterId)
 	{
 		super(testDir, false, requestFilterId);
 	}
