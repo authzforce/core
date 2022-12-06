@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Policy xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" PolicyId="urn:oasis:names:tc:xacml:2.0:conformance-test:IIA007:policy" RuleCombiningAlgId="urn:oasis:names:tc:xacml:3.0:rule-combining-algorithm:deny-overrides" Version="1.0" >
+    <Description>
+        Policy for testing missing-attribute error with StatusDetail/MissingAttributeDetail created by custom function.
+    </Description>
+    <Target/>
+    <Rule Effect="Permit" RuleId="rule1">
+        <Target>
+            <AnyOf>
+                <AllOf>
+                    <Match MatchId="urn:ow2:authzforce:feature:pdp:function:test-extensible-value:equal">
+                        <AttributeValue DataType="urn:ow2:authzforce:feature:pdp:data-type:test-extensible-value"
+                                        xmlns:test="http://authzforce.github.io/core/xmlns/test/3" test:some-required-xml-attribute="3857">Point
+                            (1224514.3987260093 5942074.072431109)</AttributeValue>
+                        <AttributeDesignator
+                                Category="access-subject"
+                                AttributeId="subject-location" DataType="urn:ow2:authzforce:feature:pdp:data-type:test-extensible-value"
+                                MustBePresent="false"/>
+                    </Match>
+                </AllOf>
+            </AnyOf>
+        </Target>
+    </Rule>
+</Policy>

@@ -117,15 +117,18 @@ public abstract class XacmlXmlPdpTest
 	private static final XmlnsFilteringParserFactory XACML_PARSER_FACTORY = XacmlJaxbParsingUtils.getXacmlParserFactory(false);
 
 	private final Path testDirPath;
+	private final boolean ignoreStatusMessageAndDetail;
 
 	/**
 	 * 
 	 * @param testDirectoryPath
 	 *            directory where test data are located
+	 * @param ignoreStatusMessageAndDetail ignore StatusMessage/StatusDetail in response comparison
 	 */
-	public XacmlXmlPdpTest(final Path testDirectoryPath)
+	public XacmlXmlPdpTest(final Path testDirectoryPath, boolean ignoreStatusMessageAndDetail)
 	{
 		this.testDirPath = testDirectoryPath;
+		this.ignoreStatusMessageAndDetail = ignoreStatusMessageAndDetail;
 	}
 
 	/**
@@ -279,7 +282,7 @@ public abstract class XacmlXmlPdpTest
 				{
 					LOGGER.debug("XACML Response received from the PDP: {}", TestUtils.printResponse(response));
 				}
-				TestUtils.assertNormalizedEquals(testDirPath.toString(), expectedResponse, response);
+				TestUtils.assertNormalizedEquals(testDirPath.toString(), expectedResponse, response, ignoreStatusMessageAndDetail);
 				LOGGER.debug("Finished PDP test of directory '{}'", testDirPath);
 			}
 		}

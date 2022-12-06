@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Request xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17" ReturnPolicyIdList="false"
+         CombinedDecision="false"
+         xmlns:test="http://authzforce.github.io/core/xmlns/test/3">
+  <Attributes Category="access-subject">
+    <Attribute AttributeId="subject-location" IncludeInResult="false">
+      <AttributeValue DataType="urn:ow2:authzforce:feature:pdp:data-type:test-extensible-value" test:some-required-xml-attribute="4326"
+      >Point (47 11)</AttributeValue>
+    </Attribute>
+  </Attributes>
+</Request>

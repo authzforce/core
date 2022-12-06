@@ -48,7 +48,8 @@ public class CustomPdpTest extends XacmlXmlPdpTest
 	 */
 	public CustomPdpTest(final Path testDirPath)
 	{
-		super(testDirPath);
+		// The CustomRequestPreproc test requires to check the StatusDetail
+		super(testDirPath, false);
 	}
 
 	@Parameters(name = "{0}")

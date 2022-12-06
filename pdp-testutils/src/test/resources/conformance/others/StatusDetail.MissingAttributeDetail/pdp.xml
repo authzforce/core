@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Testing parameter 'maxPolicySetRefDepth' -->
+<pdp xmlns="http://authzforce.github.io/core/xmlns/pdp/8"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     version="8.0">
+   <policyProvider id="refPolicyprovider" xsi:type="StaticPolicyProvider">
+      <policyLocation>${PARENT_DIR}/policies/*.xml</policyLocation>
+   </policyProvider>
+</pdp>

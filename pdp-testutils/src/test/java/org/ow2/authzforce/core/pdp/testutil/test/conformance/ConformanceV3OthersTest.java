@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 
 /**
- * "Various" XACML 3.0 conformance tests that are not in the official set of conformance tests already addressed by {@link ConformanceV3FromV2MandatoryTest}.
+ * "Various" XACML 3.0 conformance tests that are not in the official set of conformance tests already addressed by {@link MandatoryConformanceV3FromV2Test}.
  */
 @RunWith(value = Parameterized.class)
 public class ConformanceV3OthersTest extends XacmlXmlPdpTest
@@ -40,18 +40,18 @@ public class ConformanceV3OthersTest extends XacmlXmlPdpTest
 	/**
 	 * Name of root directory that contains test resources for each test
 	 */
-	public final static Path TEST_RESOURCES_ROOT_DIRECTORY_PATH = Paths.get("target", "test-classes", "others").toAbsolutePath();
+	public final static Path TEST_RESOURCES_ROOT_DIRECTORY_PATH = Paths.get("target", "test-classes", "conformance", "others").toAbsolutePath();
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConformanceV3OthersTest.class);
 
 	/**
-	 * 
 	 * @param testDirPath
 	 *            subdirectory of TEST_RESOURCES_ROOT_DIRECTORY_PATH where test data are located
 	 */
 	public ConformanceV3OthersTest(final Path testDirPath)
 	{
-		super(testDirPath);
+		// Some tests need to check StatusDetail like the actual test on StatusDetail/MissingAttributeDetail
+		super(testDirPath,  false);
 	}
 
 	@BeforeClass

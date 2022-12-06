@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+    <Result>
+        <Decision>Indeterminate</Decision>
+        <Status>
+            <StatusCode
+                  Value="urn:oasis:names:tc:xacml:1.0:status:missing-attribute"/>
+            <StatusMessage>Missing named Attribute</StatusMessage>
+            <StatusDetail>
+                <MissingAttributeDetail AttributeId="urn:oasis:names:tc:xacml:2.0:conformance-test:some-attribute" Category="urn:oasis:names:tc:xacml:1.0:subject-category:access-subject" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+            </StatusDetail>
+        </Status>
+    </Result>
+</Response>

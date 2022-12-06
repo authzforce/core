@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Response xmlns="urn:oasis:names:tc:xacml:3.0:core:schema:wd-17">
+   <Result>
+      <Decision>Indeterminate</Decision>
+      <Status>
+         <StatusCode Value="urn:ogc:def:function:geoxacml:3.0:crs-error"/>
+         <StatusMessage>Function urn:ow2:authzforce:feature:pdp:function:test-extensible-value:equal expects same SRS for both geometry parameters</StatusMessage>
+         <StatusDetail>
+            <MissingAttributeDetail AttributeId="subject-location" Category="access-subject" DataType="urn:ow2:authzforce:feature:pdp:data-type:test-extensible-value">
+               <AttributeValue DataType="urn:ow2:authzforce:feature:pdp:data-type:test-extensible-value" ns2:some-required-xml-attribute="3857" xmlns:ns2="http://authzforce.github.io/core/xmlns/test/3"/>
+            </MissingAttributeDetail>
+         </StatusDetail>
+      </Status>
+   </Result>
+</Response>

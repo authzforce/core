@@ -21,6 +21,7 @@ import com.google.common.base.Preconditions;
 import net.sf.saxon.s9api.*;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeSelectorType;
 import oasis.names.tc.xacml._3_0.core.schema.wd_17.AttributeValueType;
+import oasis.names.tc.xacml._3_0.core.schema.wd_17.MissingAttributeDetail;
 import org.ow2.authzforce.core.pdp.api.*;
 import org.ow2.authzforce.core.pdp.api.expression.AttributeSelectorExpression;
 import org.ow2.authzforce.core.pdp.api.expression.VariableReference;
@@ -49,7 +50,7 @@ public final class AttributeSelectorExpressions
      * Reasons for using SAXON's native API (s9api) in XPath evaluation instead of standard Java APIs (e.g. JAXP):
      *
      * <ol>
-     * <li>Performance: See http://www.saxonica.com/documentation9.5/javadoc/net /sf/saxon/s9api/package-summary.html:
+     * <li>Performance: See <a href="http://www.saxonica.com/documentation9.5/javadoc/net/sf/saxon/s9api/package-summary.html">Package net.sf.saxon.s9api Description</a>:
      * <p>
      * <i>This package provides Saxon's preferred Java API for XSLT, XQuery, XPath, and XML Schema processing. The interface is designed to hide as much as possible of the detail of the
      * implementation. However, the API architecture faithfully reflects the internal architecture of the Saxon product, unlike standard APIs such as JAXP and XQJ which in many cases force compromises
@@ -144,6 +145,11 @@ public final class AttributeSelectorExpressions
         protected final AttributeSelectorId attributeSelectorId;
         private final boolean mustBePresent;
         private final AttributeValueFactory<?> attrFactory;
+        private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
+        private final transient IndeterminateEvaluationException missingAttributesContentException;
+
+        protected final MissingAttributeDetail xacmlMissingAttributeDetail;
+
 
         private final transient Bag.Validator mustBePresentEnforcer;
         protected final transient XPathCompilerProxy xPathCompiler;
@@ -151,8 +157,6 @@ public final class AttributeSelectorExpressions
         private final transient XPathExecutable xPathEvaluator;
         private final transient List<VariableReference<?>> xpathVariables;
         private final transient BagDatatype<AV> returnType;
-        private final transient IndeterminateEvaluationException missingAttributeBecauseNullContextException;
-        private final transient IndeterminateEvaluationException missingAttributesContentException;
 
         // cached method results
         private transient volatile String toString = null;
@@ -198,8 +202,6 @@ public final class AttributeSelectorExpressions
 
             final String attributeCategory = attributeSelectorId.getCategory();
 
-            final String missingAttributeMessage = this + " not found in context";
-
             this.xPathCompiler = xPathCompiler;
             this.optXPathCompiler = Optional.of(this.xPathCompiler);
 
@@ -229,8 +231,11 @@ public final class AttributeSelectorExpressions
             this.missingAttributesContentException = new IndeterminateEvaluationException(this + ": No <Content> element found in Attributes of Category='" + attributeCategory + "'",
                     XacmlStatusCode.SYNTAX_ERROR.value());
 
+            // Empty string (undefined) for ContextSelectorId (AttributeId) if undefined is allowed as xs:anyURI
+            this.xacmlMissingAttributeDetail = new MissingAttributeDetail(null, attrSelectorCategory, contextSelectorId.orElse(""), attrFactory.getDatatype().getId(), null);
+
             this.mustBePresent = mustBePresent;
-            this.mustBePresentEnforcer = mustBePresent ? new Bags.NonEmptinessValidator(missingAttributeMessage) : Bags.DUMB_VALIDATOR;
+            this.mustBePresentEnforcer = mustBePresent ? new Bags.NonEmptinessValidator(new ImmutableXacmlStatus(xacmlMissingAttributeDetail, Optional.empty(), Optional.of(this + " not found in context"))) : Bags.DUMB_VALIDATOR;
         }
 
         protected abstract ImmutableXacmlStatus getXpathEvalErrorStatus();
@@ -627,8 +632,8 @@ public final class AttributeSelectorExpressions
             final String contextSelectorId = attributeSelectorId.getContextSelectorId().get();
             this.contextSelectorFQN = Optional.of(AttributeFqns.newInstance(attributeCategory, Optional.empty(), contextSelectorId));
             this.attrProvider = attrProvider;
-            this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(this + " not found in context for unknown reason", XacmlStatusCode.MISSING_ATTRIBUTE.value());
-            this.missingContextSelectorAttributeErrorStatus = new ImmutableXacmlStatus(XacmlStatusCode.MISSING_ATTRIBUTE.value(), Optional.of(this + ": No value found for attribute designated by Category=" + attributeCategory + " and ContextSelectorId=" + contextSelectorId));
+            this.missingAttributeForUnknownReasonException = new IndeterminateEvaluationException(this + " not found in context for unknown reason", xacmlMissingAttributeDetail, Optional.empty());
+            this.missingContextSelectorAttributeErrorStatus = new ImmutableXacmlStatus(xacmlMissingAttributeDetail, Optional.empty(), Optional.of(this + ": No value found for attribute designated by Category=" + attributeCategory + " and ContextSelectorId=" + contextSelectorId));
             this.xpathEvalErrMsgSuffix = "' from ContextSelectorId='" + contextSelectorId + "' against Content of Attributes of Category=" + attributeCategory;
             this.xpathEvalErrStatus =  new ImmutableXacmlStatus(XacmlStatusCode.SYNTAX_ERROR.value(), Optional.of(this + ": Error evaluating XPath against XML node from Content of Attributes Category='" + attributeCategory + xpathEvalErrMsgSuffix));
         }

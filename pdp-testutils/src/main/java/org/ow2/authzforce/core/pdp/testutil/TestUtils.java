@@ -48,6 +48,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class TestUtils
 {
@@ -198,18 +199,22 @@ public class TestUtils
     }
 
     /**
-     * Normalize a XACML response for comparison with another normalized one. In particular, it removes every Result's status as we choose to ignore the Status. Indeed, a PDP implementation might
-     * return a perfectly XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
+     * Normalize a XACML response for comparison with another normalized one, allowing to remove StatusMessage and/or StatusDetail if there is any. Indeed, a PDP implementation might
+     * return a perfectly XACML-compliant response but with extra Status Message/Detail that we would not expect and of minor importance.
+     * Responses having any Result with nested StatusCode are not supported and will be rejected.
      *
-     * @param response input XACML Response
+     * @param response input XACML Response without any nested StatusCode in results.
+     * @param removeStatusMessage remove the StatusMessage if there is any
+     * @param removeStatusDetail remove the StatusDetail if there is any
      * @return normalized response
      */
-    public static Response normalizeForComparison(final Response response)
+    public static Response normalizeForComparison(final Response response, boolean removeStatusMessage, boolean removeStatusDetail)
     {
         final List<Result> results = new ArrayList<>();
         /*
-         * We iterate over all results, because for each result, we don't compare everything. In particular, we choose to ignore the Status. Indeed, a PDP implementation might return a perfectly
-         * XACML-compliant response but with extra StatusCode/Message/Detail that we would not expect.
+         * We iterate over all results, because for each result, we don't compare everything. In particular, we choose to ignore the StatusDetail.
+         * Also if {@code removeStatusMessage}, StatusMessage is ignored as well. Indeed, a PDP implementation might return a perfectly
+         * XACML-compliant response but with extra Status Message/Detail that we would not expect.
          */
         for (final Result result : response.getResults())
         {
@@ -230,16 +235,16 @@ public class TestUtils
 				 */
                 final StatusCode oldStatusCode = oldStatus.getStatusCode();
                 assert oldStatusCode != null;
+                if(oldStatusCode.getStatusCode() != null) {
+                    throw new UnsupportedOperationException("Nested StatusCodes are not supported (found in one of the Results)");
+                }
                 // status OK is useless, equivalent to no status (no error)
                 if (oldStatusCode.getValue().equals(XacmlStatusCode.OK.value()))
                 {
                     newStatus = null;
                 } else
                 {
-
-                    // StatusMessage and StatusDetail ignored/not supported
-                    // keep only the statusCode
-                    newStatus = new Status(toJaxb(oldStatusCode), null, null);
+                    newStatus = new Status(toJaxb(oldStatusCode), removeStatusMessage?null: oldStatus.getStatusMessage(), removeStatusDetail?null: oldStatus.getStatusDetail());
                 }
             }
 
@@ -407,7 +412,7 @@ public class TestUtils
      * @param actualResponseFromPDP actual response
      * @throws JAXBException error creating JAXB Marshaller for XACML output
      */
-    public static void assertNormalizedEquals(final String testId, final Response expectedResponse, final Response actualResponseFromPDP) throws JAXBException
+    public static void assertNormalizedEquals(final String testId, final Response expectedResponse, final Response actualResponseFromPDP, boolean ignoreStatusMessageAndDetail) throws JAXBException
     {
         if (testId == null)
         {
@@ -424,12 +429,95 @@ public class TestUtils
             throw new IllegalArgumentException("Undefined actual response  for response equality check");
         }
 
+        final boolean removeStatusMessage, removeStatusDetail;
+        if(ignoreStatusMessageAndDetail) {
+            removeStatusMessage = true;
+            removeStatusDetail = true;
+        } else {
+            /*
+            Method equals is not implemented on DOM Elements used in StatusDetail, therefore useless for proper comparison of StatusDetail content.
+            Therefore, we do it manually, assuming the only type of content allowed by AuthzForce in a StatusDetail is one and only one MissingAttributeDetail.
+             */
+            final Iterator<Result> actualResultsIt = actualResponseFromPDP.getResults().iterator();
+            for (final Result expectedResult : expectedResponse.getResults())
+            {
+                if (!actualResultsIt.hasNext())
+                {
+                    fail("Actual response has fewer Results than expected");
+                }
+
+                final Result actualResult = actualResultsIt.next();
+
+                final Status expectedStatus = expectedResult.getStatus();
+                final Status actualStatus = actualResult.getStatus();
+                if (expectedStatus == null)
+                {
+                    if (actualStatus != null)
+                    {
+                        fail("One of the Result(s) of the actual response has a unexpected <Status>.");
+                    }
+
+                    // expectedStatus == actualStatus == null
+                    continue;
+                }
+                // expectedStatus != null
+                if (actualStatus == null)
+                {
+                    fail("One of the Result(s) of the actual response does not have a <Status> as expected.");
+                }
+                // actualStatus != null
+                final StatusDetail expectedStatusDetail = expectedStatus.getStatusDetail();
+                final StatusDetail actualStatusDetail = actualStatus.getStatusDetail();
+                if (expectedStatusDetail == null)
+                {
+                    if (actualStatusDetail != null)
+                    {
+                        fail("One of the Result(s) of the actual response has a unexpected <StatusDetail>.");
+                    }
+                } else if (actualStatusDetail == null)
+                {
+                    fail("One of the Result(s) of the actual response does not have a <StatusDetail> as expected.");
+                } else
+                {
+                    final MissingAttributeDetail expectedMissingAttributeDetail = validate(expectedStatusDetail);
+                    final MissingAttributeDetail actualMissingAttributeDetail = validate(actualStatusDetail);
+                    assertEquals("Test '" + testId + ": Matching <StatusDetail>/<MissingAttributeDetail>s: '", expectedMissingAttributeDetail, actualMissingAttributeDetail);
+                }
+            }
+            // StatusDetails/MissingAttributeDetails in Results are the same
+
+            removeStatusMessage = false;
+            /*
+             StatusDetail comparison already taken care of, remove it else assertEquals will fail to compare StatusDetail content for the reason above.
+             */
+            removeStatusDetail = true;
+        }
+
         // normalize responses for comparison
-        final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse);
-        final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP);
+        final Response normalizedExpectedResponse = TestUtils.normalizeForComparison(expectedResponse, removeStatusMessage, removeStatusDetail);
+        final Response normalizedActualResponse = TestUtils.normalizeForComparison(actualResponseFromPDP, removeStatusMessage,removeStatusDetail);
         final Marshaller marshaller = Xacml3JaxbHelper.createXacml3Marshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        assertEquals("Test '" + testId + "' (Status elements removed/ignored for comparison): ", new MarshallableWithToString(normalizedExpectedResponse, marshaller),
+        assertEquals("Test '" + testId + "' "+(ignoreStatusMessageAndDetail? "(Status elements removed/ignored for comparison)": "")+": ", new MarshallableWithToString(normalizedExpectedResponse, marshaller),
                 new MarshallableWithToString(normalizedActualResponse, marshaller));
+    }
+
+    private static MissingAttributeDetail validate(final StatusDetail statusDetail)
+    {
+        assert statusDetail != null;
+        final List<org.w3c.dom.Element> statusDetailContent = statusDetail.getAnies();
+        Preconditions.checkArgument(statusDetailContent.size() == 1, "Invalid number of elements in StatusDetail: != 1");
+        final org.w3c.dom.Element domElement = statusDetailContent.get(0);
+        final Unmarshaller unmarshaller;
+        try
+        {
+            unmarshaller = Xacml3JaxbHelper.createXacml3Unmarshaller();
+            final Object missingAttDetail = unmarshaller.unmarshal(domElement);
+            Preconditions.checkArgument(missingAttDetail instanceof MissingAttributeDetail, "Invalid StatusDetail content: not a MissingAttributeDetail");
+            return (MissingAttributeDetail) missingAttDetail;
+        } catch (JAXBException e)
+        {
+            throw new RuntimeException("Error instantiating XACML3.0 JAXB unmarshaller or DOM document builder or unmarshalling MissingAttributeDetail from DOM Element in StatusDetail", e);
+        }
     }
 }
